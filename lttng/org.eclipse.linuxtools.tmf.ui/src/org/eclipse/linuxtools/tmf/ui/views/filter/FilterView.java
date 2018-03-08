@@ -149,15 +149,6 @@ public class FilterView extends TmfView {
                 }
             }
         });
-        this.getSite().setSelectionProvider(fViewer.getTreeViewer());
-    }
-
-    /**
-     * @since 2.2
-     * @return the ITmfFilterTreeNode currently selected
-     */
-    ITmfFilterTreeNode getSelection() {
-        return fViewer.getSelection();
     }
 
     @Override
