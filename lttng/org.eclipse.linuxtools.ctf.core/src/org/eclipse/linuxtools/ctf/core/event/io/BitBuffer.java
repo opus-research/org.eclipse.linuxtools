@@ -10,7 +10,7 @@
  *  Matthew Khouzam - Initial Design and implementation + overhaul
  *  Francis Giraldeau - Initial API and implementation
  *  Philippe Proulx - Some refinement and optimization
- *  Etienne Bergeron - fix zero size read + cleanup
+ *  Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -144,12 +144,12 @@ public final class BitBuffer {
         }
         if (length > BIT_INT) {
             final int highShift = length - BIT_INT;
-            long a = getInt() & 0x00000000FFFFFFFFL;
+            long a = getInt();
             long b = getInt(highShift, false);
             long retVal;
             /* Cast the signed-extended int into a unsigned int. */
             a &= 0xFFFFFFFFL;
-            b &= ((1L << highShift) - 1L);
+            b &= (1L << highShift) - 1L;
 
             retVal = (this.byteOrder == ByteOrder.BIG_ENDIAN) ? ((a << highShift) | b) : ((b << BIT_INT) | a);
             /* sign extend */
@@ -159,7 +159,8 @@ public final class BitBuffer {
             }
             return retVal;
         }
-        return getInt(length, signed);
+        long retVal = getInt(length, signed);
+        return (signed ? retVal : (retVal & 0xFFFFFFFFL));
     }
 
     /**
@@ -175,7 +176,7 @@ public final class BitBuffer {
      *            The sign extended flag
      * @return The int value read from the buffer
      * @throws CTFReaderException
-     *             An error occurred reading the data. when the buffer is read
+     *             An error occurred reading the data. When the buffer is read
      *             beyond its end, this exception will be raised.
      */
     private int getInt(int length, boolean signed) throws CTFReaderException {
@@ -187,7 +188,9 @@ public final class BitBuffer {
 
         /* Validate that the buffer has enough bits. */
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot read the integer, the buffer does not have enough remaining space. Requested:" + length); //$NON-NLS-1$
+            throw new CTFReaderException("Cannot read the integer, " + //$NON-NLS-1$
+                    "the buffer does not have enough remaining space. " + //$NON-NLS-1$
+                    "Requested:" + length); //$NON-NLS-1$
         }
 
         /* Get the value from the byte buffer. */
@@ -394,7 +397,8 @@ public final class BitBuffer {
         final long curPos = this.pos;
 
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot write to bitbuffer, insufficient space. Requested: " + length); //$NON-NLS-1$
+            throw new CTFReaderException("Cannot write to bitbuffer, " //$NON-NLS-1$
+                    + "insufficient space. Requested: " + length); //$NON-NLS-1$
         }
         if (length == 0) {
             return;
