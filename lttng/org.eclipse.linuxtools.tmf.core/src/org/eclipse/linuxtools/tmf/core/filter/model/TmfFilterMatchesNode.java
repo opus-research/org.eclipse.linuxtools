@@ -90,7 +90,7 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
     public void setRegex(String regex) {
         this.fRegex = regex;
         try {
-            this.fPattern = Pattern.compile(regex, Pattern.DOTALL);
+            this.fPattern = Pattern.compile(regex);
         } catch (PatternSyntaxException e) {
             this.fPattern = null;
         }
