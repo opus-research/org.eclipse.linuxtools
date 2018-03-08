@@ -16,7 +16,6 @@ import java.math.BigInteger;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF integer definition.
@@ -100,7 +99,8 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     }
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
+        final long longNegBit = 0x0000000080000000L;
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
 
@@ -113,23 +113,40 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
          * input buffer? If not, then temporarily set the buffer's endianness to
          * this field's just to read the data
          */
-        ByteOrder previousByteOrder = input.getByteOrder();
+        ByteOrder byteOrder = input.getByteOrder();
         if ((this.declaration.getByteOrder() != null) &&
                 (this.declaration.getByteOrder() != input.getByteOrder())) {
             input.setByteOrder(this.declaration.getByteOrder());
         }
 
-        if (length > 64) {
-            throw new CTFReaderException("Cannot read an integer with over 64 bits. Length given: " + length); //$NON-NLS-1$
+        // TODO: use the eventual getLong from BitBuffer
+        if (length == 64) {
+            long low = input.getInt(32, false);
+            low = low & 0x00000000FFFFFFFFL;
+            long high = input.getInt(32, false);
+            high = high & 0x00000000FFFFFFFFL;
+            if (this.declaration.getByteOrder() != ByteOrder.BIG_ENDIAN) {
+                bits = (high << 32) | low;
+            } else {
+                bits = (low << 32) | high;
+            }
+        } else {
+            bits = input.getInt(length, signed);
+            bits = bits & 0x00000000FFFFFFFFL;
+            /*
+             * The previous line loses sign information but is necessary, this
+             * fixes the sign for 32 bit numbers. Sorry, in java all 64 bit ints
+             * are signed.
+             */
+            if ((longNegBit == (bits & longNegBit)) && signed) {
+                bits |= 0xffffffff00000000L;
+            }
         }
-
-        bits = input.get(length, signed);
-
         /*
          * Put the input buffer's endianness back to original if it was changed
          */
-        if (previousByteOrder != input.getByteOrder()) {
-            input.setByteOrder(previousByteOrder);
+        if (byteOrder != input.getByteOrder()) {
+            input.setByteOrder(byteOrder);
         }
 
         value = bits;
