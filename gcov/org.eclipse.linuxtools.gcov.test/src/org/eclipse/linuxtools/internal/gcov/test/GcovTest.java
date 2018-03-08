@@ -30,6 +30,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotRadio;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.hamcrest.Matcher;
 import org.osgi.framework.FrameworkUtil;
 
@@ -221,6 +222,7 @@ public abstract class GcovTest {
 		botView.close();
 	}
 	
+	@SuppressWarnings("unused")
 	private static void dumpCSV(SWTWorkbenchBot bot, SWTBotView botView, String projectName, String type,
 			boolean testProducedReference) {
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
