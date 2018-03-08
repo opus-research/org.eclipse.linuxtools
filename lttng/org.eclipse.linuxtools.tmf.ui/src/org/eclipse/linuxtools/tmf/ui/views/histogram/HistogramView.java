@@ -56,6 +56,7 @@ import org.eclipse.ui.IEditorPart;
  * @version 2.0
  * @author Francois Chouinard
  */
+@SuppressWarnings("deprecation")
 public class HistogramView extends TmfView {
 
     // ------------------------------------------------------------------------
@@ -178,7 +179,7 @@ public class HistogramView extends TmfView {
         gridData.verticalAlignment = SWT.CENTER;
         fCurrentEventTimeControl = new HistogramCurrentTimeControl(this, controlsComposite, currentEventLabel, 0L);
         fCurrentEventTimeControl.setLayoutData(gridData);
-        fCurrentEventTimeControl.setValue(0L);
+        fCurrentEventTimeControl.setValue(Long.MIN_VALUE);
 
         // Window span time control
         gridData = new GridData();
@@ -186,7 +187,7 @@ public class HistogramView extends TmfView {
         gridData.verticalAlignment = SWT.CENTER;
         fTimeSpanControl = new HistogramTimeRangeControl(this, controlsComposite, windowSpanLabel, 0L);
         fTimeSpanControl.setLayoutData(gridData);
-        fTimeSpanControl.setValue(0L);
+        fTimeSpanControl.setValue(Long.MIN_VALUE);
 
         // --------------------------------------------------------------------
         // Time range histogram
@@ -341,20 +342,22 @@ public class HistogramView extends TmfView {
     }
 
     private void setNewRange(long startTime, long duration) {
-        if (startTime < fTraceStartTime) {
-            startTime = fTraceStartTime;
+        long realStart = startTime;
+
+        if (realStart < fTraceStartTime) {
+            realStart = fTraceStartTime;
         }
 
-        long endTime = startTime + duration;
+        long endTime = realStart + duration;
         if (endTime > fTraceEndTime) {
             endTime = fTraceEndTime;
             if ((endTime - duration) > fTraceStartTime) {
-                startTime = endTime - duration;
+                realStart = endTime - duration;
             } else {
-                startTime = fTraceStartTime;
+                realStart = fTraceStartTime;
             }
         }
-        updateTimeRange(startTime, endTime);
+        updateTimeRange(realStart, endTime);
     }
 
     // ------------------------------------------------------------------------
@@ -426,9 +429,9 @@ public class HistogramView extends TmfView {
         // Clear the UI widgets
         fFullTraceHistogram.clear();
         fTimeRangeHistogram.clear();
-        fCurrentEventTimeControl.setValue(0L);
+        fCurrentEventTimeControl.setValue(Long.MIN_VALUE);
 
-        fTimeSpanControl.setValue(0);
+        fTimeSpanControl.setValue(Long.MIN_VALUE);
     }
 
     /**

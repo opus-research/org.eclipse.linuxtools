@@ -16,6 +16,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -37,6 +39,7 @@ import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
@@ -146,17 +149,6 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 			return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * Called by <code>run(IAction)</code> to generate the command line necessary to run the script.
-	 * @return The arguments to pass to <code>Runtime.exec</code> to start the stap process on this script.
-	 * @see TerminalCommand
-	 * @see Runtime#exec(java.lang.String[], java.lang.String[])
-	 * @deprecated Use {@link RunScriptBaseAction#buildStandardScript()} instead
-	 */
-	protected String[] buildScript() {
-		return buildStandardScript();
 	}
 	
 	/**
@@ -283,7 +275,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 
 		String modname;
 		if(getRunLocal() == false) {
-			modname = serverfileName.substring(0, serverfileName.indexOf('.'));
+			modname = serverfileName.substring(0, serverfileName.lastIndexOf(".stp")); //$NON-NLS-1$
 		}
 		/* We need to remove the directory prefix here because in the case of
 		 * running the script remotely, this is already done.  Not doing so
@@ -291,10 +283,24 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		 */
 		else {
 			modname = fileName.substring(fileName.lastIndexOf('/')+1);
-			modname = modname.substring(0, modname.indexOf('.'));
+			modname = modname.substring(0, modname.lastIndexOf(".stp")); //$NON-NLS-1$
 		}
-		if (modname.indexOf('-') != -1)
-			modname = modname.substring(0, modname.indexOf('-'));
+
+		// Make sure script name only contains underscores and/or alphanumeric characters.
+		Pattern validModName = Pattern.compile("^[a-z0-9_]+$"); //$NON-NLS-1$
+		Matcher modNameMatch = validModName.matcher(modname);
+		if (!modNameMatch.matches()) {
+			continueRun = false;
+
+			Shell parent = PlatformUI.getWorkbench().getDisplay()
+					.getActiveShell();
+			MessageDialog.openError(parent,
+					Messages.ScriptRunAction_InvalidScriptTitle,
+					Messages.ScriptRunAction_InvalidScriptTMessage);
+
+			return new String[0];
+		}
+
 		script[script.length-2]=modname;
 		return script;
 	}
