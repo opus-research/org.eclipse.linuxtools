@@ -152,7 +152,19 @@ public class DeleteTraceHandler extends AbstractHandler {
                             }
                             for (ITmfProjectModelElement child : toRemove) {
                                 // Close the experiment if open
-                                ((TmfExperimentElement) experiment).removeTrace((TmfTraceElement)child);
+                                file = ((TmfExperimentElement) experiment).getBookmarksFile();
+                                input = new FileEditorInput(file);
+                                for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+                                    for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                                        for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                                            if (editorReference.getEditorInput().equals(input)) {
+                                                wbPage.closeEditor(editorReference.getEditor(false), false);
+                                            }
+                                        }
+                                    }
+                                }
+                                experiment.removeChild(child);
+                                child.getResource().delete(true, null);
                             }
                         }
 

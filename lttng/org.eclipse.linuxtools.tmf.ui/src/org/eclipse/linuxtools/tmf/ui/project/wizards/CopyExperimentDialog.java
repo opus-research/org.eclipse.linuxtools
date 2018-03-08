@@ -209,6 +209,9 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
 
     private IFolder copyExperiment(final String newName) {
 
+    	IPath oldPath = fExperiment.getResource().getFullPath();
+    	final IPath newPath = oldPath.append("../" + newName); //$NON-NLS-1$
+
     	WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
             @Override
             public void execute(IProgressMonitor monitor) throws CoreException {
@@ -217,9 +220,18 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
-
-                    fExperiment.copy(newName,  fExperimentFolder, true);
-
+                    // Copy supplementary files first
+                    fExperiment.copySupplementaryFolder(newName);
+                    fExperiment.getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
+                    // Delete any bookmarks file found in copied experiment folder
+                    IFolder folder = fExperimentFolder.getFolder(newName);
+                    if (folder.exists()) {
+                        for (IResource member : folder.members()) {
+                            if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
+                                member.delete(true, null);
+                            }
+                        }
+                    }
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
