@@ -17,7 +17,7 @@ public class TreeParent {
 	private TreeParent parent;
 	private ArrayList<TreeParent> children;
 	private float percent = -1;
-	private int samples = -1;
+	private double samples = -1;
 
 	public TreeParent(String name, float percent) {
 		this.name = name;
@@ -25,7 +25,7 @@ public class TreeParent {
 		children = new ArrayList<TreeParent>();
 	}
 
-	public TreeParent(String name, float percent, int samples) {
+	public TreeParent(String name, float percent, double samples) {
 		this(name, percent);
 		this.samples = samples;
 	}
@@ -70,7 +70,7 @@ public class TreeParent {
 	 * 
 	 * @return the number of samples
 	 */
-	public int getNumberOfSamples () {
+	public double getNumberOfSamples () {
 		// Child of PMSymbol, distribute samples by percentage
 		if (this instanceof PMLineRef) {
 			if (samples == -1) {

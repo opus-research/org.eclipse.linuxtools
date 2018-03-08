@@ -27,7 +27,7 @@ public class PMSymbol extends TreeParent {
 		return tmpName;
 	}
 
-	public PMSymbol(String symbolName, float pc, int samples) {
+	public PMSymbol(String symbolName, float pc, double samples) {
 		super(symbolName, pc, samples);
 	}
 
