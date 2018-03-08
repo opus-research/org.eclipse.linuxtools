@@ -54,19 +54,13 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
      * @param eventType
      *            The specific class for the event type that will be used within
      *            the subclass
-     * @param id
-     *            Name given to this state change input. Only used internally.
      */
-    public AbstractStateChangeInput(ITmfTrace trace,
-            Class<? extends ITmfEvent> eventType, String id) {
+    public AbstractStateChangeInput(ITmfTrace trace, Class<? extends ITmfEvent> eventType) {
         this.trace = trace;
         this.eventType = eventType;
         eventsQueue = new ArrayBlockingQueue<ITmfEvent>(DEFAULT_EVENTS_QUEUE_SIZE);
+        eventHandlerThread = new Thread(new EventProcessor(), "CTF Kernel Event Handler"); //$NON-NLS-1$
         ssAssigned = false;
-
-        String id2 = (id == null ? "Unamed" : id); //$NON-NLS-1$
-        eventHandlerThread = new Thread(new EventProcessor(), id2 + " Event Handler"); //$NON-NLS-1$
-
     }
 
     @Override
