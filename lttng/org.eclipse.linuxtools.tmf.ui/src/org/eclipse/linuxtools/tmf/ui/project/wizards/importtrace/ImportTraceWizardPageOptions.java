@@ -106,7 +106,6 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
             }
         });
         if( proj != null ){
-            getBatchWizard().setTraceFolder(originalFolder);
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
             this.setErrorMessage(null);
         }else{

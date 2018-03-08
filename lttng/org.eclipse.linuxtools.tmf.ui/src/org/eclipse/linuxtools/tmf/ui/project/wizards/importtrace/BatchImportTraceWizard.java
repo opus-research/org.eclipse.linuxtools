@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -135,6 +136,14 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         fSelectTypePage = new ImportTraceWizardSelectTraceTypePage(workbench, selection);
         fOptions = new ImportTraceWizardPageOptions(workbench, selection);
         // keep in case it's called later
+        Iterator<?> iter = selection.iterator();
+        while(iter.hasNext()){
+            Object selected = iter.next();
+            if( selected instanceof TmfTraceFolder){
+                fTargetFolder = ((TmfTraceFolder) selected).getResource();
+                break;
+            }
+        }
         fResults.clear();
     }
 
