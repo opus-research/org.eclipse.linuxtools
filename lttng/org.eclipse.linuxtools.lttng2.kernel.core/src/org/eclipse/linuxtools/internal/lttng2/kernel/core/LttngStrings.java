@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,7 +21,6 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.core;
  * should do a mapping in the viewer itself.
  *
  * @author alexmont
- *
  */
 @SuppressWarnings({"javadoc", "nls"})
 public abstract class LttngStrings {
@@ -39,8 +38,10 @@ public abstract class LttngStrings {
     public static final String SCHED_PROCESS_FREE = "sched_process_free";
     public static final String STATEDUMP_PROCESS_STATE = "lttng_statedump_process_state";
 
+    /* System call names */
     public static final String SYSCALL_PREFIX = "sys_";
     public static final String COMPAT_SYSCALL_PREFIX = "compat_sys_";
+    public static final String SYS_CLONE = "sys_clone";
 
     /* Field names */
     public static final String IRQ = "irq";
