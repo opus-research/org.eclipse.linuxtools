@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
  * This class provides a way to represent statistics data that is compatible
  * with every type of trace.
  *
- * @version 2.0
+ * @version 1.0
  * @author Mathieu Denis
  */
 public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
@@ -222,26 +222,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     /*
      * (non-Javadoc)
      *
-     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree#registerEventInTimeRange(org.eclipse.linuxtools.tmf.core.event.ITmfEvent, org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo)
-     */
-    @Override
-    public void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo) {
-        TmfFixedArray<String>[] paths = getNormalPaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
-        }
-
-        paths = getTypePaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsData#registerName
-     * (org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfFixedArray)
+     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree#registerName(org.eclipse.linuxtools.tmf.core.util.TmfFixedArray)
      */
     @Override
     protected void registerName(TmfFixedArray<String> path) {
