@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeRootFactory;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.tabsview.TmfViewerFolder;
@@ -149,16 +148,6 @@ public class TmfStatisticsView extends TmfView {
                 createStatisticsViewers();
                 fStatsViewers.layout();
 
-                TmfStatisticsViewer statViewer;
-                for (ITmfViewer viewer : fStatsViewers.getViewers()) {
-                    if (!(viewer instanceof TmfStatisticsViewer)) {
-                        Activator.getDefault().logError("Error - cannot cast viewer to a statistics viewer"); //$NON-NLS-1$
-                        continue;
-                    }
-                    statViewer = (TmfStatisticsViewer) viewer;
-                    setInput(statViewer, fExperiment.getTraces());
-                }
-
                 if (fRequestData) {
                     TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(null, fExperiment, fExperiment.getTimeRange());
                     TmfStatisticsViewer statsViewer;
@@ -177,62 +166,6 @@ public class TmfStatisticsView extends TmfView {
                 }
             }
         }
-    }
-
-    /**
-     * Initializes the viewer with the information received.
-     *
-     * @param statViewer
-     *            The statistics viewer for which the input will be set
-     * @param traces
-     *            The list of traces to add in the tree.
-     * @since 2.0
-     */
-    public void setInput(TmfStatisticsViewer statViewer, ITmfTrace[] traces) {
-        String treeID = statViewer.getTreeID();
-        if (TmfStatisticsTreeRootFactory.containsTreeRoot(treeID)) {
-            // The experiment root is already present
-            TmfStatisticsTreeNode experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
-
-            // check if there is partial data loaded in the experiment
-            int numTraces = traces.length;
-            int numNodeTraces = experimentTreeNode.getNbChildren();
-
-            if (numTraces == numNodeTraces) {
-                boolean same = true;
-                /*
-                 * Detect if the experiment contains the same traces as when
-                 * previously selected
-                 */
-                for (int i = 0; i < numTraces; i++) {
-                    String traceName = traces[i].getName();
-                    if (!experimentTreeNode.containsChild(traceName)) {
-                        same = false;
-                        break;
-                    }
-                }
-
-                if (same) {
-                    // no need to reload data, all traces are already loaded
-                    statViewer.setInput(experimentTreeNode);
-
-                    return;
-                }
-                experimentTreeNode.reset();
-            }
-        } else {
-            TmfStatisticsTreeRootFactory.addStatsTreeRoot(treeID, statViewer.getStatisticData());
-        }
-
-        TmfStatisticsTreeNode treeModelRoot = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
-
-        // if the model has contents, clear to start over
-        if (treeModelRoot.hasChildren()) {
-            treeModelRoot.reset();
-        }
-
-        // set input to a clean data model
-        statViewer.setInput(treeModelRoot);
     }
 
     /*
@@ -260,7 +193,7 @@ public class TmfStatisticsView extends TmfView {
 
     /**
      * Creates the statistics viewers for all traces in the experiment and
-     * popupale a viewer folder. Each viewer is placed in a different tab and
+     * populates a viewer folder. Each viewer is placed in a different tab and
      * the first one is selected automatically.
      *
      * It uses the extension point that defines the statistics viewer to build
@@ -282,7 +215,7 @@ public class TmfStatisticsView extends TmfView {
         TmfStatisticsViewer globalViewer = new TmfStatisticsViewer();
         if (fExperiment != null) {
             // Shows the name of the experiment in the global tab
-            globalViewer.init( folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
+            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
 
             String traceName;
