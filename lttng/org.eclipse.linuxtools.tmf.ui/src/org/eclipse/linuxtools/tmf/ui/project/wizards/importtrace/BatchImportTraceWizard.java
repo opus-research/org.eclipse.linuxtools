@@ -236,8 +236,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             try {
                 if (fLinked) {
                     createLink(fTargetFolder, Path.fromOSString(traceToImport.getFile().getAbsolutePath()), traceToImport.getName());
-                    setTraceType(traceToImport);
-                    success = true;
+                    success = setTraceType(traceToImport).isOK();
                 }
                 else {
                     List<File> subList = new ArrayList<File>();
@@ -333,8 +332,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                     }
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
-                        + " " + resource.getName(), e); //$NON-NLS-1$
+                Activator.getDefault().logError("Error importing trace resource " + resource.getName(), e); //$NON-NLS-1$
             }
         }
     }
@@ -657,7 +655,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
+                    if (retVal.matches(IStatus.CANCEL)) {
                         return retVal;
                     }
                 }
