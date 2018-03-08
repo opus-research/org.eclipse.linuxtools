@@ -33,7 +33,9 @@ public enum CtfTmfTestTrace {
     /** Kernel trace with event contexts */
     KERNEL_VM,
     /** UST trace with lots of lost events */
-    HELLO_LOST;
+    HELLO_LOST,
+    /** Trace with non-standard field sizes */
+    FUNKY_TRACE;
 
 
     private final String fPath;
