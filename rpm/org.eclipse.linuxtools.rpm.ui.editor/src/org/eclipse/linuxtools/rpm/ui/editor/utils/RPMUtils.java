@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Red Hat, Inc.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Red Hat - initial API and implementation
- *******************************************************************************/
 package org.eclipse.linuxtools.rpm.ui.editor.utils;
 
 import java.io.BufferedReader;
@@ -22,10 +12,6 @@ import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
-/**
- * Utility class for RPM UI Editor related things.
- * 
- */
 public class RPMUtils {
 
 	/*

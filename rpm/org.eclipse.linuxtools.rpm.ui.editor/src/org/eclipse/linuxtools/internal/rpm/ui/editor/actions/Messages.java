@@ -18,8 +18,10 @@ public final class Messages extends NLS {
 	public static String SpecfileChangelogFormatter_1;
 
 	// SpecfileEditorDownloadSourcesActionDelegate
+	public static String DownloadSources_parsingSpecfile;
 	public static String DownloadSources_malformedURL;
 	public static String DownloadSources_cannotConnectToURL;
+	public static String DownloadSources_unexpectedException;
 
 	static {
 		// initialize resource bundle
