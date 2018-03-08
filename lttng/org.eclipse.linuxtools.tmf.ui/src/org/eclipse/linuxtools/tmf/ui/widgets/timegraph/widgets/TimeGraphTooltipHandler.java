@@ -176,25 +176,14 @@ public class TimeGraphTooltipHandler {
                     if (currEvent == null || currEvent.getTime() < currPixelTime) {
                         if (nextEvent != null && nextEvent.getTime() < nextPixelTime) {
                             currEvent = nextEvent;
-                            currPixelTime = nextEvent.getTime();
                         }
                     }
 
                     // state name
-                    String stateTypeName = _utilImp.getStateTypeName(entry);
-                    String entryName = entry.getName();
-                    if (stateTypeName == null) {
-                        stateTypeName = _utilImp.getStateTypeName();
-                    }
-
-                    if (!entryName.isEmpty()) {
-                        addItem(stateTypeName, entry.getName());
-                    }
-
+                    addItem(_utilImp.getStateTypeName(), entry.getName());
                     if (currEvent == null) {
                         return;
                     }
-
                     // state
                     String state = _utilImp.getEventName(currEvent);
                     if (state != null) {
@@ -202,7 +191,7 @@ public class TimeGraphTooltipHandler {
                     }
 
                     // This block receives a list of <String, String> values to be added to the tip table
-                    Map<String, String> eventAddOns = _utilImp.getEventHoverToolTipInfo(currEvent, currPixelTime);
+                    Map<String, String> eventAddOns = _utilImp.getEventHoverToolTipInfo(currEvent);
                     if (eventAddOns != null) {
                         for (Iterator<String> iter = eventAddOns.keySet().iterator(); iter.hasNext();) {
                             String message = iter.next();

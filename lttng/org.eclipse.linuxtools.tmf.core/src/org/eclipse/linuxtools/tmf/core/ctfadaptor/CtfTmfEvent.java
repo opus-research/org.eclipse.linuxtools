@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 
 /**
  * A wrapper class around CTF's Event Definition/Declaration that maps all
@@ -56,7 +55,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
     private final String eventName;
     private final String fileName;
 
-    private final TmfEventField fContent;
+    private final CtfTmfContent fContent;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -88,14 +87,16 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
         }
 
         /* Read the base event info */
-        this.timestamp = this.getTrace().getCTFTrace().timestampCyclesToNanos(eventDef.getTimestamp());
+        Long offset = originTrace.getCTFTrace().getOffset();
+        this.timestamp = eventDef.getTimestamp() + offset;
         this.sourceCPU = eventDef.getCPU();
         this.typeId = eventDef.getDeclaration().getId();
         this.eventName = eventDef.getDeclaration().getName();
         this.fileName =  fileName;
 
         /* Read the fields */
-        this.fContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, parseFields(eventDef));
+        this.fContent = new CtfTmfContent(ITmfEventField.ROOT_FIELD_ID,
+                parseFields(eventDef));
     }
 
     /**
@@ -162,8 +163,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
         this.fileName = other.fileName;
 
         /* Copy the fields over */
-        this.fContent = other.fContent.clone();
-        this.fTimestamp = other.fTimestamp.clone();
+        this.fContent = (CtfTmfContent) other.fContent.clone();
     }
 
     /**
@@ -181,7 +181,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
         this.typeId = -1;
         this.fileName = NO_STREAM;
         this.eventName = EMPTY_CTF_EVENT_NAME;
-        this.fContent = new TmfEventField("", new CtfTmfEventField[0]); //$NON-NLS-1$
+        this.fContent = new CtfTmfContent("", new CtfTmfEventField[0]); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
