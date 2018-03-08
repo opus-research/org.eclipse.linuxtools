@@ -21,7 +21,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
  * <p>
  * Note: Replaces <code>RegExContentAssistProcessor</code> which was introduced in 3.0.
  * </p>
- *
+ * 
  * @since 3.2
  */
 final class RegExContentProposalProvider implements IContentProposalProvider {
@@ -45,23 +45,19 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
                 fCursorPosition = cursorPosition;
             }
 
-            @Override
-			public String getContent() {
+            public String getContent() {
                 return fContent;
             }
 
-            @Override
-			public String getLabel() {
+            public String getLabel() {
                 return fLabel;
             }
 
-            @Override
-			public String getDescription() {
+            public String getDescription() {
                 return fDescription;
             }
 
-            @Override
-			public int getCursorPosition() {
+            public int getCursorPosition() {
                 return fCursorPosition;
             }
         }
@@ -89,7 +85,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Creates a new Proposal Computer.
-         *
+         * 
          * @param contents
          *            the contents of the subject control
          * @param position
@@ -113,7 +109,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Computes applicable proposals for the find field.
-         *
+         * 
          * @return the proposals
          */
         public IContentProposal[] computeFindProposals() {
@@ -265,7 +261,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Computes applicable proposals for the replace field.
-         *
+         * 
          * @return the proposals
          */
         public IContentProposal[] computeReplaceProposals() {
@@ -281,7 +277,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Adds a proposal.
-         *
+         * 
          * @param proposal
          *            the string to be inserted
          * @param displayString
@@ -295,7 +291,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Adds a proposal.
-         *
+         * 
          * @param proposal
          *            the string to be inserted
          * @param cursorPosition
@@ -311,7 +307,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Adds a proposal to the priority proposals list.
-         *
+         * 
          * @param proposal
          *            the string to be inserted
          * @param displayString
@@ -325,7 +321,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Adds a proposal. Ensures that existing pre- and postfixes are not duplicated.
-         *
+         * 
          * @param proposal
          *            the string to be inserted
          * @param cursorPosition
@@ -361,7 +357,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
         /**
          * Adds a proposal that starts with a backslash. Ensures that the backslash is not repeated if already typed.
-         *
+         * 
          * @param proposal
          *            the string to be inserted
          * @param displayString
@@ -394,7 +390,7 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
 
     /**
      * Creates a new completion proposal provider.
-     *
+     * 
      * @param isFind
      *            <code>true</code> if the provider is used for the 'find' field <code>false</code> if the provider is
      *            used for the 'reaplce' field
@@ -406,11 +402,9 @@ final class RegExContentProposalProvider implements IContentProposalProvider {
     /*
      * @see org.eclipse.jface.fieldassist.IContentProposalProvider#getProposals(java.lang.String, int)
      */
-    @Override
-	public IContentProposal[] getProposals(String contents, int position) {
-        if (fIsFind) {
+    public IContentProposal[] getProposals(String contents, int position) {
+        if (fIsFind)
             return new ProposalComputer(contents, position).computeFindProposals();
-        }
         return new ProposalComputer(contents, position).computeReplaceProposals();
     }
 }
