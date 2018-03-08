@@ -61,7 +61,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     private Frame savedFrame = null;
 
     public TestLoaders() {
-        this(""); //$NON-NLS-1$
+        this("");
     }
 
     @SuppressWarnings("unused")
@@ -102,7 +102,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         createFrame();
     }
 
-    @SuppressWarnings("nls")
     private void createFrame() {
         Frame testFrame = new Frame();
         if (page == 1) {
@@ -222,10 +221,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         v.setFrame(testFrame);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.hyades.uml2sd.ui.actions.provider.ISDFindProvider#find(org.eclipse.hyades.uml2sd.ui.actions.widgets.Criteria)
-     */
     @Override
     public boolean find(Criteria toSearch) {
         Frame frame = v.getFrame();
@@ -386,7 +381,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         return null;
     }
 
-    @SuppressWarnings("nls")
     @Override
     public String getTitleString() {
         return "Test Loader";
@@ -409,10 +403,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.hyades.uml2sd.ui.actions.provider.ISDGraphNodeSupporter#isNodeSupported(int)
-     */
     @Override
     public boolean isNodeSupported(int nodeType) {
         switch (nodeType) {
@@ -448,7 +438,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             img = img_;
         }
 
-        @SuppressWarnings("nls")
         public Image getResourceImage(String _name) {
             ImageDescriptor imgage;
             try {

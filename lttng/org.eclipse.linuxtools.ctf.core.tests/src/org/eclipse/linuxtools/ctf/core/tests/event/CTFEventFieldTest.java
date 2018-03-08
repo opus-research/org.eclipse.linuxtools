@@ -31,8 +31,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -45,34 +43,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class CTFEventFieldTest {
 
-    private static final String fieldName = "id"; //$NON-NLS-1$
-
-
-    /**
-     * Perform pre-test initialization.
-     */
-    @Before
-    public void setUp() {
-        // add additional set up code here
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(CTFEventFieldTest.class);
-    }
+    private static final String fieldName = "id";
 
     /**
      * Run the CTFEventField parseField(Definition,String) method test.
@@ -83,7 +54,7 @@ public class CTFEventFieldTest {
         int len = 32;
         IntegerDeclaration id = new IntegerDeclaration(len, false, len,
                 ByteOrder.LITTLE_ENDIAN, Encoding.ASCII, null, 32);
-        String lengthName = "LengthName"; //$NON-NLS-1$
+        String lengthName = "LengthName";
         StructDeclaration structDec = new StructDeclaration(0);
         structDec.addField(lengthName, id);
         StructDefinition structDef = new StructDefinition(structDec, null,
@@ -91,7 +62,7 @@ public class CTFEventFieldTest {
 
         structDef.lookupInteger(lengthName).setValue(32);
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
-        Definition fieldDef = new SequenceDefinition(sd, structDef, "TestX"); //$NON-NLS-1$
+        Definition fieldDef = new SequenceDefinition(sd, structDef, "TestX");
         ByteBuffer byb = ByteBuffer.allocate(1024);
         for (int i = 0; i < 1024; i++) {
             byb.put((byte) i);
@@ -120,7 +91,7 @@ public class CTFEventFieldTest {
     @Test
     public void testParseField_simple2() {
         IntegerDefinition fieldDef = new IntegerDefinition(
-                new IntegerDeclaration(1, true, 1, ByteOrder.BIG_ENDIAN,
+                new IntegerDeclaration(1, false, 1, ByteOrder.BIG_ENDIAN,
                         Encoding.ASCII, null, 8), null, fieldName);
         fieldDef.setValue(1L);
 
@@ -134,9 +105,9 @@ public class CTFEventFieldTest {
     public void testParseField_simple3() {
         StringDefinition fieldDef = new StringDefinition(
                 new StringDeclaration(), null, fieldName);
-        fieldDef.setString(new StringBuilder("Hello World")); //$NON-NLS-1$
+        fieldDef.setString(new StringBuilder("Hello World"));
 
-        String other = "\"Hello World\""; //$NON-NLS-1$
+        String other = "\"Hello World\"";
         assertNotNull(fieldDef);
         assertEquals(fieldDef.toString(), other);
     }
@@ -187,7 +158,7 @@ public class CTFEventFieldTest {
         ((IntegerDefinition) ((ArrayDefinition) fieldDef).getDefinitions()[11]).setValue(0);
 
         assertNotNull(fieldDef);
-        String other = "[ 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 0 ]"; //$NON-NLS-1$
+        String other = "[ 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 0 ]";
         assertEquals(other, fieldDef.toString());
     }
 }

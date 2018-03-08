@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -371,18 +370,7 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.addTreeListener(new ITreeViewerListener() {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
-                ITimeGraphEntry element = (ITimeGraphEntry) event.getElement();
-                fTimeGraphViewer.setExpandedState(element, false);
-                List<ITimeGraphEntry> elements = (List<ITimeGraphEntry>) element.getChildren();
-                while(!elements.isEmpty()){
-                    element = elements.get(0);
-                    elements.remove(0);
-                    fTimeGraphViewer.setExpandedState(element, false);
-
-                    if(element.hasChildren()) {
-                        elements.addAll(element.getChildren());
-                    }
-                }
+                fTimeGraphViewer.setExpandedState((ITimeGraphEntry) event.getElement(), false);
                 ArrayList<TreeItem> treeItems = getVisibleExpandedItems(tree);
                 if (treeItems.size() == 0) {
                     return;
@@ -706,9 +694,6 @@ public class TimeGraphCombo extends Composite {
     // Control
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.swt.widgets.Control#redraw()
-     */
     @Override
     public void redraw() {
         fTimeGraphViewer.getControl().redraw();

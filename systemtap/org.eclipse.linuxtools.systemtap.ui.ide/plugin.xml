@@ -5,7 +5,7 @@
 		point="org.eclipse.ui.perspectives">
 		<perspective
 			name="%perspective.ide.name"
-			class="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"
+			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPerspective"
 			icon="icons/perspective_obj.gif"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"/>
 	</extension>
@@ -62,12 +62,6 @@
                 commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
                 icon="icons/actions/run/run_exc.gif"
                 label="%action.run.name"
-                style="push">
-          </command>
-          <command
-                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
-                icon="icons/actions/run/run_chart.gif"
-                label="%action.runChart.name"
                 style="push">
           </command>
        </menuContribution>
@@ -148,11 +142,6 @@
 			description="%command.import.desc"
 			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.file"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"/>
-		<!--command
-			name="%command.runOptions.name"
-			description="%command.runOptions.desc"
-			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.run"
-			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScriptOptions"/-->
 		<command
 			name="%command.run.name"
 			description="%command.run.desc"
@@ -189,16 +178,10 @@
 			description="%category.popup.desc"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.category.popup"/>
   <command
-        defaultHandler="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler"
+        defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptHandler"
         description="%action.run.desc"
         id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
         name="%action.run.name">
-  </command>
-  <command
-        defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler"
-        description="%action.runChart.desc"
-        id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
-        name="%action.runChart.name">
   </command>
 	</extension>
 	<extension
@@ -213,7 +196,7 @@
 				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.ImportTapset"
 				icon="icons/actions/import_wiz.gif"
 				toolbarPath="org.eclipse.ui.workbench.file/import.ext"
-				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.ImportTapsetAction"
+				class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.ImportTapsetAction"
 				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"
 				style="push"
 				state="false"/>
@@ -225,10 +208,10 @@
 		<objectContribution
 			adaptable="false"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.definitionMenu"
-			objectClass="org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode">
+			objectClass="org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode">
 			<action
 				label="%action.viewDefinition.name"
-				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.DefinitionAction"
+				class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.DefinitionAction"
 				icon="icons/misc/file_obj.gif"
 				id="org.eclipse.linuxtools.systemtap.ui.ide.definitionAction"
 				style="push"/>
@@ -238,7 +221,7 @@
             id="org.eclipse.linuxtools.systemtap.ui.ide.actions">
          <action
                label="%action.addStapProbe.label"
-               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.AddStapProbe"
+               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.AddStapProbe"
                menubarPath="additions"
                id="org.eclipse.linuxtools.systemtap.ui.ide.AddStapProbe">
          </action>
@@ -277,7 +260,7 @@
     </category>
     <wizard
           category="org.eclipse.linuxtools.systemtap.ui.ide"
-          class="org.eclipse.linuxtools.systemtap.ui.ide.wizards.StapNewWizard"
+          class="org.eclipse.linuxtools.internal.systemtap.ui.ide.wizards.StapNewWizard"
           icon="icons/smileytap.gif"
           id="org.eclipse.linuxtools.systemtap.ui.ide.wizards.StapNewWizard"
           name="%wizard.name">

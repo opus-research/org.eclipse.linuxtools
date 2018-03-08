@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import org.junit.Test;
  *
  * @author Alexandre Montplaisir
  */
-@SuppressWarnings({"nls", "javadoc"})
+@SuppressWarnings("javadoc")
 public abstract class StateSystemTest {
 
     /** Index of the test trace used for these tests */
@@ -50,7 +50,7 @@ public abstract class StateSystemTest {
     /** Number of nanoseconds in one second */
     private static final long NANOSECS_PER_SEC = 1000000000L;
 
-    protected static IStateChangeInput input;
+    protected static ITmfStateProvider input;
     protected static ITmfStateSystem ssq;
 
     /* Offset in the trace + start time of the trace */

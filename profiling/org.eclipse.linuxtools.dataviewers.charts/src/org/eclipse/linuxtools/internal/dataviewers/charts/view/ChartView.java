@@ -25,18 +25,18 @@ import org.swtchart.Chart;
 
 /**
  * The chart view.
- * 
+ *
  * <br/>
  * This view is multiple and all the created chart will be displayed in an instance of this view. Each one will have a
  * primary id equals to ChartView.VIEW_ID and an integer (increased by 1 at each new view) for the secondary id.
- * 
+ *
  * @author Marzia Maugeri <marzia.maugeri@st.com>
- * 
+ *
  */
 public class ChartView extends ViewPart {
 
     /** The primary id of this view */
-    public static final String VIEW_ID = "org.eclipse.linuxtools.dataviewers.charts.view";
+    public static final String VIEW_ID = "org.eclipse.linuxtools.dataviewers.charts.view"; //$NON-NLS-1$
 
     /** The current secondary id for these views */
     private static int SEC_ID = 0;
@@ -52,7 +52,7 @@ public class ChartView extends ViewPart {
      * <u><b>Note</b></u>: this method uses the UI thread to open the view and then it sets the input chart. The UI
      * thread execution is synchronized on internal Integer SEC_ID which is the secondary id of the chart view. Each new
      * chart view has a secondary id equal to SEC_ID++.
-     * 
+     *
      * @param chart
      */
     public static void createChartView(final Chart chart) {
@@ -62,7 +62,7 @@ public class ChartView extends ViewPart {
                 try {
                     synchronized (lock) {
                         ChartView view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                                .getActivePage().showView(VIEW_ID, "" + (SEC_ID++), IWorkbenchPage.VIEW_ACTIVATE);
+                                .getActivePage().showView(VIEW_ID, String.valueOf(SEC_ID++), IWorkbenchPage.VIEW_ACTIVATE);
                         view.setChart(chart);
 
                     }
@@ -77,27 +77,15 @@ public class ChartView extends ViewPart {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
      */
     @Override
     public void createPartControl(Composite parent) {
-        try {
-            this.parent = parent;
-            // paintCanvas = new Canvas( parent, SWT.NONE );
-            // paintCanvas.setLayoutData( new GridData( GridData.FILL_BOTH ) );
-            // paintCanvas.setBackground( Display.getDefault( )
-            // .getSystemColor( SWT.COLOR_WHITE ) );
-
-            createActions(parent);
-            IActionBars actionBars = getViewSite().getActionBars();
-            initToolBar(actionBars.getToolBarManager());
-
-        } catch (Throwable _) {
-            Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR,
-                    "Error when creating AWT Frame...", _);
-            Activator.getDefault().getLog().log(s);
-        }
+        this.parent = parent;
+        createActions(parent);
+        IActionBars actionBars = getViewSite().getActionBars();
+        initToolBar(actionBars.getToolBarManager());
     }
 
     protected void createActions(Composite parent) {
@@ -111,54 +99,23 @@ public class ChartView extends ViewPart {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
      */
     @Override
     public void setFocus() {
-        if (parent != null) {
+        if (parent != null && !parent.isDisposed()) {
             parent.setFocus();
-        } else {
-            Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                    "Error setting the focus to the chart view: main composite is not set!");
-            Activator.getDefault().getLog().log(s);
         }
-    }
-
-    /**
-     * Close this view <br/>
-     * <br/>
-     * <u><b>Note</b></u>: it uses the UI thread to get the workbench window. Then it closes the view.
-     */
-    public void closeView() {
-        PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(ChartView.this);
-            }
-        });
     }
 
     /**
      * Set the chart in this view
-     * 
+     *
      * @param chart
      */
     public void setChart(Chart chart) {
-        if (chart != null) {
-            saveChartAction.setChart(chart);
-
-        } else {
-            saveChartAction.setEnabled(false);
-            Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                    "Error adding the chart to the chart view: SWT is not set!");
-            Activator.getDefault().getLog().log(s);
-        }
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
+        saveChartAction.setChart(chart);
     }
 
     public Composite getParent() {

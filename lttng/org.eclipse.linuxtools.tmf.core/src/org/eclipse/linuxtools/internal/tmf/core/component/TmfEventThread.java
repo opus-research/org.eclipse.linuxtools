@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.component;
 
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
@@ -145,9 +146,6 @@ public class TmfEventThread implements Runnable {
     // Runnable
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
     @Override
     public void run() {
 
@@ -203,6 +201,7 @@ public class TmfEventThread implements Runnable {
             }
 
         } catch (Exception e) {
+            Activator.logError("Error in " + fProvider.getName() + " handling " + fRequest, e); //$NON-NLS-1$ //$NON-NLS-2$
             fRequest.fail();
         }
 

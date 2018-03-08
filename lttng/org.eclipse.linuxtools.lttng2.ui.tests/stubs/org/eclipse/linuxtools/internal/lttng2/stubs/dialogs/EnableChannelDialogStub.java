@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -33,7 +33,7 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
     // Constructor
     // ------------------------------------------------------------------------
     public EnableChannelDialogStub() {
-        fChannelInfo = new ChannelInfo("mychannel"); //$NON-NLS-1$
+        fChannelInfo = new ChannelInfo("mychannel");
         fChannelInfo.setNumberOfSubBuffers(4);
         fChannelInfo.setOverwriteMode(true);
         fChannelInfo.setReadTimer(200);

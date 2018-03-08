@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *     Alexandre Montplaisir - Initial API and implementation
+ *     Bernd Hufmann - Updated for source and model lookup interfaces
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -17,13 +18,14 @@ import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.linuxtools.tmf.core.event.ITmfCustomAttributes;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
-import org.eclipse.linuxtools.tmf.core.event.TmfEventPropertySource;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfModelLookup;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
  * A wrapper class around CTF's Event Definition/Declaration that maps all
@@ -33,7 +35,8 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public final class CtfTmfEvent extends TmfEvent {
+public final class CtfTmfEvent extends TmfEvent
+        implements ITmfSourceLookup, ITmfModelLookup, ITmfCustomAttributes {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -90,7 +93,7 @@ public final class CtfTmfEvent extends TmfEvent {
                 new CtfTmfTimestamp(-1),
                 null,
                 null,
-                new TmfEventField("", new CtfTmfEventField[0]), //$NON-NLS-1$
+                new TmfEventField("", null, new CtfTmfEventField[0]), //$NON-NLS-1$
                 NO_STREAM);
         this.sourceCPU = -1;
         this.typeId = -1;
@@ -149,12 +152,9 @@ public final class CtfTmfEvent extends TmfEvent {
     }
 
     /**
-     * List the custom CTF attributes for events of this type.
-     *
-     * @return The list of custom attribute names. Should not be null, but could
-     *         be empty.
      * @since 2.0
      */
+    @Override
     public Set<String> listCustomAttributes() {
         if (fDeclaration == null) {
             return new HashSet<String>();
@@ -163,14 +163,9 @@ public final class CtfTmfEvent extends TmfEvent {
     }
 
     /**
-     * Get the value of a custom CTF attributes for this event's type.
-     *
-     * @param name
-     *            Name of the the custom attribute
-     * @return Value of this attribute, or null if there is no attribute with
-     *         that name
      * @since 2.0
      */
+    @Override
     public String getCustomAttribute(String name) {
         if (fDeclaration == null) {
             return null;
@@ -179,11 +174,12 @@ public final class CtfTmfEvent extends TmfEvent {
     }
 
     /**
-     * Get the callsite for this event.
+     * Get the call site for this event.
      *
-     * @return the callsite information, or null if there is none
+     * @return the call site information, or null if there is none
      * @since 2.0
      */
+    @Override
     public CtfTmfCallsite getCallsite() {
         CTFCallsite callsite = null;
         if (getTrace() == null) {
@@ -209,10 +205,8 @@ public final class CtfTmfEvent extends TmfEvent {
      * @since 2.0
      */
     @Override
-    public Object getAdapter(Class adapter) {
-        if (adapter == IPropertySource.class) {
-            return new TmfEventPropertySource(this);
-        }
-        return null;
+    public String getModelUri() {
+        return getCustomAttribute(CtfConstants.MODEL_URI_KEY);
     }
+
 }
