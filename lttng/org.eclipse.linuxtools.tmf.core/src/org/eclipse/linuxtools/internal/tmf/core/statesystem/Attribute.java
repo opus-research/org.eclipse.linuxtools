@@ -20,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * An Attribute is a "node" in the Attribute Tree. It represents a smallest
  * unit of the model which can be in a particular state at a given time.
@@ -32,7 +34,8 @@ import java.util.Map;
  */
 abstract class Attribute {
 
-    private final Attribute parent;
+    /** Null for the root node only */
+    private final @Nullable Attribute parent;
     private final String name;
     private final int quark;
     protected final List<Attribute> subAttributes;
@@ -40,7 +43,7 @@ abstract class Attribute {
     /**
      * Constructor
      */
-    Attribute(Attribute parent, String name, int quark) {
+    Attribute(@Nullable Attribute parent, String name, int quark) {
         this.parent = parent;
         this.quark = quark;
         this.name = name;
@@ -55,12 +58,16 @@ abstract class Attribute {
         return quark;
     }
 
-    Attribute getParent() {
+    @Nullable Attribute getParent() {
         return parent;
     }
 
     List<Attribute> getSubAttributes() {
-        return Collections.unmodifiableList(subAttributes);
+        List<Attribute> ret = Collections.unmodifiableList(subAttributes);
+        if (ret == null) {
+            throw new IllegalStateException();
+        }
+        return ret;
     }
 
     String getName() {
@@ -89,7 +96,7 @@ abstract class Attribute {
      * @return The Node object matching the last element in the path, or "null"
      *         if that attribute does not exist.
      */
-    Attribute getSubAttributeNode(String... path) {
+    @Nullable Attribute getSubAttributeNode(String... path) {
         return this.getSubAttributeNode(path, 0);
     }
 
@@ -108,8 +115,14 @@ abstract class Attribute {
     }
 
     /* The methods how to access children are left to derived classes */
+
+
     abstract void addSubAttribute(Attribute newSubAttribute);
-    abstract Attribute getSubAttributeNode(String[] path, int index);
+
+    /**
+     * @return The attribute, or null if the attribute is not found
+     */
+    abstract @Nullable Attribute getSubAttributeNode(String[] path, int index);
 
     /**
      * Return a String array composed of the full (absolute) path representing
@@ -125,11 +138,17 @@ abstract class Attribute {
         while (curNode.getParent() != null) {
             list.add(curNode.getName());
             curNode = curNode.getParent();
+
+            // FIXME curNode should never be null here, but the flow analysis
+            // can't know this. This could be re-arranged a bit more cleanly...
+            if (curNode == null) { throw new IllegalStateException(); }
         }
 
         Collections.reverse(list);
 
-        return list.toArray(new String[0]);
+        String[] ret = list.toArray(new String[0]);
+        if (ret == null) { throw new IllegalStateException(); }
+        return ret;
     }
 
     /**
@@ -147,7 +166,10 @@ abstract class Attribute {
             buf.append('/');
         }
         buf.append(array[array.length - 1]);
-        return buf.toString();
+
+        String ret = buf.toString();
+        if (ret == null) { throw new IllegalStateException(); }
+        return ret;
     }
 
     @Override
@@ -200,7 +222,7 @@ final class AlphaNumAttribute extends Attribute {
 
     private Map<String, Integer> subAttributesMap;
 
-    AlphaNumAttribute(Attribute parent, String name, int quark) {
+    AlphaNumAttribute(@Nullable Attribute parent, String name, int quark) {
         super(parent, name, quark);
         this.subAttributesMap = new HashMap<String, Integer>();
     }
@@ -208,7 +230,6 @@ final class AlphaNumAttribute extends Attribute {
     @Override
     synchronized void addSubAttribute(Attribute newSubAttribute) {
         assert (newSubAttribute != null);
-        assert (newSubAttribute.getName() != null);
         /* This should catch buggy state changing statements */
         assert (!newSubAttribute.getName().equals(this.getName()));
 
@@ -217,7 +238,7 @@ final class AlphaNumAttribute extends Attribute {
     }
 
     @Override
-    protected synchronized Attribute getSubAttributeNode(String[] path,
+    protected synchronized @Nullable Attribute getSubAttributeNode(String[] path,
             int index) {
         Integer indexOfNextNode = subAttributesMap.get(path[index]);
         Attribute nextNode;

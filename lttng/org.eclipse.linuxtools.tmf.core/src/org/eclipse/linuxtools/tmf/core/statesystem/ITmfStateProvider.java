@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -94,7 +95,7 @@ public interface ITmfStateProvider {
      *         SS is assigned yet
      * @since 2.0
      */
-    ITmfStateSystem getAssignedStateSystem();
+    @Nullable ITmfStateSystem getAssignedStateSystem();
 
     /**
      * Send an event to this input plugin for processing. The implementation

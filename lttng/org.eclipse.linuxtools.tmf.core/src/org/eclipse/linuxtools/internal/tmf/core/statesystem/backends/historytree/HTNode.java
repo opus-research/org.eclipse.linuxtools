@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
@@ -326,7 +327,7 @@ abstract class HTNode {
      *         wasn't found
      * @throws TimeRangeException
      */
-    HTInterval getRelevantInterval(int key, long t) throws TimeRangeException {
+    @Nullable HTInterval getRelevantInterval(int key, long t) throws TimeRangeException {
         assert (this.isDone);
         int startIndex;
         HTInterval curInterval;
@@ -450,7 +451,9 @@ abstract class HTNode {
         } else {
             buf = buf.append("...]");
         }
-        return buf.toString();
+        String ret = buf.toString();
+        if (ret == null) { throw new IllegalStateException(); }
+        return ret;
     }
 
     /**

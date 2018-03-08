@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -191,7 +192,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             type is invalid (not an integer)
      * @since 2.0
      */
-    ITmfStateValue popAttribute(long t, int attributeQuark)
+    @Nullable ITmfStateValue popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException;
 

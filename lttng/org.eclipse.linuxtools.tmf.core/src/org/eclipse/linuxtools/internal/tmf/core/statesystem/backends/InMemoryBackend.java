@@ -20,12 +20,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfIntervalEndComparator;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
  * State history back-end that stores its intervals in RAM only. It cannot be
@@ -147,13 +149,13 @@ public class InMemoryBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public FileInputStream supplyAttributeTreeReader() {
+    public @Nullable FileInputStream supplyAttributeTreeReader() {
         /* Saving to disk not supported */
         return null;
     }
 
     @Override
-    public File supplyAttributeTreeWriterFile() {
+    public @Nullable File supplyAttributeTreeWriterFile() {
         /* Saving to disk not supported */
         return null;
     }
@@ -180,7 +182,7 @@ public class InMemoryBackend implements IStateHistoryBackend {
     }
 
     private static int binarySearchEndTime(List<ITmfStateInterval> list, long time) {
-        ITmfStateInterval dummyInterval = new TmfStateInterval(-1, time, -1, null);
+        ITmfStateInterval dummyInterval = new TmfStateInterval(-1, time, -1, TmfStateValue.nullValue());
         int mid = Collections.binarySearch(list, dummyInterval, END_COMPARATOR);
 
         /* The returned value is < 0 if the exact key was not found. */

@@ -16,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.AttributeTree;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
@@ -43,7 +44,7 @@ public class PartialStateSystem extends StateSystem {
      * Reference to the real upstream state system. This is used so we can read
      * its attribute tree.
      */
-    private StateSystem realStateSystem = null;
+    private @Nullable StateSystem realStateSystem = null;
 
     /**
      * Constructor
@@ -67,7 +68,7 @@ public class PartialStateSystem extends StateSystem {
         ssAssignedLatch.countDown();
     }
 
-    ITmfStateSystem getUpstreamSS() {
+    @Nullable ITmfStateSystem getUpstreamSS() {
         return realStateSystem;
     }
 
@@ -109,7 +110,7 @@ public class PartialStateSystem extends StateSystem {
     @Override
     public AttributeTree getAttributeTree() {
         waitUntilReady();
-        return realStateSystem.getAttributeTree();
+        return getRealSS().getAttributeTree();
     }
 
     /*
@@ -126,7 +127,7 @@ public class PartialStateSystem extends StateSystem {
     public int getQuarkAbsoluteAndAdd(String... attribute) {
         waitUntilReady();
         try {
-            return realStateSystem.getQuarkAbsolute(attribute);
+            return getRealSS().getQuarkAbsolute(attribute);
         } catch (AttributeNotFoundException e) {
             throw new RuntimeException(ERR_MSG);
         }
@@ -136,7 +137,7 @@ public class PartialStateSystem extends StateSystem {
     public int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath) {
         waitUntilReady();
         try {
-            return realStateSystem.getQuarkRelative(startingNodeQuark, subPath);
+            return getRealSS().getQuarkRelative(startingNodeQuark, subPath);
         } catch (AttributeNotFoundException e) {
             throw new RuntimeException(ERR_MSG);
         }
@@ -148,6 +149,15 @@ public class PartialStateSystem extends StateSystem {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private StateSystem getRealSS() {
+        StateSystem ret = realStateSystem;
+        if (ret == null) {
+            /* This shouldn't be null once initialized */
+            throw new IllegalStateException();
+        }
+        return ret;
     }
 
 }

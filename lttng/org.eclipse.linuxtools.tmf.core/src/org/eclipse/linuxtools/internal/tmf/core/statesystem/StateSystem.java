@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -94,7 +96,13 @@ public class StateSystem implements ITmfStateSystemBuilder {
             attributeTree = new AttributeTree(this);
         } else {
             /* We're opening an existing file */
-            this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
+            FileInputStream fis = backend.supplyAttributeTreeReader();
+            if (fis == null) {
+                throw new IllegalArgumentException("Backend does not support" //$NON-NLS-1$
+                        + "re-opening an existing history file."); //$NON-NLS-1$
+            }
+
+            this.attributeTree = new AttributeTree(this, fis);
             transState.setInactive();
             finishedLatch.countDown(); /* The history is already built */
         }
@@ -239,8 +247,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
         List<String> prefix = new LinkedList<String>();
         List<String> suffix = new LinkedList<String>();
         boolean split = false;
-        String[] prefixStr;
-        String[] suffixStr;
         List<Integer> directChildren;
         int startingAttribute;
 
@@ -265,8 +271,14 @@ public class StateSystem implements ITmfStateSystemBuilder {
                 prefix.add(entry);
             }
         }
-        prefixStr = prefix.toArray(new String[prefix.size()]);
-        suffixStr = suffix.toArray(new String[suffix.size()]);
+        String[] s1 = prefix.toArray(new String[prefix.size()]);
+        String[] s2 = suffix.toArray(new String[suffix.size()]);
+        if (s1 == null || s2 == null) {
+            throw new IllegalStateException();
+        }
+
+        String[] prefixStr = s1;
+        String[] suffixStr = s2;
 
         /*
          * If there was no wildcard, we'll only return the one matching
@@ -380,7 +392,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public @Nullable ITmfStateValue popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
         /* These are the state values of the stack-attribute itself */
@@ -551,20 +563,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
         } else {
             ret = backend.doSingularQuery(t, attributeQuark);
         }
-
-        /*
-         * Return a fake interval if we could not find anything in the history.
-         * We do NOT want to return 'null' here.
-         */
-        if (ret == null) {
-            return new TmfStateInterval(t, this.getCurrentEndTime(),
-                    attributeQuark, TmfStateValue.nullValue());
-        }
         return ret;
     }
 
     @Override
-    public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
+    public @Nullable ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
             throws StateValueTypeException, AttributeNotFoundException,
             TimeRangeException, StateSystemDisposedException {
         Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
@@ -626,7 +629,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2, long resolution, IProgressMonitor monitor)
+            long t1, long t2, long resolution, @Nullable IProgressMonitor monitor)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException {
         if (isDisposed) {

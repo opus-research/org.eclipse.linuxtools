@@ -48,7 +48,11 @@ public final class AttributeTree {
      */
     AttributeTree(StateSystem ss) {
         this.ss = ss;
-        this.attributeList = Collections.synchronizedList(new ArrayList<Attribute>());
+
+        List<Attribute> list = Collections.synchronizedList(new ArrayList<Attribute>());
+        if (list == null) { throw new IllegalStateException(); }
+        this.attributeList = list;
+
         this.attributeTreeRoot = new AlphaNumAttribute(null, "root", -1); //$NON-NLS-1$
     }
 
@@ -72,8 +76,6 @@ public final class AttributeTree {
 
         ArrayList<String[]> list = new ArrayList<String[]>();
         byte[] curByteArray;
-        String curFullString;
-        String[] curStringArray;
         int res, remain, size;
         int expectedSize = 0;
         int total = 0;
@@ -108,8 +110,8 @@ public final class AttributeTree {
              * Go buffer -> byteArray -> String -> String[] -> insert in list.
              * bleh
              */
-            curFullString = new String(curByteArray);
-            curStringArray = curFullString.split("/"); //$NON-NLS-1$
+            String curFullString = new String(curByteArray);
+            String[] curStringArray = curFullString.split("/"); //$NON-NLS-1$
             list.add(curStringArray);
 
             /* Read the 0'ed confirmation byte */
@@ -129,6 +131,10 @@ public final class AttributeTree {
          * the attributes. Simply create attributes the normal way from them.
          */
         for (String[] attrib : list) {
+            if (attrib == null) {
+                /* We've only added real strings to the array, should never be null */
+                throw new IllegalStateException();
+            }
             this.getQuarkAndAdd(-1, attrib);
         }
     }
@@ -227,7 +233,7 @@ public final class AttributeTree {
         Attribute prevNode;
 
         /* If subPath is empty, simply return the starting quark */
-        if (subPath == null || subPath.length == 0) {
+        if (subPath.length == 0) {
             return startingNodeQuark;
         }
 
@@ -276,6 +282,7 @@ public final class AttributeTree {
              * it
              */
             for (String curDirectory : subPath) {
+                if (curDirectory == null) { throw new IllegalStateException(); }
                 nextNode = prevNode.getSubAttributeNode(curDirectory);
                 if (nextNode == null) {
                     /* This is where we need to start adding */
@@ -341,7 +348,9 @@ public final class AttributeTree {
         if (attributeQuark == -1) {
             startingAttribute = attributeTreeRoot;
         } else {
-            startingAttribute = attributeList.get(attributeQuark);
+            Attribute tmp = attributeList.get(attributeQuark);
+            if (tmp == null) { throw new IllegalStateException(); }
+            startingAttribute = tmp;
         }
 
         /* Iterate through the sub-attributes and add them to the list */
@@ -366,7 +375,7 @@ public final class AttributeTree {
 
     String getFullAttributeName(int quark) {
         if (quark >= attributeList.size() || quark < 0) {
-            return null;
+            throw new IndexOutOfBoundsException();
         }
         return attributeList.get(quark).getFullAttributeName();
     }

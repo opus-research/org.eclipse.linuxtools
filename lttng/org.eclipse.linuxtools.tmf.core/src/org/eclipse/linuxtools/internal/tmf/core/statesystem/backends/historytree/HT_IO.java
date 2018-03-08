@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * This class exists mainly for code isolation/clarification purposes. It
  * contains all the methods and descriptors to handle reading/writing to the
@@ -74,8 +76,15 @@ class HT_IO {
             this.fis = new FileInputStream(historyTreeFile);
             this.fos = new FileOutputStream(historyTreeFile, true);
         }
-        this.fcIn = fis.getChannel();
-        this.fcOut = fos.getChannel();
+
+        FileChannel fc1 = fis.getChannel();
+        FileChannel fc2 = fos.getChannel();
+        if (fc1 == null || fc2 == null) {
+            throw new IllegalStateException();
+        }
+
+        this.fcIn = fc1;
+        this.fcOut = fc2;
     }
 
     /**
@@ -96,8 +105,9 @@ class HT_IO {
         return node;
     }
 
-    private HTNode readNodeFromMemory(int seqNumber) {
-        for (HTNode node : tree.getLatestBranch()) {
+    private @Nullable HTNode readNodeFromMemory(int seqNumber) {
+        for (int i = 0; i < tree.getLatestBranchSize(); i++) {
+            HTNode node = tree.getInLatestBranch(i);
             if (node.getSequenceNumber() == seqNumber) {
                 return node;
             }
@@ -125,8 +135,7 @@ class HT_IO {
             throw e;
         } catch (IOException e) {
             /* Other types of IOExceptions shouldn't happen at this point though */
-            e.printStackTrace();
-            return null;
+            throw new IllegalStateException(e);
         }
     }
 
