@@ -74,10 +74,6 @@ public class StreamInput implements IDefinitionScope {
      */
     StructDefinition streamPacketContextDef = null;
 
-    /*
-     * Total number of lost events in this stream
-     */
-    long lostSoFar = 0;
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -431,7 +427,6 @@ public class StreamInput implements IDefinitionScope {
         String device = (String) packetIndex.lookupAttribute("device"); //$NON-NLS-1$
         // LTTng Specific
         Long CPU_ID = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
-        Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded");  //$NON-NLS-1$
         /*
          * Read the content size in bits
          */
@@ -480,12 +475,6 @@ public class StreamInput implements IDefinitionScope {
 
         if (CPU_ID != null) {
             packetIndex.setTarget("CPU" + CPU_ID.toString()); //$NON-NLS-1$
-        }
-
-        if (lostEvents != null) {
-
-            packetIndex.setLostEvents(lostEvents - lostSoFar);
-            this.lostSoFar = lostEvents;
         }
     }
 
