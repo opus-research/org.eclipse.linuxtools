@@ -27,7 +27,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
@@ -130,7 +130,7 @@ public class ResourcesView extends TmfView {
 
     private class TraceEntry implements ITimeGraphEntry {
         // The Trace
-        private final CtfKernelTrace fKernelTrace;
+        private final LttngKernelTrace fKernelTrace;
         // The start time
         private final long fTraceStartTime;
         // The end time
@@ -140,7 +140,7 @@ public class ResourcesView extends TmfView {
         // The name of entry
         private final String fName;
 
-        public TraceEntry(CtfKernelTrace trace, String name, long startTime, long endTime) {
+        public TraceEntry(LttngKernelTrace trace, String name, long startTime, long endTime) {
             fKernelTrace = trace;
             fChildren = new ArrayList<ResourcesEntry>();
             fName = name;
@@ -193,7 +193,7 @@ public class ResourcesView extends TmfView {
             return null;
         }
 
-        public CtfKernelTrace getTrace() {
+        public LttngKernelTrace getTrace() {
             return fKernelTrace;
         }
 
@@ -269,7 +269,7 @@ public class ResourcesView extends TmfView {
             }
             long resolution = Math.max(1, (fZoomEndTime - fZoomStartTime) / fDisplayWidth);
             for (TraceEntry traceEntry : fZoomEntryList) {
-                if (!traceEntry.fKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID).waitUntilBuilt()) {
+                if (!traceEntry.fKernelTrace.getStateSystem(LttngKernelTrace.STATE_ID).waitUntilBuilt()) {
                     return;
                 }
                 for (ITimeGraphEntry child : traceEntry.getChildren()) {
@@ -496,9 +496,9 @@ public class ResourcesView extends TmfView {
             if (monitor.isCanceled()) {
                 return;
             }
-            if (aTrace instanceof CtfKernelTrace) {
-                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) aTrace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
+            if (aTrace instanceof LttngKernelTrace) {
+                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(LttngKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
                     return;
                 }
@@ -547,8 +547,8 @@ public class ResourcesView extends TmfView {
             if (monitor.isCanceled()) {
                 return;
             }
-            CtfKernelTrace ctfKernelTrace = traceEntry.getTrace();
-            ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
+            LttngKernelTrace ctfKernelTrace = traceEntry.getTrace();
+            ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(LttngKernelTrace.STATE_ID);
             long startTime = ssq.getStartTime();
             long endTime = ssq.getCurrentEndTime() + 1;
             long resolution = (endTime - startTime) / fDisplayWidth;
@@ -563,7 +563,7 @@ public class ResourcesView extends TmfView {
     private static List<ITimeEvent> getEventList(ResourcesEntry entry,
             long startTime, long endTime, long resolution, boolean includeNull,
             IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem(LttngKernelTrace.STATE_ID);
         final long realStart = Math.max(startTime, ssq.getStartTime());
         final long realEnd = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (realEnd <= realStart) {
