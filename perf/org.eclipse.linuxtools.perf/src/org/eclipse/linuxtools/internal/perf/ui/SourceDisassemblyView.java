@@ -169,7 +169,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 
 	@Override
 	public boolean canPerformFind() {
-		return text != null && !text.getText().isEmpty();
+		return text != null && !"".equals(text.getText());
 	}
 
 	@Override

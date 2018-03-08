@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.cachegrind.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
@@ -29,20 +25,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class LaunchConfigTabTest extends AbstractCachegrindTest {
 
-	private ILaunchConfiguration config;
-	private Shell testShell;
-	private ValgrindOptionsTab tab;
-	private CachegrindToolPage dynamicTab;
+	protected ILaunchConfiguration config;
+	protected Shell testShell;
+	protected ValgrindOptionsTab tab;
+	protected CachegrindToolPage dynamicTab;
 
 	@Override
-	@Before
-	public void setUp() throws Exception {
+	protected void setUp() throws Exception {
 		super.setUp();
 		proj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
 
@@ -54,8 +46,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 	}
 
 	@Override
-	@After
-	public void tearDown() throws CoreException {
+	protected void tearDown() throws Exception {
 		tab.dispose();
 		testShell.dispose();
 		deleteProject(proj);
@@ -74,13 +65,15 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 		return wc;
 	}
 
-	private ILaunch saveAndLaunch(ILaunchConfigurationWorkingCopy wc,
-			String testName) throws Exception {
+	private ILaunch saveAndLaunch(ILaunchConfigurationWorkingCopy wc, String testName)
+	throws Exception {
 		tab.performApply(wc);
 		config = wc.doSave();
-		return doLaunch(config, testName);
+
+		ILaunch launch = doLaunch(config, testName);
+		return launch;
 	}
-	@Test
+
 	public void testDefaults() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		ILaunch launch = saveAndLaunch(wc, "testDefaults"); //$NON-NLS-1$
@@ -104,7 +97,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 		assertTrue(cmd.contains("--cache-sim=yes")); //$NON-NLS-1$
 		assertTrue(cmd.contains("--branch-sim=no")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testNoSim() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getCacheButton().setSelection(false);
@@ -113,7 +106,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 
 		assertFalse(tab.isValid(config));
 	}
-	@Test
+
 	public void testBranchSim() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getBranchButton().setSelection(true);
@@ -127,7 +120,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--branch-sim=yes")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testI1Cache() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 
@@ -149,7 +142,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
 		assertTrue(cmd.contains("--I1=16384,1,16")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testD1Cache() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 
@@ -171,7 +164,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
 		assertTrue(cmd.contains("--D1=16384,1,16")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testL2Cache() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 

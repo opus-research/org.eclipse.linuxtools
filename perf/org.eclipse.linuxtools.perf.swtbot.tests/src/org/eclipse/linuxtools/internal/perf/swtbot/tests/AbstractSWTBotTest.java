@@ -187,15 +187,28 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
 	/**
 	 * Stub data for use in case the Perf tool is not installed.
 	 */
-	protected static class StubPerfData implements IPerfData {
+	protected class StubPerfData implements IPerfData {
+		private String data;
+		private String title;
+
+		public StubPerfData() {
+			data = "stub_perf_data";
+			title = "stub_perf_title";
+		}
+
+		public StubPerfData(String heading, String datum) {
+			title = heading;
+			data = datum;
+		}
+
 		@Override
 		public String getPerfData() {
-			return "stub_perf_data";
+			return data;
 		}
 
 		@Override
 		public String getTitle() {
-			return "stub_perf_title";
+			return title;
 		}
 
 	}

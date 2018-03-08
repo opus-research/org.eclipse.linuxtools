@@ -19,9 +19,8 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 public class TableAppearsCondition implements ICondition {
 
 	private SWTBot bot;
-
-	@Override
-	public boolean test() {
+	
+	public boolean test() throws Exception {
 		try {
 			SWTBotTable table = bot.table();
 			// table available
@@ -35,12 +34,10 @@ public class TableAppearsCondition implements ICondition {
 		return false;
 	}
 
-	@Override
 	public void init(SWTBot bot) {
 		this.bot = bot;
 	}
 
-	@Override
 	public String getFailureMessage() {
 		return null;
 	}
