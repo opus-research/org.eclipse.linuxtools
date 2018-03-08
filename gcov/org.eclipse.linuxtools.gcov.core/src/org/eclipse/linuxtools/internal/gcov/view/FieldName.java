@@ -21,7 +21,7 @@ public class FieldName extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return "Name"; //$NON-NLS-1$
+		return "Name";
 	}
 
 	/*

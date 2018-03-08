@@ -17,7 +17,7 @@ public class GcovStringReader {
 
 
 	public static String readString(DataInput stream) throws IOException {
-		String res = "NULL string"; //$NON-NLS-1$
+		String res = "NULL string";
 		long length = stream.readInt()&MasksGenerator.UNSIGNED_INT_MASK;		
 		if (length != 0) {
 			int ln = ((int) length) << 2;

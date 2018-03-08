@@ -26,7 +26,7 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
 	private final String name;
 	private final String srcFile;
 	private ArrayList<Block> functionBlocks = new ArrayList<Block>();
-	private int numCounts = 0, numBlocks = 0;
+	private int numCounts = 0, blocksExecuted = 0, numBlocks = 0;
 	private final CoverageInfo cvrge = new CoverageInfo();
 
 	public GcnoFunction(long fnctnIdent, long fnctnChksm, String fnctnName, String fnctnSrcFle, long fnctnFrstLnNmbr) {
@@ -49,8 +49,8 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
 		for (int i = 0; i != numBlocks; i++) {
 			Block blk = functionBlocks.get(i);
 			SourceFile fileSrc = null;
-			if ((blk.getCount() != 0) && (i != 0) && (i + 1 != numBlocks)) {
-			}
+			if ((blk.getCount() != 0) && (i != 0) && (i + 1 != numBlocks))
+				blocksExecuted++;
 
 			long[] enc = blk.getEncoding();
 			for (int j = 0, k = 0; j != blk.getLineNum(); j++, k++) {

@@ -156,8 +156,8 @@ public class CovView extends AbstractSTDataView {
 
 	public static void setCovViewTitle(CovView view, String title,
 			String binaryPath) {
-		view.label.setText(" \n program runs = " + title //$NON-NLS-1$
-				+ " \n program file : " + binaryPath + "\n "); //$NON-NLS-1$ //$NON-NLS-2$
+		view.label.setText(" \n program runs = " + title
+				+ " \n program file : " + binaryPath + "\n ");
 		view.label.getParent().layout(true);
 	}
 
@@ -216,8 +216,8 @@ public class CovView extends AbstractSTDataView {
 	}
 
 	private static void reportError(Exception _) {
-		final String message = "An error has occured when parsing " //$NON-NLS-1$
-				+ "the coverage data files :\n" + _.getMessage(); //$NON-NLS-1$
+		final String message = "An error has occured when parsing "
+				+ "the coverage data files :\n" + _.getMessage();
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					IStatus.ERROR, message, _);
 
@@ -226,7 +226,7 @@ public class CovView extends AbstractSTDataView {
 				@Override
 				public void run() {
 					Shell s = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-					MessageDialog.openError(s, "Gcov Parsing Error", message); //$NON-NLS-1$
+					MessageDialog.openError(s, "Gcov Parsing Error", message);
 				}
 			});
 	}
