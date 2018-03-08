@@ -402,7 +402,7 @@ public class StreamInput implements IDefinitionScope {
 
     private void parsePacketContext(long fileSizeBytes,
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer,
-            StreamInputPacketIndexEntry packetIndex) {
+            StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
         streamPacketContextDef.read(bitBuffer);
 
         for (String field : streamPacketContextDef.getDeclaration()
