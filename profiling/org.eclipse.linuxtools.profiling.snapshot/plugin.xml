@@ -65,8 +65,19 @@
             id="org.eclipse.linuxtools.profiling.snapshot.launchConfigurationType"
             modes="profile"
             name="Profile As Snapshot"
-            public="true">
+            public="true"
+            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
+            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
       </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
+            class="org.eclipse.linuxtools.profiling.snapshot.SnapshotPreferencesPage"
+            id="org.eclipse.linuxtools.profiling.snapshot.preferences"
+            name="Snapshot">
+      </page>
    </extension>
 
 

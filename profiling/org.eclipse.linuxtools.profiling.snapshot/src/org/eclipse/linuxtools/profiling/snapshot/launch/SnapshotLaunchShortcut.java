@@ -7,37 +7,26 @@
  *
  * Contributors:
  *    Red Hat initial API and implementation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot.launch;
 
-import org.eclipse.cdt.core.model.IBinary;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut;
+import org.eclipse.linuxtools.profiling.snapshot.SnapshotConstants;
 
-public class SnapshotLaunchShortcut extends ProfileLaunchShortcut {
-
-	private static final String SNAPSHOT = "snapshot"; //$NON-NLS-1$
+/**
+ * The launch shortcut for this plug-in.
+ * 
+ */
+public class SnapshotLaunchShortcut extends ProviderLaunchShortcut {
 
 	@Override
-	public void launch(IBinary bin, String mode) {
-		ProfileLaunchShortcut provider = getProfilingProvider(SNAPSHOT);
-		if (provider != null){
-			provider.launch(bin, mode);
-		}else{
-			handleFail(Messages.SnapshotLaunchShortcut_0 + SNAPSHOT);
-		}
+	protected String getLaunchConfigID() {
+		return SnapshotConstants.PLUGIN_CONFIG_ID;
 	}
 
 	@Override
-	protected ILaunchConfigurationType getLaunchConfigType() {
-		return null;
-	}
-
-	@Override
-	protected void setDefaultProfileAttributes(
-			ILaunchConfigurationWorkingCopy wc) {
-		//TODO determine what should be done here
+	public String getProfilingType() {
+		return SnapshotConstants.PROFILING_TYPE;
 	}
 
 }
