@@ -267,4 +267,9 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
                 : null);
     }
 
+    @Override
+    public String toString() {
+        return "{ " + getCurrentFieldName() + //$NON-NLS-1$
+                " = " + getCurrentField() + //$NON-NLS-1$
+                " }";    } //$NON-NLS-1$
 }
