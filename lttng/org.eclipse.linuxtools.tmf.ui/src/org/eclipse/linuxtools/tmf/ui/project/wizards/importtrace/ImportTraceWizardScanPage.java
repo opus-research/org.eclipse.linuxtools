@@ -18,7 +18,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -67,6 +69,8 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     final ScanRunnable fRunnable = new ScanRunnable();
     final private BlockingQueue<TraceValidationHelper> fTracesToScan = new ArrayBlockingQueue<TraceValidationHelper>(MAX_TRACES);
     private volatile boolean fCanRun = true;
+
+    Job backgroundJob;
 
     // --------------------------------------------------------------------------------
     // Constructor and destructor
@@ -155,7 +159,19 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         init();
         getBatchWizard().setTracesToScan(fTracesToScan);
         getBatchWizard().setTraceFolder(fTargetFolder);
-        getBatchWizard().getNMContainer().backgroundRun(this, fRunnable);
+        backgroundJob= new Job("Scan job") { //$NON-NLS-1$
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    fRunnable.run(monitor);
+                } catch (InvocationTargetException e) {
+                } catch (InterruptedException e) {
+                }
+                return null;
+            }
+        };
+        backgroundJob.schedule();
         setErrorMessage(Messages.ImportTraceWizardScanPage_SelectAtleastOne);
     }
 
@@ -216,7 +232,6 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {
-            // TODO Auto-generated method stub
 
         }
     }
