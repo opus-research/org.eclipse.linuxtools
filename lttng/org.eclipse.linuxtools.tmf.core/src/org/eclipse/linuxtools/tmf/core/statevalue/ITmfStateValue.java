@@ -8,12 +8,13 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API
+ *   Jean-Christian Kouamé - make state values comparable
+ *   Jean-Christian kouame - add the add operation and the increment operation
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 
 /**
  * This is the interface for using state values and reading their contents.
@@ -21,10 +22,11 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * @version 1.0
  * @author Alexandre Montplaisir
  */
-public interface ITmfStateValue {
+public interface ITmfStateValue extends Comparable<ITmfStateValue> {
 
     /**
      * The supported types of state values
+     *
      * @since 2.0
      */
     public enum Type {
@@ -83,4 +85,40 @@ public interface ITmfStateValue {
      * @since 2.0
      */
     long unboxLong() throws StateValueTypeException;
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public int compareTo(ITmfStateValue value);
+
+    /**
+     * return a new state value whose value is (this + val)
+     *
+     * @param val
+     *            The state value to be added
+     * @return a new state value whose value is (this + val)
+     * @throws StateValueTypeException
+     *          <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *          </ul>
+     * @since 3.0
+     */
+    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException;
+
+    /**
+     * Increment the contained value by one
+     *
+     * @return a new state value whose value is (this + 1)
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
+     * @since 3.0
+     */
+    public ITmfStateValue increment() throws StateValueTypeException;
 }

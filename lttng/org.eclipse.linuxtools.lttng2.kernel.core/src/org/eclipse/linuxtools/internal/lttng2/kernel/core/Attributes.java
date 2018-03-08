@@ -31,7 +31,6 @@ public interface Attributes {
     static final String CPUS = "CPUs";
     static final String THREADS = "Threads";
     static final String RESOURCES = "Resources";
-    static final String MIPMAP = "mipmap";
 
     /* Sub-attributes of the CPU nodes */
     static final String CURRENT_THREAD = "Current_thread";
