@@ -86,7 +86,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param eventType
      *            The type of events that will be read from this trace
      * @throws TmfTraceException
-     *             If something went wrong while reading the trace
+     *             If something when wrong while reading the trace
      */
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> eventType)
@@ -151,7 +151,7 @@ public class CtfTmfTrace extends TmfTrace
         IStatus validTrace = Status.OK_STATUS;
         try {
             final CTFTrace temp = new CTFTrace(path);
-            if (!temp.majorIsSet()) {
+            if (!temp.majortIsSet()) {
                 validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_MajorNotSet);
             } else {
                 CTFTraceReader ctfTraceReader = new CTFTraceReader(temp);
@@ -439,12 +439,7 @@ public class CtfTmfTrace extends TmfTrace
      * @since 2.0
      */
     public CtfIterator createIterator() {
-        try {
-            return new CtfIterator(this);
-        } catch (CTFReaderException e) {
-            Activator.logError(e.getMessage(), e);
-        }
-        return null;
+        return new CtfIterator(this);
     }
 
     // ------------------------------------------------------------------------
@@ -461,9 +456,6 @@ public class CtfTmfTrace extends TmfTrace
 
     private static int fCheckpointSize = -1;
 
-    /**
-     * @since 3.0
-     */
     @Override
     public synchronized int getCheckpointSize() {
         if (fCheckpointSize == -1) {
@@ -482,9 +474,6 @@ public class CtfTmfTrace extends TmfTrace
         return new TmfBTreeTraceIndexer(this, interval);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
         return new CtfLocation(bufferIn);

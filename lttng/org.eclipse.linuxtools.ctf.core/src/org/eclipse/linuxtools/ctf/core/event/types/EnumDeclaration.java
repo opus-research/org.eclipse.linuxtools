@@ -12,17 +12,14 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A CTF enum declaration.
  *
- * The definition of a enum point basic data type. It will take the data from a
- * trace and store it (and make it fit) as an integer and a string.
+ * The definition of a enum point basic data type. It will take the data
+ * from a trace and store it (and make it fit) as an integer and a string.
  *
  * @version 1.0
  * @author Matthew Khouzam
@@ -34,9 +31,8 @@ public class EnumDeclaration implements IDeclaration {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final EnumTable fTable = new EnumTable();
-    private final IntegerDeclaration fContainerType;
-    private final Set<String> fLabels = new HashSet<String>();
+    private final EnumTable table = new EnumTable();
+    private IntegerDeclaration containerType = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -52,7 +48,7 @@ public class EnumDeclaration implements IDeclaration {
      *            you are wasting space.
      */
     public EnumDeclaration(IntegerDeclaration containerType) {
-        fContainerType = containerType;
+        this.containerType = containerType;
     }
 
     // ------------------------------------------------------------------------
@@ -64,7 +60,7 @@ public class EnumDeclaration implements IDeclaration {
      * @return The container type
      */
     public IntegerDeclaration getContainerType() {
-        return fContainerType;
+        return containerType;
     }
 
     @Override
@@ -83,61 +79,40 @@ public class EnumDeclaration implements IDeclaration {
     }
 
     /**
-     * Add a value. Do not overlap, this is <i><u><b>not</i></u></b> an interval
-     * tree.
-     *
-     * @param low
-     *            lowest value that this int can be to have label as a return
-     *            string
-     * @param high
-     *            highest value that this int can be to have label as a return
-     *            string
-     * @param label
-     *            the name of the value.
+     * Add a value. Do not overlap, this is <i><u><b>not</i></u></b> an interval tree.
+     * @param low lowest value that this int can be to have label as a return string
+     * @param high highest value that this int can be to have label as a return string
+     * @param label the name of the value.
      * @return was the value be added? true == success
      */
     public boolean add(long low, long high, String label) {
-        fLabels.add(label);
-        return fTable.add(low, high, label);
+        return table.add(low, high, label);
     }
 
     /**
-     * Check if the label for a value (enum a{day=0,night=1} would return "day"
-     * for query(0)
-     *
-     * @param value
-     *            the value to lookup
+     * check if the label for a value (enum a{day=0,night=1} would return "day" for query(0)
+     * @param value the value to lookup
      * @return the label of that value, can be null
      */
     public String query(long value) {
-        return fTable.query(value);
-    }
-
-    /**
-     * Gets a set of labels of the enum
-     *
-     * @return A set of labels of the enum, can be empty but not null
-     * @since 3.0
-     */
-    public Set<String> getLabels() {
-        return Collections.unmodifiableSet(fLabels);
+        return table.query(value);
     }
 
     /*
      * Maps integer range -> string. A simple list for now, but feel free to
      * optimize it. Babeltrace suggests an interval tree.
      */
-    private class EnumTable {
+    private static class EnumTable {
 
-        private final List<LabelAndRange> ranges = new LinkedList<LabelAndRange>();
+        private List<Range> ranges = new LinkedList<Range>();
 
         public EnumTable() {
         }
 
         public boolean add(long low, long high, String label) {
-            LabelAndRange newRange = new LabelAndRange(low, high, label);
+            Range newRange = new Range(low, high, label);
 
-            for (LabelAndRange r : ranges) {
+            for (Range r : ranges) {
                 if (r.intersects(newRange)) {
                     return false;
                 }
@@ -149,41 +124,38 @@ public class EnumDeclaration implements IDeclaration {
         }
 
         /**
-         * Return the first label that matches a value
-         *
-         * @param value
-         *            the value to query
+         * return the first label that matches a value
+         * @param value the value to query
          * @return the label corresponding to that value
          */
         public String query(long value) {
-            for (LabelAndRange r : ranges) {
+            for (Range r : ranges) {
                 if (r.intersects(value)) {
-                    return r.fLabel;
+                    return r.str;
                 }
             }
             return null;
         }
 
-    }
+        private static class Range {
 
-    private class LabelAndRange {
+            private long low, high;
+            private String str;
 
-        private final long low, high;
-        private final String fLabel;
+            public Range(long low, long high, String str) {
+                this.low = low;
+                this.high = high;
+                this.str = str;
+            }
 
-        public LabelAndRange(long low, long high, String str) {
-            this.low = low;
-            this.high = high;
-            this.fLabel = str;
-        }
+            public boolean intersects(long i) {
+                return (i >= this.low) && (i <= this.high);
+            }
 
-        public boolean intersects(long i) {
-            return (i >= this.low) && (i <= this.high);
-        }
-
-        public boolean intersects(LabelAndRange other) {
-            return this.intersects(other.low)
-                    || this.intersects(other.high);
+            public boolean intersects(Range other) {
+                return this.intersects(other.low)
+                        || this.intersects(other.high);
+            }
         }
     }
 

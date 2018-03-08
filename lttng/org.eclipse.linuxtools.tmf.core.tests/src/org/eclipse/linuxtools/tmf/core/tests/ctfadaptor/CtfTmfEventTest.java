@@ -22,7 +22,6 @@ import static org.junit.Assume.assumeTrue;
 
 import java.util.Set;
 
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfIterator;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
@@ -59,10 +58,9 @@ public class CtfTmfEventTest {
 
     /**
      * Perform pre-test initialization.
-     * @throws CTFReaderException error
      */
     @Before
-    public void setUp() throws CTFReaderException {
+    public void setUp() {
         assumeTrue(testTrace.exists());
         CtfTmfTrace trace = testTrace.getTrace();
         CtfIterator tr = new CtfIterator(trace);

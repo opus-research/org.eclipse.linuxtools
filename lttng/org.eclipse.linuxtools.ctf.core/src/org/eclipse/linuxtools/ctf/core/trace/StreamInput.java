@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.UUID;
@@ -35,7 +35,6 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntr
  * <b><u>StreamInput</u></b>
  * <p>
  * Represents a trace file that belongs to a certain stream.
- *
  * @since 2.0
  */
 public class StreamInput implements IDefinitionScope {
@@ -99,7 +98,7 @@ public class StreamInput implements IDefinitionScope {
         this.stream = stream;
         this.fileChannel = fileChannel;
         this.file = file;
-        this.index = new StreamInputPacketIndex();
+        this.index = stream.getTrace().getIndex(this);
     }
 
     // ------------------------------------------------------------------------
@@ -116,12 +115,22 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * The common streamInput Index
+     * the common streamInput Index
      *
      * @return the stream input Index
      */
     StreamInputPacketIndex getIndex() {
         return index;
+    }
+
+    /**
+     * Gets the filechannel of the streamInput. This is a limited Java
+     * ressource.
+     *
+     * @return the filechannel
+     */
+    public FileChannel getFileChannel() {
+        return fileChannel;
     }
 
     /**
@@ -134,7 +143,7 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Gets the last read timestamp of a stream. (this is not necessarily the
+     * gets the last read timestamp of a stream. (this is not necessarily the
      * last time in the stream.)
      *
      * @return the last read timestamp
@@ -155,7 +164,7 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Useless for streaminputs
+     * useless for streaminputs
      */
     @Override
     public String getPath() {
@@ -236,10 +245,7 @@ public class StreamInput implements IDefinitionScope {
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer)
             throws CTFReaderException {
 
-        /*
-         * Ignoring the return value, but this call is needed to initialize the
-         * input
-         */
+        /* Ignoring the return value, but this call is needed to initialize the input */
         createPacketBitBuffer(fileSizeBytes, packetOffsetBytes, packetIndex, bitBuffer);
 
         /*
@@ -266,7 +272,8 @@ public class StreamInput implements IDefinitionScope {
 
         if (packetIndex.getPacketSizeBits() > ((fileSizeBytes - packetIndex
                 .getOffsetBytes()) * 8)) {
-            throw new CTFReaderException("Not enough data remaining in the file for the size of this packet"); //$NON-NLS-1$
+            throw new CTFReaderException(
+                    "Not enough data remaining in the file for the size of this packet"); //$NON-NLS-1$
         }
 
         /*
@@ -290,10 +297,6 @@ public class StreamInput implements IDefinitionScope {
                 + ((packetIndex.getPacketSizeBits() + 7) / 8);
     }
 
-    ByteBuffer getByteBufferAt(long position, long size) throws IOException {
-        return fileChannel.map(MapMode.READ_ONLY, position, size);
-    }
-
     /**
      * @param fileSizeBytes
      * @param packetOffsetBytes
@@ -302,7 +305,7 @@ public class StreamInput implements IDefinitionScope {
      * @return
      * @throws CTFReaderException
      */
-    private ByteBuffer createPacketBitBuffer(long fileSizeBytes,
+    private MappedByteBuffer createPacketBitBuffer(long fileSizeBytes,
             long packetOffsetBytes, StreamInputPacketIndexEntry packetIndex,
             BitBuffer bitBuffer) throws CTFReaderException {
         /*
@@ -323,10 +326,10 @@ public class StreamInput implements IDefinitionScope {
         /*
          * Map the packet.
          */
-        ByteBuffer bb;
+        MappedByteBuffer bb;
 
         try {
-            bb = getByteBufferAt(packetOffsetBytes, mapSize);
+            bb = fileChannel.map(MapMode.READ_ONLY, packetOffsetBytes, mapSize);
         } catch (IOException e) {
             throw new CTFReaderException(e);
         }
@@ -349,6 +352,7 @@ public class StreamInput implements IDefinitionScope {
                 throw new CTFReaderException(
                         "CTF magic mismatch " + Integer.toHexString(magic) + " vs " + Integer.toHexString(Utils.CTF_MAGIC)); //$NON-NLS-1$//$NON-NLS-2$
             }
+
         }
 
         /*
@@ -380,7 +384,8 @@ public class StreamInput implements IDefinitionScope {
             long streamID = streamIDDef.getValue();
 
             if (streamID != getStream().getId()) {
-                throw new CTFReaderException("Stream ID changing within a StreamInput"); //$NON-NLS-1$
+                throw new CTFReaderException(
+                        "Stream ID changing within a StreamInput"); //$NON-NLS-1$
             }
         }
     }
@@ -397,7 +402,7 @@ public class StreamInput implements IDefinitionScope {
 
     private void parsePacketContext(long fileSizeBytes,
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer,
-            StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
+            StreamInputPacketIndexEntry packetIndex) {
         streamPacketContextDef.read(bitBuffer);
 
         for (String field : streamPacketContextDef.getDeclaration()
@@ -425,27 +430,25 @@ public class StreamInput implements IDefinitionScope {
         String device = (String) packetIndex.lookupAttribute("device"); //$NON-NLS-1$
         // LTTng Specific
         Long cpuId = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
-        Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded"); //$NON-NLS-1$
+        Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded");  //$NON-NLS-1$
 
         /* Read the content size in bits */
         if (contentSize != null) {
             packetIndex.setContentSizeBits(contentSize.intValue());
-        } else if (packetSize != null) {
-            packetIndex.setContentSizeBits(packetSize.longValue());
         } else {
             packetIndex.setContentSizeBits((int) (fileSizeBytes * 8));
         }
 
-
         /* Read the packet size in bits */
         if (packetSize != null) {
             packetIndex.setPacketSizeBits(packetSize.intValue());
-        } else if (packetIndex.getContentSizeBits() != 0) {
-            packetIndex.setPacketSizeBits(packetIndex.getContentSizeBits());
         } else {
-            packetIndex.setPacketSizeBits((int) (fileSizeBytes * 8));
+            if (packetIndex.getContentSizeBits() != 0) {
+                packetIndex.setPacketSizeBits(packetIndex.getContentSizeBits());
+            } else {
+                packetIndex.setPacketSizeBits((int) (fileSizeBytes * 8));
+            }
         }
-
 
         /* Read the begin timestamp */
         if (tsBegin != null) {
@@ -454,7 +457,7 @@ public class StreamInput implements IDefinitionScope {
 
         /* Read the end timestamp */
         if (tsEnd != null) {
-            if (tsEnd == -1) {
+            if( tsEnd == -1 ) {
                 tsEnd = Long.MAX_VALUE;
             }
             packetIndex.setTimestampEnd(tsEnd.longValue());

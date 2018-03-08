@@ -77,6 +77,12 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
     private static final String NO_FUNCTION = "no function"; //$NON-NLS-1$
 
     /**
+     * Version number of this state provider. Please bump this if you modify
+     * the contents of the generated state history in some way.
+     */
+    private static final int VERSION = 0;
+
+    /**
      * Default constructor
      *
      * @param trace
@@ -84,6 +90,11 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      */
     public CallStackStateProvider(ITmfTrace trace) {
         super(trace, ITmfEvent.class, ID);
+    }
+
+    @Override
+    public int getVersion() {
+        return VERSION;
     }
 
     @Override
@@ -144,7 +155,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      *            The event to check
      * @return If false, the event will be ignored by the state provider. If
      *         true processing will continue.
-     * @since 3.0
      */
     protected abstract boolean considerEvent(ITmfEvent event);
 
@@ -174,7 +184,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      * @param event
      *            The event
      * @return The thread name (as will be shown in the view)
-     * @since 3.0
      */
     protected abstract String getThreadName(ITmfEvent event);
 }

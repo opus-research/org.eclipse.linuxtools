@@ -23,14 +23,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -46,6 +46,7 @@ import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -311,7 +312,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *         successfully or not.
      * @since 3.0
      */
-    @Deprecated
     protected IStatus buildStateSystem() {
         /*
          * Nothing is done in the base implementation, please specify
@@ -345,31 +345,22 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return status;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public final IAnalysisModule getAnalysisModule(String analysisId) {
         return fAnalysisModules.get(analysisId);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
-    public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
-        Map<String, T> modules = new HashMap<String, T>();
+    public List<IAnalysisModule> getAnalysisModules(Class<? extends IAnalysisModule> moduleclass) {
+        List<IAnalysisModule> modules = new ArrayList<IAnalysisModule>();
         for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
             if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
-                modules.put(entry.getKey(), moduleclass.cast(entry.getValue()));
+                modules.add(entry.getValue());
             }
         }
         return modules;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public Map<String, IAnalysisModule> getAnalysisModules() {
         return Collections.unmodifiableMap(fAnalysisModules);
@@ -403,8 +394,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ------------------------------------------------------------------------
 
     @Override
-    public Class<? extends ITmfEvent> getEventType() {
-        return super.getType();
+    public Class<ITmfEvent> getEventType() {
+        return (Class<ITmfEvent>) super.getType();
     }
 
     @Override
@@ -452,10 +443,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
-     * @deprecated See {@link ITmfTrace}
      */
-    @SuppressWarnings("deprecation")
-    @Deprecated
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
         return Collections.unmodifiableMap(fStateSystems);
@@ -463,10 +451,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
-     * @deprecated See {@link ITmfTrace}
      */
-    @SuppressWarnings("deprecation")
-    @Deprecated
     @Override
     public final void registerStateSystem(String id, ITmfStateSystem ss) {
         fStateSystems.put(id, ss);
@@ -718,14 +703,16 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     @Override
-    public synchronized ITmfContext armRequest(final ITmfEventRequest request) {
+    public synchronized ITmfContext armRequest(final ITmfDataRequest request) {
         if (executorIsShutdown()) {
             return null;
         }
-        if (!TmfTimestamp.BIG_BANG.equals(request.getRange().getStartTime())
-                && (request.getIndex() == 0)) {
-            final ITmfContext context = seekEvent(request.getRange().getStartTime());
-            request.setStartIndex((int) context.getRank());
+        if ((request instanceof ITmfEventRequest)
+            && !TmfTimestamp.BIG_BANG.equals(((ITmfEventRequest) request).getRange().getStartTime())
+            && (request.getIndex() == 0))
+        {
+            final ITmfContext context = seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
+            ((ITmfEventRequest) request).setStartIndex((int) context.getRank());
             return context;
 
         }
@@ -769,7 +756,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             Activator.log(status);
         }
 
-        refreshSupplementaryFiles();
+        /* Refresh the project, so it can pick up new files that got created. */
+        try {
+            if (fResource != null) {
+                fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
 
         if (signal.getTrace() == this) {
             /* Additionally, the signal is directly for this trace. */
@@ -799,25 +793,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
-     * Refresh the supplementary files resources, so it can pick up new files
-     * that got created.
-     * @since 3.0
-     */
-    public void refreshSupplementaryFiles() {
-        if (fResource != null) {
-            IProject project = fResource.getProject();
-            IFolder supplFolder = project.getFolder(TmfCommonConstants.TRACE_SUPPLEMENATARY_FOLDER_NAME);
-            if (supplFolder.exists()) {
-                try {
-                    supplFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
-                } catch (CoreException e) {
-                    Activator.logError("Error refreshing resources", e); //$NON-NLS-1$
-                }
-            }
-        }
-    }
-
-    /**
      * Signal handler for the TmfTraceRangeUpdatedSignal signal
      *
      * @param signal The incoming signal
@@ -834,7 +809,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Signal handler for the TmfTraceUpdatedSignal signal
      *
      * @param signal The incoming signal
-     * @since 3.0
+     * @since 2.0
      */
     @TmfSignalHandler
     public void traceUpdated(final TmfTraceUpdatedSignal signal) {

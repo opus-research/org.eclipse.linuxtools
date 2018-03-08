@@ -161,6 +161,7 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	 * @return
 	 */
 	public ArrayList<PMStatEntry> getComparisonStats() {
+		cacheData();
 		ArrayList<PMStatEntry> oldStats = collectStats(oldFile);
 		ArrayList<PMStatEntry> newStats = collectStats(newFile);
 		ArrayList<PMStatEntry> result = new ArrayList<PMStatEntry>();
@@ -175,6 +176,24 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 		}
 
 		return result;
+	}
+
+	/**
+	 * Save data contents in global cache.
+	 */
+	public void cacheData() {
+		PerfPlugin plugin = PerfPlugin.getDefault();
+		plugin.cacheData(getOldDataID(), fileToString(oldFile.toFile()));
+		plugin.cacheData(getNewDataID(), fileToString(newFile.toFile()));
+	}
+
+	/**
+	 * Remove data contents from global cache.
+	 */
+	public void clearCachedData() {
+		PerfPlugin plugin = PerfPlugin.getDefault();
+		plugin.removeCachedData(getNewDataID());
+		plugin.removeCachedData(getOldDataID());
 	}
 
 	/**

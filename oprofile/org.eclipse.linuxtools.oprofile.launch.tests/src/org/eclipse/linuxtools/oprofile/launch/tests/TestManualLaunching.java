@@ -11,8 +11,7 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
@@ -82,6 +81,13 @@ public class TestManualLaunching extends AbstractTest {
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, options.getSeparateSamples());
 
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
+		assertTrue(delegate.eventsIsNull);
+		assertNotNull(delegate._options);
+		assertFalse(delegate._options.getBinaryImage().isEmpty());
+		assertTrue(delegate._options.getKernelImageFile().isEmpty());
+		assertEquals(0, delegate._options.getCallgraphDepth());
+		assertFalse(delegate._options.getVerboseLogging());
+		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, delegate._options.getSeparateProfilesMask());
 	}
 	@Test
 	public void testEventLaunch() throws CoreException {
@@ -92,7 +98,7 @@ public class TestManualLaunching extends AbstractTest {
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false);
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_ENABLED(0), true);
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_COUNT(0), 100000);
-		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_EVENT(0, 0),	"FAKE_EVENT"); //$NON-NLS-1$
+		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_EVENT(0),	"FAKE_EVENT"); //$NON-NLS-1$
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_PROFILE_KERNEL(0), true);
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_PROFILE_USER(0), true);
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_UNIT_MASK(0), 0);
@@ -106,5 +112,12 @@ public class TestManualLaunching extends AbstractTest {
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, options.getSeparateSamples());
 
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
+		assertFalse(delegate.eventsIsNull);
+		assertNotNull(delegate._options);
+		assertFalse(delegate._options.getBinaryImage().isEmpty());
+		assertTrue(delegate._options.getKernelImageFile().isEmpty());
+		assertEquals(0, delegate._options.getCallgraphDepth());
+		assertFalse(delegate._options.getVerboseLogging());
+		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, delegate._options.getSeparateProfilesMask());
 	}
 }

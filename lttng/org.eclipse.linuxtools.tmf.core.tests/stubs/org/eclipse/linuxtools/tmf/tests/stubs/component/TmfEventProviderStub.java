@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -66,9 +67,12 @@ public class TmfEventProviderStub extends TmfEventProvider {
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfContext armRequest(final ITmfEventRequest request) {
-        final ITmfContext context = fTrace.seekEvent(request.getRange().getStartTime());
-        return context;
+    public ITmfContext armRequest(final ITmfDataRequest request) {
+        if (request instanceof ITmfEventRequest) {
+            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
+            return context;
+        }
+        return null;
     }
 
     @Override
