@@ -30,6 +30,8 @@ import org.junit.runners.Suite;
     TmfTimeRangeTest.class,
     TmfTimestampDeltaTest.class,
     TmfTimestampTest.class,
+    TmfTimestampFormatTest.class,
+    TmfTimePreferencesTest.class,
     org.eclipse.linuxtools.tmf.core.tests.event.lookup.AllTests.class
 })
 public class AllTests {
