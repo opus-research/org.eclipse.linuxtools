@@ -104,24 +104,7 @@ public class KernelSourceAction extends Action implements ISelectionListener, IW
 		LogManager.logDebug("createEditorInput: returnVal-" + input, this); //$NON-NLS-1$
 		return input;
 	}
-	
-	/**
-	 * Returns the ID of the editor to use for the requested file. Usually returns
-	 * <code>CEditor.ID</code> in this code.
-	 * @param file The file to get the ID for.
-	 * @return	The ID for the editor that handles the requested file type.
-	 */
-	private String getEditorId(IFileStore fs) {
-		IEditorDescriptor editor = null;
-		IWorkbench workbench= window.getWorkbench();
-		IEditorRegistry editorRegistry= workbench.getEditorRegistry();
-		editor = editorRegistry.findEditor(CEditor.ID);
-		if (editor == null)
-			editor = editorRegistry.getDefaultEditor(fs.getName());
 
-		return editor.getId();
-	}
-	
 	/**
 	 * The main code body for this action. Causes one of the following to occur:
 	 * <ul>
@@ -148,12 +131,11 @@ public class KernelSourceAction extends Action implements ISelectionListener, IW
 				IFileStore fs = (IFileStore)t.getData();
 				if (fs != null) {
 					IEditorInput input= createEditorInput(fs);
-					String editorId= getEditorId(fs);
 					try {
 						IEditorPart editor = wb.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 						if(editor instanceof STPEditor)
 							IDESessionSettings.activeSTPEditor = (STPEditor)editor;
-						wb.getActiveWorkbenchWindow().getActivePage().openEditor(input, editorId);
+						wb.getActiveWorkbenchWindow().getActivePage().openEditor(input, CEditor.ID);
 						LogManager.logDebug("Editor opened", this); //$NON-NLS-1$
 					} catch (PartInitException e) {
 						LogManager.logCritical("PartInitException run: " + e.getMessage(), this); //$NON-NLS-1$
