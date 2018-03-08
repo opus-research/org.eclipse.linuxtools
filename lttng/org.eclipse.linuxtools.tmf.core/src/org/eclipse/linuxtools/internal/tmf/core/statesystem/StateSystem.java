@@ -21,13 +21,13 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tmf.core.Tracer;
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
@@ -44,7 +44,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public class StateSystem implements IStateSystemBuilder {
+public class StateSystem implements ITmfStateSystemBuilder {
 
     /* References to the inner structures */
     private final AttributeTree attributeTree;
@@ -606,7 +606,7 @@ public class StateSystem implements IStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     static void logMissingInterval(int attribute, long timestamp) {
-        Tracer.traceInfo("No data found in history for attribute " + //$NON-NLS-1$
+        Activator.logInfo("No data found in history for attribute " + //$NON-NLS-1$
                 attribute + " at time " + timestamp + //$NON-NLS-1$
                 ", returning dummy interval"); //$NON-NLS-1$
     }

@@ -67,16 +67,21 @@ public class TapsetParser implements Runnable {
 	public void start() {
 		stopped = false;
 		init();
-		Thread t = new Thread(this, "TapsetParser");
-		t.start();
+		this.thread = new Thread(this, "TapsetParser");
+		thread.start();
 	}
 	
 	/**
-	 * This method chanegs the stop variable which is checked periodically by the
+	 * This method changes the stop variable which is checked periodically by the
 	 * running thread to see if it should stop running.
 	 */
 	public synchronized void stop() {
 		stopped = true;
+		try {
+			this.thread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	/**
@@ -132,7 +137,6 @@ public class TapsetParser implements Runnable {
 		fireUpdateEvent();	//Inform listeners that a new batch of functions has variable info
 		runPass2Probes();
 		fireUpdateEvent();	//Inform listeners that a new batch of probes has variable info
-		stop();
 		successfulFinish = true;
 		fireUpdateEvent();	//Inform listeners that everything is done
 	}
@@ -159,30 +163,29 @@ public class TapsetParser implements Runnable {
 	 * This method will fire an updateEvent to all listeners.
 	 */
 	private void fireUpdateEvent() {
-		for(int i=0; i<listeners.size(); i++)
-			((IUpdateListener)listeners.get(i)).handleUpdateEvent();
+		for(int i=0; i<listeners.size() && !stopped; i++)
+			listeners.get(i).handleUpdateEvent();
 	}
 	
 	/**
 	 * Runs the stap with the given options and returns the output generated 
 	 * @param options String[] of any optional parameters to pass to stap
 	 * @param probe String containing the script to run stap on
-	 * @param level integer representing what point to stop stap at (1,2,3,4,5)
+	 * @since 1.2
 	 */
-	protected String runStap(String[] options, String probe, int level) {
+	protected String runStap(String[] options, String probe) {
 		String[] args = null;
 		
-		int size = 4;	//start at 4 for stap, -pX, -e, script
+		int size = 2;	//start at 2 for stap, script, options will be added in later
 		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0)
 			size += tapsets.length<<1;
 		if(null != options && options.length > 0 && options[0].trim().length() > 0)
 			size += options.length;
-		
+
 		args = new String[size];
 		args[0] = ""; //$NON-NLS-1$
-		args[1] = "-p" + level; //$NON-NLS-1$
-		args[size-2] = "-e"; //$NON-NLS-1$
 		args[size-1] = probe;
+		args[size-2] = "";
 		
 		//Add extra tapset directories
 		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
@@ -193,7 +196,7 @@ public class TapsetParser implements Runnable {
 		}
 		if(null != options && options.length > 0 && options[0].trim().length() > 0) {
 			for(int i=0; i<options.length; i++)
-				args[args.length-options.length-2+i] = options[i];
+				args[args.length-options.length-1+i] = options[i];
 		}
 
 		StringOutputStream str = new StringOutputStream();
@@ -217,6 +220,17 @@ public class TapsetParser implements Runnable {
 	}
 	
 	/**
+	 * Runs the stap with the given options and returns the output generated
+	 * @param options String[] of any optional parameters to pass to stap
+	 * @param probe String containing the script to run stap on
+	 * @level level integer representing what point to stop stap at (1,2,3,4,5)
+	 */
+	@Deprecated
+	protected String runStap(String[] options, String probe, int level) {
+		return runStap(options, probe);
+	}
+
+	/**
 	 * Returns a String containing all of the content from the files
 	 * contained in the tapset libraries.  This file always returns
 	 * what ever it could get, even if an exception was generated.
@@ -229,12 +243,12 @@ public class TapsetParser implements Runnable {
 		String[] options;
 		if(null == script) {
 			script = "probe begin{}";
-			options = new String[] {"-v"};
+			options = new String[] {"-p1", "-v", "-e"};
 		} else {
 			options = null;
 		}
 
-		return runStap(options, script, 1);
+		return runStap(options, script);
 	}
 
 	/**
@@ -264,7 +278,6 @@ public class TapsetParser implements Runnable {
 		
 		for(int i=0; i<s.length(); i++) {
 			currChar = s.charAt(i);
-			
 			if(!Character.isWhitespace(currChar) && '}' != currChar && '{' != currChar) {
 				token.append(currChar);
 			} else if(token.length() > 0){
@@ -272,7 +285,6 @@ public class TapsetParser implements Runnable {
 				prev = token.toString();
 				token.delete(0, token.length());
 			}
-
 			//Only check for new values when starting a fresh token.
 			if(1 == token.length()) {
 				if("probe".equals(prev2) && "=".equals(token.toString())) {
@@ -324,6 +336,25 @@ public class TapsetParser implements Runnable {
 					child.add(new TreeNode(prev2 + ":unknown", prev2, false));
 				
 				prev2 = null;
+			} else if ("/*".equals(token.toString())){
+				// Skip comments
+				for(; i<s.length()-1; i++) {
+					if (s.regionMatches(i, "*/", 0, 2)){
+						i++;
+						break;
+					}
+				}
+				// clear token
+				token.delete(0, token.length());
+			} else if ("//".equals(token.toString())){
+				// Skip comments
+				for(; i<s.length(); i++) {
+					if (s.charAt(i) == '\n'){
+						break;
+					}
+				}
+				// clear token
+				token.delete(0, token.length());
 			}
 		}
 	}
@@ -365,7 +396,7 @@ public class TapsetParser implements Runnable {
 				functionNames.add(probe.toString());
 			}
 		}
-		parameters = (String[])functionNames.toArray(parameters);
+		parameters = functionNames.toArray(parameters);
 		runPass2FunctionSet(parameters, 0, parameters.length-1);
 	}
 	
@@ -388,7 +419,7 @@ public class TapsetParser implements Runnable {
 			functionStr.append(funcs[i]);
 		functionStr.append("}\n");
 
-		String result = runStap(new String[] {"-u"}, functionStr.toString(), 2);
+		String result = runStap(new String[] {"-u", "-p2", "-e"}, functionStr.toString());
 		
 		if(0 < result.trim().length()) {
 			parsePass2Functions(result);
@@ -414,14 +445,18 @@ public class TapsetParser implements Runnable {
 	}
 	
 	/**
-	 * Runs stap -up2 on the selected probe group, using high and low
-	 * to determin which subelements to select.
+	 * Does a depth first search for valid probes: Runs stap -up2 on the
+	 * selected probe group, using high and low to determine which
+	 * subelements to select. If an error is encountered in a group this
+	 * function divides the group into a top and bottom half and makes a
+	 * recursive call on each subgroup to isolate the failing probes.
 	 * @param probe The top level probe group to probe.
 	 * @param low The lower bound of child elements of probe to include
-	 * @param high The upper bound of child elements of probe to inclue
+	 * @param high The upper bound of child elements of probe to include
 	 */
 	private void runPass2ProbeSet(TreeNode probe, int low, int high) {
-		if(low == high)
+
+		if(low == high || this.stopped)
 			return;
 		
 		TreeNode temp;
@@ -435,11 +470,11 @@ public class TapsetParser implements Runnable {
 			else
 				runPass2ProbeSet(temp, 0, temp.getChildCount());
 		}
-		result = runStap(new String[] {"-u"}, probeStr.toString(), 2);
+		result = runStap(new String[] {"-u", "-p2", "-e"}, probeStr.toString());
 		
 		if(0 < result.trim().length()) {
-			boolean success = parsePass2Probes(result, probe);
-			if(!success) {
+			boolean success = parsePass2Probes(result,probe);
+			if(!success && low+1 != high) {
 				runPass2ProbeSet(probe, low, low+((high-low)>>1));
 				runPass2ProbeSet(probe, low+((high-low)>>1), high);
 			}
@@ -684,4 +719,5 @@ public class TapsetParser implements Runnable {
 	private TreeNode functions;
 	private TreeNode probes;
 	private String[] tapsets;
+	private Thread thread;
 }

@@ -25,6 +25,9 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
+import org.eclipse.linuxtools.tmf.core.statistics.TmfStatistics;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -83,6 +86,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // The trace parser
     private ITmfEventParser fParser;
+
+    // The trace's statistics
+    private ITmfStatistics fStatistics;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -221,6 +227,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             }
         }
         super.init(traceName, type);
+
+        /*
+         * Initialize the statistics provider, but only if a Resource has been
+         * set (so we don't build it for experiments, for unit tests, etc.)
+         */
+        fStatistics = (fResource == null ? null : new TmfStatistics(this) );
     }
 
     /**
@@ -311,6 +323,26 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected ITmfEventParser getParser() {
         return fParser;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public ITmfStatistics getStatistics() {
+        return fStatistics;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public ITmfStateSystem getStateSystem() {
+        /*
+         * By default, no state system is used. Sub-classes can specify their
+         * own behaviour.
+         */
+        return null;
     }
 
     // ------------------------------------------------------------------------
@@ -439,7 +471,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A rank <= 0 indicates to seek the first event
         if (rank <= 0) {
-            ITmfContext context = seekEvent((ITmfLocation<?>) null);
+            ITmfContext context = seekEvent((ITmfLocation) null);
             context.setRank(0);
             return context;
         }
@@ -466,7 +498,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A null timestamp indicates to seek the first event
         if (timestamp == null) {
-            ITmfContext context = seekEvent((ITmfLocation<?>) null);
+            ITmfContext context = seekEvent((ITmfLocation) null);
             context.setRank(0);
             return context;
         }
@@ -536,7 +568,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             if (fNbEvents <= rank) {
                 fNbEvents = rank + 1;
             }
-            fIndexer.updateIndex(context, timestamp);
+            if (fIndexer != null) {
+                fIndexer.updateIndex(context, timestamp);
+            }
         }
     }
 
