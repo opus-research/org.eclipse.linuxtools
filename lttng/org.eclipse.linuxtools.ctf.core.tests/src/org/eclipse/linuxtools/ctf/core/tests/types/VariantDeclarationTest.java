@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,29 +41,11 @@ public class VariantDeclarationTest {
     private VariantDeclaration fixture;
 
     /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(VariantDeclarationTest.class);
-    }
-
-    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new VariantDeclaration();
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -74,7 +55,7 @@ public class VariantDeclarationTest {
     public void testVariantDeclaration() {
         assertNotNull(fixture);
         assertEquals(false, fixture.isTagged());
-        String left = "[declaration] variant["; //$NON-NLS-1$
+        String left = "[declaration] variant[";
         assertEquals(left, fixture.toString().substring(0, left.length()));
     }
 
@@ -83,8 +64,8 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testAddField() {
-        fixture.setTag(""); //$NON-NLS-1$
-        String tag = ""; //$NON-NLS-1$
+        fixture.setTag("");
+        String tag = "";
         IDeclaration declaration = new StringDeclaration();
         fixture.addField(tag, declaration);
     }
@@ -97,11 +78,10 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testCreateDefinition() throws CTFReaderException {
-        fixture.setTag(""); //$NON-NLS-1$
+        fixture.setTag("");
         IDefinitionScope definitionScope = createDefinitionScope();
-        String fieldName = ""; //$NON-NLS-1$
-        VariantDefinition result = fixture.createDefinition(definitionScope,
-                fieldName);
+        String fieldName = "";
+        VariantDefinition result = fixture.createDefinition(definitionScope, fieldName);
 
         assertNotNull(result);
     }
@@ -109,14 +89,14 @@ public class VariantDeclarationTest {
     private static IDefinitionScope createDefinitionScope() throws CTFReaderException {
         assumeTrue(CtfTestTraces.tracesExist());
         VariantDeclaration declaration = new VariantDeclaration();
-        declaration.setTag(""); //$NON-NLS-1$
+        declaration.setTag("");
         VariantDeclaration variantDeclaration = new VariantDeclaration();
-        variantDeclaration.setTag(""); //$NON-NLS-1$
+        variantDeclaration.setTag("");
         VariantDefinition variantDefinition = new VariantDefinition(
-                variantDeclaration, CtfTestTraces.getTestTrace(TRACE_INDEX), ""); //$NON-NLS-1$
+                variantDeclaration, CtfTestTraces.getTestTrace(TRACE_INDEX), "");
         IDefinitionScope definitionScope = new StructDefinition(
-                new StructDeclaration(1L), variantDefinition, ""); //$NON-NLS-1$
-        String fieldName = ""; //$NON-NLS-1$
+                new StructDeclaration(1L), variantDefinition, "");
+        String fieldName = "";
 
         VariantDefinition result = new VariantDefinition(declaration,
                 definitionScope, fieldName);
@@ -128,8 +108,8 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testHasField() {
-        fixture.setTag(""); //$NON-NLS-1$
-        String tag = ""; //$NON-NLS-1$
+        fixture.setTag("");
+        String tag = "";
         boolean result = fixture.hasField(tag);
 
         assertEquals(false, result);
@@ -140,7 +120,7 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testIsTagged() {
-        fixture.setTag(""); //$NON-NLS-1$
+        fixture.setTag("");
         boolean result = fixture.isTagged();
 
         assertEquals(true, result);
@@ -162,8 +142,8 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testSetTag() {
-        fixture.setTag(""); //$NON-NLS-1$
-        String tag = ""; //$NON-NLS-1$
+        fixture.setTag("");
+        String tag = "";
         fixture.setTag(tag);
     }
 
@@ -172,9 +152,9 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testToString() {
-        fixture.setTag(""); //$NON-NLS-1$
+        fixture.setTag("");
         String result = fixture.toString();
-        String left = "[declaration] variant["; //$NON-NLS-1$
+        String left = "[declaration] variant[";
         String right = result.substring(0, left.length());
 
         assertEquals(left, right);

@@ -125,9 +125,7 @@ public class SelectServerDialog extends Dialog {
 
 		Display display = parent.getDisplay();
 		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep();
-			}
+			if (!display.readAndDispatch()) display.sleep();
 		}
 
 		return result;
