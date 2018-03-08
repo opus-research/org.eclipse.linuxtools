@@ -447,8 +447,9 @@ class CtfKernelHandler implements Runnable {
              */
 
             /* Number of events of each type, globally */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
-            ss.incrementAttribute(ts, quark);
+//             quark = ss.getQuarkAbsoluteAndAdd(Attributes.STATISTICS,
+//                     Attributes.EVENT_TYPES, eventName);
+//             ss.incrementAttribute(ts, quark);
 
             /* Number of events per CPU */
 //             quark = ss.getQuarkRelativeAndAdd(currentCPUNode,
