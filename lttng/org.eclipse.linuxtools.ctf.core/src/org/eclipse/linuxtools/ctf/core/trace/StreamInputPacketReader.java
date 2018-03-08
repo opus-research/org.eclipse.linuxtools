@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
@@ -62,7 +62,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
     private final StructDefinition streamEventContextDef;
 
     /** Maps event ID to event definitions. */
-    private final Map<Long, EventDefinition> events;
+    private final HashMap<Long, EventDefinition> events;
 
     /** Reference to the index entry of the current packet. */
     private StreamInputPacketIndexEntry currentPacket = null;
@@ -315,9 +315,9 @@ public class StreamInputPacketReader implements IDefinitionScope {
             } // else, eventID remains 0
 
             /* Get the timestamp from the event header (may be overridden later on) */
-            IntegerDefinition timestampDef = sehd.lookupInteger("timestamp"); //$NON-NLS-1$
-            if (timestampDef != null) {
-                timestamp = calculateTimestamp(timestampDef);
+            Definition timestampDef = sehd.lookupInteger("timestamp"); //$NON-NLS-1$
+            if (timestampDef instanceof IntegerDefinition) {
+                timestamp = calculateTimestamp((IntegerDefinition) timestampDef);
             } // else timestamp remains 0
 
             /* Check for the variant v. */
@@ -337,9 +337,9 @@ public class StreamInputPacketReader implements IDefinitionScope {
                 }
 
                 /* Get the timestamp. This would overwrite any previous timestamp definition */
-                Definition def = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
-                if (def instanceof IntegerDefinition) {
-                    timestamp = calculateTimestamp((IntegerDefinition) def);
+                timestampDef = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
+                if (timestampDef instanceof IntegerDefinition) {
+                    timestamp = calculateTimestamp((IntegerDefinition) timestampDef);
                 }
             }
         }
