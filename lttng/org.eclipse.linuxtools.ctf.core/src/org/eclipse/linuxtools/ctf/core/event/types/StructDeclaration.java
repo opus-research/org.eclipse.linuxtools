@@ -34,8 +34,8 @@ public class StructDeclaration implements IDeclaration {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final Map<String, IDeclaration> fields = new HashMap<>();
-    private final List<String> fieldsList = new LinkedList<>();
+    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
+    private final List<String> fieldsList = new LinkedList<String>();
     private long maxAlign;
 
     // ------------------------------------------------------------------------
@@ -116,6 +116,9 @@ public class StructDeclaration implements IDeclaration {
         this.fields.put(name, declaration);
         this.fieldsList.add(name);
         maxAlign = Math.max(maxAlign, declaration.getAlignment());
+        if (maxAlign == 1) {
+            maxAlign = 1;
+        }
     }
 
     @Override

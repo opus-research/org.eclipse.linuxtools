@@ -32,7 +32,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
@@ -89,7 +88,7 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
         projectViewer.setLabelProvider(new WorkbenchLabelProvider());
         projectViewer.setInput(TraceUtils.getOpenedTmfProjects().toArray(new IProject[] {}));
 
-        fTraceTable = new Table(projectSelectionGroup, SWT.BORDER | SWT.CHECK);
+        fTraceTable = new Table(projectSelectionGroup, SWT.SINGLE | SWT.BORDER);
         fTraceTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         final TableViewer traceViewer = new TableViewer(fTraceTable);
@@ -114,8 +113,12 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
         fTraceTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                getWizard().getContainer().updateButtons();
-                updateNextPageData();
+                TableItem[] items = fTraceTable.getSelection();
+                TmfTraceElement trace = (TmfTraceElement) items[0].getData();
+                ExportTracePackageWizardPage page = (ExportTracePackageWizardPage) getWizard().getPage(ExportTracePackageWizardPage.PAGE_NAME);
+                ArrayList<TmfTraceElement> traces = new ArrayList<TmfTraceElement>();
+                traces.add(trace);
+                page.setSelectedTraces(traces);
             }
         });
 
@@ -125,7 +128,9 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
                 TableItem[] items = projectTable.getSelection();
                 fSelectedProject = (IProject) items[0].getData();
 
-                TmfProjectElement project = TmfProjectRegistry.getProject(fSelectedProject, true);
+                // Make sure all the elements are created
+                new TmfNavigatorContentProvider().getChildren(fSelectedProject);
+                TmfProjectElement project = TmfProjectRegistry.getProject(fSelectedProject);
 
                 TmfTraceFolder tracesFolder = project.getTracesFolder();
                 List<TmfTraceElement> traces = tracesFolder.getTraces();
@@ -138,67 +143,13 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
             }
         });
 
-        Composite btComp = new Composite(projectSelectionGroup, SWT.NONE);
-        btComp.setLayout(new GridLayout(2, true));
-        GridData gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.horizontalAlignment = SWT.RIGHT;
-        btComp.setLayoutData(gd);
-
-        final Button selectAll = new Button(btComp, SWT.PUSH);
-        selectAll.setText(org.eclipse.linuxtools.internal.tmf.ui.project.dialogs.Messages.Dialog_SelectAll);
-        selectAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem[] items = fTraceTable.getItems();
-                for (TableItem item : items) {
-                    item.setChecked(true);
-                }
-
-                getWizard().getContainer().updateButtons();
-                updateNextPageData();
-            }
-        });
-
-        final Button deselectAll = new Button(btComp, SWT.PUSH);
-        deselectAll.setText(org.eclipse.linuxtools.internal.tmf.ui.project.dialogs.Messages.Dialog_DeselectAll);
-        deselectAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem[] items = fTraceTable.getItems();
-                for (TableItem item : items) {
-                    item.setChecked(false);
-                }
-
-                getWizard().getContainer().updateButtons();
-                updateNextPageData();
-            }
-        });
-
         setControl(projectSelectionGroup);
         setTitle(Messages.ExportTracePackageWizardPage_Title);
         setMessage(Messages.ExportTracePackageSelectTraceWizardPage_ChooseTrace);
     }
 
-    private ArrayList<TmfTraceElement> getCheckedTraces() {
-        TableItem[] items = fTraceTable.getItems();
-        ArrayList<TmfTraceElement> traces = new ArrayList<>();
-        for (TableItem item : items) {
-            if (item.getChecked()) {
-                TmfTraceElement trace = (TmfTraceElement) item.getData();
-                traces.add(trace);
-            }
-        }
-        return traces;
-    }
-
-    private void updateNextPageData() {
-        ExportTracePackageWizardPage page = (ExportTracePackageWizardPage) getWizard().getPage(ExportTracePackageWizardPage.PAGE_NAME);
-        page.setSelectedTraces(getCheckedTraces());
-    }
-
     @Override
     public boolean canFlipToNextPage() {
-        return getCheckedTraces().size() > 0;
+        return fTraceTable.getSelectionCount() > 0;
     }
 }

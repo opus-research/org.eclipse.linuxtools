@@ -89,11 +89,11 @@ abstract public class AbstractTracePackageWizardPage extends WizardPage {
     /**
      * Create the element viewer
      *
-     * @param compositeParent
+     * @param parent
      *            the parent composite
      */
-    protected void createElementViewer(Composite compositeParent) {
-        fElementViewer = new CheckboxTreeViewer(compositeParent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
+    protected void createElementViewer(Composite parent) {
+        fElementViewer = new CheckboxTreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
 
         fElementViewer.addCheckStateListener(new ICheckStateListener() {
             @Override
@@ -105,29 +105,6 @@ abstract public class AbstractTracePackageWizardPage extends WizardPage {
                     setSubtreeChecked(fElementViewer, element, true, event.getChecked());
                 }
                 maintainCheckIntegrity(element);
-
-                if (element.getParent() != null) {
-                    // Uncheck everything in this trace if Trace files are unchecked
-                    if (element instanceof TracePackageFilesElement) {
-                        if (!element.isChecked()) {
-                            setSubtreeChecked(fElementViewer, element.getParent(), false, false);
-                        }
-                    // Check Trace files if anything else is selected
-                    } else if (element.isChecked()) {
-                        TracePackageElement parent = element.getParent();
-                        while (parent != null) {
-                            for (TracePackageElement e : parent.getChildren()) {
-                                if (e instanceof TracePackageFilesElement) {
-                                    setSubtreeChecked(fElementViewer, e, false, true);
-                                    break;
-                                }
-                            }
-                            parent = parent.getParent();
-                        }
-                    }
-                }
-
-
                 updateApproximateSelectedSize();
                 updatePageCompletion();
             }
@@ -481,7 +458,7 @@ abstract public class AbstractTracePackageWizardPage extends WizardPage {
     }
 
     private static String[] addToHistory(String[] history, String newEntry) {
-        ArrayList<String> l = new ArrayList<>(Arrays.asList(history));
+        ArrayList<String> l = new ArrayList<String>(Arrays.asList(history));
         addToHistory(l, newEntry);
         String[] r = new String[l.size()];
         l.toArray(r);

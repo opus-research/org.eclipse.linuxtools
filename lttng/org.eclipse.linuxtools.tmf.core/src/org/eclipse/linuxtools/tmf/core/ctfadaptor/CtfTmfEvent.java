@@ -77,7 +77,6 @@ public class CtfTmfEvent extends TmfEvent
         sourceCPU = cpu;
         typeId = declaration.getId();
         eventName = declaration.getName();
-
     }
 
     /**
@@ -158,7 +157,7 @@ public class CtfTmfEvent extends TmfEvent
     @Override
     public Set<String> listCustomAttributes() {
         if (fDeclaration == null) {
-            return new HashSet<>();
+            return new HashSet<String>();
         }
         return fDeclaration.getCustomAttributes();
     }

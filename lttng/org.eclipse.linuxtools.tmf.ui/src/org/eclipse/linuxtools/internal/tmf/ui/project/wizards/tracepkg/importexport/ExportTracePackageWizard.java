@@ -12,9 +12,6 @@
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importexport;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -32,7 +29,6 @@ public class ExportTracePackageWizard extends Wizard implements IExportWizard {
 
     private static final String STORE_EXPORT_TRACE_WIZARD = "ExportTraceWizard"; //$NON-NLS-1$
     private IStructuredSelection fSelection;
-    private List<TmfTraceElement> fSelectedTraces;
     private ExportTracePackageWizardPage fPage;
 
     /**
@@ -46,24 +42,11 @@ public class ExportTracePackageWizard extends Wizard implements IExportWizard {
             section = workbenchSettings.addNewSection(STORE_EXPORT_TRACE_WIZARD);
         }
         setDialogSettings(section);
-        fSelectedTraces = new ArrayList<>();
-    }
-
-    /**
-     * Constructor for the export trace wizard with known selected traces
-     *
-     * @param selectedTraces
-     *            the selected traces
-     */
-    public ExportTracePackageWizard(List<TmfTraceElement> selectedTraces) {
-        this();
-        fSelectedTraces = selectedTraces;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         fSelection = selection;
-
         setNeedsProgressMonitor(true);
     }
 
@@ -75,8 +58,8 @@ public class ExportTracePackageWizard extends Wizard implements IExportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        fPage = new ExportTracePackageWizardPage(fSelection, fSelectedTraces);
-        if (fSelectedTraces.isEmpty()) {
+        fPage = new ExportTracePackageWizardPage(fSelection);
+        if (!(fSelection.getFirstElement() instanceof TmfTraceElement)) {
             addPage(new ExportTracePackageSelectTraceWizardPage());
         }
         addPage(fPage);

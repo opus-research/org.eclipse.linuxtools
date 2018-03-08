@@ -12,11 +12,6 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -26,16 +21,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
@@ -66,16 +56,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 public class SystemTapScriptGraphOptionsTab extends
-			AbstractLaunchConfigurationTab {
+		AbstractLaunchConfigurationTab {
 
 	/**
 	 * The maximum number of regular expressions that can be stored in a configuration.
@@ -104,10 +90,50 @@ public class SystemTapScriptGraphOptionsTab extends
 	protected Pattern pattern;
 	protected Matcher matcher;
 
+	private ModifyListener regexListener = new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent event) {
+			if (!textListenersEnabled || regularExpressionCombo.getSelectionIndex() != -1) {
+				return;
+			}
+			regularExpressionCombo.setItem(selectedRegex, regularExpressionCombo.getText());
+			regularExpressionCombo.select(selectedRegex);
+			refreshRegexRows();
+			updateLaunchConfigurationDialog();
+		}
+	};
+
+	private ModifyListener sampleOutputListener = new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent event) {
+			if (!textListenersEnabled) {
+				return;
+			}
+			outputList.set(selectedRegex, sampleOutputText.getText());
+			refreshRegexRows();
+			updateLaunchConfigurationDialog();
+		}
+	};
+
+	private ModifyListener columnNameListener = new ModifyListener() {
+		@Override
+		public void modifyText(ModifyEvent event) {
+			if (!textListenersEnabled) {
+				return;
+			}
+
+			ArrayList<String> columnNames = new ArrayList<String>();
+			Control[] children = textFieldsComposite.getChildren();
+			for (int i = 0; i < numberOfVisibleColumns; i++) {
+				columnNames.add(((Text)children[i*2]).getText());
+			}
+			columnNamesList.set(selectedRegex, columnNames);
+			updateLaunchConfigurationDialog();
+		}
+	};
+
 	private Combo regularExpressionCombo;
 	private Button removeRegexButton;
-	private Button generateExpsButton;
-
 	private Text sampleOutputText;
 	private Composite textFieldsComposite;
 
@@ -175,292 +201,6 @@ public class SystemTapScriptGraphOptionsTab extends
 	 * A list of GraphDatas that rely on series information that has been deleted from their relying regex.
 	 */
 	private List<GraphData> badGraphs = new LinkedList<GraphData>();
-
-	private ModifyListener regexListener = new ModifyListener() {
-		@Override
-		public void modifyText(ModifyEvent event) {
-			if (!textListenersEnabled || regularExpressionCombo.getSelectionIndex() != -1) {
-				return;
-			}
-			regularExpressionCombo.setItem(selectedRegex, regularExpressionCombo.getText());
-			regularExpressionCombo.select(selectedRegex);
-			refreshRegexRows();
-			updateLaunchConfigurationDialog();
-		}
-	};
-
-	private ModifyListener sampleOutputListener = new ModifyListener() {
-		@Override
-		public void modifyText(ModifyEvent event) {
-			if (!textListenersEnabled) {
-				return;
-			}
-			outputList.set(selectedRegex, sampleOutputText.getText());
-			refreshRegexRows();
-			updateLaunchConfigurationDialog();
-		}
-	};
-
-	private ModifyListener columnNameListener = new ModifyListener() {
-		@Override
-		public void modifyText(ModifyEvent event) {
-			if (!textListenersEnabled) {
-				return;
-			}
-
-			ArrayList<String> columnNames = new ArrayList<String>();
-			Control[] children = textFieldsComposite.getChildren();
-			for (int i = 0; i < numberOfVisibleColumns; i++) {
-				columnNames.add(((Text)children[i*2]).getText());
-			}
-			columnNamesList.set(selectedRegex, columnNames);
-			updateLaunchConfigurationDialog();
-		}
-	};
-
-	private SelectionAdapter regexGenerator = new SelectionAdapter() {
-		@Override
-		public void widgetSelected(SelectionEvent e) {
-			MessageDialog dialog;
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			IPath scriptPath = null;
-			for (ILaunchConfigurationTab tab : getLaunchConfigurationDialog().getTabs()) {
-				if (tab instanceof SystemTapScriptLaunchConfigurationTab) {
-					scriptPath = ((SystemTapScriptLaunchConfigurationTab) tab).getScriptPath();
-					break;
-				}
-			}
-			if (scriptPath == null) {
-				dialog = new MessageDialog(workbench
-						.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsErrorTitle, null,
-						Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsError,
-						MessageDialog.ERROR, new String[]{"OK"}, 0); //$NON-NLS-1$
-				dialog.open();
-				return;
-			}
-
-			dialog = new MessageDialog(workbench
-					.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsTitle, null,
-					Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsMessage,
-					MessageDialog.QUESTION, new String[]{"Yes", "Cancel"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
-			int result = dialog.open();
-			if (result != 0) { // Cancel
-				return;
-			}
-
-			textListenersEnabled = false;
-			// If editor of this file is open, take current file contents.
-			String contents = null;
-			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-			IEditorPart editor = ResourceUtil.findEditor(workbench.getActiveWorkbenchWindow().getActivePage(), root.getFile(scriptPath.makeRelativeTo(root.getLocation())));
-			if (editor != null) {
-				ITextEditor t_editor = (ITextEditor) editor.getAdapter(ITextEditor.class);
-				if (t_editor != null) {
-					IDocumentProvider provider = t_editor.getDocumentProvider();
-					IDocument document = provider.getDocument(t_editor.getEditorInput());
-					contents = document.get();
-				}
-			}
-
-			// If chosen file is not being edited or is outside of the workspace, use the saved contents of the file itself.
-			if (contents == null) {
-				try {
-					File scriptFile = scriptPath.toFile();
-					FileInputStream f = new FileInputStream(scriptFile);
-					byte[] data = new byte[(int)scriptFile.length()];
-					f.read(data);
-					f.close();
-					contents = new String(data, Charset.defaultCharset());
-				} catch (IOException e1) {
-					dialog = new MessageDialog(workbench
-							.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsErrorTitle, null,
-							Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsError,
-							MessageDialog.ERROR, new String[]{"OK"}, 0); //$NON-NLS-1$
-					dialog.open();
-					return;
-				}
-			}
-
-			// Delete comments from the file contents. Ignore comment markers between quotes.
-			contents = CommentRemover.exec(contents);
-
-			// Now actually search the contents for "printf(...)" statements. (^|[\s({;])printf\("(.+?)",.+\)
-			Pattern pattern = Pattern.compile("(?<![a-zA-Z])printf\\(\"(.+?)\",.+\\)"); //$NON-NLS-1$
-			Matcher matcher = pattern.matcher(contents);
-			boolean firstfound = false;
-			while (matcher.find() && (!firstfound || getNumberOfRegexs() < MAX_NUMBER_OF_REGEXS)) {
-				String regex = null;
-
-				// Note: allow optional "long" modifier 'l'. Not captured because it doesn't impact output format.
-				// Also, don't support variable width/precision modifiers (*).
-				// TODO: Consider %m & %M support.
-				Pattern format = Pattern.compile("%([-\\+ \\#0])?(\\d+)?(\\.\\d*)?l?([bcdiopsuxX%])"); //$NON-NLS-1$
-
-				// Only capture until newlines to preserve the "column" format.
-				// Don't try gluing together output from multiple printfs
-				// since asynchronous prints would make things messy.
-				String[] printls = matcher.group(1).split("\\\\n"); //$NON-NLS-1$
-				for (int i = 0; i < printls.length; i++) {
-					String printl = printls[i];
-					// Ignore newlines if they are escaped ("\\n").
-					if (printl.endsWith("\\")) { //$NON-NLS-1$
-						printls[i+1] = printl.concat("\\n" + printls[i+1]); //$NON-NLS-1$
-						continue;
-					}
-
-					Matcher fmatch = format.matcher(printl);
-					int lastend = 0;
-					ArrayList<String> columnNames = new ArrayList<String>();
-					int r = 0;
-
-					while (fmatch.find()) {
-						char chr = fmatch.group(4) == null ? '\0' : fmatch.group(4).charAt(0);
-						if (chr == '\0') {
-							// Skip this statement if an invalid regex is found.
-							regex = null;
-							break;
-						}
-						char flag = fmatch.group(1) == null ? '\0' : fmatch.group(1).charAt(0);
-						int width = fmatch.group(2) == null ? 0 : Integer.parseInt(fmatch.group(2));
-						String precision = fmatch.group(3) == null ? null : fmatch.group(3).substring(1);
-
-						// First, add any non-capturing characters.
-						String pre = addRegexEscapes(printl.substring(lastend, fmatch.start()));
-						regex = lastend > 0 ? regex.concat(pre) : pre;
-						lastend = fmatch.end();
-
-						// Now add what will be captured.
-						String target = "("; //$NON-NLS-1$
-						if (chr == 'u' || (flag != '#' && chr == 'o')) {
-							target = target.concat("\\d+"); //$NON-NLS-1$
-						}
-						else if (chr == 'd' || chr == 'i') {
-							if (flag == '+') {
-								target = target.concat("\\+|"); //$NON-NLS-1$
-							} else if (flag == ' ') {
-								target = target.concat(" |"); //$NON-NLS-1$
-							}
-							target = target.concat("-?\\d+"); //$NON-NLS-1$
-						}
-						else if (flag == '#' && chr == 'o') {
-							target = target.concat("0\\d+"); //$NON-NLS-1$
-						}
-						else if (chr == 'p') {
-							target = target.concat("0x[a-f0-9]+"); //$NON-NLS-1$
-						}
-						else if (chr == 'x') {
-							if (flag == '#') {
-								target = target.concat("0x"); //$NON-NLS-1$
-							}
-							target = target.concat("[a-f0-9]+"); //$NON-NLS-1$
-						}
-						else if (chr == 'X') {
-							if (flag == '#') {
-								target = target.concat("0X"); //$NON-NLS-1$
-							}
-							target = target.concat("[A-F0-9]+"); //$NON-NLS-1$
-						}
-						else if (chr == 'b') {
-							target = target.concat("."); //$NON-NLS-1$
-						}
-						else if (chr == 'c') {
-							if (flag != '#') {
-								target = target.concat("."); //$NON-NLS-1$
-							} else {
-								target = target.concat("\\([a-z]|[0-9]{3})|.|\\\\"); //$NON-NLS-1$
-							}
-						}
-						else if (chr == 's') {
-							if (precision != null) {
-								target = target.concat(".{" + precision + "}"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else {
-								target = target.concat(".+"); //$NON-NLS-1$
-							}
-						}
-						else {
-							// Invalid or unhandled format specifier. Skip this regex.
-							regex = null;
-							break;
-						}
-
-						target = target.concat(")"); //$NON-NLS-1$
-
-						// Handle the optional width specifier.
-						// Ignore it for %b, which uses the width value in a different way.
-						if (chr != 'b' && --width > 0) {
-							if (flag == '-') {
-								target = target.concat(" {0," + width + "}"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (flag != '0' || chr == 's' || chr == 'c'){
-								target = " {0," + width + "}".concat(target); //$NON-NLS-1$ //$NON-NLS-2$
-							}
-						}
-
-						regex = regex.concat(target);
-						columnNames.add(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, ++r));
-					}
-					if (regex != null) {
-						if (!firstfound) {
-							// Since script output has been found, reset the configuration's regexs.
-							// Only reset once/if something is found, and do it only one time.
-							regularExpressionCombo.removeAll();
-							outputList.clear();
-							regexErrorMessages.clear();
-							columnNamesList.clear();
-							cachedNamesList.clear();
-							graphsTable.removeAll();
-							graphsDataList.clear();
-							badGraphs.clear();
-							firstfound = true;
-						}
-						// Finally, add the uncaptured remainder of the print statement to the regex.
-						regex = regex.concat(addRegexEscapes(printl.substring(lastend)));
-
-						regularExpressionCombo.add(regex);
-						outputList.add(""); //$NON-NLS-1$ //For empty "sample output" entry.
-						regexErrorMessages.add(null);
-						columnNamesList.add(columnNames);
-						cachedNamesList.add(new Stack<String>());
-						graphsDataList.add(new LinkedList<GraphData>());
-					}
-				}
-			}
-			textListenersEnabled = true;
-
-			if (!firstfound) {
-				dialog = new MessageDialog(workbench
-						.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsErrorTitle, null,
-						Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsEmpty,
-						MessageDialog.ERROR, new String[]{"OK"}, 0); //$NON-NLS-1$
-				dialog.open();
-				return;
-			}
-
-			if (getNumberOfRegexs() < MAX_NUMBER_OF_REGEXS) {
-				regularExpressionCombo.add(Messages.SystemTapScriptGraphOptionsTab_regexAddNew);
-			}
-
-			removeRegexButton.setEnabled(getNumberOfRegexs() > 1);
-			regularExpressionCombo.select(0);
-			updateRegexSelection(0, true);
-			checkAllOtherErrors(); // Check for errors in case there was a problem with regex generation
-			updateLaunchConfigurationDialog();
-		}
-
-		/**
-		 * This escapes all special regex characters in a string. Escapes must be added
-		 * to the generated regexs to capture printf output that doesn't
-		 * come from format specifiers (aka literal strings).
-		 * @param s The string to add escapes to.
-		 * @return The same string, after it has been modified with escapes.
-		 */
-		private String addRegexEscapes(String s) {
-			String schars = "[^$.|?*+(){}"; //$NON-NLS-1$
-			for (int i = 0; i < schars.length(); i++) {
-				s = s.replaceAll("(\\" + schars.substring(i,i+1) + ")", "\\\\$1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			}
-			return s;
-		}
-	};
 
 	/**
 	 * Returns the list of the names given to reach regular expression.
@@ -640,24 +380,11 @@ public class SystemTapScriptGraphOptionsTab extends
 		GridLayout layout = new GridLayout();
 		parent.setLayout(layout);
 
-		GridLayout oneColumn = new GridLayout();
-		oneColumn.numColumns = 1;
-
 		GridLayout twoColumns = new GridLayout();
 		twoColumns.numColumns = 2;
 
 		GridLayout threeColumns = new GridLayout();
 		threeColumns.numColumns = 3;
-
-		Composite topLayout = new Composite(parent, SWT.NONE);
-		topLayout.setLayout(oneColumn);
-		topLayout.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-
-		generateExpsButton = new Button(topLayout, SWT.PUSH);
-		generateExpsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		generateExpsButton.setText(Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsButton);
-		generateExpsButton.setToolTipText(Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsTooltip);
-		generateExpsButton.addSelectionListener(regexGenerator);
 
 		Composite regexButtonLayout = new Composite(parent, SWT.NONE);
 		regexButtonLayout.setLayout(threeColumns);
@@ -734,7 +461,7 @@ public class SystemTapScriptGraphOptionsTab extends
 						.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_removeRegexTitle, null,
 						MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_removeRegexAsk,
 								regularExpressionCombo.getItem(selectedRegex)),
-								MessageDialog.QUESTION, new String[]{"Yes", "No"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
+						MessageDialog.QUESTION, new String[]{"Yes", "No"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
 				int result = dialog.open();
 				if (result == 0) { //Yes
 					removeRegex(true);
@@ -905,7 +632,6 @@ public class SystemTapScriptGraphOptionsTab extends
 					badGraphs.remove(old_gd);
 					setUpGraphTableItem(selectedTableItem, gd, false);
 					graphsData.set(graphsTable.indexOf(selectedTableItem), gd);
-					checkErrors(selectedRegex);
 					updateLaunchConfigurationDialog();
 				}
 			}
@@ -920,7 +646,6 @@ public class SystemTapScriptGraphOptionsTab extends
 				badGraphs.remove(gd);
 				selectedTableItem.dispose();
 				setSelectionControlsEnabled(false);
-				checkErrors(selectedRegex);
 				updateLaunchConfigurationDialog();
 			}
 		});
@@ -1062,7 +787,7 @@ public class SystemTapScriptGraphOptionsTab extends
 	 * @param regex The regular expression to check for validity.
 	 * @return <code>null</code> if the regular expression is valid, or an error message.
 	 */
-	private static String checkRegex(String regex) {
+	private String checkRegex(String regex) {
 		//TODO may add more invalid regexs here, each with its own error message.
 		if (regex.contains("()")){ //$NON-NLS-1$
 			return Messages.SystemTapScriptGraphOptionsTab_6;
@@ -1285,7 +1010,7 @@ public class SystemTapScriptGraphOptionsTab extends
 				setUpGraphTableItem(item, graphData, true);
 			}
 
-			updateRegexSelection(defaultSelectedRegex, true); // Handles all remaining updates.
+			updateRegexSelection(0, true); // Handles all remaining updates.
 			checkAllOtherErrors();
 
 		} catch (CoreException e) {
@@ -1419,30 +1144,14 @@ public class SystemTapScriptGraphOptionsTab extends
 			if (i == selectedRegex) {
 				continue;
 			}
-			checkErrors(i);
-		}
-	}
 
-	/**
-	 * Checks the regular expression of the provided index for errors.
-	 * Sets the associated error message to contain relevant error information.
-	 * @param i The index of the regular expression to check for errors.
-	 */
-	private void checkErrors(int i) {
-		String regex = regularExpressionCombo.getItem(i);
-		try {
-			Pattern.compile(regex);
-		} catch (PatternSyntaxException e) {
-			regexErrorMessages.set(i, e.getMessage());
-			return;
-		}
+			String error = findBadGraphs(i);
+			if (error == null) {
+				error = checkRegex(regularExpressionCombo.getItem(i));
+			}
 
-		String error = findBadGraphs(i);
-		if (error == null) {
-			error = checkRegex(regex);
+			regexErrorMessages.set(i, error);
 		}
-
-		regexErrorMessages.set(i, error);
 	}
 
 	@Override
@@ -1454,59 +1163,11 @@ public class SystemTapScriptGraphOptionsTab extends
 			return true;
 		}
 
-		for (int r = 0, n = getNumberOfRegexs(); r < n; r++) {
-			String regexErrorMessage = regexErrorMessages.get(r);
+		for (int i = 0, n = getNumberOfRegexs(); i < n; i++) {
+			String regexErrorMessage = regexErrorMessages.get(i);
 			if (regexErrorMessage != null){
-				setErrorMessage(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_regexErrorMsgFormat,
-						regularExpressionCombo.getItems()[r], regexErrorMessage));
+				setErrorMessage(String.format("Expression \"%s\": %s", regularExpressionCombo.getItems()[i], regexErrorMessage)); //$NON-NLS-1$
 				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Checks if a launch configuration's Systemtap Graphing settings are valid.
-	 * @param launchConfig The launch configuration to check for graph validity.
-	 * @return <code>true</code> if the launch settings are valid, or <code>false</code> if
-	 * its graph settings are invalid in some way.
-	 * @since 2.2
-	 */
-	public static boolean isValidLaunch(ILaunchConfiguration launchConfig) throws CoreException {
-		// If graphic is disabled then everything is valid.
-		if (!launchConfig.getAttribute(RUN_WITH_CHART, false)){
-			return true;
-		}
-
-		for (int r = 0, n = launchConfig.getAttribute(NUMBER_OF_REGEXS, 1); r < n; r++) {
-			// Check for any invalid regexs.
-			String regex = launchConfig.getAttribute(REGULAR_EXPRESSION + r, (String) null);
-			if (regex == null || checkRegex(regex) != null) {
-				return false;
-			}
-			try {
-				Pattern.compile(regex);
-			} catch (PatternSyntaxException e) {
-				return false;
-			}
-
-			// If graphs are plotted but no data is captured by one of them, report this as a problem.
-			int numberOfColumns = launchConfig.getAttribute(NUMBER_OF_COLUMNS + r, 0);
-			if (numberOfColumns == 0) {
-				return false;
-			}
-
-			// Check for graphs that are missing required data.
-			for (int i = 0, g = launchConfig.getAttribute(NUMBER_OF_GRAPHS + r, 0); i < g; i++) {
-				if (launchConfig.getAttribute(get2DConfigData(GRAPH_X_SERIES, r, i), 0) >= numberOfColumns) {
-					return false;
-				}
-				for (int j = 0, y = launchConfig.getAttribute(get2DConfigData(GRAPH_Y_SERIES_LENGTH, r, i), 0); j < y; j++) {
-					if (launchConfig.getAttribute(get2DConfigData(GRAPH_Y_SERIES, r, i + "_" + j), 0) >= numberOfColumns) { //$NON-NLS-1$
-						return false;
-					}
-				}
 			}
 		}
 
@@ -1542,7 +1203,7 @@ public class SystemTapScriptGraphOptionsTab extends
 	private void setControlEnabled(Composite composite, boolean enabled){
 		composite.setEnabled(enabled);
 		for (Control child : composite.getChildren()) {
-			child.setEnabled(enabled);
+				child.setEnabled(enabled);
 			if(child instanceof Composite){
 				setControlEnabled((Composite)child, enabled);
 			}

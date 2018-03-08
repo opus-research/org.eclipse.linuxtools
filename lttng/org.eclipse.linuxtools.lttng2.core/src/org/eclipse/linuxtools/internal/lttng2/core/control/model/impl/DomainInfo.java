@@ -34,7 +34,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
     /**
      * The channels information of the domain.
      */
-    private final List<IChannelInfo> fChannels = new ArrayList<>();
+    private final List<IChannelInfo> fChannels = new ArrayList<IChannelInfo>();
     private boolean fIsKernel = false;
     private BufferType fBufferType = BufferType.BUFFER_TYPE_UNKNOWN;
 

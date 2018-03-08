@@ -37,8 +37,8 @@ public class TmfSignalManager {
     // Note: listeners could be restricted to ITmfComponents but there is no
     // harm in letting anyone use this since it is not tied to anything but
     // the signal data type.
-    private static Map<Object, Method[]> fListeners = new HashMap<>();
-    private static Map<Object, Method[]> fVIPListeners = new HashMap<>();
+    private static Map<Object, Method[]> fListeners = new HashMap<Object, Method[]>();
+    private static Map<Object, Method[]> fVIPListeners = new HashMap<Object, Method[]>();
 
     // If requested, add universal signal tracer
     // TODO: Temporary solution: should be enabled/disabled dynamically
@@ -104,7 +104,7 @@ public class TmfSignalManager {
      * @return
      */
     private static Method[] getSignalHandlerMethods(Object listener) {
-        List<Method> handlers = new ArrayList<>();
+        List<Method> handlers = new ArrayList<Method>();
         Method[] methods = listener.getClass().getMethods();
         for (Method method : methods) {
             if (method.isAnnotationPresent(TmfSignalHandler.class)) {
@@ -151,10 +151,10 @@ public class TmfSignalManager {
 
         // Build the list of listener methods that are registered for this signal
         Class<?> signalClass = signal.getClass();
-        Map<Object, List<Method>> targets = new HashMap<>();
+        Map<Object, List<Method>> targets = new HashMap<Object, List<Method>>();
         targets.clear();
         for (Map.Entry<Object, Method[]> entry : listeners.entrySet()) {
-            List<Method> matchingMethods = new ArrayList<>();
+            List<Method> matchingMethods = new ArrayList<Method>();
             for (Method method : entry.getValue()) {
                 if (method.getParameterTypes()[0].isAssignableFrom(signalClass)) {
                     matchingMethods.add(method);
