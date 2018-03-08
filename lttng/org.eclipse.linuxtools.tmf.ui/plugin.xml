@@ -39,15 +39,6 @@
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.statesystem.TmfStateSystemExplorer"
-            icon="icons/eview16/events_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.ssvisualizer"
-            name="%ssvisualizer.view.name"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
             class="org.eclipse.linuxtools.tmf.ui.views.colors.ColorsView"
             icon="icons/eview16/colors_view.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.colors"
@@ -87,22 +78,6 @@
             icon="icons/eview16/histogram.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.histogram"
             name="%histogram.view.name"
-            restorable="true">
-      </view>
-      <view
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.callstack.CallStackView"
-            icon="icons/eview16/callstack_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.callstack"
-            name="%callstack.view.name"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.baseviews.NewHistogramView"
-            id="org.eclipse.linuxtools.tmf.ui.baseviews.NewHistogramView"
-            name="New Histogram"
             restorable="true">
       </view>
    </extension>
@@ -160,17 +135,10 @@
       </category>
       <wizard
             category="org.eclipse.linuxtools.tmf.import.category"
-            class="org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard"
+            class="org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard"
             icon="icons/etool16/import.gif"
             id="org.eclipse.linuxtools.tmf.ui.trace.import.wizard"
             name="%project.import.wizard.name">
-      </wizard>
-      <wizard
-            category="org.eclipse.linuxtools.tmf.import.category"
-            class="org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard"
-            icon="icons/etool16/import.gif"
-            id="org.eclipse.linuxtools.tmf.ui.batch_import"
-            name="%project.import.wizard.name.batch">
       </wizard>
    </extension>
    <extension
@@ -279,9 +247,6 @@
             <contentExtension
                   pattern="org.eclipse.ui.navigator.resources.filters.*">
             </contentExtension>
-            <contentExtension
-                  pattern="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper">
-            </contentExtension>
          </includes>
       </viewerContentBinding>
    </extension>
@@ -336,32 +301,19 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
+            locationURI="menu:org.eclipse.ui.navigator.ProjectExplorer">
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
+               id="org.eclipse.linuxtools.tmf.ui.menu.managecustomparsers"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <command
                commandId="org.eclipse.ui.file.import"
                label="%command.import"
                mnemonic="%command.import.mnemonic"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
-                  <iterate
-                        operator="and">
-                     <instanceof
-                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                     </instanceof>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.batch_import"
-               label="%command.batch_import"
-               mnemonic="%command.batch_import.mnemonic"
                style="push">
             <visibleWhen
                   checkEnabled="false">
@@ -600,27 +552,6 @@
                name="org.eclipse.linuxtools.tmf.ui.separator3"
                visible="true">
          </separator>
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
-               icon="icons/etool16/customparser_wizard.gif"
-               id="org.eclipse.linuxtools.tmf.ui.menu.managecustomparsers"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
-                  <iterate
-                        operator="and">
-                     <instanceof
-                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                     </instanceof>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
          <menu
                label="%command.select_trace_type"
                mnemonic="%command.select_trace_type.mnemonic"
@@ -629,15 +560,6 @@
                   class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTraceTypeContributionItem"
                   id="org.eclipse.linuxtools.tmf.ui.command.select_trace_type.dynamic">
             </dynamic>
-            <separator
-                  name="org.eclipse.linuxtools.tmf.ui.separator6"
-                  visible="true">
-            </separator>
-            <command
-                  commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
-                  icon="icons/etool16/customparser_wizard.gif"
-                  style="push">
-            </command>
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -818,11 +740,6 @@
             description="%commands.uml2sd.scrollright.description"
             id="org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.MoveSDRight"
             name="%commands.uml2sd.scrollright">
-      </command>
-      <command
-            description="%command.batch_import.description"
-            id="org.eclipse.linuxtools.tmf.ui.batch_import"
-            name="%command.batch_import">
       </command>
    </extension>
    <extension
@@ -1088,42 +1005,12 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.editors.handlers.AddBookmarkHandler"
             commandId="org.eclipse.ui.edit.addBookmark">
          <activeWhen>
-            <and>
-               <with
-                     variable="activePart">
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor">
-                  </instanceof>
-               </with>
-               <count
-                     value="1">
-               </count>
-               <iterate
-                     ifEmpty="false"
-                     operator="and">
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.core.event.ITmfEvent">
-                  </instanceof>
-               </iterate>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.BatchImportTraceHandler"
-            commandId="org.eclipse.linuxtools.tmf.ui.batch_import">
-         <activeWhen>
-            <and>
-               <count
-                     value="1">
-               </count>
-               <iterate
-                     ifEmpty="false"
-                     operator="and">
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                  </instanceof>
-               </iterate>
-            </and>
+            <with
+                  variable="activeEditor">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor">
+               </instanceof>
+            </with>
          </activeWhen>
       </handler>
    </extension>
@@ -1232,7 +1119,7 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.TracePropertyTester"
             id="org.eclipse.linuxtools.tmf.ui.tracePropertyTester"
             namespace="org.eclipse.linuxtools.tmf.ui"
-            properties="isExperimentTrace,hasSupplementaryFiles,traceType"
+            properties="isExperimentTrace,hasSupplementaryFiles"
             type="org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement">
       </propertyTester>
    </extension>
@@ -1250,26 +1137,6 @@
             name="%tracetype.type.ctf"
             trace_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace">
       </type>
-   </extension>
-   <extension
-         point="org.eclipse.ui.navigator.linkHelper">
-      <linkHelper
-            class="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper"
-            id="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper">
-         <editorInputEnablement>
-             <instanceof value="org.eclipse.ui.IFileEditorInput"/>
-         </editorInputEnablement>
-         <selectionEnablement>
-             <or>
-                <instanceof
-                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                </instanceof>
-                <instanceof
-                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
-                </instanceof>
-             </or>
-         </selectionEnablement>
-      </linkHelper>
    </extension>
 
 </plugin>

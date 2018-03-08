@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -41,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
+abstract public class ChangeEventStateHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -57,7 +57,7 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
     /**
      * @return the new state to set
      */
-    protected abstract TraceEnablement getNewState();
+    abstract protected TraceEnablement getNewState();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -69,8 +69,12 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
      * @param monitor - a progress monitor
      * @throws ExecutionException If the command fails
      */
-    protected abstract void changeState(TraceChannelComponent channel, List<String> eventNames, IProgressMonitor monitor) throws ExecutionException;
+    abstract protected void changeState(TraceChannelComponent channel, List<String> eventNames, IProgressMonitor monitor) throws ExecutionException;
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -148,6 +152,10 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
         // Get workbench page for the Control View
@@ -216,15 +224,15 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
     /**
      *  Class containing parameter for the command execution.
      */
-    protected static class Parameter {
+    static protected class Parameter {
         /**
          * Channel component reference.
          */
-        private final TraceChannelComponent fChannel;
+        final private TraceChannelComponent fChannel;
         /**
          * The list of kernel channel components the command is to be executed on.
          */
-        private final List<TraceEventComponent> fEvents = new ArrayList<TraceEventComponent>();
+        final private List<TraceEventComponent> fEvents = new ArrayList<TraceEventComponent>();
 
         /**
          * Constructor

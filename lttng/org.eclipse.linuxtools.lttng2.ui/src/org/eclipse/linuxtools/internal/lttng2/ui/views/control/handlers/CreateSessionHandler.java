@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -41,7 +40,6 @@ public class CreateSessionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The trace session group the command is to be executed on.
      */
@@ -50,7 +48,10 @@ public class CreateSessionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -59,24 +60,21 @@ public class CreateSessionHandler extends BaseControlViewHandler {
             final TraceSessionGroup sessionGroup = fSessionGroup;
 
             // Open dialog box for the node name and address
-            final ICreateSessionDialog dialog = TraceControlDialogFactory.getInstance().getCreateSessionDialog();
-            dialog.initialize(sessionGroup);
+            ICreateSessionDialog dialog = TraceControlDialogFactory.getInstance().getCreateSessionDialog();
+            dialog.setTraceSessionGroup(sessionGroup);
 
             if (dialog.open() != Window.OK) {
                 return null;
             }
 
+            final String sessionName = dialog.getSessionName();
+            final String sessionPath = dialog.isDefaultSessionPath() ? null : dialog.getSessionPath();
+
             Job job = new Job(Messages.TraceControl_CreateSessionJob) {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     try {
-                        if (dialog.isStreamedTrace()) {
-                            sessionGroup.createSession(dialog.getSessionName(), dialog.getNetworkUrl(), dialog.getControlUrl(),
-                                    dialog.getDataUrl(), monitor);
-                        } else {
-                            String sessionPath = dialog.isDefaultSessionPath() ? null : dialog.getSessionPath();
-                            sessionGroup.createSession(dialog.getSessionName(), sessionPath, monitor);
-                        }
+                        sessionGroup.createSession(sessionName, sessionPath, monitor);
                     } catch (ExecutionException e) {
                         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_CreateSessionFailure, e);
                     }
@@ -91,6 +89,10 @@ public class CreateSessionHandler extends BaseControlViewHandler {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
 

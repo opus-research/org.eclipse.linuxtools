@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -63,31 +64,31 @@ public class FilterListDialog extends Dialog {
     /**
      * The viewer and provided are kept here as attributes
      */
-    private final IViewPart fViewer;
+    protected IViewPart fViewer = null;
     /**
      * The filter provider implementation
      */
-    private final ISDFilterProvider fProvider;
+    protected ISDFilterProvider fProvider = null;
     /**
      * The filters are the result of editing this list
      */
-    private List<FilterCriteria> fFilters;
+    protected List<FilterCriteria> fFilters;
     /**
      * The add button.
      */
-    private Button fAdd;
+    protected Button fAdd;
     /**
      * The remove button.
      */
-    private Button fRemove;
+    protected Button fRemove;
     /**
      * The edit button.
      */
-    private Button fEdit;
+    protected Button fEdit;
     /**
      * The table with list of filters.
      */
-    private Table fTable;
+    protected Table fTable;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -104,6 +105,7 @@ public class FilterListDialog extends Dialog {
         fViewer = view;
         fProvider = loader;
         fFilters = null;
+        // filters = provider.getCurrentFilters();
         setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
     }
 
@@ -142,11 +144,15 @@ public class FilterListDialog extends Dialog {
         fRemove.setEnabled(count > 0);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public Control createDialogArea(Composite parent) {
 
         Group ret = new Group(parent, SWT.NONE);
-        ret.setText(Messages.SequenceDiagram_ListOfHideDisplayPatterns);
+        ret.setText(SDMessages._57);
         RowLayout rowLayout = new RowLayout();
         rowLayout.wrap = false;
         rowLayout.pack = true;
@@ -163,18 +169,25 @@ public class FilterListDialog extends Dialog {
         fTable.setLayoutData(new RowData(220, 84));
         fTable.setHeaderVisible(false);
         fTable.addSelectionListener(new SelectionListener() {
-
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 int count = fTable.getSelectionCount();
                 if (count == 1) {
-                    Criteria criteria = openFilterDialog(((CriteriaTableItem) fTable.getSelection()[0].getData()).getCriteria(), Messages.SequenceDiagram_Update);
+                    Criteria criteria = openFilterDialog(((CriteriaTableItem) fTable.getSelection()[0].getData()).getCriteria(), SDMessages._63);
                     if (criteria != null) {
                         replaceSelectedCriteria(criteria);
                     }
                 }
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetSelected(SelectionEvent e) {
                 handleTableSelectionCount();
@@ -200,18 +213,25 @@ public class FilterListDialog extends Dialog {
         rowLayoutCommands.spacing = 8;
         commands.setLayout(rowLayoutCommands);
         fAdd = new Button(commands, SWT.NONE);
-        fAdd.setText(Messages.SequenceDiagram_Add);
+        fAdd.setText(SDMessages._61);
         fAdd.addSelectionListener(new SelectionListener() {
-
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 // Nothing to do
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Criteria init = new Criteria();
-                Criteria c = openFilterDialog(init, Messages.SequenceDiagram_Create);
+                Criteria c = openFilterDialog(init, SDMessages._62);
                 if (c != null) {
                     addCriteria(c, true, false, null);
                 }
@@ -219,17 +239,24 @@ public class FilterListDialog extends Dialog {
         });
 
         fEdit = new Button(commands, SWT.NONE);
-        fEdit.setText(Messages.SequenceDiagram_EditIt);
+        fEdit.setText(SDMessages._60);
         fEdit.addSelectionListener(new SelectionListener() {
-
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 // Nothing to do
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Criteria c = openFilterDialog(((CriteriaTableItem) fTable.getSelection()[0].getData()).getCriteria(), Messages.SequenceDiagram_Update);
+                Criteria c = openFilterDialog(((CriteriaTableItem) fTable.getSelection()[0].getData()).getCriteria(), SDMessages._63);
                 if (c != null) {
                     replaceSelectedCriteria(c);
                 }
@@ -238,14 +265,21 @@ public class FilterListDialog extends Dialog {
         fEdit.setEnabled(false);
 
         fRemove = new Button(commands, SWT.NONE);
-        fRemove.setText(Messages.SequenceDiagram_Remove);
+        fRemove.setText(SDMessages._64);
         fRemove.addSelectionListener(new SelectionListener() {
-
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 // Nothing to do
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetSelected(SelectionEvent e) {
                 fTable.remove(fTable.getSelectionIndices());
@@ -254,7 +288,7 @@ public class FilterListDialog extends Dialog {
         });
         fRemove.setEnabled(false);
 
-        getShell().setText(Messages.SequenceDiagram_SequenceDiagramHidePatterns);
+        getShell().setText(SDMessages._65);
         /*
          * for (int i=0;i<filters.size();i++) { if (filters.get(i) instanceof FilterCriteria)
          * addCriteria(((FilterCriteria)filters.get(i)).getCriteria(),true); }
@@ -273,11 +307,15 @@ public class FilterListDialog extends Dialog {
         SearchFilterDialog filter = new SearchFilterDialog((SDView) fViewer, fProvider, true, SWT.APPLICATION_MODAL);
         filter.setCriteria(criteria);
         filter.setOkText(action);
-        filter.setTitle(Messages.SequenceDiagram_DefinitionOfHidePattern);
+        filter.setTitle(SDMessages._66);
         filter.open();
         return filter.getCriteria();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#open()
+     */
     @Override
     public int open() {
         create();
@@ -287,6 +325,10 @@ public class FilterListDialog extends Dialog {
         return super.open();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     public void okPressed() {
         if (fTable.getItemCount() > 0) {
@@ -485,7 +527,7 @@ public class FilterListDialog extends Dialog {
          */
         public void setCriteria(Criteria criteria) {
             fCriteria = criteria;
-            fTableItem.setText((fIsPositive ? Messages.SequenceDiagram_display : Messages.SequenceDiagram_hide) + " " + fCriteria.getExpression() + " " + fCriteria.getGraphNodeSummary(fProvider, fLoaderClassName)); //$NON-NLS-1$ //$NON-NLS-2$
+            fTableItem.setText((fIsPositive ? SDMessages._59 : SDMessages._58) + " " + fCriteria.getExpression() + " " + fCriteria.getGraphNodeSummary(fProvider, fLoaderClassName)); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         /**

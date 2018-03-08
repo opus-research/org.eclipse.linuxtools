@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,8 +15,8 @@ package org.eclipse.linuxtools.tmf.core.statistics;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * Provider for statistics, which is assigned to a trace. This can be used to
@@ -51,7 +51,7 @@ public interface ITmfStatistics {
      *            The end time of the query range. Has no effect if isGlobal is
      *            true.
      */
-    void updateStats(boolean isGlobal, long start, long end);
+    public void updateStats(boolean isGlobal, long start, long end);
 
     /**
      * Run a histogram query on the statistics back-end. This means, return the
@@ -74,14 +74,14 @@ public interface ITmfStatistics {
      * @return The array representing the number of events found in each
      *         sub-range.
      */
-    List<Long> histogramQuery(long start, long end, int nb);
+    public List<Long> histogramQuery(long start, long end, int nb);
 
     /**
      * Return the total number of events in the trace.
      *
      * @return The total number of events
      */
-    long getEventsTotal();
+    public long getEventsTotal();
 
     /**
      * Return a Map of the total events in the trace, per event type. The event
@@ -89,7 +89,7 @@ public interface ITmfStatistics {
      *
      * @return The map of <event_type, count>, for the whole trace
      */
-    Map<String, Long> getEventTypesTotal();
+    public Map<String, Long> getEventTypesTotal();
 
     /**
      * Retrieve the number of events in the trace in a given time interval.
@@ -100,7 +100,7 @@ public interface ITmfStatistics {
      *            End time of the time range
      * @return The number of events found
      */
-    long getEventsInRange(long start, long end);
+    public long getEventsInRange(long start, long end);
 
     /**
      * Retrieve the number of events in the trace, per event type, in a given
@@ -112,11 +112,11 @@ public interface ITmfStatistics {
      *            End time of the time range
      * @return The map of <event_type, count>, for the given time range
      */
-    Map<String, Long> getEventTypesInRange(long start, long end);
+    public Map<String, Long> getEventTypesInRange(long start, long end);
 
     /**
      * Notify the statistics back-end that the trace is being closed, so it
      * should dispose itself as appropriate (release file descriptors, etc.)
      */
-    void dispose();
+    public void dispose();
 }

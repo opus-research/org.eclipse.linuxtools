@@ -76,7 +76,7 @@ public class CovViewer extends AbstractSTTreeViewer {
 	 */
 	@Override
 	public IDialogSettings getDialogSettings() {
-		return org.eclipse.linuxtools.internal.gcov.Activator.getDefault().getDialogSettings();
+		return org.eclipse.linuxtools.gcov.Activator.getDefault().getDialogSettings();
 	}
 
 	/*
@@ -92,7 +92,7 @@ public class CovViewer extends AbstractSTTreeViewer {
 
 		if (element != null) {
 			if (element.getParent() != null) {
-				String sourceLoc = ""; //$NON-NLS-1$
+				String sourceLoc = "";
 				long lineNumber = 0;
 
 				if (element.getClass() == CovFileTreeElement.class)

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -100,11 +99,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
      */
     private Button fLogLevelOnlyButton;
     /**
-     * The filter text
-     */
-    private Text fFilterText;
-
-    /**
      * The referenced trace provider group containing the UST providers
      * component which contains a list of available tracepoints.
      */
@@ -145,10 +139,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
      * The actual selected log level.
      */
     private TraceLogLevel fLogLevel;
-    /**
-     * The filter expression
-     */
-    private String fFilterExpression;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -168,54 +158,85 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     // Accessors
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isTracepoints()
+     */
     @Override
     public boolean isTracepoints() {
         return fIsTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isAllTracePoints()
+     */
     @Override
     public boolean isAllTracePoints() {
         return fIsAllTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getEventNames()
+     */
     @Override
     public List<String> getEventNames() {
         return new ArrayList<String>(fSelectedEvents);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isWildcard()
+     */
     @Override
     public boolean isWildcard() {
         return fIsWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getWildcard()
+     */
     @Override
     public String getWildcard() {
         return fWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isLogLevel()
+     */
     @Override
     public boolean isLogLevel() {
         return fIsLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelType()
+     */
     @Override
     public LogLevelType getLogLevelType() {
         return fLogLevelType;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevel()
+     */
     @Override
     public TraceLogLevel getLogLevel() {
         return fLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelEventName()
+     */
     @Override
     public String getLogLevelEventName() {
         return fLogLevelEventName;
-    }
-
-    @Override
-    public String getFilterExpression() {
-        return fFilterExpression;
     }
 
     // ------------------------------------------------------------------------
@@ -236,18 +257,14 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         // Log Level Group
         createLogLevelGroup();
 
-        // Filter Group
-        createFilterGroup();
-
         // Set default enablements
         setEnablements(GroupEnum.TRACEPOINTS);
     }
 
     /**
-     * Validates the UST composite input data.
-     *
-     * @return true if configured data is valid and can be retrieved.
-     */
+    * Validates the UST composite input data.
+    * @return true if configured data is valid and can be retrieved.
+    */
     public boolean isValid() {
 
         fIsTracepoints = fTracepointsActivateButton.getSelection();
@@ -307,7 +324,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
             fLogLevel = levels[id];
         }
 
-        // initialize wildcard with null
+        // initialize wildcard with the event name string
         fWildcard = null;
         if (fIsWildcard) {
             String tempWildcard = fWildcardText.getText();
@@ -321,16 +338,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
             if(!tempWildcard.matches("\\s*")) { //$NON-NLS-1$
                 fWildcard = tempWildcard;
-            }
-        }
-
-        // initialize filter with null
-        fFilterExpression = null;
-        if (fProviderGroup.isEventFilteringSupported()) {
-            String tempFilter = fFilterText.getText();
-
-            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
-                fFilterExpression = tempFilter;
             }
         }
 
@@ -512,22 +519,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fLogLevelButton.setLayoutData(data);
     }
 
-    void createFilterGroup() {
-        if (fProviderGroup.isEventFilteringSupported()) {
-            Group filterMainGroup = new Group(this, SWT.SHADOW_NONE);
-            filterMainGroup.setText(Messages.TraceControl_EnableEventsFilterGroupName);
-            GridLayout layout = new GridLayout(3, false);
-            filterMainGroup.setLayout(layout);
-            GridData data = new GridData(GridData.FILL_HORIZONTAL);
-            filterMainGroup.setLayoutData(data);
-
-            fFilterText = new Text(filterMainGroup, SWT.LEFT);
-            fFilterText.setToolTipText(Messages.TraceControl_EnableEventsFilterTooltip);
-            data = new GridData(GridData.FILL_HORIZONTAL);
-            fFilterText.setLayoutData(data);
-        }
-    }
-
     /**
      * Enable/selects widgets depending on the group specified.
      * @param group - group to enable.
@@ -556,7 +547,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content provider for the tracepoints tree.
      */
-    public static final class UstContentProvider extends TraceControlContentProvider {
+    final static public class UstContentProvider extends TraceControlContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof TargetNodeComponent) {
@@ -577,7 +568,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content label for the tracepoints tree.
      */
-    public static final class UstLabelProvider extends TraceControlLabelProvider {
+     final static public class UstLabelProvider extends TraceControlLabelProvider {
         @Override
         public Image getImage(Object element) {
             return null;
@@ -598,7 +589,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Check state listener for the tracepoints tree.
      */
-    public final class UstCheckStateListener implements ICheckStateListener {
+    final public class UstCheckStateListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             if (event.getChecked()) {

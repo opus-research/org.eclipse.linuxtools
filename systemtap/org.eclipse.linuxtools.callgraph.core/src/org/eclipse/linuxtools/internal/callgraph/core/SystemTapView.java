@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2009-2013 Red Hat, Inc.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Red Hat - initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.internal.callgraph.core;
 
 import java.io.BufferedReader;
@@ -30,6 +19,11 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -42,22 +36,32 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 
 public abstract class SystemTapView extends ViewPart {
-
+   
     private final String NEW_LINE = Messages.getString("SystemTapView.1"); //$NON-NLS-1$
-
+   
     public Composite masterComposite;
     private IMenuManager help;
     private Action kill;
 
     protected String viewID;
-    private Action helpVersion;
-    protected Action saveFile;
-    protected Action openFile;
-    protected Action openDefault;
+    @SuppressWarnings("unused")
+    private Action help_about;
+    private Action help_version;
+    protected Action save_file;
+    protected Action open_file;
+    protected Action open_default;
     protected String sourcePath;
     protected IMenuManager file;
     private SystemTapParser parser;
 
+
+    /**
+     * The constructor.
+     *
+     * @return
+     */
+    public SystemTapView() {
+    }
 
     /**
      * This method will be called from GraphUIJob to load the view
@@ -153,9 +157,8 @@ public abstract class SystemTapView extends ViewPart {
      */
     public boolean setParser(SystemTapParser parser) {
     	this.parser = parser;
-    	if (this.parser == null) {
+    	if (this.parser == null)
     		return false;
-        }
     	return true;
     }
 
@@ -172,7 +175,7 @@ public abstract class SystemTapView extends ViewPart {
      * point.
      */
     public abstract void setViewID();
-
+   
     /**
      * Implement this method so that the Open button in the file menu created
      * by <code>addFileMenu()</code> is able to actually open files. User will
@@ -181,7 +184,7 @@ public abstract class SystemTapView extends ViewPart {
      * @return True if an open action should be created, false otherwise.
      */
     protected abstract boolean createOpenAction();
-
+   
     /**
      * Implement this method so that the Open default button in the file menu created
      * by <code>addFileMenu()</code> is able to actually open default. The Open
@@ -192,7 +195,7 @@ public abstract class SystemTapView extends ViewPart {
      */
     protected abstract boolean createOpenDefaultAction();
 
-
+   
     /**
      * Create File menu -- calls the abstract protected methods
      * <code>createOpenAction()</code> and <code>createOpenDefaultAction()</code>. Have
@@ -205,35 +208,34 @@ public abstract class SystemTapView extends ViewPart {
             file = new MenuManager(Messages.getString("SystemTapView.FileMenu")); //$NON-NLS-1$
             menu.add(file);
         }
-
-        if (createOpenAction()) {
-            file.add(openFile);
-        }
-        if (createOpenDefaultAction()) {
-            file.add(openDefault);
-        }
-
+       
+       
+        if (createOpenAction())
+            file.add(open_file);
+        if (createOpenDefaultAction())
+            file.add(open_default);
+       
         createSaveAction();
-        file.add(saveFile);
+        file.add(save_file);
     }
-
-
+   
+   
     public void addHelpMenu() {
         IMenuManager menu = getViewSite().getActionBars().getMenuManager();
         help = new MenuManager(Messages.getString("SystemTapView.Help")); //$NON-NLS-1$
         menu.add(help);
         createHelpActions();
-
-        help.add(helpVersion);
+       
+        help.add(help_version);
     }
 
-
+   
     public void createHelpActions() {
-        helpVersion = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
+        help_version = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
             @Override
 			public void run() {
                 try {
-                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null); //$NON-NLS-1$
+                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null);
                     BufferedReader buf = new BufferedReader(
                             new InputStreamReader(pr.getErrorStream()));
                     String line = ""; //$NON-NLS-1$
@@ -259,25 +261,96 @@ public abstract class SystemTapView extends ViewPart {
                 }
             }
         };
-    }
+       
+        help_about = new Action(Messages.getString("SystemTapView.AboutMenu")) { //$NON-NLS-1$
+            @Override
+			public void run() {
+                Display disp = Display.getCurrent();
+                if (disp == null){
+                    disp = Display.getDefault();
+                }
 
+               
+                Shell sh = new Shell(disp, SWT.MIN | SWT.MAX);
+                sh.setSize(425, 540);
+                GridLayout gl = new GridLayout(1, true);
+                sh.setLayout(gl);
+
+                sh.setText(""); //$NON-NLS-1$
+               
+                Image img = new Image(disp, PluginConstants.getPluginLocation()+"systemtap.png"); //$NON-NLS-1$
+                Composite cmp = new Composite(sh, sh.getStyle());
+                cmp.setLayout(gl);
+                GridData data = new GridData(415,100);
+                cmp.setLayoutData(data);
+                cmp.setBackgroundImage(img);
+
+                Composite c = new Composite(sh, sh.getStyle());
+                c.setLayout(gl);
+                GridData gd = new GridData(415,400);
+                c.setLayoutData(gd);
+                c.setLocation(0,300);
+                StyledText viewer = new StyledText(c, SWT.READ_ONLY | SWT.MULTI
+                        | SWT.V_SCROLL | SWT.WRAP | SWT.BORDER);       
+               
+                GridData viewerGD = new GridData(SWT.FILL, SWT.FILL, true, true);
+                viewer.setLayoutData(viewerGD);
+                Font font = new Font(sh.getDisplay(), "Monospace", 11, SWT.NORMAL); //$NON-NLS-1$
+                viewer.setFont(font);
+                viewer.setText(
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" +  //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         
+                         "" + //$NON-NLS-1$
+//                         
+//                         Messages.getString("LaunchAbout.9") + //$NON-NLS-1$
+//                         Messages.getString("LaunchAbout.10") + //$NON-NLS-1$
+                         
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         
+//                         Messages.getString("LaunchAbout.14") + //$NON-NLS-1$
+//                         Messages.getString("LaunchAbout.15") + //$NON-NLS-1$
+//                         Messages.getString("LaunchAbout.16") + //$NON-NLS-1$
+                         
+                         "" + //$NON-NLS-1$
+                         
+//                         Messages.getString("LaunchAbout.18") + //$NON-NLS-1$
+//                         Messages.getString("LaunchAbout.19") + //$NON-NLS-1$
+                         
+                         "" + //$NON-NLS-1$
+                         "" //$NON-NLS-1$
+                        );
+
+
+               
+                sh.open();       
+            }
+        };
+    }
+   
     protected void createSaveAction() {
         //Save callgraph.out
-        saveFile = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
+        save_file = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
             @Override
 			public void run(){
                 Shell sh = new Shell();
                 FileDialog dialog = new FileDialog(sh, SWT.SAVE);
                 String filePath = dialog.open();
-
+               
                 if (filePath != null) {
                     saveData(filePath);
                 }
             }
         };
     }
-
-
+   
+   
     protected void addKillButton() {
         IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
         kill = new Action(Messages.getString("SystemTapView.StopScript"), //$NON-NLS-1$
@@ -290,11 +363,27 @@ public abstract class SystemTapView extends ViewPart {
         mgr.add(kill);
         setKillButtonEnabled(false);
     }
-
+   
     public void setKillButtonEnabled(boolean val) {
-        if (kill != null) {
+        if (kill != null)
             kill.setEnabled(val);
-        }
+    }
+   
+   
+    public Action getKillButton() {
+        return kill;
+    }
+   
+    public  Action getHelp_version() {
+        return help_version;
+    }
+
+    public  void setHelp_version(Action helpVersion) {
+        help_version = helpVersion;
+    }
+   
+    public Action getSave_file() {
+        return save_file;
     }
 
 
@@ -306,57 +395,49 @@ public abstract class SystemTapView extends ViewPart {
      * @param sourcePath
      */
     public void saveData(String targetFile) {
-		try {
-			File file = new File(targetFile);
-			file.delete();
-			file.createNewFile();
-
-			File sFile = new File(sourcePath);
-			if (!sFile.exists()) {
-				return;
-			}
-
-			FileInputStream fileIn = null;
-			FileOutputStream fileOut = null;
-			FileChannel channelIn = null;
-			FileChannel channelOut = null;
-			try {
-				fileIn = new FileInputStream(sFile);
-				fileOut = new FileOutputStream(file);
-				channelIn = fileIn.getChannel();
-				channelOut = fileOut.getChannel();
-
-				if (channelIn == null || channelOut == null) {
-					return;
-				}
-
-				long size = channelIn.size();
-				MappedByteBuffer buf = channelIn.map(
-						FileChannel.MapMode.READ_ONLY, 0, size);
-
-				channelOut.write(buf);
-
-			} finally {
-				if (channelIn != null) {
-					channelIn.close();
-				}
-				if (channelOut != null) {
-					channelOut.close();
-				}
-				if (fileIn != null) {
-					fileIn.close();
-				}
-				if (fileOut != null) {
-					fileOut.close();
-				}
-			}
-		} catch (IOException e) {
-			CallgraphCorePlugin.logException(e);
-		}
-	}
+        try {
+            File file = new File(targetFile);
+            file.delete();
+            file.createNewFile();
+           
+            File sFile = new File(sourcePath);
+            if (!sFile.exists()) {
+                return;
+            }
+           
+             FileChannel in = null;
+             FileChannel out = null;
+            
+             try {         
+                  in = new FileInputStream(sFile).getChannel();
+                  out = new FileOutputStream(file).getChannel();
+                 
+                  if (in == null || out == null)
+                      return;
+         
+                  long size = in.size();
+                  MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, size);
+         
+                  out.write(buf);
+         
+             } finally {
+                  if (in != null)         
+                      in.close();
+                  if (out != null)    
+                      out.close();
+             }
+           
+           
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void setSourcePath(String file) {
         sourcePath = file;
     }
-
+   
+    public Action getOpen_file() {
+        return open_file;
+    }
 }

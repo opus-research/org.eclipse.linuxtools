@@ -1,15 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
- *
- * All rights reserved. This program and the accompanying materials are
- * made available under the terms of the Eclipse Public License v1.0 which
- * accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Patrick Tasse - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards;
 
 import java.io.File;
@@ -27,8 +15,9 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefiniti
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -41,32 +30,25 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * Output wizard page for custom XML trace parsers.
- *
- * @author Patrick Tasse
- */
 public class CustomXmlParserOutputWizardPage extends WizardPage {
 
-    private static final Image UP_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/up_button.gif"); //$NON-NLS-1$
-    private static final Image DOWN_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/down_button.gif"); //$NON-NLS-1$
+    private static final Image upImage = Activator.getDefault().getImageFromPath("/icons/elcl16/up_button.gif"); //$NON-NLS-1$
+    private static final Image downImage = Activator.getDefault().getImageFromPath("/icons/elcl16/down_button.gif"); //$NON-NLS-1$
     private final CustomXmlParserWizard wizard;
     private CustomXmlTraceDefinition definition;
-    private List<Output> outputs = new ArrayList<Output>();
-    private Composite container;
-    private SashForm sash;
-    private ScrolledComposite outputsScrolledComposite;
-    private Composite outputsContainer;
-    private Composite tableContainer;
-    private CustomEventsTable previewTable;
-    private File tmpFile;
+    List<Output> outputs = new ArrayList<Output>();
+    //    Output messageOutput;
+    Composite container;
+    SashForm sash;
+    //    Text timestampFormatText;
+    //    Text timestampPreviewText;
+    ScrolledComposite outputsScrolledComposite;
+    Composite outputsContainer;
+    //    ScrolledComposite inputScrolledComposite;
+    Composite tableContainer;
+    CustomEventsTable previewTable;
+    File tmpFile;
 
-    /**
-     * Constructor
-     *
-     * @param wizard
-     *            The wizard to which this page belongs
-     */
     protected CustomXmlParserOutputWizardPage(final CustomXmlParserWizard wizard) {
         super("CustomParserOutputWizardPage"); //$NON-NLS-1$
         setTitle(wizard.inputPage.getTitle());
@@ -120,13 +102,16 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         super.dispose();
     }
 
-    private void loadDefinition(final CustomTraceDefinition def) {
-        for (final OutputColumn outputColumn : def.outputs) {
+    private void loadDefinition(final CustomTraceDefinition definition) {
+        for (final OutputColumn outputColumn : definition.outputs) {
             final Output output = new Output(outputsContainer, outputColumn.name);
             outputs.add(output);
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.DialogPage#setVisible(boolean)
+     */
     @Override
     public void setVisible(final boolean visible) {
         if (visible) {
@@ -237,11 +222,6 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         container.layout();
     }
 
-    /**
-     * Extract the output columns from the page's current contents.
-     *
-     * @return The list of output columns
-     */
     public List<OutputColumn> extractOutputs() {
         int numColumns = 0;
         for (int i = 0; i < outputs.size(); i++) {
@@ -291,7 +271,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             nameLabel.moveBelow(enabledButton);
 
             upButton = new Button(parent, SWT.PUSH);
-            upButton.setImage(UP_IMAGE);
+            upButton.setImage(upImage);
             upButton.setToolTipText(Messages.CustomXmlParserOutputWizardPage_moveBefore);
             upButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -302,7 +282,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             upButton.moveBelow(nameLabel);
 
             downButton = new Button(parent, SWT.PUSH);
-            downButton.setImage(DOWN_IMAGE);
+            downButton.setImage(downImage);
             downButton.setToolTipText(Messages.CustomXmlParserOutputWizardPage_moveAfter);
             downButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -321,11 +301,6 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         }
     }
 
-    /**
-     * Get the trace definition.
-     *
-     * @return The trace definition
-     */
     public CustomXmlTraceDefinition getDefinition() {
         return definition;
     }

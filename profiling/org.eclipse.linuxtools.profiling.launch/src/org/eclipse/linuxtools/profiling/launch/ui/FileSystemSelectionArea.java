@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Label;
  */
 
 /**
- * @since 2.0
+ * @since 1.3
  */
 public class FileSystemSelectionArea {
 

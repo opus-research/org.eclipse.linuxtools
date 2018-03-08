@@ -13,15 +13,11 @@
 package org.eclipse.linuxtools.ctf.core.event;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Clock description used in CTF traces
  */
 public class CTFClock {
-
-    private static final long ONE_BILLION_L = 1000000000L;
-    private static final double ONE_BILLION_D = 1000000000.0;
 
     private static final String NAME = "name"; //$NON-NLS-1$
     private static final String FREQ = "freq"; //$NON-NLS-1$
@@ -34,7 +30,7 @@ public class CTFClock {
     /**
      * Field properties.
      */
-    private final Map<String, Object> properties = new HashMap<String, Object>();
+    final private HashMap<String, Object> properties = new HashMap<String, Object>();
     /**
      * Field name.
      */
@@ -68,8 +64,8 @@ public class CTFClock {
              * have a system with a frequency of > 1 600 000 000 GHz with
              * 200 ppm precision
              */
-            isScaled = !((Long) getProperty(FREQ)).equals(ONE_BILLION_L);
-            clockScale = ONE_BILLION_D / ((Long) getProperty(FREQ)).doubleValue();
+            isScaled = !((Long) getProperty(FREQ)).equals(1000000000L);
+            clockScale = 1000000000.0 / ((Long) getProperty(FREQ)).doubleValue();
             clockAntiScale = 1.0 / clockScale;
 
         }
@@ -100,7 +96,6 @@ public class CTFClock {
 
     /**
      * @return the clockOffset
-     * @since 2.0
      */
     public long getClockOffset() {
         return clockOffset;
@@ -108,7 +103,6 @@ public class CTFClock {
 
     /**
      * @return the clockScale
-     * @since 2.0
      */
     public double getClockScale() {
         return clockScale;
@@ -116,7 +110,6 @@ public class CTFClock {
 
     /**
      * @return the clockAntiScale
-     * @since 2.0
      */
     public double getClockAntiScale() {
         return clockAntiScale;
@@ -124,7 +117,6 @@ public class CTFClock {
 
     /**
      * @return is the clock in ns or cycles?
-     * @since 2.0
      */
     public boolean isClockScaled() {
         return isScaled;

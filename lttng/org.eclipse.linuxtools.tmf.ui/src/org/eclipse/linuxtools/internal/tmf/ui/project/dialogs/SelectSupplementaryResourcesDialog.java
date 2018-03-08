@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
- *
+ * Copyright (c) 2009, 2011 Ericsson
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
  *******************************************************************************/
@@ -35,7 +35,8 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * SelectSupplementaryResourcesDialog
+ * <b><u>SelectSupplementaryResourcesDialog</u></b>
+ * <p>
  */
 public class SelectSupplementaryResourcesDialog extends Dialog {
 
@@ -50,14 +51,6 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
     // Constructor
     // ------------------------------------------------------------------------
 
-    /**
-     * Constructor.
-     *
-     * @param shell
-     *            Parent shell of this dialog
-     * @param resources
-     *            Available resources
-     */
     public SelectSupplementaryResourcesDialog(Shell shell, IResource[] resources) {
         super(shell);
         fAvailableResources = Arrays.copyOf(resources, resources.length);
@@ -67,25 +60,26 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
     // ------------------------------------------------------------------------
     // Getters/Setters
     // ------------------------------------------------------------------------
-
-    /**
-     * @return A copy of the resources
-     */
+    
     public IResource[] getResources() {
         return Arrays.copyOf(fReturndResources, fReturndResources.length);
     }
-
+    
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.SelectSpplementaryResources_DialogTitle);
         newShell.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_DELETE));
     }
-
+    
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -96,7 +90,7 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
         contextGroup.setText(Messages.SelectSpplementaryResources_ResourcesGroupTitle);
         contextGroup.setLayout(new GridLayout());
         contextGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-
+        
         fTreeViewer = new CheckboxTreeViewer(contextGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         GridData data = new GridData(GridData.FILL_BOTH);
         Tree tree = fTreeViewer.getTree();
@@ -134,22 +128,22 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
                 if (parentElement instanceof IResource[]) {
                     return (Object[]) parentElement;
                 }
-                return null;
+                return null;            
             }
         });
 
 //        fTreeViewer.setLabelProvider(new WorkbenchLabelProvider());
-
+        
       fTreeViewer.setLabelProvider(new LabelProvider() {
           @Override
           public String getText(Object element) {
               if (element instanceof IResource) {
                   IResource resource = (IResource) element;
-                  // show also trace name
+                  // show also trace name 
                   return resource.getParent().getName() + File.separator + resource.getName();
               }
               return super.getText(element);
-          }
+          } 
       });
         fTreeViewer.setInput(fAvailableResources);
 
@@ -158,6 +152,10 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
         return composite;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
@@ -174,5 +172,6 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
         }
         super.okPressed();
     }
+
 
 }

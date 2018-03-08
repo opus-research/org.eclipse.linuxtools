@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,30 +8,25 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfSimpleTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.junit.Test;
+import junit.framework.TestCase;
+
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfSimpleTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 
 /**
  * Test suite for the TmfSimpleTimestampTest class.
  */
-@SuppressWarnings("javadoc")
-public class TmfSimpleTimestampTest {
+@SuppressWarnings("nls")
+public class TmfSimpleTimestampTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Variables
@@ -42,24 +37,51 @@ public class TmfSimpleTimestampTest {
     private final ITmfTimestamp ts2 = new TmfSimpleTimestamp(-1234);
 
     // ------------------------------------------------------------------------
+    // Housekeping
+    // ------------------------------------------------------------------------
+
+    /**
+     * @param name the test name
+     */
+    public TmfSimpleTimestampTest(final String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testDefaultConstructor() {
         assertEquals("getValue", 0, ts0.getValue());
         assertEquals("getscale", 0, ts0.getScale());
         assertEquals("getPrecision", 0, ts0.getPrecision());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testFullConstructor() {
         assertEquals("getValue", 12345, ts1.getValue());
         assertEquals("getscale", 0, ts1.getScale());
         assertEquals("getPrecision", 0, ts1.getPrecision());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testCopyConstructor() {
         final ITmfTimestamp copy = new TmfSimpleTimestamp(ts1);
 
@@ -72,7 +94,9 @@ public class TmfSimpleTimestampTest {
         assertEquals("getPrecision", 0, copy.getPrecision());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testCopyBadTimestamp() {
         try {
             new TmfSimpleTimestamp(null);
@@ -85,7 +109,9 @@ public class TmfSimpleTimestampTest {
     // equals
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsReflexivity() {
         assertTrue("equals", ts0.equals(ts0));
         assertTrue("equals", ts1.equals(ts1));
@@ -101,7 +127,9 @@ public class TmfSimpleTimestampTest {
         assertTrue("equals", !ts2.equals(ts1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsSymmetry() {
         final ITmfTimestamp ts0copy = new TmfSimpleTimestamp(ts0);
         assertTrue("equals", ts0.equals(ts0copy));
@@ -112,7 +140,9 @@ public class TmfSimpleTimestampTest {
         assertTrue("equals", ts1copy.equals(ts1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsTransivity() {
         final ITmfTimestamp ts0copy1 = new TmfSimpleTimestamp(ts0);
         final ITmfTimestamp ts0copy2 = new TmfSimpleTimestamp(ts0copy1);
@@ -127,14 +157,18 @@ public class TmfSimpleTimestampTest {
         assertTrue("equals", ts1.equals(ts1copy2));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsNull() {
         assertTrue("equals", !ts0.equals(null));
         assertTrue("equals", !ts1.equals(null));
         assertTrue("equals", !ts2.equals(null));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsNonTimestamp() {
         assertFalse("equals", ts0.equals(ts0.toString()));
     }
@@ -143,7 +177,9 @@ public class TmfSimpleTimestampTest {
     // toString
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testToString() {
         DateFormat df = new SimpleDateFormat("HH:mm:ss.SSS");
         Date d0 = new Date(ts0.getValue()*1000);
@@ -158,7 +194,9 @@ public class TmfSimpleTimestampTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testHashCode() {
         final ITmfTimestamp ts0copy = new TmfTimestamp(ts0);
         final ITmfTimestamp ts1copy = new TmfTimestamp(ts1);
@@ -175,7 +213,9 @@ public class TmfSimpleTimestampTest {
     // normalize
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testNormalizeScale0() {
         ITmfTimestamp ts = ts0.normalize(0, 0);
         assertEquals("getValue", 0, ts.getValue());
@@ -198,7 +238,9 @@ public class TmfSimpleTimestampTest {
         assertEquals("getPrecision", 0, ts.getPrecision());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNormalizeScaleNot0() {
         ITmfTimestamp ts = ts0.normalize(0, 1);
         assertEquals("getValue", 0, ts.getValue());
@@ -225,7 +267,9 @@ public class TmfSimpleTimestampTest {
     // compareTo
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testBasicCompareTo() {
         final ITmfTimestamp tstamp1 = new TmfSimpleTimestamp(900);
         final ITmfTimestamp tstamp2 = new TmfSimpleTimestamp(1000);
@@ -243,7 +287,9 @@ public class TmfSimpleTimestampTest {
         assertTrue("CompareTo", tstamp3.compareTo(tstamp2) > 0);
     }
 
-    @Test
+    /**
+     *
+     */
     public void testCompareTo() {
         final ITmfTimestamp ts0a = new TmfTimestamp(0, 2, 0);
         final ITmfTimestamp ts1a = new TmfTimestamp(123450, -1);
@@ -260,7 +306,9 @@ public class TmfSimpleTimestampTest {
     // getDelta
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testDelta() {
         // Delta for same scale and precision (delta > 0)
         TmfTimestamp tstamp0 = new TmfSimpleTimestamp(10);
@@ -279,7 +327,9 @@ public class TmfSimpleTimestampTest {
         assertEquals("getDelta", 0, delta.compareTo(expectd, false));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testDelta2() {
         // Delta for different scale and same precision (delta > 0)
         final TmfTimestamp tstamp0 = new TmfSimpleTimestamp(10);

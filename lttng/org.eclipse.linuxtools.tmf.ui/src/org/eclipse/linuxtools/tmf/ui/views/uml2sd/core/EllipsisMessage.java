@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ * 
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
@@ -19,31 +20,47 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
 
 /**
  * Class to draw Ellipsis Message.
- *
+ * 
  * @version 1.0
  * @author sveyrier
- *
+ * 
  */
 public class EllipsisMessage extends AsyncMessage {
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#getX()
+     */
     @Override
     public int getX() {
-        if (getStartLifeline() == null) {
+        if (fStartLifeline == null) {
             return super.getX() + super.getWidth() - 16;
-        }
+        } 
         return super.getX();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#getY()
+     */
     @Override
     public int getY() {
         return super.getY() + 3;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#getWidth()
+     */
     @Override
     public int getWidth() {
         return 16;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#drawMessage(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */  
     @Override
     protected void drawMessage(IGC context) {
         // temporary store the coordinates to avoid more methods calls
@@ -53,7 +70,7 @@ public class EllipsisMessage extends AsyncMessage {
         int height = getHeight();
 
         // UML2 found message (always drawn from left to right)
-        if (getStartLifeline() == null && getEndLifeline() != null) {
+        if (fStartLifeline == null && fEndLifeline != null) {
             // Draw the message label above the message and centered
             // The label is truncated if it cannot fit between the two message end
             // 2*Metrics.MESSAGES_NAME_SPACING = space above the label + space below the label
@@ -75,7 +92,7 @@ public class EllipsisMessage extends AsyncMessage {
             context.setBackground(storedColor);
         }
         // UML2 lost message (always drawn from left to right)
-        else if (getEndLifeline() == null && getStartLifeline() != null) {
+        else if (fEndLifeline == null && fStartLifeline != null) {
             // Draw the message label above the message and centered
             // The label is truncated if it cannot fit between the two message end
             // 2*Metrics.MESSAGES_NAME_SPACING = space above the label + space below the label
@@ -103,6 +120,10 @@ public class EllipsisMessage extends AsyncMessage {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */  
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {

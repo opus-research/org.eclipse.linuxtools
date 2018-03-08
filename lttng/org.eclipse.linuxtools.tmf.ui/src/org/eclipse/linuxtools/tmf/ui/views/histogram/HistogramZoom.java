@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,13 +9,13 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Moved from LTTng to TMF
- *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.widgets.Canvas;
 
 /**
  * Class to handle zooming within histogram windows..
@@ -37,6 +37,7 @@ public class HistogramZoom implements MouseWheelListener {
     // ------------------------------------------------------------------------
 
     private final Histogram fHistogram;
+    private final Canvas fCanvas;
 
     private long fAbsoluteStartTime;
     private long fAbsoluteEndTime;
@@ -44,6 +45,8 @@ public class HistogramZoom implements MouseWheelListener {
 
     private long fRangeStartTime;
     private long fRangeDuration;
+
+    private MouseScrollCounter fScrollCounter;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -54,20 +57,25 @@ public class HistogramZoom implements MouseWheelListener {
      *
      * @param histogram
      *            The parent histogram object
+     * @param canvas
+     *            The canvas
      * @param start
      *            The start time of the zoom area
      * @param end
      *            The end time of the zoom area
-     * @since 2.0
      */
-    public HistogramZoom(Histogram histogram, long start, long end) {
+    public HistogramZoom(Histogram histogram, Canvas canvas, long start,
+            long end) {
         fHistogram = histogram;
+        fCanvas = canvas;
         fAbsoluteStartTime = start;
         fAbsoluteEndTime = end;
-        fMinWindowSize = 0;
+        fMinWindowSize = fCanvas.getBounds().x;
 
         fRangeStartTime = fAbsoluteStartTime;
         fRangeDuration = fAbsoluteStartTime + fMinWindowSize;
+
+        canvas.addMouseWheelListener(this);
     }
 
     // ------------------------------------------------------------------------
@@ -103,6 +111,16 @@ public class HistogramZoom implements MouseWheelListener {
     // ------------------------------------------------------------------------
 
     /**
+     * Stops the zooming (multiple consecutive execution)
+     */
+    public synchronized void stop() {
+        if (fScrollCounter != null) {
+            fScrollCounter.interrupt();
+            fScrollCounter = null;
+        }
+    }
+
+    /**
      * The the full time range of the histogram
      *
      * @param startTime the start time the histogram
@@ -119,24 +137,22 @@ public class HistogramZoom implements MouseWheelListener {
      * @param duration the duration
      */
     public synchronized void setNewRange(long startTime, long duration) {
-        long realStart = startTime;
-
-        if (realStart < fAbsoluteStartTime) {
-            realStart = fAbsoluteStartTime;
+        if (startTime < fAbsoluteStartTime) {
+            startTime = fAbsoluteStartTime;
         }
 
-        long endTime = realStart + duration;
+        long endTime = startTime + duration;
         if (endTime > fAbsoluteEndTime) {
             endTime = fAbsoluteEndTime;
             if (endTime - duration > fAbsoluteStartTime) {
-                realStart = endTime - duration;
+                startTime = endTime - duration;
             } else {
-                realStart = fAbsoluteStartTime;
+                startTime = fAbsoluteStartTime;
             }
         }
 
-        fRangeStartTime = realStart;
-        fRangeDuration = endTime - realStart;
+        fRangeStartTime = startTime;
+        fRangeDuration = endTime - startTime;
     }
 
     // ------------------------------------------------------------------------
@@ -145,10 +161,17 @@ public class HistogramZoom implements MouseWheelListener {
 
     @Override
     public synchronized void mouseScrolled(MouseEvent event) {
-        zoom(event.count);
+        if (fScrollCounter == null) {
+            fScrollCounter = new MouseScrollCounter(this);
+            fScrollCounter.start();
+        }
+        fScrollCounter.incrementMouseScroll(event.count);
     }
 
     private synchronized void zoom(int nbClicks) {
+        // The job is finished
+        fScrollCounter = null;
+
         // Compute the new time range
         long requestedRange = (nbClicks > 0) ? Math.round(ZOOM_FACTOR * fRangeDuration) : (long) Math.ceil(fRangeDuration * (1.0 / ZOOM_FACTOR));
 
@@ -161,26 +184,91 @@ public class HistogramZoom implements MouseWheelListener {
     }
 
     private long validateStart(long start) {
-        long realStart = start;
-
-        if (realStart < fAbsoluteStartTime) {
-            realStart = fAbsoluteStartTime;
+        if (start < fAbsoluteStartTime) {
+            start = fAbsoluteStartTime;
         }
-        if (realStart > fAbsoluteEndTime) {
-            realStart = fAbsoluteEndTime - fMinWindowSize;
+        if (start > fAbsoluteEndTime) {
+            start = fAbsoluteEndTime - fMinWindowSize;
         }
-        return realStart;
+        return start;
     }
 
     private long validateEnd(long start, long end) {
-        long realEnd = end;
-
-        if (realEnd > fAbsoluteEndTime) {
-            realEnd = fAbsoluteEndTime;
+        if (end > fAbsoluteEndTime) {
+            end = fAbsoluteEndTime;
         }
-        if (realEnd < start + fMinWindowSize) {
-            realEnd = start + fMinWindowSize;
+        if (end < start + fMinWindowSize) {
+            end = start + fMinWindowSize;
         }
-        return realEnd;
+        return end;
     }
+
+    // ------------------------------------------------------------------------
+    // DelayedMouseScroll
+    // ------------------------------------------------------------------------
+
+    private static class MouseScrollCounter extends Thread {
+
+        // --------------------------------------------------------------------
+        // Constants
+        // --------------------------------------------------------------------
+
+        private final static long QUIET_TIME = 100L;
+        private final static long POLLING_INTERVAL = 10L;
+
+        // --------------------------------------------------------------------
+        // Attributes
+        // --------------------------------------------------------------------
+
+        private HistogramZoom fZoom = null;
+
+        private long fLastPoolTime = 0L;
+        private int nbScrollClick = 0;
+
+        // --------------------------------------------------------------------
+        // Constructors
+        // --------------------------------------------------------------------
+
+        /**
+         * Constructor of inner class to handle consecutive scrolls of mouse wheel.
+         * @param zoom the histogram zoom reference
+         */
+        public MouseScrollCounter(HistogramZoom zoom) {
+            fZoom = zoom;
+            fLastPoolTime = System.currentTimeMillis();
+        }
+
+        // --------------------------------------------------------------------
+        // Operation
+        // --------------------------------------------------------------------
+
+        /**
+         * Increments the number of scroll clicks.
+         * @param nbScrolls the number to add to the current value
+         */
+        public void incrementMouseScroll(int nbScrolls) {
+            fLastPoolTime = System.currentTimeMillis();
+            nbScrollClick += nbScrolls;
+        }
+
+        // --------------------------------------------------------------------
+        // Thread
+        // --------------------------------------------------------------------
+
+        @Override
+        public void run() {
+            while ((System.currentTimeMillis() - fLastPoolTime) < QUIET_TIME) {
+                try {
+                    Thread.sleep(POLLING_INTERVAL);
+                } catch (Exception e) {
+                    return;
+                }
+            }
+            // Done waiting. Notify the histogram.
+            if (!isInterrupted()) {
+                fZoom.zoom(nbScrollClick);
+            }
+        }
+    }
+
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,8 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Close editors to release resources
- *   Geneviève Bastien - Moved the delete code to element model's classes
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -30,12 +28,10 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -67,9 +63,6 @@ public class DeleteTraceHandler extends AbstractHandler {
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -119,26 +112,25 @@ public class DeleteTraceHandler extends AbstractHandler {
         while (iterator.hasNext()) {
             Object element = iterator.next();
             if (element instanceof TmfTraceElement) {
-                final TmfTraceElement trace = (TmfTraceElement) element;
+                TmfTraceElement trace = (TmfTraceElement) element;
                 IResource resource = trace.getResource();
                 try {
-                    // Close the trace if open
-                    trace.closeEditors();
-
                     IPath path = resource.getLocation();
                     if (path != null && (trace.getParent() instanceof TmfTraceFolder)) {
+                        String location = path.toString();
                         TmfExperimentFolder experimentFolder = trace.getProject().getExperimentsFolder();
 
                         // Propagate the removal to traces
                         for (ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
                             List<ITmfProjectModelElement> toRemove = new LinkedList<ITmfProjectModelElement>();
                             for (ITmfProjectModelElement child : experiment.getChildren()) {
-                                if (child.getName().equals(trace.getName())) {
+                                if (child.getResource().getLocation().toString().equals(location)) {
                                     toRemove.add(child);
                                 }
                             }
                             for (ITmfProjectModelElement child : toRemove) {
-                                ((TmfExperimentElement) experiment).removeTrace((TmfTraceElement) child);
+                                experiment.removeChild(child);
+                                child.getResource().delete(true, null);
                             }
                         }
 
@@ -152,16 +144,7 @@ public class DeleteTraceHandler extends AbstractHandler {
                     // Refresh the project
                     trace.getProject().refresh();
 
-                } catch (final CoreException e) {
-                    Display.getDefault().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-                            mb.setText(Messages.DeleteTraceHandler_Error + ' ' + trace.getName());
-                            mb.setMessage(e.getMessage());
-                            mb.open();
-                        }
-                    });
+                } catch (CoreException e) {
                     Activator.getDefault().logError("Error deleting trace: " + trace.getName(), e); //$NON-NLS-1$
                 }
             }

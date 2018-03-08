@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -55,17 +55,18 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
+    /**
+     * The dialog composite.
+     */
+    private Composite fDialogComposite;
     /**
      * A tree viewer for displaying and selection of available contexts.
      */
     private CheckboxTreeViewer fContextsViewer;
-
     /**
      * A Tree model for the checkbox tree viewer.
      */
     private final ContextModel fContextModel = new ContextModel();
-
     /**
      * The contexts to add.
      */
@@ -74,7 +75,6 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructor
      * @param shell - a shell for the display of the dialog
@@ -88,11 +88,19 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     // Accessors
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IAddContextDialog#setAvalibleContexts(java.util.List)
+     */
     @Override
     public void setAvalibleContexts(List<String> contexts) {
         fContextModel.setAvalibleContexts(contexts);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IAddContextDialog#getContexts()
+     */
     @Override
     public List<String> getContexts() {
         List<String> ret = new ArrayList<String>();
@@ -103,7 +111,10 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -111,17 +122,21 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
         newShell.setImage(Activator.getDefault().loadIcon(ADD_CONTEXT_ICON_FILE));
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
 
         // Main dialog panel
-        Composite dialogComposite = new Composite(parent, SWT.NONE);
+        fDialogComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        dialogComposite.setLayout(layout);
-        dialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fDialogComposite.setLayout(layout);
+        fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Contexts list
-        Group contextGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
+        Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.TraceControl_AddContextAvailableContextsLabel);
         layout = new GridLayout(1, true);
         contextGroup.setLayout(layout);
@@ -138,15 +153,23 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
 
         getShell().setMinimumSize(new Point(500, 450));
 
-        return dialogComposite;
+        return fDialogComposite;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
         createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     protected void okPressed() {
         fSelectedContexts.clear();
@@ -169,7 +192,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * Content provider for the contexts tree
      */
-    public static final class ContextsContentProvider implements ITreeContentProvider {
+    final public static class ContextsContentProvider implements ITreeContentProvider {
 
         @Override
         public void dispose() {
@@ -212,7 +235,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * Label provider for the contexts tree
      */
-    public static final class ContextsLabelProvider extends ColumnLabelProvider {
+    final public static class ContextsLabelProvider extends ColumnLabelProvider {
         @Override
         public String getText(Object element) {
 
@@ -227,7 +250,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * Check state listener for the contexts tree.
      */
-    public final class ContextCheckListener implements ICheckStateListener {
+    final public class ContextCheckListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
           if (event.getChecked()) {
@@ -400,21 +423,21 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
         /**
          * @return The name of this component
          */
-        String getName();
+        public String getName();
 
         /**
          * @return The parent component
          */
-        Object getParent();
+        public Object getParent();
 
         /**
          * @return The array of children of this component
          */
-        Object[] getChildren();
+        public Object[] getChildren();
 
         /**
          * @return If this component has children or not
          */
-        boolean hasChildren();
+        public boolean hasChildren();
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -20,13 +19,11 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -65,9 +62,6 @@ public class DeleteExperimentHandler extends AbstractHandler {
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         ISelection selection = part.getSite().getSelectionProvider().getSelection();
 
         if (selection instanceof TreeSelection) {
@@ -76,35 +70,12 @@ public class DeleteExperimentHandler extends AbstractHandler {
             while (iterator.hasNext()) {
                 Object element = iterator.next();
                 if (element instanceof TmfExperimentElement) {
-                    final TmfExperimentElement experiment = (TmfExperimentElement) element;
+                    TmfExperimentElement experiment = (TmfExperimentElement) element;
                     IResource resource = experiment.getResource();
-
                     try {
-                        // Close the experiment if open
-                        experiment.closeEditors();
-
-                        IPath path = resource.getLocation();
-                        if (path != null) {
-                            // Delete supplementary files
-                            experiment.deleteSupplementaryFolder();
-                        }
-
-                        // Finally, delete the experiment
                         resource.delete(true, null);
-
-                        // Refresh the project
                         experiment.getProject().refresh();
-
-                    } catch (final CoreException e) {
-                        Display.getDefault().asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-                                mb.setText(Messages.DeleteTraceHandler_Error + ' ' + experiment.getName());
-                                mb.setMessage(e.getMessage());
-                                mb.open();
-                            }
-                        });
+                    } catch (CoreException e) {
                         Activator.getDefault().logError("Error deleting experiment: " + experiment.getName(), e); //$NON-NLS-1$
                     }
                 }

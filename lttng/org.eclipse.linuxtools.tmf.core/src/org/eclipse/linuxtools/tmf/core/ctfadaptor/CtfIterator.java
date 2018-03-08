@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @author Matthew Khouzam
  */
 public class CtfIterator extends CTFTraceReader implements ITmfContext,
-        Comparable<CtfIterator> {
+        Comparable<CtfIterator>, Cloneable {
 
     private final CtfTmfTrace ctfTmfTrace;
 
@@ -72,7 +72,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @since 2.0
      */
     public CtfIterator(final CtfTmfTrace trace,
-            final CtfLocationInfo ctfLocationData, final long rank) {
+            final CtfLocationData ctfLocationData, final long rank) {
         super(trace.getCTFTrace());
 
         this.ctfTmfTrace = trace;
@@ -101,17 +101,20 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @return CtfTmfEvent
      */
     public CtfTmfEvent getCurrentEvent() {
-        final StreamInputReader top = super.getPrio().peek();
+        final StreamInputReader top = super.prio.peek();
         if (top != null) {
-            return CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
-                    top.getFilename(), ctfTmfTrace);
+            return new CtfTmfEvent(top.getCurrentEvent(), top.getFilename(),
+                    ctfTmfTrace);
         }
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader#seek(long)
+     */
     @Override
     public boolean seek(long timestamp) {
-        return seek(new CtfLocationInfo(timestamp, 0));
+        return seek(new CtfLocationData(timestamp, 0));
     }
 
     /**
@@ -122,7 +125,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @return boolean
      * @since 2.0
      */
-    public synchronized boolean seek(final CtfLocationInfo ctfLocationData) {
+    public boolean seek(final CtfLocationData ctfLocationData) {
         boolean ret = false;
 
         /* Adjust the timestamp depending on the trace's offset */
@@ -139,12 +142,11 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
          * assign the location index correctly
          */
         long index = 0;
-        final CtfTmfEvent currentEvent = this.getCurrentEvent();
-        if (currentEvent != null) {
-            currTimestamp = currentEvent.getTimestamp().getValue();
+        if (this.getCurrentEvent() != null) {
+            currTimestamp = this.getCurrentEvent().getTimestamp().getValue();
 
             for (long i = 0; i < ctfLocationData.getIndex(); i++) {
-                if (currTimestamp == currentEvent.getTimestamp().getValue()) {
+                if (currTimestamp == this.getCurrentEvent().getTimestamp().getValue()) {
                     index++;
                 } else {
                     index = 0;
@@ -156,7 +158,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         }
         /* Seek the current location accordingly */
         if (ret) {
-            curLocation = new CtfLocation(new CtfLocationInfo(getCurrentEvent().getTimestamp().getValue(), index));
+            curLocation = new CtfLocation(new CtfLocationData(getCurrentEvent().getTimestamp().getValue(), index));
         } else {
             curLocation = NULL_LOCATION;
         }
@@ -183,6 +185,11 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         curRank = rank;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#clone()
+     */
     @Override
     public CtfIterator clone() {
         CtfIterator clone = null;
@@ -196,7 +203,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      */
     @Override
     public void dispose() {
-        super.dispose();
+        // FIXME add dispose() stuff to CTFTrace and call it here...
+
     }
 
     /**
@@ -247,7 +255,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @return boolean successful or not
      */
     @Override
-    public synchronized boolean advance() {
+    public boolean advance() {
         long index = curLocation.getLocationInfo().getIndex();
         long timestamp = curLocation.getLocationInfo().getTimestamp();
         boolean ret = super.advance();
@@ -280,6 +288,9 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         return 0;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -292,6 +303,9 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

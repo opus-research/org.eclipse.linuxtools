@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -25,7 +25,7 @@ public interface IDefinitionScope {
      * Gets the path in a C style for the scope.
      * @return the path
      */
-    String getPath();
+    public String getPath();
 
     /**
      * Looks up in this definition scope.
@@ -34,5 +34,5 @@ public interface IDefinitionScope {
      *            The path to look up
      * @return The Definition that was read
      */
-    Definition lookupDefinition(String lookupPath);
+    public Definition lookupDefinition(String lookupPath);
 }

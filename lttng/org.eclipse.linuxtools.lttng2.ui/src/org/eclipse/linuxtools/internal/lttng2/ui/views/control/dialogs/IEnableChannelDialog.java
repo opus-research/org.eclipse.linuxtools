@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent;
 
 /**
@@ -30,30 +29,24 @@ public interface IEnableChannelDialog {
     /**
      * @return the configuration info for the new channel.
      */
-    IChannelInfo getChannelInfo();
+    public IChannelInfo getChannelInfo();
 
     /**
      * Sets the domain component
      * @param domain - the trace domain component
      */
-    void setDomainComponent(TraceDomainComponent domain);
-
-    /**
-     * Set the targent node component
-     * @param node - the node component
-     */
-    void setTargetNodeComponent(TargetNodeComponent node);
+    public void setDomainComponent(TraceDomainComponent domain);
 
     /**
      * @return true for Kernel domain. False for UST.
      */
-    boolean isKernel();
+    public boolean isKernel();
 
     /**
      * Sets the whether dialog is for Kernel or UST
      * @param isKernel true for kernel domain else UST
      */
-    void setHasKernel(boolean isKernel);
+    public void setHasKernel(boolean isKernel);
 
     // ------------------------------------------------------------------------
     // Operations

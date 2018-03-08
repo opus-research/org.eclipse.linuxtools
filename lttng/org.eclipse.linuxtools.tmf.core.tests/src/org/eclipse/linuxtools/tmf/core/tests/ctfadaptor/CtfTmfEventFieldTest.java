@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -14,14 +14,13 @@
 package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.nio.ByteOrder;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
@@ -29,8 +28,9 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventField;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,19 +43,26 @@ import org.junit.Test;
  */
 public class CtfTmfEventFieldTest {
 
-    private static final String ROOT = "root";
-    private static final String SEQ = "seq";
-    private static final String ARRAY = "array";
-    private static final String STR = "str";
-    private static final String FLOAT = "float";
-    private static final String LEN = "len";
-    private static final String INT = "int";
-    private static final String NAME = "test";
-    private static final String STRUCT = "struct";
-    private static final String VARIANT = "variant";
-    private static final String ENUM = "enum";
+    private static final String ROOT = "root"; //$NON-NLS-1$
+    private static final String SEQ = "seq"; //$NON-NLS-1$
+    private static final String ARRAY = "array"; //$NON-NLS-1$
+    private static final String STR = "str"; //$NON-NLS-1$
+    private static final String FLOAT = "float"; //$NON-NLS-1$
+    private static final String LEN = "len"; //$NON-NLS-1$
+    private static final String INT = "int"; //$NON-NLS-1$
+    private static final String NAME = "test"; //$NON-NLS-1$
 
     private StructDefinition fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CtfTmfEventFieldTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -70,39 +77,30 @@ public class CtfTmfEventFieldTest {
                 ByteOrder.BIG_ENDIAN, 8);
         ArrayDeclaration arrDec = new ArrayDeclaration(2, intDec);
         SequenceDeclaration seqDec = new SequenceDeclaration(LEN, intDec);
-        StructDeclaration structDec = new StructDeclaration(32);
-        EnumDeclaration enumDec = new EnumDeclaration(intDec);
-        VariantDeclaration varDec = new VariantDeclaration();
         sDec.addField(INT, intDec);
         sDec.addField(LEN, intDec);
         sDec.addField(FLOAT, flDec);
         sDec.addField(STR, strDec);
         sDec.addField(ARRAY, arrDec);
         sDec.addField(SEQ, seqDec);
-        structDec.addField(STR, strDec);
-        structDec.addField(INT, intDec);
-        sDec.addField(STRUCT, structDec);
-        enumDec.add(0, 1, LEN);
-        enumDec.add(2, 3, FLOAT);
-        sDec.addField(ENUM, enumDec);
-        varDec.addField(LEN, intDec);
-        varDec.addField(FLOAT, flDec);
-        varDec.setTag(ENUM);
-        sDec.addField(VARIANT, varDec);
         fixture = sDec.createDefinition(fixture, ROOT);
-        int capacity = 2048;
+        int capacity = 1024;
         java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocateDirect(capacity);
         for (int i = 0; i < capacity; i++) {
             bb.put((byte) 2);
         }
         bb.position(20);
         bb.put((byte) 0);
-        bb.position(40);
-        bb.put((byte) 0);
-        bb.position(60);
-        bb.put((byte) 0);
         bb.position(0);
         fixture.read(new BitBuffer(bb));
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -110,9 +108,11 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_float() {
-        FloatDefinition fieldDef = (FloatDefinition) fixture.lookupDefinition(FLOAT);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, "_" + NAME);
-        assertEquals("test=9.551467814359616E-38", result.toString());
+        FloatDefinition fieldDef;
+        fieldDef = (FloatDefinition) fixture.lookupDefinition(FLOAT);
+        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, "_"+NAME); //$NON-NLS-1$
+        String result2 = CtfTmfEventField.copyFrom(result).toString();
+        assertEquals( result2, "test=9.551467814359616E-38"); //$NON-NLS-1$
     }
 
     /**
@@ -120,9 +120,10 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array() {
-        Definition fieldDef = fixture.lookupArray(ARRAY);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=[02, 02]", result.toString());
+        CtfTmfEventField result;
+        result = CtfTmfEventField.parseField(fixture.lookupArray(ARRAY), NAME);
+        String result2 = CtfTmfEventField.copyFrom(result).toString();
+        assertEquals( result2, "test={ 2, 2}"); //$NON-NLS-1$
     }
 
     /**
@@ -132,7 +133,8 @@ public class CtfTmfEventFieldTest {
     public void testParseField_int() {
         Definition fieldDef = fixture.lookupDefinition(INT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=02", result.toString());
+        String result2 =CtfTmfEventField.copyFrom(result).toString();
+        assertEquals( result2, "test=02"); //$NON-NLS-1$
     }
 
     /**
@@ -142,17 +144,8 @@ public class CtfTmfEventFieldTest {
     public void testParseField_sequence() {
         Definition fieldDef = fixture.lookupDefinition(SEQ);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=[02, 02]", result.toString());
-    }
-
-    /**
-     * Run the CtfTmfEventField parseField(Definition,String) method test.
-     */
-    @Test
-    public void testParseField_sequence_value() {
-        Definition fieldDef = fixture.lookupDefinition(SEQ);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("[2, 2]", result.getValue().toString());
+        String result2 =CtfTmfEventField.copyFrom(result).toString();
+        assertEquals( result2, "test={ 2, 2}"); //$NON-NLS-1$
     }
 
     /**
@@ -162,77 +155,17 @@ public class CtfTmfEventFieldTest {
     public void testParseField_string() {
         Definition fieldDef = fixture.lookupDefinition(STR);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=", result.toString());
+        String result2 =CtfTmfEventField.copyFrom(result).toString();
+        assertEquals( result2, "test="); //$NON-NLS-1$
     }
 
     /**
-     * Run the CtfTmfEventField parseField(Definition,String) method test.
+     * Test the clone() method.
      */
     @Test
-    public void testParseField_struct() {
-        Definition fieldDef = fixture.lookupDefinition(STRUCT);
+    public void testClone() {
+        Definition fieldDef = fixture.lookupDefinition(STR);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=[str=, int=02]", result.toString());
-    }
-
-    /**
-     * Run the CtfTmfEventField parseField(Definition,String) method test.
-     */
-    @Test
-    public void testParseField_enum() {
-        Definition fieldDef = fixture.lookupDefinition(ENUM);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=float", result.toString());
-    }
-
-    /**
-     * Run the CtfTmfEventField parseField(Definition,String) method test.
-     */
-    @Test
-    public void testParseField_variant() {
-        Definition fieldDef = fixture.lookupDefinition(VARIANT);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=float=9.551467814359616E-38", result.toString());
-    }
-
-    /**
-     * Run the CtfTmfEventField formatNumber(Long, int, boolean) method test for
-     * unsigned values.
-     */
-    @Test
-    public void testFormatNumber_unsignedLong() {
-
-        long unsignedLongValue = -64;
-        String result = CtfTmfEventField.formatNumber(unsignedLongValue, 10, false);
-        // -64 + 2^64 = 18446744073709551552
-        assertEquals("18446744073709551552", result);
-
-        unsignedLongValue = -131940199973272L;
-        result = CtfTmfEventField.formatNumber(unsignedLongValue, 10, false);
-        // -131940199973272l + 2^64 = 18446612133509578344
-        assertEquals("18446612133509578344", result);
-
-        unsignedLongValue = 123456789L;
-        result = CtfTmfEventField.formatNumber(unsignedLongValue, 10, false);
-        assertEquals("123456789", result);
-    }
-
-    /**
-     * Run the CtfTmfEventField formatNumber(Long, int, boolean) method test for
-     * signed values.
-     */
-    @Test
-    public void testFormatNumber_signedLong() {
-        long signedValue = -64L;
-        String result = CtfTmfEventField.formatNumber(signedValue, 10, true);
-        assertEquals("-64", result);
-
-        signedValue = -131940199973272L;
-        result = CtfTmfEventField.formatNumber(signedValue, 10, true);
-        assertEquals("-131940199973272", result);
-
-        signedValue = 123456789L;
-        result = CtfTmfEventField.formatNumber(signedValue, 10, true);
-        assertEquals("123456789", result);
+        assertNotNull(result.clone());
     }
 }

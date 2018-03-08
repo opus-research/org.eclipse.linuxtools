@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -33,12 +33,12 @@ public interface ITmfDataProvider extends ITmfComponent {
      *
      * @param request The request to process
      */
-    void sendRequest(ITmfDataRequest request);
+    public void sendRequest(ITmfDataRequest request);
 
     /**
      * Queue the coalesced requests.
      */
-    void fireRequest();
+    public void fireRequest();
 
     /**
      * Increments/decrements the pending requests counters and fires the request
@@ -49,7 +49,7 @@ public interface ITmfDataProvider extends ITmfComponent {
      *            Should we increment (true) or decrement (false) the pending
      *            counter
      */
-    void notifyPendingRequest(boolean isIncrement);
+    public void notifyPendingRequest(boolean isIncrement);
 
     /**
      * Return the next event based on the context supplied. The context
@@ -58,5 +58,5 @@ public interface ITmfDataProvider extends ITmfComponent {
      * @param context the trace read context (updated)
      * @return the event referred to by context
      */
-    ITmfEvent getNext(ITmfContext context);
+    public ITmfEvent getNext(ITmfContext context);
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -24,8 +24,10 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventFilterAppliedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventSearchAppliedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
@@ -35,9 +37,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
@@ -56,8 +55,11 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphViewer;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -80,7 +82,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
     private TimeGraphViewer fViewer;
     private final ArrayList<TimeChartAnalysisEntry> fTimeAnalysisEntries = new ArrayList<TimeChartAnalysisEntry>();
     private final Map<ITmfTrace, TimeChartDecorationProvider> fDecorationProviders = new HashMap<ITmfTrace, TimeChartDecorationProvider>();
-    private final ArrayList<DecorateThread> fDecorateThreads = new ArrayList<DecorateThread>();
+    private ArrayList<DecorateThread> fDecorateThreads;
     private long fStartTime = 0;
     private long fStopTime = Long.MAX_VALUE;
     private boolean fRefreshBusy = false;
@@ -89,6 +91,30 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
     private boolean fRedrawPending = false;
     private final Object fSyncObj = new Object();
     private ITimeGraphPresentationProvider fPresentationProvider;
+
+    /**
+     * TimeChartViewer extends TimeGraphViewer to use a TimeGraphControl that overrides drawState
+     * to inhibit drawing of filtered-out events.
+     */
+    private class TimeChartViewer extends TimeGraphViewer {
+
+        public TimeChartViewer(Composite parent, int style) {
+            super(parent, style);
+        }
+
+        @Override
+        protected TimeGraphControl createTimeGraphControl(Composite parent, TimeGraphColorScheme colorScheme) {
+            return new TimeGraphControl(parent, colorScheme) {
+                @Override
+                protected void drawState(TimeGraphColorScheme colors, ITimeEvent event, Rectangle rect, GC gc, boolean selected, boolean timeSelected) {
+                    if (! ((TimeChartEvent) event).isVisible()) {
+                        return;
+                    }
+                    super.drawState(colors, event, rect, gc, selected, timeSelected);
+                }
+            };
+        }
+    }
 
     /**
      * Default constructor
@@ -100,17 +126,14 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
 
     @Override
     public void createPartControl(Composite parent) {
-        fViewer = new TimeGraphViewer(parent, SWT.NONE);
+        fViewer = new TimeChartViewer(parent, SWT.NONE);
         fPresentationProvider = new TimeChartAnalysisProvider();
         fViewer.setTimeGraphProvider(fPresentationProvider);
-        fViewer.setTimeFormat(TimeFormat.CALENDAR);
+        fViewer.setTimeCalendarFormat(true);
         fViewer.addTimeListener(this);
         fViewer.addRangeListener(this);
         fViewer.addSelectionListener(this);
         fViewer.setMinimumItemWidth(1);
-
-        IStatusLineManager statusLineManager = getViewSite().getActionBars().getStatusLineManager();
-        fViewer.getTimeGraphControl().setStatusLineManager(statusLineManager);
 
         IEditorReference[] editorReferences = getSite().getPage().getEditorReferences();
         for (IEditorReference editorReference : editorReferences) {
@@ -129,6 +152,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         }
         fViewer.setInput(fTimeAnalysisEntries.toArray(new TimeChartAnalysisEntry[0]));
 
+        fDecorateThreads = new ArrayList<DecorateThread>();
         ColorSettingsManager.addColorSettingsListener(this);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
     }
@@ -295,16 +319,16 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
     private class ItemizeThread extends Thread {
 
         private final TimeChartAnalysisEntry fTimeAnalysisEntry;
-        private final long startTime;
-        private final long stopTime;
+        private final long fStartTime;
+        private final long fStopTime;
         private final long fMaxDuration;
 
         private ItemizeThread(TimeChartAnalysisEntry timeAnalysisEntry, long startTime, long stopTime) {
             super("Itemize Thread:" + timeAnalysisEntry.getName()); //$NON-NLS-1$
             fTimeAnalysisEntry = timeAnalysisEntry;
-            this.startTime = startTime;
-            this.stopTime = stopTime;
-            fMaxDuration = 3 * (stopTime - startTime) / fDisplayWidth;
+            fStartTime = startTime;
+            fStopTime = stopTime;
+            fMaxDuration = 3 * (fStopTime - fStartTime) / fDisplayWidth;
         }
 
         @Override
@@ -318,15 +342,15 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
             boolean hasNext = true;
             while (hasNext) {
                 synchronized (timeAnalysisEntry) {
-                    while ((hasNext = iterator.hasNext()) == true) {
+                    while (hasNext = iterator.hasNext()) {
                         event = (TimeChartEvent) iterator.next();
-                        if (event.getTime() + event.getDuration() > startTime && event.getTime() < stopTime && event.getDuration() > fMaxDuration
+                        if (event.getTime() + event.getDuration() > fStartTime && event.getTime() < fStopTime && event.getDuration() > fMaxDuration
                                 && event.getNbEvents() > 1) {
                             break;
                         }
                     }
                 }
-                if (hasNext && event != null) {
+                if (hasNext) {
                     if (event.getItemizedEntry() == null) {
                         itemizeEvent(event);
                     } else {
@@ -407,12 +431,12 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
             boolean hasNext = true;
             while (!interrupted && hasNext) {
                 synchronized (timeAnalysisEntry) {
-                    while ((hasNext = iterator.hasNext()) == true) {
+                    while (hasNext = iterator.hasNext()) {
                         event = (TimeChartEvent) iterator.next();
                         break;
                     }
                 }
-                if (hasNext && event != null) {
+                if (hasNext) {
                     // TODO possible concurrency problem here with ItemizeJob
                     event.setColorSettingPriority(ColorSettingsManager.PRIORITY_NONE);
                     if (event.getItemizedEntry() != null) {
@@ -434,12 +458,12 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
             boolean hasNext = true;
             while (!interrupted && hasNext) {
                 synchronized (timeAnalysisEntry) {
-                    while ((hasNext = iterator.hasNext()) == true) {
+                    while (hasNext = iterator.hasNext()) {
                         event = (TimeChartEvent) iterator.next();
                         break;
                     }
                 }
-                if (hasNext && event != null) {
+                if (hasNext) {
                     // TODO possible concurrency problem here with ItemizeJob
                     if (event.getItemizedEntry() == null) {
                         decorateEvent(event);
@@ -528,7 +552,8 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         final ITmfTimestamp startTimestamp = new TmfTimestamp(event.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
         final ITmfTimestamp endTimestamp = new TmfTimestamp(event.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
         TmfTimeRange range = new TmfTimeRange(startTimestamp, endTimestamp);
-        broadcast(new TmfRangeSynchSignal(this, range));
+        TmfTimestamp timestamp = new TmfTimestamp(fViewer.getSelectedTime(), ITmfTimestamp.NANOSECOND_SCALE);
+        broadcast(new TmfRangeSynchSignal(this, range, timestamp));
     }
 
     @Override
@@ -546,7 +571,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
 
     @Override
     public void timeSelected(TimeGraphTimeEvent event) {
-        broadcast(new TmfTimeSynchSignal(this, new TmfTimestamp(event.getBeginTime(), TIMESTAMP_SCALE), new TmfTimestamp(event.getEndTime(), TIMESTAMP_SCALE)));
+        broadcast(new TmfTimeSynchSignal(this, new TmfTimestamp(event.getTime(), TIMESTAMP_SCALE)));
     }
 
     @Override
@@ -586,6 +611,9 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
+        if (fTimeAnalysisEntries == null) {
+            return;
+        }
         final ITmfTrace trace = signal.getTrace();
         final IFile bookmarksFile = signal.getBookmarksFile();
         TimeChartAnalysisEntry timeAnalysisEntry = null;
@@ -614,6 +642,9 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceClosed(TmfTraceClosedSignal signal) {
+        if (fTimeAnalysisEntries == null) {
+            return;
+        }
         final ITmfTrace trace = signal.getTrace();
         for (int i = 0; i < fTimeAnalysisEntries.size(); i++) {
             if (fTimeAnalysisEntries.get(i).getTrace().equals(trace)) {
@@ -642,7 +673,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceSelected(TmfTraceSelectedSignal signal) {
-        if (signal.getSource() != this) {
+        if (signal.getSource() != this && fTimeAnalysisEntries != null) {
             ITmfTrace trace = signal.getTrace();
             for (int i = 0; i < fTimeAnalysisEntries.size(); i++) {
                 if (fTimeAnalysisEntries.get(i).getTrace().equals(trace)) {
@@ -650,9 +681,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
                     break;
                 }
             }
-            long beginTime = fTraceManager.getSelectionBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            long endTime = fTraceManager.getSelectionEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            fViewer.setSelectionRange(beginTime, endTime);
+            fViewer.setSelectedTime(trace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue(), false);
         }
     }
 
@@ -664,6 +693,9 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceUpdated(TmfTraceUpdatedSignal signal) {
+        if (fTimeAnalysisEntries == null) {
+            return;
+        }
         final ITmfTrace trace = signal.getTrace();
         for (int i = 0; i < fTimeAnalysisEntries.size(); i++) {
             TimeChartAnalysisEntry timeAnalysisEntry = fTimeAnalysisEntries.get(i);
@@ -682,21 +714,11 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void currentTimeUpdated(TmfTimeSynchSignal signal) {
-        final long beginTime = signal.getBeginTime().normalize(0, TIMESTAMP_SCALE).getValue();
-        final long endTime = signal.getEndTime().normalize(0, TIMESTAMP_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, TIMESTAMP_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                if (beginTime == endTime) {
-                    fViewer.setSelectedTime(beginTime, true);
-                    if (fStartTime != fViewer.getTime0() || fStopTime != fViewer.getTime1()) {
-                        fStartTime = fViewer.getTime0();
-                        fStopTime = fViewer.getTime1();
-                        itemize(fStartTime, fStopTime);
-                    }
-                } else {
-                    fViewer.setSelectionRange(beginTime, endTime);
-                }
+                fViewer.setSelectedTime(time, true);
             }
         });
     }
@@ -715,6 +737,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         }
         final long startTime = signal.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         final long endTime = signal.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -722,6 +745,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
                 fStopTime = endTime;
                 itemize(fStartTime, fStopTime);
                 fViewer.setStartFinishTime(startTime, endTime);
+                fViewer.setSelectedTime(time, false);
             }
         });
     }

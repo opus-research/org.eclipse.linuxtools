@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,51 +9,42 @@
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
  *   Bernd Hufmann - Fixed header and warnings
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
-import org.junit.Test;
 
 /**
  * TmfBaseColumnDataProvider test cases.
  */
-public class TmfBaseColumnDataProviderTest {
+@SuppressWarnings("nls")
+public class TmfBaseColumnDataProviderTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
-
-    private static final double DELTA = 1e-15;
-
     private final static String LEVEL_COLUMN = Messages.TmfStatisticsView_LevelColumn;
     private final static String EVENTS_COUNT_COLUMN = Messages.TmfStatisticsView_NbEventsColumn;
 
     private TmfBaseColumnDataProvider provider;
 
-    private static final String fTestName = "ColumnDataProviderTest";
+    private String fTestName;
 
     private final String fContext = "UnitTest";
 
@@ -77,9 +68,9 @@ public class TmfBaseColumnDataProviderTest {
 
     private final String fReference = "Some reference";
 
-    private final ITmfEvent fEvent1;
-    private final ITmfEvent fEvent2;
-    private final ITmfEvent fEvent3;
+    private final TmfEvent fEvent1;
+    private final TmfEvent fEvent2;
+    private final TmfEvent fEvent3;
 
     private final TmfEventField fContent1;
     private final TmfEventField fContent2;
@@ -93,15 +84,20 @@ public class TmfBaseColumnDataProviderTest {
 
     /**
      * Constructor
+     * @param name trace name to set
      */
-    public TmfBaseColumnDataProviderTest() {
-        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content", null);
+    public TmfBaseColumnDataProviderTest(final String name) {
+        super(name);
+
+        fTestName = name;
+
+        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType1, fContent1, fReference);
 
-        fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content", null);
+        fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content");
         fEvent2 = new TmfEvent(null, fTimestamp2, fSource, fType2, fContent2, fReference);
 
-        fContent3 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other different content", null);
+        fContent3 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other different content");
         fEvent3 = new TmfEvent(null, fTimestamp3, fSource, fType3, fContent3, fReference);
 
         fStatsData = new TmfStatisticsTree();
@@ -119,11 +115,9 @@ public class TmfBaseColumnDataProviderTest {
     // ------------------------------------------------------------------------
     // Get Column Data
     // ------------------------------------------------------------------------
-
     /**
      * Method with test cases.
      */
-    @Test
     public void testGetColumnData() {
         List<TmfBaseColumnData> columnsData = provider.getColumnData();
         assertNotNull("getColumnData", columnsData);
@@ -164,7 +158,7 @@ public class TmfBaseColumnDataProviderTest {
                 assertNull("getColumnData", percentProvider);
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
                 double percentage = (double) treeNode1.getValues().getTotal() / parentNode.getValues().getTotal();
-                assertEquals("getColumnData", percentage, percentProvider.getPercentage(treeNode1), DELTA);
+                assertEquals("getColumnData", percentage, percentProvider.getPercentage(treeNode1));
             }
         }
     }

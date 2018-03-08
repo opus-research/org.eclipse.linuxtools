@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,30 +8,27 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.core.tests.uml2sd;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfSyncSequenceDiagramEvent;
 
-import org.junit.Test;
-
 /**
- * TmfSyncSequenceDiagramEventTest
+ * <b><u>TmfSyncSequenceDiagramEventTest</u></b>
+ * <p>
+ * Implement me. Please.
+ * <p>
  */
-public class TmfSyncSequenceDiagramEventTest {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfSyncSequenceDiagramEventTest extends TestCase {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;
     private final String fTypeId  = "Some type";
@@ -44,21 +41,22 @@ public class TmfSyncSequenceDiagramEventTest {
     private final TmfEventType fType       = new TmfEventType(fContext, fTypeId, TmfEventField.makeRoot(fLabels));
     private final String       fReference  = "Some reference";
 
-    private final ITmfEvent fEvent1;
+    private final TmfEvent fEvent1;
     private final TmfEventField fContent1;
 
-    /**
-     * Constructor for the test case
-     */
-    public TmfSyncSequenceDiagramEventTest() {
-        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content", null);
+    public TmfSyncSequenceDiagramEventTest () {
+        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType, fContent1, fReference);
     }
 
-    /**
-     * Main test
-     */
-    @Test
+    @Override
+    public void setUp() throws Exception {
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+    }
+
     public void testTmfSyncSequenceDiagramEvent() {
         TmfSyncSequenceDiagramEvent event = null;
         try {

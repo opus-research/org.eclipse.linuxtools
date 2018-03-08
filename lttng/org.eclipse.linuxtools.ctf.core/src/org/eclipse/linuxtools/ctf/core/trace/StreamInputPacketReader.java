@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Collection;
+import java.util.HashMap;
 
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
@@ -26,7 +26,8 @@ import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -59,6 +60,9 @@ public class StreamInputPacketReader implements IDefinitionScope {
 
     /** Stream event context definition.*/
     private final StructDefinition streamEventContextDef;
+
+    /** Maps event ID to event definitions. */
+    private final HashMap<Long, EventDefinition> events;
 
     /** Reference to the index entry of the current packet. */
     private StreamInputPacketIndexEntry currentPacket = null;
@@ -96,6 +100,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
         bitBuffer = new BitBuffer();
         bitBuffer.setByteOrder(streamInputReader.getByteOrder());
 
+        events = streamInputReader.getStreamInput().getStream().getTrace().getEventDefs(streamInputReader.getStreamInput());
         lostSoFar = 0;
 
         /* Create trace packet header definition. */
@@ -132,22 +137,14 @@ public class StreamInputPacketReader implements IDefinitionScope {
         }
 
         /* Create event definitions */
-        Collection<IEventDeclaration> eventDecls = streamInputReader.getStreamInput().getStream().getEvents().values();
+        Collection<EventDeclaration> eventDecls = streamInputReader.getStreamInput().getStream().getEvents().values();
 
-        for (IEventDeclaration event : eventDecls) {
-            if (!streamInputReader.getEventDefinitions().containsKey(event.getId())) {
+        for (EventDeclaration event : eventDecls) {
+            if (!events.containsKey(event.getId())) {
                 EventDefinition eventDef = event.createDefinition(streamInputReader);
-                streamInputReader.addEventDefinition(event.getId(), eventDef);
+                events.put(event.getId(), eventDef);
             }
         }
-    }
-
-    /**
-     * Dispose the StreamInputPacketReader
-     * @since 2.0
-     */
-    public void dispose() {
-        bitBuffer.setByteBuffer(null);
     }
 
     // ------------------------------------------------------------------------
@@ -159,7 +156,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *
      * @return the current packet
      */
-    StreamInputPacketIndexEntry getCurrentPacket() {
+    public StreamInputPacketIndexEntry getCurrentPacket() {
         return this.currentPacket;
     }
 
@@ -205,7 +202,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @param currentPacket
      *            The index entry of the packet to switch to.
      */
-    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
+    public void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
         this.currentPacket = currentPacket;
 
         if (this.currentPacket != null) {
@@ -286,7 +283,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      */
     public EventDefinition readNextEvent() throws CTFReaderException {
         /* Default values for those fields */
-        long eventID = EventDeclaration.UNSET_EVENT_ID;
+        long eventID = 0;
         long timestamp = 0;
 
         if (lostEventsInThisPacket > lostSoFar) {
@@ -310,9 +307,9 @@ public class StreamInputPacketReader implements IDefinitionScope {
             } // else, eventID remains 0
 
             /* Get the timestamp from the event header (may be overridden later on) */
-            IntegerDefinition timestampDef = sehd.lookupInteger("timestamp"); //$NON-NLS-1$
-            if (timestampDef != null) {
-                timestamp = calculateTimestamp(timestampDef);
+            Definition timestampDef = sehd.lookupInteger("timestamp"); //$NON-NLS-1$
+            if (timestampDef instanceof IntegerDefinition) {
+                timestamp = calculateTimestamp((IntegerDefinition) timestampDef);
             } // else timestamp remains 0
 
             /* Check for the variant v. */
@@ -332,9 +329,9 @@ public class StreamInputPacketReader implements IDefinitionScope {
                 }
 
                 /* Get the timestamp. This would overwrite any previous timestamp definition */
-                Definition def = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
-                if (def instanceof IntegerDefinition) {
-                    timestamp = calculateTimestamp((IntegerDefinition) def);
+                timestampDef = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
+                if (timestampDef instanceof IntegerDefinition) {
+                    timestamp = calculateTimestamp((IntegerDefinition) timestampDef);
                 }
             }
         }
@@ -345,14 +342,14 @@ public class StreamInputPacketReader implements IDefinitionScope {
         }
 
         /* Get the right event definition using the event id. */
-        EventDefinition eventDef = streamInputReader.getEventDefinitions().get(eventID);
+        EventDefinition eventDef = events.get(eventID);
         if (eventDef == null) {
             throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
         }
 
         /* Read the event context. */
-        if (eventDef.getEventContext() != null) {
-            eventDef.getEventContext().read(currentBitBuffer);
+        if (eventDef.getContext() != null) {
+            eventDef.getContext().read(currentBitBuffer);
         }
 
         /* Read the event fields. */
@@ -415,6 +412,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
 
     @Override
     public Definition lookupDefinition(String lookupPath) {
+        // TODO Auto-generated method stub
         return null;
     }
 }

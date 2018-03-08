@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -34,7 +34,8 @@ import org.eclipse.swt.widgets.Text;
  *
  * Overrides InputDialog to support multiple line text input.
  *
- * @author Patrick Tassé
+ * @author Patrick Tasse
+ *
  */
 public class MultiLineInputDialog extends InputDialog {
 
@@ -81,6 +82,9 @@ public class MultiLineInputDialog extends InputDialog {
         this.dialogMessage = dialogMessage;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.InputDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -135,6 +139,9 @@ public class MultiLineInputDialog extends InputDialog {
         return composite;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createContents(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createContents(Composite parent) {
         Control control = super.createContents(parent);
@@ -147,11 +154,17 @@ public class MultiLineInputDialog extends InputDialog {
         return control;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.InputDialog#getInputTextStyle()
+     */
     @Override
     protected int getInputTextStyle() {
         return SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+     */
     @Override
     protected boolean isResizable() {
         return true;

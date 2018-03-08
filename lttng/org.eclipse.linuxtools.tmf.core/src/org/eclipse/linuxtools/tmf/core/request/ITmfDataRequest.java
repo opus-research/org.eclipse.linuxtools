@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -47,37 +47,37 @@ public interface ITmfDataRequest {
     /**
      * @return request data type (T)
      */
-    Class<? extends ITmfEvent> getDataType();
+    public Class<? extends ITmfEvent> getDataType();
 
     /**
      * @return request ID
      */
-    int getRequestId();
+    public int getRequestId();
 
     /**
      * @return request ID
      */
-    ExecutionType getExecType();
+    public ExecutionType getExecType();
 
     /**
 	 * @return the index of the first event requested
      */
-    long getIndex();
+    public long getIndex();
 
     /**
      * @return the number of requested events
      */
-    int getNbRequested();
+    public int getNbRequested();
 
     /**
      * @return the block size (for BG requests)
      */
-    int getBlockSize();
+    public int getBlockSize();
 
     /**
      * @return the number of events read so far
      */
-    int getNbRead();
+    public int getNbRead();
 
 	// ------------------------------------------------------------------------
 	// Request state predicates
@@ -86,22 +86,22 @@ public interface ITmfDataRequest {
     /**
      * @return true if the request is still active
      */
-    boolean isRunning();
+    public boolean isRunning();
 
     /**
      * @return true if the request is completed
      */
-    boolean isCompleted();
+    public boolean isCompleted();
 
     /**
      * @return true if the request has failed
      */
-    boolean isFailed();
+    public boolean isFailed();
 
     /**
      * @return true if the request was cancelled
      */
-    boolean isCancelled();
+    public boolean isCancelled();
 
 	// ------------------------------------------------------------------------
 	// Data handling
@@ -112,7 +112,7 @@ public interface ITmfDataRequest {
      *
      * @param data the data to process
      */
-    void handleData(ITmfEvent data);
+    public void handleData(ITmfEvent data);
 
 	// ------------------------------------------------------------------------
 	// Request notifications
@@ -121,27 +121,27 @@ public interface ITmfDataRequest {
     /**
      * Request processing start notification
      */
-    void handleStarted();
+    public void handleStarted();
 
     /**
      * Request processing completion notification
      */
-    void handleCompleted();
+    public void handleCompleted();
 
     /**
      * Request successful completion notification
      */
-    void handleSuccess();
+    public void handleSuccess();
 
     /**
      * Request failure notification
      */
-    void handleFailure();
+    public void handleFailure();
 
     /**
      * Request cancellation notification
      */
-    void handleCancel();
+    public void handleCancel();
 
     /**
      * To suspend the client thread until the request completes
@@ -149,7 +149,7 @@ public interface ITmfDataRequest {
      *
      * @throws InterruptedException thrown if the request was cancelled
      */
-    void waitForCompletion() throws InterruptedException;
+    public void waitForCompletion() throws InterruptedException;
 
 	// ------------------------------------------------------------------------
 	// Request state modifiers
@@ -158,20 +158,20 @@ public interface ITmfDataRequest {
     /**
      * Put the request in the running state
      */
-    void start();
+    public void start();
 
     /**
      * Put the request in the completed state
      */
-    void done();
+    public void done();
 
     /**
      * Put the request in the failed completed state
      */
-    void fail();
+    public void fail();
 
     /**
      * Put the request in the cancelled completed state
      */
-    void cancel();
+    public void cancel();
 }

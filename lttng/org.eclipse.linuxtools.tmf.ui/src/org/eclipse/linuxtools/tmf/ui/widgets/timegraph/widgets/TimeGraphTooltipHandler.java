@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
+ * Copyright (c) 2007 Intel Corporation, 2009, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,8 @@
  *   Vitaly A. Provodin, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
+ *
  *****************************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
 import java.util.Iterator;
@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
@@ -48,46 +47,45 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class TimeGraphTooltipHandler {
 
-    private static final int OFFSET = 16;
-
-    private Shell fTipShell;
-    private Composite fTipComposite;
-    private final ITimeDataProvider fTimeDataProvider;
-    private ITimeGraphPresentationProvider fTimeGraphProvider = null;
+    private Shell _tipShell;
+    private Composite _tipComposite;
+    private Point _tipPosition;
+    private final ITimeDataProvider _timeDataProvider;
+    ITimeGraphPresentationProvider _utilImp = null;
 
     /**
      * Standard constructor
      *
-     * @param graphProv
+     * @param parent
+     *            The parent shell (unused, can be null)
+     * @param rUtilImpl
      *            The presentation provider
      * @param timeProv
      *            The time provider
-     *
-     * @since 2.0
      */
-    public TimeGraphTooltipHandler(ITimeGraphPresentationProvider graphProv,
+    public TimeGraphTooltipHandler(Shell parent, ITimeGraphPresentationProvider rUtilImpl,
             ITimeDataProvider timeProv) {
 
-        this.fTimeGraphProvider = graphProv;
-        this.fTimeDataProvider = timeProv;
+        this._utilImp = rUtilImpl;
+        this._timeDataProvider = timeProv;
     }
 
     private void createTooltipShell(Shell parent) {
         final Display display = parent.getDisplay();
-        if (fTipShell != null && ! fTipShell.isDisposed()) {
-            fTipShell.dispose();
+        if (_tipShell != null && ! _tipShell.isDisposed()) {
+            _tipShell.dispose();
         }
-        fTipShell = new Shell(parent, SWT.ON_TOP | SWT.TOOL);
+        _tipShell = new Shell(parent, SWT.ON_TOP | SWT.TOOL);
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
         gridLayout.marginWidth = 2;
         gridLayout.marginHeight = 2;
-        fTipShell.setLayout(gridLayout);
-        fTipShell.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        _tipShell.setLayout(gridLayout);
+        _tipShell.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 
-        fTipComposite = new Composite(fTipShell, SWT.NONE);
-        fTipComposite.setLayout(new GridLayout(3, false));
-        setupControl(fTipComposite);
+        _tipComposite = new Composite(_tipShell, SWT.NONE);
+        _tipComposite.setLayout(new GridLayout(3, false));
+        setupControl(_tipComposite);
 
     }
 
@@ -101,8 +99,8 @@ public class TimeGraphTooltipHandler {
         control.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                if (fTipShell != null && ! fTipShell.isDisposed()) {
-                    fTipShell.dispose();
+                if (_tipShell != null && ! _tipShell.isDisposed()) {
+                    _tipShell.dispose();
                 }
             }
         });
@@ -110,8 +108,8 @@ public class TimeGraphTooltipHandler {
         control.addMouseMoveListener(new MouseMoveListener() {
             @Override
             public void mouseMove(MouseEvent e) {
-                if (fTipShell != null && ! fTipShell.isDisposed()) {
-                    fTipShell.dispose();
+                if (_tipShell != null && ! _tipShell.isDisposed()) {
+                    _tipShell.dispose();
                 }
             }
         });
@@ -119,24 +117,24 @@ public class TimeGraphTooltipHandler {
         control.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
             public void mouseExit(MouseEvent e) {
-                if (fTipShell != null && ! fTipShell.isDisposed()) {
+                if (_tipShell != null && ! _tipShell.isDisposed()) {
                     Point pt = control.toDisplay(e.x, e.y);
-                    if (! fTipShell.getBounds().contains(pt)) {
-                        fTipShell.dispose();
+                    if (! _tipShell.getBounds().contains(pt)) {
+                        _tipShell.dispose();
                     }
                 }
             }
 
             private void addItem(String name, String value) {
-                Label nameLabel = new Label(fTipComposite, SWT.NO_FOCUS);
+                Label nameLabel = new Label(_tipComposite, SWT.NO_FOCUS);
                 nameLabel.setText(name);
                 setupControl(nameLabel);
-                Label separator = new Label(fTipComposite, SWT.NO_FOCUS | SWT.SEPARATOR | SWT.VERTICAL);
+                Label separator = new Label(_tipComposite, SWT.NO_FOCUS | SWT.SEPARATOR | SWT.VERTICAL);
                 GridData gd = new GridData(SWT.CENTER, SWT.CENTER, false, false);
                 gd.heightHint = nameLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
                 separator.setLayoutData(gd);
                 setupControl(separator);
-                Label valueLabel = new Label(fTipComposite, SWT.NO_FOCUS);
+                Label valueLabel = new Label(_tipComposite, SWT.NO_FOCUS);
                 valueLabel.setText(value);
                 setupControl(valueLabel);
             }
@@ -157,35 +155,36 @@ public class TimeGraphTooltipHandler {
                     // if there is no current event at the start of the current pixel range,
                     // or if the current event starts before the current pixel range,
                     // use the next event as long as it starts within the current pixel range
-                    if ((currEvent == null || currEvent.getTime() < currPixelTime) &&
-                        (nextEvent != null && nextEvent.getTime() < nextPixelTime)) {
-                        currEvent = nextEvent;
-                        currPixelTime = nextEvent.getTime();
+                    if (currEvent == null || currEvent.getTime() < currPixelTime) {
+                        if (nextEvent != null && nextEvent.getTime() < nextPixelTime) {
+                            currEvent = nextEvent;
+                            currPixelTime = nextEvent.getTime();
+                        }
                     }
 
                     // state name
-                    String stateTypeName = fTimeGraphProvider.getStateTypeName(entry);
+                    String stateTypeName = _utilImp.getStateTypeName(entry);
                     String entryName = entry.getName();
                     if (stateTypeName == null) {
-                        stateTypeName = fTimeGraphProvider.getStateTypeName();
+                        stateTypeName = _utilImp.getStateTypeName();
                     }
 
                     if (!entryName.isEmpty()) {
                         addItem(stateTypeName, entry.getName());
                     }
 
-                    if (currEvent == null || currEvent instanceof NullTimeEvent) {
+                    if (currEvent == null) {
                         return;
                     }
 
                     // state
-                    String state = fTimeGraphProvider.getEventName(currEvent);
+                    String state = _utilImp.getEventName(currEvent);
                     if (state != null) {
                         addItem(Messages.TmfTimeTipHandler_TRACE_STATE, state);
                     }
 
                     // This block receives a list of <String, String> values to be added to the tip table
-                    Map<String, String> eventAddOns = fTimeGraphProvider.getEventHoverToolTipInfo(currEvent, currPixelTime);
+                    Map<String, String> eventAddOns = _utilImp.getEventHoverToolTipInfo(currEvent, currPixelTime);
                     if (eventAddOns != null) {
                         for (Iterator<String> iter = eventAddOns.keySet().iterator(); iter.hasNext();) {
                             String message = iter.next();
@@ -207,33 +206,43 @@ public class TimeGraphTooltipHandler {
                     }
 
                     Resolution res = Resolution.NANOSEC;
-                    TimeFormat tf = fTimeDataProvider.getTimeFormat();
-                    if (tf == TimeFormat.CALENDAR) {
+                    if (_timeDataProvider.isCalendarFormat()) {
                         addItem(Messages.TmfTimeTipHandler_TRACE_DATE, eventStartTime > -1 ?
                                 Utils.formatDate(eventStartTime)
                                 : "?"); //$NON-NLS-1$
-                    }
-                    if (eventDuration > 0) {
-                        addItem(Messages.TmfTimeTipHandler_TRACE_START_TIME, eventStartTime > -1 ?
-                                Utils.formatTime(eventStartTime, tf, res)
-                                : "?"); //$NON-NLS-1$
+                        if (eventDuration > 0) {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_START_TIME, eventStartTime > -1 ?
+                                    Utils.formatTime(eventStartTime, TimeFormat.ABSOLUTE, res)
+                                    : "?"); //$NON-NLS-1$
 
-                        addItem(Messages.TmfTimeTipHandler_TRACE_STOP_TIME, eventEndTime > -1 ?
-                                Utils.formatTime(eventEndTime, tf, res)
-                                : "?"); //$NON-NLS-1$
+                            addItem(Messages.TmfTimeTipHandler_TRACE_STOP_TIME, eventEndTime > -1 ?
+                                    Utils.formatTime(eventEndTime, TimeFormat.ABSOLUTE, res)
+                                    : "?"); //$NON-NLS-1$
+                        } else {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_EVENT_TIME, eventStartTime > -1 ?
+                                    Utils.formatTime(eventStartTime, TimeFormat.ABSOLUTE, res)
+                                    : "?"); //$NON-NLS-1$
+                        }
                     } else {
-                        addItem(Messages.TmfTimeTipHandler_TRACE_EVENT_TIME, eventStartTime > -1 ?
-                                Utils.formatTime(eventStartTime, tf, res)
-                                : "?"); //$NON-NLS-1$
+                        if (eventDuration > 0) {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_START_TIME, eventStartTime > -1 ?
+                                    Utils.formatTime(eventStartTime, TimeFormat.RELATIVE, res)
+                                    : "?"); //$NON-NLS-1$
+
+                            addItem(Messages.TmfTimeTipHandler_TRACE_STOP_TIME, eventEndTime > -1 ?
+                                    Utils.formatTime(eventEndTime, TimeFormat.RELATIVE, res)
+                                    : "?"); //$NON-NLS-1$
+                        } else {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_EVENT_TIME, eventStartTime > -1 ?
+                                    Utils.formatTime(eventStartTime, TimeFormat.RELATIVE, res)
+                                    : "?"); //$NON-NLS-1$
+                        }
                     }
 
                     if (eventDuration > 0) {
                         // Duration in relative format in any case
-                        if (tf == TimeFormat.CALENDAR) {
-                            tf = TimeFormat.RELATIVE;
-                        }
                         addItem(Messages.TmfTimeTipHandler_DURATION, eventDuration > -1 ?
-                                Utils.formatTime(eventDuration, tf, res)
+                                Utils.formatTime(eventDuration, TimeFormat.RELATIVE, res)
                                 : "?"); //$NON-NLS-1$
                     }
                 }
@@ -248,18 +257,18 @@ public class TimeGraphTooltipHandler {
                 TimeGraphControl timeGraphControl = (TimeGraphControl) event.widget;
                 createTooltipShell(timeGraphControl.getShell());
                 ITimeGraphEntry entry = timeGraphControl.getEntry(pt);
-                for (Control child : fTipComposite.getChildren()) {
+                for (Control child : _tipComposite.getChildren()) {
                     child.dispose();
                 }
                 fillValues(pt, timeGraphControl, entry);
-                if (fTipComposite.getChildren().length == 0) {
+                if (_tipComposite.getChildren().length == 0) {
                     return;
                 }
-                fTipShell.pack();
-                Point tipPosition = control.toDisplay(pt);
-                fTipShell.pack();
-                setHoverLocation(fTipShell, tipPosition);
-                fTipShell.setVisible(true);
+                _tipShell.pack();
+                _tipPosition = control.toDisplay(pt);
+                _tipShell.pack();
+                setHoverLocation(_tipShell, _tipPosition);
+                _tipShell.setVisible(true);
             }
         });
     }
@@ -267,41 +276,41 @@ public class TimeGraphTooltipHandler {
     private static void setHoverLocation(Shell shell, Point position) {
         Rectangle displayBounds = shell.getDisplay().getBounds();
         Rectangle shellBounds = shell.getBounds();
-        if (position.x + shellBounds.width + OFFSET > displayBounds.width && position.x - shellBounds.width - OFFSET >= 0) {
-            shellBounds.x = position.x - shellBounds.width - OFFSET;
+        if (position.x + shellBounds.width + 16 > displayBounds.width && position.x - shellBounds.width - 16 >= 0) {
+            shellBounds.x = position.x - shellBounds.width - 16;
         } else {
-            shellBounds.x = Math.max(Math.min(position.x + OFFSET, displayBounds.width - shellBounds.width), 0);
+            shellBounds.x = Math.max(Math.min(position.x + 16, displayBounds.width - shellBounds.width), 0);
         }
-        if (position.y + shellBounds.height + OFFSET > displayBounds.height && position.y - shellBounds.height - OFFSET >= 0) {
-            shellBounds.y = position.y - shellBounds.height - OFFSET;
+        if (position.y + shellBounds.height + 16 > displayBounds.height && position.y - shellBounds.height - 16 >= 0) {
+            shellBounds.y = position.y - shellBounds.height - 16;
         } else {
-            shellBounds.y = Math.max(Math.min(position.y + OFFSET, displayBounds.height - shellBounds.height), 0);
+            shellBounds.y = Math.max(Math.min(position.y + 16, displayBounds.height - shellBounds.height), 0);
         }
         shell.setBounds(shellBounds);
     }
 
     private void setupControl(Control control) {
-        control.setForeground(fTipShell.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-        control.setBackground(fTipShell.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        control.setForeground(_tipShell.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+        control.setBackground(_tipShell.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 
         control.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                fTipShell.dispose();
+                _tipShell.dispose();
             }
         });
 
         control.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
             public void mouseExit(MouseEvent e) {
-                fTipShell.dispose();
+                _tipShell.dispose();
             }
         });
 
         control.addMouseMoveListener(new MouseMoveListener() {
             @Override
             public void mouseMove(MouseEvent e) {
-                fTipShell.dispose();
+                _tipShell.dispose();
             }
         });
     }

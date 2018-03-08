@@ -1,21 +1,22 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.Comparator;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -68,15 +69,15 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
     /**
      * The associated message return
      */
-    private SyncMessageReturn fMessageReturn;
+    protected SyncMessageReturn fMessageReturn;
     /**
      * The time when the message occurs
      */
-    private ITmfTimestamp fEventTime = new TmfTimestamp();
+    protected ITmfTimestamp fEventTime = new TmfTimestamp();
     /**
      * Flag whether the message has time information available or not
      */
-    private boolean fHasTimeInfo = false;
+    protected boolean fHasTimeInfo = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -86,7 +87,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * Default constructor
      */
     public SyncMessage() {
-        setColorPrefId(ISDPreferences.PREF_SYNC_MESS);
+        fPrefId = ISDPreferences.PREF_SYNC_MESS;
     }
 
     // ------------------------------------------------------------------------
@@ -182,8 +183,8 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      */
     @Override
     protected void setEventOccurrence(int occurrence) {
-        setStartOccurrence(occurrence);
-        setEndOccurrence(occurrence);
+        fStartEventOccurrence = occurrence;
+        fEndEventOccurrence = occurrence;
     }
 
     /**
@@ -208,7 +209,6 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * Set the time when the message occurs
      *
      * @param time the time when the message occurs
-     * @since 2.0
      */
     public void setTime(ITmfTimestamp time) {
         fEventTime = time;
@@ -220,27 +220,37 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         }
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
      */
     @Override
     public ITmfTimestamp getEndTime() {
         return fEventTime;
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
      */
     @Override
     public ITmfTimestamp getStartTime() {
         return fEventTime;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
+     */
     @Override
     public boolean hasTimeInfo() {
         return fHasTimeInfo;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -251,12 +261,16 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
         // Draw it selected?
         if (!isSelected()) {
-            context.setBackground(pref.getBackGroundColor(getColorPrefId()));
-            context.setForeground(pref.getForeGroundColor(getColorPrefId()));
+            context.setBackground(pref.getBackGroundColor(fPrefId));
+            context.setForeground(pref.getForeGroundColor(fPrefId));
         }
         super.draw(context);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage#isVisible(int, int, int, int)
+     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         if (getY() > y + height +
@@ -267,7 +281,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
         // UML2 lost/found message visibility special case
         // Others visibility cases are perform in the ***common*** case
-        if ((getEndLifeline() == null && getStartLifeline() != null) || (getEndLifeline() != null && getStartLifeline() == null)) {
+        if ((fEndLifeline == null && fStartLifeline != null) || (fEndLifeline != null && fStartLifeline == null)) {
             if (x + width > getX() + getWidth() && x < getX() + getWidth()) {
                 return true;
             }
@@ -276,16 +290,28 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         return super.isVisible(x, y, width, height);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getComparator()
+     */
     @Override
     public Comparator<GraphNode> getComparator() {
         return new SortSyncMessageComparator();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return SYNC_MESS_TAG;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#positiveDistanceToPoint(int, int)
+     */
     @Override
     public boolean positiveDistanceToPoint(int x, int y) {
         if (getY() > y) {

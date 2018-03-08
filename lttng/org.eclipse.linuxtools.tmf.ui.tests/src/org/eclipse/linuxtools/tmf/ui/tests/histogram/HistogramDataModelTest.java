@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,32 +9,47 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Adapt to junit.framework.TestCase
- *   Alexandre Montplaisir - Port to JUnit4
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.histogram;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramScaledData;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.IHistogramModelListener;
-import org.junit.Test;
 
 /**
+ *
  * Unit tests for the HistogramDataModel class.
  */
-public class HistogramDataModelTest {
+public class HistogramDataModelTest extends TestCase {
 
-    private static final double DELTA = 1e-15;
+    // ------------------------------------------------------------------------
+    // Test data
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    @Override
+    public void setUp() throws Exception {
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+    }
+
+    // ------------------------------------------------------------------------
+    // Tests
+    // ------------------------------------------------------------------------
 
     /**
-     * Test method for {@link HistogramDataModel#HistogramDataModel()}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#HistogramDataModel()}
+     * .
      */
-    @Test
     public void testHistogramDataModel() {
         HistogramDataModel model = new HistogramDataModel();
         assertTrue(model.getNbBuckets() == HistogramDataModel.DEFAULT_NUMBER_OF_BUCKETS);
@@ -47,9 +62,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#HistogramDataModel(int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#HistogramDataModel(int)}
+     * .
      */
-    @Test
     public void testHistogramDataModelInt() {
         final int nbBuckets = 5 * 1000;
         HistogramDataModel model = new HistogramDataModel(nbBuckets);
@@ -63,9 +79,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * .
      */
-    @Test
     public void testClear() {
         final int nbBuckets = 100;
         HistogramDataModel model = new HistogramDataModel(nbBuckets);
@@ -81,9 +98,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * .
      */
-    @Test
     public void testCountEvent_0() {
         final int nbBuckets = 100;
         HistogramDataModel model = new HistogramDataModel(nbBuckets);
@@ -99,11 +117,13 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)} and
-     * {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testCountEvent_1() {
+
         final int nbBuckets = 100;
         final int maxHeight = 10;
 
@@ -124,10 +144,11 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)} and
-     * {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testCountEvent_2() {
         final int nbBuckets = 100;
         final int maxHeight = 10;
@@ -151,10 +172,11 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)} and
-     * {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testCountEvent_3() {
         final int nbBuckets = 100;
         final int maxHeight = 10;
@@ -179,10 +201,11 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)} and
-     * {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testCountEvent_4() {
         final int nbBuckets = 100;
         final int maxHeight = 10;
@@ -208,10 +231,11 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test methods for {@link HistogramDataModel#countEvent(long,long)} and
-     * {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test methods for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#countEvent(long,long)}
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testCountEvent_5() {
         final int nbBuckets = 100;
         final int startTime = 25;
@@ -237,9 +261,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_0() {
         HistogramDataModel model = new HistogramDataModel(10);
         try {
@@ -258,13 +283,15 @@ public class HistogramDataModelTest {
                 }
             }
         }
-        fail("Uncaught assertion error");
+
+        fail("Uncaught assertion error"); //$NON-NLS-1$
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_1() {
         final int nbBuckets = 10;
         final int maxHeight = 10;
@@ -291,9 +318,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_2() {
         final int nbBuckets = 10;
         final int maxHeight = 10;
@@ -320,9 +348,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_3() {
         final int nbBuckets = 10;
         final int maxHeight = 10;
@@ -349,9 +378,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_4() {
         final int nbBuckets = 10;
         final int maxHeight = 10;
@@ -378,9 +408,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_5() {
         final int nbBuckets = 100;
         final int maxHeight = 20;
@@ -406,9 +437,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_6() {
         final int nbBuckets = 100;
         final int maxHeight = 24;
@@ -435,9 +467,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleTo_7() {
         // verify scaleTo with barWidth > 1
         final int nbBuckets = 100;
@@ -464,13 +497,12 @@ public class HistogramDataModelTest {
         HistogramScaledData result = model.scaleTo(width, maxHeight, barWidth);
 
         assertEquals(4 * 26, result.fBucketDuration);
-        assertEquals(0, result.fSelectionBeginBucket);
-        assertEquals(0, result.fSelectionEndBucket);
+        assertEquals(0, result.fCurrentBucket);
         assertEquals(0, result.fFirstBucketTime);
         assertEquals(0, result.fFirstEventTime);
         assertEquals(1, result.fLastBucket);
         assertEquals(104, result.fMaxValue);
-        assertEquals((double)maxHeight/104, result.fScalingFactor, DELTA);
+        assertEquals((double)maxHeight/104, result.fScalingFactor);
         assertEquals(maxHeight, result.fHeight);
         assertEquals(width, result.fWidth);
         assertEquals(barWidth, result.fBarWidth);
@@ -490,9 +522,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleToReverse_1() {
         final int nbBuckets = 100;
         final int maxHeight = 24;
@@ -516,13 +549,12 @@ public class HistogramDataModelTest {
         HistogramScaledData result = model.scaleTo(width, maxHeight, barWidth);
 
         assertEquals(4 * 6, result.fBucketDuration);
-        assertEquals(0, result.fSelectionBeginBucket);
-        assertEquals(0, result.fSelectionEndBucket);
+        assertEquals(0, result.fCurrentBucket);
         assertEquals(-3, result.fFirstBucketTime); // negative is correct, can happen when reverse
         assertEquals(0, result.fFirstEventTime);
         assertEquals(9, result.fLastBucket);
         assertEquals(24, result.fMaxValue);
-        assertEquals((double)maxHeight/24, result.fScalingFactor, DELTA);
+        assertEquals((double)maxHeight/24, result.fScalingFactor);
         assertEquals(maxHeight, result.fHeight);
         assertEquals(width, result.fWidth);
         assertEquals(barWidth, result.fBarWidth);
@@ -542,9 +574,10 @@ public class HistogramDataModelTest {
     }
 
     /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     * Test method for
+     * {@link org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel#scaleTo(int,int,int)}
+     * .
      */
-    @Test
     public void testScaleToReverse_2() {
         final int nbBuckets = 100;
         final int maxHeight = 24;
@@ -578,11 +611,10 @@ public class HistogramDataModelTest {
 
         // For the above number of events, result and revResult are exactly the same.
         assertEquals(result.fBucketDuration, revResult.fBucketDuration);
-        assertEquals(result.fSelectionBeginBucket, revResult.fSelectionBeginBucket);
-        assertEquals(result.fSelectionEndBucket, revResult.fSelectionEndBucket);
+        assertEquals(result.fCurrentBucket, revResult.fCurrentBucket);
         assertEquals(result.fFirstBucketTime, revResult.fFirstBucketTime);
         assertEquals(result.fMaxValue, revResult.fMaxValue);
-        assertEquals(result.fScalingFactor, revResult.fScalingFactor, DELTA);
+        assertEquals(result.fScalingFactor, revResult.fScalingFactor);
         assertEquals(result.fLastBucket, revResult.fLastBucket);
         assertEquals(result.getBucketEndTime(0), revResult.getBucketEndTime(0));
         assertEquals(result.getBucketStartTime(0), revResult.getBucketStartTime(0));
@@ -595,7 +627,6 @@ public class HistogramDataModelTest {
     /**
      * Test method for testing model listener.
      */
-    @Test
     public void testModelListener() {
         final int nbBuckets = 2000;
         final int nbEvents = 10 * nbBuckets + 256;

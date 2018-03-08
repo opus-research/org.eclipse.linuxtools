@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Changed to updated histogram data model
- *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -62,8 +61,7 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
      */
     public FullTraceHistogram(HistogramView view, Composite parent) {
         super(view, parent);
-        fZoom = new HistogramZoom(this, getStartTime(), getTimeLimit());
-        addMouseWheelListener(fZoom);
+        fZoom = new HistogramZoom(this, fCanvas, getStartTime(), getTimeLimit());
         fCanvas.addMouseMoveListener(this);
     }
 
@@ -77,6 +75,9 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
     // Operations
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.Histogram#clear()
+     */
     @Override
     public void clear() {
         fRangeStartTime = 0L;
@@ -84,6 +85,7 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         if (fZoom != null) {
             fZoom.setFullRange(0L, 0L);
             fZoom.setNewRange(0L, 0L);
+            fZoom.stop();
         }
         super.clear();
     }
@@ -111,6 +113,9 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         fDataModel.complete();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.Histogram#updateTimeRange(long, long)
+     */
     @Override
     public void updateTimeRange(long startTime, long endTime) {
         ((HistogramView) fParentView).updateTimeRange(startTime, endTime);
@@ -227,12 +232,4 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         imageGC.drawLine(center, (height / 2) - chHalfWidth, center, (height / 2) + chHalfWidth);
     }
 
-    /**
-     * Get the histogram zoom
-     * @return the histogram zoom
-     * @since 2.0
-     */
-    public HistogramZoom getZoom() {
-        return fZoom;
-    }
 }

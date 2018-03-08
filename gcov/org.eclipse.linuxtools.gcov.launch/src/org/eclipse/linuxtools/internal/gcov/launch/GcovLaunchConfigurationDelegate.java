@@ -7,12 +7,12 @@
  *
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
- *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially
+ *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially 
  *        written in the now-defunct OprofileSession class
- *    QNX Software Systems and others - the section of code marked in the launch
+ *    QNX Software Systems and others - the section of code marked in the launch 
  *        method, and the exec method
  *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.gcov.launch;
 
 import java.net.URI;
@@ -30,6 +30,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchesListener2;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.linuxtools.gcov.launch.GcovLaunchPlugin;
 import org.eclipse.linuxtools.internal.gcov.parser.CovManager;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
@@ -41,14 +42,14 @@ import org.eclipse.ui.PlatformUI;
 
 public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
 	protected ILaunchConfiguration config;
-
+	
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		this.config = config;
 		IPath exePath = getExePath(config);
 
-		/*
-		 * this code written by QNX Software Systems and others and was
+		/* 
+		 * this code written by QNX Software Systems and others and was 
 		 * originally in the CDT under LocalCDILaunchDelegate::RunLocalApplication
 		 */
 		//set up and launch the local c/c++ program
@@ -57,19 +58,19 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 		URI workingDirURI = getProject().getLocationURI();
 		IPath workingDirPath = new Path(workingDirURI.getPath());
 		String arguments[] = getProgramArgumentsArray( config );
-
+		
 		//add a listener for termination of the launch
 		ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
 		lmgr.addLaunchListener(new LaunchTerminationWatcher(launch, exePath));
-
+		
 		Process process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
 
 		DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
 
 	}
-
-	//A class used to listen for the termination of the current launch, and
-	// run some functions when it is finished.
+	
+	//A class used to listen for the termination of the current launch, and 
+	// run some functions when it is finished. 
 	class LaunchTerminationWatcher implements ILaunchesListener2 {
 		private ILaunch launch;
 		private IPath exePath;
@@ -77,7 +78,6 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 			launch = il;
 			this.exePath = exePath;
 		}
-		@Override
 		public void launchesTerminated(ILaunch[] launches) {
 
 			for (ILaunch l : launches) {
@@ -91,9 +91,8 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 					//need to run this in the ui thread otherwise get SWT Exceptions
 					// based on concurrency issues
 					Display.getDefault().syncExec(new Runnable() {
-						@Override
 						public void run() {
-							String s = exePath.toOSString();
+							String s = exePath.toOSString();			
 							CovManager cvrgeMnger = new CovManager(s, getProject());
 
 							try {
@@ -114,22 +113,19 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 			}
 
 		}
-		@Override
 		public void launchesAdded(ILaunch[] launches) { /* dont care */}
-		@Override
 		public void launchesChanged(ILaunch[] launches) { /* dont care */ }
-		@Override
 		public void launchesRemoved(ILaunch[] launches) { /* dont care */ }
 
 	}
-
+	
 	@Override
 	protected String getPluginID() {
-		return GcovLaunchPlugin.PLUGIN_ID;
+		return GcovLaunchPlugin.getUniqueIdentifier();
 	}
-
+	
 	/* all these functions exist to be overridden by the test class in order to allow launch testing */
-
+	
 	protected IProject getProject(){
 		try{
 			IProject project = CDebugUtils.verifyCProject(config).getProject();
@@ -153,4 +149,8 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 		return exePath;
 	}
 
+	@Override
+	public String generateCommand(ILaunchConfiguration config) {
+		return "";
+	}
 }

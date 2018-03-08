@@ -16,6 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -38,7 +39,7 @@ public class PerfProfileView extends ViewPart {
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String ID = "org.eclipse.linuxtools.internal.perf.views.ProfileView"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.internal.perf.views.ProfileView";
 
 	private TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
@@ -47,9 +48,15 @@ public class PerfProfileView extends ViewPart {
 	static class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
-			return (((TreeParent) e1).getPercent()
-					<= ((TreeParent) e2).getPercent()) ? 1 : -1;
+			return (((TreeParent) e1).getPercent() <= ((TreeParent) e2)
+					.getPercent()) ? -1 : 1;
 		}
+	}
+
+	/**
+	 * The constructor.
+	 */
+	public PerfProfileView() {
 	}
 
 	/**
@@ -67,9 +74,11 @@ public class PerfProfileView extends ViewPart {
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer");
+		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		PerfPlugin.getDefault().setProfileView(this);
 	}
 	
 	public void refreshModel() {
@@ -110,8 +119,11 @@ public class PerfProfileView extends ViewPart {
 		drillDownAdapter.addNavigationActions(manager);
 	}
 
-	private void hookDoubleClickAction() {
+	private void makeActions() {
 		doubleClickAction = new PerfDoubleClickAction(viewer);
+	}
+
+	private void hookDoubleClickAction() {
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
@@ -124,16 +136,19 @@ public class PerfProfileView extends ViewPart {
 		return viewer;
 	}
 	
+	@SuppressWarnings("unused")
+	private void showMessage(String message) {
+		MessageDialog.openInformation(
+			viewer.getControl().getShell(),
+			"Perf Profile View",
+			message);
+	}
+
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
 	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
-	}
-
-	@Override
-	public void setContentDescription (String name) {
-		super.setContentDescription(name);
 	}
 }

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -29,7 +29,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.preferences.ControlPreferences;
 import org.eclipse.rse.services.shells.HostShellProcessAdapter;
 import org.eclipse.rse.services.shells.IHostShell;
 import org.eclipse.rse.services.shells.IShellService;
@@ -49,19 +48,22 @@ public class CommandShell implements ICommandShell {
     // ------------------------------------------------------------------------
 
     /** Sub-string to be echo'ed when running command in shell, used to indicate that the command has finished running */
-    public static final String DONE_MARKUP_STRING = "--RSE:donedonedone:--"; //$NON-NLS-1$
+    public final static String DONE_MARKUP_STRING = "--RSE:donedonedone:--"; //$NON-NLS-1$
 
     /** Sub-string to be echoed when running a command in shell. */
-    public static final String BEGIN_END_TAG = "BEGIN-END-TAG:"; //$NON-NLS-1$
+    public final static String BEGIN_END_TAG = "BEGIN-END-TAG:"; //$NON-NLS-1$
 
     /** Command delimiter for shell */
-    public static final String CMD_DELIMITER = "\n"; //$NON-NLS-1$
+    public final static String CMD_DELIMITER = "\n"; //$NON-NLS-1$
 
     /** Shell "echo" command */
-    public static final String SHELL_ECHO_CMD = " echo "; //$NON-NLS-1$
+    public final static String SHELL_ECHO_CMD = " echo "; //$NON-NLS-1$
 
     /** Default command separator */
-    public static final char CMD_SEPARATOR = ';';
+    public final static char CMD_SEPARATOR = ';';
+
+    /** Default timeout value used for executing commands, in milliseconds */
+    private final static int DEFAULT_TIMEOUT_VALUE = 15000;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -92,7 +94,10 @@ public class CommandShell implements ICommandShell {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#connect()
+     */
     @Override
     public void connect() throws ExecutionException {
         IShellService shellService = fProxy.getShellService();
@@ -108,6 +113,10 @@ public class CommandShell implements ICommandShell {
         fIsConnected = true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#disconnect()
+     */
     @Override
     public void disconnect() {
         fIsConnected = false;
@@ -119,11 +128,19 @@ public class CommandShell implements ICommandShell {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#executeCommand(java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
     public ICommandResult executeCommand(String command, IProgressMonitor monitor) throws ExecutionException {
         return executeCommand(command, monitor, true);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#executeCommand(java.lang.String, org.eclipse.core.runtime.IProgressMonitor, boolean)
+     */
     @Override
     public ICommandResult executeCommand(final String command, final IProgressMonitor monitor, final boolean checkReturnValue) throws ExecutionException {
         if (fIsConnected) {
@@ -195,7 +212,7 @@ public class CommandShell implements ICommandShell {
             fExecutor.execute(future);
 
             try {
-                return future.get(ControlPreferences.getInstance().getCommandTimeout(), TimeUnit.SECONDS);
+                return future.get(DEFAULT_TIMEOUT_VALUE, TimeUnit.MILLISECONDS);
             } catch (java.util.concurrent.ExecutionException ex) {
                 throw new ExecutionException(Messages.TraceControl_ExecutionFailure, ex);
             } catch (InterruptedException ex) {
@@ -292,8 +309,10 @@ public class CommandShell implements ICommandShell {
             return true;
         }
         int index = line.indexOf(expected);
-        if ((index > 0) && (line.indexOf(SHELL_ECHO_CMD) == -1)) {
-            return true;
+        if (index > 0) {
+            if (line.indexOf(SHELL_ECHO_CMD) == -1) {
+                return true;
+            }
         }
 
         return false;

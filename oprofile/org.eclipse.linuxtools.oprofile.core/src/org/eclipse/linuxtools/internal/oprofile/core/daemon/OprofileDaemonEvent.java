@@ -22,24 +22,16 @@ public class OprofileDaemonEvent {
 	public static final int COUNT_UNINITIALIZED = 0;
 	public static final int COUNT_INVALID = -1;
 	
-	/**
-	 *  The event to collect on this counter
-	 */
+	// The event to collect on this counter
 	private OpEvent event;
 	
-	/**
-	 *  Boolean variable to enable/disable Profile kernel
-	 */
+	// Profile kernel?
 	private boolean profileKernel;
 	
-	/**
-	 *  Boolean variable to enable/disable Profile userspace
-	 */
+	// Profile userspace?
 	private boolean profileUser;
 	
-	/**
-	 *  Reset counter value
-	 */
+	// Reset counter value
 	private int count;
 
 	public OprofileDaemonEvent() {

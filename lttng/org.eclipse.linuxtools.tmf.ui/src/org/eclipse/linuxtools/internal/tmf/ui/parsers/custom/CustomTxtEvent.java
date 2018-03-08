@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,60 +17,23 @@ import java.util.regex.Matcher;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition.InputData;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition.InputLine;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
-/**
- * Trace event for custom text parsers.
- *
- * @author Patrick Tassé
- */
 public class CustomTxtEvent extends CustomEvent {
 
-    /**
-     * Constructor
-     *
-     * @param definition
-     *            Trace definition
-     */
     public CustomTxtEvent(CustomTxtTraceDefinition definition) {
         super(definition);
         setType(new CustomTxtEventType(definition));
     }
 
-    /**
-     * Construct a custom text event from an existing TmfEvent.
-     *
-     * @param definition
-     *            Trace definition
-     * @param other
-     *            The TmfEvent object to copy
-     */
     public CustomTxtEvent(CustomTxtTraceDefinition definition, TmfEvent other) {
         super(definition, other);
     }
 
-    /**
-     * Full constructor.
-     *
-     * @param definition
-     *            Trace definition
-     * @param parentTrace
-     *            Parent trace object
-     * @param timestamp
-     *            Timestamp of this event
-     * @param source
-     *            Source of this event
-     * @param type
-     *            Event type
-     * @param reference
-     *            Reference if this event
-     */
-    public CustomTxtEvent(CustomTxtTraceDefinition definition,
-            ITmfTrace parentTrace, ITmfTimestamp timestamp, String source,
-            TmfEventType type, String reference) {
+    public CustomTxtEvent(CustomTxtTraceDefinition definition, ITmfTrace parentTrace, ITmfTimestamp timestamp, String source, TmfEventType type, String reference) {
         super(definition, parentTrace, timestamp, source, type, reference);
     }
 
@@ -79,14 +42,6 @@ public class CustomTxtEvent extends CustomEvent {
         super.setContent(content);
     }
 
-    /**
-     * Process an entry in the trace file
-     *
-     * @param input
-     *            The input line to read
-     * @param matcher
-     *            The regex matcher to use
-     */
     public void processGroups(InputLine input, Matcher matcher) {
     	if (input.columns == null) {
     		return;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
+ *
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages;
 
@@ -24,8 +24,6 @@ import org.eclipse.osgi.util.NLS;
 @SuppressWarnings("javadoc")
 final public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.messages"; //$NON-NLS-1$
-
-    public static String EnableChannelDialog_DefaultMessage;
 
     // Failures
     public static String TraceControl_ConnectionFailure;
@@ -45,9 +43,7 @@ final public class Messages extends NLS {
     public static String TraceControl_GettingVersionError;
 
     // Commands
-    public static String TraceControl_ErrorTitle;
     public static String TraceControl_RetrieveNodeConfigurationJob;
-    public static String TraceControl_RetrieveNodeConfigurationFailure;
     public static String TraceControl_ListSessionFailure;
     public static String TraceControl_EclipseCommandFailure;
     public static String TraceControl_NewNodeCreationFailure;
@@ -95,8 +91,6 @@ final public class Messages extends NLS {
     public static String TraceControl_NewNodeConnectionNameTooltip;
     public static String TraceControl_NewNodeHostNameLabel;
     public static String TraceControl_NewNodeHostNameTooltip;
-    public static String TraceControl_NewNodePortLabel;
-    public static String TraceControl_NewNodePortTooltip;
     public static String TraceControl_AlreadyExistsError;
 
     public static String TraceControl_CreateSessionDialogTitle;
@@ -104,31 +98,6 @@ final public class Messages extends NLS {
     public static String TraceControl_CreateSessionNameTooltip;
     public static String TraceControl_CreateSessionPathLabel;
     public static String TraceControl_CreateSessionPathTooltip;
-
-    public static String TraceControl_CreateSessionConfigureStreamingButtonText;
-    public static String TraceControl_CreateSessionConfigureStreamingButtonTooltip;
-    public static String TraceControl_CreateSessionNoStreamingButtonText;
-    public static String TraceControl_CreateSessionNoStreamingButtonTooltip;
-    public static String TraceControl_CreateSessionTracePathText;
-    public static String TraceControl_CreateSessionTracePathTooltip;
-    public static String TraceControl_CreateSessionLinkButtonText;
-    public static String TraceControl_CreateSessionLinkButtonTooltip;
-    public static String TraceControl_CreateSessionProtocolLabelText;
-    public static String TraceControl_CreateSessionAddressLabelText;
-    public static String TraceControl_CreateSessionPortLabelText;
-    public static String TraceControl_CreateSessionControlUrlLabel;
-    public static String TraceControl_CreateSessionDataUrlLabel;
-    public static String TraceControl_CreateSessionCommonProtocolTooltip;
-    public static String TraceControl_CreateSessionControlAddressTooltip;
-    public static String TraceControl_CreateSessionControlPortTooltip;
-    public static String TraceControl_CreateSessionProtocolTooltip;
-    public static String TraceControl_CreateSessionDataAddressTooltip;
-    public static String TraceControl_CreateSessionDataPortTooltip;
-    public static String TraceControl_CreateSessionNoConsumertText;
-    public static String TraceControl_CreateSessionNoConsumertTooltip;
-    public static String TraceControl_CreateSessionDisableConsumertText;
-    public static String TraceControl_CreateSessionDisableConsumertTooltip;
-
     public static String TraceControl_InvalidSessionNameError;
     public static String TraceControl_SessionAlreadyExistsError;
     public static String TraceControl_SessionPathAlreadyExistsError;
@@ -148,8 +117,6 @@ final public class Messages extends NLS {
     public static String TraceControl_EnableChannelDiscardModeTooltip;
     public static String TraceControl_EnableChannelOverwriteModeLabel;
     public static String TraceControl_EnableChannelOverwriteModeTooltip;
-    public static String TraceControl_EnbleChannelMaxSizeTraceFilesTooltip;
-    public static String TraceControl_EnbleChannelMaxNumTraceFilesTooltip;
 
     public static String TraceControl_InvalidChannelNameError;
     public static String TraceControl_ChannelAlreadyExistsError;
@@ -187,8 +154,6 @@ final public class Messages extends NLS {
     public static String TraceControl_EnableEventsLogLevelOnlyTypeTooltip;
     public static String TraceControl_EnableEventsLogLevelTooltip;
     public static String TraceControl_EnableEventsLoglevelEventNameTooltip;
-    public static String TraceControl_EnableEventsFilterGroupName;
-    public static String TraceControl_EnableEventsFilterTooltip;
 
     public static String TraceControl_InvalidProbeNameError;
     public static String TraceControl_InvalidWildcardError;
@@ -229,19 +194,15 @@ final public class Messages extends NLS {
     public static String TraceControl_EventDisplayName;
     public static String TraceControl_ProviderDisplayName;
     public static String TraceControl_KernelProviderDisplayName;
-    public static String TraceControl_PerUidBuffersDisplayName;
 
     // Property names
     public static String TraceControl_SessionNamePropertyName;
     public static String TraceControl_EventNamePropertyName;
     public static String TraceControl_EventTypePropertyName;
     public static String TraceControl_LogLevelPropertyName;
-    public static String TraceControl_FieldsPropertyName;
-    public static String TraceControl_FilterPropertyName;
     public static String TraceControl_StatePropertyName;
     public static String TraceControl_VersionPropertyName;
     public static String TraceControl_DomainNamePropertyName;
-    public static String TraceControl_BufferTypePropertyName;
     public static String TraceControl_ChannelNamePropertyName;
     public static String TraceControl_OverwriteModePropertyName;
     public static String TraceControl_SubBufferSizePropertyName;
@@ -257,16 +218,12 @@ final public class Messages extends NLS {
     public static String TraceControl_ProbeAddressPropertyName;
     public static String TraceControl_ProbeOffsetPropertyName;
     public static String TraceControl_ProbeSymbolPropertyName;
-    public static String TraceControl_MaxSizeTraceFilesPropertyName;
-    public static String TraceControl_MaxNumTraceFilesPropertyName;
-    public static String TraceControl_ConfigureMetadataChannelName;
 
     // Preferences
     public static String TraceControl_TracingGroupPreference;
     public static String TraceControl_LoggingPreference;
     public static String TraceControl_LogfilePath;
     public static String TraceControl_AppendLogfilePreference;
-    public static String TraceControl_CommandTimeout;
 
     public static String TraceControl_VerboseLevelsPreference;
     public static String TraceControl_VerboseLevelNonePreference;

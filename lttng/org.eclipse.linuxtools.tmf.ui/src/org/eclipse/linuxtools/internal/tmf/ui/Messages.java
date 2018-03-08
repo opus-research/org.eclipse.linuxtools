@@ -1,22 +1,8 @@
-/*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- *******************************************************************************/
-
 package org.eclipse.linuxtools.internal.tmf.ui;
 
 import org.eclipse.osgi.util.NLS;
 
-/**
- * TMF message bundle
- */
-@SuppressWarnings("javadoc")
 public class Messages extends NLS {
-
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.ui.messages"; //$NON-NLS-1$
 
     public static String ManageCustomParsersDialog_DeleteButtonLabel;
@@ -72,11 +58,6 @@ public class Messages extends NLS {
     public static String TmfEventsTable_FilterHint;
     public static String TmfEventsTable_HideRawActionText;
     public static String TmfEventsTable_HideTableActionText;
-    public static String TmfEventsTable_OpenSourceCodeActionText;
-    public static String TmfEventsTable_OpenSourceCodeNotFound;
-    public static String TmfEventsTable_OpenSourceCodeSelectFileDialogTitle;
-    public static String TmfEventsTable_OpenModelActionText;
-    public static String TmfEventsTable_OpenModelUnsupportedURI;
     public static String TmfEventsTable_ReferenceColumnHeader;
     public static String TmfEventsTable_RemoveBookmarkActionText;
     public static String TmfEventsTable_SearchHint;
@@ -99,14 +80,6 @@ public class Messages extends NLS {
     public static String TmfTimeLegend_TRACE_STATES_TITLE;
     public static String TmfTimeLegend_WINDOW_TITLE;
     public static String TmfTimeLegend_StateTypeName;
-    public static String TmfTimeFilterDialog_WINDOW_TITLE;
-    public static String TmfTimeFilterDialog_MESSAGE;
-    public static String TmfTimeFilterDialog_CHECK_ALL;
-    public static String TmfTimeFilterDialog_UNCHECK_ALL;
-    public static String TmfTimeFilterDialog_CHECK_SELECTED;
-    public static String TmfTimeFilterDialog_UNCHECK_SELECTED;
-    public static String TmfTimeFilterDialog_CHECK_SUBTREE;
-    public static String TmfTimeFilterDialog_UNCHECK_SUBTREE;
 
     public static String TmfTimeTipHandler_DURATION;
     public static String TmfTimeTipHandler_TRACE_DATE;
@@ -114,9 +87,6 @@ public class Messages extends NLS {
     public static String TmfTimeTipHandler_TRACE_START_TIME;
     public static String TmfTimeTipHandler_TRACE_STATE;
     public static String TmfTimeTipHandler_TRACE_STOP_TIME;
-
-    public static String TmfTimeGraphCombo_FilterActionNameText;
-    public static String TmfTimeGraphCombo_FilterActionToolTipText;
 
     public static String TmfTimeGraphViewer_ResetScaleActionNameText;
     public static String TmfTimeGraphViewer_ResetScaleActionToolTipText;
@@ -283,13 +253,6 @@ public class Messages extends NLS {
 
     public static String TmfView_PinActionNameText;
     public static String TmfView_PinActionToolTipText;
-
-    public static String CallStackView_FunctionColumn;
-    public static String CallStackView_DepthColumn;
-    public static String CallStackView_EntryTimeColumn;
-    public static String CallStackView_ExitTimeColumn;
-    public static String CallStackView_DurationColumn;
-    public static String CallStackView_StackInfoNotAvailable;
 
     static {
         // initialize resource bundle
