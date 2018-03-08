@@ -97,8 +97,9 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 						readLine = reader.readLine();
 					}
 					reader.close();
-					if (project.getLocationURI()!=null) {
-						if(project.getLocationURI().toString().startsWith("rse:")) { //$NON-NLS-1$
+					if (project.getLocationURI() != null && !lines.isEmpty()) {
+						if(project.getLocationURI().toString().startsWith("rse:")
+								&& lines.size() > 1) { //$NON-NLS-1$
 							// RSE output
 							command = lines.get(lines.size()-2);
 						} else {
@@ -111,10 +112,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 					}
 				}
 			} catch (CoreException e) {
-				e.printStackTrace();
-			} catch (IndexOutOfBoundsException e) {
-				// Executable cannot be found in system path.
-				e.printStackTrace();
+				// Failed to call 'which', do nothing
 			}
 		}
 		return command;
