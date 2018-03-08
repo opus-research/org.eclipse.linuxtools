@@ -33,7 +33,6 @@ public class AllTests {
         suite.addTestSuite(TmfStatisticsTreeNodeTest.class);
         suite.addTestSuite(TmfStatisticsTreeRootFactoryTest.class);
         suite.addTestSuite(TmfTreeContentProviderTest.class);
-        suite.addTestSuite(TmfStatisticsTest.class);
         // $JUnit-END$
         return suite;
     }
