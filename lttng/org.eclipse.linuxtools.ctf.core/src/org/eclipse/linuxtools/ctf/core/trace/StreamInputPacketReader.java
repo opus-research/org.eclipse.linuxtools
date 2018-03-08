@@ -222,11 +222,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
                                 this.currentPacket.getOffsetBytes(),
                                 (this.currentPacket.getPacketSizeBits() + 7) / 8);
             } catch (IOException e) {
-                /*
-                 * The streamInputReader object is already allocated, so this
-                 * shouldn't fail bar some very bad kernel or RAM errors...
-                 */
-                e.printStackTrace();
+                throw new CTFReaderException(e.getMessage(), e);
             }
 
             bitBuffer.setByteBuffer(bb);
@@ -317,7 +313,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
 
         final StructDefinition sehd = streamEventHeaderDef;
         final BitBuffer currentBitBuffer = bitBuffer;
-
+        final long posStart = currentBitBuffer.position();
         /* Read the stream event header. */
         if (sehd != null) {
             sehd.read(currentBitBuffer);
@@ -390,6 +386,10 @@ public class StreamInputPacketReader implements IDefinitionScope {
          * updateTimestamp.
          */
         eventDef.setTimestamp(timestamp);
+
+        if (posStart == currentBitBuffer.position()) {
+            throw new CTFReaderException("Not allowed empty event, event: " + eventDef.getDeclaration().getName()); //$NON-NLS-1$
+        }
 
         return eventDef;
     }
