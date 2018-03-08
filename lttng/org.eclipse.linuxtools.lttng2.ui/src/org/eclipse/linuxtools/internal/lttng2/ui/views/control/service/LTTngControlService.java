@@ -44,6 +44,7 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.preferences.ControlPreferences;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandResult;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandShell;
+import org.osgi.framework.Version;
 
 /**
  * <p>
@@ -60,12 +61,12 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * The command shell implementation
      */
-    private final ICommandShell fCommandShell;
+    protected ICommandShell fCommandShell = null;
 
     /**
      * The version string.
      */
-    private LttngVersion fVersion = null;
+    protected Version fVersion = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -98,22 +99,13 @@ public class LTTngControlService implements ILttngControlService {
      * @param version - a version to set
      */
     public void setVersion(String version) {
-        fVersion = new LttngVersion(version);
+        fVersion = new Version(version);
     }
 
     @Override
     public boolean isVersionSupported(String version) {
-        LttngVersion tmp = new LttngVersion(version);
+        Version tmp = new Version(version);
         return (fVersion != null && fVersion.compareTo(tmp) >= 0) ? true : false;
-    }
-
-    /**
-     * Returns the command shell implementation.
-     *
-     * @return the command shell implementation
-     */
-    protected ICommandShell getCommandShell() {
-        return fCommandShell;
     }
 
     // ------------------------------------------------------------------------
@@ -865,7 +857,11 @@ public class LTTngControlService implements ILttngControlService {
 
     @Override
     public void calibrate(boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
+//        String newSessionName = formatParameter(sessionName);
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CALIBRATE);
+//
+//        command.append(OPTION_SESSION);
+//        command.append(newSessionName);
 
         if (isKernel) {
             command.append(LTTngControlServiceConstants.OPTION_KERNEL);
@@ -926,7 +922,7 @@ public class LTTngControlService implements ILttngControlService {
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
         for (int i = 0; i < output.length; i++) {
-            ret.append(output[i]).append("\n"); //$NON-NLS-1$
+            ret.append(output[i] + "\n"); //$NON-NLS-1$
         }
         return ret.toString();
     }
@@ -1142,6 +1138,10 @@ public class LTTngControlService implements ILttngControlService {
             } else {
                 index++;
             }
+//            else if (line.matches(EVENT_NONE_PATTERN)) {
+                // do nothing
+//            } else
+
         }
 
         return index;

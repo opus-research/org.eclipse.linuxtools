@@ -60,7 +60,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingPro
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPropertiesProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.LoadersManager;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.GridData;
@@ -86,116 +86,72 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 public class SDView extends ViewPart {
 
     // ------------------------------------------------------------------------
-    // Constants
-    // ------------------------------------------------------------------------
-    /**
-     * Name of menu separator for view modes
-     * @since 2.0
-     */
-    public static final String UML2SD_VIEW_MODES_SEPARATOR = "UML2SD_VIEW_MODES"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for working set
-     * @since 2.0
-     */
-    public static final String UML2SD_WORKING_SET_SEPARATOR = "UML2SD_WORKING_SET"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for sorting
-     * @since 2.0
-     */
-    public static final String UML2SD_SORTING_SEPARATOR = "UML2SD_SORTING"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for filtering
-     * @since 2.0
-     */
-    public static final String UML2SD_FILTERING_SEPARATOR = "UML2SD_FILTERING"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for view layout
-     * @since 2.0
-     */
-    public static final String UML2SD_VIEW_LAYOUT_SEPARATOR = "UML2SD_VIEW_LAYOUT"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for link editor
-     * @since 2.0
-     */
-    public static final String UML2SD_LINK_EDITOR_SEPARATOR = "UML2SD_LINK_EDITOR"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for other commands
-     * @since 2.0
-     */
-    public static final String UML2SD_OTHER_COMMANDS_SEPARATOR = "UML2SD_OTHER_COMMANDS"; //$NON-NLS-1$
-    /**
-     * Name of menu separator for other plug-in commands
-     * @since 2.0
-     */
-    public static final String UML2SD_OTHER_PLUGINS_COMMANDS_SEPARATOR = "UML2SD_OTHER_PLUGINS_COMMANDS"; //$NON-NLS-1$
-
-    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
     /**
      * The sequence diagram widget.
      */
-    private SDWidget fSdWidget = null;
+    protected SDWidget fSdWidget = null;
     /**
      * The time compression bar.
      */
-    private TimeCompressionBar fTimeCompressionBar = null;
+    protected TimeCompressionBar fTimeCompressionBar = null;
     /**
      * The sequence diagram find provider implementation.
      */
-    private ISDFindProvider fSdFindProvider = null;
+    protected ISDFindProvider fSdFindProvider = null;
     /**
      * The sequence diagram paging provider implementation.
      */
-    private ISDPagingProvider fSdPagingProvider = null;
+    protected ISDPagingProvider fSdPagingProvider = null;
     /**
      * The sequence diagram filter provider implementation.
      */
-    private ISDFilterProvider fSdFilterProvider = null;
+    protected ISDFilterProvider fSdFilterProvider = null;
     /**
      * The extended sequence diagram filter provider implementation.
      */
-    private IExtendedFilterProvider fSdExFilterProvider = null;
+    protected IExtendedFilterProvider fSdExFilterProvider = null;
     /**
      * The extended sequence diagram find provider implementation.
      */
-    private IExtendedFindProvider fSdExFindProvider = null;
+    protected IExtendedFindProvider fSdExFindProvider = null;
     /**
      * The extended sequence diagram action bar provider implementation.
      */
-    private ISDExtendedActionBarProvider fSdExtendedActionBarProvider = null;
+    protected ISDExtendedActionBarProvider fSdExtendedActionBarProvider = null;
     /**
      * The sequence diagram property provider implementation.
      */
-    private ISDPropertiesProvider fSdPropertiesProvider = null;
+    protected ISDPropertiesProvider fSdPropertiesProvider = null;
     /**
      * Button for executing the next page action.
      */
-    private NextPage fNextPageButton = null;
+    protected NextPage fNextPageButton = null;
     /**
      * Button for executing the previous page action.
      */
-    private PrevPage fPrevPageButton = null;
+    protected PrevPage fPrevPageButton = null;
     /**
      * Button for executing the first page page action.
      */
-    private FirstPage fFirstPageButton = null;
+    protected FirstPage fFirstPageButton = null;
     /**
      * Button for executing the last page action.
      */
-    private LastPage fLastPageButton = null;
+    protected LastPage fLastPageButton = null;
     /**
      * The menu manager reference.
      */
-    private MenuManager fMenuMgr = null;
+    protected MenuManager fMenuMgr = null;
     /**
      * Flag to indicate whether view needs initialization or not.
      */
-    private boolean fNeedInit = true;
+    protected boolean fNeedInit = true;
     /**
      * WaitCursor is the cursor to be displayed when long tasks are running
      */
-    private Cursor fWaitCursor;
+    protected Cursor fWaitCursor;
 
     // ------------------------------------------------------------------------
     // Methods
@@ -215,7 +171,7 @@ public class SDView extends ViewPart {
         GridData seqDiagLayoutData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL | GridData.GRAB_VERTICAL | GridData.VERTICAL_ALIGN_FILL);
         fTimeCompressionBar = new TimeCompressionBar(parent, SWT.NONE);
         fTimeCompressionBar.setLayoutData(timeLayoutdata);
-        fSdWidget = new SDWidget(parent, SWT.NONE);
+        fSdWidget = new SDWidget(parent, SWT.NONE);// SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         fSdWidget.setLayoutData(seqDiagLayoutData);
         fSdWidget.setSite(this);
         fSdWidget.setTimeBar(fTimeCompressionBar);
@@ -352,6 +308,7 @@ public class SDView extends ViewPart {
     public void setSDFilterProvider(ISDFilterProvider provider) {
         fSdFilterProvider = provider;
         // Both systems can be used now, commenting out next statement
+        // sdExFilterProvider = null;
         createCoolbarContent();
     }
 
@@ -364,6 +321,7 @@ public class SDView extends ViewPart {
     public void setExtendedFilterProvider(IExtendedFilterProvider provider) {
         fSdExFilterProvider = provider;
         // Both systems can be used now, commenting out next statement
+        // sdFilterProvider = null;
         createCoolbarContent();
     }
 
@@ -467,39 +425,6 @@ public class SDView extends ViewPart {
     }
 
     /**
-     * Sets the sdWidget.
-     *
-     * @param sdWidget
-     *          A sdWidget to set
-     * @since 2.0
-     */
-    protected void setSDWidget(SDWidget sdWidget) {
-        fSdWidget = sdWidget;
-    }
-
-    /**
-     * Sets the time compression bar.
-     *
-     * @param timeCompressionbar
-     *          A sdWidget to set
-     * @since 2.0
-     */
-    protected void setTimeBar(TimeCompressionBar timeCompressionbar) {
-        fTimeCompressionBar = timeCompressionbar;
-    }
-
-    /**
-     * Sets the initialization flag.
-     *
-     * @param needInit
-     *          flag value to set
-     * @since 2.0
-     */
-    protected void setNeedInit(boolean needInit) {
-        fNeedInit = needInit;
-    }
-
-    /**
      * Creates the basic sequence diagram menu
      */
     protected void hookContextMenu() {
@@ -532,7 +457,7 @@ public class SDView extends ViewPart {
      */
     protected void fillContextMenu(IMenuManager manager) {
         manager.add(new Separator("Additions")); //$NON-NLS-1$
-        if (getSDWidget() != null && getSDWidget().getCurrentGraphNode() != null) {
+        if (getSDWidget() != null && getSDWidget().fCurrentGraphNode != null) {
             ISelectionProvider selProvider = fSdWidget.getSelectionProvider();
             ISelection sel = selProvider.getSelection();
             int nbMessage = 0;
@@ -546,15 +471,15 @@ public class SDView extends ViewPart {
             if (nbMessage != 1) {
                 return;
             }
-            GraphNode node = getSDWidget().getCurrentGraphNode();
+            GraphNode node = getSDWidget().fCurrentGraphNode;
             if ((node instanceof SyncMessageReturn) && (((SyncMessageReturn) node).getMessage() != null)) {
                 Action goToMessage = new MoveToMessage(this);
-                goToMessage.setText(Messages.SequenceDiagram_GoToMessage);
+                goToMessage.setText(SDMessages._39);
                 manager.add(goToMessage);
             }
             if ((node instanceof SyncMessage) && (((SyncMessage) node).getMessageReturn() != null)) {
                 Action goToMessage = new MoveToMessage(this);
-                goToMessage.setText(Messages.SequenceDiagram_GoToMessageReturn);
+                goToMessage.setText(SDMessages._40);
                 manager.add(goToMessage);
             }
         }
@@ -601,44 +526,44 @@ public class SDView extends ViewPart {
         createMenuGroup();
 
         Zoom resetZoom = new Zoom(this, ZoomType.ZOOM_RESET);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, resetZoom);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, resetZoom);
+        bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", resetZoom);//$NON-NLS-1$
+        bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", resetZoom); //$NON-NLS-1$
 
         Zoom noZoom = new Zoom(this, ZoomType.ZOOM_NONE);
         noZoom.setChecked(true);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, noZoom);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, noZoom);
+        bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", noZoom);//$NON-NLS-1$
+        bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", noZoom); //$NON-NLS-1$
 
         Zoom zoomIn = new Zoom(this, ZoomType.ZOOM_IN);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomIn);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomIn);
+        bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", zoomIn);//$NON-NLS-1$
+        bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", zoomIn); //$NON-NLS-1$
 
         Zoom zoomOut = new Zoom(this, ZoomType.ZOOM_OUT);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomOut);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomOut);
+        bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", zoomOut);//$NON-NLS-1$
+        bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", zoomOut); //$NON-NLS-1$
 
-        MenuManager navigation = new MenuManager(Messages.SequenceDiagram_Navigation);
+        MenuManager navigation = new MenuManager(SDMessages._77);
 
         ShowNodeStart showNodeStart = new ShowNodeStart(this);
-        showNodeStart.setText(Messages.SequenceDiagram_ShowNodeStart);
+        showNodeStart.setText(SDMessages.uml_25);
 
         showNodeStart.setId("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ShowNodeStart");//$NON-NLS-1$
         showNodeStart.setActionDefinitionId("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ShowNodeStart");//$NON-NLS-1$
         navigation.add(showNodeStart);
 
         ShowNodeEnd showNodeEnd = new ShowNodeEnd(this);
-        showNodeEnd.setText(Messages.SequenceDiagram_ShowNodeEnd);
+        showNodeEnd.setText(SDMessages.uml_23);
 
         showNodeEnd.setId("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ShowNodeEnd");//$NON-NLS-1$
         showNodeEnd.setActionDefinitionId("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ShowNodeEnd");//$NON-NLS-1$
         navigation.add(showNodeEnd);
 
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, navigation);
+        bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", navigation); //$NON-NLS-1$
 
         ConfigureMinMax minMax = new ConfigureMinMax(this);
-        minMax.setText(Messages.SequenceDiagram_ConfigureMinMax);
+        minMax.setText(SDMessages.uml_45);
         minMax.setId("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ConfigureMinMax");//$NON-NLS-1$
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, minMax);
+        bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", minMax); //$NON-NLS-1$
 
         if ((fSdWidget.getFrame() != null) && (fSdWidget.getFrame().hasTimeInfo())) {
             minMax.setEnabled(true);
@@ -649,24 +574,24 @@ public class SDView extends ViewPart {
         // Do we need to display a paging item
         if (fSdPagingProvider != null) {
             fNextPageButton = new NextPage(this);
-            bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fNextPageButton);
+            bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", fNextPageButton); //$NON-NLS-1$
             fNextPageButton.setEnabled(fSdPagingProvider.hasNextPage());
-            bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fNextPageButton);
+            bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", fNextPageButton); //$NON-NLS-1$
 
             fPrevPageButton = new PrevPage(this);
-            bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fPrevPageButton);
+            bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", fPrevPageButton); //$NON-NLS-1$
             fPrevPageButton.setEnabled(fSdPagingProvider.hasPrevPage());
-            bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fPrevPageButton);
+            bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", fPrevPageButton); //$NON-NLS-1$
 
             fFirstPageButton = new FirstPage(this);
-            bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fFirstPageButton);
+            bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", fFirstPageButton); //$NON-NLS-1$
             fFirstPageButton.setEnabled(fSdPagingProvider.hasPrevPage());
-            bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fFirstPageButton);
+            bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", fFirstPageButton); //$NON-NLS-1$
 
             fLastPageButton = new LastPage(this);
-            bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fLastPageButton);
+            bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", fLastPageButton); //$NON-NLS-1$
             fLastPageButton.setEnabled(fSdPagingProvider.hasNextPage());
-            bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fLastPageButton);
+            bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", fLastPageButton); //$NON-NLS-1$
         }
 
         if (fSdExFilterProvider != null) {
@@ -680,15 +605,17 @@ public class SDView extends ViewPart {
                     action.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FILTERS));
                 }
                 if (action.getText() == null || action.getText().length() == 0) {
-                    action.setText(Messages.SequenceDiagram_EditFilters);
+                    action.setText(SDMessages._42);
                 }
-                bar.getMenuManager().prependToGroup(UML2SD_FILTERING_SEPARATOR, action);
-                bar.getToolBarManager().prependToGroup(UML2SD_FILTERING_SEPARATOR, action);
+                bar.getMenuManager().prependToGroup("UML2SD_FILTERING", action); //$NON-NLS-1$
+                bar.getToolBarManager().prependToGroup("UML2SD_FILTERING", action); //$NON-NLS-1$
             }
         }
         // Both systems can be used now: commenting out else keyword
-        if (fSdFilterProvider != null) {
-            bar.getMenuManager().appendToGroup(UML2SD_FILTERING_SEPARATOR, new OpenSDFiltersDialog(this, fSdFilterProvider));
+        /* else */if (fSdFilterProvider != null) {
+            bar.getMenuManager().appendToGroup("UML2SD_FILTERING", new OpenSDFiltersDialog(this, fSdFilterProvider)); //$NON-NLS-1$
+            // No longer in the coolbar: commenting out next statement
+            //bar.getToolBarManager().appendToGroup("UML2SD_FILTERING",new OpenSDFiltersDialog(this, sdFilterProvider));	//$NON-NLS-1$
         }
         if (fSdPagingProvider instanceof ISDAdvancedPagingProvider) {
             IContributionItem sdPaging = bar.getMenuManager().find(OpenSDPagesDialog.ID);
@@ -696,7 +623,7 @@ public class SDView extends ViewPart {
                 bar.getMenuManager().remove(sdPaging);
                 sdPaging = null;
             }
-            bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, new OpenSDPagesDialog(this, (ISDAdvancedPagingProvider) fSdPagingProvider));
+            bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", new OpenSDPagesDialog(this, (ISDAdvancedPagingProvider) fSdPagingProvider)); //$NON-NLS-1$
             updatePagesMenuItem(bar);
         }
 
@@ -710,14 +637,14 @@ public class SDView extends ViewPart {
                     action.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_SEARCH_SEQ));
                 }
                 if (action.getText() == null) {
-                    action.setText(Messages.SequenceDiagram_Find + "..."); //$NON-NLS-1$
+                    action.setText(SDMessages._41);
                 }
-                bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, action);
-                bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, action);
+                bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", action); //$NON-NLS-1$
+                bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", action); //$NON-NLS-1$
             }
         } else if (fSdFindProvider != null) {
-            bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, new OpenSDFindDialog(this));
-            bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, new OpenSDFindDialog(this));
+            bar.getMenuManager().appendToGroup("UML2SD_OTHER_COMMANDS", new OpenSDFindDialog(this)); //$NON-NLS-1$
+            bar.getToolBarManager().appendToGroup("UML2SD_OTHER_COMMANDS", new OpenSDFindDialog(this)); //$NON-NLS-1$
         }
 
         if (fSdExtendedActionBarProvider != null) {
@@ -1050,26 +977,19 @@ public class SDView extends ViewPart {
     }
 
     /**
-     * Gets the initialization flag.
-     * @return the value of the initialization flag.
-     * @since 2.0
-     */
-    protected boolean isNeedInit() {
-        return fNeedInit;
-    }
-
-    /**
      * Restores the loader for the view based on the view ID.
      *
      * @return boolean <code>true</code> if initialization is needed else <code>false</code>.
      */
     protected boolean restoreLoader() {
         String id = getViewSite().getId();
+        // System.err.println("restoreLoader() id="+id);
         if (id == null) {
             return true;
         }
         IUml2SDLoader loader = LoadersManager.getInstance().getCurrentLoader(id, this);
-        if ((loader != null)) {
+        // System.err.println("restoreLoader() l="+l);
+        if ((loader != null)) {// &&( LoadersManager.getLoadersManager().getViewer(l)==this)){
             loader.setViewer(this);
             return false;
         }
@@ -1105,22 +1025,22 @@ public class SDView extends ViewPart {
         if (bar == null) {
             return;
         }
-        bar.getToolBarManager().add(new Separator(UML2SD_VIEW_MODES_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_WORKING_SET_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_SORTING_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_FILTERING_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_VIEW_LAYOUT_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_LINK_EDITOR_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_OTHER_COMMANDS_SEPARATOR));
-        bar.getToolBarManager().add(new Separator(UML2SD_OTHER_PLUGINS_COMMANDS_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_VIEW_MODES_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_WORKING_SET_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_SORTING_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_FILTERING_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_VIEW_LAYOUT_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_LINK_EDITOR_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_OTHER_COMMANDS_SEPARATOR));
-        bar.getMenuManager().add(new Separator(UML2SD_OTHER_PLUGINS_COMMANDS_SEPARATOR));
+        bar.getToolBarManager().add(new Separator("UML2SD_VIEW_MODES")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_WORKING_SET")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_SORTING")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_FILTERING")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_VIEW_LAYOUT")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_LINK_EDITOR")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_OTHER_COMMANDS")); //$NON-NLS-1$
+        bar.getToolBarManager().add(new Separator("UML2SD_OTHER_PLUGINS_COMMANDS")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_VIEW_MODES")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_WORKING_SET")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_SORTING")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_FILTERING")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_VIEW_LAYOUT")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_LINK_EDITOR")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_OTHER_COMMANDS")); //$NON-NLS-1$
+        bar.getMenuManager().add(new Separator("UML2SD_OTHER_PLUGINS_COMMANDS")); //$NON-NLS-1$
     }
 
     @Override

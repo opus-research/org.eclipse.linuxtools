@@ -141,7 +141,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param type the trace event type
      * @throws TmfTraceException If we couldn't open the trace
      */
-    void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException;
+    public void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException;
 
     /**
      * Validate that the trace is of the correct type.
@@ -149,40 +149,54 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param project the eclipse project
      * @param path the trace path
      *
-     * @return an IStatus object with validation result. Use severity OK to indicate success.
+     * @return true if trace is valid
      * @since 2.0
      */
-    IStatus validate(IProject project, String path);
+    public IStatus validate(IProject project, String path);
 
     // ------------------------------------------------------------------------
     // Basic getters
     // ------------------------------------------------------------------------
 
     /**
+     * If this trace is used as a container for sub-traces, this can be used to
+     * get the sub-traces themselves. If the trace is stand-alone, this should
+     * return an array with only "this" inside. For this reason, be careful if
+     * calling this recursively.
+     *
+     * This offers a standard way of iterating through compound traces (like
+     * experiments).
+     *
+     * @return The array of sub-traces.
+     * @since 2.0
+     */
+    public ITmfTrace[] getTraces();
+
+    /**
      * @return the trace event type
      */
-    Class<? extends ITmfEvent> getEventType();
+    public Class<? extends ITmfEvent> getEventType();
 
     /**
      * @return the associated trace resource
      */
-    IResource getResource();
+    public IResource getResource();
 
     /**
      * @return the trace path
      */
-    String getPath();
+    public String getPath();
 
     /**
      * @return the trace cache size
      */
-    int getCacheSize();
+    public int getCacheSize();
 
     /**
      * @return The statistics provider for this trace
      * @since 2.0
      */
-    ITmfStatistics getStatistics();
+    public ITmfStatistics getStatistics();
 
     /**
      * Return the map of state systems associated with this trace.
@@ -193,7 +207,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return The map of state systems
      * @since 2.0
      */
-    Map<String, ITmfStateSystem> getStateSystems();
+    public Map<String, ITmfStateSystem> getStateSystems();
 
     /**
      * If a state system is not build by the trace itself, it's possible to
@@ -208,18 +222,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      *            The already-built state system
      * @since 2.0
      */
-    void registerStateSystem(String id, ITmfStateSystem ss);
-
-    /**
-     * Index the trace. Depending on the trace type, this could be done at the
-     * constructor or initTrace phase too, so this could be implemented as a
-     * no-op.
-     *
-     * @param waitForCompletion
-     *            Should we block the caller until indexing is finished, or not.
-     * @since 2.0
-     */
-    void indexTrace(boolean waitForCompletion);
+    public void registerStateSystem(String id, ITmfStateSystem ss);
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters
@@ -228,30 +231,30 @@ public interface ITmfTrace extends ITmfDataProvider {
     /**
      * @return the number of events in the trace
      */
-    long getNbEvents();
+    public long getNbEvents();
 
     /**
      * @return the trace time range
      * @since 2.0
      */
-    TmfTimeRange getTimeRange();
+    public TmfTimeRange getTimeRange();
 
     /**
      * @return the timestamp of the first trace event
      * @since 2.0
      */
-    ITmfTimestamp getStartTime();
+    public ITmfTimestamp getStartTime();
 
     /**
      * @return the timestamp of the last trace event
      * @since 2.0
      */
-    ITmfTimestamp getEndTime();
+    public ITmfTimestamp getEndTime();
 
     /**
      * @return the streaming interval in ms (0 if not a streaming trace)
      */
-    long getStreamingInterval();
+    public long getStreamingInterval();
 
     // ------------------------------------------------------------------------
     // Trace positioning getters
@@ -260,7 +263,7 @@ public interface ITmfTrace extends ITmfDataProvider {
     /**
      * @return the current trace location
      */
-    ITmfLocation getCurrentLocation();
+    public ITmfLocation getCurrentLocation();
 
     /**
      * Returns the ratio (proportion) corresponding to the specified location.
@@ -268,7 +271,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param location a trace specific location
      * @return a floating-point number between 0.0 (beginning) and 1.0 (end)
      */
-    double getLocationRatio(ITmfLocation location);
+    public double getLocationRatio(ITmfLocation location);
 
     // ------------------------------------------------------------------------
     // SeekEvent operations (returning a trace context)
@@ -286,7 +289,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param location the trace specific location
      * @return a context which can later be used to read the corresponding event
      */
-    ITmfContext seekEvent(ITmfLocation location);
+    public ITmfContext seekEvent(ITmfLocation location);
 
     /**
      * Position the trace at the 'rank'th event in the trace.
@@ -300,7 +303,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param rank the event rank
      * @return a context which can later be used to read the corresponding event
      */
-    ITmfContext seekEvent(long rank);
+    public ITmfContext seekEvent(long rank);
 
     /**
      * Position the trace at the first event with the specified timestamp. If
@@ -317,7 +320,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return a context which can later be used to read the corresponding event
      * @since 2.0
      */
-    ITmfContext seekEvent(ITmfTimestamp timestamp);
+    public ITmfContext seekEvent(ITmfTimestamp timestamp);
 
     /**
      * Position the trace at the event located at the specified ratio in the
@@ -330,7 +333,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param ratio the proportional 'rank' in the trace
      * @return a context which can later be used to read the corresponding event
      */
-    ITmfContext seekEvent(double ratio);
+    public ITmfContext seekEvent(double ratio);
 
     /**
      * Returns the initial range offset
@@ -338,5 +341,21 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return the initial range offset
      * @since 2.0
      */
-    ITmfTimestamp getInitialRangeOffset();
+    public ITmfTimestamp getInitialRangeOffset();
+
+    /**
+     * Return the current selected time.
+     *
+     * @return the current time stamp
+     * @since 2.0
+     */
+    public ITmfTimestamp getCurrentTime();
+
+    /**
+     * Return the current selected range.
+     *
+     * @return the current time range
+     * @since 2.0
+     */
+    public TmfTimeRange getCurrentRange();
 }

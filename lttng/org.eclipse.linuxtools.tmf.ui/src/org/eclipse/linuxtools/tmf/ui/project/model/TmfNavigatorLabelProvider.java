@@ -80,10 +80,8 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
         if (icon == null) {
             URL imageURL = bundle.getResource(url);
             ImageDescriptor descriptor = ImageDescriptor.createFromURL(imageURL);
-            if (descriptor != null) {
-                icon = descriptor.createImage();
-                plugin.getImageRegistry().put(key, icon);
-            }
+            icon = descriptor.createImage();
+            plugin.getImageRegistry().put(key, icon);
         }
         return icon;
     }
@@ -105,13 +103,7 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
                 String icon = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEICON);
                 if (name != null && icon != null) {
                     Bundle bundle = Platform.getBundle(name);
-                    if (bundle != null) {
-                        Image image = loadIcon(bundle, icon);
-                        if (image != null) {
-                            return image;
-                        }
-                    }
-                    return fUnknownTraceIcon;
+                    return loadIcon(bundle, icon);
                 }
             } catch (CoreException e) {
             }

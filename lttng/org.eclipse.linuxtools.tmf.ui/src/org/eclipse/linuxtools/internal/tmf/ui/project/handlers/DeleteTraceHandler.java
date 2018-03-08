@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Close editors to release resources
  *   Geneviève Bastien - Moved the delete code to element model's classes
  *******************************************************************************/
 
@@ -21,6 +20,7 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -38,10 +38,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * <b><u>DeleteTraceHandler</u></b>
@@ -123,7 +126,18 @@ public class DeleteTraceHandler extends AbstractHandler {
                 IResource resource = trace.getResource();
                 try {
                     // Close the trace if open
-                    trace.closeEditors();
+                    IFile file = trace.getBookmarksFile();
+                    FileEditorInput input = new FileEditorInput(file);
+                    IWorkbench wb = PlatformUI.getWorkbench();
+                    for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+                        for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                            for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                                if (editorReference.getEditorInput().equals(input)) {
+                                    wbPage.closeEditor(editorReference.getEditor(false), false);
+                                }
+                            }
+                        }
+                    }
 
                     IPath path = resource.getLocation();
                     if (path != null && (trace.getParent() instanceof TmfTraceFolder)) {
@@ -138,7 +152,8 @@ public class DeleteTraceHandler extends AbstractHandler {
                                 }
                             }
                             for (ITmfProjectModelElement child : toRemove) {
-                                ((TmfExperimentElement) experiment).removeTrace((TmfTraceElement) child);
+                                // Close the experiment if open
+                                ((TmfExperimentElement) experiment).removeTrace((TmfTraceElement)child);
                             }
                         }
 

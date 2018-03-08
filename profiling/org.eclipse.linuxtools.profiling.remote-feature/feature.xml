@@ -3,9 +3,7 @@
       id="org.eclipse.linuxtools.profiling.remote"
       label="%featureName"
       version="1.0.0.qualifier"
-      provider-name="%featureProvider"
-      license-feature="org.eclipse.linuxtools.license.feature"
-      license-feature-version="1.0.0.qualifier">
+      provider-name="%featureProvider">
 
    <description>
       %description

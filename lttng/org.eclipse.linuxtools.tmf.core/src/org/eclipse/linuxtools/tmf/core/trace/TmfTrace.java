@@ -27,8 +27,9 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -48,7 +49,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  * <li> public double getLocationRatio(ITmfLocation<?> location)
  * <li> public ITmfContext seekEvent(ITmfLocation<?> location)
  * <li> public ITmfContext seekEvent(double ratio)
- * <li> public IStatus validate(IProject project, String path)
+ * <li> public boolean validate(IProject project, String path)
  * </ul>
  * A concrete trace must provide its corresponding parser. A common way to
  * accomplish this is by making the concrete class extend TmfTrace and
@@ -98,6 +99,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // The trace's statistics
     private ITmfStatistics fStatistics;
+
+    // The current selected time
+    private ITmfTimestamp fCurrentTime = TmfTimestamp.ZERO;
+
+    // The current selected range
+    private TmfTimeRange fCurrentRange = TmfTimeRange.NULL_RANGE;
 
     /**
      * The collection of state systems that are registered with this trace. Each
@@ -197,10 +204,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @throws TmfTraceException If something failed during the initialization
      */
-    protected void initialize(final IResource resource,
-            final String path,
-            final Class<? extends ITmfEvent> type)
-                    throws TmfTraceException {
+    protected void initialize(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         if (path == null) {
             throw new TmfTraceException("Invalid trace path"); //$NON-NLS-1$
         }
@@ -220,8 +224,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             }
         }
         super.init(traceName, type);
-        // register as VIP after super.init() because TmfComponent registers to signal manager there
-        TmfSignalManager.registerVIP(this);
     }
 
     /**
@@ -236,10 +238,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
-     * @since 2.0
+     * Index the trace
+     *
+     * @param waitForCompletion index synchronously (true) or not (false)
      */
-    @Override
-    public void indexTrace(boolean waitForCompletion) {
+    protected void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
     }
 
@@ -304,6 +307,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ------------------------------------------------------------------------
     // ITmfTrace - Basic getters
     // ------------------------------------------------------------------------
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public ITmfTrace[] getTraces() {
+        return new ITmfTrace[] { this };
+    }
 
     @Override
     public Class<ITmfEvent> getEventType() {
@@ -399,6 +410,22 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @Override
     public ITmfTimestamp getEndTime() {
         return fEndTime;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public ITmfTimestamp getCurrentTime() {
+        return fCurrentTime;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public TmfTimeRange getCurrentRange() {
+        return fCurrentRange;
     }
 
     /**
@@ -596,6 +623,13 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         if (fEndTime.equals(TmfTimestamp.BIG_CRUNCH) || (fEndTime.compareTo(timestamp, false) < 0)) {
             fEndTime = timestamp;
         }
+        if (fCurrentRange == TmfTimeRange.NULL_RANGE) {
+            fCurrentTime = timestamp;
+            ITmfTimestamp initialOffset = getInitialRangeOffset();
+            long endValue = timestamp.getValue() + initialOffset.normalize(0, timestamp.getScale()).getValue();
+            ITmfTimestamp endTimestamp = new TmfTimestamp(endValue, timestamp.getScale());
+            fCurrentRange = new TmfTimeRange(timestamp, endTimestamp);
+        }
         if (context.hasValidRank()) {
             long rank = context.getRank();
             if (fNbEvents <= rank) {
@@ -644,20 +678,21 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
-        boolean signalIsForUs = false;
-        for (ITmfTrace trace : TmfTraceManager.getTraceSet(signal.getTrace())) {
-            if (trace == this) {
-                signalIsForUs = true;
+        ITmfTrace trace = null;
+        for (ITmfTrace expTrace : signal.getTrace().getTraces()) {
+            if (expTrace == this) {
+                trace = expTrace;
                 break;
             }
         }
 
-        if (!signalIsForUs) {
+        if (trace == null) {
+            /* This signal is not for us */
             return;
         }
 
         /*
-         * The signal is either for this trace, or for an experiment containing
+         * The signal is for this trace, or for an experiment containing
          * this trace.
          */
         try {
@@ -677,15 +712,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
 
         if (signal.getTrace() == this) {
-            /* Additionally, the signal is directly for this trace. */
+            /* Additionally, the signal is directly for this trace or experiment. */
             if (getNbEvents() == 0) {
-                return;
-            }
-
-            /* For a streaming trace, the range updated signal should be sent
-             * by the subclass when a new safe time is determined.
-             */
-            if (getStreamingInterval() > 0) {
                 return;
             }
 
@@ -713,6 +741,35 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
         if (signal.getTrace() == this) {
             getIndexer().buildIndex(getNbEvents(), signal.getRange(), false);
+        }
+    }
+
+    /**
+     * Signal handler for the TmfTimeSynchSignal signal
+     *
+     * @param signal The incoming signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void synchToTime(final TmfTimeSynchSignal signal) {
+        if (signal.getCurrentTime().compareTo(fStartTime) >= 0 && signal.getCurrentTime().compareTo(fEndTime) <= 0) {
+            fCurrentTime = signal.getCurrentTime();
+        }
+    }
+
+    /**
+     * Signal handler for the TmfRangeSynchSignal signal
+     *
+     * @param signal The incoming signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void synchToRange(final TmfRangeSynchSignal signal) {
+        if (signal.getCurrentTime().compareTo(fStartTime) >= 0 && signal.getCurrentTime().compareTo(fEndTime) <= 0) {
+            fCurrentTime = signal.getCurrentTime();
+        }
+        if (signal.getCurrentRange().getIntersection(getTimeRange()) != null) {
+            fCurrentRange = signal.getCurrentRange().getIntersection(getTimeRange());
         }
     }
 

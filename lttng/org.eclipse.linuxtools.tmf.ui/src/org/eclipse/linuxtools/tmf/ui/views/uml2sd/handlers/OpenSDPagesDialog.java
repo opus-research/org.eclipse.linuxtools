@@ -12,12 +12,13 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.PagesDialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation for paging.
@@ -25,7 +26,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
  * @version 1.0
  * @author Bernd Hufmann
  */
-public class OpenSDPagesDialog extends BaseSDAction {
+public class OpenSDPagesDialog extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -41,9 +42,13 @@ public class OpenSDPagesDialog extends BaseSDAction {
     // ------------------------------------------------------------------------
 
     /**
+     * The sequence diagram view reference
+     */
+    protected SDView fView;
+    /**
      * The advanced paging provider reference.
      */
-    private final ISDAdvancedPagingProvider fProvider;
+    protected ISDAdvancedPagingProvider fProvider;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -58,10 +63,10 @@ public class OpenSDPagesDialog extends BaseSDAction {
      *            The provider
      */
     public OpenSDPagesDialog(SDView view, ISDAdvancedPagingProvider provider) {
-        super(view);
-        setText(Messages.SequenceDiagram_Pages);
+        super(SDMessages._44);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_GOTO_PAGE));
         setId(ID);
+        fView = view;
         fProvider = provider;
     }
 
@@ -71,10 +76,10 @@ public class OpenSDPagesDialog extends BaseSDAction {
 
     @Override
     public void run() {
-        if (getView() == null) {
+        if (fView == null) {
             return;
         }
-        PagesDialog dialog = new PagesDialog(getView(), fProvider);
+        PagesDialog dialog = new PagesDialog(fView, fProvider);
         dialog.open();
     }
 }

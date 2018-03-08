@@ -16,14 +16,12 @@ import java.util.UUID;
 
 /**
  * Various utilities.
- *
+ * 
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
 public class Utils {
-
-    private Utils() {}
 
     // ------------------------------------------------------------------------
     // Constants
@@ -32,27 +30,27 @@ public class Utils {
     /**
      * CTF magic number. (sort of looks like CTF CTF CT)
      */
-    public static final int CTF_MAGIC = 0xC1FC1FC1;
+    public final static int CTF_MAGIC = 0xC1FC1FC1;
 
     /**
      * TSDL magic number. (sort of looks like TSDL LSDT)
      */
-    public static final int TSDL_MAGIC = 0x75D11D57;
+    public final static int TSDL_MAGIC = 0x75D11D57;
 
     /**
      * TSDL magic number length in bytes.
      */
-    public static final int TSDL_MAGIC_LEN = 4;
+    public final static int TSDL_MAGIC_LEN = 4;
 
     /**
      * Directory separator on the current platform.
      */
-    public static final String SEPARATOR = System.getProperty("file.separator"); //$NON-NLS-1$
+    public final static String SEPARATOR = System.getProperty("file.separator"); //$NON-NLS-1$
 
     /**
      * Length in bytes of a UUID value.
      */
-    public static final int UUID_LEN = 16;
+    public final static int UUID_LEN = 16;
 
     // ------------------------------------------------------------------------
     // Operations
