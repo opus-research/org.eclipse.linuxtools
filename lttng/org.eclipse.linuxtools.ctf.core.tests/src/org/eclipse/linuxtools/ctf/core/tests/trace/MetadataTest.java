@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertNotNull;
@@ -6,7 +17,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.nio.ByteOrder;
 
-import org.eclipse.linuxtools.ctf.core.tests.TestParams;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.Metadata;
 import org.junit.After;
@@ -22,6 +33,8 @@ import org.junit.Test;
  */
 @SuppressWarnings("javadoc")
 public class MetadataTest {
+
+    private static final int TRACE_INDEX = 0;
 
     private Metadata fixture;
 
@@ -42,8 +55,8 @@ public class MetadataTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
-        fixture = new Metadata(TestParams.createTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new Metadata(CtfTestTraces.getTestTrace(TRACE_INDEX));
     }
 
     /**

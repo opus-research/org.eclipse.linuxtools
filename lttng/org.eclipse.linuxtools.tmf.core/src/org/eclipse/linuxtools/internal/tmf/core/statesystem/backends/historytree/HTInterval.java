@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -29,6 +29,14 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  *
  */
 final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
+
+    private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
+
+    /* 'Byte' equivalent for state values types */
+    private static final byte TYPE_NULL = -1;
+    private static final byte TYPE_INTEGER = 0;
+    private static final byte TYPE_STRING = 1;
+    private static final byte TYPE_LONG = 2;
 
     private final long start;
     private final long end;
@@ -86,25 +94,20 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
         /* Read the 'type' of the value, then react accordingly */
         valueType = buffer.get();
-        if (valueType <= 0) {
-            /* the type of ValueOrOffset is 'value' */
-            valueOrOffset = buffer.getInt();
-            if (valueOrOffset == -1) {
-                /* Null value */
-                value = TmfStateValue.nullValue();
-            } else {
-                /* Normal integer value */
-                value = TmfStateValue.newValueInt(valueOrOffset);
-            }
+        valueOrOffset = buffer.getInt();
+        switch (valueType) {
 
-        } else { // valueType > 0
-            /* the type is 'offset' */
-            valueOrOffset = buffer.getInt();
+        case TYPE_NULL:
+            value = TmfStateValue.nullValue();
+            break;
 
-            /*
-             * Go read the corresponding entry in the Strings section of the
-             * block
-             */
+        case TYPE_INTEGER:
+            /* "ValueOrOffset" is the straight value */
+            value = TmfStateValue.newValueInt(valueOrOffset);
+            break;
+
+        case TYPE_STRING:
+            /* Go read the matching entry in the Strings section of the block */
             buffer.mark();
             buffer.position(valueOrOffset);
 
@@ -124,8 +127,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             /* Confirm the 0'ed byte at the end */
             res = buffer.get();
             if (res != 0) {
-                throw new IOException(
-                        "Invalid interval data. Maybe your file is corrupt?"); //$NON-NLS-1$
+                throw new IOException(errMsg);
             }
 
             /*
@@ -133,14 +135,29 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
              * interval)
              */
             buffer.reset();
+            break;
+
+        case TYPE_LONG:
+            /* Go read the matching entry in the Strings section of the block */
+            buffer.mark();
+            buffer.position(valueOrOffset);
+            value = TmfStateValue.newValueLong(buffer.getLong());
+
+            /*
+             * Restore the file pointer's position (so we can read the next
+             * interval)
+             */
+            buffer.reset();
+            break;
+        default:
+            /* Unknown data, better to not make anything up... */
+            throw new IOException(errMsg);
         }
 
         try {
-            interval = new HTInterval(intervalStart, intervalEnd, attribute,
-                    value);
+            interval = new HTInterval(intervalStart, intervalEnd, attribute, value);
         } catch (TimeRangeException e) {
-            throw new IOException(
-                    "Invalid interval data. Maybe your file is corrupt?"); //$NON-NLS-1$
+            throw new IOException(errMsg);
         }
         return interval;
     }
@@ -166,11 +183,12 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
-        buffer.put(sv.getType());
+        buffer.put(getByteFromType(sv.getType()));
 
-        byteArrayToWrite = sv.toByteArray();
+        switch (getByteFromType(sv.getType())) {
 
-        if (byteArrayToWrite == null) {
+        case TYPE_NULL:
+        case TYPE_INTEGER:
             /* We write the 'valueOffset' field as a straight value. In the case
              * of a null value, it will be unboxed as -1 */
             try {
@@ -184,27 +202,59 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             }
             return 0; /* we didn't use a Strings section entry */
 
+        case TYPE_STRING:
+            byteArrayToWrite = sv.toByteArray();
+            /*
+             * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
+             * end)
+             */
+            sizeOfStringEntry = byteArrayToWrite.length + 2;
+
+            /* we use the valueOffset as an offset. */
+            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
+            buffer.mark();
+            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
+
+            /*
+             * write the Strings entry (1st byte = size, then the bytes, then the 0)
+             */
+            buffer.put((byte) sizeOfStringEntry);
+            buffer.put(byteArrayToWrite);
+            buffer.put((byte) 0);
+            assert (buffer.position() == endPosOfStringEntry);
+            buffer.reset();
+            return sizeOfStringEntry;
+
+        case TYPE_LONG:
+            /*
+             * Size to write is the number of bytes in a Long
+             */
+            sizeOfStringEntry = 8;
+
+            /* we use the valueOffset as an offset. */
+            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
+            buffer.mark();
+            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
+
+            /*
+             * write the Long in the Strings section
+             */
+            try {
+                buffer.putLong(sv.unboxLong());
+            } catch (StateValueTypeException e) {
+                /*
+                 * This should not happen, since the value told us it was of
+                 * type Long (corrupted value?)
+                 */
+                e.printStackTrace();
+            }
+            assert (buffer.position() == endPosOfStringEntry);
+            buffer.reset();
+            return sizeOfStringEntry;
+
+        default:
+            return 0;
         }
-        /*
-         * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
-         * end)
-         */
-        sizeOfStringEntry = byteArrayToWrite.length + 2;
-
-        /* we use the valueOffset as an offset. */
-        buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
-        buffer.mark();
-        buffer.position(endPosOfStringEntry - sizeOfStringEntry);
-
-        /*
-         * write the Strings entry (1st byte = size, then the bytes, then the 0)
-         */
-        buffer.put((byte) sizeOfStringEntry);
-        buffer.put(byteArrayToWrite);
-        buffer.put((byte) 0);
-        assert (buffer.position() == endPosOfStringEntry);
-        buffer.reset();
-        return sizeOfStringEntry;
     }
 
     @Override
@@ -310,5 +360,25 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
         sb.append(sv.toString());
 
         return sb.toString();
+    }
+
+    /**
+     * Here we determine how state values "types" are written in the 8-bit
+     * field that indicates the value type in the file.
+     */
+    private static byte getByteFromType(ITmfStateValue.Type type) {
+        switch(type) {
+        case NULL:
+            return TYPE_NULL;
+        case INTEGER:
+            return TYPE_INTEGER;
+        case STRING:
+            return TYPE_STRING;
+        case LONG:
+            return TYPE_LONG;
+        default:
+            /* Should not happen if the switch is fully covered */
+            throw new RuntimeException();
+        }
     }
 }

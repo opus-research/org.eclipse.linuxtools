@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -22,6 +22,8 @@ import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBac
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.ThreadedHistoryTreeBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial.PartialHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial.PartialStateSystem;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
@@ -72,8 +74,11 @@ public abstract class StateSystemManager extends TmfComponent {
         // at least if its range matches the trace's range.
         if (htFile.exists()) {
             /* Load an existing history */
+            final int version = (htInput == null) ?
+                    IStateChangeInput.IGNORE_PROVIDER_VERSION :
+                    htInput.getVersion();
             try {
-                htBackend = new HistoryTreeBackend(htFile);
+                htBackend = new HistoryTreeBackend(htFile, version);
                 ITmfStateSystem ss = HistoryBuilder.openExistingHistory(htBackend);
                 return ss;
             } catch (IOException e) {
@@ -92,7 +97,8 @@ public abstract class StateSystemManager extends TmfComponent {
             return null;
         }
         try {
-            htBackend = new ThreadedHistoryTreeBackend(htFile, htInput.getStartTime(), QUEUE_SIZE);
+            htBackend = new ThreadedHistoryTreeBackend(htFile,
+                    htInput.getStartTime(), htInput.getVersion(), QUEUE_SIZE);
             StateSystem ss = new StateSystem(htBackend);
             htInput.assignTargetStateSystem(ss);
             builder = new HistoryBuilder(htInput, ss, htBackend, buildManually);
@@ -151,6 +157,89 @@ public abstract class StateSystemManager extends TmfComponent {
         input.assignTargetStateSystem(ss);
 
         HistoryBuilder builder = new HistoryBuilder(input, ss, backend, buildManually);
+        return builder.getStateSystemQuerier();
+    }
+
+    /**
+     * Create a new state system backed with a partial history. A partial
+     * history is similar to a "full" one (which you get with
+     * {@link #loadStateHistory}), except that the file on disk is much smaller,
+     * but queries are a bit slower.
+     *
+     * Also note that single-queries are implemented using a full-query
+     * underneath, (which are much slower), so this might not be a good fit for
+     * a use case where you have to do lots of single queries.
+     *
+     * @param htFile
+     *            The target file of the history. Since they are usually quick
+     *            to build, it will overwrite any existing file, without trying
+     *            to re-open it.
+     * @param realInput
+     *            The state provider input to use to build this history.
+     * @param buildManually
+     *            Indicates if you want to build the state system in-band
+     *            ('true', for unit tests for example), or to not block the
+     *            caller and start the build once the RangeUpdated signal.
+     * @return Reference to the newly constructed state system
+     * @throws TmfTraceException
+     *             If the history file could not be created
+     * @since 2.0
+     */
+    public static ITmfStateSystem newPartialHistory(File htFile,
+            IStateChangeInput realInput, boolean buildManually) throws TmfTraceException {
+        /*
+         * The order of initializations is very tricky (but very important!)
+         * here. We need to follow this pattern:
+         * (1 is done before the call to this method)
+         *
+         * 1- Instantiate realInput
+         * 2- Instantiate realBackend
+         * 3- Instantiate partialBackend, whith prereqs:
+         *  3a- Instantiate partialInput, via realInput.getNew()
+         *  3b- Instantiate nullBackend (partialSS's backend)
+         *  3c- Instantiate partialSS
+         *  3d- partialInput.assignSS(partialSS)
+         * 4- Instantiate realSS
+         * 5- partialSS.assignUpstream(realSS)
+         * 6- realInput.assignSS(realSS)
+         * 7- Call HistoryBuilder(realInput, realSS, partialBackend) to build the thing.
+         */
+
+        final long granularity = 50000;
+
+        /* 2 */
+        IStateHistoryBackend realBackend = null;
+        try {
+            realBackend = new ThreadedHistoryTreeBackend(htFile,
+                    realInput.getStartTime(), realInput.getVersion(), QUEUE_SIZE);
+        } catch (IOException e) {
+            throw new TmfTraceException(e.toString(), e);
+        }
+
+        /* 3a */
+        IStateChangeInput partialInput = realInput.getNewInstance();
+
+        /* 3b-3c, constructor automatically uses a NullBackend */
+        PartialStateSystem pss = new PartialStateSystem();
+
+        /* 3d */
+        partialInput.assignTargetStateSystem(pss);
+
+        /* 3 */
+        IStateHistoryBackend partialBackend =
+                new PartialHistoryBackend(partialInput, pss, realBackend, granularity);
+
+        /* 4 */
+        StateSystem realSS = new StateSystem(partialBackend);
+
+        /* 5 */
+        pss.assignUpstream(realSS);
+
+        /* 6 */
+        realInput.assignTargetStateSystem(realSS);
+
+        /* 7 */
+        HistoryBuilder builder = new HistoryBuilder(realInput, realSS, partialBackend, buildManually);
         return builder.getStateSystemQuerier();
     }
 }

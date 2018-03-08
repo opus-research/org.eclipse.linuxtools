@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
@@ -7,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.TestParams;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -25,7 +36,9 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class CTFTraceReaderTest {
 
-    CTFTraceReader fixture;
+    private static final int TRACE_INDEX = 0;
+
+    private CTFTraceReader fixture;
 
     /**
      * Launch the test.
@@ -44,8 +57,8 @@ public class CTFTraceReaderTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
-        fixture = new CTFTraceReader(TestParams.createTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new CTFTraceReader(CtfTestTraces.getTestTrace(TRACE_INDEX));
     }
 
     /**
@@ -64,7 +77,7 @@ public class CTFTraceReaderTest {
      */
     @Test
     public void testOpen_existing() throws CTFReaderException {
-        CTFTrace trace = TestParams.createTrace();
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
 
         CTFTraceReader result = new CTFTraceReader(trace);
         assertNotNull(result);
@@ -161,7 +174,7 @@ public class CTFTraceReaderTest {
      */
     @Test
     public void testEquals() throws CTFReaderException {
-        CTFTraceReader fixture2 = new CTFTraceReader(TestParams.createTrace());
+        CTFTraceReader fixture2 = new CTFTraceReader(CtfTestTraces.getTestTrace(TRACE_INDEX));
         assertEquals(fixture, fixture2);
     }
 

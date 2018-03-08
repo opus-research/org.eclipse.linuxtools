@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -141,7 +141,7 @@ public class TmfTraceFolder extends TmfProjectModelElement implements IPropertyS
      */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        return (sfDescriptors != null) ? Arrays.copyOf(sfDescriptors, sfDescriptors.length) : null;
+        return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
     /*

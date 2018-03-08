@@ -25,7 +25,15 @@
             class="org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView"
             icon="icons/symbol.gif"
             id="org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"
-            name="Source Disassembly">
+            name="Perf Source Disassembly">
+      </view>
+      <view
+            allowMultiple="true"
+            category="org.eclipse.linuxtools.profiling.ui"
+            class="org.eclipse.linuxtools.internal.perf.ui.StatView"
+            icon="icons/symbol.gif"
+            id="org.eclipse.linuxtools.perf.ui.StatView"
+            name="Perf Statistics">
       </view>
    </extension>
    <extension
@@ -134,7 +142,7 @@
          point="org.eclipse.ui.editors">
       <editor
             default="true"
-            filenames="perf.data, perf.data.old"
+            filenames="*.data, *.data.old"
             id="org.eclipse.linuxtools.perf.editor"
             launcher="org.eclipse.linuxtools.internal.perf.launch.PerfOpenData"
             name="Perf Viewer">
@@ -153,5 +161,41 @@
             tabgroup="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigurationTabGroup"
             type="timing">
       </provider>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.linuxtools.perf.ui.ProfileView">
+         <command
+               commandId="org.eclipse.linuxtools.perf.SaveData"
+               id="org.eclipse.linuxtools.perf.SaveCommand"
+               label="Save Current Session"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.linuxtools.perf.ui.StatView">
+         <command
+               commandId="org.eclipse.linuxtools.perf.SaveStatData"
+               id="org.eclipse.linuxtools.perf.SaveStatData"
+               label="Save Statistics"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveSessionHandler"
+            id="org.eclipse.linuxtools.perf.SaveData"
+            name="Save Current Session">
+      </command>
+      <command
+            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveStatsHandler"
+            id="org.eclipse.linuxtools.perf.SaveStatData"
+            name="Save Statistics">
+      </command>
    </extension>   
 </plugin>

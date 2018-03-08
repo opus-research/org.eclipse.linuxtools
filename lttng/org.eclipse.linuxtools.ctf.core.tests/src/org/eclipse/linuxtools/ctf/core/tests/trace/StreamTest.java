@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertNotNull;
@@ -10,7 +21,7 @@ import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.TestParams;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
@@ -31,6 +42,8 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class StreamTest {
 
+    private static final int TRACE_INDEX = 0;
+
     private Stream fixture;
 
     /**
@@ -50,14 +63,14 @@ public class StreamTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
-        fixture = new Stream(TestParams.createTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
         fixture.setEventContext(new StructDeclaration(1L));
         fixture.setPacketContext(new StructDeclaration(1L));
         fixture.setEventHeader(new StructDeclaration(1L));
         fixture.setId(1L);
-        fixture.addInput(new StreamInput(new Stream(TestParams.createTrace()),
-                (FileChannel) null, TestParams.getEmptyFile()));
+        fixture.addInput(new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+                (FileChannel) null, CtfTestTraces.getEmptyFile()));
     }
 
     /**
@@ -75,7 +88,7 @@ public class StreamTest {
      */
     @Test
     public void testStream() throws CTFReaderException {
-        CTFTrace trace = TestParams.createTrace();
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
         Stream result = new Stream(trace);
         assertNotNull(result);
     }

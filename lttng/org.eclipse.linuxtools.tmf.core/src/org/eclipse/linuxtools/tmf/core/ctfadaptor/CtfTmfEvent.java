@@ -8,6 +8,7 @@
  *
  * Contributors:
  *     Alexandre Montplaisir - Initial API and implementation
+ *     Bernd Hufmann - Updated for source and model lookup interfaces
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -15,12 +16,15 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventPropertySource;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfModelLookup;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.ui.views.properties.IPropertySource;
 
@@ -32,7 +36,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public final class CtfTmfEvent extends TmfEvent {
+public final class CtfTmfEvent extends TmfEvent implements ITmfSourceLookup, ITmfModelLookup {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -175,6 +179,42 @@ public final class CtfTmfEvent extends TmfEvent {
             return null;
         }
         return fDeclaration.getCustomAttribute(name);
+    }
+
+    /**
+     * Get the call site for this event.
+     *
+     * @return the call site information, or null if there is none
+     * @since 2.0
+     */
+    @Override
+    public CtfTmfCallsite getCallsite() {
+        CTFCallsite callsite = null;
+        if (getTrace() == null) {
+            return null;
+        }
+        if (getContent() != null) {
+            ITmfEventField ipField = getContent().getField(CtfConstants.CONTEXT_FIELD_PREFIX + CtfConstants.IP_KEY);
+            if (ipField != null && ipField.getValue() instanceof Long) {
+                long ip = (Long) ipField.getValue();
+                callsite = getTrace().getCTFTrace().getCallsite(eventName, ip);
+            }
+        }
+        if (callsite == null) {
+            callsite = getTrace().getCTFTrace().getCallsite(eventName);
+        }
+        if (callsite != null) {
+            return new CtfTmfCallsite(callsite);
+        }
+        return null;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public String getModelUri() {
+        return getCustomAttribute(CtfConstants.MODEL_URI_KEY);
     }
 
     /**

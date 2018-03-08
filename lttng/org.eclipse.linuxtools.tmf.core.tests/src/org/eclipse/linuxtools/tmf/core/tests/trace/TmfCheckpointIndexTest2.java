@@ -26,9 +26,9 @@ import java.util.List;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfCheckpointIndexer;
@@ -42,7 +42,7 @@ import org.junit.Test;
  * Test suite for the TmfCheckpointIndexer class (events with same
  * timestamp around checkpoint).
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("javadoc")
 public class TmfCheckpointIndexTest2 {
 
     // ------------------------------------------------------------------------

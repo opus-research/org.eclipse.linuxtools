@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -8,14 +8,17 @@
  *
  * Contributors:
  *  Matthew Khouzam - Initial API and implementation
- *  Alexendre Montplaisir - Initial API and implementation, extend TmfEventField
+ *  Alexandre Montplaisir - Initial API and implementation, extend TmfEventField
  *  Bernd Hufmann - Add Enum field handling
+ *  Geneviève Bastien - Add Struct and Variant field handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -27,6 +30,10 @@ import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
+import org.eclipse.linuxtools.internal.tmf.core.Messages;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 
 /**
@@ -57,6 +64,9 @@ public abstract class CtfTmfEventField extends TmfEventField {
     /** @since 2.0 */
     protected static final int FIELDTYPE_ENUM = 4;
 
+    /** @since 2.0 */
+    protected static final int FIELDTYPE_STRUCT = 5;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
@@ -69,14 +79,15 @@ public abstract class CtfTmfEventField extends TmfEventField {
      *            The name of this field
      * @param value
      *            The value of this field. Its type should match the field type.
+     * @param fields
+     *            The children fields. Useful for composite fields
      * @since 2.0
      */
-    protected CtfTmfEventField(String name, Object value) {
+    protected CtfTmfEventField(String name, Object value, ITmfEventField[] fields) {
         super(/* Strip the underscore from the field name if there is one */
                 name.startsWith("_") ? name.substring(1) : name, //$NON-NLS-1$
                 value,
-                /* CTF fields do not have sub-fields */
-                null);
+                fields);
     }
 
     // ------------------------------------------------------------------------
@@ -127,7 +138,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < arrayDecl.getLength(); i++) {
                     values.add(((IntegerDefinition) arrayDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values);
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration) arrayDecl.getElementType()).getBase());
             }
             /* Add other types of arrays here */
 
@@ -147,10 +158,40 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < seqDef.getLength(); i++) {
                     values.add(((IntegerDefinition) seqDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values);
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration) seqDecl.getElementType()).getBase());
             }
             /* Add other Sequence types here */
 
+        } else if (fieldDef instanceof StructDefinition) {
+            StructDefinition strDef = (StructDefinition) fieldDef;
+
+            String curFieldName = null;
+            Definition curFieldDef;
+            CtfTmfEventField curField;
+            List<ITmfEventField> list = new ArrayList<ITmfEventField>();
+            /* Recursively parse the fields */
+            for (Entry<String, Definition> entry : strDef.getDefinitions().entrySet()) {
+                curFieldName = entry.getKey();
+                curFieldDef = entry.getValue();
+                curField = CtfTmfEventField.parseField(curFieldDef, curFieldName);
+                list.add(curField);
+            }
+            field = new CTFStructField(fieldName, list.toArray(new CtfTmfEventField[list.size()]));
+        } else if (fieldDef instanceof VariantDefinition) {
+            VariantDefinition varDef = (VariantDefinition) fieldDef;
+
+            String curFieldName = varDef.getCurrentFieldName();
+            Definition curFieldDef = varDef.getDefinitions().get(curFieldName);
+            if (curFieldDef != null) {
+                field = CtfTmfEventField.parseField(curFieldDef, curFieldName);
+            } else {
+                /* A safe-guard, but curFieldDef should never be null */
+                field = new CTFStringField(curFieldName, ""); //$NON-NLS-1$
+            }
+
+        } else {
+            /* Safe-guard, to avoid null exceptions later, field is expected not to be null */
+            field = new CTFStringField(fieldName, Messages.TmfEventField_UnsupportedType + fieldDef.getClass().toString());
         }
         return field;
     }
@@ -170,6 +211,40 @@ public abstract class CtfTmfEventField extends TmfEventField {
      * @return The field type
      */
     public abstract int getFieldType();
+
+    /**
+     * Print a numeric value as a string in a given base
+     *
+     * @param value
+     *            The value to print as string
+     * @param base
+     *            The base for this value
+     * @return formatted number string
+     * @since 2.0
+     */
+    protected final static String formatNumber(long value, int base) {
+        String s;
+        /* Format the number correctly according to the integer's base */
+        switch (base) {
+        case 2:
+            s = "0b" + Long.toBinaryString(value); //$NON-NLS-1$
+            break;
+        case 8:
+            s = "0" + Long.toOctalString(value); //$NON-NLS-1$
+            break;
+        case 10:
+            s = Long.toString(value);
+            break;
+        case 16:
+            s = "0x" + Long.toHexString(value); //$NON-NLS-1$
+            break;
+        default:
+            /* Non-standard base, we'll just print it as a decimal number */
+            s = Long.toString(value);
+            break;
+        }
+        return s;
+    }
 
 }
 
@@ -192,7 +267,7 @@ final class CTFIntegerField extends CtfTmfEventField {
      *            The name of this field
      */
     CTFIntegerField(String name, long longValue, int base) {
-        super(name, longValue);
+        super(name, longValue, null);
         this.base = base;
     }
 
@@ -206,37 +281,17 @@ final class CTFIntegerField extends CtfTmfEventField {
         return (Long) super.getValue();
     }
 
+    @Override
+    public String getFormattedValue() {
+        return formatNumber(getValue(), base);
+    }
+
     /**
      * Custom-format the integer values depending on their base.
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getName());
-        sb.append('=');
-
-        /* Format the number correctly according to the integer's base */
-        switch (base) {
-        case 2:
-            sb.append("0b"); //$NON-NLS-1$
-            sb.append(Long.toBinaryString(getValue()));
-            break;
-        case 8:
-            sb.append('0');
-            sb.append(Long.toOctalString(getValue()));
-            break;
-        case 10:
-            sb.append(getValue());
-            break;
-        case 16:
-            sb.append("0x"); //$NON-NLS-1$
-            sb.append(Long.toHexString(getValue()));
-            break;
-        default:
-            /* Non-standard base, we'll just print it as a decimal number */
-            sb.append(getValue().toString());
-            break;
-        }
-        return sb.toString();
+        return getName() + '=' + formatNumber(getValue(), base);
     }
 }
 
@@ -256,7 +311,7 @@ final class CTFStringField extends CtfTmfEventField {
      *            The name of this field
      */
     CTFStringField(String name, String strValue) {
-        super(name, strValue);
+        super(name, strValue, null);
     }
 
     @Override
@@ -277,6 +332,9 @@ final class CTFStringField extends CtfTmfEventField {
  */
 final class CTFIntegerArrayField extends CtfTmfEventField {
 
+    private final int base;
+    private String formattedValue = null;
+
     /**
      * Constructor for CTFIntegerArrayField.
      *
@@ -286,8 +344,9 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
      * @param name
      *            The name of this field
      */
-    CTFIntegerArrayField(String name, List<Long> longValues) {
-        super(name, longValues);
+    CTFIntegerArrayField(String name, List<Long> longValues, int base) {
+        super(name, longValues, null);
+        this.base = base;
     }
 
     @Override
@@ -298,6 +357,26 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
     @Override
     public List<Long> getValue() {
         return (List<Long>) super.getValue();
+    }
+
+    @Override
+    public String getFormattedValue() {
+        if (formattedValue == null) {
+            List<String> strings = new ArrayList<String>();
+            for (Long value : getValue()) {
+                strings.add(formatNumber(value, base));
+            }
+            formattedValue = strings.toString();
+        }
+        return formattedValue;
+    }
+
+    /**
+     * Custom-format the integer values depending on their base.
+     */
+    @Override
+    public String toString() {
+        return getName() + '=' + getFormattedValue();
     }
 }
 
@@ -317,7 +396,7 @@ final class CTFFloatField extends CtfTmfEventField {
      *            The name of this field
      */
     protected CTFFloatField(String name, double value) {
-        super(name, value);
+        super(name, value, null);
     }
 
     @Override
@@ -348,7 +427,7 @@ final class CTFEnumField extends CtfTmfEventField {
      */
     CTFEnumField(String name, CtfEnumPair enumValue) {
         super(name, new CtfEnumPair(enumValue.getFirst(),
-                                    enumValue.getSecond().longValue()));
+                                    enumValue.getSecond().longValue()), null);
     }
 
     @Override
@@ -359,6 +438,41 @@ final class CTFEnumField extends CtfTmfEventField {
     @Override
     public CtfEnumPair getValue() {
         return (CtfEnumPair) super.getValue();
+    }
+}
+
+/**
+ * The CTF field implementation for struct fields with sub-types
+ *
+ * @author gbastien
+ */
+final class CTFStructField extends CtfTmfEventField {
+
+    /**
+     * Constructor for CTFStringField.
+     *
+     * @param strValue
+     *            The string value of this field
+     * @param name
+     *            The name of this field
+     */
+    CTFStructField(String name, CtfTmfEventField[] fields) {
+        super(name, fields, fields);
+    }
+
+    @Override
+    public int getFieldType() {
+        return FIELDTYPE_STRUCT;
+    }
+
+    @Override
+    public CtfTmfEventField[] getValue() {
+        return (CtfTmfEventField[]) super.getValue();
+    }
+
+    @Override
+    public String toString() {
+        return getName() + '=' + Arrays.toString(getValue());
     }
 }
 

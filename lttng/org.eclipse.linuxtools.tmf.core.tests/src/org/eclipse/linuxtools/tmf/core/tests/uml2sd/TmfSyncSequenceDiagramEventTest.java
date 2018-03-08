@@ -23,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfSyncSequenceDiagramEvent;
 
 import org.junit.Test;
@@ -31,7 +31,6 @@ import org.junit.Test;
 /**
  * TmfSyncSequenceDiagramEventTest
  */
-@SuppressWarnings("nls")
 public class TmfSyncSequenceDiagramEventTest {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;

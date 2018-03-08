@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -32,9 +32,6 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -46,6 +43,10 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
@@ -668,7 +669,8 @@ public class ControlFlowView extends TmfView {
                             if (monitor.isCanceled()) {
                                 return;
                             }
-                            if (!execNameInterval.getStateValue().isNull() && execNameInterval.getStateValue().getType() == 1) {
+                            if (!execNameInterval.getStateValue().isNull() &&
+                                    execNameInterval.getStateValue().getType() == ITmfStateValue.Type.STRING) {
                                 String execName = execNameInterval.getStateValue().unboxStr();
                                 long startTime = execNameInterval.getStartTime();
                                 long endTime = execNameInterval.getEndTime() + 1;
@@ -787,7 +789,7 @@ public class ControlFlowView extends TmfView {
                     e.printStackTrace();
                 }
                 if (lastEndTime != time && lastEndTime != -1) {
-                    eventList.add(new ControlFlowEvent(entry, lastEndTime, time - lastEndTime, 0));
+                    eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                 }
                 eventList.add(new ControlFlowEvent(entry, time, duration, status));
                 lastEndTime = time + duration;
