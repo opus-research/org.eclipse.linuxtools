@@ -45,7 +45,7 @@ import org.eclipse.ui.PlatformUI;
 
 public class OprofileManualLaunchConfigurationDelegate extends AbstractOprofileLaunchConfigurationDelegate {
 	@Override
-	protected boolean preExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, ILaunch launch) {
+	protected boolean preExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents) {
 		// Set current project to allow using the oprofile path that
 		// was chosen for the project
 		Oprofile.OprofileProject.setProject(getProject());
