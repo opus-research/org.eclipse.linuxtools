@@ -9,6 +9,7 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Replace background requests by pre-emptable requests
+ *   Patrick Tasse - Fix TimerThread leak
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.component;
@@ -94,7 +95,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
         fDataQueue = new LinkedBlockingQueue<ITmfEvent>(fQueueSize);
-        fExecutor = new TmfRequestExecutor();
     }
 
     /**
@@ -110,6 +110,9 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         fType = type;
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
+        if (fExecutor != null) {
+            fExecutor.stop();
+        }
         fExecutor = new TmfRequestExecutor();
         fSignalDepth = 0;
 
@@ -161,7 +164,9 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     @Override
     public void dispose() {
         TmfProviderManager.deregister(fType, this);
-        fExecutor.stop();
+        if (fExecutor != null) {
+            fExecutor.stop();
+        }
         super.dispose();
         // if (Tracer.isComponentTraced()) Tracer.traceComponent(this, "stopped");
     }
@@ -316,7 +321,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      */
     protected void queueRequest(final ITmfDataRequest request) {
 
-        if (fExecutor.isShutdown()) {
+        if (fExecutor == null || fExecutor.isShutdown()) {
             request.cancel();
             return;
         }
@@ -386,7 +391,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      * @since 2.0
      */
     protected boolean executorIsShutdown() {
-        return fExecutor.isShutdown();
+        return fExecutor == null || fExecutor.isShutdown();
     }
 
     /**
@@ -394,7 +399,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      * @since 2.0
      */
     protected boolean executorIsTerminated() {
-        return fExecutor.isTerminated();
+        return fExecutor == null || fExecutor.isTerminated();
     }
 
     // ------------------------------------------------------------------------
