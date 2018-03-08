@@ -22,8 +22,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -231,78 +229,5 @@ public class TmfExperimentElement extends TmfProjectModelElement implements IPro
     public boolean isPropertySet(Object id) {
         return false;
     }
-
-    /**
-     * Refreshes the trace specific supplementary folder information. It creates the folder if not exists.
-     * It sets the persistence property of the trace resource
-     * @since 2.0
-     */
-    public void refreshSupplementaryFolder() {
-        createSupplementaryDirectory();
-    }
-
-    /**
-     * Checks if supplementary resource exist or not.
-     *
-     * @return <code>true</code> if one or more files are under the trace supplementary folder
-     * @since 2.0
-     */
-    public boolean hasSupplementaryResources() {
-        IResource[] resources = getSupplementaryResources();
-        return (resources.length > 0);
-    }
-
-    /**
-     * Returns the supplementary resources under the trace supplementary folder.
-     *
-     * @return array of resources under the trace supplementary folder.
-     * @since 2.0
-     */
-    public IResource[] getSupplementaryResources() {
-        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
-        if (supplFolder.exists()) {
-            try {
-                return supplFolder.members();
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error deleting supplementary folder " + supplFolder, e); //$NON-NLS-1$
-            }
-        }
-        return new IResource[0];
-    }
-
-    /**
-     * Deletes the given resources.
-     *
-     * @param resources array of resources to delete.
-     * @since 2.0
-     */
-    public void deleteSupplementaryResources(IResource[] resources) {
-        for (int i = 0; i < resources.length; i++) {
-            try {
-                resources[i].delete(true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error deleting supplementary resource " + resources[i], e); //$NON-NLS-1$
-            }
-        }
-    }
-
-    private void createSupplementaryDirectory() {
-        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
-        if (!supplFolder.exists()) {
-            try {
-                supplFolder.create(true, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error creating resource supplementary file " + supplFolder, e); //$NON-NLS-1$
-            }
-        }
-
-        try {
-            fResource.setPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, supplFolder.getLocationURI().getPath());
-        } catch (CoreException e) {
-            Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
-        }
-
-    }
-
 
 }
