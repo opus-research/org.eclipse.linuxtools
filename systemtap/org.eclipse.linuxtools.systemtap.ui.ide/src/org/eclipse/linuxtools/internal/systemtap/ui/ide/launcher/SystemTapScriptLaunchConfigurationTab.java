@@ -41,12 +41,12 @@ import org.eclipse.ui.ide.ResourceUtil;
 public class SystemTapScriptLaunchConfigurationTab extends
 		AbstractLaunchConfigurationTab {
 
-	private static final String SCRIPT_PATH_ATTR = "ScriptPath";
-	private static final String CURRENT_USER_ATTR = "executeAsCurrentUser";
-	private static final String USER_NAME_ATTR = "userName";
-	private static final String USER_PASS_ATTR = "userPassword";
-	private static final String LOCAL_HOST_ATTR = "executeOnLocalHost";
-	private static final String HOST_NAME_ATTR = "hostName";
+	static final String SCRIPT_PATH_ATTR = "ScriptPath";
+	static final String CURRENT_USER_ATTR = "executeAsCurrentUser";
+	static final String USER_NAME_ATTR = "userName";
+	static final String USER_PASS_ATTR = "userPassword";
+	static final String LOCAL_HOST_ATTR = "executeOnLocalHost";
+	static final String HOST_NAME_ATTR = "hostName";
 
 	private Text scriptPathText;
 	private Button currentUserCheckButton;
