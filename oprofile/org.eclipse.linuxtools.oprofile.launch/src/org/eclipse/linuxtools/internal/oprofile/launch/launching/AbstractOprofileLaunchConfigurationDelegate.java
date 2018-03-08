@@ -67,7 +67,6 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		options.loadConfiguration(config);
 		IPath exePath = getExePath(config);
 		options.setBinaryImage(exePath.toOSString());
-		Oprofile.OprofileProject.setProfilingBinary(options.getOprofileComboText());
 
 		//if daemonEvents null or zero size, the default event will be used
 		OprofileDaemonEvent[] daemonEvents = null;
@@ -103,7 +102,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 					process.waitFor();
 				} catch (InterruptedException e){
 					process.destroy();
-					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message"));
 					throw new CoreException(status);
 				}
 			}
@@ -227,7 +226,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 			} catch (URISyntaxException e) {
 				//Since working directory paths are verified by the launch tab, this exception should never be thrown
 				Status status = new Status(IStatus.ERROR, OprofileCorePlugin.getId(),
-						OprofileLaunchMessages.getString("oprofilelaunch.error.invalidworkingdir.status_message")); //$NON-NLS-1$
+						OprofileLaunchMessages.getString("oprofilelaunch.error.invalidworkingdir.status_message"));
 				throw new CoreException(status);
 			}
 			return uri;

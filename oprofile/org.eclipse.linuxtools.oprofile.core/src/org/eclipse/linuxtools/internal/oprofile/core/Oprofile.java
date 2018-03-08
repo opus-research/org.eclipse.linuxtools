@@ -64,7 +64,11 @@ public class Oprofile
 		if (!isKernelModuleLoaded())
 			initializeOprofile();
 
-		if (isKernelModuleLoaded()) {
+		//it still may not have loaded, if not, critical error
+		if (!isKernelModuleLoaded()) {
+			OprofileCorePlugin.showErrorDialog("oprofileInit", null); //$NON-NLS-1$
+			//			throw new ExceptionInInitializerError(OprofileProperties.getString("fatal.kernelModuleNotLoaded")); //$NON-NLS-1$
+		} else {
 			initializeOprofileCore();
 		}
 	}
@@ -78,31 +82,32 @@ public class Oprofile
 	 * @return true if the module is loaded, otherwise false
 	 */
 	private static boolean isKernelModuleLoaded() {
-		IRemoteFileProxy proxy = null;
-		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+			IRemoteFileProxy proxy = null;
+			try {
+				proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
 
-		for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
-			IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
-			if (f.fetchInfo().exists())
-				return true;
+			for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
+				IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
+				if (f.fetchInfo().exists())
+					return true;
+			}
+			return false;
+		} else {
+			return true;
 		}
-		return false;
 	}
 	/**
 	 *  Initialize oprofile module by calling <code>`opcontrol --init`</code>
 	 */
 	private static void initializeOprofile() {
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			try {
-				OprofileCorePlugin.getDefault().getOpcontrolProvider()
-						.initModule();
-			} catch (OpcontrolException e) {
-				// Fail silently
-			}
+		try {
+			OprofileCorePlugin.getDefault().getOpcontrolProvider().initModule();
+		} catch (OpcontrolException e) {
+			OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
 		}
 	}
 
@@ -111,11 +116,12 @@ public class Oprofile
 	 *  Initializes static data for oprofile.
 	 */
 	private static void initializeOprofileCore () {
-		info = OpInfo.getInfo();
+		if (isKernelModuleLoaded()){
+			info = OpInfo.getInfo();
 
-		if (info == null) {
-			throw new ExceptionInInitializerError(
-					OprofileProperties.getString("fatal.opinfoNotParsed")); //$NON-NLS-1$
+			if (info == null) {
+				throw new ExceptionInInitializerError(OprofileProperties.getString("fatal.opinfoNotParsed")); //$NON-NLS-1$
+			}
 		}
 	}
 
@@ -125,7 +131,7 @@ public class Oprofile
 	 * @return the number of counters
 	 */
 	public static int getNumberOfCounters() {
-		if (!isKernelModuleLoaded() && OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)){
+		if (!isKernelModuleLoaded()){
 			return 0;
 		}
 		return info.getNrCounters();
@@ -179,8 +185,8 @@ public class Oprofile
 	 * @return true if oprofile is in timer mode, false otherwise
 	 */
 	public static boolean getTimerMode() {
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)){
-			return false;
+		if (! isKernelModuleLoaded()){
+			return true;
 		}
 		return info.getTimerMode();
 	}
@@ -248,7 +254,12 @@ public class Oprofile
 	 * @since 1.1
 	 */
 	public static void updateInfo(){
-		info = OpInfo.getInfo();
+		if (!isKernelModuleLoaded()){
+			initializeOprofile();
+		}
+		if(isKernelModuleLoaded()){
+			info = OpInfo.getInfo();
+		}
 	}
 
 	// Oprofile class has a static initializer and the code inside it needs to know which project
