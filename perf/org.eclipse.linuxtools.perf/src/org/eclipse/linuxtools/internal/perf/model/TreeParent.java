@@ -17,7 +17,7 @@ public class TreeParent {
 	private TreeParent parent;
 	private ArrayList<TreeParent> children;
 	private float percent = -1;
-	
+
 	public String getName() {
 		return name;
 	}
