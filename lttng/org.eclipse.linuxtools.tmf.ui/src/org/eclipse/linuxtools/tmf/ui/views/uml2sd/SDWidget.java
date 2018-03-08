@@ -42,6 +42,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
@@ -1330,10 +1331,22 @@ public class SDWidget extends ScrollView implements SelectionListener,
         Image dbuffer = null;
         GC gcim = null;
 
+        /* Make sure we don't pass 0 to new Image() */
+        if (area.width <= 0) {
+            area.width = 1;
+        }
+        if (area.height <= 0) {
+            area.height = 1;
+        }
+
         try {
             dbuffer = new Image(getDisplay(), area.width, area.height);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            Activator.getDefault().logError("Cannot open display", e); //$NON-NLS-1$
+            return null;
+        } catch (SWTError e) {
             Activator.getDefault().logError("Error creating image", e); //$NON-NLS-1$
+            return null;
         }
 
         gcim = new GC(dbuffer);
