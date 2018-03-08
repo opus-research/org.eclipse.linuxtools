@@ -56,8 +56,8 @@ public class GraphSelectorEditor extends EditorPart {
 
 	public GraphSelectorEditor() {
 		super();
-		displaySets = new ArrayList<GraphDisplaySet>();
-		tabListeners = new ArrayList<ITabListener>();
+		displaySets = new ArrayList<>();
+		tabListeners = new ArrayList<>();
 	}
 
 	/**
@@ -153,6 +153,14 @@ public class GraphSelectorEditor extends EditorPart {
 	}
 
 	/**
+	 * @return The title of the tab containing the active graph.
+	 * @since 3.0
+	 */
+	public String getActiveTitle() {
+		return scriptFolder.getSelection().getText();
+	}
+
+	/**
 	 * Finds and returns the component of the provided index.
 	 * @param index The index of the GraphDisplaySet to return
 	 * @return The <code>GraphDisplaySet</code> of the provided
@@ -168,7 +176,9 @@ public class GraphSelectorEditor extends EditorPart {
 	}
 
 	@Override
-	public void setFocus() {}
+	public void setFocus() {
+		// Empty
+	}
 
 	/**
 	 * @since 2.0
@@ -226,10 +236,12 @@ public class GraphSelectorEditor extends EditorPart {
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
+		// TODO
 	}
 
 	@Override
 	public void doSaveAs() {
+		// TODO
 	}
 
 	@Override

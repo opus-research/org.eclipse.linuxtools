@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.oprofile.ui.view;
 
-import java.io.File;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
@@ -21,6 +19,7 @@ import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiPlugin;
+import org.eclipse.linuxtools.oprofile.ui.model.IUiModelElement;
 import org.eclipse.linuxtools.oprofile.ui.model.UiModelSession;
 
 public class OprofileViewDeleteSessionAction extends Action {
@@ -51,9 +50,15 @@ public class OprofileViewDeleteSessionAction extends Action {
 	 */
 	private void deleteSession(UiModelSession sess) {
 		String sessionName = sess.getLabelText();
-		String eventName = sess.getParent().getLabelText();
+		IUiModelElement[] modelEvents = sess.getChildren();
 		try {
-			OprofileCorePlugin.getDefault().getOpcontrolProvider().deleteSession(sessionName, eventName);
+			for (int i = 0; i < modelEvents.length; i++) {
+				OprofileCorePlugin
+						.getDefault()
+						.getOpcontrolProvider()
+						.deleteSession(sessionName,
+								modelEvents[i].getLabelText());
+			}
 			// clear out collected data by this session
 			// check if profile is done through operf or oprofile
 			if (Oprofile.OprofileProject.getProfilingBinary().equals(
@@ -71,12 +76,11 @@ public class OprofileViewDeleteSessionAction extends Action {
 
 	public static void deleteOperfDataFolder(IFolder operfData)
 	{
-		if(operfData.exists())
-		{
+		if(operfData.exists()) {
 			try {
 				operfData.delete(true,null);
 			} catch (CoreException e) {
-				OprofileCorePlugin.showErrorDialog("opcontrolProvider", e);
+				OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
 			}
 		}
 

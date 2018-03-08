@@ -38,6 +38,7 @@ public class TmfAnalysisManager {
     private static final Map<String, List<Class<? extends IAnalysisParameterProvider>>> fParameterProviders = new HashMap<>();
     private static final Map<Class<? extends IAnalysisParameterProvider>, IAnalysisParameterProvider> fParamProviderInstances = new HashMap<>();
     private static final List<IAnalysisModuleSource> fSources = new ArrayList<>();
+    private static final List<ITmfNewAnalysisModuleListener> fListeners = new ArrayList<>();
 
     /**
      * Registers a new source of modules
@@ -53,13 +54,34 @@ public class TmfAnalysisManager {
     }
 
     /**
-     * Cleans the module source list and initialize it from the extension point
+     * Initializes sources and new module listeners from the extension point
      */
-    public static void initializeModuleSources() {
+    public static void initialize() {
+        initializeModuleSources();
+        initializeNewModuleListeners();
+    }
+
+    /**
+     * Cleans the module sources list and initialize it from the extension point
+     */
+    private static void initializeModuleSources() {
         synchronized (fSources) {
             fSources.clear();
             for (IAnalysisModuleSource source : TmfAnalysisModuleSources.getSources()) {
                 fSources.add(source);
+            }
+        }
+    }
+
+    /**
+     * Cleans the new module listeners list and initialize it from the extension
+     * point
+     */
+    private static void initializeNewModuleListeners() {
+        synchronized (fListeners) {
+            fListeners.clear();
+            for (ITmfNewAnalysisModuleListener output : TmfAnalysisModuleOutputs.getOutputListeners()) {
+                fListeners.add(output);
             }
         }
     }
@@ -181,6 +203,22 @@ public class TmfAnalysisManager {
     public static void refreshModules() {
         synchronized (fAnalysisModules) {
             fAnalysisModules.clear();
+        }
+    }
+
+    /**
+     * This method should be called when new analysis modules have been created
+     * by module helpers to that the {@link ITmfNewAnalysisModuleListener} can
+     * be executed on the module instance.
+     *
+     * @param module
+     *            The newly created analysis module
+     */
+    public static void analysisModuleCreated(IAnalysisModule module) {
+        synchronized (fListeners) {
+            for (ITmfNewAnalysisModuleListener listener : fListeners) {
+                listener.moduleCreated(module);
+            }
         }
     }
 

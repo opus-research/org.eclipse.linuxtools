@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -56,6 +57,9 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         implements ITmfAnalysisModuleWithStateSystems {
 
     private static final String EXTENSION = ".ht"; //$NON-NLS-1$
+    private static final String UNDEFINED_ID = "undefined"; //$NON-NLS-1$
+
+    private final CountDownLatch fInitialized = new CountDownLatch(1);
 
     @Nullable private ITmfStateSystemBuilder fStateSystem;
     @Nullable private ITmfStateProvider fStateProvider;
@@ -90,7 +94,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      *
      * @return The {@link StateSystemBackendType}
      */
-    protected abstract StateSystemBackendType getBackendType();
+    protected StateSystemBackendType getBackendType() {
+        /* Using full history by default, sub-classes can override */
+        return StateSystemBackendType.FULL;
+    }
 
     /**
      * Get the supplementary file name where to save this state system. The
@@ -113,6 +120,17 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         return fStateSystem;
     }
 
+    /**
+     * Block the calling thread until the analysis module has been initialized.
+     * After this method returns, {@link #getStateSystem()} should not return
+     * null anymore.
+     */
+    public void waitForInitialization() {
+        try {
+            fInitialized.await();
+        } catch (InterruptedException e) {}
+    }
+
     // ------------------------------------------------------------------------
     // TmfAbstractAnalysisModule
     // ------------------------------------------------------------------------
@@ -121,6 +139,12 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     protected boolean executeAnalysis(@Nullable final  IProgressMonitor monitor) {
         IProgressMonitor mon = (monitor == null ? new NullProgressMonitor() : monitor);
         final ITmfStateProvider provider = createStateProvider();
+
+        String id = getId();
+        if (id == null) {
+            /* The analysis module does not specify an ID, use a generic one */
+            id = UNDEFINED_ID;
+        }
 
         /* FIXME: State systems should make use of the monitor, to be cancelled */
         try {
@@ -132,18 +156,18 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             case FULL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
                 htFile = new File(directory + getSsFileName());
-                createFullHistory(provider, htFile);
+                createFullHistory(id, provider, htFile);
                 break;
             case PARTIAL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
                 htFile = new File(directory + getSsFileName());
-                createPartialHistory(provider, htFile);
+                createPartialHistory(id, provider, htFile);
                 break;
             case INMEM:
-                createInMemoryHistory(provider);
+                createInMemoryHistory(id, provider);
                 break;
             case NULL:
-                createNullHistory(provider);
+                createNullHistory(id, provider);
                 break;
             default:
                 break;
@@ -162,6 +186,14 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         }
     }
 
+    @Override
+    public void dispose() {
+        if (fStateSystem != null) {
+            fStateSystem.dispose();
+        }
+        super.dispose();
+    }
+
     // ------------------------------------------------------------------------
     // History creation methods
     // ------------------------------------------------------------------------
@@ -171,7 +203,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      * exists, it will be opened directly. If not, it will be created from
      * scratch.
      */
-    private void createFullHistory(ITmfStateProvider provider, File htFile) throws TmfTraceException {
+    private void createFullHistory(String id, ITmfStateProvider provider, File htFile) throws TmfTraceException {
 
         /* If the target file already exists, do not rebuild it uselessly */
         // TODO for now we assume it's complete. Might be a good idea to check
@@ -181,8 +213,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
            /* Load an existing history */
             final int version = provider.getVersion();
             try {
-                fHtBackend = new HistoryTreeBackend(htFile, version);
-                fStateSystem = new StateSystem(fHtBackend, false);
+                IStateHistoryBackend backend = new HistoryTreeBackend(htFile, version);
+                fHtBackend = backend;
+                fStateSystem = new StateSystem(id, backend, false);
+                fInitialized.countDown();
                 return;
             } catch (IOException e) {
                 /*
@@ -197,9 +231,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         final int QUEUE_SIZE = 10000;
 
         try {
-            fHtBackend = new ThreadedHistoryTreeBackend(htFile,
+            IStateHistoryBackend backend = new ThreadedHistoryTreeBackend(htFile,
                     provider.getStartTime(), provider.getVersion(), QUEUE_SIZE);
-            fStateSystem = new StateSystem(fHtBackend);
+            fHtBackend = backend;
+            fStateSystem = new StateSystem(id, backend);
             provider.assignTargetStateSystem(fStateSystem);
             build(provider);
         } catch (IOException e) {
@@ -221,7 +256,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      * underneath, (which are much slower), so this might not be a good fit for
      * a use case where you have to do lots of single queries.
      */
-    private void createPartialHistory(ITmfStateProvider provider, File htPartialFile)
+    private void createPartialHistory(String id, ITmfStateProvider provider, File htPartialFile)
             throws TmfTraceException {
         /*
          * The order of initializations is very tricky (but very important!)
@@ -269,7 +304,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
                 new PartialHistoryBackend(partialProvider, pss, realBackend, granularity);
 
         /* 4 */
-        StateSystem realSS = new StateSystem(partialBackend);
+        StateSystem realSS = new StateSystem(id, partialBackend);
 
         /* 5 */
         pss.assignUpstream(realSS);
@@ -289,9 +324,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      * no history intervals will be saved anywhere, and as such only
      * {@link ITmfStateSystem#queryOngoingState} will be available.
      */
-    private void createNullHistory(ITmfStateProvider provider) {
-        fHtBackend = new NullBackend();
-        fStateSystem = new StateSystem(fHtBackend);
+    private void createNullHistory(String id, ITmfStateProvider provider) {
+        IStateHistoryBackend backend = new NullBackend();
+        fHtBackend = backend;
+        fStateSystem = new StateSystem(id, backend);
         provider.assignTargetStateSystem(fStateSystem);
         build(provider);
     }
@@ -301,14 +337,15 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      * only be done for very small state system, and will be naturally limited
      * to 2^31 intervals.
      */
-    private void createInMemoryHistory(ITmfStateProvider provider) {
-        fHtBackend = new InMemoryBackend(provider.getStartTime());
-        fStateSystem = new StateSystem(fHtBackend);
+    private void createInMemoryHistory(String id, ITmfStateProvider provider) {
+        IStateHistoryBackend backend = new InMemoryBackend(provider.getStartTime());
+        fHtBackend = backend;
+        fStateSystem = new StateSystem(id, backend);
         provider.assignTargetStateSystem(fStateSystem);
         build(provider);
     }
 
-    private void dispose(boolean deleteFiles) {
+    private void disposeProvider(boolean deleteFiles) {
         ITmfStateProvider provider = fStateProvider;
         if (provider != null) {
             provider.dispose();
@@ -338,8 +375,18 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         fStateProvider = provider;
         fRequest = request;
 
+        /*
+         * The state system object is now created, we can consider this module
+         * "initialized" (components can retrieve it and start doing queries).
+         */
+        fInitialized.countDown();
+
+        /*
+         * Block the executeAnalysis() construction is complete (so that the
+         * progress monitor displays that it is running).
+         */
         try {
-             fRequest.waitForCompletion();
+             request.waitForCompletion();
         } catch (InterruptedException e) {
              e.printStackTrace();
         }
@@ -375,19 +422,19 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         @Override
         public void handleSuccess() {
             super.handleSuccess();
-            dispose(false);
+            disposeProvider(false);
         }
 
         @Override
         public void handleCancel() {
             super.handleCancel();
-            dispose(true);
+            disposeProvider(true);
         }
 
         @Override
         public void handleFailure() {
             super.handleFailure();
-            dispose(true);
+            disposeProvider(true);
         }
     }
 
@@ -402,12 +449,6 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             return fStateSystem;
         }
         return null;
-    }
-
-    @Override
-    @Nullable
-    public String getStateSystemId(ITmfStateSystem ss) {
-        return getId();
     }
 
     @Override

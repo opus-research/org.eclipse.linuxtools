@@ -6,9 +6,11 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
- *******************************************************************************/ 
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.oprofile.ui.model;
+
+import java.util.Arrays;
 
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelImage;
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSymbol;
@@ -17,7 +19,7 @@ import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiPlugin;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * Children of sessions in the view -- the binary which was profiled. 
+ * Children of sessions in the view -- the binary which was profiled.
  * May or may not have child symbols. Note that although the dependent
  * images are children of OpModelImages in the data model, for usability's
  * sake they are children of the parent session in the tree.
@@ -27,8 +29,7 @@ public class UiModelImage implements IUiModelElement {
 	private IUiModelElement parent;		//parent element, may be UiModelSession or UiModelDependent
 	private OpModelImage image;			//the node in the data model
 	private UiModelSymbol symbols[];		//this node's child (symbols)
-	private int totalCount;				//total number of samples 
-	private int depCount;					//number of samples from dependent images
+	private int totalCount;				//total number of samples
 
 	/**
 	 * Constructor to the UiModelImage class
@@ -41,8 +42,7 @@ public class UiModelImage implements IUiModelElement {
 		this.parent = parent;
 		this.image = image;
 		this.symbols = null;
-		this.totalCount = totalCount;
-		this.depCount = depCount;
+		this.totalCount = totalCount+depCount;//totalCount;
 		refreshModel();
 	}
 	/**
@@ -50,30 +50,31 @@ public class UiModelImage implements IUiModelElement {
 	 */
 	private void refreshModel() {
 		OpModelSymbol[] dataModelSymbols = image.getSymbols();
-		
+
 		//dependent images may not have symbols
 		if (dataModelSymbols != null) {
 			symbols = new UiModelSymbol[dataModelSymbols.length];
-	
+
 			for (int i = 0; i < dataModelSymbols.length; i++) {
 				symbols[i] = new UiModelSymbol(this, dataModelSymbols[i], totalCount);
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		if (image.getCount() == OpModelImage.IMAGE_PARSE_ERROR) {
 			return OprofileUiMessages.getString("opxmlParse.error.multipleImages"); //$NON-NLS-1$
 		} else {
-			double countPercentage = (double)(image.getCount() - depCount) / (double)totalCount;
+			double countPercentage = (double)(image.getCount() ) / (double)totalCount;
 			String percentage = OprofileUiPlugin.getPercentageString(countPercentage);
-			
-			return percentage + " " + OprofileUiMessages.getString("uimodel.percentage.in") + image.getName(); //$NON-NLS-1$ //$NON-NLS-2$
+
+			return percentage + " " + OprofileUiMessages.getString("uimodel.percentage.in")+" " + image.getName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 	}
-	
+
 	/** IUiModelElement functions **/
+	@Override
 	public String getLabelText() {
 		return toString();
 	}
@@ -82,23 +83,28 @@ public class UiModelImage implements IUiModelElement {
 	 * Returns the children of this element.
 	 * @return An array of child elements or null
 	 */
+	@Override
 	public IUiModelElement[] getChildren() {
 		IUiModelElement children[] = null;
-		
+
 		if (symbols != null) {
 			children = new IUiModelElement[symbols.length];
-			
+
 			for (int i = 0; i < symbols.length; i++) {
 				children[i] = symbols[i];
 			}
 		}
-		
+		if (UiModelRoot.SORT_TYPE.FUNCTION == UiModelRoot.getSortingType()) {
+			Arrays.sort(children, UiModelSorting.getInstance());
+			return children;
+		}
 		return children;
 	}
 	/**
 	 * Returns if the element has any children.
 	 * @return true if the element has children, false otherwise
 	 */
+	@Override
 	public boolean hasChildren() {
 		return (symbols == null || symbols.length == 0 ? false : true);
 	}
@@ -107,6 +113,7 @@ public class UiModelImage implements IUiModelElement {
 	 * Returns the element's parent.
 	 * @return parent The parent element or null
 	 */
+	@Override
 	public IUiModelElement getParent() {
 		return parent;
 	}
@@ -115,6 +122,7 @@ public class UiModelImage implements IUiModelElement {
 	 * Returns the Image to display next to the text in the tree viewer.
 	 * @return an Image object of the icon
 	 */
+	@Override
 	public Image getLabelImage() {
 		return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.IMAGE_ICON).createImage();
 	}

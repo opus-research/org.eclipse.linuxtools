@@ -65,7 +65,11 @@ public class TmfAnalysisModuleHelperConfigElement implements IAnalysisModuleHelp
 
     @Override
     public String getHelpText() {
-        return new String();
+        /*
+         * FIXME: No need to externalize this. A better solution will be found
+         * soon and this string is just temporary
+         */
+        return new String("The trace must be opened to get the help message"); //$NON-NLS-1$
     }
 
     @Override
@@ -136,6 +140,7 @@ public class TmfAnalysisModuleHelperConfigElement implements IAnalysisModuleHelp
                 }
             }
             module.setTrace(trace);
+            TmfAnalysisManager.analysisModuleCreated(module);
         } catch (CoreException e) {
             Activator.logError("Error getting analysis modules from configuration files", e); //$NON-NLS-1$
         }

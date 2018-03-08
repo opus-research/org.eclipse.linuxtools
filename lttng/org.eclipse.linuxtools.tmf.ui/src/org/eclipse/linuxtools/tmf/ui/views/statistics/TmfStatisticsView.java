@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,18 +16,12 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
-import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
@@ -155,17 +149,10 @@ public class TmfStatisticsView extends TmfView {
 
             TmfTraceRangeUpdatedSignal updateSignal = new TmfTraceRangeUpdatedSignal(this, fTrace, fTrace.getTimeRange());
 
-            // Synchronizes the requests to make them coalesced
-            if (fTrace instanceof TmfEventProvider) {
-                ((TmfEventProvider) fTrace).startSynch(new TmfStartSynchSignal(0));
-            }
             for (ITmfViewer viewer : fStatsViewers.getViewers()) {
                 TmfStatisticsViewer statsViewer = (TmfStatisticsViewer) viewer;
                 statsViewer.sendPartialRequestOnNextUpdate();
                 statsViewer.traceRangeUpdated(updateSignal);
-            }
-            if (fTrace instanceof TmfEventProvider) {
-                ((TmfEventProvider) fTrace).endSynch(new TmfEndSynchSignal(0));
             }
         } else {
             /*
@@ -226,65 +213,17 @@ public class TmfStatisticsView extends TmfView {
         Composite folder = fStatsViewers.getParentFolder();
 
         // Instantiation of the global viewer
-        TmfStatisticsViewer globalViewer = getGlobalViewer();
         if (fTrace != null) {
-            if (globalViewer != null) {
-                // Shows the name of the trace in the global tab
-                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fTrace.getName(), fTrace); //$NON-NLS-1$
-            }
+            // Shows the name of the trace in the global tab
+            TmfStatisticsViewer globalViewer = new TmfStatisticsViewer(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fTrace.getName(), fTrace); //$NON-NLS-1$
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
 
-            String traceName;
-            IResource traceResource;
-            // Creates a statistics viewer for each trace.
-            for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
-                traceName = trace.getName();
-                traceResource = trace.getResource();
-                TmfStatisticsViewer viewer = getStatisticsViewer(traceResource);
-                /*
-                 * Adds a new viewer only if there is one defined for the
-                 * selected trace type, since the global tab already contains
-                 * all the basic event counts for the trace(s)
-                 */
-                if (viewer != null) {
-                    viewer.init(folder, traceName, trace);
-                    fStatsViewers.addTab(viewer, viewer.getName(), defaultStyle);
-                }
-            }
         } else {
-            if (globalViewer != null) {
-                // There is no trace selected. Shows an empty global tab
-                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fTrace);
-            }
+            // There is no trace selected. Shows an empty global tab
+            TmfStatisticsViewer globalViewer = new TmfStatisticsViewer(folder, Messages.TmfStatisticsView_GlobalTabName, fTrace);
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
         }
         // Makes the global viewer visible
         fStatsViewers.setSelection(0);
-    }
-
-    /**
-     * Retrieves and instantiates a viewer based on his plug-in definition for a
-     * specific trace type. It is specific to the statistics viewer.
-     *
-     * It only calls the 0-parameter constructor without performing any other
-     * initialization on the viewer.
-     *
-     * @param resource
-     *            The resource where to find the information about the trace
-     *            properties
-     * @return a new statistics viewer based on his plug-in definition, or null
-     *         if no statistics definition was found for the trace type.
-     * @since 2.0
-     */
-    protected static TmfStatisticsViewer getStatisticsViewer(IResource resource) {
-        return (TmfStatisticsViewer) TmfTraceType.getTraceTypeElement(resource, TmfTraceType.STATISTICS_VIEWER_ELEM);
-    }
-
-    /**
-     * @return The class to use to instantiate the global statistics viewer
-     * @since 2.0
-     */
-    protected TmfStatisticsViewer getGlobalViewer() {
-        return new TmfStatisticsViewer();
     }
 }

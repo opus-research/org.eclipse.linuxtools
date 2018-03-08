@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -37,11 +37,13 @@ public class StapTreeLabelProvider implements ILabelProvider {
 
 	@Override
 	public void addListener(ILabelProviderListener listener) {
+		// Empty
 	}
 
-	
+
 	@Override
 	public void dispose() {
+		// Empty
 	}
 
 	@Override
@@ -50,7 +52,8 @@ public class StapTreeLabelProvider implements ILabelProvider {
 	}
 
 	@Override
-	public void removeListener(ILabelProviderListener listener) {		
+	public void removeListener(ILabelProviderListener listener) {
+		// Empty
 	}
 
 }

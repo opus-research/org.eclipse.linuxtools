@@ -13,14 +13,14 @@ import org.eclipse.debug.core.model.RuntimeProcess;
  */
 public class SystemTapRuntimeProcessFactory implements IProcessFactory {
 
-	static public final String PROCESS_FACTORY_ID = "org.eclipse.linuxtools.systemtap.ui.ide.SystemTapRuntimeProcessFactory"; //$NON-NLS-1$
+	public static final String PROCESS_FACTORY_ID = "org.eclipse.linuxtools.systemtap.ui.ide.SystemTapRuntimeProcessFactory"; //$NON-NLS-1$
 
-	static public class SystemTapRuntimeProcess extends RuntimeProcess {
+	public static class SystemTapRuntimeProcess extends RuntimeProcess {
 
 		private Process originalProcess = null;
 
 		public SystemTapRuntimeProcess(ILaunch launch, Process process,
-				String name, Map attributes) {
+				String name, Map<String, String> attributes) {
 			super(launch, process, name, attributes);
 			originalProcess = process;
 		}
@@ -42,8 +42,7 @@ public class SystemTapRuntimeProcessFactory implements IProcessFactory {
 
 	@Override
 	public IProcess newProcess(ILaunch launch, Process process, String label,
-			Map attributes) {
-
+			Map<String, String> attributes) {
 		return new SystemTapRuntimeProcess(launch, process, label, attributes);
 	}
 

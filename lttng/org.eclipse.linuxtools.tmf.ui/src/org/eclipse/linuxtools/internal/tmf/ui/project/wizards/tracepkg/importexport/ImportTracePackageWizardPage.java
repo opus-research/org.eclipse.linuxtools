@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -206,10 +206,22 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         return super.determinePageCompletion() && fTmfTraceFolder != null;
     }
 
+    /**
+     * Create the operation that will be responsible of creating the manifest
+     * based on the file name.
+     *
+     * @param fileName the file name to generate the manifest from
+     *
+     * @return the operation that will extract the manifest
+     */
+    protected AbstractTracePackageOperation createExtractManifestOperation(String fileName) {
+        return new TracePackageExtractManifestOperation(fileName);
+    }
+
     @Override
     protected Object createElementViewerInput() {
 
-        final TracePackageExtractManifestOperation op = new TracePackageExtractManifestOperation(getFilePathValue());
+        final AbstractTracePackageOperation op = createExtractManifestOperation(getFilePathValue());
 
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
@@ -233,7 +245,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
             // Canceled
         }
 
-        TracePackageElement[] resultElements = op.getResultElement();
+        TracePackageElement[] resultElements = op.getResultElements();
         if (resultElements == null || resultElements.length == 0) {
             return null;
         }
@@ -350,6 +362,14 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
             String traceName = traceElement.getText();
             if (traceExists(traceName)) {
                 int returnCode = promptForOverwrite(traceName);
+                // The return code is an index to a button in the dialog but the
+                // 'X' button in the window corner is not considered a button
+                // therefore it returns -1 and unfortunately, there is no
+                // constant for that.
+                if (returnCode < 0) {
+                    return false;
+                }
+
                 final String[] response = new String[] { IDialogConstants.NO_TO_ALL_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.YES_LABEL };
                 if (response[returnCode].equals(IDialogConstants.YES_TO_ALL_LABEL)) {
                     break;

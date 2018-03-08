@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphing;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -40,6 +41,7 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -63,8 +65,8 @@ public class GraphDisplaySet {
 		updater = new UpdateManager(delay);
 		createPartControl(parent);
 
-		builders = new ArrayList<AbstractChartBuilder>();
-		tabListeners = new ArrayList<ITabListener>();
+		builders = new ArrayList<>();
+		tabListeners = new ArrayList<>();
 	}
 
 	/**
@@ -155,7 +157,9 @@ public class GraphDisplaySet {
 		return builders.get(folder.getSelectionIndex()-2);
 	}
 
-	public void setFocus() {}
+	public void setFocus() {
+		// Abstract
+	}
 
 	/**
 	 * Removes all internal references in this class.  Nothing should make any references
@@ -234,9 +238,16 @@ public class GraphDisplaySet {
 
 	public void addGraph(GraphData gd) {
 		CTabItem item = new CTabItem(folder, SWT.CLOSE);
-		item.setText(GraphFactory.getGraphName(gd.graphID));
-		GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
+		item.setText(MessageFormat.format(Localization.getString("GraphDisplaySet.GraphTabTitle"), //$NON-NLS-1$
+				gd.title, GraphFactory.getGraphName(gd.graphID)));
+		final GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
 		gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		gc.addCheckOption("Legend", new SelectionAdapter() { //$NON-NLS-1$
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				gc.setLegendVisible(((Button)e.getSource()).getSelection());
+			}
+		});
 		folder.setSelection(item);
 
 		AbstractChartBuilder g = gc.getCanvas();

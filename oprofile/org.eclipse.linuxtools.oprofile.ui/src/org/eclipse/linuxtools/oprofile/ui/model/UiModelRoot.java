@@ -6,12 +6,14 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
- *******************************************************************************/ 
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.oprofile.ui.model;
 
-import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
+import java.util.Arrays;
+
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelRoot;
+import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSession;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -21,15 +23,16 @@ import org.eclipse.swt.graphics.Image;
  */
 public class UiModelRoot implements IUiModelElement {
 	private static UiModelRoot uiModelRoot = new UiModelRoot();	//singleton
-	private UiModelEvent[] events;							//this node's children
+
 	private UiModelError rootError;
+	private UiModelSession[] session;						//this node's children
 
 	/** constructor, private for singleton use **/
 	protected UiModelRoot() {
-		events = null;
+		session = null;
 		rootError = null;
 	}
-	
+
 	/**
 	 * Get the instance of this ui model root.
 	 * @return the ui model root object
@@ -39,32 +42,34 @@ public class UiModelRoot implements IUiModelElement {
 	}
 
 	/**
-	 * Kick off creating the UI model from the data model. Meant to 
-	 * 	be called from UI code. The refreshModel() method is called for 
+	 * Kick off creating the UI model from the data model. Meant to
+	 * 	be called from UI code. The refreshModel() method is called for
 	 *  the child elements from their constructor.
 	 */
 	public void refreshModel() {
-		OpModelEvent dataModelEvents[] = getModelDataEvents();
-		
+		OpModelSession dataModelEvents[] = getModelDataEvents();
+
+
 		rootError = null;
-		events = null;
+		session = null;
 
 		if (dataModelEvents == null || dataModelEvents.length == 0) {
 			rootError = UiModelError.NO_SAMPLES_ERROR;
 		} else {
-			events = new UiModelEvent[dataModelEvents.length];
+			session = new UiModelSession[dataModelEvents.length];
 			for (int i = 0; i < dataModelEvents.length; i++) {
-				events[i] = new UiModelEvent(dataModelEvents[i]);
+				session[i] = new UiModelSession(dataModelEvents[i]);
 			}
 		}
 	}
-	
-	protected OpModelEvent[] getModelDataEvents() {
+
+	protected OpModelSession[] getModelDataEvents() {
 		OpModelRoot modelRoot = OpModelRoot.getDefault();
-		return modelRoot.getEvents();
+		return modelRoot.getSessions();
 	}
 
 	/** IUiModelElement functions **/
+	@Override
 	public String getLabelText() {
 		return null;
 	}
@@ -73,16 +78,26 @@ public class UiModelRoot implements IUiModelElement {
 	 * Returns the children of this element.
 	 * @return An array of child elements or null
 	 */
+	@Override
 	public IUiModelElement[] getChildren() {
-		if (events != null)
-			return events;
-		else
+		if (session != null && session.length != 0) {
+			if (UiModelRoot.SORT_TYPE.SESSION == UiModelRoot.getSortingType()) {
+				Arrays.sort(session, UiModelSorting.getInstance());
+				return session;
+			}
+
+			else {
+				return session;
+			}
+
+		} else
 			return new IUiModelElement[] { rootError };
 	}
 	/**
 	 * Returns if the element has any children.
 	 * @return true if the element has children, false otherwise
 	 */
+	@Override
 	public boolean hasChildren() {
 		return true;
 	}
@@ -91,11 +106,31 @@ public class UiModelRoot implements IUiModelElement {
 	 * Returns the element's parent.
 	 * @return The parent element or null
 	 */
+	@Override
 	public IUiModelElement getParent() {
 		return null;
 	}
 
+	@Override
 	public Image getLabelImage() {
 		return null;
+	}
+
+	/**
+	 *
+	 * Adding sorting feature in tree.
+	 * @since 3.0
+	 *
+	 */
+	public static enum SORT_TYPE{DEFAULT,SESSION,EVENT,LIB,FUNCTION,LINE_NO}
+	private static SORT_TYPE sortType;
+	public static void setSortingType(SORT_TYPE sortType)
+	{
+		UiModelRoot.sortType = sortType;
+	}
+
+	public static SORT_TYPE getSortingType()
+	{
+		return UiModelRoot.sortType;
 	}
 }

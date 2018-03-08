@@ -37,16 +37,18 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlEvent;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTrace;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
@@ -133,6 +135,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     // The mapping of available trace type IDs to their corresponding
     // configuration element
     private static final Map<String, IConfigurationElement> sfTraceTypeAttributes = new HashMap<>();
+    private static final Map<String, IConfigurationElement> sfTraceTypeUIAttributes = new HashMap<>();
     private static final Map<String, IConfigurationElement> sfTraceCategories = new HashMap<>();
 
     /**
@@ -140,15 +143,32 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * extension registry.
      */
     public static void init() {
+        /* Read the tmf.core "tracetype" extension point */
         IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceType.TMF_TRACE_TYPE_ID);
         for (IConfigurationElement ce : config) {
-            String elementName = ce.getName();
-            if (elementName.equals(TmfTraceType.TYPE_ELEM)) {
+            switch (ce.getName()) {
+            case TmfTraceType.TYPE_ELEM:
                 String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
                 sfTraceTypeAttributes.put(traceTypeId, ce);
-            } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
+                break;
+            case TmfTraceType.CATEGORY_ELEM:
                 String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
                 sfTraceCategories.put(categoryId, ce);
+                break;
+            default:
+            }
+        }
+
+        /*
+         * Read the corresponding tmf.ui "tracetypeui" extension point for this
+         * trace type, if it exists.
+         */
+        config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceTypeUIUtils.TMF_TRACE_TYPE_UI_ID);
+        for (IConfigurationElement ce : config) {
+            String elemName = ce.getName();
+            if (TmfTraceTypeUIUtils.TYPE_ELEM.equals(elemName)) {
+                String traceType = ce.getAttribute(TmfTraceTypeUIUtils.TRACETYPE_ATTR);
+                sfTraceTypeUIAttributes.put(traceType, ce);
             }
         }
     }
@@ -373,8 +393,12 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
                 return TmfEventsEditor.ID;
             }
-            IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
-            IConfigurationElement[] defaultEditorCE = ce.getChildren(TmfTraceType.DEFAULT_EDITOR_ELEM);
+            IConfigurationElement ce = sfTraceTypeUIAttributes.get(fTraceTypeId);
+            if (ce == null) {
+                /* This trace type does not define UI attributes */
+                return null;
+            }
+            IConfigurationElement[] defaultEditorCE = ce.getChildren(TmfTraceTypeUIUtils.DEFAULT_EDITOR_ELEM);
             if (defaultEditorCE.length == 1) {
                 return defaultEditorCE[0].getAttribute(TmfTraceType.ID_ATTR);
             }

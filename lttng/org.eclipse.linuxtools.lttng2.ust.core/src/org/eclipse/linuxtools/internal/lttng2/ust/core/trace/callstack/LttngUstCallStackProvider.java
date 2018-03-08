@@ -15,11 +15,11 @@ package org.eclipse.linuxtools.internal.lttng2.ust.core.trace.callstack;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.linuxtools.lttng2.ust.core.trace.LttngUstTrace;
 import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
  * Callstack provider for LTTng-UST traces.
@@ -80,19 +80,13 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
      * @param trace
      *            The UST trace
      */
-    public LttngUstCallStackProvider(LttngUstTrace trace) {
+    public LttngUstCallStackProvider(ITmfTrace trace) {
         super(trace);
     }
 
     // ------------------------------------------------------------------------
     // Methods from AbstractTmfStateProvider
     // ------------------------------------------------------------------------
-
-    @Override
-    public LttngUstTrace getTrace() {
-        /* Type is enforced by the constructor */
-        return (LttngUstTrace) super.getTrace();
-    }
 
     @Override
     public LttngUstCallStackProvider getNewInstance() {
@@ -128,7 +122,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionEntry(ITmfEvent event) {
-        String eventName = ((CtfTmfEvent) event).getEventName();
+        String eventName = event.getType().getName();
         if (!FUNC_ENTRY_EVENTS.contains(eventName)) {
             return null;
         }
@@ -138,7 +132,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionExit(ITmfEvent event) {
-        String eventName = ((CtfTmfEvent) event).getEventName();
+        String eventName = event.getType().getName();
         if (!FUNC_EXIT_EVENTS.contains(eventName)) {
             return null;
         }

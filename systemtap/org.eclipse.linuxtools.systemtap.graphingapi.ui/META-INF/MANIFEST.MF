@@ -9,8 +9,6 @@ Bundle-Localization: plugin
 Export-Package: 
  org.eclipse.linuxtools.systemtap.graphingapi.ui.charts,
  org.eclipse.linuxtools.systemtap.graphingapi.ui.datadisplay,
- org.eclipse.linuxtools.systemtap.graphingapi.ui.graphs,
- org.eclipse.linuxtools.systemtap.graphingapi.ui.preferences,
  org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets,
  org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset,
  org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.filter,
@@ -23,4 +21,4 @@ Require-Bundle: org.eclipse.linuxtools.systemtap.graphingapi.core;visibility:=re
  org.swtchart,
  org.eclipse.linuxtools.dataviewers.piechart
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
