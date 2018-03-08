@@ -38,7 +38,7 @@ public class BitBufferTest {
     @Before
     public void setUp() {
         fixture = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
-        fixture.order(ByteOrder.BIG_ENDIAN);
+        fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         fixture.setByteBuffer(ByteBuffer.allocate(0));
         fixture.position(1);
     }
@@ -87,18 +87,6 @@ public class BitBufferTest {
     }
 
     /**
-     * Run the boolean canRead(int,int) method test.
-     */
-    @Test
-    public void testCanRead_2params() {
-        int index = 1;
-        int length = 1;
-        boolean result = fixture.canRead(index, length);
-
-        assertEquals(false, result);
-    }
-
-    /**
      * Run the void clear() method test.
      */
     @Test
@@ -132,7 +120,7 @@ public class BitBufferTest {
      */
     @Test
     public void testGetByteOrder() {
-        ByteOrder result = fixture.order();
+        ByteOrder result = fixture.getByteOrder();
 
         assertNotNull(result);
         assertEquals("BIG_ENDIAN", result.toString()); //$NON-NLS-1$
@@ -143,7 +131,7 @@ public class BitBufferTest {
      */
     @Test
     public void testGetOrder() {
-        ByteOrder result = fixture.order();
+        ByteOrder result = fixture.getByteOrder();
 
         assertNotNull(result);
         assertEquals("BIG_ENDIAN", result.toString()); //$NON-NLS-1$
@@ -156,7 +144,7 @@ public class BitBufferTest {
     public void testSetOrder() {
         ByteOrder order = ByteOrder.BIG_ENDIAN;
 
-        fixture.order(order);
+        fixture.setByteOrder(order);
     }
 
     /**
@@ -202,6 +190,6 @@ public class BitBufferTest {
     @Test
     public void testSetByteOrder() {
         ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
-        fixture.order(byteOrder);
+        fixture.setByteOrder(byteOrder);
     }
 }

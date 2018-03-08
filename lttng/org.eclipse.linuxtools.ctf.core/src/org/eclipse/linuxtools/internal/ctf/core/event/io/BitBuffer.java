@@ -78,7 +78,7 @@
          */
         public BitBuffer(ByteBuffer buf, ByteOrder order) {
             setByteBuffer(buf);
-            order(order);
+            setByteOrder(order);
             position(0);
         }
 
@@ -114,7 +114,7 @@
          */
         public int getInt(int length, boolean signed) {
             int val = 0;
-            if (!canRead(this.pos, length)) {
+            if (!canRead(length)) {
                 throw new BufferOverflowException();
             }
             if (length == 0) {
@@ -151,72 +151,8 @@
                     val = this.buf.getInt(this.pos / 8);
                     gotIt = true;
                     break;
-                }
-            }
-            if (!gotIt) {
-                // Nothing read yet: use longer methods
-                if (this.byteOrder == ByteOrder.LITTLE_ENDIAN) {
-                    val = getIntLE(this.pos, length, signed);
-                } else {
-                    val = getIntBE(this.pos, length, signed);
-                }
-            }
-            this.pos += length;
 
-            return val;
-        }
-
-        /**
-         * Relative <i>get</i> method for reading integer of <i>length</i> bits.
-         *
-         * Reads <i>length</i> bits starting at the current position. The result is
-         * signed extended if <i>signed</i> is true. The current position is
-         * increased of <i>length</i> bits.
-         *
-         * @param length
-         *            The length in bits of this integer
-         * @param signed
-         *            The sign extended flag
-         * @return The int value read from the buffer
-         */
-        public int getInt(int index, int length, boolean signed) {
-            int val = 0;
-            if (!canRead(this.pos, length)) {
-                throw new BufferOverflowException();
-            }
-            if (length == 0) {
-                return 0;
-            }
-            boolean gotIt = false;
-
-            // Fall back to fast ByteBuffer reader if we want to read byte-aligned bytes
-            if (this.pos % BitBuffer.BIT_CHAR == 0) {
-                switch (length) {
-                case BitBuffer.BIT_CHAR:
-                    // Byte
-                    if (signed) {
-                        val = this.buf.get(this.pos / 8);
-                    } else {
-                        val = (this.buf.get(this.pos / 8)) & 0xff;
-                    }
-                    gotIt = true;
-                    break;
-
-                case BitBuffer.BIT_SHORT:
-                    // Word
-                    if (signed) {
-                        val = this.buf.getShort(this.pos / 8);
-                    } else {
-                        short a = this.buf.getShort(this.pos / 8);
-                        val = a & 0xffff;
-                    }
-                    gotIt = true;
-                    break;
-
-                case BitBuffer.BIT_INT:
-                    // Double word
-                    val = this.buf.getInt(this.pos / 8);
-                    gotIt = true;
+                default:
                     break;
                 }
             }
@@ -232,6 +168,7 @@
 
             return val;
         }
+
         private int getIntBE(int index, int length, boolean signed) {
             assert ((length > 0) && (length <= BIT_INT));
             int end = index + length;
@@ -372,36 +309,18 @@
          *            The value to write
          */
         public void putInt(int length, int value) {
-            putInt(this.pos, length, value);
-        }
+            final int curPos = this.pos;
 
-        /**
-         * Absolute <i>put</i> method to write <i>length</i> bits integer.
-         *
-         * Writes <i>length</i> lower-order bits from the provided <i>value</i>,
-         * starting from <i>index</i> position in the buffer. Sequential bytes are
-         * written according to the current byte order. The sign bit is carried to
-         * the MSB if signed is true. The sign bit is included in <i>length</i>. The
-         * current position is increased of <i>length</i>.
-         *
-         * @param index
-         *            The start position to write the value
-         * @param value
-         *            The value to write
-         * @param length
-         *            The number of bits to write
-         */
-        public void putInt(int index, int length, int value) {
-            if (!canRead(index, length)) {
+            if (!canRead(length)) {
                 throw new BufferOverflowException();
             }
             if (length == 0) {
                 return;
             }
             if (this.byteOrder == ByteOrder.LITTLE_ENDIAN) {
-                putIntLE(index, length, value);
+                putIntLE(curPos, length, value);
             } else {
-                putIntBE(index, length, value);
+                putIntBE(curPos, length, value);
             }
             this.pos += length;
         }
@@ -549,24 +468,11 @@
          * @return does the buffer have enough room to read the next "length"
          */
         public boolean canRead(int length) {
-            return canRead(this.pos, length);
-        }
-
-        /**
-         * Can this buffer be read for thus amount of bits?
-         *
-         * @param index
-         *            the position in the buffer to read
-         * @param length
-         *            the length in bits to read
-         * @return does the buffer have enough room to read the next "length"
-         */
-        public boolean canRead(int index, int length) {
             if (this.buf == null) {
                 return false;
             }
 
-            if ((index + length) > (this.buf.capacity() * BIT_CHAR)) {
+            if ((this.pos + length) > (this.buf.capacity() * BIT_CHAR)) {
                 return false;
             }
             return true;
@@ -578,7 +484,7 @@
          * @param order
          *            The order of the buffer.
          */
-        public void order(ByteOrder order) {
+        public void setByteOrder(ByteOrder order) {
             this.byteOrder = order;
             if (this.buf != null) {
                 this.buf.order(order);
@@ -590,7 +496,7 @@
          *
          * @return The order of the buffer.
          */
-        public ByteOrder order() {
+        public ByteOrder getByteOrder() {
             return this.byteOrder;
         }
 
