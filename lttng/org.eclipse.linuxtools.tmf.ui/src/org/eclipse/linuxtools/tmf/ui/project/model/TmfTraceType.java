@@ -328,7 +328,6 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public TraceTypeHelper getTraceType(String id) {
-        init();
         return fTraceTypes.get(id);
     }
 
@@ -391,20 +390,20 @@ public final class TmfTraceType {
     }
 
     /**
-     * Get the trace type helper classes from category name
+     * Get the trace types
      *
-     * @param categoryName
-     *            the categoryName to lookup
-     * @return a list of trace type helper classes {@link TraceTypeHelper}
+     * @param category
+     *            the category to lookup
+     * @return the trace types
      * @since 2.0
      */
 
-    public List<TraceTypeHelper> getTraceTypes(String categoryName) {
+    public List<TraceTypeHelper> getTraceTypes(String category) {
         init();
         List<TraceTypeHelper> traceNames = new ArrayList<TraceTypeHelper>();
         for (String key : fTraceTypes.keySet()) {
-            final String storedCategoryName = fTraceTypes.get(key).getCategoryName();
-            if (storedCategoryName.equals(categoryName)) {
+            final String categoryName = fTraceTypes.get(key).getCategoryName();
+            if (categoryName.equals(category)) {
                 traceNames.add(fTraceTypes.get(key));
             }
         }
@@ -716,7 +715,7 @@ public final class TmfTraceType {
      * @throws CoreException
      *             An exception caused by accessing eclipse project items.
      */
-    public static IStatus setTraceType(IPath path, TraceTypeHelper traceType) throws CoreException {
+    static IStatus setTraceType(IPath path, TraceTypeHelper traceType) throws CoreException {
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         String TRACE_NAME = path.lastSegment();
         String traceBundle = null, traceTypeId = traceType.getCanonicalName(), traceIcon = null;
