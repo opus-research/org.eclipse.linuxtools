@@ -26,14 +26,9 @@ public class Messages extends NLS {
 	public static String SystemTapScriptLaunchConfigurationTab_7;
 	public static String SystemTapScriptLaunchConfigurationTab_8;
 	public static String SystemTapScriptLaunchConfigurationTab_9;
-	public static String SystemTapScriptLaunchConfigurationTab_10;
-	public static String SystemTapScriptLaunchConfigurationTab_11;
 
 	public static String SystemTapScriptLaunchConfigurationTab_options;
 	public static String SystemTapScriptLaunchConfigurationTab_runWithChart;
-	public static String SystemTapScriptOptionsTab_0;
-	public static String SystemTapScriptOptionsTab_1;
-	public static String SystemTapScriptOptionsTab_2;
 
 	static {
 		// initialize resource bundle

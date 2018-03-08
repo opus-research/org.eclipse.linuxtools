@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -31,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -61,14 +59,9 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	private Label userPasswordLabel;
 	private Label hostNamelabel;
 	private Button runWithChartCheckButton;
-	private FileDialog fileDialog;
 
 	@Override
 	public void createControl(Composite parent) {
-
-		this.fileDialog = new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OPEN);
-        fileDialog.setText(Messages.SystemTapScriptLaunchConfigurationTab_11);
-        fileDialog.setFilterPath(Platform.getLocation().toOSString());
 
 		GridLayout layout = new GridLayout();
 		Composite top = new Composite(parent, SWT.NONE);
@@ -96,17 +89,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		gridData.widthHint = 110;
 		selectScriptButon.setLayoutData(gridData);
 		selectScriptButon.setText(Messages.SystemTapScriptLaunchConfigurationTab_1);
-		selectScriptButon.addSelectionListener(new SelectionListener() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				scriptPathText.setText(fileDialog.open());
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
 
 		// User Settings
 		Group userSettingsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
