@@ -13,7 +13,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.linuxtools.ctf.core;bundle-version="3.0.0"
 Export-Package: org.eclipse.linuxtools.internal.tmf.core;x-friends:="org.eclipse.linuxtools.tmf.core.tests",
  org.eclipse.linuxtools.internal.tmf.core.component;x-friends:="org.eclipse.linuxtools.tmf.core.tests",
- org.eclipse.linuxtools.internal.tmf.core.mipmap;x-friends:="org.eclipse.linuxtools.tmf.core.tests",
  org.eclipse.linuxtools.internal.tmf.core.request;x-friends:="org.eclipse.linuxtools.tmf.core.tests",
  org.eclipse.linuxtools.internal.tmf.core.statesystem;x-friends:="org.eclipse.linuxtools.tmf.core.tests",
  org.eclipse.linuxtools.internal.tmf.core.statesystem.backends;x-friends:="org.eclipse.linuxtools.tmf.core.tests",

@@ -86,13 +86,7 @@ public class InMemoryBackend implements IStateHistoryBackend {
         }
 
         /* Add the interval into the-array */
-        if (stateEndTime < latestTime) {
-            /* Out-of-order interval, insert at correct position */
-            int i = binarySearchEndTime(intervals, stateEndTime);
-            intervals.add(i, interval);
-        } else {
-            intervals.add(interval);
-        }
+        intervals.add(interval);
     }
 
 

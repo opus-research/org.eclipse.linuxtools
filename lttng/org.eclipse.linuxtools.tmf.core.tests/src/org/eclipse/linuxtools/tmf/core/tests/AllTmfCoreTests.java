@@ -25,7 +25,6 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.tmf.core.tests.component.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.ctfadaptor.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.event.AllTests.class,
-    org.eclipse.linuxtools.tmf.core.tests.mipmap.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.request.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.signal.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.statesystem.AllTests.class,
