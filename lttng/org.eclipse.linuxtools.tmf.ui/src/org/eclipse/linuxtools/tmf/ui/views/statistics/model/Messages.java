@@ -10,7 +10,7 @@
  *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial API and Implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
 
 import org.eclipse.osgi.util.NLS;
 
@@ -21,7 +21,7 @@ import org.eclipse.osgi.util.NLS;
  * @author Mathieu Denis
  */
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.messages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.views.statistics.model.messages"; //$NON-NLS-1$
     /**
      * CPU statistic name.
      */
@@ -30,22 +30,6 @@ public class Messages extends NLS {
      * Event type statistic name.
      */
     public static String TmfStatisticsData_EventTypes;
-    /**
-     * Level column name
-     */
-    public static String TmfStatisticsView_LevelColumn;
-    /**
-     * Level column tool tip.
-     */
-    public static String TmfStatisticsView_LevelColumnTip;
-    /**
-     * Number of events column name.
-     */
-    public static String TmfStatisticsView_NbEventsColumn;
-    /**
-     * Number of events column tool tip.
-     */
-    public static String TmfStatisticsView_NbEventsTip;
 
     static {
         // initialize resource bundle

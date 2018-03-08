@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot;
 
-import java.util.HashMap;
-import java.util.Set;
-
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -35,18 +31,14 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 	Combo providerCombo;
 	AbstractLaunchConfigurationTab[] tabs;
 	ILaunchConfiguration initial;
-	String providerId = "";
-	HashMap<String, String> comboItems;
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
 		setControl(top);
 		top.setLayout(new GridLayout(1, true));
 		providerCombo = new Combo(top, SWT.READ_ONLY);
-		comboItems = ProfileLaunchConfigurationTabGroup
-				.getTabGroupNamesForType("snapshot");
-		Set<String> providerNames = comboItems.keySet();
-		providerCombo.setItems(providerNames.toArray(new String[0]));
+		providerCombo.setItems(ProfileLaunchConfigurationTabGroup
+				.getTabGroupIdsForType("snapshot"));
 
 		final CTabFolder tabgroup = new CTabFolder(top, SWT.NONE);
 
@@ -58,15 +50,13 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 					item.dispose();
 				}
 
-				providerId = comboItems.get(providerCombo.getText());
 				// get the tabs associated with the selected ID
 				tabs = ProfileLaunchConfigurationTabGroup
-						.getTabGroupProviderFromId(providerId)
+						.getTabGroupProviderFromId(providerCombo.getText())
 						.getProfileTabs();
 
 				// create the tab item, and load the specified tab inside
 				for (ILaunchConfigurationTab tab : tabs) {
-					tab.setLaunchConfigurationDialog(getLaunchConfigurationDialog());
 					CTabItem item = new CTabItem(tabgroup, SWT.NONE);
 					item.setText(tab.getName());
 					item.setImage(tab.getImage());
@@ -77,7 +67,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 
 				// initialize all tab widgets based on the configuration
 				initializeFrom(initial);
-				top.layout();
 			}
 		});
 
@@ -100,11 +89,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 		 *  about them. We get access to this launch configuration to ensure
 		 *  that we can properly load the widgets the first time.
 		 */
-
-		// store current provider id in the configuration
-		if (configuration != null) {
-			setProvider(configuration);
-		}
 		if (initial == null){
 			initial = configuration;
 		}
@@ -125,19 +109,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 
 	public String getName() {
 		return "Snapshot";
-	}
-	/**
-	 * Set the provider attribute in the specified configuration.
-	 * @param configuration a configuration
-	 */
-	public void setProvider(ILaunchConfiguration configuration) {
-		try {
-			ILaunchConfigurationWorkingCopy wc = configuration.getWorkingCopy();
-			wc.setAttribute("provider", providerId);
-			configuration = wc.doSave();
-		} catch (CoreException e1) {
-			e1.printStackTrace();
-		}
 	}
 
 }

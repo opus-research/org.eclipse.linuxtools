@@ -24,8 +24,6 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 /**
  * The TMF coalesced event request
  *
- * @param <T> The request event type
- *
  * @version 1.0
  * @author Francois Chouinard
  */
