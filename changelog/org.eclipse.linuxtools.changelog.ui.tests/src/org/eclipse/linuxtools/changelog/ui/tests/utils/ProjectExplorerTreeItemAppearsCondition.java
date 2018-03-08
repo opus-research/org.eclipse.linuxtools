@@ -24,16 +24,15 @@ public class ProjectExplorerTreeItemAppearsCondition implements ICondition {
 	private String parent;
 	private String teamDirt;
 	private SWTBotTree projectExplorerTree;
-
+	
 	public ProjectExplorerTreeItemAppearsCondition(SWTBotTree projectExplorerTree, String parent, String teamDirt, String treeItemName) {
 		this.itemName = treeItemName;
 		this.parent = parent;
 		this.teamDirt = teamDirt;
 		this.projectExplorerTree = projectExplorerTree;
 	}
-
-	@Override
-	public boolean test() {
+	
+	public boolean test() throws Exception {
 		treeItem = ProjectExplorer.expandProject(projectExplorerTree, parent, teamDirt);
 		for (SWTBotTreeItem i : treeItem.getItems()) {
 			if (i.getText().contains(itemName)) {
@@ -43,12 +42,10 @@ public class ProjectExplorerTreeItemAppearsCondition implements ICondition {
 		return false;
 	}
 
-	@Override
 	public void init(SWTBot bot) {
 		// no initialization
 	}
 
-	@Override
 	public String getFailureMessage() {
 		return null;
 	}

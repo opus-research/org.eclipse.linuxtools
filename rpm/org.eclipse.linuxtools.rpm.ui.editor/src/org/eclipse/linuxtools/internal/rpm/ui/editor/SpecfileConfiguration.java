@@ -216,7 +216,6 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 
 	private IInformationControlCreator getInformationControlCreator() {
 		return new IInformationControlCreator() {
-			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				return new DefaultInformationControl(parent, false);
 			}

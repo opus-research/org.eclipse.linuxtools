@@ -135,9 +135,8 @@ public class StapGraphParser extends SystemTapParser {
 				String name = serialMap.get(val);
 				long time =  endingTimeInNS - timeMap.get(val);
 				timeMap.put(val, time);
-				if (val == firstNode) {
+				if (val == firstNode)
 					showTime(val, time);
-				}
 				if (shouldGetEndingTimeForID.contains(val)){
 					long cumulativeTime = aggregateTimeMap.get(name) + endingTimeInNS;
 					aggregateTimeMap.put(name, cumulativeTime);
@@ -146,9 +145,7 @@ public class StapGraphParser extends SystemTapParser {
 				lastFunctionCalled = val;
 			}
 			String tmp = markedMap.get(lastFunctionCalled);
-			if (tmp == null) {
-				tmp = ""; //$NON-NLS-1$
-			}
+			if (tmp == null) tmp = ""; //$NON-NLS-1$
 			markedMap.put(lastFunctionCalled,
 					tmp + "\n" + Messages.getString("StapGraphParser.Term")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -169,12 +166,10 @@ public class StapGraphParser extends SystemTapParser {
 			if (markedMap.containsKey(firstNode)) {
 				markedMessage = markedMap.get(firstNode) + "\n"; //$NON-NLS-1$
 			}
-			if (skippedDirectives) {
+			if (skippedDirectives)
 				markedMessage += Messages.getString("StapGraphParser.CDirectives"); //$NON-NLS-1$
-			}
-			if (timeCheck) {
+			if (timeCheck)
 				markedMessage += Messages.getString("StapGraphParser.TooFast"); //$NON-NLS-1$
-			}
 
 			markedMessage += Messages.getString("StapGraphParser.TimeForThisNode"); //$NON-NLS-1$
 
@@ -191,9 +186,8 @@ public class StapGraphParser extends SystemTapParser {
 		int key = Integer.parseInt(parsed[0]);
 
 		ArrayList<Integer> idList = idMaps.get(key);
-		if (idList == null || msg.length() < 1 || idList.size() < 1) {
+		if (idList == null || msg.length() < 1 || idList.size() < 1)
 			return;
-		}
 		int id = idList.get(idList.size() -1);
 		if (parsed[1].equals("<unknown>")) { //$NON-NLS-1$
 			parsed[1] = parsed[1] + Messages.getString("StapGraphParser.UnknownMarkers"); //$NON-NLS-1$
@@ -204,9 +198,8 @@ public class StapGraphParser extends SystemTapParser {
 	private IStatus parse(String s) {
 
 		try {
-		if (s.length() < 1) {
+		if (s.length() < 1)
 			return Status.OK_STATUS;
-		}
 		switch (s.charAt(0)) {
 			case '<' :
 				/*
@@ -252,9 +245,8 @@ public class StapGraphParser extends SystemTapParser {
 				endingTimeInNS=time;
 
 				name = cleanFunctionName(name);
-				if (name.equals("main")) { //$NON-NLS-1$
+				if (name.equals("main")) //$NON-NLS-1$
 					encounteredMain = true;
-				}
 				if (firstNode == -1) {
 					firstNode = id;
 				}
@@ -354,9 +346,8 @@ public class StapGraphParser extends SystemTapParser {
 				endingTimeInNS=Long.parseLong(args[1]);
 				time = endingTimeInNS - timeMap.get(id);
 				timeMap.put(id, time);
-				if (id == firstNode) {
+				if (id == firstNode)
 					showTime(id, time);
-				}
 
 
 				//IF AN ID IS IN THIS ARRAY IT IS BECAUSE WE NEED THE ENDING TIME
@@ -409,15 +400,12 @@ public class StapGraphParser extends SystemTapParser {
 		try {
 			String line;
 			while ((line = buff.readLine()) != null) {
-				if (line.equals("}")) { //$NON-NLS-1$
+				if (line.equals("}")) //$NON-NLS-1$
 					break;
-				}
-				if (monitor.isCanceled()) {
+				if (monitor.isCanceled())
 					return Status.CANCEL_STATUS;
-				}
-				if (line.length() < 1) {
+				if (line.length() < 1)
 					continue;
-				}
 
 				String[] args = new String[2];
 				args = line.split(" ", 2); //$NON-NLS-1$
@@ -441,13 +429,11 @@ public class StapGraphParser extends SystemTapParser {
 
 					//Set neighbour
 					ArrayList<Integer> tmpList = outNeighbours.get(ids[0]);
-					if (tmpList == null) {
+					if (tmpList == null)
 						tmpList = new ArrayList<Integer>();
-					}
 
-					for (int i = 0; i < called; i++) {
+					for (int i = 0; i < called; i++)
 						tmpList.add(ids[1]);
-					}
 
 					outNeighbours.put(ids[0], tmpList);
 				} else {
@@ -509,9 +495,8 @@ public class StapGraphParser extends SystemTapParser {
 
 	@Override
 	public IStatus realTimeParsing() {
-		if (!(internalData instanceof BufferedReader)) {
+		if (!(internalData instanceof BufferedReader))
 			return Status.CANCEL_STATUS;
-		}
 
 		BufferedReader buff = (BufferedReader) internalData;
 
@@ -520,12 +505,10 @@ public class StapGraphParser extends SystemTapParser {
 		boolean first = true;
 		try {
 			while ((line = buff.readLine()) != null) {
-				if (monitor.isCanceled()) {
+				if (monitor.isCanceled())
 					return Status.CANCEL_STATUS;
-				}
-				if (line.length() < 1) {
+				if (line.length() < 1)
 					continue;
-				}
 				if (first && (line.contains(Messages.getString("StapGraphParser.17")))) { //$NON-NLS-1$
 					return parseDotFile();
 				}
@@ -538,11 +521,10 @@ public class StapGraphParser extends SystemTapParser {
 
 					if (tmp != null && tmp.length() > 0) {
 						char tchar = tmp.charAt(0);
-						if (tchar != '-' && tchar != '+' && tchar != '?' && tchar != '>' && tchar != '<') {
+						if (tchar != '-' && tchar != '+' && tchar != '?' && tchar != '>' && tchar != '<')
 							project = CoreModel.getDefault().getCModel().getCProject(tmp);
-						} else {
+						else
 							buff.reset();
-						}
 					}
 
 				} else if (line.charAt(0) == '-') {
@@ -552,13 +534,11 @@ public class StapGraphParser extends SystemTapParser {
 					//Total time should be the last line in the output
 					parseEnd();
 				} else if (line.charAt(0) == '?') {
-					if (line.length() > 1) {
+					if (line.length() > 1)
 						parseMarked(line.substring(1));
-					}
 				} else {
-					if (parse(line) == Status.CANCEL_STATUS) {
+					if (parse(line) == Status.CANCEL_STATUS)
 						break;
-					}
 				}
 			}
 			if (draw && view != null) {
@@ -580,9 +560,7 @@ public class StapGraphParser extends SystemTapParser {
 	 */
 	private void showTime(int id, long time) {
 		String tmp = markedMap.get(id);
-		if (tmp == null) {
-			tmp = ""; //$NON-NLS-1$
-		}
+		if (tmp == null) tmp = ""; //$NON-NLS-1$
 		markedMap.put(id, tmp +
 				Messages.getString("StapGraphParser.ActualTime") + time/1000000  //$NON-NLS-1$
 				+ Messages.getString("StapGraphParser.TimeUnits")); //$NON-NLS-1$
