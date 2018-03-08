@@ -569,10 +569,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
             TimeRangeException, StateSystemDisposedException {
         Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
 
-        if (curStackDepth == 0) {
+        if (curStackDepth == -1) {
             /* There is nothing stored in this stack at this moment */
             return null;
-        } else if (curStackDepth < 0) {
+        } else if (curStackDepth < -1 || curStackDepth == 0) {
             /*
              * This attribute is an integer attribute, but it doesn't seem like
              * it's used as a stack-attribute...
