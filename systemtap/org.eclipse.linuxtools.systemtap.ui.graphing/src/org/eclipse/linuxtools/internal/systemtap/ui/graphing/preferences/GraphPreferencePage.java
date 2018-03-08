@@ -26,12 +26,17 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 public class GraphPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public GraphPreferencePage() {
 		super(GRID);
+		LogManager.logDebug("Start GraphPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(GraphingPlugin.getDefault().getPreferenceStore());
+		//setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
 		setDescription(Localization.getString("GraphPreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
+		LogManager.logDebug("End GraphPreferencePage:", this); //$NON-NLS-1$
 	}
 	
 	@Override
 	public void createFieldEditors() {
+		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
+
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES,
 				Localization.getString("GraphPreferencePage.ShowXGridLines"), //$NON-NLS-1$
@@ -66,6 +71,7 @@ public class GraphPreferencePage extends FieldEditorPreferencePage implements IW
 				Localization.getString("GraphPreferencePage.YSeriesTicks"), //$NON-NLS-1$
 				getFieldEditorParent()));
 		
+		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
 	}
 
 	public void init(IWorkbench workbench) {
