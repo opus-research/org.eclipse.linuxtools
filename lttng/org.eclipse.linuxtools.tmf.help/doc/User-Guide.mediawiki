@@ -126,7 +126,7 @@ To create a new project with name org.eclipse.linuxtools.tmf.sample.ui select ''
 
 [[Image:images/Screenshot-NewPlug-inProject2.png]]<br>
 
-[[Image:images/Screenshot-NewPlug-inProject3.png]]<br>
+[[Image:Screenshot-NewPlug-inProject3.png]]<br>
 
 === Creating a Sequence Diagram View ===
 
@@ -952,365 +952,23 @@ In some case it might be necessary to change the implementation of the analysis 
 === Downloading the Reference Plug-in ===
 To download the reference plug-in that demonstrates the reference loader, use the following link: [http://wiki.eclipse.org/images/d/d3/ReferencePlugin.zip Reference Plug-in]. Just extract the zip file and import the extracted Eclipse plug-in (plug-in name: ''org.eclipse.linuxtools.tmf.reference.ui'') to your Eclipse workspace. <br>
 
-= View Tutorial  =
-
-This tutorial describes how to create a simple view using the TMF framework and the SWTChart library. SWTChart is a library based on SWT that can draw several types of charts including a line chart which we will use in this tutorial. We will create a view containing a line chart that displays time stamps on the X axis and the corresponding event values on the Y axis.
-
-This tutorial will cover concepts like:
-
-* Extending TmfView
-* Signal handling (@TmfSignalHandler)
-* Data requests (TmfEventRequest)
-* SWTChart integration
-
-=== Prerequisites ===
-
-The tutorial is based on Eclipse 4.3 (Eclipse Kepler), TMF 2.0.0 and SWTChart 0.7.0. You can install SWTChart by using the Orbit update site. http://download.eclipse.org/tools/orbit/downloads/
-
-=== Creating an Eclipse UI Plug-in ===
-
-To create a new project with name org.eclipse.linuxtools.tmf.sample.ui select '''File -> New -> Project -> Plug-in Development -> Plug-in Project'''. <br>
-[[Image:images/Screenshot-NewPlug-inProject1.png]]<br>
-
-[[Image:images/Screenshot-NewPlug-inProject2.png]]<br>
-
-[[Image:images/Screenshot-NewPlug-inProject3.png]]<br>
-
-=== Creating a View ===
-
-To open the plug-in manifest, double-click on the MANIFEST.MF file. <br>
-[[Image:images/SelectManifest.png]]<br>
-
-Change to the Dependencies tab and select '''Add...''' of the ''Required Plug-ins'' section. A new dialog box will open. Next find plug-in ''org.eclipse.linuxtools.tmf.core'' and press '''OK'''<br>
-Following the same steps, add ''org.eclipse.linuxtools.tmf.ui'' and ''org.swtchart''.<br>
-[[Image:images/AddDependencyTmfUi.png]]<br>
-
-Change to the Extensions tab and select '''Add...''' of the ''All Extension'' section. A new dialog box will open. Find the view extension ''org.eclipse.ui.views'' and press '''Finish'''.<br>
-[[Image:images/AddViewExtension1.png]]<br>
-
-To create a view, click the right mouse button. Then select '''New -> view'''<br>
-[[Image:images/AddViewExtension2.png]]<br>
-
-A new view entry has been created. Fill in the fields ''id'' and ''name''. For ''class'' click on the '''class hyperlink''' and it will show the New Java Class dialog. Enter the name ''SampleView'', change the superclass to ''TmfView'' and click Finish. This will create the source file and fill the ''class'' field in the process. We use TmfView as the superclass because it provides extra functionality like getting the active trace, pinning and it has support for signal handling between components.<br>
-[[Image:images/FillSampleViewExtension.png]]<br>
-
-This will generate an empty class. Once the quick fixes are applied, the following code is obtained:
-
-<pre>
-package org.eclipse.linuxtools.tmf.sample.ui;
-
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.ViewPart;
-
-public class SampleView extends TmfView {
-
-    public SampleView(String viewName) {
-        super(viewName);
-        // TODO Auto-generated constructor stub
-    }
-
-    @Override
-    public void createPartControl(Composite parent) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void setFocus() {
-        // TODO Auto-generated method stub
-
-    }
-
-}
-</pre>
-
-This creates an empty view, however the basic structure is now is place.
-
-===Implementing a view===
-
-We will start by adding a empty chart then it will need to be populated with the trace data. Finally, we will make the chart more visually pleasing by adjusting the range and formating the time stamps.
-
-====Adding an Empty Chart====
-
-First, we can add an empty chart to the view and initialize some of its components.
-
-<pre>
-    private static final String SERIES_NAME = "Series";
-    private static final String Y_AXIS_TITLE = "Signal";
-    private static final String X_AXIS_TITLE = "Time";
-    private static final String FIELD = "value"; // The name of the field that we want to display on the Y axis
-    private static final String VIEW_ID = "org.eclipse.linuxtools.tmf.sample.ui.view";
-    private Chart chart;
-    private ITmfTrace currentTrace;
-
-    public SampleView() {
-        super(VIEW_ID);
-    }
-
-    @Override
-    public void createPartControl(Composite parent) {
-        chart = new Chart(parent, SWT.BORDER);
-        chart.getTitle().setVisible(false);
-        chart.getAxisSet().getXAxis(0).getTitle().setText(X_AXIS_TITLE);
-        chart.getAxisSet().getYAxis(0).getTitle().setText(Y_AXIS_TITLE);
-        chart.getSeriesSet().createSeries(SeriesType.LINE, SERIES_NAME);
-        chart.getLegend().setVisible(false);
-    }
-
-    @Override
-    public void setFocus() {
-        chart.setFocus();
-    }
-</pre>
-
-The view is prepared. Run the Example. To launch the an Eclipse Application select the ''Overview'' tab and click on '''Launch an Eclipse Application'''<br>
-[[Image:images/RunEclipseApplication.png]]<br>
-
-A new Eclipse application window will show. In the new window go to '''Windows -> Show View -> Other... -> Other -> Sample View'''.<br>
-[[Image:images/ShowViewOther.png]]<br>
-
-You should now see a view containing an empty chart<br>
-[[Image:images/EmptySampleView.png]]<br>
-
-====Signal Handling====
-
-We would like to populate the view when a trace is selected. To achieve this, we can use a signal hander which is specified with the '''@TmfSignalHandler''' annotation.
-
-<pre>
-    @TmfSignalHandler
-    public void traceSelected(final TmfTraceSelectedSignal signal) {
-
-    }
-</pre>
-
-====Requesting Data====
-
-Then we need to actually gather data from the trace. This is done asynchronously using a ''TmfEventRequest''
-
-<pre>
-    @TmfSignalHandler
-    public void traceSelected(final TmfTraceSelectedSignal signal) {
-        // Don't populate the view again if we're already showing this trace
-        if (currentTrace == signal.getTrace()) {
-            return;
-        }
-        currentTrace = signal.getTrace();
-
-        // Create the request to get data from the trace
-
-        TmfEventRequest req = new TmfEventRequest(TmfEvent.class,
-                TmfTimeRange.ETERNITY, TmfEventRequest.ALL_DATA,
-                ExecutionType.BACKGROUND) {
-
-            @Override
-            public void handleData(ITmfEvent data) {
-                // Called for each event
-                super.handleData(data);
-            }
-
-            @Override
-            public void handleSuccess() {
-                // Request successful, not more data available
-                super.handleSuccess();
-            }
-
-            @Override
-            public void handleFailure() {
-                // Request failed, not more data available
-                super.handleFailure();
-            }
-        };
-        ITmfTrace trace = signal.getTrace();
-        trace.sendRequest(req);
-    }
-</pre>
-
-====Transferring Data to the Chart====
-
-The chart expects an array of doubles for both the X and Y axis values. To provide that, we can accumulate each event's time and value in their respective list then convert the list to arrays when all events are processed.
-
-<pre>
-        TmfEventRequest req = new TmfEventRequest(TmfEvent.class,
-                TmfTimeRange.ETERNITY, TmfEventRequest.ALL_DATA,
-                ExecutionType.BACKGROUND) {
-
-            ArrayList<Double> xValues = new ArrayList<Double>();
-            ArrayList<Double> yValues = new ArrayList<Double>();
-
-            @Override
-            public void handleData(ITmfEvent data) {
-                // Called for each event
-                super.handleData(data);
-                ITmfEventField field = data.getContent().getField(FIELD);
-                if (field != null) {
-                    yValues.add((Double) field.getValue());
-                    xValues.add((double) data.getTimestamp().getValue());
-                }
-            }
-
-            @Override
-            public void handleSuccess() {
-                // Request successful, not more data available
-                super.handleSuccess();
-
-                final double x[] = toArray(xValues);
-                final double y[] = toArray(yValues);
-
-                // This part needs to run on the UI thread since it updates the chart SWT control
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        chart.getSeriesSet().getSeries()[0].setXSeries(x);
-                        chart.getSeriesSet().getSeries()[0].setYSeries(y);
-
-                        chart.redraw();
-                    }
-
-                });
-            }
-
-            /**
-             * Convert List<Double> to double[]
-             */
-            private double[] toArray(List<Double> list) {
-                double[] d = new double[list.size()];
-                for (int i = 0; i < list.size(); ++i) {
-                    d[i] = list.get(i);
-                }
-
-                return d;
-            }
-        };
-</pre>
-
-====Adjusting the Range====
-
-The chart now contains values but they might be out of range and not visible. We can adjust the range of each axis by computing the minimum and maximum values as we add events.
-
-<pre>
-
-            ArrayList<Double> xValues = new ArrayList<Double>();
-            ArrayList<Double> yValues = new ArrayList<Double>();
-            private double maxY = -Double.MAX_VALUE;
-            private double minY = Double.MAX_VALUE;
-            private double maxX = -Double.MAX_VALUE;
-            private double minX = Double.MAX_VALUE;
-
-            @Override
-            public void handleData(ITmfEvent data) {
-                super.handleData(data);
-                ITmfEventField field = data.getContent().getField(FIELD);
-                if (field != null) {
-                    Double yValue = (Double) field.getValue();
-                    minY = Math.min(minY, yValue);
-                    maxY = Math.max(maxY, yValue);
-                    yValues.add(yValue);
-
-                    double xValue = (double) data.getTimestamp().getValue();
-                    xValues.add(xValue);
-                    minX = Math.min(minX, xValue);
-                    maxX = Math.max(maxX, xValue);
-                }
-            }
-
-            @Override
-            public void handleSuccess() {
-                super.handleSuccess();
-                final double x[] = toArray(xValues);
-                final double y[] = toArray(yValues);
-
-                // This part needs to run on the UI thread since it updates the chart SWT control
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        chart.getSeriesSet().getSeries()[0].setXSeries(x);
-                        chart.getSeriesSet().getSeries()[0].setYSeries(y);
-
-                        // Set the new range
-                        if (!xValues.isEmpty() && !yValues.isEmpty()) {
-                            chart.getAxisSet().getXAxis(0).setRange(new Range(0, x[x.length - 1]));
-                            chart.getAxisSet().getYAxis(0).setRange(new Range(minY, maxY));
-                        } else {
-                            chart.getAxisSet().getXAxis(0).setRange(new Range(0, 1));
-                            chart.getAxisSet().getYAxis(0).setRange(new Range(0, 1));
-                        }
-                        chart.getAxisSet().adjustRange();
-
-                        chart.redraw();
-                    }
-                });
-            }
-</pre>
-
-====Formatting the Time Stamps====
-
-To display the time stamps on the X axis nicely, we need to specify a format or else the time stamps will be displayed as ''long''. We use TmfTimestampFormat to make it consistent with the other TMF views. We also need to handle the '''TmfTimestampFormatUpdateSignal''' to make sure that the time stamps update when the preferences change.
-
-<pre>
-    @Override
-    public void createPartControl(Composite parent) {
-        ...
-
-        chart.getAxisSet().getXAxis(0).getTick().setFormat(new TmfChartTimeStampFormat());
-    }
-
-    public class TmfChartTimeStampFormat extends SimpleDateFormat {
-        private static final long serialVersionUID = 1L;
-        @Override
-        public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-            long time = date.getTime();
-            toAppendTo.append(TmfTimestampFormat.getDefaulTimeFormat().format(time));
-            return toAppendTo;
-        }
-    }
-
-    @TmfSignalHandler
-    public void timestampFormatUpdated(TmfTimestampFormatUpdateSignal signal) {
-        // Called when the time stamp preference is changed
-        chart.getAxisSet().getXAxis(0).getTick().setFormat(new TmfChartTimeStampFormat());
-        chart.redraw();
-    }
-</pre>
-
-We also need to populate the view when a trace is already selected and the view is opened. We can reuse the same code by having the view send the '''TmfTraceSelectedSignal''' to itself.
-
-<pre>
-    @Override
-    public void createPartControl(Composite parent) {
-        ...
-
-        ITmfTrace trace = getActiveTrace();
-        if (trace != null) {
-            traceSelected(new TmfTraceSelectedSignal(this, trace));
-        }
-    }
-</pre>
-
-The view is now ready but we need a proper trace to test it. For this example, a trace was generated using LTTng-UST so that it would produce a sine function.<br>
-
-[[Image:images/SampleView.png]]<br>
-
-In summary, we have implemented a simple TMF view using the SWTChart library. We made use of signals and requests to populate the view at the appropriate time and we formated the time stamps nicely. We also made sure that the time stamp format is updated when the preferences change.
-
 =CTF Parser=
 
-== CTF Format == 
+== CTF Format ==
 CTF is a format used to store traces. It is self defining, binary and made to be easy to write to. 
 Before going further, the full specification of the CTF file format can be found at http://www.efficios.com/ .
 
-For the purpose of the reader some basic description will be given. A CTF trace typically is made of several files all in the same folder. 
+For the purpose of the reader some basic description will be given. A CTF trace typically is made of several files all in the same folder.
 
-These files can be split into two types : 
+These files can be split into two types :
 * Metadata
 * Event streams
- 
+
 === Metadata ===
-The metadata is either raw text or packetized text. It is tsdl encoded. it contains a description of the type of data in the event streams. It can grow over time if new events are added to a trace but it will never overwrite what is already there. 
+The metadata is either raw text or packetized text. It is tsdl encoded. it contains a description of the type of data in the event streams. It can grow over time if new events are added to a trace but it will never overwrite what is already there.
 
 === Event Streams ===
-The event streams are a file per stream per cpu. These streams are binary and packet based. The streams store events and event information (ie lost events) The event data is stored in headers and field payloads. 
+The event streams are a file per stream per cpu. These streams are binary and packet based. The streams store events and event information (ie lost events) The event data is stored in headers and field payloads.
 
 So if you have two streams (channels) "channel1" and "channel2" and 4 cores, you will have the following files in your trace directory: "channel1_0" , "channel1_1" , "channel1_2" , "channel1_3" , "channel2_0" , "channel2_1" , "channel2_2" & "channel2_3"
 
@@ -1319,47 +977,51 @@ In order to read a CTF trace, two steps must be done.
 * The metadata must be read to know how to read the events.
 * the events must be read.
 
-The metadata is a written in a subset of the C language called TSDL. To read it, first it is depacketized (if it is not in plain text) then the raw text is parsed by an antlr grammer. The parsing is done in two phases. There is a lexer (CTFLexer.g) which separated the metatdata text into tokens. The tokens are then pattern matched using the parser (CTFParser.g) to form an AST. This AST is walked through using "IOStructGen.java" to populate streams and traces in trace parent object. 
+The metadata is a written in a subset of the C language called TSDL. To read it, first it is depacketized (if it is not in plain text) then the raw text is parsed by an antlr grammer. The parsing is done in two phases. There is a lexer (CTFLexer.g) which separated the metatdata text into tokens. The tokens are then pattern matched using the parser (CTFParser.g) to form an AST. This AST is walked through using "IOStructGen.java" to populate streams and traces in trace parent object.
 
-When the metadata is loaded and read, the trace object will be populated with 3 items: 
-* the event definitions available per stream: a definition is a description of the datatype. 
-* the event declarations available per stream: this will save declaration creation on a per event basis. They will all be created in advance, just not populated. 
-* the beginning of a packet index. 
+When the metadata is loaded and read, the trace object will be populated with 3 items:
+* the event definitions available per stream: a definition is a description of the datatype.
+* the event declarations available per stream: this will save declaration creation on a per event basis. They will all be created in advance, just not populated.
+* the beginning of a packet index.
 
-Now all the trace readers for the event streams have everything they need to read a trace. They will each point to one file, and read the file from packet to packet. Everytime the trace reader changes packet, the index is updated with the new packet's information. The readers are in a priority queue and sorted by timestamp. This ensures that the events are read in a sequential order. They are also sorted by file name so that in the eventuality that two events occur at the same time, they stay in the same order. 
+Now all the trace readers for the event streams have everything they need to read a trace. They will each point to one file, and read the file from packet to packet. Everytime the trace reader changes packet, the index is updated with the new packet's information. The readers are in a priority queue and sorted by timestamp. This ensures that the events are read in a sequential order. They are also sorted by file name so that in the eventuality that two events occur at the same time, they stay in the same order.
 
 == Seeking in a trace ==
-The reason for maintaining an index is to speed up seeks. In the case that a user wishes to seek to a certain timestamp, they just have to find the index entry that contains the timestamp, and go there to iterate in that packet until the proper event is found. this will reduce the searches time by an order of 8000 for a 256k paket size (kernel default). 
+The reason for maintaining an index is to speed up seeks. In the case that a user wishes to seek to a certain timestamp, they just have to find the index entry that contains the timestamp, and go there to iterate in that packet until the proper event is found. this will reduce the searches time by an order of 8000 for a 256k paket size (kernel default).
 
 == Interfacing to TMF == 
-The trace can be read easily now but the data is still awkward to extract. 
+The trace can be read easily now but the data is still awkward to extract.
 
 === CtfLocation ===
-A location in a given trace, it is currently the timestamp of a trace. 
+A location in a given trace, it is currently the timestamp of a trace and the index of the event. The index shows for a given timestamp if it is the first second or nth element.
 
 === CtfTmfTrace ===
 The CtfTmfTrace is a wrapper for the standard CTF trace that allows it to perform the following actions: 
-* '''InitTrace()''' create a trace
-* '''ValidateTrace()''' is the trace a CTF trace?
-* '''GeTLocationRatio()''' how far in the trace is my location?
-* '''SeekEvent()''' sets the cursor to a certain point in a trace.  
-* '''ReadNextEvent()''' reads the next event and then advances the cursor
-* '''GetEnvironmntVars()''' gets the 'env' structures of the metadata
+* '''initTrace()''' create a trace
+* '''validateTrace()''' is the trace a CTF trace?
+* '''getLocationRatio()''' how far in the trace is my location?
+* '''seekEvent()''' sets the cursor to a certain point in a trace.
+* '''readNextEvent()''' reads the next event and then advances the cursor
+* '''getTraceProperties()''' gets the 'env' structures of the metadata
 
 === CtfIterator ===
 The CtfIterator is a wrapper to the CTF file reader. It behaves like an iterator on a trace. However, it contains a file pointer and thus cannot be duplicated too often or the system will run out of file handles. To alleviate the situation, a pool of iterators is created at the very beginning and stored in the CtfTmfTrace. They can be retried by calling the GetIterator() method.
 
-=== CtfLightWeightContext ===
-The CtfLightWeightContext wraps the tmfContext type. It has a CtfLocation and points to an iterator in the CtfTmfTrace iterator pool as well as the parent trace. it is made to be cloned easily and not affect system resources much.  Contexts behave much like C File Pointers (FILE*) but they can be copied until one runs out of ram. 
+=== CtfIteratorManager ===
+Since each CtfIterator will have a file reader, the OS will run out of handles if too many iterators are spawned. The solution is to use the iterator manager. This will allow the user to get an iterator. If there is a context at the requested position, the manager will return that one, if not, a context will be selected at random and set to the correct location. Using random replacement minimizes contention as it will settle quickly at a new balance point.
+
+=== CtfTmfContext ===
+The CtfTmfContext implements the ITmfContext type. It is the CTF equivalent of TmfContext. It has a CtfLocation and points to an iterator in the CtfTmfTrace iterator pool as well as the parent trace. it is made to be cloned easily and not affect system resources much. Contexts behave much like C file pointers (FILE*) but they can be copied until one runs out of RAM.
 
 === CtfTmfTimestamp ===
 The CtfTmfTimestamp take a CTF time (normally a long int) and outputs the time formats it as a TmfTimestamp, allowing it to be compared to other timestamps. The time is stored with the UTC offset already applied. It also features a simple toString() function that allows it to output the time in more Human readable ways: "yyyy/mm/dd/hh:mm:ss.nnnnnnnnn ns" for example. An additional feature is the getDelta() function that allows two timestamps to be substracted, showing the time difference between A and B.
  
 === CtfTmfEvent ===
-The CtfTmfEvent is an ITmfEvent that is used to wrap event declarations and event definitions from the CTF side into easier to read and parse chunks of information. It is a final class with final fields made to be newed very often without incurring performance costs. Most of the information is already available. It should be noted that one type of event can appear called "lost event" these are synthetic events that do not exist in the trace. They will not appear in other trace readers such as babeltrace. 
+The CtfTmfEvent is an ITmfEvent that is used to wrap event declarations and event definitions from the CTF side into easier to read and parse chunks of information. It is a final class with final fields made to be newed very often without incurring performance costs. Most of the information is already available. It should be noted that one type of event can appear called "lost event" these are synthetic events that do not exist in the trace. They will not appear in other trace readers such as babeltrace.
 
 === Other ===
-There are other helper files that format given events for views, they are simpler and the architecture does not depend on them. 
+There are other helper files that format given events for views, they are simpler and the architecture does not depend on them.
 
 === Limitations ===
 For the moment live trace reading is not supported, there are no sources of traces to test on.
+
