@@ -20,7 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
-import org.eclipse.linuxtools.internal.dataviewers.charts.Messages;
+import org.eclipse.linuxtools.internal.dataviewers.charts.ChartConstants;
 import org.eclipse.linuxtools.internal.dataviewers.charts.view.ChartView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -40,30 +40,8 @@ import org.swtchart.Chart;
  */
 public class SaveChartAction extends Action {
 
-    /** The section name of the "save chart as image" action dialog settings */
-    private static final String TAG_SECTION_CHARTS_SAVEACTION_STATE = "charts_saveasimg_section"; //$NON-NLS-1$
-    /** The key used by the file dialog to save its file name */
-    private static final String TAG_IMG_FILE_NAME = "IMG_FILE_NAME"; //$NON-NLS-1$
-    /** The key used by the file dialog to save its filter path */
-    private static final String TAG_IMG_FILTER_PATH = "IMG_FILTER_PATH"; //$NON-NLS-1$
-
-    /** Image extension for jpg format */
-    private static final String EXT_JPG = "*.jpg"; //$NON-NLS-1$
-    /** Image extension for jpeg format */
-    private static final String EXT_JPEG = "*.jpeg"; //$NON-NLS-1$
-    /** Image extension for png format */
-    private static final String EXT_PNG = "*.png"; //$NON-NLS-1$
-    /** Image extension for gif format */
-    private static final String EXT_GIF = "*.gif"; //$NON-NLS-1$
-    /** The file extensions provided by the "save chart as image" file dialog */
-    private static final String[] saveAsImageExt = { EXT_PNG, EXT_GIF, EXT_JPG, EXT_JPEG, "*.*" }; //$NON-NLS-1$
-    /** The names associated to the files extensions provided by the "save chart as image" file dialog */
-    private static final String[] saveAsImageExtNames = new String[] {
-            "PNG (*.png)", "GIF (*.gif)", "JPEG (*.jpg)", "JPEG (*.jpeg)", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            Messages.ChartConstants_ALL_FILES };
-
-    private final FileDialog dialog;
-    private final Shell shell;
+    private FileDialog dialog;
+    private Shell shell;
     private Chart cm;
 
     /**
@@ -73,13 +51,16 @@ public class SaveChartAction extends Action {
      *            the shell used by the dialogs
      */
     public SaveChartAction(Shell shell, ChartView cview) {
-        super(Messages.ChartConstants_SAVE_CHART_AS + "...", Activator.getImageDescriptor("icons/save_chart.gif")); //$NON-NLS-1$ //$NON-NLS-2$
+        super("Save chart as...", Activator.getImageDescriptor("icons/save_chart.gif"));
         this.setEnabled(false);
         this.shell = shell;
         this.dialog = new FileDialog(shell, SWT.SAVE);
-        dialog.setFilterExtensions(saveAsImageExt);
-        dialog.setFilterNames(saveAsImageExtNames);
-        dialog.setText(Messages.ChartConstants_SAVE_CHART_DIALOG_TEXT);
+        dialog.setFileName(ChartConstants.DEFAULT_IMG_FILE_NAME);
+        dialog.setFilterPath(ChartConstants.DEFAULT_IMG_FILTER_PATH);
+        dialog.setFilterExtensions(ChartConstants.saveAsImageExt);
+        dialog.setFilterNames(ChartConstants.saveAsImageExtNames);
+        dialog.setText("Select an image file (extension will be set to \".jpeg\" if not recognized).");
+
         // restore state if there is one saved
         restoreState();
     }
@@ -90,12 +71,18 @@ public class SaveChartAction extends Action {
      * @param chart
      */
     public void setChart(Chart chart) {
-        if (chart != null) {
-            setEnabled(true);
-        } else {
-            setEnabled(false);
+        try {
+            if (chart != null) {
+                setEnabled(true);
+            } else {
+                setEnabled(false);
+            }
+            cm = chart;
+        } catch (Throwable _) {
+            Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR,
+                    "Error when creating \"save as image\" action...", _);
+            Activator.getDefault().getLog().log(s);
         }
-        cm = chart;
     }
 
     /*
@@ -110,10 +97,11 @@ public class SaveChartAction extends Action {
             // cancel pressed
             return;
         }
+
         final File file = new File(path);
         if (file.exists()) {
-            boolean overwrite = MessageDialog.openQuestion(shell, Messages.ChartConstants_CONFIRM_OVERWRITE_TITLE,
-                    Messages.ChartConstants_CONFIRM_OVERWRITE_MSG);
+            boolean overwrite = MessageDialog.openQuestion(shell, "Confirm overwrite",
+                    "File already exists. Overwrite?");
             if (overwrite) {
                 file.delete();
             } else {
@@ -123,27 +111,26 @@ public class SaveChartAction extends Action {
 
         final String ext = dialog.getFilterNames()[dialog.getFilterIndex()];
 
-        UIJob saveAsImage = new UIJob(Messages.ChartConstants_SAVE_CHART_AS + " " + file.getName()) { //$NON-NLS-1$
+        UIJob saveAsImage = new UIJob("Save chart as " + file.getName()) {
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
                 int extention;
-                if (EXT_GIF.equals(ext)) {
-                    extention = SWT.IMAGE_GIF;
-                } else if (EXT_JPEG.equals(ext) || EXT_JPG.equals(ext)) {
+                if (ext.contains("PNG")) {
+                    extention = SWT.IMAGE_PNG;
+                } else if (ext.contains("JPG") || ext.contains("JPEG")) {
                     extention = SWT.IMAGE_JPEG;
                 } else {
                     extention = SWT.IMAGE_PNG;
                 }
 
                 try {
-                    monitor.beginTask(Messages.ChartConstants_SAVE_CHART_AS + " " + file.getName() + "...", //$NON-NLS-1$//$NON-NLS-2$
-                            IProgressMonitor.UNKNOWN);
+                    monitor.beginTask("Saving chart as " + file.getName() + "...", IProgressMonitor.UNKNOWN);
                     file.createNewFile();
                     generateImageFile(file, extention);
                     return Status.OK_STATUS;
                 } catch (IOException e) {
-                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.ChartConstants_ERROR_SAVING_CHART
-                            + " (" + file.getAbsolutePath() + "):\n" + e.getMessage(), e); //$NON-NLS-1$ //$NON-NLS-2$
+                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error saving chart to \""
+                            + file.getAbsolutePath() + "\":" + e.getMessage(), e);
                 }
             }
         };
@@ -157,29 +144,42 @@ public class SaveChartAction extends Action {
     /**
      * Restores the state of this action (file dialog)
      */
-    protected void restoreState() {
-        IDialogSettings settings = Activator.getDefault().getDialogSettings()
-                .getSection(TAG_SECTION_CHARTS_SAVEACTION_STATE);
-        if (settings == null) {
-            settings = Activator.getDefault().getDialogSettings().addNewSection(TAG_SECTION_CHARTS_SAVEACTION_STATE);
-            return;
-        }
+    public void restoreState() {
+        try {
+            IDialogSettings settings = Activator.getDefault().getDialogSettings()
+                    .getSection(ChartConstants.TAG_SECTION_CHARTS_SAVEACTION_STATE);
+            if (settings == null) {
+                settings = Activator.getDefault().getDialogSettings()
+                        .addNewSection(ChartConstants.TAG_SECTION_CHARTS_SAVEACTION_STATE);
+                return;
+            }
 
-        dialog.setFileName(settings.get(TAG_IMG_FILE_NAME));
-        dialog.setFilterPath(settings.get(TAG_IMG_FILTER_PATH));
+            dialog.setFileName(settings.get(ChartConstants.TAG_IMG_FILE_NAME));
+            dialog.setFilterPath(settings.get(ChartConstants.TAG_IMG_FILTER_PATH));
+        } catch (Exception e) {
+            Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, e.getMessage(), e);
+            Activator.getDefault().getLog().log(s);
+        }
     }
 
     /**
      * Saves the state of this action (file dialog)
      */
-    protected void saveState() {
-        IDialogSettings settings = Activator.getDefault().getDialogSettings()
-                .getSection(TAG_SECTION_CHARTS_SAVEACTION_STATE);
-        if (settings == null) {
-            settings = Activator.getDefault().getDialogSettings().addNewSection(TAG_SECTION_CHARTS_SAVEACTION_STATE);
+    public void saveState() {
+        try {
+            IDialogSettings settings = Activator.getDefault().getDialogSettings()
+                    .getSection(ChartConstants.TAG_SECTION_CHARTS_SAVEACTION_STATE);
+            if (settings == null) {
+                settings = Activator.getDefault().getDialogSettings()
+                        .addNewSection(ChartConstants.TAG_SECTION_CHARTS_SAVEACTION_STATE);
+            }
+
+            settings.put(ChartConstants.TAG_IMG_FILE_NAME, dialog.getFileName());
+            settings.put(ChartConstants.TAG_IMG_FILTER_PATH, dialog.getFilterPath());
+        } catch (Exception e) {
+            Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, e.getMessage(), e);
+            Activator.getDefault().getLog().log(s);
         }
-        settings.put(TAG_IMG_FILE_NAME, dialog.getFileName());
-        settings.put(TAG_IMG_FILTER_PATH, dialog.getFilterPath());
     }
 
     protected void generateImageFile(File file, int extention) {

@@ -24,6 +24,7 @@ import org.junit.Test;
  * The class <code>TraceInfoTest</code> contains test for the class
  * <code>{@link TraceInfo}</code>.
  */
+@SuppressWarnings("nls")
 public class TraceInfoTest {
 
     // ------------------------------------------------------------------------
