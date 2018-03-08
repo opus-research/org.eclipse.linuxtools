@@ -4,14 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.ErrorMessage;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobbler;
-import org.eclipse.ui.PlatformUI;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -24,11 +21,18 @@ public class ScpExec implements Runnable {
 	private Session session;
 	private Channel channel;
 
-	public ScpExec(String cmds[], String moduleName) {
-		this.command = cmds[0];
-		for (String cmd:cmds) {
-			this.command = this.command + " " + cmd; //$NON-NLS-1$
+	public ScpExec(String cmd[], String moduleName) {
+		this.command = ""; //$NON-NLS-1$
+
+		this.command = cmd[0];
+
+		for (int i = 1; i<cmd.length; i++)
+		{
+			this.command = this.command + " " + cmd[i]; //$NON-NLS-1$
 		}
+
+
+
 	}
 
 	/**
@@ -36,11 +40,12 @@ public class ScpExec implements Runnable {
 	 * This must be called in order to get the process to start running.
 	 */
 	public void start() {
-		if(init().isOK()) {
+		if(init()) {
 			Thread t = new Thread(this, command);
 			t.start();
 		} else {
 			stop();
+		//	returnVal = Integer.MIN_VALUE;
 		}
 	}
 
@@ -51,15 +56,14 @@ public class ScpExec implements Runnable {
 	 * @since 1.2
 	 */
 	protected void transferListeners(){
-		for(IGobblerListener listener :inputListeners) {
-			inputGobbler.addDataListener(listener);
-		}
-		for(IGobblerListener listener: errorListeners) {
-			errorGobbler.addDataListener(listener);
-		}
+		int i;
+		for(i=0; i<inputListeners.size(); i++)
+			inputGobbler.addDataListener(inputListeners.get(i));
+		for(i=0; i<errorListeners.size(); i++)
+			errorGobbler.addDataListener(errorListeners.get(i));
 	}
 
-	protected IStatus init() {
+	protected boolean init() {
 		String user = ConsoleLogPlugin.getDefault().getPreferenceStore()
 				.getString(ConsoleLogPreferenceConstants.SCP_USER);
 		String host = ConsoleLogPlugin.getDefault().getPreferenceStore()
@@ -88,16 +92,20 @@ public class ScpExec implements Runnable {
 			inputGobbler = new StreamGobbler(channel.getInputStream());
 
 			this.transferListeners();
-			return Status.OK_STATUS;
+			return true;
 
 		} catch (JSchException e) {
-			IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e); 
-			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.ScpExec_Error, e.getMessage(), status);
-			return status; 
+			e.printStackTrace();
+			new ErrorMessage("Error in connection",
+					"File Transfer failed.\n See stderr for more details")
+					.open();
+			return false;
 		} catch (IOException e) {
-			IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e); 
-			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.ScpExec_Error, e.getMessage(), status);
-			return status; 
+			e.printStackTrace();
+			new ErrorMessage("Error in connection",
+					"File Transfer failed.\n See stderr for more details")
+					.open();
+			return false;
 		}
 	}
 
@@ -110,7 +118,7 @@ public class ScpExec implements Runnable {
 
 			while (!stopped) {
 				if (session.isConnected() == false) {
-					throw new RuntimeException(Messages.ScpExec_ConnTimedOut);
+					throw new RuntimeException("Connection Timed Out");
 				}
 
 				if (channel.isClosed() || (channel.getExitStatus() != -1)) {
@@ -243,27 +251,33 @@ public class ScpExec implements Runnable {
 		}
 	}
 
-	static int checkAck(InputStream in) throws IOException {
-		int b = in.read();
-		// b may be 0 for success,
-		// 1 for error,
-		// 2 for fatal error,
-		// -1
-		if (b == 0)
-			return b;
-		if (b == -1)
-			return b;
+  static int checkAck(InputStream in) throws IOException{
+    int b=in.read();
+    // b may be 0 for success,
+    //          1 for error,
+    //          2 for fatal error,
+    //          -1
+    if(b==0) return b;
+    if(b==-1) return b;
 
-		if (b == 1 || b == 2) {
-			StringBuilder sb = new StringBuilder();
-			int c;
-			do {
-				c = in.read();
-				sb.append((char) c);
-			} while (c != '\n');
-		}
-		return b;
-	}
+    if(b==1 || b==2){
+      StringBuffer sb=new StringBuffer();
+      int c;
+      do {
+	c=in.read();
+	sb.append((char)c);
+      }
+      while(c!='\n');
+      if(b==1){ // error
+	//System.out.print(sb.toString());
+      }
+      if(b==2){ // fatal error
+	//System.out.print(sb.toString());
+      }
+    }
+    return b;
+  }
+
 
    protected boolean stopped = false;
    private boolean disposed = false;
