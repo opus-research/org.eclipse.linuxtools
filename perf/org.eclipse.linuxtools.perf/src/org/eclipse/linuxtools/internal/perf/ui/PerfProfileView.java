@@ -48,8 +48,8 @@ public class PerfProfileView extends ViewPart {
 	static class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
-			return (((TreeParent) e1).getPercent() <= ((TreeParent) e2)
-					.getPercent()) ? -1 : 1;
+			return (((TreeParent) e1).getPercent()
+					<= ((TreeParent) e2).getPercent()) ? 1 : -1;
 		}
 	}
 
@@ -146,5 +146,10 @@ public class PerfProfileView extends ViewPart {
 	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
+	}
+
+	@Override
+	public void setContentDescription (String name) {
+		super.setContentDescription(name);
 	}
 }
