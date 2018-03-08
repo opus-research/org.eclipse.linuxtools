@@ -38,8 +38,6 @@ import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSys
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -121,10 +119,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
      * Flag to indicate that something went wrong when creating the dialog box.
      */
     private boolean fIsError = false;
-    /**
-     * Children of the remote folder (can be null)
-     */
-    private Object[] fFolderChildren = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -195,24 +189,8 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button selectAllButton = createButton(parent, IDialogConstants.SELECT_ALL_ID, Messages.TraceControl_ImportDialog_SelectAll, true);
-        selectAllButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setFolderChildrenChecked(true);
-            }
-        });
-
-        Button deselectAllButton = createButton(parent, IDialogConstants.DESELECT_ALL_ID, Messages.TraceControl_ImportDialog_DeselectAll, true);
-        deselectAllButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setFolderChildrenChecked(false);
-            }
-        });
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        updateOKButtonEnablement();
+        createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
+        createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
     @Override
@@ -367,7 +345,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
         // make sure that remote directory is read and not cached
         remoteFolder.markStale(true, true);
 
-        fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+        fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER);
         GridData data = new GridData(GridData.FILL_BOTH);
         Tree tree = fFolderViewer.getTree();
         tree.setLayoutData(data);
@@ -387,22 +365,26 @@ public class ImportDialog extends Dialog implements IImportDialog {
                         // A trick to keep selection of a file in sync with the directory
                         boolean p = fFolderViewer.getChecked((element.getParentRemoteFile()));
                         fFolderViewer.setChecked(element, p);
-                    } else {
-                        fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
-                        if (!event.getChecked()) {
-                            fFolderViewer.setChecked(element.getParentRemoteFile(), false);
-                        }
+                        return;
                     }
-                    updateOKButtonEnablement();
+                    fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
+                    if (!event.getChecked()) {
+                        fFolderViewer.setChecked(element.getParentRemoteFile(), false);
+                    }
                 }
             }
         });
         fFolderViewer.setInput(remoteFolder);
 
-        fFolderChildren = remoteFolder.getContents(RemoteChildrenContentsType.getInstance());
+        Object[] children = remoteFolder.getContents(RemoteChildrenContentsType.getInstance());
         // children can be null if there the path doesn't exist. This happens when a trace
         // session hadn't been started and no output was created.
-        setFolderChildrenChecked(true);
+        if (children != null) {
+            // Select all traces by default
+            for (int i = 0; i < children.length; i++) {
+                fFolderViewer.setSubtreeChecked(children[i], true);
+            }
+        }
 
         Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         projectGroup.setText(Messages.TraceControl_ImportDialogProjectsGroupName);
@@ -438,20 +420,4 @@ public class ImportDialog extends Dialog implements IImportDialog {
         getShell().setMinimumSize(new Point(500, 400));
     }
 
-    private void setFolderChildrenChecked(boolean isChecked) {
-        if (fFolderChildren != null) {
-            for (Object child : fFolderChildren) {
-                fFolderViewer.setSubtreeChecked(child, isChecked);
-            }
-        }
-        updateOKButtonEnablement();
-    }
-
-    private void updateOKButtonEnablement() {
-        Object[] checked = fFolderViewer.getCheckedElements();
-        Button okButton = getButton(IDialogConstants.OK_ID);
-        if (okButton != null) {
-            okButton.setEnabled(checked.length > 0);
-        }
-    }
  }
