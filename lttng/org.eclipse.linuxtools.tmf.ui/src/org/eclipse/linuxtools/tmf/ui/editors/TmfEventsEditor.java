@@ -56,6 +56,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorLabelProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
@@ -88,6 +89,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
 
     /** ID for this class */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.editors.events"; //$NON-NLS-1$
+
+    /* label provider used to get trace icon */
+    private static final TmfNavigatorLabelProvider LABEL_PROVIDER = new TmfNavigatorLabelProvider();
 
     private TmfEventsTable fEventsTable;
     private IFile fFile;
@@ -257,6 +261,14 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                 fEventsTable.addSelectionChangedListener(this);
                 fEventsTable.setTrace(fTrace, true);
                 fEventsTable.refreshBookmarks(fFile);
+
+                setTitleImage(LABEL_PROVIDER.getImage(fTrace));
+
+                /* ensure start time is set */
+                final ITmfContext context = fTrace.seekEvent(0);
+                fTrace.getNext(context);
+                context.dispose();
+
                 broadcast(new TmfTraceOpenedSignal(this, fTrace, fFile));
             } else {
                 fEventsTable = new TmfEventsTable(fParent, 0);
@@ -275,6 +287,8 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
             fEventsTable.addSelectionChangedListener(this);
             fEventsTable.setTrace(fTrace, true);
             fEventsTable.refreshBookmarks(fFile);
+
+            setTitleImage(LABEL_PROVIDER.getImage(fTrace));
 
             /* ensure start time is set */
             final ITmfContext context = fTrace.seekEvent(0);
