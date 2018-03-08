@@ -69,17 +69,10 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public void createControl(Composite parent) {
 		Composite top;
-
-		if(parent.getChildren().length > 0){
-			top = (Composite) parent.getChildren()[0];
-		} else {
-			top = new Composite(parent, SWT.NONE);
-			setControl(top);
-			top.setLayout(new GridLayout());
-		}
-
+		top = new Composite(parent, SWT.NONE);
+		setControl(top);
+		top.setLayout(new GridLayout());
 		this.top = top;
-
 	}
 
 	private void createEventTabs(Composite top, ILaunchConfiguration config){
