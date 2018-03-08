@@ -393,12 +393,6 @@ class HistoryTree {
 
         assert (indexOfNode < latestBranch.size());
 
-        prevNode = latestBranch.get(indexOfNode);
-        if (prevNode.getNbChildren() > 0 && prevNode.getNbChildren() < config.getMinChildren()) {
-            addExtensionNode(indexOfNode);
-            return;
-        }
-
         /* Check if we need to add a new root node */
         if (indexOfNode == 0) {
             addNewRootNode();
@@ -462,25 +456,6 @@ class HistoryTree {
             prevNode.linkNewChild(newNode);
             latestBranch.add(newNode);
         }
-    }
-
-    private void addExtensionNode(int indexOfNode) {
-        CoreNode oldNode, newNode;
-        long splitTime = this.treeEnd;
-
-        oldNode = latestBranch.get(indexOfNode);
-        newNode = initNewCoreNode(oldNode.getParentSequenceNumber(), config.getTreeStart());
-
-        /* Link the new node to a extension of old node */
-        oldNode.setExtensionSequenceNumber(newNode.getSequenceNumber());
-
-        newNode.copyChildren(oldNode);
-
-        /* Close off the oldNode */
-        oldNode.closeThisNode(splitTime);
-        treeIO.writeNode(oldNode);
-
-        latestBranch.set(indexOfNode, newNode);
     }
 
     /**
