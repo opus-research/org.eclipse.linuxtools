@@ -565,7 +565,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Checks if the trace is already in the statistics tree.
             int numNodeTraces = statisticsTreeNode.getNbChildren();
 
-            ITmfTrace[] traces = TmfTraceManager.getTraceSet(fTrace);
+            ITmfTrace[] traces = fTraceManager.getActiveTraceSet();
             int numTraces = traces.length;
 
             if (numTraces == numNodeTraces) {
@@ -706,7 +706,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                 statTree.resetTimeRangeValue();
             }
 
-            for (final ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+            for (final ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
                 if (!isListeningTo(aTrace)) {
                     continue;
                 }

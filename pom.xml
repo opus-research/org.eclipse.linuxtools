@@ -92,7 +92,7 @@
   
   <profiles>
     <profile>
-      <id>platform-kepler</id>
+      <id>platform-juno</id>
       <activation>
         <activeByDefault>true</activeByDefault>
         <property>
@@ -107,19 +107,19 @@
       </properties>
       <repositories>
         <repository>
-          <id>kepler</id>
+          <id>juno</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
       </repositories>
     </profile>
     <profile>
-      <id>platform-kepler-staging</id>
+      <id>platform-kepler</id>
       <activation>
         <activeByDefault>false</activeByDefault>
         <property>
           <name>platform-version-name</name>
-          <value>kepler-staging</value>
+          <value>kepler</value>
         </property>
       </activation>
       <properties>
@@ -129,7 +129,7 @@
       </properties>
       <repositories>
         <repository>
-          <id>kepler-staging</id>
+          <id>kepler</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>

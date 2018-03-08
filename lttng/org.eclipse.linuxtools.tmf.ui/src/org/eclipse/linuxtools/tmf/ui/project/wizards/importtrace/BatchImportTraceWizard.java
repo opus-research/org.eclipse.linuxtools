@@ -294,7 +294,51 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         IPath path = fTargetFolder.getFullPath().append(traceToImport.getName());
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         if (resource != null) {
-            TmfTraceType.getInstance().setTraceType(traceToImport.getTraceTypeId(), resource);
+            try {
+                // Set the trace properties for this resource
+                boolean traceTypeOK = false;
+                String traceBundle = null, traceTypeId = null, traceIcon = null;
+                traceTypeId = traceToImport.getTraceTypeId();
+                IConfigurationElement ce = TmfTraceType.getInstance().getTraceAttributes(traceTypeId);
+                if ((ce != null) && (ce.getContributor() != null)) {
+                    traceTypeOK = true;
+                    traceBundle = ce.getContributor().getName();
+                    traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                    traceIcon = ce.getAttribute(TmfTraceType.ICON_ATTR);
+                }
+                final String traceType = traceTypeId;
+                if (!traceTypeOK &&
+                        (traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY) ||
+                        traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY))) {
+                    // do custom trace stuff here
+                    traceTypeOK = true;
+                    traceBundle =
+                            Activator.getDefault().getBundle().getSymbolicName();
+
+                    traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + traceType; //$NON-NLS-1$
+                    traceIcon = DEFAULT_TRACE_ICON_PATH;
+                }
+                if (traceTypeOK) {
+                    resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE,
+                            traceBundle);
+                    resource.setPersistentProperty(TmfCommonConstants.TRACETYPE,
+                            traceTypeId);
+                    resource.setPersistentProperty(TmfCommonConstants.TRACEICON,
+                            traceIcon);
+                }
+                TmfProjectElement tmfProject =
+                        TmfProjectRegistry.getProject(resource.getProject());
+                if (tmfProject != null) {
+                    for (TmfTraceElement traceElement : tmfProject.getTracesFolder().getTraces()) {
+                        if (traceElement.getName().equals(resource.getName())) {
+                            traceElement.refreshTraceType();
+                            break;
+                        }
+                    }
+                }
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error importing trace resource " + resource.getName(), e); //$NON-NLS-1$
+            }
         }
     }
 

@@ -15,7 +15,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation to move the focus to the last page of the whole sequence diagram.
@@ -55,8 +55,8 @@ public class LastPage extends Action {
     public LastPage(SDView view) {
         super();
         fView = view;
-        setText(Messages.SequenceDiagram_LastPage);
-        setToolTipText(Messages.SequenceDiagram_GoToLastPage);
+        setText(SDMessages._141);
+        setToolTipText(SDMessages._142);
         setId(ID);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_LAST_PAGE));
     }
