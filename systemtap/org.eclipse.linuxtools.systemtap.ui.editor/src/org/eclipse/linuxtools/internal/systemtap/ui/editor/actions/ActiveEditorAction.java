@@ -1,22 +1,23 @@
 /*******************************************************************************
- * Copyright (c) 2013 Red Hat, Inc.
+ * Copyright (c) 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Red Hat, Inc. - initial API and implementation
+ *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.perf.swtbot.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package org.eclipse.linuxtools.internal.systemtap.ui.editor.actions;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-	StatViewTest.class,
-	SourceDisassemblyViewTest.class,
-	StatComparisonViewTest.class })
-public class AllPerfTests {
+public abstract class ActiveEditorAction extends EditorAction {
+	public ActiveEditorAction() {
+		super();
+	}
+
+	@Override
+	protected void buildEnablementChecks() {
+		setEnablement(null != getActiveEditor());
+	}
 }
