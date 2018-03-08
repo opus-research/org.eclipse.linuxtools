@@ -131,10 +131,6 @@ public class PerfProfileView extends ViewPart {
 			}
 		});
 	}
-
-	public TreeViewer getTreeViewer () {
-		return viewer;
-	}
 	
 	@SuppressWarnings("unused")
 	private void showMessage(String message) {
