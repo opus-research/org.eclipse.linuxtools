@@ -14,9 +14,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTable;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -206,8 +204,7 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
             writer.write(wizard.inputPage.getInputText());
             writer.close();
 
-            final CustomTxtTrace trace = new CustomTxtTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
-            trace.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, false);
+            final ITmfTrace trace = new CustomTxtTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
             previewTable.dispose();
             previewTable = new CustomEventsTable(definition, tableContainer, CACHE_SIZE);
             previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
