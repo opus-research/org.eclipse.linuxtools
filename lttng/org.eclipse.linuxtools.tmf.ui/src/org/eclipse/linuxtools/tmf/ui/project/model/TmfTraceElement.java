@@ -421,13 +421,11 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      *         respectively as keys and values
      */
     private Map<String, String> getTraceProperties() {
-        for (ITmfTrace openedTrace : TmfTraceManager.getInstance().getOpenedTraces()) {
-            for (ITmfTrace singleTrace : TmfTraceManager.getTraceSet(openedTrace)) {
-                if (this.getLocation().toString().endsWith(singleTrace.getPath())) {
-                    if (singleTrace instanceof ITmfTraceProperties) {
-                        ITmfTraceProperties traceProperties = (ITmfTraceProperties) singleTrace;
-                        return traceProperties.getTraceProperties();
-                    }
+        for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
+            if (trace.getResource().equals(this.getResource())) {
+                if (trace instanceof ITmfTraceProperties) {
+                    ITmfTraceProperties traceProperties = (ITmfTraceProperties) trace;
+                    return traceProperties.getTraceProperties();
                 }
             }
         }
@@ -575,20 +573,5 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             TmfExperimentElement experiment = (TmfExperimentElement) getParent();
             experiment.closeEditors();
         }
-    }
-
-    /**
-     * Get the instantiated trace associated with this element.
-     *
-     * @return The instantiated trace or null if trace is not (yet) available
-     * @since 2.1
-     */
-    public ITmfTrace getTrace() {
-        for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
-            if (trace.getResource().equals(getResource())) {
-                return trace;
-            }
-        }
-        return null;
     }
 }

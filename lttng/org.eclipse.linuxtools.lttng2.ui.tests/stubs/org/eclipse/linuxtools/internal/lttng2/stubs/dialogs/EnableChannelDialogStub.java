@@ -12,10 +12,8 @@
 package org.eclipse.linuxtools.internal.lttng2.stubs.dialogs;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableChannelDialog;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent;
 
 /**
@@ -80,14 +78,5 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
 
     public void setChannelInfo(ChannelInfo info) {
         fChannelInfo = info;
-    }
-
-    @Override
-    public void setTargetNodeComponent(TargetNodeComponent node) {
-        // Do nothing
-    }
-
-    public void setBufferType (BufferType bufferType) {
-        fChannelInfo.setBufferType(bufferType);
     }
 }
