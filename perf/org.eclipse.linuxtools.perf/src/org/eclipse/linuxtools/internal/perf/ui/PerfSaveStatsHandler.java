@@ -46,15 +46,6 @@ public class PerfSaveStatsHandler extends AbstractSaveDataHandler {
 						newDataLoc.lastSegment());
 			} finally {
 				closeResource(bw, statsData.getName());
-				if (bw != null) {
-					try {
-						bw.close();
-					} catch (IOException ex) {
-						openErroDialog(Messages.PerfResourceLeak_title,
-								Messages.PerfResourceLeak_msg,
-								statsData.getName());
-					}
-				}
 			}
 		}
 		return null;
