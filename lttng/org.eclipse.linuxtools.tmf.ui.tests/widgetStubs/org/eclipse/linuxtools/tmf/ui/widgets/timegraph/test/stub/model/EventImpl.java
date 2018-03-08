@@ -82,14 +82,4 @@ public class EventImpl implements ITimeEvent {
 		return duration;
 	}
 
-    @Override
-    public boolean isLink() {
-        return false;
-    }
-
-    @Override
-    public int compareTo(ITimeEvent o) {
-        return getTime() < o.getTime() ? -1 : getTime() > o.getTime() ? 1 : 0;
-    }
-
 }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson, others
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
  *   Alexander N. Alexeev, Intel - Add monitors statistics support
  *   Alvaro Sanchez-Leon - Adapted for TMF
  *   Patrick Tasse - Refactoring
- *   Geneviève Bastien - Add event links between entries
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
@@ -28,7 +27,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.TimeGraphLegend;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeLinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
@@ -154,23 +152,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
             fSelectedTime = 0;
             fSelectedEntry = null;
             refreshAllData(realInput);
-        }
-    }
-
-    /**
-     * Sets or clears the list of links to display on this combo
-     *
-     * @param links the links to display in this time graph combo
-     * @since 3.0
-     */
-    public void setLinks(TimeLinkEvent[] links) {
-        TimeLinkEvent[] realInput = links;
-
-        if (fTimeGraphCtrl != null) {
-            if (realInput == null) {
-                realInput = new TimeLinkEvent[0];
-            }
-            refreshArrows(realInput);
         }
     }
 
@@ -458,10 +439,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         fTimeGraphCtrl.refreshData(traces);
         fTimeScaleCtrl.redraw();
         adjustVerticalScrollBar();
-    }
-
-    private void refreshArrows(TimeLinkEvent[] events) {
-        fTimeGraphCtrl.refreshArrows(events);
     }
 
     /**
