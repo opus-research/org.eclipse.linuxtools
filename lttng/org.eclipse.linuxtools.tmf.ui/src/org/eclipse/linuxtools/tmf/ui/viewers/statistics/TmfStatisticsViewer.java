@@ -204,11 +204,6 @@ public class TmfStatisticsViewer extends TmfViewer {
         initInput();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.core.component.TmfComponent#dispose()
-     */
     @Override
     public void dispose() {
         super.dispose();
@@ -242,7 +237,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Sends the time range request only once from this method.
             if (fSendRangeRequest) {
                 fSendRangeRequest = false;
-                requestTimeRangeData(trace, signal.getRange());
+                requestTimeRangeData(trace, fTrace.getCurrentRange());
             }
         }
         requestData(trace, signal.getRange());

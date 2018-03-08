@@ -43,7 +43,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfSyncSequenceDiagramEvent;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
@@ -300,10 +299,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 private int fNbSeqEvents = 0;
                 private final List<ITmfSyncSequenceDiagramEvent> fSdEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>(MAX_NUM_OF_MSG);
 
-                /*
-                 * (non-Javadoc)
-                 * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
-                 */
                 @Override
                 public void handleData(ITmfEvent event) {
                     super.handleData(event);
@@ -346,10 +341,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                     }
                 }
 
-                /*
-                 * (non-Javadoc)
-                 * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleSuccess()
-                 */
                 @Override
                 public void handleSuccess() {
                     if ((fFirstTime != null) && (fLastTime != null)) {
@@ -372,10 +363,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                     super.handleSuccess();
                 }
 
-                /*
-                 * (non-Javadoc)
-                 * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleCompleted()
-                 */
                 @Override
                 public void handleCompleted() {
                     if (fEvents.isEmpty()) {
@@ -478,10 +465,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader#setViewer(org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView)
-     */
     @Override
     public void setViewer(SDView viewer) {
 
@@ -507,19 +490,11 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader#getTitleString()
-     */
     @Override
     public String getTitleString() {
         return getName();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.component.TmfComponent#dispose()
-     */
     @Override
     public void dispose() {
        super.dispose();
@@ -548,10 +523,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
        }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.hyades.uml2sd.ui.actions.provider.ISDGraphNodeSupporter#isNodeSupported(int)
-     */
     @Override
     public boolean isNodeSupported(int nodeType) {
         switch (nodeType) {
@@ -565,10 +536,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter#getNodeName(int, java.lang.String)
-     */
     @Override
     public String getNodeName(int nodeType, String loaderClassName) {
         switch (nodeType) {
@@ -582,10 +549,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         return ""; //$NON-NLS-1$
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.ISelectionListener#selectionChanged(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection)
-     */
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
@@ -598,11 +561,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.eclipse.hyades.uml2sd.ui.actions.provider.ISDFindProvider#find(org.eclipse.hyades.uml2sd.ui.actions.widgets.Criteria)
-     */
     @Override
     public boolean find(Criteria toSearch) {
         fLock.lock();
@@ -659,19 +617,11 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider#cancel()
-     */
     @Override
     public void cancel() {
         cancelOngoingRequests();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider#filter(java.util.List)
-     */
     @SuppressWarnings("unchecked")
     @Override
     public boolean filter(List<?> filters) {
@@ -694,10 +644,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#hasNextPage()
-     */
     @Override
     public boolean hasNextPage() {
         fLock.lock();
@@ -712,10 +658,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#hasPrevPage()
-     */
     @Override
     public boolean hasPrevPage() {
         fLock.lock();
@@ -726,10 +668,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#nextPage()
-     */
     @Override
     public void nextPage() {
         fLock.lock();
@@ -748,10 +686,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#prevPage()
-     */
     @Override
     public void prevPage() {
         fLock.lock();
@@ -770,10 +704,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#firstPage()
-     */
     @Override
     public void firstPage() {
         fLock.lock();
@@ -788,10 +718,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#lastPage()
-     */
     @Override
     public void lastPage() {
         fLock.lock();
@@ -805,10 +731,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider#currentPage()
-     */
     @Override
     public int currentPage() {
         fLock.lock();
@@ -819,10 +741,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider#pagesCount()
-     */
     @Override
     public int pagesCount() {
         fLock.lock();
@@ -833,10 +751,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider#pageNumberChanged(int)
-     */
     @Override
     public void pageNumberChanged(int pagenNumber) {
         int localPageNumber = pagenNumber;
@@ -859,10 +773,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.component.TmfComponent#broadcast(org.eclipse.linuxtools.tmf.signal.TmfSignal)
-     */
     @Override
     public void broadcast(TmfSignal signal) {
         fIsSignalSent = true;
@@ -1236,9 +1146,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      */
     protected TmfTimeRange getSignalTimeRange(ITmfTimestamp startTime) {
         fLock.lock();
-        TmfTimeRange currentRange = TmfTraceManager.getInstance().getCurrentRange();
         try {
-            long offset = fTrace == null ? 0 : currentRange.getEndTime().getDelta(currentRange.getStartTime()).normalize(0, startTime.getScale()).getValue();
+            long offset = fTrace == null ? 0 : fTrace.getCurrentRange().getEndTime().getDelta(fTrace.getCurrentRange().getStartTime()).normalize(0, startTime.getScale()).getValue();
             TmfTimestamp initialEndOfWindow = new TmfTimestamp(startTime.getValue() + offset, startTime.getScale(), startTime.getPrecision());
             return new TmfTimeRange(startTime, initialEndOfWindow);
         }
@@ -1313,10 +1222,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             fSearchRequest = new SearchEventRequest(window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND, findCriteria);
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-         */
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             fSearchRequest.setMonitor(monitor);
@@ -1369,10 +1274,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             return status;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.core.runtime.jobs.Job#canceling()
-         */
         @Override
         protected void canceling() {
             fSearchRequest.cancel();
@@ -1434,10 +1335,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             fMonitor = monitor;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.linuxtools.tmf.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.event.TmfData)
-         */
         @Override
         public void handleData(ITmfEvent event) {
             super.handleData(event);
