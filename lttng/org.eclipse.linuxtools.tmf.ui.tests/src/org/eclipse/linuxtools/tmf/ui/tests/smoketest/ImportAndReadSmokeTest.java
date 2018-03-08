@@ -107,6 +107,8 @@ public class ImportAndReadSmokeTest {
 
     /** The Log4j logger instance. */
     private static final Logger logger = Logger.getRootLogger();
+    private static IWorkbenchPage page;
+    private static SWTBotTree treeBot;
 
     /**
      * Test Class setup
@@ -143,20 +145,35 @@ public class ImportAndReadSmokeTest {
          */
         TmfProjectRegistry.createProject(TRACE_PROJECT_NAME, null, new NullProgressMonitor());
 
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        assertNotNull(window);
-        // Get the selection
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                assertNotNull(window);
+                // Get the selection
+                page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            }
+
+        });
         final SWTBotView projectViewBot = bot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
         projectViewBot.setFocus();
         waitForJobs();
-        IWorkbenchPart part = page.getActivePart();
 
-        final Composite widget = (Composite) projectViewBot.getWidget();
-        final Composite control = (Composite) widget.getChildren()[0];
-        Tree tree = (Tree) control.getChildren()[0];
-        assertNotNull(part);
-        SWTBotTree treeBot = new SWTBotTree(tree);
+        Display.getDefault().syncExec(new Runnable() {
+
+
+            @Override
+            public void run() {
+                IWorkbenchPart part = page.getActivePart();
+                final Composite widget = (Composite) projectViewBot.getWidget();
+                final Composite control = (Composite) widget.getChildren()[0];
+                Tree tree = (Tree) control.getChildren()[0];
+                assertNotNull(part);
+                treeBot = new SWTBotTree(tree);
+            }
+
+        });
         final SWTBotTreeItem treeItem = treeBot.getTreeItem(TRACE_PROJECT_NAME);
         if (treeItem != null) {
             try {
@@ -214,14 +231,20 @@ public class ImportAndReadSmokeTest {
     }
 
     private static void switchTracingPerspective() {
-        {
-            try {
-                PlatformUI.getWorkbench().showPerspective(TRACING_PERSPECTIVE_ID,
-                        PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-            } catch (WorkbenchException e) {
-                fail(e.getMessage());
+
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    PlatformUI.getWorkbench().showPerspective(TRACING_PERSPECTIVE_ID,
+                            PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                } catch (WorkbenchException e) {
+                    fail(e.getMessage());
+                }
             }
-        }
+        });
+
     }
 
     private static void focusMainWindow() {
@@ -277,8 +300,16 @@ public class ImportAndReadSmokeTest {
         if (display != null) {
             final long endTimeMillis = System.currentTimeMillis() + waitTimeMillis;
             while (System.currentTimeMillis() < endTimeMillis) {
-                refreshUI(display);
-                display.update();
+                Display.getDefault().syncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        refreshUI(display);
+                        display.update();
+                    }
+
+                });
+
             }
         } else {
             try {
@@ -288,6 +319,9 @@ public class ImportAndReadSmokeTest {
             }
         }
     }
+
+    private IEditorReference[] ieds;
+    private IEditorPart iep;
 
     /**
      * Main test case
@@ -319,14 +353,21 @@ public class ImportAndReadSmokeTest {
         }
         final Display display = Display.getDefault();
 
-        refreshUI(display);
+        Display.getDefault().syncExec(new Runnable() {
 
-        treeItem.select();
-        treeItem.click();
-        treeItem.expand();
+            @Override
+            public void run() {
+                refreshUI(display);
 
-        treeItem.getNode("Traces [0]").select();
-        waitForJobs();
+                treeItem.select();
+                treeItem.click();
+                treeItem.expand();
+
+                treeItem.getNode("Traces [0]").select();
+                waitForJobs();
+            }
+
+        });
 
         Job job = new Job("Batch Import testing") {
             /* treeControl to be used in jobs */
@@ -385,7 +426,7 @@ public class ImportAndReadSmokeTest {
                     }
                 });
                 assertNotNull(treeControl[0]);
-                SWTBotTree treeBot = new SWTBotTree(treeControl[0]);
+                treeBot = new SWTBotTree(treeControl[0]);
                 final String ctfId = "Common Trace Format";
                 final String lttngId = traceTypeName;
                 monitor.worked(1);
@@ -420,7 +461,6 @@ public class ImportAndReadSmokeTest {
             private void selectTrace(IProgressMonitor monitor) {
                 monitor.subTask("Select Trace Type");
                 bot = new SWTWorkbenchBot();
-                SWTBotTree treeBot;
                 treeBot = bot.tree();
                 bot.waitUntil(Conditions.widgetIsEnabled(treeBot));
                 final SWTBotTreeItem genericCtfTreeItem = treeBot.getTreeItem(traceTypeName);
@@ -451,7 +491,15 @@ public class ImportAndReadSmokeTest {
 
         };
         job.schedule();
-        openBITW();
+
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                openBITW();
+            }
+
+        });
         job.join();
         waitForJobs();
 
@@ -467,40 +515,68 @@ public class ImportAndReadSmokeTest {
         bot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(TRACE_NAME, treeItem.getNode(nodeName)));
         treeItem.getNode(nodeName).getNode(TRACE_NAME).select();
         treeItem.getNode(nodeName).getNode(TRACE_NAME).doubleClick();
-        display.sleep();
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                display.sleep();
+            }
+
+        });
         Thread.sleep(1000);
         waitForJobs();
-        IEditorReference[] ieds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-        assertNotNull(ieds);
-        IEditorPart iep = null;
-        for (IEditorReference ied : ieds) {
-            if (ied.getTitle().equals(TRACE_NAME)) {
-                iep = ied.getEditor(true);
-                break;
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                ieds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+                assertNotNull(ieds);
+                iep = null;
+                for (IEditorReference ied : ieds) {
+                    if (ied.getTitle().equals(TRACE_NAME)) {
+                        iep = ied.getEditor(true);
+                        break;
+                    }
+                }
             }
-        }
+
+        });
         assertNotNull(iep);
         fDesired1 = getEvent(100);
         fDesired2 = getEvent(10000);
-        TmfEventsEditor tmfEd = (TmfEventsEditor) iep;
+        final TmfEventsEditor tmfEd = (TmfEventsEditor) iep;
 
-        tmfEd.setFocus();
-        tmfEd.selectionChanged(new SelectionChangedEvent(tmfEd, new StructuredSelection(fDesired1)));
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                tmfEd.setFocus();
+                tmfEd.selectionChanged(new SelectionChangedEvent(tmfEd, new StructuredSelection(fDesired1)));
+            }
+
+        });
 
         waitForJobs();
         Thread.sleep(1000);
         assertNotNull(tmfEd);
-        IViewReference[] viewRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
-        for (IViewReference viewRef : viewRefs) {
-            IViewPart vp = viewRef.getView(true);
-            if (vp.getTitle().equals("Histogram")) {
-                testHV(vp);
-            } else if (vp.getTitle().equals("Properties")) {
-                testPV(vp);
-            } else if (vp.getTitle().equals("Statistics")) {
-                testSV(vp);
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                IViewReference[] viewRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
+                for (IViewReference viewRef : viewRefs) {
+                    IViewPart vp = viewRef.getView(true);
+                    if (vp.getTitle().equals("Histogram")) {
+                        testHV(vp);
+                    } else if (vp.getTitle().equals("Properties")) {
+                        testPV(vp);
+                    } else if (vp.getTitle().equals("Statistics")) {
+                        testSV(vp);
+                    }
+                }
             }
-        }
+
+        });
     }
 
     private static void testPV(IViewPart vp) {
@@ -561,9 +637,15 @@ public class ImportAndReadSmokeTest {
     }
 
     private static void refreshUI(final Display display) {
-        if (!display.readAndDispatch()) {
-            display.sleep();
-        }
+        display.syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            }
+        });
     }
 
     private static void createProject() throws InterruptedException {
@@ -715,7 +797,7 @@ public class ImportAndReadSmokeTest {
         }
 
         // Get the selection
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
             return null;
