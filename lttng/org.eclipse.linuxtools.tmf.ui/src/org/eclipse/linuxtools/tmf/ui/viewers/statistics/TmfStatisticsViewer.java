@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
@@ -156,12 +157,16 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     private boolean fSendRangeRequest = true;
 
+    /** Reference to the trace manager */
+    private final TmfTraceManager fTraceManager;
+
     /**
      * Empty constructor. To be used in conjunction with
      * {@link TmfStatisticsViewer#init(Composite, String, ITmfTrace)}
      */
     public TmfStatisticsViewer() {
         super();
+        fTraceManager = TmfTraceManager.getInstance();
     }
 
     /**
@@ -178,6 +183,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     public TmfStatisticsViewer(Composite parent, String viewerName, ITmfTrace trace) {
         init(parent, viewerName, trace);
+        fTraceManager = TmfTraceManager.getInstance();
     }
 
     /**
@@ -237,7 +243,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Sends the time range request only once from this method.
             if (fSendRangeRequest) {
                 fSendRangeRequest = false;
-                requestTimeRangeData(trace, fTrace.getCurrentRange());
+                requestTimeRangeData(trace, fTraceManager.getCurrentRange());
             }
         }
         requestData(trace, signal.getRange());
@@ -559,7 +565,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Checks if the trace is already in the statistics tree.
             int numNodeTraces = statisticsTreeNode.getNbChildren();
 
-            ITmfTrace[] traces = fTrace.getTraces();
+            ITmfTrace[] traces = fTraceManager.getActiveTraceSet();
             int numTraces = traces.length;
 
             if (numTraces == numNodeTraces) {
@@ -700,8 +706,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                 statTree.resetTimeRangeValue();
             }
 
-            ITmfTrace[] traces = trace.getTraces();
-            for (final ITmfTrace aTrace : traces) {
+            for (final ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
                 if (!isListeningTo(aTrace)) {
                     continue;
                 }
