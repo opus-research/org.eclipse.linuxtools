@@ -128,6 +128,14 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         fScanPage = new ImportTraceWizardScanPage(workbench, selection);
         fSelectTypePage = new ImportTraceWizardSelectTraceTypePage(workbench, selection);
         // keep in case it's called later
+        Iterator<?> iter = selection.iterator();
+        while (iter.hasNext()) {
+            Object selected = iter.next();
+            if (selected instanceof TmfTraceFolder) {
+                fTargetFolder = ((TmfTraceFolder) selected).getResource();
+                break;
+            }
+        }
         fResults.clear();
     }
 
@@ -332,8 +340,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                     }
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
-                        + " " + resource.getName(), e); //$NON-NLS-1$
+                Activator.getDefault().logError("Error importing trace resource " + resource.getName(), e); //$NON-NLS-1$
             }
         }
         return Status.OK_STATUS;
@@ -540,6 +547,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     }
 
     private void updateTracesToScan(final List<String> added) {
+        // Treeset is used instead of a hashset since the traces should be read
+        // in the order they were added.
         final Set<String> filesToScan = new TreeSet<String>();
         for (String name : fParentFiles.keySet()) {
             filesToScan.addAll(fParentFiles.get(name));
