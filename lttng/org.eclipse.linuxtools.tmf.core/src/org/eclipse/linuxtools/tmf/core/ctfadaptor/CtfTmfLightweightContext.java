@@ -87,9 +87,6 @@ public class CtfTmfLightweightContext implements ITmfContext {
         curLocation = (CtfLocation) location;
         if (curLocation != null) {
             getIterator().seek(curLocation.getLocationInfo());
-        } else {
-            getIterator().goToLastEvent();
-            getIterator().advance();
         }
     }
 

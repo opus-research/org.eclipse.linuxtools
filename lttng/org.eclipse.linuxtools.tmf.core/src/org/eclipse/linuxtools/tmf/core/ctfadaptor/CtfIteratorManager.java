@@ -145,9 +145,6 @@ class CtfTraceManager {
             if (context.getLocation() != null) {
                 final CtfLocationData location = (CtfLocationData) context.getLocation().getLocationInfo();
                 retVal.seek(location);
-            } else {
-                retVal.goToLastEvent();
-                retVal.advance();
             }
         }
         return retVal;

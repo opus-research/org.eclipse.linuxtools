@@ -49,7 +49,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -275,12 +274,6 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
             fEventsTable.addSelectionChangedListener(this);
             fEventsTable.setTrace(fTrace, true);
             fEventsTable.refreshBookmarks(fFile);
-
-            /* ensure start time is set */
-            final ITmfContext context = fTrace.seekEvent(0);
-            fTrace.getNext(context);
-            context.dispose();
-
             broadcast(new TmfTraceOpenedSignal(this, fTrace, fFile));
         } else {
             setPartName(getEditorInput().getName());
