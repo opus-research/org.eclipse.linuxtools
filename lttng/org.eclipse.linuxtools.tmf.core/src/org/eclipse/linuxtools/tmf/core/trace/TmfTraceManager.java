@@ -217,7 +217,6 @@ public final class TmfTraceManager {
         fCurrentTrace = trace;
     }
 
-
     /**
      * Handler for the TmfTraceSelectedSignal.
      *
@@ -368,8 +367,8 @@ public final class TmfTraceManager {
      */
     private static String getTemporaryDir(ITmfTrace trace) {
         return System.getProperty("java.io.tmpdir") + //$NON-NLS-1$
-            File.separator +
-            trace.getName() +
-            File.separator;
+                File.separator +
+                trace.getName() +
+                File.separator;
     }
 }

@@ -65,7 +65,8 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_OverwriteExistingTrace;
     /**
-     * The label of the checkbox to create a link to the trace in workspace (import trace wizard)
+     * The label of the checkbox to create a link to the trace in workspace
+     * (import trace wizard)
      */
     public static String ImportTraceWizard_CreateLinksInWorkspace;
     /**
@@ -93,7 +94,8 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_CannotImportFilesUnderAVirtualFolder;
     /**
-     * The error message if destination directory is a virtual folder (for a link).
+     * The error message if destination directory is a virtual folder (for a
+     * link).
      */
     public static String ImportTraceWizard_HaveToCreateLinksUnderAVirtualFolder;
     /**
@@ -105,24 +107,25 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_Information;
     /**
-     *  The title of the select traces wizard.
+     * The title of the select traces wizard.
      */
     public static String SelectTracesWizard_WindowTitle;
     /**
      * The column header for the traces (select traces wizard page).
      */
-	public static String SelectTracesWizardPage_TraceColumnHeader;
-	/**
-	 * The title of select traces wizard page.
-	 */
-	public static String SelectTracesWizardPage_WindowTitle;
-	/**
-	 * The description of the select traces wizard page.
-	 */
-	public static String SelectTracesWizardPage_Description;
-	/**
-	 * The error message when no name was entered in a dialog box (new trace or experiment dialog)
-	 */
+    public static String SelectTracesWizardPage_TraceColumnHeader;
+    /**
+     * The title of select traces wizard page.
+     */
+    public static String SelectTracesWizardPage_WindowTitle;
+    /**
+     * The description of the select traces wizard page.
+     */
+    public static String SelectTracesWizardPage_Description;
+    /**
+     * The error message when no name was entered in a dialog box (new trace or
+     * experiment dialog)
+     */
     public static String Dialog_EmptyNameError;
     /**
      * The error message when name of trace or experiment already exists
@@ -184,6 +187,49 @@ public class Messages extends NLS {
      * The label of the field for entering the new trace name.
      */
     public static String CopyTraceDialog_TraceNewName;
+
+    /**
+     * the category of the resource properties
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_ResourceProperties;
+    /**
+     * the category of the trace properties
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_TraceProperties;
+    /**
+     * the descriptor for the name property
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_Name;
+    /**
+     * the descriptor for the path property
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_Path;
+    /**
+     * the descriptor for the location properties
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_Location;
+    /**
+     * the descriptor for the event type property
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_EventType;
+    /**
+     * the description for the linked property
+     *
+     * @since 2.0
+     */
+    public static String TmfTraceElement_IsLinked;
 
     static {
         // initialize resource bundle
