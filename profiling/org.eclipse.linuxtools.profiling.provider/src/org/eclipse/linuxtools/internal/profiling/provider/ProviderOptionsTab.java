@@ -19,7 +19,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.swt.SWT;
@@ -41,7 +40,7 @@ public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 	HashMap<String, String> comboItems;
 	CTabFolder tabgroup;
 	Boolean initialized;
-	public static final String PROVIDER_CONFIG_ATT = "provider"; //$NON-NLS-1$
+	private static final String PROVIDER_CONFIG_ATT = "provider"; //$NON-NLS-1$
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
@@ -103,7 +102,6 @@ public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 
 			tab.createControl(tabgroup);
 			item.setControl(tab.getControl());
-			tabgroup.setSelection(0);
 		}
 	}
 
@@ -221,22 +219,6 @@ public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 	private int getComboItemIndexFromId(String id) {
 		String providerName = getComboItemNameFromId(id);
 		return getItemIndex(providerName);
-	}
-
-	@Override
-	public boolean isValid(ILaunchConfiguration config) {
-		String provider;
-		try {
-			provider = config.getAttribute(PROVIDER_CONFIG_ATT, "");
-		} catch (CoreException e) {
-			setErrorMessage(e.getMessage());
-			return false;
-		}
-		if (provider.equals("")) {
-			setErrorMessage(Messages.ProviderOptionsTab_0);
-			return false;
-		}
-		return true;
 	}
 
 	/**

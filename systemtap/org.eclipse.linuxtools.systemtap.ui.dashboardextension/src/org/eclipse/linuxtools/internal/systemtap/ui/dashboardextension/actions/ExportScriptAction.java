@@ -18,7 +18,6 @@ import java.text.MessageFormat;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ExportScriptDialog;
@@ -85,9 +84,10 @@ public class ExportScriptAction extends RunScriptAction {
 				return;
 			
 			ExportScriptDialog exportDialog = new ExportScriptDialog(fWindow.getShell(), dataSet);
-			exportDialog.create();
+			exportDialog.open();
 			
-			if(exportDialog.open() == Window.OK) {
+			exportDialog.dispose();
+			if(!exportDialog.isCanceled()) {
 				String category = exportDialog.getCategory();
 				String display = exportDialog.getDisplay();
 				String description = exportDialog.getDescription();

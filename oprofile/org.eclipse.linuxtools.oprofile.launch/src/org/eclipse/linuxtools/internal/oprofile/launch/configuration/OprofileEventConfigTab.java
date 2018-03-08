@@ -467,7 +467,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		} catch (CoreException e) {
 			return null;
 		}
-		if (name.equals(EMPTY_STRING)) {
+		if (name == null) {
 			return null;
 		}
 
