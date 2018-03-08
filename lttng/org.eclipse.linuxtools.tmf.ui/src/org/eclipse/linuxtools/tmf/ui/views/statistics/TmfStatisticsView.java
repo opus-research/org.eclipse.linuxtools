@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+h * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -160,7 +160,7 @@ public class TmfStatisticsView extends TmfView {
                 }
 
                 if (fRequestData) {
-                    TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(null, fExperiment, fExperiment.getTimeRange());
+                    TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(this, fExperiment, fExperiment.getTimeRange());
                     TmfStatisticsViewer statsViewer;
                     // Synchronizes the request to make them coalesced
                     fExperiment.startSynch(new TmfStartSynchSignal(0));
@@ -279,7 +279,16 @@ public class TmfStatisticsView extends TmfView {
         Composite folder = fStatsViewers.getParentFolder();
 
         // Instantiation of the global viewer
-        TmfStatisticsViewer globalViewer = new TmfStatisticsViewer();
+        TmfStatisticsViewer globalViewer;
+        try {
+            globalViewer = getGlobalViewerClass().newInstance();
+        } catch (InstantiationException e) {
+            Activator.getDefault().logError("Statistics: cannot instantiate the global viewer!"); //$NON-NLS-1$
+            return;
+        } catch (IllegalAccessException e) {
+            Activator.getDefault().logError("Statistics: cannot instantiate the global viewer!"); //$NON-NLS-1$
+            return;
+        }
         if (fExperiment != null) {
             // Shows the name of the experiment in the global tab
             globalViewer.init( folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
@@ -327,5 +336,13 @@ public class TmfStatisticsView extends TmfView {
      */
     protected static TmfStatisticsViewer getStatisticsViewer(IResource resource) {
         return (TmfStatisticsViewer) TmfTraceType.getTraceTypeElement(resource, TmfTraceType.STATISTICS_VIEWER_ELEM);
+    }
+
+    /**
+     * @return The class to use to instantiate the global statistics viewer
+     * @since 2.0
+     */
+    protected Class<? extends TmfStatisticsViewer> getGlobalViewerClass() {
+        return TmfStatisticsViewer.class;
     }
 }

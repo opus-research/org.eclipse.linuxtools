@@ -158,6 +158,17 @@ public class TmfStatisticsTreeNode {
     }
 
     /**
+     * Resets the global number of events. It doesn't remove any node
+     * and doesn't modify the partial event count.
+     *
+     * @since 2.0
+     */
+    public void resetGlobalValue() {
+        getValue().resetTotalCount();
+        fNodes.resetGlobalValue(fPath);
+    }
+
+    /**
      * Resets the number of events in the time range. It doesn't remove any node
      * and doesn't modify the global event count.
      *
