@@ -131,10 +131,10 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
         for (int i = 0; i < checkpoints.size(); i++) {
             ITmfCheckpoint checkpoint = checkpoints.get(i);
             TmfExperimentLocation expLocation = (TmfExperimentLocation) checkpoint.getLocation();
-            TmfLocationArray locations = expLocation.getLocation();
+            TmfLocationArray locations = expLocation.getLocationInfo();
             ITmfContext[] trcContexts = new ITmfContext[2];
-            trcContexts[0] = new TmfContext(locations.getLocations()[0], (i * pageSize) / 2);
-            trcContexts[1] = new TmfContext(locations.getLocations()[1], (i * pageSize) / 2);
+            trcContexts[0] = new TmfContext(locations.getLocation(0), (i * pageSize) / 2);
+            trcContexts[1] = new TmfContext(locations.getLocation(1), (i * pageSize) / 2);
             TmfExperimentContext expContext = new TmfExperimentContext(trcContexts);
             expContext.getEvents()[0] = fTestTraces[0].getNext(fTestTraces[0].seekEvent((i * pageSize) / 2));
             expContext.getEvents()[1] = fTestTraces[1].getNext(fTestTraces[1].seekEvent((i * pageSize) / 2));
@@ -189,10 +189,10 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
         for (int i = 0; i < checkpoints.size(); i++) {
             ITmfCheckpoint checkpoint = checkpoints.get(i);
             TmfExperimentLocation expLocation = (TmfExperimentLocation) checkpoint.getLocation();
-            TmfLocationArray locations = expLocation.getLocation();
+            TmfLocationArray locations = expLocation.getLocationInfo();
             ITmfContext[] trcContexts = new ITmfContext[2];
-            trcContexts[0] = new TmfContext(locations.getLocations()[0], (i * pageSize) / 2);
-            trcContexts[1] = new TmfContext(locations.getLocations()[1], (i * pageSize) / 2);
+            trcContexts[0] = new TmfContext(locations.getLocation(0), (i * pageSize) / 2);
+            trcContexts[1] = new TmfContext(locations.getLocation(1), (i * pageSize) / 2);
             TmfExperimentContext expContext = new TmfExperimentContext(trcContexts);
             expContext.getEvents()[0] = testTraces[0].getNext(testTraces[0].seekEvent((i * pageSize) / 2));
             expContext.getEvents()[1] = testTraces[1].getNext(testTraces[1].seekEvent((i * pageSize) / 2));

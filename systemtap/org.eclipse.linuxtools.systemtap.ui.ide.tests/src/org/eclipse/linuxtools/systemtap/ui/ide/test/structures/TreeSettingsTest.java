@@ -11,28 +11,23 @@
 
 package org.eclipse.linuxtools.systemtap.ui.ide.test.structures;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TreeSettings;
-
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.junit.Before;
+import org.junit.Test;
 
-import junit.framework.TestCase;
+public class TreeSettingsTest {
 
-public class TreeSettingsTest extends TestCase {
-
-	public static void main(String[] args) {
-		//Do not preseve what was in the trees beacuse of invalid date
-	}
-
-	public TreeSettingsTest(String name) {
-		super(name);
-	}
-
-	protected void setUp() throws Exception {
-		super.setUp();
-		
+	@Before
+	public void setUp() {
 		TreeSettings.setTrees(new TreeNode("func", false), new TreeNode("probe", false));
 	}
 
+	@Test
 	public void testSetTrees() {
 		TreeNode t = new TreeNode("f", false);
 		TreeNode t1 = new TreeNode("as", "as3", false);
@@ -47,6 +42,7 @@ public class TreeSettingsTest extends TestCase {
 		assertFalse("Set probe null", TreeSettings.setTrees(t, t3));
 	}
 	
+	@Test
 	public void testGetTreeFileDate() {
 		long d1 = TreeSettings.getTreeFileDate();
 		long d2 = TreeSettings.getTreeFileDate();
@@ -58,6 +54,7 @@ public class TreeSettingsTest extends TestCase {
 		assertTrue("TreeDate changed", d1 < d2);
 	}
 
+	@Test
 	public void testGetFunctionTree() {
 		TreeNode temp;
 		TreeNode t = new TreeNode("f", false);
@@ -91,6 +88,7 @@ public class TreeSettingsTest extends TestCase {
 		assertTrue("Funcs child display", t2.toString().equals(temp.getChildAt(0).toString()));
 	}
 	
+	@Test
 	public void testGetProbeTree() {
 		TreeNode temp;
 		TreeNode t = new TreeNode("f", false);
@@ -123,9 +121,5 @@ public class TreeSettingsTest extends TestCase {
 		assertTrue("Probs child object", t2.getData().toString().equals(temp.getChildAt(0).getData()));
 		assertTrue("Probs child display", t2.toString().equals(temp.getChildAt(0).toString()));
 
-	}
-	
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
+	}	
 }

@@ -41,8 +41,8 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
-    private final static String LEVEL_COLUMN = org.eclipse.linuxtools.tmf.ui.viewers.statistics.Messages.TmfStatisticsView_LevelColumn;
-    private final static String EVENTS_COUNT_COLUMN = org.eclipse.linuxtools.tmf.ui.viewers.statistics.Messages.TmfStatisticsView_NbEventsColumn;
+    private final static String LEVEL_COLUMN = Messages.TmfStatisticsView_LevelColumn;
+    private final static String EVENTS_COUNT_COLUMN = Messages.TmfStatisticsView_NbEventsColumn;
 
     private TmfBaseColumnDataProvider provider;
 
@@ -131,8 +131,8 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
         assertEquals("getColumnData", 3, columnsData.size());
 
         TmfStatisticsTreeNode parentNode = fStatsData.get(new TmfFixedArray<String>(fTestName));
-        TmfStatisticsTreeNode treeNode1  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().toString()));
-        TmfStatisticsTreeNode treeNode2  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent3.getType().toString()));
+        TmfStatisticsTreeNode treeNode1  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().getName()));
+        TmfStatisticsTreeNode treeNode2  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent3.getType().getName()));
         ViewerComparator vComp = null;
         for (TmfBaseColumnData columnData : columnsData) {
             assertNotNull("getColumnData", columnData);

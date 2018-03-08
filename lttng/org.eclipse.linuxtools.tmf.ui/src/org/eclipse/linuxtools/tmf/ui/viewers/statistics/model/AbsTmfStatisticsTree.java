@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 public abstract class AbsTmfStatisticsTree {
 
     /**
-     * String builder used to merge string more efficienctly.
+     * String builder used to merge string more efficiently.
      */
     protected static final StringBuilder fBuilder = new StringBuilder();
 
@@ -44,7 +44,7 @@ public abstract class AbsTmfStatisticsTree {
     public static final TmfFixedArray<String> ROOT = new TmfFixedArray<String>("root"); //$NON-NLS-1$
 
     /**
-     * Function to merge many string more efficienctly.
+     * Function to merge many string more efficiently.
      *
      * @param strings
      *            Strings to merge.
@@ -151,23 +151,19 @@ public abstract class AbsTmfStatisticsTree {
     }
 
     /**
-     * Increase any kind of counter.
-     *
-     * This method must be implemented by subclasses.
+     * Register an event and increase his value by <i>qty</i>
      *
      * @param event
      *            Current event.
      * @param extraInfo
      *            Extra information to pass along with the event.
-     * @param values
-     *            Values desired.
+     * @param qty
+     *            The number of events that must be counted.
      */
-    public abstract void increase(ITmfEvent event, ITmfExtraEventInfo extraInfo, int values);
+    public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty);
 
     /**
      * Register an event.
-     *
-     * This method must be implemented by subclasses.
      *
      * @param event
      *            Current event.
@@ -175,6 +171,21 @@ public abstract class AbsTmfStatisticsTree {
      *            Extra information to pass along with the event.
      */
     public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
+
+    /**
+     * Register an event within a time range and increase his value by qty
+     *
+     * This method must be implemented by subclasses.
+     *
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
+     * @param qty
+     *            The number of events that must be counted.
+     * @since 2.0
+     */
+    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty);
 
     /**
      * Register an event within a time range.
@@ -201,7 +212,7 @@ public abstract class AbsTmfStatisticsTree {
     protected abstract void registerName(final TmfFixedArray<String> path);
 
     /**
-     * Reset a node.
+     * Resets a node.
      *
      * Works recursively.
      *
@@ -216,6 +227,21 @@ public abstract class AbsTmfStatisticsTree {
     }
 
     /**
+     * Reset the global value of a node.
+     *
+     * Works recursively.
+     *
+     * @param path
+     *            Path to the node.
+     * @since 2.0
+     */
+    public void resetGlobalValue(final TmfFixedArray<String> path) {
+        for (TmfStatisticsTreeNode node : getChildren(path)) {
+            node.resetGlobalValue();
+        }
+    }
+
+    /**
      * Reset the time range value of a node.
      *
      * Works recursively.
@@ -226,7 +252,6 @@ public abstract class AbsTmfStatisticsTree {
      */
     public void resetTimeRangeValue(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getChildren(path)) {
-            resetTimeRangeValue(node.getPath());
             node.resetTimeRangeValue();
         }
     }

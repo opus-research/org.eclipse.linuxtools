@@ -61,8 +61,6 @@ public class PerfCore {
 		if (!str.trim().equals("")) {
 			if (print != null) {
 				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
-			} else {
-				System.out.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
 			}
 		}
 		return str;
@@ -113,7 +111,7 @@ public class PerfCore {
 		} catch (CoreException e) {
 			return null;
 		}
-		if (projectName == null) {
+		if (projectName.equals("")) {
 			return null;
 		}
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
@@ -134,7 +132,12 @@ public class PerfCore {
 		} else {
 			ConfigUtils configUtils = new ConfigUtils(config);
 			try {
-				project = ConfigUtils.getProject(configUtils.getProjectName());
+				String projectName = configUtils.getProjectName();
+				// an empty string is not a legal path to file argument for ConfigUtils.getProject
+				if(projectName != null && !projectName.equals("")){
+					project = ConfigUtils.getProject(projectName);
+				}
+
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
@@ -234,7 +237,7 @@ public class PerfCore {
 
 		//p.waitFor();
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		return spitStream(input, "Perf --version STDOUT", null);
+		return spitStream(input, "Perf --version", null);
 	}
 
 	public static boolean checkPerfInPath()
@@ -355,7 +358,6 @@ public class PerfCore {
 		}
 
 		//(Annotate string per symbol)
-		//if (PerfPlugin.DEBUG_ON) System.out.println(Arrays.toString( (String[])base.toArray( new String[base.size()] ) ));
 		return base.toArray( new String[base.size()] );
 	}
 	//Runs Perf Record on the given binary and records into perf.data before calling Report() to feed in the results. 
@@ -377,7 +379,7 @@ public class PerfCore {
 			}
 			error = new BufferedReader(new InputStreamReader(perfRecord.getErrorStream()));
 			perfRecord.waitFor();			
-			spitStream(error,"Perf Record STDERR", null);
+			spitStream(error,"Perf Record", null);
 		} catch( IOException e ) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -487,9 +489,14 @@ public class PerfCore {
 				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 				// line containing report information
 				if ((line.startsWith("#"))) {
-					if (line.contains("Events:")) {
+					if (line.contains("Events:") || line.contains("Samples:")) {
 						String[] tmp = line.trim().split(" ");
-						currentEvent = new PMEvent(tmp[tmp.length - 1]);
+						String event = tmp[tmp.length - 1];
+						// In this case, the event name is single quoted
+						if (line.contains("Samples:")){
+							event = event.substring(1, event.length() -1);
+						}
+						currentEvent = new PMEvent(event);
 						invisibleRoot.addChild(currentEvent);
 						currentCommand = null;
 						currentDso = null;
@@ -543,7 +550,7 @@ public class PerfCore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		spitStream(error,"Perf Report STDERR", print);
+		spitStream(error,"Perf Report", print);
 
 		boolean SourceLineNumbers = PerfPlugin.ATTR_SourceLineNumbers_default;
 		boolean Kernel_SourceLineNumbers = PerfPlugin.ATTR_Kernel_SourceLineNumbers_default;
@@ -599,7 +606,7 @@ public class PerfCore {
 						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {
 							currentDso.removeChild(currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols));
 						}
-						spitStream(error,"Perf Annotate STDERR", print);
+						spitStream(error,"Perf Annotate", print);
 					}
 				}
 			}

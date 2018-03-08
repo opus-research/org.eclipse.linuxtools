@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 public class CtfTmfTimestamp extends TmfTimestamp {
 
     /**
-     * How to display this timestamp
      */
     public enum TimestampType {
         /**
@@ -55,7 +54,7 @@ public class CtfTmfTimestamp extends TmfTimestamp {
      * @param timestamp long
      */
     public CtfTmfTimestamp(long timestamp) {
-        super(timestamp, -9, 0);
+        setValue(timestamp, -9, 0);
         type = TimestampType.DAY;
     }
 
@@ -152,8 +151,15 @@ public class CtfTmfTimestamp extends TmfTimestamp {
     private String nanoToString() {
         final long timestamp = getValue();
         StringBuilder retVal = new StringBuilder();
-        retVal.append(timestamp);
-        retVal.append(" ns"); //$NON-NLS-1$
+        String time = Long.toString(timestamp);
+        for (int i = 0; i < time.length(); i++) {
+            int pos = time.length() - i - 1;
+            retVal.append(time.charAt(i));
+            if (pos % 3 == 0) {
+                retVal.append(' ');
+            }
+        }
+        retVal.append("ns"); //$NON-NLS-1$
         return retVal.toString();
     }
 

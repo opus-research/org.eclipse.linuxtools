@@ -34,7 +34,7 @@ public class TmfStatisticsTreeNode {
     /**
      * Value of the node.
      */
-    protected TmfStatistics fValue;
+    protected TmfStatisticsValues fValue;
 
     /**
      * Path of the node.
@@ -58,7 +58,7 @@ public class TmfStatisticsTreeNode {
             AbsTmfStatisticsTree nodes) {
         fPath = path;
         fNodes = nodes;
-        fValue = new TmfStatistics();
+        fValue = new TmfStatisticsValues();
     }
 
     /**
@@ -86,7 +86,7 @@ public class TmfStatisticsTreeNode {
     }
 
     /**
-     * Get the children of this node.
+     * Gets every children of this node even if no event has been registered for a node.
      *
      * @return Direct children of this node.
      */
@@ -135,7 +135,7 @@ public class TmfStatisticsTreeNode {
      *
      * @return Value associated with this node.
      */
-    public TmfStatistics getValue() {
+    public TmfStatisticsValues getValue() {
         return fValue;
     }
 
@@ -153,13 +153,28 @@ public class TmfStatisticsTreeNode {
      * no children.
      */
     public void reset() {
-        fValue = new TmfStatistics();
+        fValue = new TmfStatisticsValues();
         fNodes.reset(fPath);
+    }
+
+    /**
+     * Resets the global number of events. It doesn't remove any node
+     * and doesn't modify the partial event count.
+     *
+     * Works recursively.
+     *
+     * @since 2.0
+     */
+    public void resetGlobalValue() {
+        getValue().resetTotalCount();
+        fNodes.resetGlobalValue(fPath);
     }
 
     /**
      * Resets the number of events in the time range. It doesn't remove any node
      * and doesn't modify the global event count.
+     *
+     * Works recursively.
      *
      * @since 2.0
      */

@@ -41,21 +41,15 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
     }
 
     /**
-     * Copy factory constructor. Create a SimpleTimestamp from a standard
-     * ITmfTimestamp.
+     * Copy constructor
      *
-     * @param timestamp
-     *            The timestamp to copy
-     * @return The newly-created TmfSimpleTimestamp object
-     * @throws IllegalArgumentException
-     *             If the scale or precision of the ITmfTimestamp are not zero.
-     * @since 2.0
+     * @param timestamp the timestamp to copy
      */
-    public static TmfSimpleTimestamp copyFrom(final ITmfTimestamp timestamp) {
+    public TmfSimpleTimestamp(final ITmfTimestamp timestamp) {
         if (timestamp == null || timestamp.getScale() != 0 || timestamp.getPrecision() != 0) {
             throw new IllegalArgumentException();
         }
-        return new TmfSimpleTimestamp(timestamp.getValue());
+        setValue(timestamp.getValue(), 0, 0);
     }
 
     // ------------------------------------------------------------------------
@@ -105,7 +99,7 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
      */
     @Override
     public TmfSimpleTimestamp clone() {
-        return new TmfSimpleTimestamp(getValue());
+        return (TmfSimpleTimestamp) super.clone();
     }
 
     // ------------------------------------------------------------------------

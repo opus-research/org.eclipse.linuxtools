@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests.utils;
 
-import org.eclipse.debug.core.ILaunch;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptions;
@@ -27,18 +26,23 @@ import org.eclipse.linuxtools.internal.oprofile.launch.launching.OprofileLaunchC
 public final class TestingOprofileLaunchConfigurationDelegate extends OprofileLaunchConfigurationDelegate {
 	public boolean eventsIsNull;
 	public OprofileDaemonOptions _options;  
+	@Override
 	protected void oprofileDumpSamples() { return; }
+	@Override
 	protected void oprofileReset() { return; }
+	@Override
 	protected void oprofileShutdown() { return; }
+	@Override
 	protected void oprofileStartCollection() { return; }
+	@Override
 	protected void oprofileSetupDaemon(OprofileDaemonOptions options, OprofileDaemonEvent[] events) { 
 		_options = options; 
 		eventsIsNull = events == null ? true : false; 
 		return; 
 	}
 	@Override
-	protected void postExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, ILaunch launch, Process process) {
-		super.postExec(options, daemonEvents, launch, process);
+	protected void postExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, Process process) {
+		super.postExec(options, daemonEvents, process);
 		
 		try {
 			process.waitFor();

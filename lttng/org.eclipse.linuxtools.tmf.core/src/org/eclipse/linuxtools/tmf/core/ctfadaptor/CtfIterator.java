@@ -78,7 +78,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         this.ctfTmfTrace = trace;
         if (this.hasMoreEvents()) {
             this.curLocation = new CtfLocation(ctfLocationData);
-            if (this.getCurrentEvent().getTimestampValue() != ctfLocationData.getTimestamp()) {
+            if (this.getCurrentEvent().getTimestamp().getValue() != ctfLocationData.getTimestamp()) {
                 this.seek(ctfLocationData);
                 this.curRank = rank;
             }
@@ -122,7 +122,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
         /* Adjust the timestamp depending on the trace's offset */
         long currTimestamp = ctfLocationData.getTimestamp();
-        final long offsetTimestamp = currTimestamp - this.getTrace().getOffset();
+        final long offsetTimestamp = this.getCtfTmfTrace().getCTFTrace().timestampNanoToCycles(currTimestamp);
         if (offsetTimestamp < 0) {
             ret = super.seek(0L);
         } else {
@@ -133,20 +133,24 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
          * Check if there is already one or more events for that timestamp, and
          * assign the location index correctly
          */
-        currTimestamp = this.getCurrentEvent().getTimestampValue();
         long index = 0;
-        for (long i = 0; i < ctfLocationData.getIndex(); i++) {
-            if (currTimestamp == this.getCurrentEvent().getTimestampValue()) {
-                index++;
-            } else {
-                index = 0;
-            }
-            this.advance();
-        }
+        if (this.getCurrentEvent() != null) {
+            currTimestamp = this.getCurrentEvent().getTimestamp().getValue();
 
+            for (long i = 0; i < ctfLocationData.getIndex(); i++) {
+                if (currTimestamp == this.getCurrentEvent().getTimestamp().getValue()) {
+                    index++;
+                } else {
+                    index = 0;
+                }
+                this.advance();
+            }
+        } else {
+            ret= false;
+        }
         /* Seek the current location accordingly */
         if (ret) {
-            curLocation.setLocation(new CtfLocationData(getCurrentEvent().getTimestampValue(), index));
+            curLocation = new CtfLocation(new CtfLocationData(getCurrentEvent().getTimestamp().getValue(), index));
         } else {
             curLocation = NULL_LOCATION;
         }
@@ -181,7 +185,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     @Override
     public CtfIterator clone() {
         CtfIterator clone = null;
-        clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocation(), curRank);
+        clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocationInfo(), curRank);
         return clone;
     }
 
@@ -200,10 +204,10 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @param location ITmfLocation<?>
      */
     @Override
-    public void setLocation(final ITmfLocation<?> location) {
+    public void setLocation(final ITmfLocation location) {
         // FIXME alex: isn't there a cleaner way than a cast here?
         this.curLocation = (CtfLocation) location;
-        seek(((CtfLocation) location).getLocation());
+        seek(((CtfLocation) location).getLocationInfo());
     }
 
     /**
@@ -244,16 +248,16 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      */
     @Override
     public boolean advance() {
-        long index = curLocation.getLocation().getIndex();
-        long timestamp = curLocation.getLocation().getTimestamp();
+        long index = curLocation.getLocationInfo().getIndex();
+        long timestamp = curLocation.getLocationInfo().getTimestamp();
         boolean ret = super.advance();
 
         if (ret) {
-            final long timestampValue = getCurrentEvent().getTimestampValue();
+            final long timestampValue = getCurrentEvent().getTimestamp().getValue();
             if (timestamp == timestampValue) {
-                curLocation.setLocation(timestampValue, index + 1);
+                curLocation = new CtfLocation(timestampValue, index + 1);
             } else {
-                curLocation.setLocation(timestampValue, 0L);
+                curLocation = new CtfLocation(timestampValue, 0L);
             }
         } else {
             curLocation = NULL_LOCATION;
