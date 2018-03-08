@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Item;
 
 /**
- * Label provider, on top of {@link ISTDataViewersField}s
+ * Label provider, on top of {@link ISTProfField}s
  */
 public class STDataViewersColumnLabelProvider extends ColumnLabelProvider {
     private final ISTDataViewersField fields;
@@ -27,7 +27,7 @@ public class STDataViewersColumnLabelProvider extends ColumnLabelProvider {
     /**
      * Create a STDataViewersColumnLabelProvider on a field
      *
-     * @param column
+     * @param field
      */
     public STDataViewersColumnLabelProvider(Item column) {
         Object data = column.getData();
