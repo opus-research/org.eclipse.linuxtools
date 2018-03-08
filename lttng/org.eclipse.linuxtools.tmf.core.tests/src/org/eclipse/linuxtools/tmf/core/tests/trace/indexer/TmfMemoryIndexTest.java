@@ -33,7 +33,7 @@ public class TmfMemoryIndexTest extends AbstractCheckpointCollectionTest {
 
     @Override
     protected TmfMemoryIndex createCollection() {
-        fCheckpointCollection = fMemoryIndex = new TmfMemoryIndex(getTrace());
+        fMemoryIndex = new TmfMemoryIndex(getTrace());
         return fMemoryIndex;
     }
 

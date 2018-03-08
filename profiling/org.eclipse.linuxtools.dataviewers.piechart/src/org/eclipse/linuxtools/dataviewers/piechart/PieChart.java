@@ -27,10 +27,6 @@ public class PieChart extends Chart {
 	protected List<RGB> colorList = new ArrayList<RGB>();
 
     public PieChart(Composite parent, int style) {
-        this(parent, style, new String[0]);
-    }
-
-    public PieChart(Composite parent, int style, String labels[]) {
         super(parent, style);
         Control plotArea = null;
         for (Control child : getChildren()) {
@@ -41,7 +37,7 @@ public class PieChart extends Chart {
                 plotArea = child;
             }
         }
-        this.addPaintListener(new PieChartPaintListener(this, plotArea, labels));
+        this.addPaintListener(new PieChartPaintListener(this, plotArea));
     }
 
     @Override
@@ -54,7 +50,6 @@ public class PieChart extends Chart {
     /*
      * Add data to this Pie Chart. A single pie Chart will be drawn with the data provided.
      */
-    @Deprecated
     public void addPieChartSeries(String labels[], double val[]) {
         for (ISeries s : this.getSeriesSet().getSeries()) {
 			this.getSeriesSet().deleteSeries(s.getId());
