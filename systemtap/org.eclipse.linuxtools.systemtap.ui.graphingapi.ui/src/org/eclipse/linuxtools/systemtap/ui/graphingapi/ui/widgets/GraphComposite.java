@@ -19,7 +19,6 @@ import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.AbstractChartBu
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.AbstractChartWithoutAxisBuilder;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.graph.GraphFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
@@ -95,9 +94,8 @@ public class GraphComposite extends Composite {
 		zoomScale.addSelectionListener(scaleListener);
 
 		//The scale zoom scrool doesn't make sense for charts without axis
-		if (builder instanceof AbstractChartWithoutAxisBuilder) {
+		if (builder instanceof AbstractChartWithoutAxisBuilder)
 			this.configure(false);
-		}
 	}
 
 	/**
@@ -107,9 +105,8 @@ public class GraphComposite extends Composite {
 	public void configure(boolean withSidebar) {
 		sidebarVisible = withSidebar;
 
-		for(Button b:checkOptions) {
-			b.setVisible(sidebarVisible);
-		}
+		for(int i=0; i<checkOptions.size(); i++)
+			checkOptions.get(i).setVisible(sidebarVisible);
 
 		zoomScale.setVisible(sidebarVisible);
 		label.setVisible(sidebarVisible);
@@ -130,9 +127,8 @@ public class GraphComposite extends Composite {
 		b.setText(title);
 
 		Button old = null;
-		if(checkOptions.size() > 0) {
+		if(checkOptions.size() > 0)
 			old = checkOptions.get(checkOptions.size()-1);
-		}
 
 		FormData data = new FormData();
 		data.bottom = (null != old) ? new FormAttachment(old,0) : new FormAttachment(100, 0);
@@ -150,13 +146,14 @@ public class GraphComposite extends Composite {
 	}
 
 	public void removeCheckOption(String title) {
-		for(Button b :checkOptions) {
+		Button b;
+		for(int i=0; i<checkOptions.size(); i++) {
+			b = checkOptions.get(i);
 			if(b.getText().equals(title)) {
 				checkOptions.remove(b);
 
-				if(checkOptions.size() == 0) {
+				if(checkOptions.size() == 0)
 					((FormData)label.getLayoutData()).right = new FormAttachment(100, 0);
-				}
 
 				return;
 			}
@@ -184,14 +181,10 @@ public class GraphComposite extends Composite {
 	public void dispose() {
 		scaleListener = null;
 
-		if(null != zoomScale) {
-			zoomScale.dispose();
-		}
+		if(null != zoomScale) zoomScale.dispose();
 		zoomScale = null;
 
-		if(null != label) {
-			label.dispose();
-		}
+		if(null != label) label.dispose();
 		label = null;
 		super.dispose();
 	}
@@ -205,7 +198,7 @@ public class GraphComposite extends Composite {
 	 *  normalizeListener - A SelectionListener for the normalization checkbox
 	 *  propertyChangeListener - Detects changes in user preferences and applies them
 	 */
-	private SelectionListener scaleListener = new SelectionAdapter() {
+	private SelectionListener scaleListener = new SelectionListener() {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 
@@ -216,6 +209,9 @@ public class GraphComposite extends Composite {
 				builder.setScale(scale);
 			}
 		}
+
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {}
 	};
 
 	private boolean sidebarVisible = true;
