@@ -12,10 +12,6 @@
 package org.eclipse.linuxtools.systemtap.ui.ide;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * A simple class that contains information about the current session of the IDE, such as
@@ -25,30 +21,6 @@ import org.eclipse.ui.PlatformUI;
  */
 public class IDESessionSettings {
 	public static String tapsetLocation = "";
+	public static STPEditor activeSTPEditor = null;
 	public static String password = null;
-	
-	private static STPEditor activeSTPEditor = null;
-
-	public static STPEditor getActiveSTPEditor() {
-		if (activeSTPEditor == null){
-			// If the active editor is not set and there is only one
-			// stap script editor open set that to be the active editor.
-			IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-			int count = 0;
-			for(IEditorReference editor: editors){
-				if (editor.getId().equals(STPEditor.ID)){
-					activeSTPEditor = (STPEditor) editor.getEditor(true);
-					count++;
-				}
-			}
-			if (count > 1){
-				activeSTPEditor = null;
-			}
-		}
-		return activeSTPEditor;
-	}
-
-	public static void setActiveSTPEditor (STPEditor editor){
-		activeSTPEditor = editor;
-	}
 }
