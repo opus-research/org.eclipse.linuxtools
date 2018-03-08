@@ -12,6 +12,8 @@
 package org.eclipse.linuxtools.internal.tmf.ui.project.model;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -108,10 +110,17 @@ public class TmfEditorLinkHelper implements ILinkHelper {
 
             // If trace is under an experiment, use the original trace from the traces folder
             traceElement = traceElement.getElementUnderTraceFolder();
-            file = traceElement.getBookmarksFile();
+
+            // Get the editor resource
+            final IResource resource = traceElement.getResource();
+            if (resource instanceof IFile) {
+                file = (IFile) resource;
+            } else if (resource instanceof IFolder) {
+                file = ((IFolder) resource).getFile(traceElement.getName() + '_');
+            }
         } else if ((aSelection.getFirstElement() instanceof TmfExperimentElement)) {
             TmfExperimentElement experimentElement = (TmfExperimentElement) aSelection.getFirstElement();
-            file = experimentElement.getBookmarksFile();
+            file = experimentElement.getResource().getFile(experimentElement.getName() + '_');
         }
 
         if (file != null) {
@@ -119,6 +128,7 @@ public class TmfEditorLinkHelper implements ILinkHelper {
             IEditorPart localEditor = aPage.findEditor(tmpInput);
             if (localEditor != null) {
                 // Editor found.
+                aPage.activate(localEditor);
                 aPage.bringToTop(localEditor);
             } else {
                 // Search in references for corresponding editor

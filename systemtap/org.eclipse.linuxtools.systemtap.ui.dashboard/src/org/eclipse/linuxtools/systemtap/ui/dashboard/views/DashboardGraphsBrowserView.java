@@ -14,14 +14,6 @@ package org.eclipse.linuxtools.systemtap.ui.dashboard.views;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.actions.ActivateGraphAction;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleTreeNode;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphData;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -29,6 +21,16 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
+
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.actions.ActivateGraphAction;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleTreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
 
 
 /**
@@ -39,7 +41,22 @@ import org.eclipse.ui.PlatformUI;
 public class DashboardGraphsBrowserView extends GraphsView {
 	public DashboardGraphsBrowserView() {
 		super();
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
+	
+	/**
+	 * This method sends requests to get all of the modules that are
+	 * avialable on the system.  Once then are found, it will
+	 * set the viewer's content to the tree of modules that were found.
+	 */
+	/*protected void generateGraphsTree() {
+		TreeNode graphs = DashboardGraphsLocator.getGraphs();
+		
+		if(null != graphs)
+			viewer.setInput(graphs);
+		else
+			viewer.setInput(new TreeNode("", false));
+	}*/
 	
 	@Override
 	protected void generateGraphsTree() {
@@ -102,6 +119,7 @@ public class DashboardGraphsBrowserView extends GraphsView {
 	 */
 	@Override
 	public void dispose() {
+		LogManager.logInfo("disposing", this); //$NON-NLS-1$
 		super.dispose();
 		viewer=null;
 	}

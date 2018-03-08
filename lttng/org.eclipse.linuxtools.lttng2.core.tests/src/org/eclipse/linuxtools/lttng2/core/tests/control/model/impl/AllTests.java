@@ -21,7 +21,6 @@ public class AllTests {
 
         TestSuite suite = new TestSuite(AllTests.class.getName());
         //$JUnit-BEGIN$
-        suite.addTestSuite(FieldInfoTest.class);
         suite.addTestSuite(BaseEventInfoTest.class);
         suite.addTestSuite(DomainInfoTest.class);
         suite.addTestSuite(EventInfoTest.class);

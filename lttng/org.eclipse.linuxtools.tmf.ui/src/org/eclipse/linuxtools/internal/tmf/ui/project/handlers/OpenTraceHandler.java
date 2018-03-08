@@ -70,9 +70,6 @@ public class OpenTraceHandler extends AbstractHandler {
         // Get the selection
         final IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         final IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         final ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -143,7 +140,7 @@ public class OpenTraceHandler extends AbstractHandler {
 
                 final IFile file;
                 try {
-                    file = traceElement.createBookmarksFile();
+                    file = traceElement.getBookmarksFile();
                 } catch (final CoreException e) {
                     Activator.getDefault().logError("Error opening trace " + traceElement.getName(), e); //$NON-NLS-1$
                     displayErrorMsg(Messages.OpenTraceHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$

@@ -68,9 +68,6 @@ public class OpenExperimentHandler extends AbstractHandler {
         // Get the selection
         final IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         final IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         final ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -113,7 +110,7 @@ public class OpenExperimentHandler extends AbstractHandler {
 
                 final IFile file;
                 try {
-                    file = experimentElement.createBookmarksFile();
+                    file = experimentElement.getBookmarksFile();
                 } catch (final CoreException e) {
                     Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$
                     displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
