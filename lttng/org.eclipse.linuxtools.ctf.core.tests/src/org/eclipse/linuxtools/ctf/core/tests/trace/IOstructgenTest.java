@@ -17,8 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashMap;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
@@ -272,49 +270,6 @@ public class IOstructgenTest {
     static final String tempTraceDir = System.getProperty("java.io.tmpdir")
             + "/" + "tempTrace";
 
-    private static final int EVENT_SIZE = 16;
-
-    private static class Event {
-        private int eventId;
-        private int eventTimestamp;
-        private int eventContent;
-
-        public Event(int id, int content) {
-            eventId = id;
-            eventTimestamp = 0;
-            eventContent = content;
-        }
-
-        public void setEventTimestamp(int eventTimestamp) {
-            this.eventTimestamp = eventTimestamp;
-        }
-
-        public void setEventContent(int eventContent) {
-            this.eventContent = eventContent;
-        }
-
-        public void writeEvent(ByteBuffer data) {
-            // Id and Timestamp
-            int timeId = eventTimestamp << 5;
-            timeId |= eventId & 0x1f;
-            data.putInt(timeId);
-
-            // Context
-            long ip = 0x0000facedecafe00L + ((data.position() /
-                    getSize()) & 0x0F);
-            data.putLong(ip);
-
-            // Content
-            data.putInt(eventContent);
-
-        }
-
-        public int getSize() {
-            return EVENT_SIZE;
-        }
-
-    }
-
     private static void deltree(File f) {
         for (File elem : f.listFiles()) {
             if (elem.isDirectory()) {
@@ -341,60 +296,20 @@ public class IOstructgenTest {
             f.createNewFile();
 
             byte magicLE[] = { (byte) 0xC1, (byte) 0x1F, (byte) 0xFC, (byte) 0xC1 };
-            byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7,
-                    0x36, 0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
+            byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7, 0x36,
+                    0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
                     (byte) 0xb4, 0x38, (byte) 0x85, 0x7f, (byte) 0x8d };
-
-            Event ev = new Event(2, 2);
-            int dataSize = 4096;
-            final int headerSize = 24 + 44;
-            final int packetSize = dataSize + headerSize + 512;// added some
-                                                               // fuzz
-            final int nbEvents = (dataSize / ev.getSize()) - 1;
-            final int contentSize = (nbEvents * ev.getSize() +
-                    headerSize) * 8;
-
-            ByteBuffer data = ByteBuffer.allocate(packetSize);
-            data.order(ByteOrder.LITTLE_ENDIAN);
-
-            // packet header
-            // magic number 4
-            data.put(magicLE);
-            // uuid 16
-            data.put(uuid);
-            // stream ID 4
-            data.putInt(0);
-
-            // packet context
-            // timestamp_begin 8
-            data.putLong(0xa500);
-
-            // timestamp_end 8
-            data.putLong(nbEvents * 0x10000 + 0xa5a6);
-
-            // content_size 8
-            data.putLong(contentSize);
-
-            // packet_size 8
-            data.putLong(packetSize * 8);
-
-            // events_discarded 8
-            data.putLong(0);
-
-            // cpu_id 4
-            data.putInt(0);
-
-            // fill me
-            for (int i = 0; i < nbEvents; i++) {
-                ev.setEventTimestamp(i * 0x10000 + 0xa5a5);
-                ev.setEventContent(i);
-                ev.writeEvent(data);
+            final int size = 4096;
+            byte[] data = new byte[size];
+            for (int i = 0; i < size; i++) {
+                data[i] = 0x00;
             }
-
             f = new File(tempTraceDir + "/dummyChan");
             fw = new FileWriter(f);
             FileOutputStream fos = new FileOutputStream(f);
-            fos.write(data.array());
+            fos.write(magicLE);
+            fos.write(uuid);
+            fos.write(data);
             fos.close();
             fw.close();
             f.createNewFile();
