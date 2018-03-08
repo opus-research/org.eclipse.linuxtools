@@ -807,8 +807,9 @@ public class IOStructGen {
             long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0));
             event.setLogLevel(logLevel);
         } else {
-            /* Unknown event attribute, we'll simply ignore it */
-            // FIXME log this?
+            /* Custom event attribute, we'll add it to the attributes map */
+            String right = parseUnaryString((CommonTree) rightNode.getChild(0));
+            event.getCustomAttributes().put(left, right);
         }
     }
 
