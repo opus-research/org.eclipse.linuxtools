@@ -6,10 +6,8 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
@@ -25,105 +23,103 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * It doesn't reserve a file handle, so many iterators can be used without
  * worries of I/O errors or resource exhaustion.
  *
+ * @version 1.0
  * @author Matthew Khouzam
  */
-public class CtfIterator extends CTFTraceReader
-        implements ITmfContext, Comparable<CtfIterator> {
+public class CtfIterator extends CTFTraceReader implements ITmfContext,
+        Comparable<CtfIterator> {
 
-    /** An invalid location */
-    public static final CtfLocation NULL_LOCATION = new CtfLocation(CtfLocation.INVALID_LOCATION);
+    private final CtfTmfTrace ctfTmfTrace;
 
-    private final CtfTmfTrace fTrace;
+    /**
+     * An invalid location
+     */
+    final public static CtfLocation NULL_LOCATION = new CtfLocation(CtfLocation.INVALID_LOCATION);
 
-    private CtfLocation fCurLocation;
-    private long fCurRank;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
+    private CtfLocation curLocation;
+    private long curRank;
 
     /**
      * Create a new CTF trace iterator, which initially points at the first
      * event in the trace.
      *
      * @param trace
-     *            The trace to iterate over
+     *            the trace to iterate over
      * @throws CTFReaderException
-     *             If the iterator couldn't not be instantiated, probably due to
-     *             a read error.
+     *             error
      */
-    public CtfIterator(CtfTmfTrace trace) throws CTFReaderException {
+    public CtfIterator(final CtfTmfTrace trace) throws CTFReaderException {
         super(trace.getCTFTrace());
-        fTrace = trace;
+        this.ctfTmfTrace = trace;
         if (this.hasMoreEvents()) {
-            fCurLocation = new CtfLocation(trace.getStartTime());
-            fCurRank = 0;
-        } else {
-            setUnknownLocation();
-        }
-    }
-
-    /**
-     * Create a new CTF trace iterator, which will initially point to the given
-     * location/rank.
-     *
-     * @param trace
-     *            The trace to iterate over
-     * @param ctfLocationData
-     *            The initial timestamp the iterator will be pointing to
-     * @param rank
-     *            The initial rank
-     * @throws CTFReaderException
-     *             If the iterator couldn't not be instantiated, probably due to
-     *             a read error.
-     * @since 2.0
-     */
-    public CtfIterator(CtfTmfTrace trace, CtfLocationInfo ctfLocationData, long rank)
-            throws CTFReaderException {
-        super(trace.getCTFTrace());
-
-        this.fTrace = trace;
-        if (this.hasMoreEvents()) {
-            this.fCurLocation = new CtfLocation(ctfLocationData);
-            if (this.getCurrentEvent().getTimestamp().getValue() != ctfLocationData.getTimestamp()) {
-                this.seek(ctfLocationData);
-                this.fCurRank = rank;
-            }
+            this.curLocation = new CtfLocation(trace.getStartTime());
+            this.curRank = 0;
         } else {
             setUnknownLocation();
         }
     }
 
     private void setUnknownLocation() {
-        fCurLocation = NULL_LOCATION;
-        fCurRank = UNKNOWN_RANK;
+        this.curLocation = NULL_LOCATION;
+        this.curRank = UNKNOWN_RANK;
     }
 
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
+    /**
+     * Constructor for CtfIterator.
+     *
+     * @param trace
+     *            CtfTmfTrace the trace
+     * @param ctfLocationData
+     *            long the timestamp in ns of the trace for positioning
+     * @param rank
+     *            long the index of the trace for positioning
+     * @throws CTFReaderException
+     *             error
+     * @since 2.0
+     */
+    public CtfIterator(final CtfTmfTrace trace,
+            final CtfLocationInfo ctfLocationData, final long rank) throws CTFReaderException {
+        super(trace.getCTFTrace());
+
+        this.ctfTmfTrace = trace;
+        if (this.hasMoreEvents()) {
+            this.curLocation = new CtfLocation(ctfLocationData);
+            if (this.getCurrentEvent().getTimestamp().getValue() != ctfLocationData.getTimestamp()) {
+                this.seek(ctfLocationData);
+                this.curRank = rank;
+            }
+        } else {
+            setUnknownLocation();
+        }
+
+    }
 
     /**
-     * Return this iterator's trace.
+     * Method getCtfTmfTrace. gets a CtfTmfTrace
      *
-     * @return CtfTmfTrace The iterator's trace
+     * @return CtfTmfTrace
      */
     public CtfTmfTrace getCtfTmfTrace() {
-        return fTrace;
+        return ctfTmfTrace;
     }
 
     /**
-     * Return the current event pointed to by the iterator.
+     * Method getCurrentEvent. gets the current event
      *
-     * @return CtfTmfEvent The current event
+     * @return CtfTmfEvent
      */
     public CtfTmfEvent getCurrentEvent() {
         final StreamInputReader top = super.getPrio().peek();
         if (top != null) {
             return CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
-                    top.getFilename(), fTrace);
+                    top.getFilename(), ctfTmfTrace);
         }
         return null;
+    }
+
+    @Override
+    public boolean seek(long timestamp) {
+        return seek(new CtfLocationInfo(timestamp, 0));
     }
 
     /**
@@ -131,15 +127,14 @@ public class CtfIterator extends CTFTraceReader
      *
      * @param ctfLocationData
      *            The LocationData representing the position to seek to
-     * @return boolean True if the seek was successful, false if there was an
-     *         error seeking.
+     * @return boolean success
      * @since 2.0
      */
-    public synchronized boolean seek(CtfLocationInfo ctfLocationData) {
+    public synchronized boolean seek(final CtfLocationInfo ctfLocationData) {
         boolean ret = false;
 
         /* Avoid the cost of seeking at the current location. */
-        if (fCurLocation.getLocationInfo().equals(ctfLocationData)) {
+        if (curLocation.getLocationInfo().equals(ctfLocationData)) {
             return super.hasMoreEvents();
         }
 
@@ -178,27 +173,115 @@ public class CtfIterator extends CTFTraceReader
         }
         /* Seek the current location accordingly */
         if (ret) {
-            fCurLocation = new CtfLocation(new CtfLocationInfo(getCurrentEvent().getTimestamp().getValue(), index));
+            curLocation = new CtfLocation(new CtfLocationInfo(getCurrentEvent().getTimestamp().getValue(), index));
         } else {
-            fCurLocation = NULL_LOCATION;
+            curLocation = NULL_LOCATION;
         }
-
         return ret;
     }
 
-    // ------------------------------------------------------------------------
-    // CTFTraceReader
-    // ------------------------------------------------------------------------
-
+    /**
+     * Method getRank.
+     *
+     * @return long
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getRank()
+     */
     @Override
-    public boolean seek(long timestamp) {
-        return seek(new CtfLocationInfo(timestamp, 0));
+    public long getRank() {
+        return curRank;
+    }
+
+    /**
+     * Method setRank.
+     *
+     * @param rank
+     *            long
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#setRank(long)
+     */
+    @Override
+    public void setRank(final long rank) {
+        curRank = rank;
     }
 
     @Override
+    public CtfIterator clone() {
+        CtfIterator clone = null;
+        try {
+            clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocationInfo(), curRank);
+        } catch (CTFReaderException e) {
+            Activator.logError(e.getMessage(), e);
+        }
+        return clone;
+    }
+
+    /**
+     * Method dispose.
+     *
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#dispose()
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+
+    /**
+     * Method setLocation.
+     *
+     * @param location
+     *            ITmfLocation<?>
+     * @since 3.0
+     */
+    @Override
+    public void setLocation(final ITmfLocation location) {
+        // FIXME alex: isn't there a cleaner way than a cast here?
+        this.curLocation = (CtfLocation) location;
+        seek(((CtfLocation) location).getLocationInfo());
+    }
+
+    /**
+     * Method getLocation.
+     *
+     * @return CtfLocation
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getLocation()
+     */
+    @Override
+    public CtfLocation getLocation() {
+        return curLocation;
+    }
+
+    /**
+     * Method increaseRank.
+     *
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#increaseRank()
+     */
+    @Override
+    public void increaseRank() {
+        /* Only increase the rank if it's valid */
+        if (hasValidRank()) {
+            curRank++;
+        }
+    }
+
+    /**
+     * Method hasValidRank, if the iterator is valid
+     *
+     * @return boolean
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#hasValidRank()
+     */
+    @Override
+    public boolean hasValidRank() {
+        return (getRank() >= 0);
+    }
+
+    /**
+     * Method advance go to the next event
+     *
+     * @return boolean successful or not
+     */
+    @Override
     public synchronized boolean advance() {
-        long index = fCurLocation.getLocationInfo().getIndex();
-        long timestamp = fCurLocation.getLocationInfo().getTimestamp();
+        long index = curLocation.getLocationInfo().getIndex();
+        long timestamp = curLocation.getLocationInfo().getTimestamp();
         boolean ret = false;
         try {
             ret = super.advance();
@@ -209,59 +292,23 @@ public class CtfIterator extends CTFTraceReader
         if (ret) {
             final long timestampValue = getCurrentEvent().getTimestamp().getValue();
             if (timestamp == timestampValue) {
-                fCurLocation = new CtfLocation(timestampValue, index + 1);
+                curLocation = new CtfLocation(timestampValue, index + 1);
             } else {
-                fCurLocation = new CtfLocation(timestampValue, 0L);
+                curLocation = new CtfLocation(timestampValue, 0L);
             }
         } else {
-            fCurLocation = NULL_LOCATION;
+            curLocation = NULL_LOCATION;
         }
         return ret;
     }
 
-    // ------------------------------------------------------------------------
-    // ITmfContext
-    // ------------------------------------------------------------------------
-
-    @Override
-    public long getRank() {
-        return fCurRank;
-    }
-
-    @Override
-    public void setRank(long rank) {
-        fCurRank = rank;
-    }
-
-    @Override
-    public void increaseRank() {
-        /* Only increase the rank if it's valid */
-        if (hasValidRank()) {
-            fCurRank++;
-        }
-    }
-
-    @Override
-    public boolean hasValidRank() {
-        return (getRank() >= 0);
-    }
-
-    @Override
-    public void setLocation(ITmfLocation location) {
-        // FIXME alex: isn't there a cleaner way than a cast here?
-        fCurLocation = (CtfLocation) location;
-        seek(((CtfLocation) location).getLocationInfo());
-    }
-
-    @Override
-    public CtfLocation getLocation() {
-        return fCurLocation;
-    }
-
-    // ------------------------------------------------------------------------
-    // Comparable
-    // ------------------------------------------------------------------------
-
+    /**
+     * Method compareTo.
+     *
+     * @param o
+     *            CtfIterator
+     * @return int -1, 0, 1
+     */
     @Override
     public int compareTo(final CtfIterator o) {
         if (this.getRank() < o.getRank()) {
@@ -272,19 +319,15 @@ public class CtfIterator extends CTFTraceReader
         return 0;
     }
 
-    // ------------------------------------------------------------------------
-    // Object
-    // ------------------------------------------------------------------------
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
         result = (prime * result)
-                + ((fTrace == null) ? 0 : fTrace.hashCode());
+                + ((ctfTmfTrace == null) ? 0 : ctfTmfTrace.hashCode());
         result = (prime * result)
-                + ((fCurLocation == null) ? 0 : fCurLocation.hashCode());
-        result = (prime * result) + (int) (fCurRank ^ (fCurRank >>> 32));
+                + ((curLocation == null) ? 0 : curLocation.hashCode());
+        result = (prime * result) + (int) (curRank ^ (curRank >>> 32));
         return result;
     }
 
@@ -300,21 +343,21 @@ public class CtfIterator extends CTFTraceReader
             return false;
         }
         CtfIterator other = (CtfIterator) obj;
-        if (fTrace == null) {
-            if (other.fTrace != null) {
+        if (ctfTmfTrace == null) {
+            if (other.ctfTmfTrace != null) {
                 return false;
             }
-        } else if (!fTrace.equals(other.fTrace)) {
+        } else if (!ctfTmfTrace.equals(other.ctfTmfTrace)) {
             return false;
         }
-        if (fCurLocation == null) {
-            if (other.fCurLocation != null) {
+        if (curLocation == null) {
+            if (other.curLocation != null) {
                 return false;
             }
-        } else if (!fCurLocation.equals(other.fCurLocation)) {
+        } else if (!curLocation.equals(other.curLocation)) {
             return false;
         }
-        if (fCurRank != other.fCurRank) {
+        if (curRank != other.curRank) {
             return false;
         }
         return true;

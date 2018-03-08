@@ -117,6 +117,7 @@ public class SequenceDefinition extends Definition {
 
     /**
      * Is the sequence a null terminated string?
+     *
      * @return true == is a string, false == is not a string
      */
     public boolean isString() {
@@ -140,7 +141,13 @@ public class SequenceDefinition extends Definition {
         currentLength = (int) lengthDefinition.getValue();
 
         if ((definitions == null) || (definitions.length < currentLength)) {
-            Definition newDefinitions[] = new Definition[currentLength];
+
+            Definition newDefinitions[];
+            try {
+                newDefinitions = new Definition[currentLength];
+            } catch (java.lang.OutOfMemoryError e) {
+                throw new CTFReaderException(e.getMessage(), e);
+            }
 
             int i = 0;
 

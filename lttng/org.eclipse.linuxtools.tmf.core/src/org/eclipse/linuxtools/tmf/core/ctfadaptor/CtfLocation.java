@@ -143,5 +143,6 @@ public final class CtfLocation extends TmfLocation {
     @Override
     public void serialize(ByteBuffer bufferOut) {
         getLocationInfo().serialize(bufferOut);
+
     }
 }
