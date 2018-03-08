@@ -35,7 +35,7 @@ public class ValgrindTestsPlugin extends AbstractUIPlugin {
 	 */
 	public static final String SYSTEM_PROPERTY_RUN_VALGRIND = "eclipse.valgrind.tests.runValgrind"; //$NON-NLS-1$
 	// generateFiles implies runValgrind
-	public static final boolean RUN_VALGRIND = GENERATE_FILES || System.getProperty(SYSTEM_PROPERTY_RUN_VALGRIND, "no").equals("yes"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final boolean RUN_VALGRIND = GENERATE_FILES || System.getProperty(SYSTEM_PROPERTY_RUN_VALGRIND, "yes").equals("yes"); //$NON-NLS-1$ //$NON-NLS-2$
 	
 	// Launch config attribute to mock valgrind's exit code
 	public static final String ATTR_MOCK_EXIT_CODE = PLUGIN_ID + ".MOCK_EXIT_CODE"; //$NON-NLS-1$
