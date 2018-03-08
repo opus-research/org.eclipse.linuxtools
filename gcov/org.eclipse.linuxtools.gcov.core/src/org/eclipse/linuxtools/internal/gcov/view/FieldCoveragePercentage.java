@@ -17,7 +17,6 @@ import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractPercentageDraw
 import org.eclipse.linuxtools.dataviewers.charts.provider.IChartField;
 import org.eclipse.linuxtools.internal.gcov.model.CovRootTreeElement;
 import org.eclipse.linuxtools.internal.gcov.model.TreeElement;
-import org.eclipse.osgi.util.NLS;
 
 
 
@@ -28,7 +27,7 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 
 	@Override
 	public String getColumnHeaderText() {
-		return Messages.FieldCoveragePercentage_column_header;
+		return "Coverage %";
 	}
 
 	@Override
@@ -68,8 +67,7 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 	@Override
 	public String getToolTipText(Object element) {
 		TreeElement e = (TreeElement) element;
-		String s = NLS.bind(Messages.FieldCoveragePercentage_column_tooltip,
-				Integer.toString((int) e.getCoveragePercentage()));
+		String s =" Coverage % = "+Integer.toString((int)e.getCoveragePercentage());
 		return s ;			
 	}
 
