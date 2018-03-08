@@ -190,11 +190,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // Accessors
     // ------------------------------------------------------------------------
 
-    /**
-     * Get the traces contained in this experiment.
-     *
-     * @return The array of contained traces
-     */
+    @Override
     public ITmfTrace[] getTraces() {
         return fTraces;
     }

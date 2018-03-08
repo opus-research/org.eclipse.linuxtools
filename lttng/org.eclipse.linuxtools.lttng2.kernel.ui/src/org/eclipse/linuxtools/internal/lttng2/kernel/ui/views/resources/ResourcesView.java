@@ -473,7 +473,7 @@ public class ResourcesView extends TmfView {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
         ArrayList<TraceEntry> entryList = new ArrayList<TraceEntry>();
-        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
+        for (ITmfTrace aTrace : trace.getTraces()) {
             if (monitor.isCanceled()) {
                 return;
             }
