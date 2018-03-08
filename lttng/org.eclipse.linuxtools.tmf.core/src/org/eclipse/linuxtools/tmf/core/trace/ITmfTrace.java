@@ -16,6 +16,7 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -26,7 +27,6 @@ import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -208,12 +208,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      *
      * @return The map of state systems
      * @since 2.0
-     * @deprecated State systems now should be provided by analysis and use
-     *             {@link ITmfStateSystemAnalysisModule} and retrieve the modules
-     *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
-     *             being TmfStateSystemAnalysisModule.class
      */
-    @Deprecated
     Map<String, ITmfStateSystem> getStateSystems();
 
     /**
@@ -228,10 +223,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param ss
      *            The already-built state system
      * @since 2.0
-     * @deprecated State systems now should be provided by analysis and use
-     *             {@link ITmfStateSystemAnalysisModule}
      */
-    @Deprecated
     void registerStateSystem(String id, ITmfStateSystem ss);
 
     /**
@@ -255,14 +247,13 @@ public interface ITmfTrace extends ITmfDataProvider {
     IAnalysisModule getAnalysisModule(String analysisId);
 
     /**
-     * Return a map of analysis modules that are of a given class. Module are
-     * already casted to the requested class
+     * Return a list of analysis modules that are of a given class
      *
      * @param moduleclass
      *            Class returned module must extend
-     * @return List of modules of class moduleclass
+     * @return List of {@link IAnalysisModule} of class moduleclass
      */
-    <T> Map<String, T> getAnalysisModules(Class<T> moduleclass);
+    List<IAnalysisModule> getAnalysisModules(Class<? extends IAnalysisModule> moduleclass);
 
     /**
      * Returns a map of analysis modules applicable to this trace. The key is
