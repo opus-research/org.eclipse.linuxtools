@@ -16,7 +16,8 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -30,7 +31,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -66,7 +66,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
     private final TracePackageTraceElement[] fTraceExportElements;
     private final boolean fUseCompression;
     private final boolean fUseTar;
-    private final List<IResource> fResources;
+    private final Set<IResource> fResources;
     private IFolder fExportFolder;
 
     /**
@@ -86,7 +86,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
         fTraceExportElements = traceExportElements;
         fUseCompression = useCompression;
         fUseTar = useTar;
-        fResources = new ArrayList<IResource>();
+        fResources = new HashSet<IResource>();
     }
 
     /**
@@ -195,13 +195,9 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
                 ModalContext.checkCanceled(monitor);
                 IResource res = supplFile.getResource();
                 res.refreshLocal(0, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
-                IResource link = createExportResource(traceSuppFilesFolder, res);
+                createExportResource(traceSuppFilesFolder, res);
                 Element suppFileElement = doc.createElement(ITracePackageConstants.SUPPLEMENTARY_FILE_ELEMENT);
-
-                // project/.traceExport/.tracing/kernel/statistics.ht -> .tracing/kernel/statistics.ht
-                IPath archiveRelativePath = link.getFullPath().makeRelativeTo(fExportFolder.getFullPath());
-
-                suppFileElement.setAttribute(ITracePackageConstants.SUPPLEMENTARY_FILE_NAME_ATTRIB, archiveRelativePath.toString());
+                suppFileElement.setAttribute(ITracePackageConstants.SUPPLEMENTARY_FILE_NAME_ATTRIB, res.getName());
                 traceNode.appendChild(suppFileElement);
             }
 
@@ -217,11 +213,9 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
             folder.create(IResource.FORCE, true, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
         }
 
-        IResource link = createExportResource(folder, resource);
+        createExportResource(folder, resource);
         Element fileElement = doc.createElement(ITracePackageConstants.TRACE_FILE_ELEMENT);
-        // project/.traceExport/Traces/kernel -> Traces/kernel
-        IPath archiveRelativePath = link.getFullPath().makeRelativeTo(fExportFolder.getFullPath());
-        fileElement.setAttribute(ITracePackageConstants.TRACE_FILE_NAME_ATTRIB, archiveRelativePath.toString());
+        fileElement.setAttribute(ITracePackageConstants.TRACE_FILE_NAME_ATTRIB, resource.getName());
         traceNode.appendChild(fileElement);
         fResources.add(folder);
     }
@@ -232,21 +226,16 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
      * @param exportFolder the folder that will contain the linked resource
      * @param res the resource to export
      * @throws CoreException when createLink fails
-     * @return the created linked resource
      */
-    private static IResource createExportResource(IFolder exportFolder, IResource res) throws CoreException {
-        IResource ret = null;
+    private static void createExportResource(IFolder exportFolder, IResource res) throws CoreException {
         // Note: The resources cannot be HIDDEN or else they are ignored by ArchiveFileExportOperation
         if (res instanceof IFolder) {
             IFolder folder = exportFolder.getFolder(res.getName());
             folder.createLink(res.getLocationURI(), IResource.NONE, null);
-            ret = folder;
         } else if (res instanceof IFile) {
             IFile file = exportFolder.getFile(res.getName());
             file.createLink(res.getLocationURI(), IResource.NONE, null);
-            ret = file;
         }
-        return ret;
     }
 
     private static void exportBookmarks(IProgressMonitor monitor, Node traceNode, TracePackageBookmarkElement element) throws CoreException, InterruptedException {
@@ -284,7 +273,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
     }
 
     private IStatus exportToArchive(IProgressMonitor monitor, int totalWork) throws InvocationTargetException, InterruptedException {
-        ArchiveFileExportOperation op = new ArchiveFileExportOperation(fResources, getFileName());
+        ArchiveFileExportOperation op = new ArchiveFileExportOperation(new ArrayList<IResource>(fResources), getFileName());
         op.setCreateLeadupStructure(false);
         op.setUseCompression(fUseCompression);
         op.setUseTarFormat(fUseTar);

@@ -40,7 +40,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFileElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -91,27 +90,12 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
      *
      * @param selection
      *            the current object selection
+     * @param selectedTraces
+     *            the selected traces from the selection
      */
-    public ExportTracePackageWizardPage(IStructuredSelection selection) {
+    public ExportTracePackageWizardPage(IStructuredSelection selection, List<TmfTraceElement> selectedTraces) {
         super(PAGE_NAME, Messages.ExportTracePackageWizardPage_Title, Activator.getDefault().getImageDescripterFromPath(ICON_PATH), selection);
-
-        Object[] selectedElements = getSelection().toArray();
-        fSelectedTraces = new ArrayList<TmfTraceElement>();
-        TmfProjectElement firstProject = null;
-        for (Object selectedElement : selectedElements) {
-            if (selectedElement instanceof TmfTraceElement) {
-                TmfTraceElement tmfTraceElement = (TmfTraceElement) selectedElement;
-                TmfProjectElement project = tmfTraceElement.getProject();
-                // Only allow exporting traces under the same project, this prevents possible name clashes.
-                // Traces under the first encountered project in the selection are kept.
-                if (firstProject != null && !project.equals(firstProject)) {
-                    continue;
-                }
-
-                fSelectedTraces.add(tmfTraceElement.getElementUnderTraceFolder());
-                firstProject = project;
-            }
-        }
+        fSelectedTraces = selectedTraces;
     }
 
     /**
@@ -153,6 +137,16 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
         updatePageCompletion();
 
         setControl(composite);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            updatePageCompletion();
+        } else {
+            setPageComplete(false);
+        }
     }
 
     /**

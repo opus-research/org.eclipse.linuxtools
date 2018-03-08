@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importex
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -32,6 +33,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageOperation;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageWizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageElement;
+import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
@@ -335,41 +337,72 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
     }
 
     private boolean checkForOverwrite() {
-        List<TmfTraceElement> traces = fTmfTraceFolder.getTraces();
-
         TracePackageElement[] traceElements = (TracePackageElement[]) getElementViewer().getInput();
+        List<TracePackageTraceElement> noImportTraces = new ArrayList<TracePackageTraceElement>();
+        boolean noToAll = false;
         for (TracePackageElement packageElement : traceElements) {
             TracePackageTraceElement traceElement = (TracePackageTraceElement) packageElement;
             if (!AbstractTracePackageOperation.isFilesChecked(traceElement)) {
                 continue;
             }
 
-            for (TmfTraceElement t : traces) {
-                String traceName = traceElement.getText();
-                if (t.getName().equals(traceName)) {
-                    final MessageDialog dialog = new MessageDialog(getContainer()
-                            .getShell(), null, null, MessageFormat.format(Messages.ImportTracePackageWizardPage_AlreadyExists, traceName),
-                            MessageDialog.QUESTION, new String[] {
-                                    IDialogConstants.NO_LABEL,
-                                    IDialogConstants.YES_TO_ALL_LABEL,
-                                    IDialogConstants.YES_LABEL,
-                            }, 2) {
-                        @Override
-                        protected int getShellStyle() {
-                            return super.getShellStyle() | SWT.SHEET;
-                        }
-                    };
-                    int code = dialog.open();
-                    final String[] response = new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.YES_LABEL };
-                    if (response[code].equals(IDialogConstants.YES_TO_ALL_LABEL)) {
-                        return true;
-                    } else if (response[code].equals(IDialogConstants.NO_LABEL)) {
-                        return false;
-                    }
+            if (noToAll) {
+                noImportTraces.add(traceElement);
+                continue;
+            }
+
+            String traceName = traceElement.getText();
+            if (traceExists(traceName)) {
+                int returnCode = promptForOverwrite(traceName);
+                final String[] response = new String[] { IDialogConstants.NO_TO_ALL_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.YES_LABEL };
+                if (response[returnCode].equals(IDialogConstants.YES_TO_ALL_LABEL)) {
+                    break;
+                } else if (response[returnCode].equals(IDialogConstants.NO_TO_ALL_LABEL)) {
+                    noToAll = true;
+                    noImportTraces.add(traceElement);
+                } else if (response[returnCode].equals(IDialogConstants.NO_LABEL)) {
+                    noImportTraces.add(traceElement);
+                }
+            }
+        }
+
+        // Unselect the traces that the user decided not to import
+        for (TracePackageTraceElement t : noImportTraces) {
+            for (TracePackageElement e : t.getChildren()) {
+                if (e instanceof TracePackageFilesElement) {
+                    ((TracePackageFilesElement) e).setChecked(false);
                 }
             }
         }
 
         return true;
+    }
+
+    private boolean traceExists(String traceName) {
+        List<TmfTraceElement> traces = fTmfTraceFolder.getTraces();
+        for (TmfTraceElement t : traces) {
+            if (t.getName().equals(traceName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int promptForOverwrite(String traceName) {
+        final MessageDialog dialog = new MessageDialog(getContainer()
+                .getShell(), null, null, MessageFormat.format(Messages.ImportTracePackageWizardPage_AlreadyExists, traceName),
+                MessageDialog.QUESTION, new String[] {
+                        IDialogConstants.NO_TO_ALL_LABEL,
+                        IDialogConstants.NO_LABEL,
+                        IDialogConstants.YES_TO_ALL_LABEL,
+                        IDialogConstants.YES_LABEL,
+                }, 3) {
+            @Override
+            protected int getShellStyle() {
+                return super.getShellStyle() | SWT.SHEET;
+            }
+        };
+        return dialog.open();
     }
 }
