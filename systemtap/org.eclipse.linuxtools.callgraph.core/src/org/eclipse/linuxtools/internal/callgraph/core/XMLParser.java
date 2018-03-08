@@ -30,14 +30,12 @@ public class XMLParser {
 	XMLParser() {
 		id = 0;
 		currentlyIn = 0;
-		if (keyValues != null) {
+		if (keyValues != null)
 			keyValues.clear();
-		}
 		keyValues = new HashMap<Integer,HashMap<String,String>>();
 		
-		if (idList != null) {
+		if (idList != null)
 			idList.clear();
-		}
 		idList = new ArrayList<Integer>();
 		
 		textMode = false;
@@ -63,9 +61,8 @@ public class XMLParser {
 		String[] lines = tabstrip.split("\n");
 		
 		for (String line : lines) {
-			if (line.length() < 1) {
+			if (line.length() < 1)
 				continue;
-			}
 				
 			if (line.charAt(0) == '<') {
 				//Either an open or close tag
@@ -73,9 +70,8 @@ public class XMLParser {
 					//Closing tag -- assume properly formed
 					idList.remove((Integer) currentlyIn);
 					currentlyIn = -1;
-					if (idList.size() > 0) {
+					if (idList.size() > 0)
 						currentlyIn = idList.get(idList.size()-1);
-					}
 					setTextMode(true);
 
 				} else if (line.substring(line.length()-2, line.length() - 1).equals("/>")) {
@@ -105,9 +101,8 @@ public class XMLParser {
 				}
 			} else {
 				//Attribute addition
-				if (currentlyIn < 0 ) {
+				if (currentlyIn < 0 )
 					continue;
-				}
 				
 				if (textMode) {
 					HashMap<String,String> map = keyValues.get(currentlyIn);
@@ -135,9 +130,8 @@ public class XMLParser {
 			String[] kvPair = tokens[j].split("=");
 			String value = "";
 			String key = "";
-			if (kvPair.length < 1) {
+			if (kvPair.length < 1)
 				continue;
-			}
 			
 			if (kvPair.length < 2) {
 				value = kvPair[0];
@@ -181,10 +175,12 @@ public class XMLParser {
 		          contents.append(line);
 		          contents.append("\n");
 		        }
-		      } finally {
+		      }
+		      finally {
 		        input.close();
 		      }
-		    } catch (IOException ex){
+		    }
+		    catch (IOException ex){
 		      ex.printStackTrace();
 		    }
 		    
