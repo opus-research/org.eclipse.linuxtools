@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.junit.Before;
@@ -31,8 +31,6 @@ import org.junit.Test;
  * @author Matthew Khouzam
  */
 public class CTFTraceCallsitePerformanceTest {
-
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
 
     private static final int NUMBER_OF_SEEKS = 100000;
 
@@ -75,8 +73,8 @@ public class CTFTraceCallsitePerformanceTest {
     @Before
     public void setup() throws CTFReaderException, SecurityException,
             IllegalArgumentException {
-        assumeTrue(testTrace.exists());
-        fTrace = new CTFTrace(testTrace.getPath());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fTrace = new CTFTrace(CtfTestTraces.getTraceFile().getParentFile());
     }
 
     private void addCallsites(int numCallsites) {
