@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
@@ -176,11 +175,7 @@ public class ScriptConsole extends IOConsole {
 			@Override
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
-				try {
-					stop.start();
-				} catch (CoreException e) {
-				  // Failed to start the 'stop' process. Ignore.
-				}
+				stop.start();
 			}
 		};
 	    this.run(cmd, errorParser);
@@ -218,11 +213,7 @@ public class ScriptConsole extends IOConsole {
 	    	cmd.addErrorStreamListener(errorDaemon);
 	    }
         cmd.addInputStreamListener(consoleDaemon);
-        try {
-			cmd.start();
-		} catch (CoreException e) {
-			ExceptionErrorDialog.openError(e.getMessage(), e);
-		}
+        cmd.start();
         activate();
         notifyConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);

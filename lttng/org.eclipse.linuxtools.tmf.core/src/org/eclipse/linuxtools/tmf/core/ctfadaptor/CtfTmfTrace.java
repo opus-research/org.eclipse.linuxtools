@@ -13,6 +13,9 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -26,6 +29,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEnvironmentVariables;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -36,7 +40,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * @version 1.0
  * @author Matthew khouzam
  */
-public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
+public class CtfTmfTrace extends TmfTrace
+        implements ITmfEventParser, ITmfEnvironmentVariables {
 
     // -------------------------------------------
     // Constants
@@ -275,36 +280,15 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     }
 
     // -------------------------------------------
-    // Environment Parameters
+    // ITmfEnvironmentVariables
     // -------------------------------------------
-    /**
-     * Method getNbEnvVars.
-     *
-     * @return int
-     */
-    public int getNbEnvVars() {
-        return this.fTrace.getEnvironment().size();
-    }
 
     /**
-     * Method getEnvNames.
-     *
-     * @return String[]
+     * @since 2.0
      */
-    public String[] getEnvNames() {
-        final String[] s = new String[getNbEnvVars()];
-        return this.fTrace.getEnvironment().keySet().toArray(s);
-    }
-
-    /**
-     * Method getEnvValue.
-     *
-     * @param key
-     *            String
-     * @return String
-     */
-    public String getEnvValue(final String key) {
-        return this.fTrace.getEnvironment().get(key);
+    @Override
+    public Map<String, String> getEnvironment() {
+        return Collections.unmodifiableMap(fTrace.getEnvironment());
     }
 
     // -------------------------------------------
