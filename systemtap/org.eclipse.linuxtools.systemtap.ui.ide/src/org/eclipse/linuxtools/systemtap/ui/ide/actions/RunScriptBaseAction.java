@@ -33,11 +33,9 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsoleManager;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -115,11 +113,11 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
             		public void run() {
             			final ScriptConsole console;
             			if(getRunLocal() == false) {
-            				console = ScriptConsoleManager.getInstance().getConsoleInstance(serverfileName);
-            				console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
+            				console = ScriptConsole.getInstance(serverfileName);
+            				console.run(script, envVars, new StapErrorParser());
             			} else {
-            				console = ScriptConsoleManager.getInstance().getConsoleInstance(fileName);
-            				console.runLocally(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
+            				console = ScriptConsole.getInstance(fileName);
+            				console.runLocally(script, envVars, new StapErrorParser());
             			}
                         scriptConsoleInitialized(console);
             		}
