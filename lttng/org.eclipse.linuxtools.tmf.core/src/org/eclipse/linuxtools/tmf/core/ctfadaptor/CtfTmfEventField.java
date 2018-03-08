@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -8,9 +8,9 @@
  *
  * Contributors:
  *  Matthew Khouzam - Initial API and implementation
- *  Alexendre Montplaisir - Initial API and implementation, extend TmfEventField
+ *  Alexandre Montplaisir - Initial API and implementation, extend TmfEventField
  *  Bernd Hufmann - Add Enum field handling
- *  Geneviève Bastien - Add support for Struct fields
+ *  Geneviève Bastien - Add Struct and Variant field handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 
@@ -136,7 +137,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < arrayDecl.getLength(); i++) {
                     values.add(((IntegerDefinition) arrayDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values);
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration)arrayDecl.getElementType()).getBase());
             }
             /* Add other types of arrays here */
 
@@ -156,7 +157,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < seqDef.getLength(); i++) {
                     values.add(((IntegerDefinition) seqDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values);
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration)seqDecl.getElementType()).getBase());
             }
             /* Add other Sequence types here */
 
@@ -175,6 +176,18 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 list.add(curField);
             }
             field = new CTFStructField(fieldName, list.toArray(new CtfTmfEventField[list.size()]));
+        } else if (fieldDef instanceof VariantDefinition) {
+            VariantDefinition strVar = (VariantDefinition) fieldDef;
+
+            String curFieldName = strVar.getCurrentFieldName();
+            Definition curFieldDef = strVar.getDefinitions().get(curFieldName);
+            if (curFieldDef != null) {
+                field = CtfTmfEventField.parseField(curFieldDef, curFieldName);
+            } else {
+                /* A safe-guard, but curFieldDef should never be null */
+                field = new CTFStringField(curFieldName, ""); //$NON-NLS-1$
+            }
+
         }
         return field;
     }
@@ -301,6 +314,8 @@ final class CTFStringField extends CtfTmfEventField {
  */
 final class CTFIntegerArrayField extends CtfTmfEventField {
 
+    private final int base;
+
     /**
      * Constructor for CTFIntegerArrayField.
      *
@@ -310,8 +325,9 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
      * @param name
      *            The name of this field
      */
-    CTFIntegerArrayField(String name, List<Long> longValues) {
+    CTFIntegerArrayField(String name, List<Long> longValues, int base) {
         super(name, longValues, null);
+        this.base = base;
     }
 
     @Override
@@ -322,6 +338,38 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
     @Override
     public List<Long> getValue() {
         return (List<Long>) super.getValue();
+    }
+
+    /**
+     * Custom-format the integer values depending on their base.
+     */
+    @Override
+    public String toString() {
+        List<String> strings = new ArrayList<String>();
+
+        for (Long value : getValue() ) {
+
+            /* Format the number correctly according to the integer's base */
+            switch (base) {
+            case 2:
+                strings.add("0b" + Long.toBinaryString(value)); //$NON-NLS-1$
+                break;
+            case 8:
+                strings.add('0' + Long.toOctalString(value));
+                break;
+            case 10:
+                strings.add(value.toString());
+                break;
+            case 16:
+                strings.add("0x" + Long.toHexString(value)); //$NON-NLS-1$
+                break;
+            default:
+                /* Non-standard base, we'll just print it as a decimal number */
+                strings.add(value.toString());
+                break;
+            }
+        }
+        return strings.toString();
     }
 }
 
