@@ -30,15 +30,15 @@ public class SDTimeEvent {
     /**
      * The time stamp of the event
      */
-    protected ITmfTimestamp fTimestamp;
+    final private ITmfTimestamp fTimestamp;
     /**
      * The event index.
      */
-    protected int fEvent;
+    final private int fEvent;
     /**
      * The time range implementing node.
      */
-    protected ITimeRange fNode;
+    final private ITimeRange fNode;
 
     // ------------------------------------------------------------------------
     // Constructors
