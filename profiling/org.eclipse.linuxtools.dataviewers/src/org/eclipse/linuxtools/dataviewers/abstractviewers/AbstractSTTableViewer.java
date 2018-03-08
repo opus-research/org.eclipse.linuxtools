@@ -121,7 +121,6 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 									Rectangle bounds = item.getBounds(i);
 									if (bounds.contains(e.x,e.y)){
 										handleHyperlink(field,item.getData());
-										return;
 									}
 								}
 							}
@@ -143,12 +142,12 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 								if (field.isHyperLink(item.getData())){
 									Rectangle bounds = item.getBounds(i);
 								if (bounds.contains(e.x,e.y)){
-										cursor = new Cursor(e.display,SWT.CURSOR_HAND);
+										cursor = e.display.getSystemCursor(SWT.CURSOR_HAND);
 										table.setCursor(cursor);
 										return;
 									}
 								}
-								cursor = new Cursor(e.display,SWT.CURSOR_ARROW);
+								cursor = e.display.getSystemCursor(SWT.CURSOR_ARROW);
 								table.setCursor(cursor);
 							}
 			
