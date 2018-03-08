@@ -60,25 +60,21 @@ public class CreateSessionHandler extends BaseControlViewHandler {
             final TraceSessionGroup sessionGroup = fSessionGroup;
 
             // Open dialog box for the node name and address
-            final ICreateSessionDialog dialog = TraceControlDialogFactory.getInstance().getCreateSessionDialog();
-            dialog.initialize(sessionGroup);
+            ICreateSessionDialog dialog = TraceControlDialogFactory.getInstance().getCreateSessionDialog();
+            dialog.setTraceSessionGroup(sessionGroup);
 
             if (dialog.open() != Window.OK) {
                 return null;
             }
 
+            final String sessionName = dialog.getSessionName();
+            final String sessionPath = dialog.isDefaultSessionPath() ? null : dialog.getSessionPath();
+
             Job job = new Job(Messages.TraceControl_CreateSessionJob) {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     try {
-                        if (dialog.isStreamedTrace()) {
-                            sessionGroup.createSession(dialog.getSessionName(), dialog.getNetworkUrl(), dialog.getControlUrl(),
-                                    dialog.getDataUrl(), dialog.isNoConsumer(), dialog.isDisableConsumer(), monitor);
-                        } else {
-                            String sessionPath = dialog.isDefaultSessionPath() ? null : dialog.getSessionPath();
-                            sessionGroup.createSession(dialog.getSessionName(), sessionPath, dialog.isNoConsumer(),
-                                    dialog.isDisableConsumer(), monitor);
-                        }
+                        sessionGroup.createSession(sessionName, sessionPath, monitor);
                     } catch (ExecutionException e) {
                         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_CreateSessionFailure, e);
                     }
