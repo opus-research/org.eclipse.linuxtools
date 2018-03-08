@@ -33,6 +33,7 @@ public class EventIterator implements Iterator<ITimeEvent> {
     private int fIndex = 0;
     private int fZoomedIndex= 0;
     private ITimeEvent fNext = null;
+    private ITimeEvent fSplitNext = null;
     private ITimeEvent fZoomedNext = null;
 
     /**
@@ -81,9 +82,26 @@ public class EventIterator implements Iterator<ITimeEvent> {
         if (fNext == null && fEventList != null) {
             while (fIndex < fEventList.size()) {
                 ITimeEvent event = fEventList.get(fIndex++);
-                if (event.getTime() + event.getDuration() >= fStartTime && event.getTime() <= fEndTime) {
+                if (event.getTime() + event.getDuration() >= fStartTime && event.getTime() <= fEndTime &&
+                        (event.getTime() < fZoomedStartTime || event.getTime() + event.getDuration() > fZoomedEndTime)) {
+                    // the event is visible and is not completely hidden by the zoomed events
                     fNext = event;
-                    break;
+                    if (event.getTime() < fZoomedEndTime && event.getTime() + event.getDuration() > fZoomedStartTime) {
+                        // the event is partially hidden by the zoomed events and must be split
+                        fNext = null;
+                        if (event.getTime() + event.getDuration() > fZoomedEndTime && fZoomedEndTime < fEndTime) {
+                            // the end of the event is partially hidden by the zoomed events and is visible
+                            fNext = new TimeEvent(event.getEntry(), fZoomedEndTime, event.getTime() + event.getDuration() - fZoomedEndTime);
+                        }
+                        if (event.getTime() < fZoomedStartTime && fZoomedStartTime > fStartTime) {
+                            // the start of the event is partially hidden by the zoomed events and is visible
+                            fSplitNext = fNext;
+                            fNext = new TimeEvent(event.getEntry(), event.getTime(), fZoomedStartTime - event.getTime());
+                        }
+                    }
+                    if (fNext != null) {
+                        break;
+                    }
                 }
             }
             if (fNext == null) {
@@ -95,6 +113,7 @@ public class EventIterator implements Iterator<ITimeEvent> {
             while (fZoomedIndex < fZoomedEventList.size()) {
                 ITimeEvent event = fZoomedEventList.get(fZoomedIndex++);
                 if (event.getTime() + event.getDuration() >= fStartTime && event.getTime() <= fEndTime) {
+                    // the zoomed event is visible
                     fZoomedNext = event;
                     break;
                 }
@@ -111,30 +130,13 @@ public class EventIterator implements Iterator<ITimeEvent> {
     public ITimeEvent next() {
         if (hasNext()) {
             if (fZoomedNext != null && (fNext == null || fZoomedNext.getTime() <= fNext.getTime())) {
-                if (fNext != null && fNext.getTime() == fZoomedNext.getTime()) {
-                    long duration = fNext.getTime() + fNext.getDuration() - fZoomedEndTime;
-                    if (duration > 0) {
-                        fNext = new TimeEvent(fNext.getEntry(), fZoomedEndTime, duration);
-                    } else {
-                        fNext = null;
-                    }
-                }
                 ITimeEvent event = fZoomedNext;
                 fZoomedNext = null;
                 return event;
             }
-            if (fNext.getTime() < fZoomedEndTime && fNext.getTime() + fNext.getDuration() > fZoomedStartTime) {
-                ITimeEvent event = new TimeEvent(fNext.getEntry(), fNext.getTime(), fZoomedStartTime - fNext.getTime());
-                long duration = fNext.getTime() + fNext.getDuration() - fZoomedEndTime;
-                if (duration > 0) {
-                    fNext = new TimeEvent(fNext.getEntry(), fZoomedEndTime, duration);
-                } else {
-                    fNext = null;
-                }
-                return event;
-            }
             ITimeEvent event = fNext;
-            fNext = null;
+            fNext = fSplitNext;
+            fSplitNext = null;
             return event;
         }
         throw new NoSuchElementException();
