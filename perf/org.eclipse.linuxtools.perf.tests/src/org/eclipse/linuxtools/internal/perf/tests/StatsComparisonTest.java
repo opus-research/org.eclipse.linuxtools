@@ -31,7 +31,7 @@ public class StatsComparisonTest {
 	PMStatEntry statEntry2;
 	PMStatEntry statEntry3;
 	PMStatEntry statEntry4;
-	public static final String STAT_RES = "resources/stat-data/";
+	private static final String STAT_RES = "resources/stat-data/";
 
 	@Before
 	public void setUp() {
@@ -128,20 +128,6 @@ public class StatsComparisonTest {
 		for(PMStatEntry expectedEntry : expectedStatList){
 			assertTrue(actualStatList.contains(expectedEntry));
 		}
-	}
-
-	@Test
-	public void testStatDataComparisonFieldGetters() {
-		File oldStatData = new File(STAT_RES + "perf_old.stat");
-		File newStatData = new File(STAT_RES + "perf_new.stat");
-		String dataTitle = "title";
-		StatComparisonData diffData = new StatComparisonData(dataTitle,
-				oldStatData, newStatData);
-
-		assertEquals(dataTitle, diffData.getTitle());
-		assertEquals("", diffData.getPerfData());
-		assertEquals(oldStatData, diffData.getOldData());
-		assertEquals(newStatData, diffData.getNewData());
 	}
 
 	@Test
