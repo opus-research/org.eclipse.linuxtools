@@ -30,8 +30,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
@@ -953,12 +953,20 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         if (y < 0) {
             return -1;
         }
-        int ySum = 0;
-        for (int idx = fTopIndex; idx < fItemData.fExpandedItems.length; idx++) {
-            ySum += fItemData.fExpandedItems[idx].fItemHeight;
-            if (y < ySum) {
-                return idx;
+        if (fGlobalItemHeight == CUSTOM_ITEM_HEIGHT) {
+            int ySum = 0;
+            for (int idx = fTopIndex; idx < fItemData.fExpandedItems.length; idx++) {
+                ySum += fItemData.fExpandedItems[idx].fItemHeight;
+                if (y < ySum) {
+                    return idx;
+                }
             }
+            return -1;
+        }
+        int idx = y / fGlobalItemHeight;
+        idx += fTopIndex;
+        if (idx < fItemData.fExpandedItems.length) {
+            return idx;
         }
         return -1;
     }
@@ -1064,20 +1072,26 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     public int countPerPage() {
         int height = getCtrlSize().y;
         int count = 0;
-        int ySum = 0;
-        for (int idx = fTopIndex; idx < fItemData.fExpandedItems.length; idx++) {
-            ySum += fItemData.fExpandedItems[idx].fItemHeight;
-            if (ySum >= height) {
-                return count;
+        if (fGlobalItemHeight == CUSTOM_ITEM_HEIGHT) {
+            int ySum = 0;
+            for (int idx = fTopIndex; idx < fItemData.fExpandedItems.length; idx++) {
+                ySum += fItemData.fExpandedItems[idx].fItemHeight;
+                if (ySum >= height) {
+                    return count;
+                }
+                count++;
             }
-            count++;
+            for (int idx = fTopIndex - 1; idx >= 0; idx--) {
+                ySum += fItemData.fExpandedItems[idx].fItemHeight;
+                if (ySum >= height) {
+                    return count;
+                }
+                count++;
+            }
+            return count;
         }
-        for (int idx = fTopIndex - 1; idx >= 0; idx--) {
-            ySum += fItemData.fExpandedItems[idx].fItemHeight;
-            if (ySum >= height) {
-                return count;
-            }
-            count++;
+        if (height > 0) {
+            count = height / fGlobalItemHeight;
         }
         return count;
     }
@@ -1122,27 +1136,34 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     Rectangle getNameRect(Rectangle bound, int idx, int nameWidth) {
-        Rectangle rect = getStatesRect(bound, idx, nameWidth);
-        rect.x = bound.x;
-        rect.width = nameWidth;
-        return rect;
+        int x = bound.x;
+        int y = bound.y + (idx - fTopIndex) * fGlobalItemHeight;
+        int width = nameWidth;
+        int height = fGlobalItemHeight;
+        if (fGlobalItemHeight == CUSTOM_ITEM_HEIGHT) {
+            int ySum = 0;
+            for (int i = fTopIndex; i < idx; i++) {
+                ySum += fItemData.fExpandedItems[i].fItemHeight;
+            }
+            y = bound.y + ySum;
+            height = fItemData.fExpandedItems[idx].fItemHeight;
+        }
+        return new Rectangle(x, y, width, height);
     }
 
     Rectangle getStatesRect(Rectangle bound, int idx, int nameWidth) {
         int x = bound.x + nameWidth;
+        int y = bound.y + (idx - fTopIndex) * fGlobalItemHeight;
         int width = bound.width - x;
-        int ySum = 0;
-        if (idx >= fTopIndex) {
+        int height = fGlobalItemHeight;
+        if (fGlobalItemHeight == CUSTOM_ITEM_HEIGHT) {
+            int ySum = 0;
             for (int i = fTopIndex; i < idx; i++) {
                 ySum += fItemData.fExpandedItems[i].fItemHeight;
             }
-        } else {
-            for (int i = fTopIndex - 1; i >= idx; i--) {
-                ySum -= fItemData.fExpandedItems[i].fItemHeight;
-            }
+            y = bound.y + ySum;
+            height = fItemData.fExpandedItems[idx].fItemHeight;
         }
-        int y = bound.y + ySum;
-        int height = fItemData.fExpandedItems[idx].fItemHeight;
         return new Rectangle(x, y, width, height);
     }
 
@@ -1859,32 +1880,32 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             long time = getTimeAtX(x);
             if (time >= 0) {
                 message.append("T: "); //$NON-NLS-1$
-                message.append(new TmfNanoTimestamp(time).toString());
+                message.append(new CtfTmfTimestamp(time).toString());
                 message.append("     T1: "); //$NON-NLS-1$
                 if (fTimeProvider instanceof ITimeDataProvider2) {
                     long selectionBegin = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
                     long selectionEnd = ((ITimeDataProvider2) fTimeProvider).getSelectionEnd();
-                    message.append(new TmfNanoTimestamp(Math.min(selectionBegin, selectionEnd)).toString());
+                    message.append(new CtfTmfTimestamp(Math.min(selectionBegin, selectionEnd)).toString());
                     if (selectionBegin != selectionEnd) {
                         message.append("     T2: "); //$NON-NLS-1$
-                        message.append(new TmfNanoTimestamp(Math.max(selectionBegin, selectionEnd)).toString());
+                        message.append(new CtfTmfTimestamp(Math.max(selectionBegin, selectionEnd)).toString());
                         message.append("     \u0394: "); //$NON-NLS-1$
                         message.append(new TmfTimestampDelta(Math.abs(selectionBegin - selectionEnd), ITmfTimestamp.NANOSECOND_SCALE));
                     }
                 } else {
                     @SuppressWarnings("deprecation")
                     long selectedTime = fTimeProvider.getSelectedTime();
-                    message.append(new TmfNanoTimestamp(selectedTime));
+                    message.append(new CtfTmfTimestamp(selectedTime));
                 }
             }
         } else if (fDragState == DRAG_SELECTION || fDragState == DRAG_ZOOM) {
             long time0 = fDragTime0;
             long time = getTimeAtX(fDragX);
             message.append("T1: "); //$NON-NLS-1$
-            message.append(new TmfNanoTimestamp(Math.min(time, time0)).toString());
+            message.append(new CtfTmfTimestamp(Math.min(time, time0)).toString());
             if (time != time0) {
                 message.append("     T2: "); //$NON-NLS-1$
-                message.append(new TmfNanoTimestamp(Math.max(time, time0)).toString());
+                message.append(new CtfTmfTimestamp(Math.max(time, time0)).toString());
                 message.append("     \u0394: "); //$NON-NLS-1$
                 message.append(new TmfTimestampDelta(Math.abs(time - time0), ITmfTimestamp.NANOSECOND_SCALE));
             }
@@ -2238,40 +2259,20 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * @return The default height of regular item rows
+     * @return The height of regular item rows
      */
     public int getItemHeight() {
         return fGlobalItemHeight;
     }
 
     /**
-     * Set the default height of regular item rows.
+     * Set the height of regular itew rows
      *
      * @param rowHeight
      *            The height
      */
     public void setItemHeight(int rowHeight) {
         this.fGlobalItemHeight = rowHeight;
-    }
-
-    /**
-     * Set the height of a specific item. Overrides the default item height.
-     *
-     * @param entry
-     *            A time graph entry
-     * @param rowHeight
-     *            The height
-     * @return true if the height is successfully stored, false otherwise
-     *
-     * @since 2.1
-     */
-    public boolean setItemHeight(ITimeGraphEntry entry, int rowHeight) {
-        Item item = fItemData.findItem(entry);
-        if (item != null) {
-            item.fItemHeight = rowHeight;
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -2410,11 +2411,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             if (parent != null) {
                 parent.fChildren.add(item);
             }
-            if (fGlobalItemHeight == CUSTOM_ITEM_HEIGHT) {
-                item.fItemHeight = fTimeGraphProvider.getItemHeight(entry);
-            } else {
-                item.fItemHeight = fGlobalItemHeight;
-            }
+            item.fItemHeight = fTimeGraphProvider.getItemHeight(entry);
             itemList.add(item);
             if (entry.hasChildren()) {
                 item.fExpanded = true;
