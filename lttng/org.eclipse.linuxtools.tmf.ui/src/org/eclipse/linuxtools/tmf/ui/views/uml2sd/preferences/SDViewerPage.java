@@ -48,7 +48,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
     /**
      * Temporary preferences tag
      */
-    private static final String TEMP_TAG = SDViewPref.TEMP_TAG;
+    protected static final String TEMP_TAG = SDViewPref.TEMP_TAG;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -56,51 +56,51 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
     /**
      * The preference handler used to access the PreferenceStore
      */
-    private SDViewPref fPreferences = null;
+    protected SDViewPref fPreferences = null;
     /**
      * BackGround color selector
      */
-    private ColorFieldEditor fLineColor = null;
+    protected ColorFieldEditor fLineColor = null;
     /**
      * Foreground color selector
      */
-    private ColorFieldEditor fBackGroundColor = null;
+    protected ColorFieldEditor fBackGroundColor = null;
     /**
      * Font color selector
      */
-    private ColorFieldEditor fTextColor = null;
+    protected ColorFieldEditor fTextColor = null;
     /**
      * List which display all modifiable sequence Diagram font
      */
-    private List fClassItemList = null;
+    protected List fClassItemList = null;
     /**
      * Font selector (The same is used for each modifiable font)
      */
-    private FontFieldEditor fFont = null;
+    protected FontFieldEditor fFont = null;
     /**
      * Link font when zooming selector
      */
-    private BooleanFieldEditor fLink = null;
+    protected BooleanFieldEditor fLink = null;
     /**
      * Enable tooltip selector
      */
-    private BooleanFieldEditor fTooltip = null;
+    protected BooleanFieldEditor fTooltip = null;
     /**
      * Do not take external time into account in the min max computation
      */
-    private BooleanFieldEditor fNoExternalTime = null;
+    protected BooleanFieldEditor fNoExternalTime = null;
     /**
      * Use gradient color selector
      */
-    private BooleanFieldEditor fUseGrad = null;
+    protected BooleanFieldEditor fUseGrad = null;
     /**
      * A button area.
      */
-    private Composite fButtonArea;
+    protected Composite fButtonArea;
     /**
      * SwimLane width selector
      */
-    private IntegerFieldEditor fLifelineWidth = null;
+    protected IntegerFieldEditor fLifelineWidth = null;
 
     // ------------------------------------------------------------------------
     // Methods
@@ -241,7 +241,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         // and all the fonts and colors
         // fonts and colors are stored for each time because
         // we are using only one FontFieldEditor
-        Set<String> keySet = SDViewPref.getInstance().getFontPref().keySet();
+        Set<String> keySet = SDViewPref.getInstance().fFontPref.keySet();
         Iterator<String> it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -253,7 +253,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
             }
         }
 
-        keySet = SDViewPref.getInstance().getBackColorPref().keySet();
+        keySet = SDViewPref.getInstance().fBackColorPref.keySet();
         it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -270,7 +270,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         fBackGroundColor.setPreferenceName(fontList[fClassItemList.getSelectionIndex()] + SDViewPref.BACK_COLOR_POSTFIX + TEMP_TAG);
         fBackGroundColor.load();
 
-        keySet = SDViewPref.getInstance().getForeColorPref().keySet();
+        keySet = SDViewPref.getInstance().fForeColorPref.keySet();
         it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -285,7 +285,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         fLineColor.setPreferenceName(fontList[fClassItemList.getSelectionIndex()] + SDViewPref.FORE_COLOR_POSTFIX + TEMP_TAG);
         fLineColor.load();
 
-        keySet = SDViewPref.getInstance().getTextColorPref().keySet();
+        keySet = SDViewPref.getInstance().fTextColorPref.keySet();
         it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -358,7 +358,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
             TAG1 = TEMP_TAG;
             TAG2 = "";//$NON-NLS-1$
         }
-        Set<String> keySet = SDViewPref.getInstance().getFontPref().keySet();
+        Set<String> keySet = SDViewPref.getInstance().fFontPref.keySet();
         Iterator<String> it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -370,7 +370,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
             }
         }
 
-        keySet = SDViewPref.getInstance().getBackColorPref().keySet();
+        keySet = SDViewPref.getInstance().fBackColorPref.keySet();
         it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -382,7 +382,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
             }
         }
 
-        keySet = SDViewPref.getInstance().getForeColorPref().keySet();
+        keySet = SDViewPref.getInstance().fForeColorPref.keySet();
         it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
@@ -394,7 +394,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
             }
         }
 
-        keySet = SDViewPref.getInstance().getTextColorPref().keySet();
+        keySet = SDViewPref.getInstance().fTextColorPref.keySet();
         it = keySet.iterator();
         while (it.hasNext()) {
             Object prefName = it.next();
