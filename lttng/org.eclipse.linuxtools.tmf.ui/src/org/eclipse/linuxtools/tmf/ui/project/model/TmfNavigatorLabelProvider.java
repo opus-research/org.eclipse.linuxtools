@@ -101,8 +101,8 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     @Override
     public Image getImage(Object element) {
 
-        if (element instanceof TmfCommonProjectElement) {
-            TmfCommonProjectElement trace = (TmfCommonProjectElement) element;
+        if (element instanceof TmfTraceElement) {
+            TmfTraceElement trace = (TmfTraceElement) element;
             try {
                 if (trace.getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE) == null) {
                     return fUnknownTraceIcon;
@@ -121,9 +121,10 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
                 }
             } catch (CoreException e) {
             }
-            if (element instanceof TmfTraceElement) {
-                return fDefaultTraceIcon;
-            }
+            return fDefaultTraceIcon;
+        }
+
+        if (element instanceof TmfExperimentElement) {
             return fExperimentIcon;
         }
 
@@ -165,17 +166,17 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
 
         if (element instanceof TmfTraceFolder) {
             TmfTraceFolder folder = (TmfTraceFolder) element;
-            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$//$NON-NLS-2$
         }
 
         if (element instanceof TmfExperimentElement) {
             TmfExperimentElement folder = (TmfExperimentElement) element;
-            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$//$NON-NLS-2$
         }
 
         if (element instanceof TmfExperimentFolder) {
             TmfExperimentFolder folder = (TmfExperimentFolder) element;
-            return folder.getName() + " [" + folder.getChildren().size() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            return folder.getName() + " [" + folder.getChildren().size() + "]"; //$NON-NLS-1$//$NON-NLS-2$
         }
 
         // Catch all

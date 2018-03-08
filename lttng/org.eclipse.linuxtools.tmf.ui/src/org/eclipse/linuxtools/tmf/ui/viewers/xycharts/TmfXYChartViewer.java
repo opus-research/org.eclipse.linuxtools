@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.tmf.ui.viewers.xycharts;
 
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalThrottler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
@@ -22,6 +23,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewer;
@@ -70,6 +72,18 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
     private ITmfTrace fTrace;
     /** The SWT Chart reference */
     private Chart fSwtChart;
+    /** A signal throttler for range updates */
+    private final TmfSignalThrottler fTimeRangeSyncThrottle = new TmfSignalThrottler(this, 200);
+    /** The mouse selection provider */
+    private TmfBaseProvider fMouseSelectionProvider;
+    /** The mouse drag zoom provider */
+    private TmfBaseProvider fMouseDragZoomProvider;
+    /** The mouse wheel zoom provider */
+    private TmfBaseProvider fMouseWheelZoomProvider;
+    /** The tooltip provider */
+    private TmfBaseProvider fToolTipProvider;
+    /** The middle mouse drag provider */
+    private TmfBaseProvider fMouseDragProvider;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -110,6 +124,12 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         } else {
             yAxis.getTitle().setText(yLabel);
         }
+
+        fMouseSelectionProvider = new TmfMouseSelectionProvider(this);
+        fMouseDragZoomProvider = new TmfMouseDragZoomProvider(this);
+        fMouseWheelZoomProvider = new TmfMouseWheelZoomProvider(this);
+        fToolTipProvider = new TmfSimpleTooltipProvider(this);
+        fMouseDragProvider = new TmfMouseDragProvider(this);
     }
 
     // ------------------------------------------------------------------------
@@ -234,6 +254,77 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         return fSwtChart;
     }
 
+    /**
+     * Sets a mouse selection provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse selection provider.
+     *
+     * @param provider
+     *            The selection provider to set
+     */
+    public void setSelectionProvider(TmfBaseProvider provider) {
+        if (fMouseSelectionProvider != null) {
+            fMouseSelectionProvider.dispose();
+        }
+        fMouseSelectionProvider = provider;
+    }
+
+    /**
+     * Sets a mouse drag zoom provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse drag zoom provider.
+     *
+     * @param provider
+     *            The mouse drag zoom provider to set
+     */
+    public void setMouseDragZoomProvider(TmfBaseProvider provider) {
+        if (fMouseDragZoomProvider != null) {
+            fMouseDragZoomProvider.dispose();
+        }
+        fMouseDragZoomProvider = provider;
+    }
+
+    /**
+     * Sets a mouse wheel zoom provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse wheel zoom
+     * provider.
+     *
+     * @param provider
+     *            The mouse wheel zoom provider to set
+     */
+    public void setMouseWheelZoomProvider(TmfBaseProvider provider) {
+        if (fMouseWheelZoomProvider != null) {
+            fMouseWheelZoomProvider.dispose();
+        }
+        fMouseWheelZoomProvider = provider;
+    }
+
+    /**
+     * Sets a tooltip provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the tooltip provider.
+     *
+     * @param provider
+     *            The tooltip provider to set
+     */
+    public void setTooltipProvider(TmfBaseProvider provider) {
+        if (fToolTipProvider != null) {
+            fToolTipProvider.dispose();
+        }
+        fToolTipProvider = provider;
+    }
+
+    /**
+     * Sets a mouse drag provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse drag provider.
+     *
+     * @param provider
+     *            The mouse drag provider to set
+     */
+    public void setMouseDrageProvider(TmfBaseProvider provider) {
+        if (fMouseDragProvider != null) {
+            fMouseDragProvider.dispose();
+        }
+        fMouseDragProvider = provider;
+    }
+
     // ------------------------------------------------------------------------
     // ITmfChartTimeProvider
     // ------------------------------------------------------------------------
@@ -277,6 +368,37 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         return fTimeOffset;
     }
 
+    @Override
+    public void updateSelectionRange(final long currentBeginTime, final long currentEndTime) {
+        if (fTrace != null) {
+            setSelectionBeginTime(currentBeginTime);
+            setSelectionEndTime(currentEndTime);
+
+            final ITmfTimestamp startTimestamp = new TmfTimestamp(fSelectionBeginTime, ITmfTimestamp.NANOSECOND_SCALE);
+            final ITmfTimestamp endTimestamp = new TmfTimestamp(fSelectionEndTime, ITmfTimestamp.NANOSECOND_SCALE);
+
+            TmfTimeSynchSignal signal = new TmfTimeSynchSignal(TmfXYChartViewer.this, startTimestamp, endTimestamp);
+            broadcast(signal);
+        }
+    }
+
+    @Override
+    public void updateWindow(long windowStartTime, long windowEndTime) {
+
+        setWindowStartTime(windowStartTime);
+        setWindowEndTime(windowEndTime);
+        fWindowDuration = windowEndTime - windowStartTime;
+
+        // Build the new time range; keep the current time
+        TmfTimeRange timeRange = new TmfTimeRange(
+                new TmfTimestamp(fWindowStartTime, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(fWindowEndTime, ITmfTimestamp.NANOSECOND_SCALE));
+
+        // Send the  signal
+        TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange);
+        fTimeRangeSyncThrottle.queue(signal);
+    }
+
     // ------------------------------------------------------------------------
     // ITmfViewer interface
     // ------------------------------------------------------------------------
@@ -297,6 +419,26 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
     public void dispose() {
         super.dispose();
         fSwtChart.dispose();
+
+        if (fMouseSelectionProvider != null) {
+            fMouseSelectionProvider.dispose();
+        }
+
+        if (fMouseDragZoomProvider != null) {
+            fMouseDragZoomProvider.dispose();
+        }
+
+        if (fMouseWheelZoomProvider != null) {
+            fMouseWheelZoomProvider.dispose();
+        }
+
+        if (fToolTipProvider != null) {
+            fToolTipProvider.dispose();
+        }
+
+        if (fMouseDragProvider != null) {
+            fMouseDragProvider.dispose();
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -409,6 +551,9 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
             ITmfTimestamp selectedEndTime = signal.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
             setSelectionBeginTime(selectedTime.getValue());
             setSelectionEndTime(selectedEndTime.getValue());
+            if (fMouseSelectionProvider != null) {
+                fMouseSelectionProvider.refresh();
+            }
         }
     }
 
