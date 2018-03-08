@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,7 +90,7 @@ public interface ISDPreferences {
      * @param prefId The preference name
      * @return the color
      */
-    IColor getBackGroundColor(String prefId);
+    public IColor getBackGroundColor(String prefId);
 
     /**
      * Returns the foreground color for the given preference name (font preference name)
@@ -98,7 +98,7 @@ public interface ISDPreferences {
      * @param prefId A preference name
      * @return the color
      */
-    IColor getForeGroundColor(String prefId);
+    public IColor getForeGroundColor(String prefId);
 
     /**
      * Returns the font color for the given preference name (font preference name)
@@ -106,7 +106,7 @@ public interface ISDPreferences {
      * @param prefId A preference name
      * @return the color
      */
-    IColor getFontColor(String prefId);
+    public IColor getFontColor(String prefId);
 
     /**
      * Returns the font for the given preference name
@@ -114,34 +114,34 @@ public interface ISDPreferences {
      * @param prefId the preference name
      * @return the font
      */
-    IFont getFont(String prefId);
+    public IFont getFont(String prefId);
 
     /**
      * Returns the time compression bar selection color
      *
      * @return the time compression bar selection color
      */
-    IColor getTimeCompressionSelectionColor();
+    public IColor getTimeCompressionSelectionColor();
 
     /**
      * Returns the background color used to draw selection
      *
      * @return the background color
      */
-    IColor getBackGroundColorSelection();
+    public IColor getBackGroundColorSelection();
 
     /**
      * Returns the foreground color used to draw selection
      *
      * @return the foreground color
      */
-    IColor getForeGroundColorSelection();
+    public IColor getForeGroundColorSelection();
 
     /**
      * Returns whether to use gradient color or not
      *
      * @return whether to use gradient color or not
      */
-    boolean useGradienColor();
+    public boolean useGradienColor();
 
 }

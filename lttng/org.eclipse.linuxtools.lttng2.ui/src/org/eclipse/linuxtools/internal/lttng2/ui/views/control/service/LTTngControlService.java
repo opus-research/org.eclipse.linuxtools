@@ -60,12 +60,12 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * The command shell implementation
      */
-    private final ICommandShell fCommandShell;
+    protected ICommandShell fCommandShell = null;
 
     /**
      * The version string.
      */
-    private LttngVersion fVersion = null;
+    protected LttngVersion fVersion = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -105,15 +105,6 @@ public class LTTngControlService implements ILttngControlService {
     public boolean isVersionSupported(String version) {
         LttngVersion tmp = new LttngVersion(version);
         return (fVersion != null && fVersion.compareTo(tmp) >= 0) ? true : false;
-    }
-
-    /**
-     * Returns the command shell implementation.
-     *
-     * @return the command shell implementation
-     */
-    protected ICommandShell getCommandShell() {
-        return fCommandShell;
     }
 
     // ------------------------------------------------------------------------
@@ -865,7 +856,11 @@ public class LTTngControlService implements ILttngControlService {
 
     @Override
     public void calibrate(boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
+//        String newSessionName = formatParameter(sessionName);
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CALIBRATE);
+//
+//        command.append(OPTION_SESSION);
+//        command.append(newSessionName);
 
         if (isKernel) {
             command.append(LTTngControlServiceConstants.OPTION_KERNEL);
@@ -1142,6 +1137,10 @@ public class LTTngControlService implements ILttngControlService {
             } else {
                 index++;
             }
+//            else if (line.matches(EVENT_NONE_PATTERN)) {
+                // do nothing
+//            } else
+
         }
 
         return index;

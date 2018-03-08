@@ -17,7 +17,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -46,39 +46,39 @@ public class MinMaxDialog extends Dialog {
     /**
      * Label for minimum.
      */
-    private Label fMinLabel;
+    protected Label fMinLabel;
     /**
      * Label for maximum.
      */
-    private Label fMaxLabel;
+    protected Label fMaxLabel;
     /**
      * Label for scale
      */
-    private Label fScaleLabel;
+    protected Label fScaleLabel;
     /**
      * Label for precision.
      */
-    private Label fPrecisionLabel;
+    protected Label fPrecisionLabel;
     /**
      * Text field for minimum.
      */
-    private Text fMinText;
+    protected Text fMinText;
     /**
      * Text field for maximum.
      */
-    private Text fMaxText;
+    protected Text fMaxText;
     /**
      * Text field for scale.
      */
-    private Text fScaleText;
+    protected Text fScaleText;
     /**
      * Text field for precision.
      */
-    private Text fPrecisionText;
+    protected Text fPrecisionText;
     /**
      * The sequence diagram widget reference.
      */
-    private SDWidget fSdWidget;
+    protected SDWidget fSdWidget;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -109,7 +109,7 @@ public class MinMaxDialog extends Dialog {
 
     @Override
     protected Control createDialogArea(Composite p) {
-        p.getShell().setText(Messages.SequenceDiagram_TimeCompressionBarConfig);
+        p.getShell().setText(SDMessages._123);
         Composite parent = (Composite) super.createDialogArea(p);
 
         GridLayout parentLayout = new GridLayout();
@@ -123,7 +123,7 @@ public class MinMaxDialog extends Dialog {
         g1.setLayout(g1layout);
 
         fMinLabel = new Label(g1, SWT.RADIO);
-        fMinLabel.setText(Messages.SequenceDiagram_MinTime);
+        fMinLabel.setText(SDMessages._124);
         fMinLabel.setLayoutData(newGridData(1));
 
         fMinText = new Text(g1, SWT.SINGLE | SWT.BORDER);
@@ -131,7 +131,7 @@ public class MinMaxDialog extends Dialog {
         fMinText.setText(String.valueOf(fSdWidget.getFrame().getMinTime().getValue()));
 
         fMaxLabel = new Label(g1, SWT.RADIO);
-        fMaxLabel.setText(Messages.SequenceDiagram_MaxTime);
+        fMaxLabel.setText(SDMessages._125);
         fMaxLabel.setLayoutData(newGridData(1));
 
         fMaxText = new Text(g1, SWT.SINGLE | SWT.BORDER);
@@ -139,7 +139,7 @@ public class MinMaxDialog extends Dialog {
         fMaxText.setText(String.valueOf(fSdWidget.getFrame().getMaxTime().getValue()));
 
         fScaleLabel = new Label(g1, SWT.RADIO);
-        fScaleLabel.setText(Messages.SequenceDiagram_Scale);
+        fScaleLabel.setText(SDMessages._136);
         fScaleLabel.setLayoutData(newGridData(1));
 
         fScaleText = new Text(g1, SWT.SINGLE | SWT.BORDER);
@@ -148,7 +148,7 @@ public class MinMaxDialog extends Dialog {
 
 
         fPrecisionLabel = new Label(g1, SWT.RADIO);
-        fPrecisionLabel.setText(Messages.SequenceDiagram_Precision);
+        fPrecisionLabel.setText(SDMessages._137);
         fPrecisionLabel.setLayoutData(newGridData(1));
 
         fPrecisionText = new Text(g1, SWT.SINGLE | SWT.BORDER);
@@ -177,14 +177,14 @@ public class MinMaxDialog extends Dialog {
 
             super.okPressed();
         } catch (Exception e) {
-            MessageDialog.openError(getShell(), Messages.SequenceDiagram_Error, Messages.SequenceDiagram_InvalidRange);
+            MessageDialog.openError(getShell(), SDMessages._98, SDMessages._99);
         }
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
-        createButton(parent, IDialogConstants.CLIENT_ID, Messages.SequenceDiagram_Default, false);
+        createButton(parent, IDialogConstants.CLIENT_ID, SDMessages._126, false);
         getButton(IDialogConstants.CLIENT_ID).addSelectionListener(new SelectionListener() {
 
             @Override

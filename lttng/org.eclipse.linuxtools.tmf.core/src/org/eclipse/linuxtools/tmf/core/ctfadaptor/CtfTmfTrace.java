@@ -13,23 +13,18 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -40,8 +35,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * @version 1.0
  * @author Matthew khouzam
  */
-public class CtfTmfTrace extends TmfTrace
-        implements ITmfEventParser, ITmfTraceProperties {
+public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
 
     // -------------------------------------------
     // Constants
@@ -139,18 +133,11 @@ public class CtfTmfTrace extends TmfTrace
         IStatus validTrace = Status.OK_STATUS;
         try {
             final CTFTrace temp = new CTFTrace(path);
-            if (!temp.majortIsSet()) {
-                validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_MajorNotSet);
-            } else {
-                CTFTraceReader ctfTraceReader = new CTFTraceReader(temp);
-                if (!ctfTraceReader.hasMoreEvents()) {
-                    // TODO: This will need an additional check when we support live traces
-                    // because having no event is valid for a live trace
-                    validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_NoEvent);
-                }
-                ctfTraceReader.dispose();
-            }
+            boolean valid = temp.majortIsSet(); // random test
             temp.dispose();
+            if (!valid) {
+                validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_MajorNotSet);
+            }
         } catch (final CTFReaderException e) {
             validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
         }
@@ -280,15 +267,36 @@ public class CtfTmfTrace extends TmfTrace
     }
 
     // -------------------------------------------
-    // ITmfTraceProperties
+    // Environment Parameters
     // -------------------------------------------
+    /**
+     * Method getNbEnvVars.
+     *
+     * @return int
+     */
+    public int getNbEnvVars() {
+        return this.fTrace.getEnvironment().size();
+    }
 
     /**
-     * @since 2.0
+     * Method getEnvNames.
+     *
+     * @return String[]
      */
-    @Override
-    public Map<String, String> getTraceProperties() {
-        return Collections.unmodifiableMap(fTrace.getEnvironment());
+    public String[] getEnvNames() {
+        final String[] s = new String[getNbEnvVars()];
+        return this.fTrace.getEnvironment().keySet().toArray(s);
+    }
+
+    /**
+     * Method getEnvValue.
+     *
+     * @param key
+     *            String
+     * @return String
+     */
+    public String getEnvValue(final String key) {
+        return this.fTrace.getEnvironment().get(key);
     }
 
     // -------------------------------------------
