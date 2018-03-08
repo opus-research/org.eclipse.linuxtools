@@ -11,8 +11,7 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.logging;
 
-import org.eclipse.ui.plugin.*;
-import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -22,7 +21,7 @@ public class LoggingPlugin extends AbstractUIPlugin {
 
 	//The shared instance.
 	private static LoggingPlugin plugin;
-	
+
 	/**
 	 * The constructor.
 	 */
@@ -54,14 +53,4 @@ public class LoggingPlugin extends AbstractUIPlugin {
 		return plugin;
 	}
 
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path.
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.logging", path);
-	}
 }
