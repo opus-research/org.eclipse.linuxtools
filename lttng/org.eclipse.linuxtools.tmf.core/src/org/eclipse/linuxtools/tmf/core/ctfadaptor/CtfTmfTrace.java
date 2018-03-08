@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Patrick Tasse - Updated for removal of context clone
- *   Geneviève Bastien - Added the createTimestamp function
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -344,14 +343,5 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      */
     public CtfIterator createIterator(){
         return new CtfIterator(this);
-    }
-
-    // ------------------------------------------------------------------------
-    // Timestamp transformation functions
-    // ------------------------------------------------------------------------
-
-    @Override
-    public ITmfTimestamp createTimestamp(long ts) {
-        return new CtfTmfTimestamp(getTimestampTransform().transform(ts));
     }
 }
