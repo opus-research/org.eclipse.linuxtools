@@ -52,6 +52,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.internal.texteditor.AnnotationColumn;
 import org.eclipse.ui.internal.texteditor.LineNumberColumn;
@@ -59,13 +60,14 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.MarkerAnnotationPreferences;
+import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 
 public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundListener {
-    public final static String ST_RULER = "STRuler";
+    private final static String ST_RULER = "STRuler";
 
     protected STContributedRulerColumn fAbstractSTRulerColumn;
 
@@ -171,6 +173,32 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
                 fCachedTextWidget.addLineBackgroundListener(this);
             }
         }
+    }
+
+    @Override
+    protected void rulerContextMenuAboutToShow(IMenuManager menu) {
+        super.rulerContextMenuAboutToShow(menu);
+
+        CompositeRuler vr = (CompositeRuler) super.getVerticalRuler();
+
+        for (Iterator<?> iter = vr.getDecoratorIterator(); iter.hasNext();) {
+            IVerticalRulerColumn column = (IVerticalRulerColumn) iter.next();
+            if (column instanceof STContributedRulerColumn) {
+                STContributedRulerColumn fSTColumn = (STContributedRulerColumn) column;
+                IAction stprofcolAction = getAction(ISTTextEditorActionConstants.ST_TOGGLE);
+                stprofcolAction.setChecked(fSTColumn != null && fSTColumn.isShowingSTRuler());
+            } else if (column instanceof LineNumberColumn) {
+                LineNumberColumn fLineColumn = (LineNumberColumn) column;
+                IAction lineNumberAction = getAction(ITextEditorActionConstants.LINENUMBERS_TOGGLE);
+                lineNumberAction.setChecked(fLineColumn != null && fLineColumn.isShowingLineNumbers());
+            }
+        }
+
+        if (fInput != null) {
+            IAction stAction = getAction(ISTTextEditorActionConstants.ST_TOGGLE);
+            menu.appendToGroup(ITextEditorActionConstants.GROUP_RULERS, stAction);
+        }
+
     }
 
     @SuppressWarnings("rawtypes")
@@ -318,6 +346,32 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
             fInput = (AbstractSTAnnotatedSourceEditorInput) input;
             fListColumns = fInput.getColumns();
         }
+    }
+
+    @Override
+    protected void createActions() {
+        super.createActions();
+
+        ResourceAction action;
+
+        action = new ResourceAction(STTextEditorMessages.getBundleForConstructedKeys(),
+                "Editor.ToggleSTColumnAction.", IAction.AS_CHECK_BOX) { //$NON-NLS-1$
+            @Override
+            public void run() {
+                toggleSTRuler();
+            }
+        };
+
+        if (fInput != null) {
+            action.setActionDefinitionId(ISTTextEditorActionDefinitionIds.ST_TOGGLE);
+            setAction(ISTTextEditorActionConstants.ST_TOGGLE, action);
+        }
+    }
+
+    private void toggleSTRuler() {
+        // globally
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        store.setValue(ST_RULER, !isSTRulerVisible());
     }
 
     protected boolean isSTRulerVisible() {
