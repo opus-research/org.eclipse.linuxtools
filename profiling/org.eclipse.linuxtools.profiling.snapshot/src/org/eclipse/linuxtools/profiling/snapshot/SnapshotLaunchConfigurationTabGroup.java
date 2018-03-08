@@ -13,14 +13,10 @@ package org.eclipse.linuxtools.profiling.snapshot;
 import java.util.ArrayList;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.linuxtools.internal.profiling.provider.ProviderLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 
-/**
- * The tab group for this plug-in's launch configuration.
- * 
- */
 public class SnapshotLaunchConfigurationTabGroup extends
-		ProviderLaunchConfigurationTabGroup {
+		ProfileLaunchConfigurationTabGroup {
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
