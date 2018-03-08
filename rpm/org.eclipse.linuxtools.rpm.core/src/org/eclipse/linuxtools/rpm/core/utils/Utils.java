@@ -60,7 +60,6 @@ public class Utils {
 	 * @throws IOException If an IOException occurs.
 	 * @deprecated use {@link Utils#runCommand(OutputStream, IProject, String...)} instead.
 	 */
-	@Deprecated
 	public static IStatus runCommand(final OutputStream outStream,
 			String... command) throws IOException {
 		return runCommand(null, null, command);
