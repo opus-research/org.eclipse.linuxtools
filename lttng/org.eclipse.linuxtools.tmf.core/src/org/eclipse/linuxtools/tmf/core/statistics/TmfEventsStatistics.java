@@ -12,17 +12,12 @@
 
 package org.eclipse.linuxtools.tmf.core.statistics;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -43,9 +38,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @since 2.0
  */
 public class TmfEventsStatistics implements ITmfStatistics {
-
-    /* All timestamps should be stored in nanoseconds in the statistics backend */
-    private static final int SCALE = ITmfTimestamp.NANOSECOND_SCALE;
 
     private final ITmfTrace trace;
 
@@ -69,7 +61,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public void updateStats(final boolean isGlobal, long start, long end) {
+    public void updateStats(final boolean isGlobal, ITmfTimestamp start,
+            ITmfTimestamp end) {
         cancelOngoingRequests();
 
         /*
@@ -77,9 +70,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
          * same thread, since it will be run by TmfStatisticsViewer's signal
          * handlers, to ensure they get correctly coalesced.
          */
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = isGlobal ? TmfTimeRange.ETERNITY : new TmfTimeRange(startTS, endTS);
+        TmfTimeRange range = isGlobal ? TmfTimeRange.ETERNITY : new TmfTimeRange(start, end);
         final StatsTotalRequest totalReq = new StatsTotalRequest(trace, range);
         final StatsPerTypeRequest perTypeReq = new StatsPerTypeRequest(trace, range);
 
@@ -132,25 +123,6 @@ public class TmfEventsStatistics implements ITmfStatistics {
         return;
     }
 
-    @Override
-    public List<Long> histogramQuery(long start, long end, int nb) {
-        final long[] borders = new long[nb];
-        final long increment = (end - start) / nb;
-
-        long curTime = start;
-        for (int i = 0; i < nb; i++) {
-            borders[i] = curTime;
-            curTime += increment;
-        }
-
-        HistogramQueryRequest req = new HistogramQueryRequest(borders, end);
-        sendAndWait(req);
-
-        List<Long> results = new LinkedList<Long>(req.getResults());
-        return results;
-
-    }
-
     private synchronized void cancelOngoingRequests() {
         if (totalRequest != null && totalRequest.isRunning()) {
             totalRequest.cancel();
@@ -179,11 +151,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public long getEventsInRange(long start, long end) {
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = new TmfTimeRange(startTS, endTS);
-
+    public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end) {
+        TmfTimeRange range = new TmfTimeRange(start, end);
         StatsTotalRequest request = new StatsTotalRequest(trace, range);
         sendAndWait(request);
 
@@ -192,11 +161,9 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public Map<String, Long> getEventTypesInRange(long start, long end) {
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = new TmfTimeRange(startTS, endTS);
-
+    public Map<String, Long> getEventTypesInRange(ITmfTimestamp start,
+            ITmfTimestamp end) {
+        TmfTimeRange range = new TmfTimeRange(start, end);
         StatsPerTypeRequest request = new StatsPerTypeRequest(trace, range);
         sendAndWait(request);
 
@@ -280,65 +247,6 @@ public class TmfEventsStatistics implements ITmfStatistics {
             } else {
                 stats.put(eventType, 1L);
             }
-        }
-    }
-
-    /**
-     * Event request for histogram queries. It is much faster to do one event
-     * request then set the results accordingly than doing thousands of them one
-     * by one.
-     */
-    private class HistogramQueryRequest extends TmfEventRequest {
-
-        /** Map of <borders, number of events> */
-        private final TreeMap<Long, Long> results;
-
-        /**
-         * New histogram request
-         *
-         * @param borders
-         *            The array of borders (not including the end time). The
-         *            first element should be the start time of the queries.
-         * @param endTime
-         *            The end time of the query. Not used in the results map,
-         *            but we need to know when to stop the event request.
-         */
-        public HistogramQueryRequest(long[] borders, long endTime) {
-            super(trace.getEventType(),
-                    new TmfTimeRange(
-                            new TmfTimestamp(borders[0], SCALE),
-                            new TmfTimestamp(endTime, SCALE)),
-                    TmfDataRequest.ALL_DATA,
-                    trace.getCacheSize(),
-                    ITmfDataRequest.ExecutionType.BACKGROUND);
-
-            /* Prepare the results map, with all counts at 0 */
-            results = new TreeMap<Long, Long>();
-            for (long border : borders) {
-                results.put(border, 0L);
-            }
-        }
-
-        public Collection<Long> getResults() {
-            return results.values();
-        }
-
-        @Override
-        public void handleData(ITmfEvent event) {
-            super.handleData(event);
-            if ((event != null)  && (event.getTrace() == trace)) {
-                long ts = event.getTimestamp().normalize(0, SCALE).getValue();
-                Long key = results.floorKey(ts);
-                if (key != null) {
-                    incrementValue(key);
-                }
-            }
-        }
-
-        private void incrementValue(Long key) {
-            long value = results.get(key);
-            value++;
-            results.put(key, value);
         }
     }
 

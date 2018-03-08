@@ -14,13 +14,13 @@ package org.eclipse.linuxtools.tmf.core.statistics;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -46,6 +46,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
+
 public class TmfStateStatistics implements ITmfStatistics {
 
     /** ID for the statistics state system */
@@ -127,8 +128,8 @@ public class TmfStateStatistics implements ITmfStatistics {
     }
 
     @Override
-    public void updateStats(final boolean isGlobal, final long start,
-            final long end) {
+    public void updateStats(final boolean isGlobal, final ITmfTimestamp start,
+            final ITmfTimestamp end) {
         /*
          * Since we are currently in a signal handler (ie, in the UI thread),
          * and since state system queries can be arbitrarily long (O(log n) wrt
@@ -157,44 +158,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         };
         statsThread.start();
         return;
-    }
 
-    @Override
-    public List<Long> histogramQuery(final long start, final long end, final int nb) {
-        final List<Long> list = new LinkedList<Long>();
-        final long increment = (end - start) / nb;
-
-        /* Wait until the history building completed */
-        if (!stats.waitUntilBuilt()) {
-            return null;
-        }
-
-        /*
-         * We will do one state system query per "border", and save the
-         * differences between each border.
-         */
-        long prevTotal = (start == stats.getStartTime()) ? 0 : getEventCountAt(start);
-        long curTime = start + increment;
-
-        long curTotal, count;
-        for (int i = 0; i < nb - 1; i++) {
-            curTotal = getEventCountAt(curTime);
-            count = curTotal - prevTotal;
-            list.add(count);
-
-            curTime += increment;
-            prevTotal = curTotal;
-        }
-
-        /*
-         * For the last bucket, we'll stretch its end time to the end time of
-         * the requested range, in case it got truncated down.
-         */
-        curTotal = getEventCountAt(end);
-        count = curTotal - prevTotal;
-        list.add(count);
-
-        return list;
     }
 
     @Override
@@ -260,28 +224,42 @@ public class TmfStateStatistics implements ITmfStatistics {
     }
 
     @Override
-    public long getEventsInRange(long start, long end) {
+    public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end) {
         // FIXME Instead of waiting until the end, we could check the current
         // end time, and answer as soon as possible...
         stats.waitUntilBuilt();
 
-        long startCount;
-        if (start == stats.getStartTime()) {
-            startCount = 0;
-        } else {
-            /*
-             * We want the events happening at "start" to be included, so we'll
-             * need to query one unit before that point.
-             */
-            startCount = getEventCountAt(start - 1);
-        }
-        long endCount = getEventCountAt(end);
+        int countAtStart = 0, countAtEnd = 0;
+        long startTime = checkStartTime(start);
+        long endTime = checkEndTime(end);
 
-        return endCount - startCount;
+        try {
+            final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
+            if (startTime == stats.getStartTime()) {
+                countAtStart = 0;
+            } else {
+                /* State system works that way... */
+                countAtStart = stats.querySingleState(startTime - 1, quark).getStateValue().unboxInt();
+            }
+            countAtEnd = stats.querySingleState(endTime, quark).getStateValue().unboxInt();
+
+        } catch (TimeRangeException e) {
+            /* Assume there is no events for that range */
+            return 0;
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            e.printStackTrace();
+        }
+
+        long total = countAtEnd - countAtStart;
+        return total;
     }
 
     @Override
-    public Map<String, Long> getEventTypesInRange(long start, long end) {
+    public Map<String, Long> getEventTypesInRange(ITmfTimestamp start, ITmfTimestamp end) {
         // FIXME Instead of waiting until the end, we could check the current
         // end time, and answer as soon as possible...
         stats.waitUntilBuilt();
@@ -352,39 +330,16 @@ public class TmfStateStatistics implements ITmfStatistics {
         return map;
     }
 
-    private long getEventCountAt(long timestamp) {
-        /* Make sure the target time is within the range of the history */
-        long ts = checkStartTime(timestamp);
-        ts = checkEndTime(ts);
-
-        try {
-            final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            long count = stats.querySingleState(ts, quark).getStateValue().unboxInt();
-            return count;
-
-        } catch (TimeRangeException e) {
-            /* Assume there is no events for that range */
-        } catch (AttributeNotFoundException e) {
-            e.printStackTrace();
-        } catch (StateValueTypeException e) {
-            e.printStackTrace();
-        } catch (StateSystemDisposedException e) {
-            e.printStackTrace();
-        }
-
-        return 0;
-    }
-
-    private long checkStartTime(long initialStart) {
-        long start = initialStart;
+    private long checkStartTime(ITmfTimestamp startTs) {
+        long start = startTs.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         if (start < stats.getStartTime()) {
             return stats.getStartTime();
         }
         return start;
     }
 
-    private long checkEndTime(long initialEnd) {
-        long end = initialEnd;
+    private long checkEndTime(ITmfTimestamp endTs) {
+        long end = endTs.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         if (end > stats.getCurrentEndTime()) {
             return stats.getCurrentEndTime();
         }

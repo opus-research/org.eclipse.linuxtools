@@ -48,12 +48,12 @@ import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -68,8 +68,7 @@ import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterMatchesNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterNode;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfEventFilterAppliedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfEventSearchAppliedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
@@ -128,7 +127,8 @@ import org.eclipse.ui.themes.ColorUtil;
  * @author Patrick Tasse
  * @since 2.0
  */
-public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorSettingsListener, ISelectionProvider {
+public class TmfEventsTable extends TmfComponent implements IGotoMarker,
+        IColorSettingsListener, ITmfEventsFilterProvider, ISelectionProvider {
 
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
@@ -216,6 +216,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     protected final Object fFilterSyncObj = new Object();
     protected SearchThread fSearchThread;
     protected final Object fSearchSyncObj = new Object();
+    protected List<ITmfEventsFilterListener> fEventsFilterListeners = new ArrayList<ITmfEventsFilterListener>();
 
     /**
      * List of selection change listeners (element type: <code>ISelectionChangedListener</code>).
@@ -450,7 +451,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         }
                         Point pt = fTable.toDisplay(event.x, y);
                         pt.x += BOOKMARK_IMAGE.getBounds().width;
-                        pt.y += item.getBounds().height;
+                        pt.y += size.y;
                         tooltipShell.setBounds(pt.x, pt.y, size.x, size.y);
                         tooltipShell.setVisible(true);
                         break;
@@ -1056,11 +1057,15 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     }
 
     protected void fireFilterApplied(final ITmfFilter filter) {
-        broadcast(new TmfEventFilterAppliedSignal(this, fTrace, filter));
+        for (final ITmfEventsFilterListener listener : fEventsFilterListeners) {
+            listener.filterApplied(filter, fTrace);
+        }
     }
 
     protected void fireSearchApplied(final ITmfFilter filter) {
-        broadcast(new TmfEventSearchAppliedSignal(this, fTrace, filter));
+        for (final ITmfEventsFilterListener listener : fEventsFilterListeners) {
+            listener.searchApplied(filter, fTrace);
+        }
     }
 
     protected void startFilterThread() {
@@ -1488,13 +1493,14 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             final String source = event.getSource();
             final String type = event.getType().getName();
             final String reference = event.getReference();
-            final String content = event.getContent().toString();
+            final ITmfEventField content = event.getContent();
+            final String value = (content.getValue() != null) ? content.getValue().toString() : content.toString();
             fields = new TmfEventField[] {
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content)
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, value)
             };
         }
         return fields;
@@ -1668,7 +1674,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         for (int i = 0; i < listeners.length; ++i) {
             final ISelectionChangedListener l = (ISelectionChangedListener) listeners[i];
             SafeRunnable.run(new SafeRunnable() {
-                @Override
                 public void run() {
                     l.selectionChanged(event);
                 }
@@ -1700,11 +1705,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     }
                     defaultMessage.append(tableItem.getText(i));
                 }
-                final InputDialog dialog = new MultiLineInputDialog(
-                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                        Messages.TmfEventsTable_AddBookmarkDialogTitle,
-                        Messages.TmfEventsTable_AddBookmarkDialogMessage,
-                        defaultMessage.toString());
+                final InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                        Messages.TmfEventsTable_AddBookmarkDialogTitle, Messages.TmfEventsTable_AddBookmarkDialogText,
+                        defaultMessage.toString(), null);
                 if (dialog.open() == Window.OK) {
                     final String message = dialog.getValue();
                     try {
@@ -1819,9 +1822,54 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.refresh();
     }
 
+    @Override
+    public void addEventsFilterListener(final ITmfEventsFilterListener listener) {
+        if (!fEventsFilterListeners.contains(listener)) {
+            fEventsFilterListeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeEventsFilterListener(final ITmfEventsFilterListener listener) {
+        fEventsFilterListeners.remove(listener);
+    }
+
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
+
+    /**
+     * Handler for the experiment updated signal.
+     *
+     * @param signal
+     *            The incoming signal
+     */
+    @TmfSignalHandler
+    public void experimentUpdated(final TmfExperimentUpdatedSignal signal) {
+        if ((signal.getExperiment() != fTrace) || fTable.isDisposed()) {
+            return;
+        }
+        // Perform the refresh on the UI thread
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!fTable.isDisposed() && (fTrace != null)) {
+                    if (fTable.getData(Key.FILTER_OBJ) == null) {
+                        fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1 for header row
+                        if ((fPendingGotoRank != -1) && ((fPendingGotoRank + 1) < fTable.getItemCount())) { // +1 for header row
+                            fTable.setSelection((int) fPendingGotoRank + 1); // +1 for header row
+                            fPendingGotoRank = -1;
+                        }
+                    } else {
+                        startFilterThread();
+                    }
+                }
+                if (!fRawViewer.isDisposed() && (fTrace != null)) {
+                    fRawViewer.refreshEventCount();
+                }
+            }
+        });
+    }
 
     /**
      * Handler for the trace updated signal

@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statistics;
 
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
@@ -21,10 +20,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
 /**
  * Provider for statistics, which is assigned to a trace. This can be used to
  * populate views like the Statistics View or the Histogram.
- *
- * As a guideline, since any trace type can use this interface, all timestamps
- * should be normalized to nanoseconds when using these methods
- * ({@link ITmfTimestamp#NANOSECOND_SCALE}).
  *
  * @author Alexandre Montplaisir
  * @since 2.0
@@ -51,30 +46,8 @@ public interface ITmfStatistics {
      *            The end time of the query range. Has no effect if isGlobal is
      *            true.
      */
-    public void updateStats(boolean isGlobal, long start, long end);
-
-    /**
-     * Run a histogram query on the statistics back-end. This means, return the
-     * total number of events in a series of 'nb' equal-sized ranges between
-     * 'start' and 'end'. As its name implies, this is typically used to fill
-     * the histogram data (where each range represents one pixel on the
-     * histogram).
-     *
-     * Unlike {@link #updateStats}, this method will block the caller until the
-     * results are returned, so it should not be called from a signal handler or
-     * from the UI thread.
-     *
-     * @param start
-     *            Start time of the query
-     * @param end
-     *            End time of the query
-     * @param nb
-     *            The number of ranges to separate the complete time range into.
-     *            It will be the size() of the returned array.
-     * @return The array representing the number of events found in each
-     *         sub-range.
-     */
-    public List<Long> histogramQuery(long start, long end, int nb);
+    public void updateStats(final boolean isGlobal, ITmfTimestamp start,
+            ITmfTimestamp end);
 
     /**
      * Return the total number of events in the trace.
@@ -100,7 +73,7 @@ public interface ITmfStatistics {
      *            End time of the time range
      * @return The number of events found
      */
-    public long getEventsInRange(long start, long end);
+    public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end);
 
     /**
      * Retrieve the number of events in the trace, per event type, in a given
@@ -112,7 +85,8 @@ public interface ITmfStatistics {
      *            End time of the time range
      * @return The map of <event_type, count>, for the given time range
      */
-    public Map<String, Long> getEventTypesInRange(long start, long end);
+    public Map<String, Long> getEventTypesInRange(ITmfTimestamp start,
+            ITmfTimestamp end);
 
     /**
      * Notify the statistics back-end that the trace is being closed, so it
