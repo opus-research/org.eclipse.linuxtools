@@ -438,6 +438,7 @@ public class TraceControlComponent implements ITraceControlComponent {
      * (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         return null;
