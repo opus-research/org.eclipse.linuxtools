@@ -283,60 +283,6 @@ Upon successful importing the traces will be stored in the '''Traces''' folder. 
 
 Note that trace type is an extension point of the '''Tracing and Monitoring Framework (TMF)'''. Depending on the which features are loaded, the list of trace types can vary.
 
-=== Trace Package Exporting and Importing ===
-
-A trace package is an archive file that contains the trace itself and can also contain its bookmarks and its supplementary files. Including supplementary files in the package can improve performance of opening an imported trace but at the expense of package size.
-
-==== Exporting ====
-
-The '''Export Trace Package Wizard''' allows users to select a trace and export its files and bookmarks to an archive on a media.
-
-The '''Traces''' folder holds the set of traces available for a tracing project. To export a trace contained in the '''Traces''' folder, one can open the '''Export...''' menu from the '''File''' main menu. Then select '''Trace Package Export'''
-
-[[Image:images/tracePackageImages/fileExport.png]]
-
-At this point, the '''Trace Package Export''' is opened. The project containing the trace has to be selected first then the trace to be exported.
-
-[[Image:images/tracePackageImages/chooseTrace.png]]
-
-One can also open the wizard and skip the first page by selecting a trace in the '''Traces''' folder by double clicking on the project name, double clicking on the '''Traces''' folder, right-clicking on the trace then selecting '''Export Trace Package...''' menu item in the context-sensitive menu.
-
-[[Image:images/tracePackageImages/exportSelectedTrace.png]]
-
-Next, the user can choose the content to export and various format options for the resulting file.
-
-[[Image:images/tracePackageImages/exportPackage.png]]
-
-The '''Trace''' item is always selected and represents the files that constitute the trace. The '''Supplementary files''' items represent files that are typically generated when a trace is opened by the viewer. Sharing these files can speed up opening a trace dramatically but also increases the size of the exported archive file. The ''Size'' column can help to decide whether or not to include these files. Lastly, by selecting '''Bookmarks''', the user can export all the bookmarks so that they can be shared along with the trace.
-
-The '''To archive file''' field is used to specify the location where to save the resulting archive.
-
-The '''Options''' section allows the user to choose between a tar archive or a zip archive. Compression can also be toggled on or off.
-
-When Finish button is clicked, the package is generated and saved to the media.
-
-==== Importing ====
-
-The '''Import Trace Package Wizard''' allows users to select a previously exported trace package from their media and import the content of the package in the workspace.
-
-The '''Traces''' folder holds the set of traces for a tracing project. To import a trace package to the '''Traces''' folder, one can open the '''Import...''' menu from the '''File''' main menu. Then select '''Trace Package Import'''.
-
-[[Image:images/tracePackageImages/fileImport.png]]
-
-One can also open the wizard by double clicking on the project name, right-clicking on the  '''Traces''' folder then selecting '''Import Trace Package...''' menu item in the context-sensitive menu.
-
-[[Image:images/tracePackageImages/importTraceFolder.png]]
-
-At this point, the '''Trace Package Import Wizard''' is opened.
-
-[[Image:images/tracePackageImages/importPackage.png]]
-
-The '''From archive file''' field is used to specify the location of the trace package to export. The user can choose the content to import in the tree.
-
-If the wizard was opened using the File menu, the destination project has to be selected in the '''Into project''' field.
-
-When Finish is clicked, the trace is imported under the project's Trace folder.
-
 === Selecting a Trace Type ===
 
 If no trace type was selected a trace type as to be associated to a trace before it can be opened. To select a trace type select the relevant trace and click the right mouse button. In the context-sensitive menu, select '''Select Trace Type...''' menu item. A sub-menu will show will all available trace type categories. From the relevant category select the required trace type. The examples, below show how to select the '''Common Trace Format''' types '''LTTng Kernel''' and '''Generic CTF trace'''.
@@ -570,11 +516,6 @@ If a source file is available in the trace for the selected event, the item '''O
 ==== EMF Model ====
 
 If an EMF model URI is available in the trace for the selected event, the item '''Open Model Element''' is shown in the context menu. Selecting this menu item will attempt to open the model file in the project specified in the URI. The model file will be opened in its default model editor. If the model file is not found, an error dialog is shown displaying the URI information.
-
-=== Exporting To Text ===
-It is possible to export the content of the trace to a text file based on the columns displayed in the events table. If a filter (see '''[[#Filtering| Filtering]]''') was defined prior exporting only events that match the filter will be exported to the file. To export the trace to text, press the right mouse button on the events table. A context-sensitive menu will show. Select the '''Export To Text...''' menu option. A file locater dialog will open. Fill in the file name and location and then press on '''OK'''. A window with a progress bar will open till the export is finished.
-
-''Note'':  The columns in the text file are separated by tabs.    
 
 == Histogram View ==
 
@@ -1252,9 +1193,9 @@ Adding contexts on channels and events from the channel level, will enable the s
 
 A new display will open for selecting one or more contexts to add. Select one or more contexts as described in chapter [[#Adding Contexts to Channels and Events of a Domain | Adding Contexts to Channels and Events of a Domain]]. Upon successful operation, the selected context will be added to all channels and their events of the selected domain. '''Note''' that the LTTng 2.0 tracer control on the remote host doesn't provide a way to retrieve added contexts. Hence it's not possible to display the context information in the GUI.
 
-==== Adding Contexts to an Event of a Specific Channel ====
+==== Adding Contexts to a Event of a Specific Channel ====
 
-Adding contexts to an event of a channel is only available in LTTng Tools versions v2.0.0-2.1.x. The menu option won't be visible for LTTng Tools version v2.2.0 or later. To add contexts on an event select an event of a channel, click right mouse button on the corresponding event tree node and select the menu item '''Add Context...''' from the context-sensitive menu.
+Adding contexts to a event of a channel, select an event of a channel, click right mouse button on the corresponding event tree node and select the menu item '''Add Context...''' from the context-sensitive menu.
 
 [[Image:images/LTTng2AddContextToEventsAction.png]]
 
