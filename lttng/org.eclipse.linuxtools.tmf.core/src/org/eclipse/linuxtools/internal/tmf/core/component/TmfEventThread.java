@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.internal.tmf.core.component;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
-import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -111,7 +111,7 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The event provider
      */
-    public ITmfDataProvider getProvider() {
+    public ITmfEventProvider getProvider() {
         return fProvider;
     }
 

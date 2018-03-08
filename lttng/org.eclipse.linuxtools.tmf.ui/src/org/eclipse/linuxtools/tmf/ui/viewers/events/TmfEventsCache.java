@@ -21,10 +21,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -271,8 +270,8 @@ public class TmfEventsCache {
             }
         }
 
-        request = new DataRequest(ITmfEvent.class, filter, startRank, ITmfEventRequest.ALL_DATA);
-        ((ITmfDataProvider) fTrace).sendRequest(request);
+        request = new DataRequest(ITmfEvent.class, filter, startRank, TmfEventRequest.ALL_DATA);
+        ((ITmfEventProvider) fTrace).sendRequest(request);
         try {
             request.waitForCompletion();
             return ((DataRequest) request).getFilteredIndex();
@@ -326,7 +325,7 @@ public class TmfEventsCache {
                 if (fFilter == null) {
                     nbRequested = fCache.length;
                 } else {
-                    nbRequested = ITmfEventRequest.ALL_DATA;
+                    nbRequested = TmfEventRequest.ALL_DATA;
                     int i = startIndex / fCacheSize;
                     if (i < fFilterIndex.size()) {
                         skipCount = startIndex - (i * fCacheSize);
@@ -373,7 +372,7 @@ public class TmfEventsCache {
                     }
                 };
 
-                ((ITmfDataProvider) fTrace).sendRequest(request);
+                ((ITmfEventProvider) fTrace).sendRequest(request);
                 try {
                     request.waitForCompletion();
                 } catch (InterruptedException e) {
