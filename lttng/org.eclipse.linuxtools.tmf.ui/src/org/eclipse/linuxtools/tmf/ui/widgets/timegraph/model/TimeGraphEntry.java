@@ -40,8 +40,8 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     private String fName;
     private long fStartTime = -1;
     private long fEndTime = -1;
-    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
-    private List<ITimeEvent> fZoomedEventList = null;
+    private EventList fEventList = new EventList(new ArrayList<ITimeEvent>(), Long.MIN_VALUE, Long.MAX_VALUE);
+    private EventList fZoomedEventList = null;
 
     /**
      * Constructor
@@ -163,53 +163,58 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *
      * @param event
      *            The time event
+     * @deprecated As of 2.1, don't use
      */
+    @Deprecated
     public void addEvent(ITimeEvent event) {
-        long start = event.getTime();
-        long end = start + event.getDuration();
-        synchronized (fEventList) {
-            fEventList.add(event);
-            if (fStartTime == -1 || start < fStartTime) {
-                fStartTime = start;
-            }
-            if (fEndTime == -1 || end > fEndTime) {
-                fEndTime = end;
-            }
-        }
     }
 
     /**
      * Set the general event list of this entry.
      *
-     * Creates a copy of the list to avoid the caller still modifying the list
-     *
      * @param eventList
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        if (eventList != null) {
-            fEventList = new ArrayList<ITimeEvent>(eventList);
-        } else {
-            // the event list should never be null
-            fEventList = new ArrayList<ITimeEvent>();
-        }
+        fEventList = new EventList(eventList, Long.MAX_VALUE, Long.MIN_VALUE);
     }
 
     /**
      * Set the zoomed event list of this entry.
      *
-     * Creates a copy of the list to avoid the caller still modifying the list
-     *
      * @param eventList
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        if (eventList != null) {
-            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
-        } else {
-            // the zoomed event list can be null
-            fZoomedEventList = null;
-        }
+        fZoomedEventList = new EventList(eventList, Long.MAX_VALUE, Long.MIN_VALUE);
+    }
+
+    /**
+     * Set the general event list of this entry.
+     *
+     * @param eventList
+     *            The list of time events
+     * @param startTime
+     *            The start time
+     * @param endTime
+     *            The end time
+     */
+    public void setEventList(List<ITimeEvent> eventList, long startTime, long endTime) {
+        fEventList = new EventList(eventList, startTime, endTime);
+    }
+
+    /**
+     * Set the zoomed event list of this entry.
+     *
+     * @param eventList
+     *            The list of time events
+     * @param startTime
+     *            The start time
+     * @param endTime
+     *            The end time
+     */
+    public void setZoomedEventList(List<ITimeEvent> eventList, long startTime, long endTime) {
+        fZoomedEventList = new EventList(eventList, startTime, endTime);
     }
 
     /**

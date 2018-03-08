@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -50,6 +51,20 @@ public class EventIterator implements Iterator<ITimeEvent> {
     }
 
     /**
+     * Basic constructor, with start time and end times equal to the lowest and
+     * highest values possible, respectively.
+     *
+     * @param eventList
+     *            The list on which this iterator will iterate
+     * @param zoomedEventList
+     *            The "zoomed" list
+     * @since 2.1
+     */
+    public EventIterator(EventList eventList, EventList zoomedEventList) {
+        this(eventList, zoomedEventList, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    /**
      * Complete constructor, where we specify start and end times.
      *
      * @param eventList
@@ -63,12 +78,53 @@ public class EventIterator implements Iterator<ITimeEvent> {
      */
     public EventIterator(List<ITimeEvent> eventList,
             List<ITimeEvent> zoomedEventList, long startTime, long endTime) {
-        fEventList = eventList;
-        fZoomedEventList = zoomedEventList;
+        if (eventList != null) {
+            fEventList = Collections.unmodifiableList(eventList);
+        }
+        if (zoomedEventList != null) {
+            fZoomedEventList = Collections.unmodifiableList(zoomedEventList);
+        }
         if (zoomedEventList != null && zoomedEventList.size() > 0) {
             fZoomedStartTime = zoomedEventList.get(0).getTime();
             ITimeEvent lastEvent = zoomedEventList.get(zoomedEventList.size() - 1);
             fZoomedEndTime = lastEvent.getTime() + lastEvent.getDuration();
+        } else {
+            fZoomedStartTime = Long.MAX_VALUE;
+            fZoomedEndTime = Long.MIN_VALUE;
+        }
+        fStartTime = startTime;
+        fEndTime = endTime;
+    }
+
+    /**
+     * Complete constructor, where we specify start and end times.
+     *
+     * @param eventList
+     *            The list on which this iterator will iterate
+     * @param zoomedEventList
+     *            The "zoomed" list
+     * @param startTime
+     *            The start time
+     * @param endTime
+     *            The end time
+     * @since 2.1
+     */
+    public EventIterator(EventList eventList, EventList zoomedEventList, long startTime, long endTime) {
+        if (eventList != null) {
+            fEventList = eventList.getList();
+        }
+        if (zoomedEventList != null) {
+            fZoomedEventList = zoomedEventList.getList();
+        }
+        if (zoomedEventList != null && fZoomedEventList != null && fZoomedEventList.size() > 0) {
+            fZoomedStartTime = fZoomedEventList.get(0).getTime();
+            ITimeEvent lastEvent = fZoomedEventList.get(fZoomedEventList.size() - 1);
+            fZoomedEndTime = lastEvent.getTime() + lastEvent.getDuration();
+            fZoomedStartTime = Math.min(zoomedEventList.getStartTime(), fZoomedStartTime);
+            fZoomedEndTime = Math.max(zoomedEventList.getEndTime(), fZoomedEndTime);
+        } else if (zoomedEventList != null) {
+            fZoomedStartTime = zoomedEventList.getStartTime();
+            fZoomedEndTime = zoomedEventList.getEndTime();
         } else {
             fZoomedStartTime = Long.MAX_VALUE;
             fZoomedEndTime = Long.MIN_VALUE;
@@ -91,12 +147,20 @@ public class EventIterator implements Iterator<ITimeEvent> {
                         fNext = null;
                         if (event.getTime() + event.getDuration() > fZoomedEndTime && fZoomedEndTime < fEndTime) {
                             // the end of the event is partially hidden by the zoomed events and is visible
-                            fNext = new TimeEvent(event.getEntry(), fZoomedEndTime, event.getTime() + event.getDuration() - fZoomedEndTime);
+                            if (event instanceof ITimeEvent2) {
+                                fNext = ((ITimeEvent2) event).split(fZoomedEndTime).getSecond();
+                            } else {
+                                fNext = new TimeEvent(event.getEntry(), fZoomedEndTime, event.getTime() + event.getDuration() - fZoomedEndTime);
+                            }
                         }
                         if (event.getTime() < fZoomedStartTime && fZoomedStartTime > fStartTime) {
                             // the start of the event is partially hidden by the zoomed events and is visible
                             fSplitNext = fNext;
-                            fNext = new TimeEvent(event.getEntry(), event.getTime(), fZoomedStartTime - event.getTime());
+                            if (event instanceof ITimeEvent2) {
+                                fNext = ((ITimeEvent2) event).split(fZoomedStartTime).getFirst();
+                            } else {
+                                fNext = new TimeEvent(event.getEntry(), event.getTime(), fZoomedStartTime - event.getTime());
+                            }
                         }
                     }
                     if (fNext != null) {
