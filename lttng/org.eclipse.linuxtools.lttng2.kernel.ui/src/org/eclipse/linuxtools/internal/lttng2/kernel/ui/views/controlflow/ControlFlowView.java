@@ -215,6 +215,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                             return;
                         }
                         TimeGraphEntry entry = null;
+                        ArrayList<ITimeEvent> eventList = new ArrayList<ITimeEvent>(1);
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -237,10 +238,17 @@ public class ControlFlowView extends AbstractTimeGraphView {
                                     // latest execName
                                     entry.setName(execName);
                                 }
-                                entry.addEvent(new TimeEvent(entry, startTime, endTime - startTime));
+                                eventList.add(new TimeEvent(entry, startTime, endTime - startTime));
                             } else {
+                                if (entry != null) {
+                                    entry.setEventList(eventList);
+                                }
                                 entry = null;
+                                eventList = new ArrayList<ITimeEvent>(1);
                             }
+                        }
+                        if (entry != null) {
+                            entry.setEventList(eventList);
                         }
                     } catch (AttributeNotFoundException e) {
                         e.printStackTrace();

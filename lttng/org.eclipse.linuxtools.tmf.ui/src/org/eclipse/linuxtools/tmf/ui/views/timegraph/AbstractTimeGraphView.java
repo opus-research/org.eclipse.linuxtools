@@ -452,7 +452,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
             } else {
                 List<ITimeEvent> zoomedEventList = getEventList(entry, fZoomStartTime, fZoomEndTime, fResolution, monitor);
                 if (zoomedEventList != null) {
-                    entry.setZoomedEventList(zoomedEventList);
+                    entry.setZoomedEventList(zoomedEventList, fZoomStartTime, fZoomEndTime);
                 }
             }
             redraw();
