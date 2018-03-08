@@ -372,7 +372,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                 @Override
                 public void run() {
                     fMonitor = SubMonitor.convert(getMonitor());
-                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
+                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
                 }
             });
@@ -386,7 +386,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         @Override
                         public void run() {
                             if (!control.isDisposed()) {
-                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
+                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
                                 getMonitor().subTask(Messages.ImportTraceWizardPageScan_done);
                             }
                         }
