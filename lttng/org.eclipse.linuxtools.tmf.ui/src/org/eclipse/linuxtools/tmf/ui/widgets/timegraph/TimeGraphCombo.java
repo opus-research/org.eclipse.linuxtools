@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -370,7 +371,21 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.addTreeListener(new ITreeViewerListener() {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
-                fTimeGraphViewer.setExpandedState((ITimeGraphEntry) event.getElement(), false);
+                ITimeGraphEntry element = (ITimeGraphEntry) event.getElement();
+                fTimeGraphViewer.setExpandedState(element, false);
+
+                List<ITimeGraphEntry> children = (List<ITimeGraphEntry>) element.getChildren();
+                List<ITimeGraphEntry> elements = new ArrayList<ITimeGraphEntry>();
+                elements.addAll(children);
+                while(!elements.isEmpty()){
+                    element = elements.get(0);
+                    elements.remove(0);
+                    fTimeGraphViewer.setExpandedState(element, fTreeViewer.getExpandedState(element));
+
+                    if(element.hasChildren()) {
+                        elements.addAll(element.getChildren());
+                    }
+                }
                 ArrayList<TreeItem> treeItems = getVisibleExpandedItems(tree);
                 if (treeItems.size() == 0) {
                     return;
@@ -381,7 +396,20 @@ public class TimeGraphCombo extends Composite {
 
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
-                fTimeGraphViewer.setExpandedState((ITimeGraphEntry) event.getElement(), true);
+                ITimeGraphEntry element = (ITimeGraphEntry) event.getElement();
+                fTimeGraphViewer.setExpandedState(element, true);
+                List<ITimeGraphEntry> children = (List<ITimeGraphEntry>) element.getChildren();
+                List<ITimeGraphEntry> elements = new ArrayList<ITimeGraphEntry>();
+                elements.addAll(children);
+                while(!elements.isEmpty()){
+                    element = elements.get(0);
+                    elements.remove(0);
+                    fTimeGraphViewer.setExpandedState(element, fTreeViewer.getExpandedState(element));
+
+                    if(element.hasChildren()) {
+                        elements.addAll(element.getChildren());
+                    }
+                }
                 ArrayList<TreeItem> treeItems = getVisibleExpandedItems(tree);
                 if (treeItems.size() == 0) {
                     return;
