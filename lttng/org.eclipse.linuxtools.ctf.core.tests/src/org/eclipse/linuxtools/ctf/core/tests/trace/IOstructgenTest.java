@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     Matthew Khouzam - Initial API and implementation
- *     Simon Delisle - Generate dummy trace
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.trace;
@@ -18,8 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashMap;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
@@ -27,7 +24,6 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.IOStructGen;
-import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -274,54 +270,6 @@ public class IOstructgenTest {
     static final String tempTraceDir = System.getProperty("java.io.tmpdir")
             + "/" + "tempTrace";
 
-    static final int DATA_SIZE = 4096;
-
-    static final int HEADER_SIZE = 68;
-
-    static final int PAKET_SIZE = DATA_SIZE + HEADER_SIZE + 512;
-
-    private static class Event {
-        private static final int EVENT_SIZE = 16;
-        private int eventId;
-        private int eventTimestamp;
-        private int eventContent;
-
-        public Event(int id, int content) {
-            eventId = id;
-            eventTimestamp = 0;
-            eventContent = content;
-        }
-
-        public void setEventTimestamp(int eventTimestamp) {
-            this.eventTimestamp = eventTimestamp;
-        }
-
-        public void setEventContent(int eventContent) {
-            this.eventContent = eventContent;
-        }
-
-        public void writeEvent(ByteBuffer data) {
-            // Id and Timestamp
-            int timeId = eventTimestamp << 5;
-            timeId |= eventId & 0x1f;
-            data.putInt(timeId);
-
-            // Context
-            long ip = 0x0000facedecafe00L + ((data.position() /
-                    getSize()) & 0x0F);
-            data.putLong(ip);
-
-            // Content
-            data.putInt(eventContent);
-
-        }
-
-        public int getSize() {
-            return EVENT_SIZE;
-        }
-
-    }
-
     private static void deltree(File f) {
         for (File elem : f.listFiles()) {
             if (elem.isDirectory()) {
@@ -334,91 +282,43 @@ public class IOstructgenTest {
 
     private static void createDummyTrace(String metadata) {
 
+        File f;
         try {
-            File dir;
-            dir = new File(tempTraceDir);
-            if (dir.exists()) {
-                deltree(dir);
+            f = new File(tempTraceDir);
+            if (f.exists()) {
+                deltree(f);
             }
-            dir.mkdirs();
-            File metadataFile;
-            metadataFile = new File(tempTraceDir + "/metadata");
-            FileWriter fw = new FileWriter(metadataFile);
+            f.mkdirs();
+            f = new File(tempTraceDir + "/metadata");
+            FileWriter fw = new FileWriter(f);
             fw.write(metadata);
             fw.close();
+            f.createNewFile();
 
-            byte magicLE[] = { (byte) 0xC1, (byte) 0x1F, (byte) 0xFC,
-                    (byte) 0xC1 };
-            byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7,
-                    0x36, 0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
+            byte magicLE[] = { (byte) 0xC1, (byte) 0x1F, (byte) 0xFC, (byte) 0xC1 };
+            byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7, 0x36,
+                    0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
                     (byte) 0xb4, 0x38, (byte) 0x85, 0x7f, (byte) 0x8d };
-
-            Event ev = new Event(2, 2);
-
-            final int nbEvents = (DATA_SIZE / ev.getSize()) - 1;
-            final int contentSize = (nbEvents * ev.getSize() +
-                    HEADER_SIZE) * 8;
-
-            ByteBuffer data = ByteBuffer.allocate(PAKET_SIZE);
-            data.order(ByteOrder.LITTLE_ENDIAN);
-            data.clear();
-
-            // packet header
-            // magic number 4
-            data.put(magicLE);
-            // uuid 16
-            data.put(uuid);
-            // stream ID 4
-            data.putInt(0);
-
-            // packet context
-            // timestamp_begin 8
-            data.putLong(0xa500);
-
-            // timestamp_end 8
-            data.putLong(nbEvents * 0x10000 + 0xa5a6);
-
-            // content_size 8
-            data.putLong(contentSize);
-
-            // packet_size 8
-            data.putLong(PAKET_SIZE * 8);
-
-            // events_discarded 8
-            data.putLong(0);
-
-            // cpu_id 4
-            data.putInt(0);
-
-            // fill me
-            for (int i = 0; i < nbEvents; i++) {
-                ev.setEventTimestamp(i * 0x10000 + 0xa5a5);
-                ev.setEventContent(i);
-                ev.writeEvent(data);
+            final int size = 4096;
+            byte[] data = new byte[size];
+            for (int i = 0; i < size; i++) {
+                data[i] = 0x00;
             }
-
-            File dummyFile;
-            dummyFile = new File(tempTraceDir + "/dummyChan");
-            FileOutputStream fos = new FileOutputStream(dummyFile);
-            // The byteBuffer need to be flip in file writing mode
-            data.flip();
-            fos.getChannel().write(data);
+            f = new File(tempTraceDir + "/dummyChan");
+            fw = new FileWriter(f);
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(magicLE);
+            fos.write(uuid);
+            fos.write(data);
             fos.close();
+            fw.close();
+            f.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            f = null;
         }
 
-    }
-
-    private CTFTrace trace;
-
-    /**
-     * Close trace
-     */
-    @After
-    public void tearDown(){
-        trace.dispose();
     }
 
     /**
@@ -430,8 +330,9 @@ public class IOstructgenTest {
     @Test
     public void TSDLSimpleTest() throws CTFReaderException {
         createDummyTrace(simpleTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
+
     }
 
     /**
@@ -443,7 +344,7 @@ public class IOstructgenTest {
     @Test
     public void TSDLEnvironmentTest() throws CTFReaderException {
         createDummyTrace(envTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
@@ -456,7 +357,7 @@ public class IOstructgenTest {
     @Test
     public void TSDLEnumTest() throws CTFReaderException {
         createDummyTrace(enumTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
@@ -469,7 +370,7 @@ public class IOstructgenTest {
     @Test
     public void TSDLClockTest() throws CTFReaderException {
         createDummyTrace(clockTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
@@ -482,7 +383,7 @@ public class IOstructgenTest {
     @Test
     public void TSDLContextTest() throws CTFReaderException {
         createDummyTrace(contextTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
@@ -495,7 +396,7 @@ public class IOstructgenTest {
     @Test
     public void TSDLCallsiteTest() throws CTFReaderException {
         createDummyTrace(callsiteTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
@@ -508,7 +409,7 @@ public class IOstructgenTest {
     @Test
     public void TSDLAllTest() throws CTFReaderException {
         createDummyTrace(allDressedTSDL);
-        trace = new CTFTrace(tempTraceDir);
+        CTFTrace trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
 
         HashMap<Long, IEventDeclaration> events = trace.getEvents(0L);
