@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -34,6 +33,10 @@ import org.eclipse.ui.IWorkbench;
 /**
  * This page selects the project to import to.
  *
+<<<<<<< HEAD
+=======
+ *
+>>>>>>> e40938b... Tmf: fix missing titles to import wizard pages
  * @author Matthew Khouzam
  * @since 2.0
  */
@@ -110,8 +113,9 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
             this.setErrorMessage(null);
         } else {
-            this.setErrorMessage(Messages.Shared_selectProject);
+            this.setErrorMessage(Messages.SharedSelectProject);
         }
+        this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
     }
 
 }

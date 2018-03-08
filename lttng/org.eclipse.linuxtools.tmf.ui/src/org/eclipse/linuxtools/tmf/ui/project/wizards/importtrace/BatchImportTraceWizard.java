@@ -169,7 +169,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void addFileToScan(final String fileName) {
         if (!fParentFiles.containsKey(fileName)) {
             fParentFiles.put(fileName, new HashSet<String>());
-            startUpdateTask(Messages.BatchImportTraceWizard_add + " " + fileName, fileName); //$NON-NLS-1$
+            startUpdateTask(Messages.BatchImportTraceWizardAdd + ' ' + fileName, fileName);
 
         }
 
@@ -184,7 +184,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void removeFile(final String fileName) {
         fParentFiles.remove(fileName);
         fParentFilesToScan.remove(fileName);
-        startUpdateTask(Messages.BatchImportTraceWizard_remove + " " + fileName, null);//$NON-NLS-1$
+        startUpdateTask(Messages.BatchImportTraceWizardRemove + ' ' + fileName, null);
     }
 
     private void startUpdateTask(final String taskName, final String fileName) {
@@ -412,8 +412,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
-                        + " " + resource.getName(), e); //$NON-NLS-1$
+                Activator.getDefault().logError(Messages.BatchImportTraceWizardErrorImportingTraceResource
+                        + ' ' + resource.getName(), e);
             }
         }
         return validate;
@@ -536,7 +536,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
         IStatus status = op.getStatus();
         if (!status.isOK()) {
-            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizard_ImportProblem, null, status);
+            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizardImportProblem, null, status);
             return false;
         }
 
