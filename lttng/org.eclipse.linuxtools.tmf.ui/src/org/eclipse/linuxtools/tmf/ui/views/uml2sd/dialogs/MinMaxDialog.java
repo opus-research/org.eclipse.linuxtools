@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ * 
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -31,12 +32,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Dialog box for entering minimum and maximum time range for time compression bar.
- *
+ * Dialog box for entering minimum and maximum time range for time compression bar. 
+ * 
  * @version 1.0
  * @author sveyrier
  * @author Bernd Hufmann
- *
+ * 
  */
 public class MinMaxDialog extends Dialog {
 
@@ -44,7 +45,7 @@ public class MinMaxDialog extends Dialog {
     // Attributes
     // ------------------------------------------------------------------------
     /**
-     * Label for minimum.
+     * Label for minimum. 
      */
     protected Label fMinLabel;
     /**
@@ -60,19 +61,19 @@ public class MinMaxDialog extends Dialog {
      */
     protected Label fPrecisionLabel;
     /**
-     * Text field for minimum.
+     * Text field for minimum. 
      */
     protected Text fMinText;
     /**
-     * Text field for maximum.
+     * Text field for maximum. 
      */
     protected Text fMaxText;
     /**
-     * Text field for scale.
+     * Text field for scale. 
      */
     protected Text fScaleText;
     /**
-     * Text field for precision.
+     * Text field for precision. 
      */
     protected Text fPrecisionText;
     /**
@@ -86,7 +87,7 @@ public class MinMaxDialog extends Dialog {
     /**
      * Standard constructor.
      * @param shell The shell
-     * @param viewer The sequence diagram widget reference.
+     * @param viewer The sequence diagram widget reference. 
      */
     public MinMaxDialog(Shell shell, SDWidget viewer) {
         super(shell);
@@ -150,7 +151,7 @@ public class MinMaxDialog extends Dialog {
         fScaleText.setLayoutData(newGridData(2));
         fScaleText.setText(String.valueOf(fSdWidget.getFrame().getMinTime().getScale()));
 
-
+        
         fPrecisionLabel = new Label(g1, SWT.RADIO);
         fPrecisionLabel.setText(SDMessages._137);
         fPrecisionLabel.setLayoutData(newGridData(1));
