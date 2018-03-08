@@ -264,7 +264,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param statusLineManager
      *            The status line manager, or null to disable status line messages
-     * @since 2.1
+     * @since 3.0
      */
     public void setStatusLineManager(IStatusLineManager statusLineManager) {
         if (fStatusLineManager != null && statusLineManager == null) {
@@ -278,7 +278,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param timeGraphScale
      *            The time graph scale
-     * @since 2.1
+     * @since 3.0
      */
     public void setTimeGraphScale(TimeGraphScale timeGraphScale) {
         fTimeGraphScale = timeGraphScale;
@@ -381,7 +381,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      * Refresh the links (arrows) of this widget
      *
      * @param events The link events to refresh
-     * @since 2.1
+     * @since 3.0
      */
     public void refreshArrows(List<ILinkEvent> events) {
         fItemData.refreshArrows(events);
@@ -908,62 +908,10 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param hideArrows true to hide arrows
      *
-     * @since 2.1
+     * @since 3.0
      */
     public void hideArrows(boolean hideArrows) {
         fHideArrows = hideArrows;
-    }
-
-    /**
-     * Follow the arrow forward
-     *
-     * @since 2.1
-     */
-    public void followArrowFwd() {
-        ITimeGraphEntry trace = getSelectedTrace();
-        if (trace == null) {
-            return;
-        }
-        long selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
-        for (ILinkEvent link : fItemData.fLinks) {
-            if (link.getEntry() == trace && link.getTime() == selectedTime) {
-                selectItem(link.getDestinationEntry(), false);
-                if (link.getDuration() != 0) {
-                    fTimeProvider.setSelectedTimeNotify(link.getTime() + link.getDuration(), true);
-                    // Notify if visible time window has been adjusted
-                    fTimeProvider.setStartFinishTimeNotify(fTimeProvider.getTime0(), fTimeProvider.getTime1());
-                }
-                fireSelectionChanged();
-                return;
-            }
-        }
-        selectNextEvent();
-    }
-
-    /**
-     * Follow the arrow backward
-     *
-     * @since 2.1
-     */
-    public void followArrowBwd() {
-        ITimeGraphEntry trace = getSelectedTrace();
-        if (trace == null) {
-            return;
-        }
-        long selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
-        for (ILinkEvent link : fItemData.fLinks) {
-            if (link.getDestinationEntry() == trace && link.getTime() + link.getDuration() == selectedTime) {
-                selectItem(link.getEntry(), false);
-                if (link.getDuration() != 0) {
-                    fTimeProvider.setSelectedTimeNotify(link.getTime(), true);
-                    // Notify if visible time window has been adjusted
-                    fTimeProvider.setStartFinishTimeNotify(fTimeProvider.getTime0(), fTimeProvider.getTime1());
-                }
-                fireSelectionChanged();
-                return;
-            }
-        }
-        selectPrevEvent();
     }
 
     /**
@@ -1439,7 +1387,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *            The width reserved for the names
      * @param gc
      *            Reference to the SWT GC object
-     * @since 2.1
+     * @since 3.0
      */
     public void drawLinks(Rectangle bounds, ITimeDataProvider timeProvider,
             List<ILinkEvent> links, int nameSpace, GC gc) {
@@ -1464,7 +1412,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *            the name space
      * @param gc
      *            Graphics context
-     * @since 2.1
+     * @since 3.0
      */
     protected void drawLink(ILinkEvent event, Rectangle bounds, ITimeDataProvider timeProvider, int nameSpace, GC gc) {
         int srcIndex = fItemData.findItemIndex(event.getEntry());
@@ -1496,7 +1444,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      * @param gc
      *            Graphics context
      * @return true if the state was drawn
-     * @since 2.1
+     * @since 3.0
      */
     protected boolean drawArrow(TimeGraphColorScheme colors, ITimeEvent event,
             Rectangle rect, GC gc) {
@@ -2330,7 +2278,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *            The height
      * @return true if the height is successfully stored, false otherwise
      *
-     * @since 2.1
+     * @since 3.0
      */
     public boolean setItemHeight(ITimeGraphEntry entry, int rowHeight) {
         Item item = fItemData.findItem(entry);
@@ -2500,7 +2448,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                 refreshExpanded(expandedItemList, item);
             }
             fExpandedItems = expandedItemList.toArray(new Item[0]);
-            fTopIndex = Math.min(fTopIndex, Math.max(0, fExpandedItems.length - 1));
         }
 
         private void refreshExpanded(List<Item> expandedItemList, Item item) {

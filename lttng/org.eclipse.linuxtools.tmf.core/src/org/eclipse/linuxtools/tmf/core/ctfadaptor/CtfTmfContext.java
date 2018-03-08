@@ -6,15 +6,13 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
- *   Simon Delisle - Remove the iterator in dispose()
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * Lightweight Context for CtfTmf traces. Should only use 3 references, 1 ref to
@@ -60,6 +58,9 @@ public class CtfTmfContext implements ITmfContext {
         return curRank;
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
     public ITmfLocation getLocation() {
         return curLocation;
@@ -70,6 +71,9 @@ public class CtfTmfContext implements ITmfContext {
         return curRank != CtfLocation.INVALID_LOCATION.getTimestamp();
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
     public void setLocation(ITmfLocation location) {
         curLocation = (CtfLocation) location;
@@ -139,7 +143,7 @@ public class CtfTmfContext implements ITmfContext {
 
     @Override
     public void dispose() {
-        CtfIteratorManager.removeIterator(fTrace, this);
+        // do nothing
     }
 
     /**

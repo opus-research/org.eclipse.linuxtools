@@ -140,7 +140,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             }
         }
-        putEntryList(trace, new ArrayList<TimeGraphEntry>(entryList));
+        putEntryList(trace, (ArrayList<TimeGraphEntry>) entryList.clone());
 
         if (trace.equals(getTrace())) {
             refresh();
