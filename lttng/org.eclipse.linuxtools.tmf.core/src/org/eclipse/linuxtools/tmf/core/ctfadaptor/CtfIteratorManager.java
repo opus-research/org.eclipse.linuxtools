@@ -6,7 +6,9 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors:
+ *   Matthew Khouzam - Initial API and implementation
+ *   Simon Delisle - Added a method to remove the iterator
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
@@ -70,6 +72,19 @@ public abstract class CtfIteratorManager {
     public static synchronized CtfIterator getIterator(final CtfTmfTrace trace,
             final CtfTmfContext ctx) {
         return map.get(trace).getIterator(ctx);
+    }
+
+    /**
+     * Remove an iterator for a given trace and context
+     *
+     * @param trace
+     *            the trace
+     * @param ctx
+     *            the context
+     * @since 2.1
+     */
+    public static synchronized void removeIterator(final CtfTmfTrace trace, final CtfTmfContext ctx) {
+        map.get(trace).removeIterator(ctx);
     }
 }
 
@@ -154,6 +169,10 @@ class CtfTraceManager {
         return retVal;
     }
 
+    public void removeIterator(CtfTmfContext context) {
+        removeElement(context);
+    }
+
     /**
      * Add a pair of context and element to the hashmap and the arraylist.
      *
@@ -166,6 +185,11 @@ class CtfTraceManager {
             final CtfIterator elem) {
         fMap.put(context, elem);
         fRandomAccess.add(context);
+    }
+
+    private void removeElement(final CtfTmfContext context) {
+        fMap.remove(context);
+        fRandomAccess.remove(context);
     }
 
     /**
