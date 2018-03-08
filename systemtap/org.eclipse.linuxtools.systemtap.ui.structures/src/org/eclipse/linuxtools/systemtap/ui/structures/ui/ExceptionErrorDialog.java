@@ -21,7 +21,6 @@ import org.eclipse.ui.PlatformUI;
 /**
  * A convenience class for showing error dialogs which display the full stack
  * trace in the details section.
- * @since 2.0
  *
  */
 public class ExceptionErrorDialog {
