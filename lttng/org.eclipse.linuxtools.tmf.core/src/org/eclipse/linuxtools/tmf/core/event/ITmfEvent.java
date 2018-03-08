@@ -106,9 +106,4 @@ public interface ITmfEvent {
      */
     public String getReference();
 
-    /**
-     * @return a clone of the event
-     */
-    public ITmfEvent clone();
-
 }
