@@ -24,12 +24,14 @@ long rightfib(unsigned long n) {
 }
 
 int main(int argc, char *argv[]) {
+	//vector<int> first;
 	if (argc != 2) {
 		cout << "Not right args" << endl;
 		return 1;
 	}
 	cout << atoi(argv[1]) << endl;
 	cout << leftfib(atoi(argv[1])) << endl;
-
+	//cout << first.front() << endl;
+	//cout << "Hello" << endl;
 	return 0;
 }
