@@ -135,6 +135,5 @@ public class FunctionBrowserView extends BrowserView {
 			menu.dispose();
 		menu = null;
 		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
-		TapsetLibrary.stop();
 	}
 }
