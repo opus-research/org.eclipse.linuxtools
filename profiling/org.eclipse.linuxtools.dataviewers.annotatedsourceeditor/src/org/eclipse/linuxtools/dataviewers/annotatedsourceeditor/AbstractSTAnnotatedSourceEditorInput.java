@@ -10,21 +10,43 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.annotatedsourceeditor;
 
-import org.eclipse.swt.graphics.Color;
+import java.util.ArrayList;
 
-public interface IAnnotationEditorInput {
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+
+public abstract class AbstractSTAnnotatedSourceEditorInput extends FileStoreEditorInput {
+    private ArrayList<ISTAnnotationColumn> columns;
+
+    public AbstractSTAnnotatedSourceEditorInput(IFileStore fileStore) {
+        super(fileStore);
+    }
+
+    /**
+     * gets how many STColumn exist
+     *
+     * @return
+     */
+    public int getColumnCount() {
+        if (columns == null) {
+            columns = getColumns();
+        }
+        return columns != null ? columns.size() : 0;
+    }
+
     /**
      * gets the background column of a editor line
      *
      * @param line
      * @return
      */
-    Color getColor(int line);
+    public abstract Color getColor(int line);
 
     /**
      * gets the ISTAnnotationColumn objects list
      *
      * @return
      */
-    ISTAnnotationColumn getColumn();
+    public abstract ArrayList<ISTAnnotationColumn> getColumns();
 }
