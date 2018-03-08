@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.signal;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
@@ -24,7 +23,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 public class TmfRangeSynchSignal extends TmfSignal {
 
     private final TmfTimeRange fCurrentRange;
-    private final ITmfTimestamp fCurrentTime;
 
     /**
      * Constructor
@@ -33,15 +31,11 @@ public class TmfRangeSynchSignal extends TmfSignal {
      *            Object sending this signal
      * @param range
      *            The time range to which we synchronized
-     * @param ts
-     *            The current selected timestamp, independent from the time
-     *            range
      * @since 2.0
      */
-    public TmfRangeSynchSignal(Object source, TmfTimeRange range, ITmfTimestamp ts) {
+    public TmfRangeSynchSignal(Object source, TmfTimeRange range) {
         super(source);
         fCurrentRange = range;
-        fCurrentTime = ts;
     }
 
     /**
@@ -50,14 +44,6 @@ public class TmfRangeSynchSignal extends TmfSignal {
      */
     public TmfTimeRange getCurrentRange() {
         return fCurrentRange;
-    }
-
-    /**
-     * @return This signal's current selected timestamp
-     * @since 2.0
-     */
-    public ITmfTimestamp getCurrentTime() {
-        return fCurrentTime;
     }
 
 }
