@@ -1,14 +1,19 @@
 package org.eclipse.linuxtools.systemtap.ui.structures.validators;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.NumberValidator;
 
-import org.junit.Test;
+import junit.framework.TestCase;
 
+public class NumberValidatorTest extends TestCase {
+	public NumberValidatorTest(String name) {
+		super(name);
+	}
 
-public class NumberValidatorTest {
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
 
-	@Test
 	public void testIsValid() {
 		NumberValidator validator = new NumberValidator();
 
@@ -19,5 +24,10 @@ public class NumberValidatorTest {
 		assertNull("Integer is valid", validator.isValid("3"));
 		assertNull("Double is valid", validator.isValid("2.2"));
 		assertNull("Double is a number", validator.isValid(".3"));
+	}
+	
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 }

@@ -11,23 +11,22 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.Command;
 
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.TestCase;
 
+public class CommandTest extends TestCase {
+	public CommandTest(String name) {
+		super(name);
+	}
 
-public class CommandTest {
-
-	@Before
-	protected void setUp() {
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		
 		tc = new Command(new String[] {"ls", "/home/"}, null, null);
 	}
 
-	@Test
 	public void testCommand() {
 		assertNotNull("Command not null", tc);
 
@@ -47,35 +46,35 @@ public class CommandTest {
 		assertNotNull("Command not null", tc);
 	}
 
-	@Test
 	public void testIsFinished() {
 		assertTrue("Not finished", tc.isRunning());
 		tc.stop();
 		assertFalse("Finished", tc.isRunning());
 	}
 	
-	@Test
 	public void testStop() {
 		assertTrue("Running", tc.isRunning());
 		tc.stop();
 		assertFalse("Not running", tc.isRunning());
 	}
 
-	@Test
 	public void testGetReturnValue() {
 		assertEquals(-1, tc.getReturnValue());
 	}
 	
-	@Test
 	public void testIsDisposed() {
 		assertFalse(tc.isDisposed());
 		tc.dispose();
 		assertTrue(tc.isDisposed());
 	}
 	
-	@Test
 	public void testDispose() {
 		tc.dispose();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 
 	Command tc;

@@ -11,16 +11,20 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.linuxtools.systemtap.ui.structures.Sort;
 
-import org.junit.Test;
+import junit.framework.TestCase;
 
+public class SortTest extends TestCase {
+	public SortTest(String name) {
+		super(name);
+	}
 
-public class SortTest {
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
 
-	@Test
 	public void testQuicksort() {
 		String blank = "";
 		String[] s0 = null;
@@ -74,4 +78,10 @@ public class SortTest {
 		assertTrue("Single item same", "b".equals(s7[2]));
 		assertTrue("Single item same", "d".equals(s7[3]));
 	}
+	
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+	
 }
