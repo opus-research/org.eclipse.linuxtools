@@ -60,7 +60,6 @@ final public class Messages extends NLS {
     public static String TraceControl_DestroyConfirmationMessage;
 
     public static String TraceControl_ImportJob;
-    public static String TraceControl_DownloadTask;
     public static String TraceControl_ImportFailure;
 
     public static String TraceControl_ChangeSessionStateJob;
