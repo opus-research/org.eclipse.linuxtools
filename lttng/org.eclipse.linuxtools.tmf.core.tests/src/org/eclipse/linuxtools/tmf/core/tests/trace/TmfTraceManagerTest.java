@@ -45,12 +45,12 @@ public class TmfTraceManagerTest {
     private static final int SCALE = ITmfTimestamp.NANOSECOND_SCALE;
 
     private static ITmfTrace trace1;
-    private static final long t1start = 1332170682440133097L;
-    private static final long t1end =   1332170692664579801L;
+//  private static final long t1start = 1331668247314038062L;
+//  private static final long t1end =   1331668259054285979L;
 
     private static ITmfTrace trace2;
-//    private static final long t2start = 1331668247314038062L;
-//    private static final long t2end =   1331668259054285979L;
+    private static final long t2start = 1332170682440133097L;
+    private static final long t2end =   1332170692664579801L;
 
     private static final long ONE_SECOND = 1000000000L;
 
@@ -63,8 +63,8 @@ public class TmfTraceManagerTest {
     @BeforeClass
     public static void setUpClass() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
-        trace1 = CtfTmfTestTraces.getTestTrace(0);
-        trace2 = CtfTmfTestTraces.getTestTrace(1);
+        trace1 = CtfTmfTestTraces.getTestTrace(1);
+        trace2 = CtfTmfTestTraces.getTestTrace(0);
 
         trace1.indexTrace(true);
         trace2.indexTrace(true);
@@ -135,10 +135,10 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTraceInitialRange() {
-        openTrace(trace1);
+        openTrace(trace2);
         final TmfTimeRange expectedRange = new TmfTimeRange(
-                trace1.getStartTime(),
-                calculateOffset(trace1.getStartTime(), trace1.getInitialRangeOffset()));
+                trace2.getStartTime(),
+                calculateOffset(trace2.getStartTime(), trace2.getInitialRangeOffset()));
         TmfTimeRange actualRange = tm.getCurrentRange();
         assertEquals(expectedRange, actualRange);
     }
@@ -149,8 +149,8 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testNewTimestamp() {
-        openTrace(trace1);
-        ITmfTimestamp ts = new TmfTimestamp(t1start + ONE_SECOND, SCALE);
+        openTrace(trace2);
+        ITmfTimestamp ts = new TmfTimestamp(t2start + ONE_SECOND, SCALE);
         selectTimestamp(ts);
 
         ITmfTimestamp afterTs = tm.getCurrentTime();
@@ -163,9 +163,9 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTimestampBefore() {
-        openTrace(trace1);
+        openTrace(trace2);
         ITmfTimestamp beforeTs = tm.getCurrentTime();
-        ITmfTimestamp ts = new TmfTimestamp(t1start - ONE_SECOND, SCALE);
+        ITmfTimestamp ts = new TmfTimestamp(t2start - ONE_SECOND, SCALE);
         selectTimestamp(ts);
 
         ITmfTimestamp curTs = tm.getCurrentTime();
@@ -178,9 +178,9 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTimestampAfter() {
-        openTrace(trace1);
+        openTrace(trace2);
         ITmfTimestamp beforeTs = tm.getCurrentTime();
-        ITmfTimestamp ts = new TmfTimestamp(t1end + ONE_SECOND, SCALE);
+        ITmfTimestamp ts = new TmfTimestamp(t2end + ONE_SECOND, SCALE);
         selectTimestamp(ts);
 
         ITmfTimestamp curTs = tm.getCurrentTime();
@@ -192,10 +192,10 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTraceNewTimeRange() {
-        openTrace(trace1);
+        openTrace(trace2);
         TmfTimeRange range = new TmfTimeRange(
-                new TmfTimestamp(t1start + ONE_SECOND, SCALE),
-                new TmfTimestamp(t1end - ONE_SECOND, SCALE));
+                new TmfTimestamp(t2start + ONE_SECOND, SCALE),
+                new TmfTimestamp(t2end - ONE_SECOND, SCALE));
         selectTimerange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
@@ -209,14 +209,14 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTraceTimeRangeClampingStart() {
-        openTrace(trace1);
+        openTrace(trace2);
         TmfTimeRange range = new TmfTimeRange(
-                new TmfTimestamp(t1start - ONE_SECOND, SCALE), // minus here
-                new TmfTimestamp(t1end - ONE_SECOND, SCALE));
+                new TmfTimestamp(t2start - ONE_SECOND, SCALE), // minus here
+                new TmfTimestamp(t2end - ONE_SECOND, SCALE));
         selectTimerange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
-        assertEquals(t1start, curRange.getStartTime().getValue());
+        assertEquals(t2start, curRange.getStartTime().getValue());
         assertEquals(range.getEndTime(), curRange.getEndTime());
     }
 
@@ -226,15 +226,15 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTraceTimeRangeClampingEnd() {
-        openTrace(trace1);
+        openTrace(trace2);
         TmfTimeRange range = new TmfTimeRange(
-                new TmfTimestamp(t1start + ONE_SECOND, SCALE),
-                new TmfTimestamp(t1end + ONE_SECOND, SCALE)); // plus here
+                new TmfTimestamp(t2start + ONE_SECOND, SCALE),
+                new TmfTimestamp(t2end + ONE_SECOND, SCALE)); // plus here
         selectTimerange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
         assertEquals(range.getStartTime(), curRange.getStartTime());
-        assertEquals(t1end, curRange.getEndTime().getValue());
+        assertEquals(t2end, curRange.getEndTime().getValue());
     }
 
     /**
@@ -244,15 +244,15 @@ public class TmfTraceManagerTest {
      */
     @Test
     public void testTraceTimeRangeClampingBoth() {
-        openTrace(trace1);
+        openTrace(trace2);
         TmfTimeRange range = new TmfTimeRange(
-                new TmfTimestamp(t1start - ONE_SECOND, SCALE), // minus here
-                new TmfTimestamp(t1end + ONE_SECOND, SCALE)); // plus here
+                new TmfTimestamp(t2start - ONE_SECOND, SCALE), // minus here
+                new TmfTimestamp(t2end + ONE_SECOND, SCALE)); // plus here
         selectTimerange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
-        assertEquals(t1start, curRange.getStartTime().getValue());
-        assertEquals(t1end, curRange.getEndTime().getValue());
+        assertEquals(t2start, curRange.getStartTime().getValue());
+        assertEquals(t2end, curRange.getEndTime().getValue());
     }
 
     // ------------------------------------------------------------------------
@@ -274,11 +274,18 @@ public class TmfTraceManagerTest {
          * The initial range should be == to the initial range of the earliest
          * trace (here trace1).
          */
-        final TmfTimeRange expectedRange = new TmfTimeRange(
+        final TmfTimeRange traceInitialRange = new TmfTimeRange(
                 trace1.getStartTime(),
                 calculateOffset(trace1.getStartTime(), trace1.getInitialRangeOffset()));
-        TmfTimeRange actualRange = tm.getCurrentRange();
-        assertEquals(expectedRange, actualRange);
+
+        final TmfTimeRange expInitialRange = new TmfTimeRange(
+                exp.getStartTime(),
+                calculateOffset(exp.getStartTime(), exp.getInitialRangeOffset()));
+
+        final TmfTimeRange actualRange = tm.getCurrentRange();
+
+        assertEquals(traceInitialRange, actualRange);
+        assertEquals(expInitialRange, actualRange);
     }
 
     // ------------------------------------------------------------------------
@@ -288,6 +295,7 @@ public class TmfTraceManagerTest {
     private static TmfExperiment createExperiment(ITmfTrace t1, ITmfTrace t2) {
         ITmfTrace[] traces = new ITmfTrace[] { t1, t2 };
         TmfExperiment exp = new TmfExperiment(ITmfEvent.class, "test-exp", traces);
+        exp.indexTrace(true);
         return exp;
     }
 

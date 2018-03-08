@@ -209,7 +209,7 @@ public final class TmfTraceManager {
 
         for (Map.Entry<ITmfTrace, TmfTraceContext> entry : fTraces.entrySet()) {
             final ITmfTrace trace = entry.getKey();
-            if (ts.intersects(getCurrentTimeRange(trace))) {
+            if (ts.intersects(getValidTimeRange(trace))) {
                 TmfTraceContext prevCtx = entry.getValue();
                 TmfTraceContext newCtx = new TmfTraceContext(prevCtx, ts);
                 entry.setValue(newCtx);
@@ -234,12 +234,21 @@ public final class TmfTraceManager {
             final ITmfTrace trace = entry.getKey();
             final TmfTraceContext curCtx = entry.getValue();
 
-            final TmfTimeRange curTr = getCurrentTimeRange(trace);
-            final TmfTimeRange signalTr = signal.getCurrentRange().getIntersection(curTr);
+            final TmfTimeRange validTr = getValidTimeRange(trace);
 
-            ITmfTimestamp newTs = (signalTs == null ? curCtx.getTimestamp() : signalTs);
-            TmfTimeRange newTr = (signalTr == null ? curCtx.getTimerange() : signalTr);
+            /* Determine the new time stamp */
+            ITmfTimestamp newTs;
+            if (signalTs != null && signalTs.intersects(validTr)) {
+                newTs = signalTs;
+            } else {
+                newTs = curCtx.getTimestamp();
+            }
 
+            /* Determine the new time range */
+            TmfTimeRange targetTr = signal.getCurrentRange().getIntersection(validTr);
+            TmfTimeRange newTr = (targetTr == null ? curCtx.getTimerange() : targetTr);
+
+            /* Update the values */
             TmfTraceContext newCtx = new TmfTraceContext(newTs, newTr);
             entry.setValue(newCtx);
         }
@@ -249,7 +258,19 @@ public final class TmfTraceManager {
     // Utility methods
     // ------------------------------------------------------------------------
 
-    private TmfTimeRange getCurrentTimeRange(ITmfTrace trace) {
+    /**
+     * Return the valid time range of a trace (not the "current time range", but
+     * the range of all possible valid timestamps).
+     *
+     * For a real trace this is the whole range of the trace. For an experiment,
+     * it goes from the start time of the earliest trace to the end time of the
+     * latest one.
+     *
+     * @param trace
+     *            The trace to check for
+     * @return The valid time span
+     */
+    private TmfTimeRange getValidTimeRange(ITmfTrace trace) {
         if (!fTraces.containsKey(trace)) {
             /* Trace is not part of the currently opened traces */
             return null;
