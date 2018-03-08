@@ -30,7 +30,7 @@ public class TmfAsyncSequenceDiagramEvent extends TmfSyncSequenceDiagramEvent im
     /**
      * The end time of the sequence diagram event (i.e. time when signal was received).
      */
-    private final ITmfTimestamp fEndTime;
+    final protected ITmfTimestamp fEndTime;
 
     // ------------------------------------------------------------------------
     // Constructors

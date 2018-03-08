@@ -40,23 +40,23 @@ public class SDPrintDialog extends Dialog {
     /**
      * The sequence dialog widget reference.
      */
-    private SDWidget fSdView;
+    protected SDWidget fSdView;
     /**
      * Sequence dialog print dialog UI
      */
-    private SDPrintDialogUI fDialogUI;
+    protected SDPrintDialogUI fDialogUI;
     /**
      * Error message to display.
      */
-    private String fErrorMessage = null;
+    protected String fErrorMessage = null;
     /**
      * A message label.
      */
-    private Label fMessageLabel = null;
+    protected Label fMessageLabel = null;
     /**
      * Flag whether the page is complete or not
      */
-    private boolean fIsPageComplete = true;
+    protected boolean fIsPageComplete = true;
 
     // ------------------------------------------------------------------------
     // Constructors

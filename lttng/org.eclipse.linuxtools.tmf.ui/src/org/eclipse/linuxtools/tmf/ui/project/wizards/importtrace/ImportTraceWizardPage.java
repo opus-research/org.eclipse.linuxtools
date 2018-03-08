@@ -12,7 +12,6 @@
  *   Francois Chouinard - Complete re-design
  *   Anna Dushistova(Montavista) - [383047] NPE while importing a CFT trace
  *   Matthew Khouzam - Moved out some common functions
- *   Patrick Tasse - Add sorting of file system elements
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
@@ -107,29 +106,11 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     // ------------------------------------------------------------------------
-    // Classes
-    // ------------------------------------------------------------------------
-
-    private static class FileSystemElementComparator implements Comparator<Object> {
-
-        FileSystemStructureProvider provider = FileSystemStructureProvider.INSTANCE;
-
-        @Override
-        public int compare(Object o1, Object o2) {
-            String label1 = provider.getLabel(o1);
-            String label2 = provider.getLabel(o2);
-            return label1.compareTo(label2);
-        }
-
-    }
-
-    // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
 
-    private static final String IMPORT_WIZARD_PAGE = "ImportTraceWizardPage"; //$NON-NLS-1$
+    static private final String IMPORT_WIZARD_PAGE = "ImportTraceWizardPage"; //$NON-NLS-1$
     private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
-    private static final FileSystemElementComparator FILE_SYSTEM_ELEMENT_COMPARATOR = new FileSystemElementComparator();
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -303,7 +284,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             Object fileSystemObject = parent.getFileSystemObject();
             List<?> children = provider.getChildren(fileSystemObject);
             if (children != null) {
-                Collections.sort(children, FILE_SYSTEM_ELEMENT_COMPARATOR);
                 Iterator<?> iterator = children.iterator();
                 while (iterator.hasNext()) {
                     Object child = iterator.next();
