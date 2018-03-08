@@ -49,7 +49,21 @@ public class ScpExec implements Runnable {
 		//	returnVal = Integer.MIN_VALUE;
 		}
 	}
-	
+
+	/**
+	 * This transfers any listeners which may have been added
+	 * to the command before the process has been constructed
+	 * properly to the process itself.
+	 * @since 1.2
+	 */
+	protected void transferListeners(){
+		int i;
+		for(i=0; i<inputListeners.size(); i++)
+			inputGobbler.addDataListener(inputListeners.get(i));
+		for(i=0; i<errorListeners.size(); i++)
+			errorGobbler.addDataListener(errorListeners.get(i));
+	}
+
 	protected boolean init()
 	{
 	  String user=ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_USER);
@@ -78,12 +92,8 @@ public class ScpExec implements Runnable {
    
 		errorGobbler = new StreamGobbler(channel.getExtInputStream());            
 		inputGobbler = new StreamGobbler(channel.getInputStream());
-      	
-		int i;
-		for(i=0; i<inputListeners.size(); i++)
-			inputGobbler.addDataListener(inputListeners.get(i));
-		for(i=0; i<errorListeners.size(); i++)
-			errorGobbler.addDataListener(errorListeners.get(i));
+
+		this.transferListeners();
 		return true;
 
       }catch(Exception e)
