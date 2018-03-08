@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Red Hat - initial API and implementation
- *    Neil Guzman - create patches hyperlink (B#413508)
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink;
 
