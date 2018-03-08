@@ -90,7 +90,7 @@ public class TraceTypeHelper {
         boolean valid = false;
         if (fTrace != null) {
             valid = standardValidate(path);
-        } else if (TmfTraceType.isCustomTraceId(getCanonicalName())) {
+        } else if (fCategoryName.equals(TmfTraceType.CUSTOM_TXT_CATEGORY) || fCategoryName.equals(TmfTraceType.CUSTOM_XML_CATEGORY)) {
             valid = customValidate(path);
         }
         return valid;
