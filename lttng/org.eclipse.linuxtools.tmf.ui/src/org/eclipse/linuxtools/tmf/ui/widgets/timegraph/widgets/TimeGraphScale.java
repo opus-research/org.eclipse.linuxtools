@@ -10,7 +10,6 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
- *   Marc-Andre Laperle - Add time zone preference
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -19,12 +18,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
@@ -105,12 +99,6 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
         super(parent, colors, SWT.NO_BACKGROUND | SWT.NO_FOCUS | SWT.DOUBLE_BUFFERED);
         addMouseListener(this);
         addMouseMoveListener(this);
-    }
-
-    @Override
-    public void dispose() {
-        TmfSignalManager.deregister(this);
-        super.dispose();
     }
 
     /**
@@ -540,19 +528,6 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
             fTime1bak = fTimeProvider.getTime1();
         }
     }
-
-        /**
-     * Update the display to use the updated timestamp format
-     *
-     * @param signal the incoming signal
-     * @since 2.1
-     */
-    @TmfSignalHandler
-    public void timestampFormatUpdated(TmfTimestampFormatUpdateSignal signal) {
-        TimeDraw.updateTimeZone();
-        Utils.updateTimeZone();
-        redraw();
-    }
 }
 
 abstract class TimeDraw {
@@ -575,21 +550,6 @@ abstract class TimeDraw {
     protected static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("MMM dd");             //$NON-NLS-1$
     protected static final SimpleDateFormat MONTH_FORMAT = new SimpleDateFormat("yyyy MMM");         //$NON-NLS-1$
     protected static final SimpleDateFormat YEAR_FORMAT = new SimpleDateFormat("yyyy");              //$NON-NLS-1$
-
-    protected static final SimpleDateFormat formatArray[] = {
-    	SEC_FORMAT, SEC_FORMAT_HEADER, MIN_FORMAT, MIN_FORMAT_HEADER,
-    	HOURS_FORMAT, HOURS_FORMAT_HEADER, DAY_FORMAT, DAY_FORMAT_HEADER, MONTH_FORMAT, YEAR_FORMAT
-    };
-
-    /**
-     * Updates the timezone using the preferences.
-     */
-    public static void updateTimeZone() {
-        final TimeZone timeZone = TmfTimePreferences.getInstance().getTimeZone();
-        for (SimpleDateFormat sdf : formatArray) {
-            sdf.setTimeZone(timeZone);
-        }
-    }
 
     static String sep(long n) {
         StringBuilder retVal = new StringBuilder();
