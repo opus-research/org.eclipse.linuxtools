@@ -526,7 +526,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
         IStatus status = op.getStatus();
         if (!status.isOK()) {
-            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizard_importProblem, null, status);
+            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizard_ImportProblem, null, status);
             return false;
         }
 
