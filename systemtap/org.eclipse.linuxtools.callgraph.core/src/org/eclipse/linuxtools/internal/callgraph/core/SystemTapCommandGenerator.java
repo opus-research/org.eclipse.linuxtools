@@ -47,8 +47,9 @@ public class SystemTapCommandGenerator {
 		String[] script = buildScript();
 		
 		String cmd = ""; //$NON-NLS-1$
-		for (int i = 0; i < script.length-1; i++)
+		for (int i = 0; i < script.length-1; i++) {
 			cmd = cmd + script[i] + " "; //$NON-NLS-1$
+		}
 		cmd = cmd + script[script.length-1];
 
 		return cmd;
@@ -73,7 +74,7 @@ public class SystemTapCommandGenerator {
 		if (needsToSendCommand){
 			if (binaryArguments.length() < 1){	
 				cmdList.add("-c '" + binaryPath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			}else{				
+			} else {				
 				cmdList.add("-c \"" + binaryPath + " " + binaryArguments +"\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
 		}
@@ -91,9 +92,11 @@ public class SystemTapCommandGenerator {
 		script[0] = command;
 
 		for(int i=0; i< cmdList.size(); i++) {
-			if (cmdList.get(i) != null)
+			if (cmdList.get(i) != null) {
 				script[i +1] = cmdList.get(i).toString();
-			else script[i + 1] = ""; //$NON-NLS-1$
+			} else {
+				script[i + 1] = ""; //$NON-NLS-1$
+			}
 		}
 		return script;
 		

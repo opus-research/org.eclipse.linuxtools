@@ -157,8 +157,9 @@ public abstract class SystemTapView extends ViewPart {
      */
     public boolean setParser(SystemTapParser parser) {
     	this.parser = parser;
-    	if (this.parser == null)
+    	if (this.parser == null) {
     		return false;
+    	}
     	return true;
     }
 
@@ -210,10 +211,12 @@ public abstract class SystemTapView extends ViewPart {
         }
        
        
-        if (createOpenAction())
+        if (createOpenAction()) {
             file.add(open_file);
-        if (createOpenDefaultAction())
+        }
+        if (createOpenDefaultAction()) {
             file.add(open_default);
+        }
        
         createSaveAction();
         file.add(save_file);
@@ -304,25 +307,11 @@ public abstract class SystemTapView extends ViewPart {
                          "" +  //$NON-NLS-1$
                          "" + //$NON-NLS-1$
                          "" + //$NON-NLS-1$
-                         
-                         "" + //$NON-NLS-1$
-//                         
-//                         Messages.getString("LaunchAbout.9") + //$NON-NLS-1$
-//                         Messages.getString("LaunchAbout.10") + //$NON-NLS-1$
-                         
                          "" + //$NON-NLS-1$
                          "" + //$NON-NLS-1$
                          "" + //$NON-NLS-1$
-                         
-//                         Messages.getString("LaunchAbout.14") + //$NON-NLS-1$
-//                         Messages.getString("LaunchAbout.15") + //$NON-NLS-1$
-//                         Messages.getString("LaunchAbout.16") + //$NON-NLS-1$
-                         
                          "" + //$NON-NLS-1$
-                         
-//                         Messages.getString("LaunchAbout.18") + //$NON-NLS-1$
-//                         Messages.getString("LaunchAbout.19") + //$NON-NLS-1$
-                         
+                         "" + //$NON-NLS-1$
                          "" + //$NON-NLS-1$
                          "" //$NON-NLS-1$
                         );
@@ -365,8 +354,9 @@ public abstract class SystemTapView extends ViewPart {
     }
    
     public void setKillButtonEnabled(boolean val) {
-        if (kill != null)
+        if (kill != null) {
             kill.setEnabled(val);
+        }
     }
    
    
@@ -412,8 +402,9 @@ public abstract class SystemTapView extends ViewPart {
                   in = new FileInputStream(sFile).getChannel();
                   out = new FileOutputStream(file).getChannel();
                  
-                  if (in == null || out == null)
+                  if (in == null || out == null) {
                       return;
+                  }
          
                   long size = in.size();
                   MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, size);
@@ -421,10 +412,12 @@ public abstract class SystemTapView extends ViewPart {
                   out.write(buf);
          
              } finally {
-                  if (in != null)         
+                  if (in != null) {    
                       in.close();
-                  if (out != null)    
+                  }
+                  if (out != null) {    
                       out.close();
+                  }
              }
            
            
