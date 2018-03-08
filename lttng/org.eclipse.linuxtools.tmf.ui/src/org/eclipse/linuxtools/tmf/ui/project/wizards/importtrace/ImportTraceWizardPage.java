@@ -11,9 +11,10 @@
  *   Francois Chouinard - Got rid of dependency on internal platform class
  *   Francois Chouinard - Complete re-design
  *   Anna Dushistova(Montavista) - [383047] NPE while importing a CFT trace
+ *   Matthew Khouzam - Moved out some common functions
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.project.wizards;
+package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,12 +54,12 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.FocusEvent;
@@ -90,15 +91,17 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
  * A variant of the standard resource import wizard with the following changes:
  * <ul>
  * <li>A folder/file combined checkbox tree viewer to select traces
- * <li>Cherry-picking of traces in the file structure without re-creating the file hierarchy
+ * <li>Cherry-picking of traces in the file structure without re-creating the
+ * file hierarchy
  * <li>A trace types dropbox for optional characterization
  * </ul>
- * For our purpose, a trace can either be a single file or a whole directory sub-tree, whichever is reached first from
- * the root directory.
+ * For our purpose, a trace can either be a single file or a whole directory
+ * sub-tree, whichever is reached first from the root directory.
  * <p>
  *
  * @version 1.0
  * @author Francois Chouinard
+ * @since 2.0
  */
 public class ImportTraceWizardPage extends WizardResourceImportPage {
 
@@ -107,8 +110,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     // ------------------------------------------------------------------------
 
     static private final String IMPORT_WIZARD_PAGE = "ImportTraceWizardPage"; //$NON-NLS-1$
-    private static final String CUSTOM_TXT_CATEGORY = "Custom Text"; //$NON-NLS-1$
-    private static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
     private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
@@ -127,16 +128,19 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     // Target import directory ('Traces' folder)
     private IFolder fTargetFolder;
 
+
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor.
-     * Creates the trace wizard page.
+     * Constructor. Creates the trace wizard page.
      *
-     * @param name The name of the page.
-     * @param selection The current selection
+     * @param name
+     *            The name of the page.
+     * @param selection
+     *            The current selection
      */
     protected ImportTraceWizardPage(String name, IStructuredSelection selection) {
         super(name, selection);
@@ -144,8 +148,11 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /**
      * Constructor
-     * @param workbench The workbench reference.
-     * @param selection The current selection
+     *
+     * @param workbench
+     *            The workbench reference.
+     * @param selection
+     *            The current selection
      */
     public ImportTraceWizardPage(IWorkbench workbench, IStructuredSelection selection) {
         this(IMPORT_WIZARD_PAGE, selection);
@@ -183,7 +190,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     // ------------------------------------------------------------------------
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#createControl(org.eclipse.swt.widgets.Composite)
+     *
+     * @see
+     * org.eclipse.ui.dialogs.WizardResourceImportPage#createControl(org.eclipse
+     * .swt.widgets.Composite)
      */
     @Override
     public void createControl(Composite parent) {
@@ -197,7 +207,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#createSourceGroup(org.eclipse.swt.widgets.Composite)
+     *
+     * @see
+     * org.eclipse.ui.dialogs.WizardResourceImportPage#createSourceGroup(org
+     * .eclipse.swt.widgets.Composite)
      */
     @Override
     protected void createSourceGroup(Composite parent) {
@@ -209,7 +222,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#createFileSelectionGroup(org.eclipse.swt.widgets.Composite)
+     *
+     * @see
+     * org.eclipse.ui.dialogs.WizardResourceImportPage#createFileSelectionGroup
+     * (org.eclipse.swt.widgets.Composite)
      */
     @Override
     protected void createFileSelectionGroup(Composite parent) {
@@ -256,6 +272,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.ui.dialogs.WizardResourceImportPage#getFolderProvider()
      */
     @Override
@@ -265,6 +282,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.ui.dialogs.WizardResourceImportPage#getFileProvider()
      */
     @Override
@@ -314,7 +332,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#getSelectedResources()
+     *
+     * @see
+     * org.eclipse.ui.dialogs.WizardResourceImportPage#getSelectedResources()
      */
     @Override
     protected List<FileSystemElement> getSelectedResources() {
@@ -340,11 +360,14 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
      * The directory browse button.
      */
     protected Button directoryBrowseButton;
+
     private boolean entryChanged = false;
 
     /**
      * creates the directory selection group.
-     * @param parent the parent composite
+     *
+     * @param parent
+     *            the parent composite
      */
     protected void createDirectorySelectionGroup(Composite parent) {
 
@@ -421,7 +444,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#handleEvent(org.eclipse.swt.widgets.Event)
+     *
+     * @see
+     * org.eclipse.ui.dialogs.WizardResourceImportPage#handleEvent(org.eclipse
+     * .swt.widgets.Event)
      */
     @Override
     public void handleEvent(Event event) {
@@ -583,7 +609,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         fTraceTypes.setLayoutData(data);
         fTraceTypes.setFont(parent.getFont());
 
-        String[] availableTraceTypes = getAvailableTraceTypes();
+        String[] availableTraceTypes = ImportUtils.getAvailableTraceTypes();
         fTraceTypes.setItems(availableTraceTypes);
 
         fTraceTypes.addSelectionListener(new SelectionListener() {
@@ -598,61 +624,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         });
     }
 
-    // The mapping of available trace type IDs to their corresponding configuration element
-    private final Map<String, IConfigurationElement> fTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
-    private final Map<String, IConfigurationElement> fTraceCategories = new HashMap<String, IConfigurationElement>();
-    private final Map<String, IConfigurationElement> fTraceAttributes = new HashMap<String, IConfigurationElement>();
-
-    private String[] getAvailableTraceTypes() {
-
-        // Populate the Categories and Trace Types
-        IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceType.TMF_TRACE_TYPE_ID);
-        for (IConfigurationElement ce : config) {
-            String elementName = ce.getName();
-            if (elementName.equals(TmfTraceType.TYPE_ELEM)) {
-                String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                fTraceTypeAttributes.put(traceTypeId, ce);
-            } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
-                String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                fTraceCategories.put(categoryId, ce);
-            }
-        }
-
-        // Generate the list of Category:TraceType to populate the ComboBox
-        List<String> traceTypes = new ArrayList<String>();
-        for (String typeId : fTraceTypeAttributes.keySet()) {
-            IConfigurationElement ce = fTraceTypeAttributes.get(typeId);
-            String traceTypeName = getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR); //$NON-NLS-1$
-            fTraceAttributes.put(traceTypeName, ce);
-            traceTypes.add(traceTypeName);
-        }
-        Collections.sort(traceTypes);
-
-        // add the custom trace types
-        for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-            String traceTypeName = CUSTOM_TXT_CATEGORY + " : " + def.definitionName; //$NON-NLS-1$
-            traceTypes.add(traceTypeName);
-        }
-        for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-            String traceTypeName = CUSTOM_XML_CATEGORY + " : " + def.definitionName; //$NON-NLS-1$
-            traceTypes.add(traceTypeName);
-        }
-
-        // Format result
-        return traceTypes.toArray(new String[traceTypes.size()]);
-    }
-
-    private String getCategory(IConfigurationElement ce) {
-        String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-        if (categoryId != null) {
-            IConfigurationElement category = fTraceCategories.get(categoryId);
-            if (category != null && !category.getName().equals("")) { //$NON-NLS-1$
-                return category.getAttribute(TmfTraceType.NAME_ATTR);
-            }
-        }
-        return "[no category]"; //$NON-NLS-1$
-    }
-
     // ------------------------------------------------------------------------
     // Options
     // ------------------------------------------------------------------------
@@ -662,7 +633,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.WizardDataTransferPage#createOptionsGroupButtons(org.eclipse.swt.widgets.Group)
+     *
+     * @see
+     * org.eclipse.ui.dialogs.WizardDataTransferPage#createOptionsGroupButtons
+     * (org.eclipse.swt.widgets.Group)
      */
     @Override
     protected void createOptionsGroupButtons(Group optionsGroup) {
@@ -695,6 +669,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.ui.dialogs.WizardDataTransferPage#validateSourceGroup()
      */
     @Override
@@ -735,64 +710,13 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
         // Perform trace validation
         String traceTypeName = fTraceTypes.getText();
-        if (traceTypeName != null && !"".equals(traceTypeName) && //$NON-NLS-1$
-            !traceTypeName.startsWith(CUSTOM_TXT_CATEGORY) && !traceTypeName.startsWith(CUSTOM_XML_CATEGORY)) {
-
-            List<File> traces = isolateTraces();
-            for (File trace : traces) {
-                ITmfTrace tmfTrace = null;
-                try {
-                    IConfigurationElement ce = fTraceAttributes.get(traceTypeName);
-                    tmfTrace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                    if (tmfTrace != null && !tmfTrace.validate(fProject, trace.getAbsolutePath())) {
-                        setMessage(null);
-                        setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
-                        tmfTrace.dispose();
-                        return false;
-                    }
-                } catch (CoreException e) {
-                } finally {
-                    if (tmfTrace != null) {
-                        tmfTrace.dispose();
-                    }
-                }
-            }
+        if (!ImportUtils.validateTrace(traceTypeName, getSelectedResources())) {
+            setMessage(null);
+            setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
+            return false;
         }
-
         setErrorMessage(null);
         return true;
-    }
-
-    private List<File> isolateTraces() {
-
-        List<File> traces = new ArrayList<File>();
-
-        // Get the selection
-        List<FileSystemElement> selectedResources = getSelectedResources();
-        Iterator<FileSystemElement> resources = selectedResources.iterator();
-
-        // Get the sorted list of unique entries
-        Map<String, File> fileSystemObjects = new HashMap<String, File>();
-        while (resources.hasNext()) {
-            File resource = (File) resources.next().getFileSystemObject();
-            String key = resource.getAbsolutePath();
-            fileSystemObjects.put(key, resource);
-        }
-        List<String> files = new ArrayList<String>(fileSystemObjects.keySet());
-        Collections.sort(files);
-
-        // After sorting, traces correspond to the unique prefixes
-        String prefix = null;
-        for (int i = 0; i < files.size(); i++) {
-            File file = fileSystemObjects.get(files.get(i));
-            String name = file.getAbsolutePath();
-            if (prefix == null || !name.startsWith(prefix)) {
-                prefix = name; // new prefix
-                traces.add(file);
-            }
-        }
-
-        return traces;
     }
 
     // ------------------------------------------------------------------------
@@ -801,6 +725,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /**
      * Finish the import.
+     *
      * @return <code>true</code> if successful else false
      */
     public boolean finish() {
@@ -825,7 +750,8 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         List<FileSystemElement> selectedResources = getSelectedResources();
         Iterator<FileSystemElement> resources = selectedResources.iterator();
 
-        // Use a map to end up with unique resources (getSelectedResources() can return duplicates)
+        // Use a map to end up with unique resources (getSelectedResources() can
+        // return duplicates)
         Map<String, File> fileSystemObjects = new HashMap<String, File>();
         while (resources.hasNext()) {
             File file = (File) resources.next().getFileSystemObject();
@@ -840,9 +766,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             String traceIcon = null;
             String traceType = fTraceTypes.getText();
             boolean traceTypeOK = false;
-            if (traceType.startsWith(CUSTOM_TXT_CATEGORY)) {
+            if (traceType.startsWith(ImportUtils.CUSTOM_TXT_CATEGORY)) {
                 for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                    if (traceType.equals(CUSTOM_TXT_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
+                    if (traceType.equals(ImportUtils.CUSTOM_TXT_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
                         traceTypeOK = true;
                         traceBundle = Activator.getDefault().getBundle().getSymbolicName();
                         traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
@@ -850,9 +776,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
                         break;
                     }
                 }
-            } else if (traceType.startsWith(CUSTOM_XML_CATEGORY)) {
+            } else if (traceType.startsWith(ImportUtils.CUSTOM_XML_CATEGORY)) {
                 for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                    if (traceType.equals(CUSTOM_XML_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
+                    if (traceType.equals(ImportUtils.CUSTOM_XML_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
                         traceTypeOK = true;
                         traceBundle = Activator.getDefault().getBundle().getSymbolicName();
                         traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
@@ -861,7 +787,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
                     }
                 }
             } else {
-                IConfigurationElement ce = fTraceAttributes.get(traceType);
+                IConfigurationElement ce = ImportUtils.getTraceAttributes(traceType);
                 if (ce != null) {
                     traceTypeOK = true;
                     traceBundle = ce.getContributor().getName();
@@ -934,8 +860,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             }
         });
 
-        // Perform a distinct import operation for everything that has the same prefix
-        // (distinct prefixes correspond to traces - we don't want to re-create parent structures)
+        // Perform a distinct import operation for everything that has the same
+        // prefix
+        // (distinct prefixes correspond to traces - we don't want to re-create
+        // parent structures)
         boolean ok = true;
         boolean isLinked = createLinksInWorkspaceButton.getSelection();
         for (int i = 0; i < fileList.size(); i++) {
