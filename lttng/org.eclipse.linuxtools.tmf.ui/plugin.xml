@@ -80,6 +80,14 @@
             name="%histogram.view.name"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.tmf.ui.views.category"
+            class="org.eclipse.linuxtools.tmf.ui.baseviews.NewHistogramView"
+            id="org.eclipse.linuxtools.tmf.ui.baseviews.NewHistogramView"
+            name="New Histogram"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
