@@ -15,8 +15,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.IOException;
 
 import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
+import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,6 +54,7 @@ public class CommandTest {
 
 	@Test
 	public void testIsFinished() {
+		assumeTrue(stapInstalled());
 		assertTrue("Not finished", tc.isRunning());
 		tc.stop();
 		assertFalse("Finished", tc.isRunning());
@@ -69,6 +74,7 @@ public class CommandTest {
 
 	@Test
 	public void testLoggedCommand() {
+		assumeTrue(stapInstalled());
 		tc.dispose();
 
 		tc = new Command(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null);
@@ -92,6 +98,7 @@ public class CommandTest {
 
 	@Test
 	public void testStop() {
+		assumeTrue(stapInstalled());
 		tc.start();
 		assertTrue(tc.isRunning());
 		tc.stop();
@@ -103,6 +110,21 @@ public class CommandTest {
 		assertFalse(tc.isDisposed());
 		tc.dispose();
 		assertTrue(tc.isDisposed());
+	}
+
+	/**
+	 * Check that stap is installed
+	 * @return true if stap is installed, false otherwise.
+	 */
+	private boolean stapInstalled() {
+		try {
+			Process process = RuntimeProcessFactory.getFactory().exec(
+					new String[] { "stap", "-V" }, null);
+			return (process != null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	Command tc;
