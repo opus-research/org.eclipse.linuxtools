@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
+ *   Mathieu Denis (mathieu.denis@polymtl.ca)  - Initial design and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
@@ -83,12 +83,12 @@ public class TmfBaseColumnDataTest extends TestCase {
                 TmfStatisticsTreeNode parent = node;
                 do {
                     parent = parent.getParent();
-                } while (parent != null && parent.getValue().getTotal() == 0);
+                } while (parent != null && parent.getValue().nbEvents == 0);
 
                 if (parent == null) {
                     return 0;
                 }
-                return (double) node.getValue().getTotal() / parent.getValue().getTotal();
+                return (double) node.getValue().nbEvents / parent.getValue().nbEvents;
             }
         };
 

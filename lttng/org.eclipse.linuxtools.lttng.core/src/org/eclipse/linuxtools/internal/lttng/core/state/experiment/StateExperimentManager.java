@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Alvaro Sanchez-Leon (alvsan09@gmail.com) - Initial API and implementation
  *   Marc Dumais (marc.dumais@ericsson.com) - Fix for 316455 (second part)
@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.internal.lttng.core.signal.ILttExperimentSelectedL
 import org.eclipse.linuxtools.internal.lttng.core.signal.StateExperimentListener;
 import org.eclipse.linuxtools.internal.lttng.core.state.model.LttngTraceState;
 import org.eclipse.linuxtools.internal.lttng.core.state.trace.IStateTraceManager;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -41,7 +40,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
 /**
  * @author alvaro
- *
+ * 
  */
 public class StateExperimentManager extends LTTngTreeNode implements ILttExperimentSelectedListener,
         IStateExperimentManager {
@@ -56,10 +55,10 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
     /**
      * Used to route incoming events to proper trace manager, during check point building
      */
-    private final Map<ITmfTrace, StateTraceHelper> ftraceToManagerMap = new HashMap<ITmfTrace, StateTraceHelper>();
+    private final Map<ITmfTrace<?>, StateTraceHelper> ftraceToManagerMap = new HashMap<ITmfTrace<?>, StateTraceHelper>();
 
     private LttngSyntheticEvent syntheticEvent = null;
-    private ITmfDataRequest fStateCheckPointRequest = null;
+    private ITmfDataRequest<LttngEvent> fStateCheckPointRequest = null;
     private boolean fCheckPointUpdateBusy = false;
     private boolean fCheckPointUpdatePending = false;
     private int fCheckPointUpdateIndex = 0;
@@ -139,12 +138,12 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.linuxtools.lttng.state.experiment.IStateExperimentManager #experimentSelected_prep
      * (org.eclipse.linuxtools.tmf.experiment.TmfExperiment)
      */
     @Override
-    public void experimentSelected_prep(TmfExperiment experiment) {
+    public void experimentSelected_prep(TmfExperiment<LttngEvent> experiment) {
 
         if (fSelectedExperiment != null) {
             clearExperimentNode(fSelectedExperiment);
@@ -171,11 +170,11 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
             }
 
             // Make sure the traces exists in the tree
-            ITmfTrace[] rtraces = experiment.getTraces();
+            ITmfTrace<?>[] rtraces = experiment.getTraces();
             String traceName;
             LTTngTreeNode traceStateManagerNode;
             // StateStacksHandler
-            for (ITmfTrace rtrace : rtraces) {
+            for (ITmfTrace<?> rtrace : rtraces) {
                 traceName = rtrace.getName();
                 traceStateManagerNode = experimentNode.getChildByName(traceName);
                 // Node does not exist for this experiment, so needs to be
@@ -217,12 +216,12 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.linuxtools.lttng.signal.ILttExperimentSelectedListener# experimentSelected(java.lang.Object,
      * org.eclipse.linuxtools.tmf.experiment.TmfExperiment)
      */
     @Override
-    public void experimentSelected(Object source, TmfExperiment experiment) {
+    public void experimentSelected(Object source, TmfExperiment<LttngEvent> experiment) {
         // validate
         if (experiment == null) {
             TraceDebug.debug("Received experiment is null"); //$NON-NLS-1$
@@ -246,14 +245,14 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.linuxtools.lttng.signal.ILttExperimentSelectedListener# experimentUpdated
      * (org.eclipse.linuxtools.tmf.signal.TmfExperimentUpdatedSignal, boolean)
      */
     @SuppressWarnings("unchecked")
     @Override
     public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
-        TmfExperiment experiment = signal.getExperiment();
+        TmfExperiment<LttngEvent> experiment = (TmfExperiment<LttngEvent>) signal.getExperiment();
         // validate
         if (fSelectedExperiment == null || experiment != fSelectedExperiment.getValue()) {
             return;
@@ -296,7 +295,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.linuxtools.lttng.state.experiment.IStateExperimentManager#getExperimentTimeRange()
      */
     @Override
@@ -304,14 +303,14 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
     public TmfTimeRange getExperimentTimeRange() {
         TmfTimeRange timeRangeResult = null;
         if (fSelectedExperiment != null) {
-            timeRangeResult = ((TmfExperiment) fSelectedExperiment.getValue()).getTimeRange();
+            timeRangeResult = ((TmfExperiment<LttngEvent>) fSelectedExperiment.getValue()).getTimeRange();
         }
         return timeRangeResult;
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#finalize()
      */
     @Override
@@ -321,7 +320,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.linuxtools.lttng.state.experiment.IStateExperimentManager #waitForComplete(boolean)
      */
     @Override
@@ -329,7 +328,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
         fwaitForCompletion = wait;
     }
 
-    private ITmfDataRequest buildCheckPoints(final TmfExperiment experiment,
+    private ITmfDataRequest<LttngEvent> buildCheckPoints(final TmfExperiment<LttngEvent> experiment,
             final TmfTimeRange range, boolean initial) {
         // validate
         if (experiment == null) {
@@ -353,7 +352,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
                 ftraceToManagerMap.clear();
             }
 
-            ITmfTrace trace;
+            ITmfTrace<?> trace;
             for (LTTngTreeNode traceStateManagerNode : traceNodes) {
                 IStateTraceManager traceManager;
                 try {
@@ -384,22 +383,22 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
         fCheckPointNbEventsHandled = 0;
 
         // Prepare event data request to build state model
-        ITmfEventRequest request = new TmfEventRequest(LttngEvent.class, range,
+        ITmfEventRequest<LttngEvent> request = new TmfEventRequest<LttngEvent>(LttngEvent.class, range,
                 fCheckPointUpdateIndex, TmfEventRequest.ALL_DATA, LttngConstants.DEFAULT_BLOCK_SIZE,
                 ITmfDataRequest.ExecutionType.BACKGROUND) {
 
             /*
              * (non-Javadoc)
-             *
+             * 
              * @see org.eclipse.linuxtools.tmf.request.TmfDataRequest#handleData()
              */
             @Override
-            public void handleData(ITmfEvent event) {
+            public void handleData(LttngEvent event) {
                 super.handleData(event);
                 if (event != null) {
 //					Tracer.trace("Chk: " + event.getTimestamp());
                     fCheckPointNbEventsHandled++;
-                    ITmfTrace trace = event.getTrace();
+                    ITmfTrace<?> trace = event.getTrace();
 
                     StateTraceHelper helper = ftraceToManagerMap.get(trace);
 
@@ -420,7 +419,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
             /*
              * (non-Javadoc)
-             *
+             * 
              * @see org.eclipse.linuxtools.tmf.request.TmfDataRequest#handleCompleted()
              */
             @Override
@@ -443,7 +442,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
             /*
              * /**
-             *
+             * 
              * @param header
              */
             private void printCompletedMessage() {
@@ -479,7 +478,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
         return request;
     }
 
-    private LttngSyntheticEvent updateSynEvent(ITmfEvent e, LttngTraceState stateModel) {
+    private LttngSyntheticEvent updateSynEvent(LttngEvent e, LttngTraceState stateModel) {
         if (syntheticEvent == null || syntheticEvent.getBaseEvent() != e) {
             syntheticEvent = new LttngSyntheticEvent(e);
         }
@@ -491,12 +490,12 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
         return syntheticEvent;
     }
 
-
+    
     /**
      * Helper class that wraps the StateTraceManager, the current LTTngTraceState and the number of read events
-     *
+     * 
      * @author bHufmann
-     *
+     * 
      */
     private static class StateTraceHelper {
 
@@ -506,7 +505,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
         /**
          * Constructor
-         *
+         * 
          * @param stateManager
          *            The StateTraceManager the helper is for
          */
@@ -519,7 +518,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
         /**
          * Returns the StateTraceManager
-         *
+         * 
          * @return IStateTraceManager
          */
         public IStateTraceManager getStateManager() {
@@ -528,7 +527,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
         /**
          * Returns the number of read events
-         *
+         * 
          * @return long
          */
         public long getNumberRead() {
@@ -544,7 +543,7 @@ public class StateExperimentManager extends LTTngTreeNode implements ILttExperim
 
         /**
          * Returns the current LTTngTraceState
-         *
+         * 
          * @return LttngTraceState
          */
         public LttngTraceState getTraceModel() {

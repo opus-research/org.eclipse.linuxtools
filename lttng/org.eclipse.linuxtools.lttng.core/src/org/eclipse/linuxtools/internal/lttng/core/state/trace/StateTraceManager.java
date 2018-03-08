@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Alvaro Sanchez-Leon (alvsan09@gmail.com) - Initial API and implementation
  *******************************************************************************/
@@ -17,6 +17,7 @@ import java.util.Vector;
 
 import org.eclipse.linuxtools.internal.lttng.core.Activator;
 import org.eclipse.linuxtools.internal.lttng.core.TraceDebug;
+import org.eclipse.linuxtools.internal.lttng.core.event.LttngEvent;
 import org.eclipse.linuxtools.internal.lttng.core.event.LttngSyntheticEvent;
 import org.eclipse.linuxtools.internal.lttng.core.event.LttngSyntheticEvent.SequenceInd;
 import org.eclipse.linuxtools.internal.lttng.core.event.LttngTimestamp;
@@ -32,7 +33,6 @@ import org.eclipse.linuxtools.internal.lttng.core.state.model.StateModelFactory;
 import org.eclipse.linuxtools.internal.lttng.core.state.resource.ILttngStateContext;
 import org.eclipse.linuxtools.internal.lttng.core.trace.LTTngTextTrace;
 import org.eclipse.linuxtools.internal.lttng.core.trace.LTTngTrace;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
@@ -44,8 +44,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
-public class StateTraceManager extends LTTngTreeNode implements
-        IStateTraceManager, ILttngStateContext {
+public class StateTraceManager extends LTTngTreeNode implements IStateTraceManager, ILttngStateContext {
 
 	// constants
 	private static final long DEFAULT_OFFSET = 0L;
@@ -55,10 +54,10 @@ public class StateTraceManager extends LTTngTreeNode implements
 	private static final long LTTNG_CHECK_POINT_INTERVAL = 50000L;
 	private long fcheckPointInterval = LTTNG_CHECK_POINT_INTERVAL;
 
-	private TmfExperiment fExperiment = null;
+	private TmfExperiment<LttngEvent> fExperiment = null;
 
 	// immutable Objects
-	private final ITmfTrace fTrace;
+	private final ITmfTrace<?> fTrace;
 	private int fcpuNumber = -1;
 	private final ITransEventProcessor fStateUpdateProcessor;
 
@@ -69,11 +68,11 @@ public class StateTraceManager extends LTTngTreeNode implements
 	private LttngTraceState fCheckPointStateModel;
 
 	// locks
-	private final Object fCheckPointsLock = new Object();
-	private final Object fStateModelLock = new Object();
+	private Object fCheckPointsLock = new Object();
+	private Object fStateModelLock = new Object();
 
 
-
+	
 	// =======================================================================
 	// Constructor
 	// =======================================================================
@@ -84,7 +83,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 	 * @param trace
 	 * @throws LttngStateException
 	 */
-	public StateTraceManager(Long id, LTTngTreeNode parent, String name, ITmfTrace trace) throws LttngStateException {
+	public StateTraceManager(Long id, LTTngTreeNode parent, String name, ITmfTrace<?> trace) throws LttngStateException {
 		super(id, parent, name, trace);
 
 		if (trace == null) {
@@ -110,8 +109,8 @@ public class StateTraceManager extends LTTngTreeNode implements
 	private void init() {
 		// resolve the experiment
 		Object obj = getParent().getValue();
-		if (obj != null && obj instanceof TmfExperiment) {
-			fExperiment = (TmfExperiment) obj;
+		if (obj != null && obj instanceof TmfExperiment<?>) {
+			fExperiment = (TmfExperiment<LttngEvent>) obj;
 		}
 
 		// initialize the number of cpus
@@ -121,18 +120,18 @@ public class StateTraceManager extends LTTngTreeNode implements
 			fcpuNumber = ((LTTngTextTrace) fTrace).getCpuNumber();
 		}
 	}
-
+	
 
 
 
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.linuxtools.lttng.state.IStateManager#getEventLog()
 	 */
 	@Override
-	public ITmfTrace getStateTrace() {
+	public ITmfTrace<?> getStateTrace() {
 		return fTrace;
 	}
 
@@ -141,12 +140,12 @@ public class StateTraceManager extends LTTngTreeNode implements
 	 * <p>
 	 * The function will use "eventCount" internally to determine if a save was
 	 * needed
-	 *
+	 * 
 	 * @param eventCounter
 	 *            The event "count" or event "id" so far
 	 * @param eventTime
 	 *            The timestamp of this event
-	 *
+	 * 
 	 * @return boolean True if a checkpoint was saved, false otherwise
 	 */
 	private void saveCheckPointIfNeeded(Long eventCounter, ITmfTimestamp eventTime) {
@@ -190,7 +189,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#
 	 * restoreCheckPointByTimestamp
 	 * (org.eclipse.linuxtools.tmf.event.TmfTimestamp)
@@ -203,7 +202,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 		// The GUI can have time limits higher than this log, since GUI can
 		// handle multiple logs. Ignore special null value of experiment time range.
-        if ((eventTime.getValue() < 0) ||
+        if ((eventTime.getValue() < 0) || 
                 (!experimentRange.equals(TmfTimeRange.NULL_RANGE) && (eventTime.getValue() > experimentRange.getEndTime().getValue()))) {
 			return null;
 		}
@@ -292,7 +291,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/**
 	 * Adjust the result from a binary search to the round down position
-	 *
+	 * 
 	 * @param position
 	 *            if Negative is: (-(insertion point) -1)
 	 * @return position or if no match found, earlier than insertion point
@@ -310,7 +309,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 	// TODO: Remove this request type when the UI handle their own requests
 	/**
 	 * Request Event data of a specified time range
-	 *
+	 * 
 	 * @param timeWindow
 	 * @param listener
 	 * @param processor
@@ -329,7 +328,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#getStateModel
 	 * ()
@@ -345,7 +344,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#
 	 * getCheckPointStateModel()
 	 */
@@ -400,16 +399,16 @@ public class StateTraceManager extends LTTngTreeNode implements
 		// =======================================================================
 		/*
 		 * (non-Javadoc)
-		 *
+		 * 
 		 * @see
 		 * org.eclipse.linuxtools.lttng.request.LttngSyntEventRequest#handleData
 		 * ()
 		 */
 		@Override
-		public void handleData(ITmfEvent event) {
+		public void handleData(LttngSyntheticEvent event) {
 			super.handleData(event);
 			if (event != null) {
-				synEvent = (LttngSyntheticEvent) event;
+				synEvent = event;
 				if (synEvent.getSynType() == SequenceInd.AFTER) {
 					// Note : We call this function before incrementing
 					// eventCount to save a default check point at the "0th"
@@ -430,7 +429,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 		 * To be overridden by active save e.g. check points, this no action
 		 * default is used for requests which do not require rebuilding of
 		 * checkpoints e.g. requiring data of a new time range selection
-		 *
+		 * 
 		 * @param count
 		 * @param time
 		 */
@@ -441,7 +440,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.linuxtools.lttng.state.resource.ILttngStateContext#
 	 * getNumberOfCpus()
 	 */
@@ -452,7 +451,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.linuxtools.lttng.state.resource.ILttngStateContext#
 	 * getTraceTimeWindow()
 	 */
@@ -467,7 +466,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.linuxtools.lttng.state.resource.ILttngStateContext#getTraceId
 	 * ()
@@ -482,7 +481,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#
 	 * getExperimentTimeWindow()
 	 */
@@ -496,7 +495,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#getExperimentName
 	 * ()
@@ -508,19 +507,19 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.linuxtools.lttng.state.resource.ILttngStateContext#getTraceIdRef
 	 * ()
 	 */
 	@Override
-	public ITmfTrace getTraceIdRef() {
+	public ITmfTrace<?> getTraceIdRef() {
 		return fTrace;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#clearCheckPoints
 	 * ()
@@ -543,7 +542,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.linuxtools.lttng.state.trace.IStateTraceManager#handleEvent
 	 * (org.eclipse.linuxtools.lttng.event.LttngSyntheticEvent, java.lang.Long)
@@ -558,7 +557,7 @@ public class StateTraceManager extends LTTngTreeNode implements
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
