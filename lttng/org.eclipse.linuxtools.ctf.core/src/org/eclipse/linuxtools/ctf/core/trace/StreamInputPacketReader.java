@@ -119,7 +119,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
         /*
          * Set the BitBuffer's byte order.
          */
-        getBitBuffer().order(streamInputReader.getByteOrder());
+        getBitBuffer().setByteOrder(streamInputReader.getByteOrder());
 
         events = streamInputReader.getStreamInput().getStream().getTrace()
                 .getEventDefs(streamInputReader.getStreamInput());
