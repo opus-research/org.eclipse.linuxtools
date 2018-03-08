@@ -130,6 +130,18 @@ public abstract class Definition {
      */
     public abstract void read(BitBuffer input);
 
+    /**
+     * Offset the buffer position wrt the current alignment
+     *
+     * @param input the bitbuffer that is being read
+     * @param declaration the declaration which has an alignment
+     */
+    protected static void alignRead(BitBuffer input, IDeclaration declaration){
+        int align = (int) declaration.getAlignment();
+        int pos = input.position() + ((align - (input.position() % align)) % align);
+        input.position(pos);
+    }
+
     @Override
     public String toString() {
         return path + '[' + Integer.toHexString(hashCode()) + ']';
