@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbenchWindow;
  * @author Sami Wagiaalla
  * 
  */
-public class RunScriptByPathAction extends RunScriptAction {
+public class RunScriptByPathAction extends RunScriptBaseAction {
 
 	IPath path;
 
