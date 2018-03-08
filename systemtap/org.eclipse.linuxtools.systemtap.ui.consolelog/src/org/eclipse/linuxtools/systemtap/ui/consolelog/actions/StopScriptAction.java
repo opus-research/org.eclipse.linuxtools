@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.actions;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole.ActiveConsoleObserver;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -38,7 +39,7 @@ public class StopScriptAction extends ConsoleAction {
 	public void run() {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			public void run() {
-				ScriptConsole console = getActive();
+				ScriptConsole console = ScriptConsole.getActive();
 				if(null != console && console.isRunning()){
 					console.stop();
 				}
@@ -52,6 +53,12 @@ public class StopScriptAction extends ConsoleAction {
 		view.addPropertyListener(new IPropertyListener() {
 			public void propertyChanged(Object source, int propId) {
 				updateEnablement();
+			}
+		});
+		ScriptConsole.addActiveConsoleObserver(new ActiveConsoleObserver() {
+			@Override
+			protected void activeConsoleRunning(boolean running) {
+				action.setEnabled(running);
 			}
 		});
 	}
