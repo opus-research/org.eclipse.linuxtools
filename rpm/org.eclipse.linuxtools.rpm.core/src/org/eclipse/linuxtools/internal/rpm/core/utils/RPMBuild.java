@@ -149,6 +149,11 @@ public class RPMBuild {
 	 */
 	public IStatus build(IResource specFile, OutputStream outStream,
 			String buildParameter) throws CoreException {
+		if(specFile == null){
+			throw new CoreException(new Status(IStatus.ERROR,
+					IRPMConstants.RPM_CORE_ID, Messages.Specfile_not_found));
+		}
+
 		List<String> command = new ArrayList<String>();
 		IRemoteProxyManager rmtProxyMgr;
 		IRemoteCommandLauncher rmtCmdLauncher = null;
