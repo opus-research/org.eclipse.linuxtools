@@ -20,7 +20,7 @@ import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartBuild
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.listeners.ITabListener;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphDisplaySet;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.GC;
@@ -84,10 +84,10 @@ public class SaveGraphImageAction extends Action implements IWorkbenchWindowActi
 	 * @return The IGraph in tha active display set.
 	 */
 	public AbstractChartBuilder getGraph() {
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
+		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
 		AbstractChartBuilder g = null;
 
-		GraphDisplaySet gds = ((GraphSelectorEditor)ivp).getActiveDisplaySet();
+		GraphDisplaySet gds = ((GraphSelectorView)ivp).getActiveDisplaySet();
 		if(null != gds) {
 			g = gds.getActiveGraph();
 		}
@@ -158,9 +158,9 @@ public class SaveGraphImageAction extends Action implements IWorkbenchWindowActi
 	 * should be enabled or not.
 	 */
 	private void buildEnablementChecks() {
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
+		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
 		if(null != ivp) {
-			final GraphSelectorEditor gsv = (GraphSelectorEditor)ivp;
+			final GraphSelectorView gsv = (GraphSelectorView)ivp;
 			gsv.addTabListener(new ITabListener() {
 				@Override
 				public void tabClosed() {
