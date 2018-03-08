@@ -26,8 +26,6 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -261,7 +259,6 @@ public interface ITmfTrace extends ITmfDataProvider {
 
     /**
      * @return the current trace location
-     * @since 3.0
      */
     ITmfLocation getCurrentLocation();
 
@@ -270,7 +267,6 @@ public interface ITmfTrace extends ITmfDataProvider {
      *
      * @param location a trace specific location
      * @return a floating-point number between 0.0 (beginning) and 1.0 (end)
-     * @since 3.0
      */
     double getLocationRatio(ITmfLocation location);
 
@@ -289,7 +285,6 @@ public interface ITmfTrace extends ITmfDataProvider {
      * <p>
      * @param location the trace specific location
      * @return a context which can later be used to read the corresponding event
-     * @since 3.0
      */
     ITmfContext seekEvent(ITmfLocation location);
 
@@ -344,18 +339,4 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @since 2.0
      */
     ITmfTimestamp getInitialRangeOffset();
-
-    /**
-     * Returns the ID of the host this trace is from. The host ID is not
-     * necessarily the hostname, but should be a unique identifier for the
-     * machine on which the trace was taken. It can be used to determine if two
-     * traces were taken on the exact same machine (timestamp are already
-     * synchronized, resources with same id are the same if taken at the same
-     * time, etc).
-     *
-     * @return The host id of this trace
-     * @since 3.0
-     */
-   String getHostId();
-
 }

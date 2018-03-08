@@ -21,9 +21,8 @@ import java.util.concurrent.SynchronousQueue;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedDataRequest;
-import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestScheduler;
+import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
@@ -95,7 +94,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
         fDataQueue = new LinkedBlockingQueue<ITmfEvent>(fQueueSize);
-        fExecutor = new TmfRequestScheduler();
+        fExecutor = new TmfRequestExecutor();
     }
 
     /**
@@ -111,7 +110,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         fType = type;
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
-        fExecutor = new TmfRequestScheduler();
+        fExecutor = new TmfRequestExecutor();
         fSignalDepth = 0;
 
         fLogData = TmfCoreTracer.isEventTraced();
@@ -265,7 +264,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     protected void newCoalescedDataRequest(ITmfDataRequest request) {
         synchronized (fLock) {
             TmfCoalescedDataRequest coalescedRequest = new TmfCoalescedDataRequest(request.getDataType(), request.getIndex(),
-                    request.getNbRequested(), request.getExecType());
+                    request.getNbRequested(), request.getBlockSize(), request.getExecType());
             coalescedRequest.addRequest(request);
             if (TmfCoreTracer.isRequestTraced()) {
                 TmfCoreTracer.traceRequest(request, "COALESCED with " + coalescedRequest.getRequestId()); //$NON-NLS-1$
@@ -305,7 +304,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         if (request.getExecType() == ExecutionType.FOREGROUND) {
             queueRequest(request);
         } else {
-            queueBackgroundRequest(request, true);
+            queueBackgroundRequest(request, request.getBlockSize(), true);
         }
     }
 
@@ -336,11 +335,12 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      *
      * @param request
      *            The request
+     * @param blockSize
+     *            The request should be split in chunks of this size
      * @param indexing
      *            Should we index the chunks
-     * @since 3.0
      */
-    protected void queueBackgroundRequest(final ITmfDataRequest request, final boolean indexing) {
+    protected void queueBackgroundRequest(final ITmfDataRequest request, final int blockSize, final boolean indexing) {
         queueRequest(request);
     }
 
