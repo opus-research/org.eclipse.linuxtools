@@ -14,8 +14,6 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.actions;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsoleManager;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsoleManager.ActiveConsoleObserver;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -28,7 +26,7 @@ import org.eclipse.ui.console.IConsole;
  * A class that handles stopping the <code>ScriptConsole</code>.
  * @author Ryan Morse
  */
-public class StopScriptAction extends ConsoleAction implements ActiveConsoleObserver, IPropertyListener{
+public class StopScriptAction extends ConsoleAction {
 
 	private IAction action;
 
@@ -40,7 +38,7 @@ public class StopScriptAction extends ConsoleAction implements ActiveConsoleObse
 	public void run() {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			public void run() {
-				ScriptConsole console = ScriptConsoleManager.getInstance().getActive();
+				ScriptConsole console = getActive();
 				if(null != console && console.isRunning()){
 					console.stop();
 				}
@@ -51,19 +49,37 @@ public class StopScriptAction extends ConsoleAction implements ActiveConsoleObse
 	@Override
 	public void init(IViewPart view) {
 		updateEnablement();
-		view.addPropertyListener(this);
-		ScriptConsoleManager.getInstance().addActiveConsoleObserver(this);
+		view.addPropertyListener(new IPropertyListener() {
+			public void propertyChanged(Object source, int propId) {
+				updateEnablement();
+			}
+		});
 	}
 
 	private void updateEnablement(){
-		if (this.action != null){
-			this.action.setEnabled(ScriptConsoleManager.getInstance().isActiveConsoleRunning());
-		}
+		if (this.action != null)
+			this.action.setEnabled(ScriptConsole.isActiveConsoleRunning());
 	}
 
 	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 		this.action = action;
+		updateEnablement();
+	}
+
+
+	/**
+	 * This method will stop the i'th <code>ScriptConsole</code> if it is running.
+	 * @param i The index value of the console that will be stopped.
+	 */
+	public void run(int i) {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		if (ic[i] instanceof ScriptConsole){
+			ScriptConsole console = (ScriptConsole)ic[i];
+
+			if(console.isRunning())
+				console.stop();
+		}
 	}
 
 	/**
@@ -99,13 +115,4 @@ public class StopScriptAction extends ConsoleAction implements ActiveConsoleObse
 		}
 		return false;
 	}
-
-	public void propertyChanged(Object source, int propId) {
-		updateEnablement();
-	}
-
-	public void consoleActivated(ScriptConsole console) {
-		this.action.setEnabled(console.isRunning());
-	}
-
 }

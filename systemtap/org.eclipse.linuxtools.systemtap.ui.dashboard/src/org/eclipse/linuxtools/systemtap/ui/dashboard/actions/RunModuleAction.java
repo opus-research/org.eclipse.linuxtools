@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsoleManager;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.actions.hidden.GetSelectedModule;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
@@ -152,7 +151,7 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 				modname,
 				tmpfileName};
 
-			   	ScriptConsole console = ScriptConsoleManager.getInstance().getConsoleInstance(serverfileName);
+			   	ScriptConsole console = ScriptConsole.getInstance(serverfileName);
             console.run(cmd, null, null, null);
 		IDataSet ds;
 		if(paused) {
