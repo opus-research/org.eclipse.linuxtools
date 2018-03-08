@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -34,7 +34,7 @@ public class EventDefinition implements IDefinitionScope {
     /**
      * The corresponding event declaration.
      */
-    private final IEventDeclaration declaration;
+    private final EventDeclaration declaration;
 
     /**
      * The timestamp of the current event.
@@ -68,7 +68,7 @@ public class EventDefinition implements IDefinitionScope {
      * @param streamInputReader
      *            The SIR from where this EventDef was read
      */
-    public EventDefinition(IEventDeclaration declaration,
+    public EventDefinition(EventDeclaration declaration,
             StreamInputReader streamInputReader) {
         this.declaration = declaration;
         this.streamInputReader = streamInputReader;
@@ -87,9 +87,8 @@ public class EventDefinition implements IDefinitionScope {
      * Gets the declaration (the form) of the data
      *
      * @return the event declaration
-     * @since 2.0
      */
-    public IEventDeclaration getDeclaration() {
+    public EventDeclaration getDeclaration() {
         return declaration;
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -17,12 +17,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
@@ -66,7 +64,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
     private final String fileName;
 
     private final TmfEventField fContent;
-    private final IEventDeclaration fDeclaration;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -94,7 +91,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
             this.fileName = NO_STREAM;
             this.eventName = EMPTY_CTF_EVENT_NAME;
             this.fContent = null;
-            this.fDeclaration = null;
             return;
         }
 
@@ -108,9 +104,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
 
         /* Read the fields */
         this.fContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, parseFields(eventDef));
-
-        /* Link this event to its custom CTF attributes */
-        this.fDeclaration = eventDef.getDeclaration();
     }
 
     /**
@@ -202,12 +195,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
 
         /* Copy the fields over */
         this.fContent = other.fContent.clone();
-
-        /*
-         * Copy the reference to the custom attributes (should be the same
-         * object for all events of this type)
-         */
-        this.fDeclaration = other.fDeclaration;
     }
 
     /**
@@ -226,7 +213,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         this.fileName = NO_STREAM;
         this.eventName = EMPTY_CTF_EVENT_NAME;
         this.fContent = new TmfEventField("", new CtfTmfEventField[0]); //$NON-NLS-1$
-        this.fDeclaration = null;
     }
 
     // ------------------------------------------------------------------------
@@ -324,35 +310,14 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         return getChannelName();
     }
 
-    /**
-     * List the custom CTF attributes for events of this type.
-     *
-     * @return The list of custom attribute names. Should not be null, but could
-     *         be empty.
-     * @since 2.0
-     */
-    public Set<String> listCustomAttributes() {
-        return fDeclaration.getCustomAttributes();
-    }
-
-    /**
-     * Get the value of a custom CTF attributes for this event's type.
-     *
-     * @param name
-     *            Name of the the custom attribute
-     * @return Value of this attribute, or null if there is no attribute with
-     *         that name
-     * @since 2.0
-     */
-    public String getCustomAttribute(String name) {
-        return fDeclaration.getCustomAttribute(name);
-    }
-
     @Override
     public CtfTmfEvent clone() {
         return new CtfTmfEvent(this);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+     */
     /**
      * @since 2.0
      */
