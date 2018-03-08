@@ -17,7 +17,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import org.eclipse.core.filesystem.IFileStore;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,18 +47,18 @@ public class KernelSourceTreeTest {
 		
 		direct = "/noSuchDirectory/";	//Missing folder
 		kst.buildKernelTree(direct, excluded);
-		assertEquals("Missing directory", 0, kst.getTree().getChildCount());
+		assertNull("Missing directory", kst.getTree());
 		
-		direct = "/root/";	//Inaccessible
+		direct = "/root/";	//Inaccessable
 		kst.buildKernelTree(direct, excluded);
-		assertEquals("Inaccessable directory", 0, kst.getTree().getChildCount());
+		assertNull("Inaccessable directory", kst.getTree());
 		
 		direct = "/bin/";	//No .c or .h files
 		kst.buildKernelTree(direct, excluded);
 		t = kst.getTree();
 		assertEquals("Bin folder item count", 0, t.getChildCount());
 		assertTrue("Bin folder name", "bin".equals(t.toString()));
-		assertTrue("Bin has file", t.getData() instanceof IFileStore);
+		assertTrue("Bin has file", t.getData() instanceof File);
 
 		excluded = new String[] {".git"};
 		direct = "/tmp/";	//No .c or .h files

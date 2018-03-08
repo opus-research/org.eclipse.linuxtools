@@ -82,7 +82,9 @@
     -->
     <module>org.eclipse.linuxtools.systemtap.ui.logging</module>
     <module>org.eclipse.linuxtools.systemtap.ui.structures</module>
+    <!--
     <module>org.eclipse.linuxtools.systemtap.ui.structures.tests</module>
+    -->
     <module>org.eclipse.linuxtools.systemtap.ui.systemtapgui</module>
     <module>org.eclipse.linuxtools.systemtap.ui.tests</module>
     <module>org.eclipse.linuxtools.threadprofiler</module>
