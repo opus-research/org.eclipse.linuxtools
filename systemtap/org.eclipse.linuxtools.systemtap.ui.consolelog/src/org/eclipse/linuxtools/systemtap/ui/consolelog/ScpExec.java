@@ -286,12 +286,12 @@ public class ScpExec implements Runnable {
   }
 
   
-   private boolean stopped = false;
+   protected boolean stopped = false;
 	private boolean disposed = false;
-	private StreamGobbler inputGobbler = null;
-	private StreamGobbler errorGobbler = null;
-	private ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
-	private ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+	protected StreamGobbler inputGobbler = null;
+	protected StreamGobbler errorGobbler = null;
+	protected ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+	protected ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
 	//private int returnVal = Integer.MAX_VALUE;
 	private String command;
 

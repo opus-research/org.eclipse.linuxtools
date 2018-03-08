@@ -154,6 +154,7 @@
    <extension
          point="org.eclipse.linuxtools.profiling.launch.launchProvider">
       <provider
+            default="false"
             delegate="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.stubby1"
             name="Profile As Stubby 1"
@@ -163,6 +164,7 @@
             type="stub">
       </provider>
             <provider
+            default="true"
             delegate="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.stubby2"
             name="Profile As Stubby 2"
@@ -172,6 +174,7 @@
             type="stub">
       </provider>
             <provider
+            default="false"
             delegate="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.stubby3"
             name="Profile As Stubby 3"
