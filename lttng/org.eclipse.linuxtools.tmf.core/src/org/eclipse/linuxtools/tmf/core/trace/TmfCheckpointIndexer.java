@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.internal.tmf.core.Messages;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -156,16 +155,9 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
-                monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                 while (!monitor.isCanceled()) {
                     try {
-                        long prevNbEvents = fTrace.getNbEvents();
-                        Thread.sleep(250);
-                        long nbEvents = fTrace.getNbEvents();
-                        setName(Messages.TmfCheckpointIndexer_Indexing + fTrace.getName() + " (" + nbEvents + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-                        // setName doesn't refresh the UI, setTaskName does
-                        long rate = (nbEvents - prevNbEvents) * 4;
-                        monitor.setTaskName(rate + Messages.TmfCheckpointIndexer_EventsPerSecond);
+                        Thread.sleep(100);
                     } catch (final InterruptedException e) {
                         return Status.OK_STATUS;
                     }
