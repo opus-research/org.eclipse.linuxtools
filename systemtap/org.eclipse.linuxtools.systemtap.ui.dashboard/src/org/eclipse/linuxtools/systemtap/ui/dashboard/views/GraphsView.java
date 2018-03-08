@@ -41,23 +41,18 @@ public abstract class GraphsView extends ViewPart {
 	 * This class provides the framework for traversing the view's Tree structure.
 	 */
 	private static class ViewContentProvider implements ITreeContentProvider {
-		@Override
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 
-		@Override
 		public void dispose() {}
 
-		@Override
 		public Object[] getElements(Object parent) {
 			return getChildren(parent);
 		}
 
-		@Override
 		public Object getParent(Object child) {
 			return null;
 		}
 
-		@Override
 		public Object[] getChildren(Object par) {
 			TreeNode parent = ((TreeNode)par);
 
@@ -70,7 +65,6 @@ public abstract class GraphsView extends ViewPart {
 			return children;
 		}
 
-		@Override
 		public boolean hasChildren(Object parent) {
 			return ((TreeNode)parent).getChildCount() > 0;
 		}

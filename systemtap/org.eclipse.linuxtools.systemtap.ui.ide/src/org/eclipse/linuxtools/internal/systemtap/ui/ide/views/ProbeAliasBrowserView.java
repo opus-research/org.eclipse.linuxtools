@@ -15,7 +15,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.ProbeAliasAction;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
@@ -41,7 +40,7 @@ public class ProbeAliasBrowserView extends BrowserView {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		TapsetLibrary.init();
-		TapsetLibrary.addProbeListener(new ViewUpdater());
+		TapsetLibrary.addListener(new ViewUpdater());
 		refresh();
 		makeActions();
 	}
@@ -51,10 +50,7 @@ public class ProbeAliasBrowserView extends BrowserView {
 	 */
 	@Override
 	public void refresh() {
-		TreeNode probes = TapsetLibrary.getProbes();
-		if (probes != null){
-			super.viewer.setInput(TapsetLibrary.getProbes());
-		}
+		super.viewer.setInput(TapsetLibrary.getProbes());
 	}
 
 	/**

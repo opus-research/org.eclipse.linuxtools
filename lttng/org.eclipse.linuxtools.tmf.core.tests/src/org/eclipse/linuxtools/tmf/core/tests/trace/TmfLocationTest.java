@@ -18,7 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTimestampLocation;
@@ -179,9 +179,9 @@ public class TmfLocationTest {
         TmfLongLocation location2 = new TmfLongLocation(lng);
         TmfTimestampLocation location3 = new TmfTimestampLocation(ts);
 
-        String expected1 = "TmfStringLocation [fLocationInfo=" + str + "]";
-        String expected2 = "TmfLongLocation [fLocationInfo=" + lng + "]";
-        String expected3 = "TmfTimestampLocation [fLocationInfo=" + ts + "]";
+        String expected1 = "TmfLocation [fLocation=" + str + "]";
+        String expected2 = "TmfLocation [fLocation=" + lng + "]";
+        String expected3 = "TmfLocation [fLocation=" + ts + "]";
 
         assertEquals("toString", expected1, location1.toString());
         assertEquals("toString", expected2, location2.toString());

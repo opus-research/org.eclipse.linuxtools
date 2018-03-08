@@ -36,7 +36,6 @@ public class SelectFilterWizardPage extends WizardPage {
 		buttonListener = new ButtonSelectionListener();
 	}
 
-	@Override
 	public void createControl(Composite parent) {
 		wizard = (SelectFilterWizard)super.getWizard();
 

@@ -1,14 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
- *   Patrick Tasse - Updated for removal of context clone
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -18,9 +16,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -156,7 +154,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         final CtfTmfContext context = new CtfTmfContext(this);
         context.setLocation(curLocation);
         context.seek(curLocation.getLocationInfo());
-        final CtfLocationInfo currentTime = ((CtfLocationInfo)context.getLocation().getLocationInfo());
+        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocationInfo());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
         return ((double) currentTime.getTimestamp() - startTime)
@@ -183,7 +181,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
          * by rank for now.
          */
         if (currentLocation == null) {
-            currentLocation = new CtfLocation(new CtfLocationInfo(0L, 0L));
+            currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
             context.setRank(0);
         }
         if (currentLocation.getLocationInfo() == CtfLocation.INVALID_LOCATION) {
@@ -313,9 +311,9 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     @Override
     public CtfTmfEvent parseEvent(ITmfContext context) {
         CtfTmfEvent event = null;
-        if (context instanceof CtfTmfContext) {
-            final ITmfContext tmpContext = seekEvent(context.getLocation());
-            event = getNext(tmpContext);
+        if( context instanceof CtfTmfContext ){
+            CtfTmfContext itt = (CtfTmfContext) context.clone();
+            event = itt.getCurrentEvent();
         }
         return event;
     }

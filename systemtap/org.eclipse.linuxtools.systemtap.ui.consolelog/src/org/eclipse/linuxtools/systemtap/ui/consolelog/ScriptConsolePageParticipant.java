@@ -21,18 +21,15 @@ import org.eclipse.ui.part.IPageBookViewPage;
 
 /**
  * This class is responsible for creating and initializing UI for a {@link ScriptConsole}
- * @since 2.0
  */
 public class ScriptConsolePageParticipant implements IConsolePageParticipant {
 
 
-	@Override
 	@SuppressWarnings("rawtypes")
 	public Object getAdapter(Class adapter) {
 		return null;
 	}
 
-	@Override
 	public void init(IPageBookViewPage page, IConsole iConsole) {
 		if (!(iConsole instanceof ScriptConsole)){
 			return;
@@ -52,15 +49,12 @@ public class ScriptConsolePageParticipant implements IConsolePageParticipant {
 
 	}
 
-	@Override
 	public void dispose() {
 	}
 
-	@Override
 	public void activated() {
 	}
 
-	@Override
 	public void deactivated() {
 	}
 

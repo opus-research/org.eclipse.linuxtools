@@ -18,7 +18,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
@@ -35,13 +34,6 @@ import org.eclipse.ui.PlatformUI;
  * @author Ryan Morse
  */
 public final class TapsetLibrary {
-
-	private static TreeNode functionTree = null;
-	private static TreeNode probeTree = null;
-
-	private static FunctionParser functionParser = null;
-	private static ProbeParser probeParser = null;
-
 	public static TreeNode getProbes() {
 		return probeTree;
 	}
@@ -58,7 +50,7 @@ public final class TapsetLibrary {
 	 * available.
 	 */
 	public static void init() {
-		if (null != functionParser && null != probeParser) {
+		if (null != stpp) {
 			return;
 		}
 
@@ -78,20 +70,15 @@ public final class TapsetLibrary {
 	 * to get the information directly from the files.
 	 */
 	private static void runStapParser() {
-		functionParser = FunctionParser.getInstance();
-		functionParser.addListener(functionCompletionListener);
-		functionParser.schedule();
-
-		probeParser = ProbeParser.getInstance();
-		probeParser.addListener(probeCompletionListener);
-		probeParser.schedule();
+		stpp = TapsetParser.getInstance();
+		stpp.addListener(completionListener);
+		stpp.schedule();
+		functionTree = stpp.getFunctions();
+		probeTree = stpp.getProbes();
 	}
 
-	/**
-	 * @since 2.0
-	 */
 	public static boolean isFinishSuccessful(){
-		return functionParser.isFinishSuccessful() && probeParser.isFinishSuccessful();
+		return stpp.isFinishSuccessful();
 	}
 	/**
 	 * This method will get all of the tree information from
@@ -188,22 +175,12 @@ public final class TapsetLibrary {
 	 * Adds a new listener to the TapsetParser
 	 * @param listener the listener to be added
 	 * @return boolean indicating whether or not the listener was added
-	 * @since 2.0
 	 */
-	public static boolean addFunctionListener(IUpdateListener listener) {
-		if(null == functionParser)
+	public static boolean addListener(IUpdateListener listener) {
+		if(null == stpp)
 			return false;
-		functionParser.addListener(listener);
-		return true;
-	}
 
-	/**
-	 * @since 2.0
-	 */
-	public static boolean addProbeListener(IUpdateListener listener) {
-		if(null == probeParser)
-			return false;
-		probeParser.addListener(listener);
+		stpp.addListener(listener);
 		return true;
 	}
 
@@ -212,26 +189,22 @@ public final class TapsetLibrary {
 	 * @param listener The listener to be removed from the tapsetParser
 	 */
 	public static void removeUpdateListener(IUpdateListener listener) {
-		functionParser.removeListener(listener);
+		stpp.removeListener(listener);
 	}
 
-	private static final IUpdateListener functionCompletionListener = new IUpdateListener() {
-		@Override
+	/**
+	 * This class handles saving the results of the TapsetParser to
+	 * the TreeSettings.xml file.
+	 */
+	private static final IUpdateListener completionListener = new IUpdateListener() {
 		public void handleUpdateEvent() {
-			functionTree = functionParser.getFunctions();
-			TreeSettings.setTrees(functionTree, probeTree);
-			synchronized (functionParser) {
-				functionParser.notifyAll();
-			}
-		}
-	};
-
-	private static final IUpdateListener probeCompletionListener = new IUpdateListener() {
-		@Override
-		public void handleUpdateEvent() {
-			probeTree = probeParser.getProbes();
-			synchronized (probeParser) {
-				probeParser.notifyAll();
+			functionTree = stpp.getFunctions();
+			probeTree = stpp.getProbes();
+			if(stpp.isFinishSuccessful()){
+				TreeSettings.setTrees(functionTree, probeTree);
+				synchronized (stpp) {
+					stpp.notifyAll();
+				}
 			}
 		}
 	};
@@ -242,19 +215,10 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static void waitForInitialization() {
-		while (!functionParser.isFinishSuccessful()){
+		while (!stpp.isFinishSuccessful()){
 			try {
-				synchronized (functionParser) {
-					functionParser.wait(5000);
-				}
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-		while (!probeParser.isFinishSuccessful()){
-			try {
-				synchronized (probeParser) {
-					probeParser.wait(5000);
+				synchronized (stpp) {
+					stpp.wait(5000);
 				}
 			} catch (InterruptedException e) {
 				break;
@@ -268,10 +232,10 @@ public final class TapsetLibrary {
 	 * @since 1.2
 	 */
 	public static void stop(){
-		if(null != functionParser){
-			functionParser.cancel();
+		if(null != stpp){
+			stpp.cancel();
 			try {
-				functionParser.join();
+				stpp.join();
 			} catch (InterruptedException e) {
 				// The current thread was interrupted while waiting
 				// for the parser thread to exit. Nothing to do
@@ -279,4 +243,8 @@ public final class TapsetLibrary {
 			}
 		}
 	}
+
+	private static TreeNode functionTree = null;
+	private static TreeNode probeTree = null;
+	private static TapsetParser stpp = null;
 }

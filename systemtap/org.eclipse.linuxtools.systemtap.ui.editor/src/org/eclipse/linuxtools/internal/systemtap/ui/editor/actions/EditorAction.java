@@ -26,7 +26,6 @@ public abstract class EditorAction extends Action implements IWorkbenchWindowAct
 		setEnabled(true);
 	}
 
-	@Override
 	public void init(IWorkbenchWindow window) {
 		this.window = window;
 	}
@@ -48,7 +47,6 @@ public abstract class EditorAction extends Action implements IWorkbenchWindowAct
 		return getActivePage().getActiveEditor();
 	}
 
-	@Override
 	public void selectionChanged(IAction act, ISelection select) {
 		action = act;
 		buildEnablementChecks();
@@ -62,7 +60,6 @@ public abstract class EditorAction extends Action implements IWorkbenchWindowAct
 		action.setEnabled(enabled);
 	}
 
-	@Override
 	public void dispose() {
 		window = null;
 		action = null;

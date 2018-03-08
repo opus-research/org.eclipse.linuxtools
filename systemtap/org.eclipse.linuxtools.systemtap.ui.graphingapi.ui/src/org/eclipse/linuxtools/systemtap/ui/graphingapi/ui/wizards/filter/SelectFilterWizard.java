@@ -27,7 +27,6 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 		this.series = series;
 	}
 
-	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 	}
 

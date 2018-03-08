@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.core.event;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -85,7 +84,6 @@ public interface ITmfEvent extends IAdaptable {
 
     /**
      * @return the event timestamp
-     * @since 2.0
      */
     public ITmfTimestamp getTimestamp();
 

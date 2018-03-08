@@ -94,7 +94,6 @@ public class DataGrid implements IUpdateListener {
 		table.setMenu(this.initMenus());
 		
 		table.addListener(SWT.MouseDown, new Listener() {
-			@Override
 			public void handleEvent(Event event) {
 				clickLocation.x = event.x;
 				clickLocation.y = event.y;
@@ -199,7 +198,6 @@ public class DataGrid implements IUpdateListener {
 	}
 
 	public class RemoveFilterSelection implements SelectionListener {
-		@Override
 		public void widgetSelected(SelectionEvent e) {
 			IDataSetFilter idsf = (IDataSetFilter)((MenuItem)e.widget).getData();
 			e.widget.dispose();
@@ -210,7 +208,6 @@ public class DataGrid implements IUpdateListener {
 			}
 		}
 		
-		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 	
@@ -267,12 +264,10 @@ public class DataGrid implements IUpdateListener {
 		}
 	}
 	
-	@Override
 	public void handleUpdateEvent() {
 		if(table.isDisposed()) return;
 		
 		table.getDisplay().asyncExec(new Runnable() {
-			@Override
 			public void run() {
 				TableItem item;
 				int startLocation, endLocation = filteredDataSet.getRowCount();
