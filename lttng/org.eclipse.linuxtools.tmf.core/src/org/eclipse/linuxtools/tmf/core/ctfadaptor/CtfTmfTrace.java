@@ -217,7 +217,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         if (location == null) {
             CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
             if (event != null) {
-                currentLocation.setLocation(event.getTimestampValue(), 0);
+                currentLocation.setLocation(event.getTimestamp().getValue(), 0);
             }
         }
         if(context.getRank() != 0) {
@@ -280,7 +280,11 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         return;
     }
 
-    @Override
+    /**
+     * Method getStateSystem.
+     *
+     * @return IStateSystemQuerier
+     */
     public IStateSystemQuerier getStateSystem() {
         return this.ss;
     }
