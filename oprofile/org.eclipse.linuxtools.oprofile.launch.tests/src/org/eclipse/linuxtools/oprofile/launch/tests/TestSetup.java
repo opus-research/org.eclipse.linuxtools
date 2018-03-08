@@ -19,9 +19,8 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
+import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileEventConfigTab;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileSetupTab;
-import org.eclipse.linuxtools.oprofile.launch.tests.utils.LaunchTestingOptions;
-import org.eclipse.linuxtools.oprofile.launch.tests.utils.OprofileTestingEventConfigTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -34,13 +33,11 @@ import org.osgi.framework.FrameworkUtil;
 public class TestSetup extends AbstractTest {
 	protected ILaunchConfiguration config;
 	protected Shell testShell;
-	protected IProject project;
 	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "primeTest"); //$NON-NLS-1$
-		project = proj.getProject();
 		config = createConfiguration(proj.getProject());
 		testShell = new Shell(Display.getDefault());
 		testShell.setLayout(new GridLayout());
@@ -60,22 +57,14 @@ public class TestSetup extends AbstractTest {
 	
 	@Override
 	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
-		OprofileTestingEventConfigTab configTab = new OprofileTestingEventConfigTab();
+		OprofileEventConfigTab configTab = new OprofileEventConfigTab();
 		OprofileSetupTab setupTab = new OprofileSetupTab();
-		configTab.setOprofileProject(proj.getProject());
 		configTab.setDefaults(wc);
 		setupTab.setDefaults(wc);
 	}
 
 	//getter functions for otherwise unaccessible member variables 
-	private class OprofileTestingSetupTab extends OprofileSetupTab {
-		@Override
-		protected IProject getOprofileProject() { return proj.getProject(); }
-		@Override
-		public void setDefaults(ILaunchConfigurationWorkingCopy config) {
-			options = new LaunchTestingOptions();
-			options.saveConfiguration(config);
-		}
+	private static class OprofileTestingSetupTab extends OprofileSetupTab {
 		protected Button getKernelCheck() { return checkSeparateKernel; }
 		protected Button getLibraryCheck() { return checkSeparateLibrary; }
 		protected Text getTextKernelImage() { return kernelImageFileText; }
@@ -133,7 +122,19 @@ public class TestSetup extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertTrue(tab.isValid(config));
 	}
-
+	
+	private static class OprofileTestingEventConfigTab extends OprofileEventConfigTab {
+		@Override
+		protected boolean getOprofileTimerMode() { return false; }
+		@Override
+		protected int getNumberOfOprofileCounters() { return 1; }
+		@Override
+		protected boolean checkEventSetupValidity(int counter, String name, int maskValue) { return true; }
+		@Override
+		protected boolean hasPermissions(IProject project) { return true; }
+		public Button getDefaultCheck() { return defaultEventCheck; }
+	}
+	
 	public void testEventConfigTab() throws CoreException {
 		OprofileTestingEventConfigTab tab = new OprofileTestingEventConfigTab();
 		tab.createControl(new Shell());
