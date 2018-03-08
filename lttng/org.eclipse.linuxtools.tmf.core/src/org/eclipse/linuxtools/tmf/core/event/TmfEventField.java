@@ -64,7 +64,7 @@ public class TmfEventField implements ITmfEventField {
         /* Fill the fFieldNames and fNameMapping structures */
         final int nbFields = (fFields != null) ? fFields.length : 0;
         fFieldNames = new String[nbFields];
-        fNameMapping = new HashMap<String, ITmfEventField>();
+        fNameMapping = new HashMap<>();
 
         for (int i = 0; i < nbFields; i++) {
             final String curName = fFields[i].getName();
@@ -133,6 +133,21 @@ public class TmfEventField implements ITmfEventField {
             return fFields[index];
         }
         return null;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public ITmfEventField getSubField(final String[] names) {
+        ITmfEventField field = this;
+        for (String name : names) {
+            field = field.getField(name);
+            if (field == null) {
+                return null;
+            }
+        }
+        return field;
     }
 
     // ------------------------------------------------------------------------

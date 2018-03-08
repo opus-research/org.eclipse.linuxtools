@@ -21,8 +21,7 @@ import java.util.TreeMap;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -147,7 +146,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         HistogramQueryRequest req = new HistogramQueryRequest(borders, end);
         sendAndWait(req);
 
-        List<Long> results = new LinkedList<Long>(req.getResults());
+        List<Long> results = new LinkedList<>(req.getResults());
         return results;
 
     }
@@ -224,8 +223,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
         private long total;
 
         public StatsTotalRequest(ITmfTrace trace, TmfTimeRange range) {
-            super(trace.getEventType(), range, TmfDataRequest.ALL_DATA,
-                    trace.getCacheSize(), ITmfDataRequest.ExecutionType.BACKGROUND);
+            super(trace.getEventType(), range, 0, ITmfEventRequest.ALL_DATA,
+                    ITmfEventRequest.ExecutionType.BACKGROUND);
             total = 0;
         }
 
@@ -252,9 +251,9 @@ public class TmfEventsStatistics implements ITmfStatistics {
         private final Map<String, Long> stats;
 
         public StatsPerTypeRequest(ITmfTrace trace, TmfTimeRange range) {
-            super(trace.getEventType(), range, TmfDataRequest.ALL_DATA,
-                    trace.getCacheSize(), ITmfDataRequest.ExecutionType.BACKGROUND);
-            this.stats = new HashMap<String, Long>();
+            super(trace.getEventType(), range, 0, ITmfEventRequest.ALL_DATA,
+                    ITmfEventRequest.ExecutionType.BACKGROUND);
+            this.stats = new HashMap<>();
         }
 
         public Map<String, Long> getResults() {
@@ -316,12 +315,12 @@ public class TmfEventsStatistics implements ITmfStatistics {
                     new TmfTimeRange(
                             new TmfTimestamp(borders[0], SCALE),
                             new TmfTimestamp(endTime, SCALE)),
-                    TmfDataRequest.ALL_DATA,
-                    trace.getCacheSize(),
-                    ITmfDataRequest.ExecutionType.BACKGROUND);
+                    0,
+                    ITmfEventRequest.ALL_DATA,
+                    ITmfEventRequest.ExecutionType.BACKGROUND);
 
             /* Prepare the results map, with all counts at 0 */
-            results = new TreeMap<Long, Long>();
+            results = new TreeMap<>();
             for (long border : borders) {
                 results.put(border, 0L);
             }

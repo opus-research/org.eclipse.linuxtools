@@ -47,7 +47,7 @@ public class SpecfileTaskHandler extends SpecfileMarkerHandler{
 	 * @param file The FileEditorInput to get the file from.
 	 * @param document The specfile document.
 	 *
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public SpecfileTaskHandler(FileEditorInput file, IDocument document) {
 		this(file.getFile(), document);
@@ -66,7 +66,7 @@ public class SpecfileTaskHandler extends SpecfileMarkerHandler{
 		}
 
 		String message = line.substring(line.indexOf(taskType));
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		MarkerUtilities.setLineNumber(map, lineNumber);
 		MarkerUtilities.setMessage(map, message);
 		map.put(IMarker.MESSAGE, message);
