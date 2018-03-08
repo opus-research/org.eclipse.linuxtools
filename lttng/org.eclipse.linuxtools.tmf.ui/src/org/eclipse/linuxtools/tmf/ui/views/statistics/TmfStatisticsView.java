@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 20112 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -391,7 +391,6 @@ public class TmfStatisticsView extends TmfView {
      * Handles the signal about new experiment range.
      * @param signal The experiment range updated signal
      */
-    @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
         TmfExperiment<ITmfEvent> experiment = (TmfExperiment<ITmfEvent>) signal.getExperiment();
