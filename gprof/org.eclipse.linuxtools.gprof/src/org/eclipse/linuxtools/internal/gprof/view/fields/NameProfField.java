@@ -15,6 +15,7 @@ import org.eclipse.linuxtools.internal.gprof.view.GmonView;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 import org.eclipse.swt.graphics.Color;
 
+
 /**
  * Column "name", or "location" of the displayed element
  *
@@ -55,13 +56,10 @@ public class NameProfField extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getValue(Object obj) {
-		if (obj instanceof TreeElement) {
-			TreeElement e = (TreeElement) obj;
-			return e.getName();
-		}
-		return "";
+		TreeElement e = (TreeElement) obj;
+		return e.getName();
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getBackground(java.lang.Object)

@@ -69,9 +69,6 @@ public class RenameTraceHandler extends AbstractHandler {
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -137,7 +134,7 @@ public class RenameTraceHandler extends AbstractHandler {
         TmfExperimentFolder experimentFolder = newTrace.getProject().getExperimentsFolder();
         for (final ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
             for (final ITmfProjectModelElement trace : experiment.getChildren()) {
-                if (trace.getName().equals(oldTrace.getName())) {
+                if (trace.equals(oldTrace)) {
                     // Create a link to the renamed trace
                     createTraceLink(newTrace, experiment);
 

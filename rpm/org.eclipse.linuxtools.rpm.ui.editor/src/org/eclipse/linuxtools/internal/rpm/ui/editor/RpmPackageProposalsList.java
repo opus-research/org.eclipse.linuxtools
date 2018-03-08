@@ -89,6 +89,7 @@ public class RpmPackageProposalsList {
 		 * Show RPM informations only if the proposal list is less than the
 		 * limit set in the RPM proposals preference page.
 		 */
+		;
 		if (proposalsList.size() < rpmpkgsMaxProposals) {
 			List<String[]> proposalsListWithInfo = new ArrayList<String[]>(proposalsList.size());
 			for (String[]  proposals: proposalsList){

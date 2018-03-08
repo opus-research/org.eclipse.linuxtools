@@ -14,26 +14,25 @@ package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.filter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 
 public abstract class FilterWizardPage extends WizardPage {
 	public FilterWizardPage(String title) {
-		super("selectFilterOptions"); //$NON-NLS-1$
+		super("selectFilterOptions");
 		setTitle(title);
 	}
-
+	
 	public void createControl(Composite parent) {
 		wizard = (SelectFilterWizard)super.getWizard();
 	}
-
+	
 	@Override
 	public boolean canFlipToNextPage() {
 		return false;
 	}
-
+	
 	abstract void createFilter();
 
 	@Override
@@ -41,21 +40,22 @@ public abstract class FilterWizardPage extends WizardPage {
 		wizard = null;
 		super.dispose();
 	}
-
-	protected final SelectionListener selectionListener = new SelectionAdapter() {
-		@Override
+	
+	protected final SelectionListener selectionListener = new SelectionListener() {
+		public void widgetDefaultSelected(SelectionEvent e) {}
+		
 		public void widgetSelected(SelectionEvent e) {
 			createFilter();
 			wizard.getContainer().updateButtons();
 		}
 	};
-
+	
 	protected final ModifyListener modifyListener = new ModifyListener() {
 		public void modifyText(ModifyEvent e) {
 			createFilter();
 			wizard.getContainer().updateButtons();
 		}
 	};
-
+	
 	protected SelectFilterWizard wizard;
 }

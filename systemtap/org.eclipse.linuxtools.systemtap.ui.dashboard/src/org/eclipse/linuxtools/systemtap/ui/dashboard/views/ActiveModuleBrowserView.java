@@ -22,8 +22,10 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphDa
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -42,6 +44,7 @@ import org.eclipse.ui.PlatformUI;
 public class ActiveModuleBrowserView extends ModuleView {
 	public ActiveModuleBrowserView() {
 		super();
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 
 	@Override
@@ -84,8 +87,9 @@ public class ActiveModuleBrowserView extends ModuleView {
 	 * @param data The <code>ActiveModuleData</code> representing the item to add.
 	 */
 	public void add(String display, ActiveModuleData data) {
-		Display disp = PlatformUI.getWorkbench().getDisplay();
-		disp.getActiveShell().setCursor(disp.getSystemCursor(SWT.CURSOR_WAIT));
+		 Display disp = PlatformUI.getWorkbench().getDisplay();
+		  Cursor cursor = new Cursor(disp, SWT.CURSOR_WAIT);
+		  PlatformUI.getWorkbench().getDisplay().getActiveShell().setCursor(cursor);
 
 		TreeNode root = (TreeNode)viewer.getInput();
 		ActiveModuleTreeNode child = new ActiveModuleTreeNode(data, display, true);
@@ -107,7 +111,8 @@ public class ActiveModuleBrowserView extends ModuleView {
 		}
 		root.sortLevel();
 		viewer.refresh();
-		disp.getActiveShell().setCursor(null);
+		  PlatformUI.getWorkbench().getDisplay().getActiveShell().setCursor(null);
+		  cursor.dispose();
 	}
 
 	/**
@@ -156,9 +161,8 @@ public class ActiveModuleBrowserView extends ModuleView {
 	public boolean isActive(DashboardModule mod) {
 		TreeNode tree = (TreeNode)viewer.getInput();
 		for(int i=0; i<tree.getChildCount(); i++) {
-			if(tree.getChildAt(i).toString().equals(mod.category + "." + mod.display)) {//$NON-NLS-1$
+			if(tree.getChildAt(i).toString().equals(mod.category + "." + mod.display)) //$NON-NLS-1$
 				return true;
-			}
 		}
 		return false;
 	}
@@ -172,9 +176,8 @@ public class ActiveModuleBrowserView extends ModuleView {
 	public boolean isPaused(DashboardModule mod) {
 		TreeNode tree = (TreeNode)viewer.getInput();
 		for(int i=0; i<tree.getChildCount(); i++) {
-			if(tree.getChildAt(i).toString().equals(mod.category + "." + mod.display)) {//$NON-NLS-1$
+			if(tree.getChildAt(i).toString().equals(mod.category + "." + mod.display)) //$NON-NLS-1$
 				return ((ActiveModuleData)tree.getChildAt(i).getData()).paused;
-			}
 		}
 		return false;
 	}
@@ -186,6 +189,7 @@ public class ActiveModuleBrowserView extends ModuleView {
 	public boolean anyRunning() {
 		TreeNode tree = (TreeNode)viewer.getInput();
 		return tree.getChildCount() > 0;
+		//return true;
 	}
 
 	/**
@@ -194,6 +198,7 @@ public class ActiveModuleBrowserView extends ModuleView {
 	 */
 	@Override
 	public void dispose() {
+		LogManager.logInfo("disposing", this); //$NON-NLS-1$
 		super.dispose();
 		viewer = null;
 	}
@@ -213,14 +218,13 @@ public class ActiveModuleBrowserView extends ModuleView {
 			TreeNode treeObj = (TreeNode)obj;
 			Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
 
-			if(treeObj.getChildCount() > 0) {
+			if(treeObj.getChildCount() > 0)
 				img = DashboardPlugin.getImageDescriptor("icons/misc/module_obj.gif").createImage(); //$NON-NLS-1$
-			} else if(treeObj instanceof GraphTreeNode) {
-				if(null == ((DashboardGraphData)((GraphTreeNode)treeObj).getData()).adapter) {
+			else if(treeObj instanceof GraphTreeNode){
+				if(null == ((DashboardGraphData)((GraphTreeNode)treeObj).getData()).adapter)
 					img = DashboardPlugin.getImageDescriptor("icons/misc/graph_dis.gif").createImage(); //$NON-NLS-1$
-				} else {
+				else
 					img = DashboardPlugin.getImageDescriptor("icons/misc/graph_act.gif").createImage(); //$NON-NLS-1$
-				}
 			}
 
 			return img;

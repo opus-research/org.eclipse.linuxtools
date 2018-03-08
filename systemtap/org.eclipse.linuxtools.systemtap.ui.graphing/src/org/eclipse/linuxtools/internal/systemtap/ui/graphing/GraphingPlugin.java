@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.graphing;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -19,7 +20,6 @@ import org.osgi.framework.BundleContext;
  */
 public class GraphingPlugin extends AbstractUIPlugin {
 
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.systemtap.ui.graphing"; //$NON-NLS-1$
 	//The shared instance.
 	private static GraphingPlugin plugin;
 	
@@ -28,6 +28,14 @@ public class GraphingPlugin extends AbstractUIPlugin {
 	 */
 	public GraphingPlugin() {
 		plugin = this;
+	}
+
+	/**
+	 * This method is called upon plug-in activation
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
 	}
 
 	/**
@@ -46,4 +54,14 @@ public class GraphingPlugin extends AbstractUIPlugin {
 		return plugin;
 	}
 
+	/**
+	 * Returns an image descriptor for the image file at the given
+	 * plug-in relative path.
+	 *
+	 * @param path the path
+	 * @return the image descriptor
+	 */
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.graphing", path);
+	}
 }

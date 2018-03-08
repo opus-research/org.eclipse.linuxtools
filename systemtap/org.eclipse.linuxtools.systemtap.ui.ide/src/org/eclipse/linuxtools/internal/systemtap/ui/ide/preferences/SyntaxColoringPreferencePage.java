@@ -11,33 +11,42 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences;
 
-import org.eclipse.jface.preference.ColorFieldEditor;
-import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.preference.*;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbench;
 
 
 public class SyntaxColoringPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 	public SyntaxColoringPreferencePage() {
 		super();
+		LogManager.logDebug("Start SyntaxColoringPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
 		setDescription(Localization.getString("SyntaxColoringPreferencePage.SyntaxColoringOptions"));
+		LogManager.logDebug("End SyntaxColoringPreferencePage:", this); //$NON-NLS-1$
 	}
-
+	
 	public void init(IWorkbench workbench) {
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
-
+	
 	@Override
 	protected Control createContents(Composite parent) {
+		LogManager.logDebug("Start createContents: parent-" + parent, this); //$NON-NLS-1$
+		final TabFolder tabFolder = new TabFolder(parent, SWT.BORDER);
+		
 		//STP Editor
-		Composite comp = new Composite(parent, SWT.NULL);
-		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		TabItem stpEditor = new TabItem(tabFolder, SWT.NULL);
+		stpEditor.setText(Localization.getString("SyntaxColoringPreferencePage.STPEditor"));
+		Composite comp = new Composite(tabFolder, SWT.NULL);
+		stpEditor.setControl(comp);
 
 		stpDC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_DEFAULT_COLOR,
@@ -60,21 +69,50 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 		stpSC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_STRING_COLOR,
 				Localization.getString("SyntaxColoringPreferencePage.StringColor"), comp);
+		
+		//C Editor
+		TabItem cEditor = new TabItem(tabFolder, SWT.NULL);
+		cEditor.setText(Localization.getString("SyntaxColoringPreferencePage.CEditor"));
+		comp = new Composite(tabFolder, SWT.NULL);
+		cEditor.setControl(comp);
 
-	    return comp;
+		cDC = createColorFieldEditor(
+				IDEPreferenceConstants.P_C_DEFAULT_COLOR,
+				Localization.getString("SyntaxColoringPreferencePage.DefaultColor"), comp);
+		cKC = createColorFieldEditor(
+				IDEPreferenceConstants.P_C_KEYWORD_COLOR,
+				Localization.getString("SyntaxColoringPreferencePage.KeywordColor"), comp);
+		cPC = createColorFieldEditor(
+				IDEPreferenceConstants.P_C_PREPROCESSOR_COLOR,
+				Localization.getString("SyntaxColoringPreferencePage.PreprocessorColor"), comp);
+		cCC = createColorFieldEditor(
+				IDEPreferenceConstants.P_C_COMMENT_COLOR,
+				Localization.getString("SyntaxColoringPreferencePage.CommentColor"), comp);
+		cTC = createColorFieldEditor(
+				IDEPreferenceConstants.P_C_TYPE_COLOR,
+				Localization.getString("SyntaxColoringPreferencePage.TypeColor"), comp);
+		cSC = createColorFieldEditor(
+				IDEPreferenceConstants.P_C_STRING_COLOR,
+				Localization.getString("SyntaxColoringPreferencePage.StringColor"), comp);
+
+		LogManager.logDebug("End createContents: returnVal-" + tabFolder, this); //$NON-NLS-1$
+	    return tabFolder;
 	}
-
+	
 	private ColorFieldEditor createColorFieldEditor(String name, String lblText, Composite parent) {
+		LogManager.logDebug("Start createColorFieldEditor: name-" + name + ", lblText-" + lblText + ", parent-" + parent, this); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		ColorFieldEditor cfe = new ColorFieldEditor(name, lblText, parent);
 		cfe.setPage(this);
 		cfe.setPreferenceStore(getPreferenceStore());
 		cfe.load();
-
+		
+		LogManager.logDebug("End createColorFieldEditor: returnVal-" + cfe, this); //$NON-NLS-1$
 		return cfe;
 	}
-
+	
 	@Override
 	protected void performDefaults() {
+		LogManager.logDebug("Start performDefaults:", this); //$NON-NLS-1$
 		stpDC.loadDefault();
 		stpKC.loadDefault();
 		stpEC.loadDefault();
@@ -82,12 +120,20 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 		stpCC.loadDefault();
 		stpTC.loadDefault();
 		stpSC.loadDefault();
-
+		cDC.loadDefault();
+		cKC.loadDefault();
+		cPC.loadDefault();
+		cCC.loadDefault();
+		cTC.loadDefault();
+		cSC.loadDefault();
+		
 		super.performDefaults();
+		LogManager.logDebug("End performDefaults:", this); //$NON-NLS-1$
 	}
-
+	
 	@Override
 	public boolean performOk() {
+		LogManager.logDebug("Start performOk:", this); //$NON-NLS-1$
 		stpDC.store();
 		stpKC.store();
 		stpEC.store();
@@ -95,12 +141,20 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 		stpCC.store();
 		stpTC.store();
 		stpSC.store();
+		cDC.store();
+		cKC.store();
+		cPC.store();
+		cCC.store();
+		cTC.store();
+		cSC.store();
 
+		LogManager.logDebug("End performOk returnVal-true", this); //$NON-NLS-1$
 		return true;
 	}
-
+	
 	@Override
 	public void dispose() {
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();
 		stpDC.dispose();
 		stpKC.dispose();
@@ -109,6 +163,12 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 		stpCC.dispose();
 		stpTC.dispose();
 		stpSC.dispose();
+		cDC.dispose();
+		cKC.dispose();
+		cPC.dispose();
+		cCC.dispose();
+		cTC.dispose();
+		cSC.dispose();
 		stpDC = null;
 		stpKC = null;
 		stpEC = null;
@@ -116,7 +176,14 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 		stpCC = null;
 		stpTC = null;
 		stpSC = null;
+		cDC = null;
+		cKC = null;
+		cPC = null;
+		cCC = null;
+		cTC = null;
+		cSC = null;
 	}
-
+	
 	private ColorFieldEditor stpDC, stpKC, stpEC, stpEE, stpCC, stpTC, stpSC;
+	private ColorFieldEditor cDC, cKC, cPC, cCC, cTC, cSC;
 }

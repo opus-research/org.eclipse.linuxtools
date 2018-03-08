@@ -20,12 +20,11 @@ import org.eclipse.linuxtools.systemtap.ui.editor.RecentFileMenuManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.CollapseAllHandler;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 
@@ -40,7 +39,6 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class BrowserView extends ViewPart {
 	protected TreeViewer viewer;
-	private CollapseAllHandler collapseHandler;
 
 	public BrowserView() {
 		super();
@@ -98,45 +96,39 @@ public abstract class BrowserView extends ViewPart {
 			String item = treeObj.getData().toString();
 
 			img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
-			if (treeObj.getChildCount() > 0) {
+			if (treeObj.getChildCount() > 0)
 				img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-			}
 
 
 			//Kernel Source
-			if(item.endsWith(".c")) {//$NON-NLS-1$
+			if(item.endsWith(".c")) //$NON-NLS-1$
 				img = IDEPlugin.getImageDescriptor("icons/files/file_c.gif").createImage(); //$NON-NLS-1$
-			}
-			if(item.endsWith(".h")) {//$NON-NLS-1$
+			if(item.endsWith(".h")) //$NON-NLS-1$
 				img = IDEPlugin.getImageDescriptor("icons/files/file_h.gif").createImage(); //$NON-NLS-1$
-			}
 
 			//Functions
 			if(item.endsWith(")") && !item.endsWith("\")")) { //$NON-NLS-1$ //$NON-NLS-2$
-				item = item.substring(0, item.indexOf('(')).trim();
-				if(item.endsWith(":long")) {//$NON-NLS-1$
+				item = item.substring(0, item.indexOf("(")).trim(); //$NON-NLS-1$
+				if(item.endsWith(":long")) //$NON-NLS-1$
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
-				} else if(item.endsWith(":string")) {//$NON-NLS-1$
+				else if(item.endsWith(":string")) //$NON-NLS-1$
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
-				} else {
+				else //if(item.endsWith(":unknown"))
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_void.gif").createImage(); //$NON-NLS-1$
-				}
 			} else {
 				//Probes
-				if(item.startsWith("probe")) {//$NON-NLS-1$
+				if(item.startsWith("probe")) //$NON-NLS-1$
 					img = IDEPlugin.getImageDescriptor("icons/misc/probe_obj.gif").createImage(); //$NON-NLS-1$
-				}
 
 				//Probe variables
-				if(item.endsWith(":long")) {//$NON-NLS-1$
+				if(item.endsWith(":long")) //$NON-NLS-1$
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
-				} else if(item.endsWith(":string")) {//$NON-NLS-1$
+				else if(item.endsWith(":string")) //$NON-NLS-1$
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
-				} else if(item.endsWith(":unknown")) {//$NON-NLS-1$
+				else if(item.endsWith(":unknown")) //$NON-NLS-1$
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
-				} else {
+				else
 					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
-				}
 			}
 
 			return img;
@@ -145,13 +137,10 @@ public abstract class BrowserView extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		parent.getShell().setCursor(parent.getShell().getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
+		parent.getShell().setCursor(new Cursor(parent.getShell().getDisplay(), SWT.CURSOR_WAIT));
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
-		IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-		collapseHandler = new CollapseAllHandler(getViewer());
-		handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
 		RecentFileMenuManager.getInstance().registerActionBar(getViewSite().getActionBars());
 	}
 
@@ -168,9 +157,6 @@ public abstract class BrowserView extends ViewPart {
 	public void dispose() {
 		super.dispose();
 		viewer = null;
-		if(collapseHandler != null) {
-			collapseHandler.dispose();
-		}
 	}
 
 	abstract void refresh();

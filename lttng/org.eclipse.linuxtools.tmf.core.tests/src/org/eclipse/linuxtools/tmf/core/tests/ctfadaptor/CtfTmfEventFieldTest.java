@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.nio.ByteOrder;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
@@ -29,6 +28,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventField;
 import org.junit.After;
 import org.junit.Before;
@@ -123,7 +123,7 @@ public class CtfTmfEventFieldTest {
         CtfTmfEventField result;
         result = CtfTmfEventField.parseField(fixture.lookupArray(ARRAY), NAME);
         String result2 = CtfTmfEventField.copyFrom(result).toString();
-        assertEquals( result2, "test=[2, 2]"); //$NON-NLS-1$
+        assertEquals( result2, "test={ 2, 2}"); //$NON-NLS-1$
     }
 
     /**
@@ -145,18 +145,7 @@ public class CtfTmfEventFieldTest {
         Definition fieldDef = fixture.lookupDefinition(SEQ);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         String result2 =CtfTmfEventField.copyFrom(result).toString();
-        assertEquals( result2, "test=[2, 2]"); //$NON-NLS-1$
-    }
-
-    /**
-     * Run the CtfTmfEventField parseField(Definition,String) method test.
-     */
-    @Test
-    public void testParseField_sequence_value() {
-        Definition fieldDef = fixture.lookupDefinition(SEQ);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        String result2 = CtfTmfEventField.copyFrom(result).getValue().toString();
-        assertEquals( result2, "[2, 2]"); //$NON-NLS-1$
+        assertEquals( result2, "test={ 2, 2}"); //$NON-NLS-1$
     }
 
     /**

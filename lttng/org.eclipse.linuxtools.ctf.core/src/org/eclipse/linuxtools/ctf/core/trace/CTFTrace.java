@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -37,16 +37,18 @@ import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
 
 /**
@@ -61,6 +63,14 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
  * @version $Revision: 1.0 $
  */
 public class CTFTrace implements IDefinitionScope {
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+
+    private static final String OFFSET = "offset"; //$NON-NLS-1$
+
+
 
     /*
      * (non-Javadoc)
@@ -111,11 +121,6 @@ public class CTFTrace implements IDefinitionScope {
     private StructDeclaration packetHeaderDecl = null;
 
     /**
-     * The clock of the trace
-     */
-    private CTFClock singleClock;
-
-    /**
      * Packet header structure definition
      *
      * This is only used when opening the trace files, to read the first packet
@@ -138,8 +143,8 @@ public class CTFTrace implements IDefinitionScope {
      */
     private final Map<String, CTFClock> clocks = new HashMap<String, CTFClock>();
 
-    /** FileInputStreams to the streams */
-    private final List<FileInputStream> fileInputStreams = new LinkedList<FileInputStream>();
+    /** FileChannels to the streams */
+    private final List<FileChannel> streamFileChannels = new LinkedList<FileChannel>();
 
     /** Handlers for the metadata files */
     private final static FileFilter metadataFileFilter = new MetadataFileFilter();
@@ -147,7 +152,7 @@ public class CTFTrace implements IDefinitionScope {
                                                                                          // fieldJavadoc
 
     /** map of all the event types */
-    private final Map<Long,HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,IEventDeclaration>>();
+    private final Map<Long,HashMap<Long, EventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,EventDeclaration>>();
     /** map of all the event types */
     private final Map<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
     /** map of all the indexes */
@@ -190,9 +195,6 @@ public class CTFTrace implements IDefinitionScope {
         this.metadata = new Metadata(this);
 
         /* Set up the internal containers for this trace */
-        if (!this.path.exists()) {
-            throw new CTFReaderException("Trace (" + path.getPath() + ") doesn't exist. Deleted or moved?"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
 
         if (!this.path.isDirectory()) {
             throw new CTFReaderException("Path must be a valid directory"); //$NON-NLS-1$
@@ -223,12 +225,12 @@ public class CTFTrace implements IDefinitionScope {
                 /*
                  * Copy the events
                  */
-                Iterator<Entry<Long, IEventDeclaration>> it = s.getStream()
+                Iterator<Entry<Long, EventDeclaration>> it = s.getStream()
                         .getEvents().entrySet().iterator();
                 while (it.hasNext()) {
-                    Entry<Long, IEventDeclaration> pairs = it.next();
+                    Map.Entry<Long, EventDeclaration> pairs = it.next();
                     Long eventNum = pairs.getKey();
-                    IEventDeclaration eventDec = pairs.getValue();
+                    EventDeclaration eventDec = pairs.getValue();
                     getEvents(s.getStream().getId()).put(eventNum, eventDec);
                 }
 
@@ -240,21 +242,20 @@ public class CTFTrace implements IDefinitionScope {
         }
     }
 
-    /**
-     * Dispose the trace
-     * @since 2.0
-     */
-    public void dispose() {
-        for (FileInputStream fis : fileInputStreams) {
-            if (fis != null) {
+    @Override
+    protected void finalize() throws Throwable {
+        /* If this trace gets closed, release the descriptors to the streams */
+        for (FileChannel fc : streamFileChannels) {
+            if (fc != null) {
                 try {
-                    fis.close();
+                    fc.close();
                 } catch (IOException e) {
                     // do nothing it's ok, we tried to close it.
                 }
             }
         }
-        System.gc(); // Invoke GC to release MappedByteBuffer objects (Java bug JDK-4724038)
+        super.finalize();
+
     }
 
     // ------------------------------------------------------------------------
@@ -268,7 +269,7 @@ public class CTFTrace implements IDefinitionScope {
      *            The ID of the stream from which to read
      * @return The Hash map with the event declarations
      */
-    public HashMap<Long, IEventDeclaration> getEvents(Long streamId) {
+    public HashMap<Long, EventDeclaration> getEvents(Long streamId) {
         return eventDecs.get(streamId);
     }
 
@@ -277,7 +278,7 @@ public class CTFTrace implements IDefinitionScope {
      * @param id the StreamInput
      * @return The index
      */
-    StreamInputPacketIndex getIndex(StreamInput id){
+    public StreamInputPacketIndex getIndex(StreamInput id){
         if(! indexes.containsKey(id)){
             indexes.put(id, new StreamInputPacketIndex());
         }
@@ -288,7 +289,6 @@ public class CTFTrace implements IDefinitionScope {
      * Gets an event Declaration hashmap for a given StreamInput
      * @param id the StreamInput
      * @return the hashmap with the event definitions
-     * @since 2.0
      */
     public HashMap<Long, EventDefinition> getEventDefs(StreamInput id) {
         if(! eventDefs.containsKey(id)){
@@ -305,9 +305,8 @@ public class CTFTrace implements IDefinitionScope {
      * @param id
      *            the ID of the event
      * @return the event declaration
-     * @since 2.0
      */
-    public IEventDeclaration getEventType(long streamId, long id) {
+    public EventDeclaration getEventType(long streamId, long id) {
         return getEvents(streamId).get(id);
     }
 
@@ -317,7 +316,6 @@ public class CTFTrace implements IDefinitionScope {
      * @param id
      *            Long the id of the stream
      * @return Stream the stream that we need
-     * @since 2.0
      */
     public Stream getStream(Long id) {
         return streams.get(id);
@@ -529,9 +527,8 @@ public class CTFTrace implements IDefinitionScope {
 
         try {
             /* Open the file and get the FileChannel */
-            FileInputStream fis = new FileInputStream(streamFile);
-            fileInputStreams.add(fis);
-            fc = fis.getChannel();
+            fc = new FileInputStream(streamFile).getChannel();
+            streamFileChannels.add(fc);
 
             /* Map one memory page of 4 kiB */
             byteBuffer = fc.map(MapMode.READ_ONLY, 0, 4096);
@@ -574,17 +571,18 @@ public class CTFTrace implements IDefinitionScope {
                 }
             }
 
-            /* Read the stream ID */
-            Definition streamIDDef = packetHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
+            /* Read stream ID */
+            // TODO: it hasn't been checked that the stream_id field exists and
+            // is an unsigned
+            // integer
+            IntegerDefinition streamIDDef = (IntegerDefinition) packetHeaderDef
+                    .lookupDefinition("stream_id"); //$NON-NLS-1$
+            assert (streamIDDef != null);
 
-            if (streamIDDef instanceof IntegerDefinition) { //this doubles as a null check
-                long streamID = ((IntegerDefinition) streamIDDef).getValue();
-                stream = streams.get(streamID);
-            } else {
-                /* No stream_id in the packet header */
-                stream = streams.get(null);
-            }
+            long streamID = streamIDDef.getValue();
 
+            /* Get the stream to which this trace file belongs to */
+            stream = streams.get(streamID);
         } else {
             /* No packet header, we suppose there is only one stream */
             stream = streams.get(null);
@@ -620,7 +618,6 @@ public class CTFTrace implements IDefinitionScope {
      *            A stream object.
      * @throws ParseException
      *             If there was some problem reading the metadata
-     * @since 2.0
      */
     public void addStream(Stream stream) throws ParseException {
 
@@ -633,8 +630,7 @@ public class CTFTrace implements IDefinitionScope {
         }
 
         /*
-         * If the stream we try to add has the null key, it must be the only
-         * one. Thus, if the streams container is not empty, it is not valid.
+         * If the stream we try to add has the null key, it must be the onl         * one. Thus, if the streams container is not empty, it is not valid.
          */
         if ((stream.getId() == null) && (streams.size() != 0)) {
             throw new ParseException("Stream without id with multiple streams"); //$NON-NLS-1$
@@ -647,13 +643,12 @@ public class CTFTrace implements IDefinitionScope {
 
         /* It should be ok now. */
         streams.put(stream.getId(), stream);
-        eventDecs.put(stream.getId(), new HashMap<Long,IEventDeclaration>());
+        eventDecs.put(stream.getId(), new HashMap<Long,EventDeclaration>());
     }
 
     /**
      * gets the Environment variables from the trace metadata (See CTF spec)
      * @return the environment variables in a map form (key value)
-     * @since 2.0
      */
     public Map<String, String> getEnvironment() {
         return environment;
@@ -695,18 +690,23 @@ public class CTFTrace implements IDefinitionScope {
         return clocks.get(name);
     }
 
-
-
+    private CTFClock singleClock;
+    private long singleOffset;
 
     /**
-     * gets the clock if there is only one. (this is 100% of the use cases as of
-     * June 2012)
-     *
+     * gets the clock if there is only one. (this is 100% of the use cases as of June 2012)
      * @return the clock
      */
     public final CTFClock getClock() {
         if (clocks.size() == 1) {
-            singleClock = clocks.get(clocks.keySet().iterator().next());
+            if (singleClock == null) {
+                singleClock = clocks.get(clocks.keySet().toArray()[0]);
+                if (singleClock.getProperty(OFFSET) != null) {
+                    singleOffset = (Long) getClock().getProperty(OFFSET);
+                } else {
+                    singleClock.addAttribute(OFFSET, 0);
+                }
+            }
             return singleClock;
         }
         return null;
@@ -714,88 +714,13 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * gets the time offset of a clock with respect to UTC in nanoseconds
-     *
      * @return the time offset of a clock with respect to UTC in nanoseconds
      */
     public final long getOffset() {
         if (getClock() == null) {
             return 0;
         }
-        return singleClock.getClockOffset();
-    }
-
-    /**
-     * gets the time offset of a clock with respect to UTC in nanoseconds
-     *
-     * @return the time offset of a clock with respect to UTC in nanoseconds
-     */
-    private final double getTimeScale() {
-        if (getClock() == null) {
-            return 1.0;
-        }
-        return singleClock.getClockScale();
-    }
-
-    /**
-     * Does the trace need to time scale?
-     *
-     * @return if the trace is in ns or cycles.
-     */
-    private final boolean clockNeedsScale() {
-        if (getClock() == null) {
-            return false;
-        }
-        return singleClock.isClockScaled();
-    }
-
-    /**
-     * the inverse clock for returning to a scale.
-     *
-     * @return 1.0 / scale
-     */
-    private final double getInverseTimeScale() {
-        if (getClock() == null) {
-            return 1.0;
-        }
-        return singleClock.getClockAntiScale();
-    }
-
-    /**
-     * @param cycles
-     *            clock cycles since boot
-     * @return time in nanoseconds UTC offset
-     * @since 2.0
-     */
-    public long timestampCyclesToNanos(long cycles) {
-        long retVal = cycles + getOffset();
-        /*
-         * this fix is since quite often the offset will be > than 53 bits and
-         * therefore the conversion will be lossy
-         */
-        if (clockNeedsScale()) {
-            retVal = (long) (retVal * getTimeScale());
-        }
-        return retVal;
-    }
-
-    /**
-     * @param nanos
-     *            time in nanoseconds UTC offset
-     * @return clock cycles since boot.
-     * @since 2.0
-     */
-    public long timestampNanoToCycles(long nanos) {
-        long retVal;
-        /*
-         * this fix is since quite often the offset will be > than 53 bits and
-         * therefore the conversion will be lossy
-         */
-        if (clockNeedsScale()) {
-            retVal = (long) (nanos * getInverseTimeScale());
-        } else {
-            retVal = nanos;
-        }
-        return retVal - getOffset();
+        return singleOffset;
     }
 
     /**
@@ -812,10 +737,10 @@ public class CTFTrace implements IDefinitionScope {
      * @param id the id of a stream
      * @return the hashmap containing events.
      */
-    public HashMap<Long, IEventDeclaration> createEvents(Long id){
-        HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
+    public HashMap<Long, EventDeclaration> createEvents(Long id){
+        HashMap<Long, EventDeclaration> value = eventDecs.get(id);
         if( value == null ) {
-            value = new HashMap<Long, IEventDeclaration>();
+            value = new HashMap<Long, EventDeclaration>();
             eventDecs.put(id, value);
         }
         return value;
