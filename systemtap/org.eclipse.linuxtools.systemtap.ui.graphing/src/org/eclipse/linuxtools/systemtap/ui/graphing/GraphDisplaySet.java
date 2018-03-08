@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphing;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -26,7 +25,7 @@ import org.eclipse.linuxtools.systemtap.graphingapi.ui.datadisplay.DataGrid;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphComposite;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.GraphFactory;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.SelectGraphAndSeriesWizard;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.SelectGraphWizard;
 import org.eclipse.linuxtools.systemtap.structures.UpdateManager;
 import org.eclipse.linuxtools.systemtap.structures.listeners.ITabListener;
 import org.eclipse.swt.SWT;
@@ -41,7 +40,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -65,8 +63,8 @@ public class GraphDisplaySet {
 		updater = new UpdateManager(delay);
 		createPartControl(parent);
 
-		builders = new ArrayList<>();
-		tabListeners = new ArrayList<>();
+		builders = new ArrayList<AbstractChartBuilder>();
+		tabListeners = new ArrayList<ITabListener>();
 	}
 
 	/**
@@ -120,7 +118,7 @@ public class GraphDisplaySet {
 		//This is a tab/button for opening new graphs
 		CTabItem newGraph = new CTabItem(folder, SWT.NONE);
 		newGraph.setImage(AbstractUIPlugin.imageDescriptorFromPlugin(GraphingPlugin.PLUGIN_ID, "icons/actions/new_wiz.gif").createImage()); //$NON-NLS-1$
-		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.CreateGraph")); //$NON-NLS-1$
+		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.DataView")); //$NON-NLS-1$
 
 		//Tab containing the data table
 		CTabItem item = new CTabItem(folder, SWT.NONE);
@@ -157,29 +155,25 @@ public class GraphDisplaySet {
 		return builders.get(folder.getSelectionIndex()-2);
 	}
 
-	public void setFocus() {
-		// Abstract
-	}
+	public void setFocus() {}
 
 	/**
 	 * Removes all internal references in this class.  Nothing should make any references
 	 * to anything in this class after calling the dispose method.
 	 */
 	public void dispose() {
-		if(null != updater && updater.isRunning()) {
+		if(null != updater) {
 			updater.dispose();
 		}
 		updater = null;
 
 		dataSet = null;
-		if(null != folder && !folder.isDisposed()) {
+		if(null != folder) {
 			folder.removeSelectionListener(listener);
 			folder.dispose();
 			folder = null;
 		}
 		listener = null;
-
-		builders.clear();
 	}
 
 	/**
@@ -194,7 +188,7 @@ public class GraphDisplaySet {
 
 			if(folder.getSelectionIndex() == 0) {
 				folder.setSelection(lastSelectedTab);
-				SelectGraphAndSeriesWizard wizard = new SelectGraphAndSeriesWizard(dataSet, null);
+				SelectGraphWizard wizard = new SelectGraphWizard(dataSet, null);
 				IWorkbench workbench = PlatformUI.getWorkbench();
 				wizard.init(workbench, null);
 				WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
@@ -238,16 +232,9 @@ public class GraphDisplaySet {
 
 	public void addGraph(GraphData gd) {
 		CTabItem item = new CTabItem(folder, SWT.CLOSE);
-		item.setText(MessageFormat.format(Localization.getString("GraphDisplaySet.GraphTabTitle"), //$NON-NLS-1$
-				gd.title, GraphFactory.getGraphName(gd.graphID)));
-		final GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
+		item.setText(GraphFactory.getGraphName(gd.graphID));
+		GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
 		gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		gc.addCheckOption("Legend", new SelectionAdapter() { //$NON-NLS-1$
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				gc.setLegendVisible(((Button)e.getSource()).getSelection());
-			}
-		});
 		folder.setSelection(item);
 
 		AbstractChartBuilder g = gc.getCanvas();

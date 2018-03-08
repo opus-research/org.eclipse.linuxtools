@@ -6,9 +6,7 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
- *   Simon Delisle - Added a method to remove the iterator
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
@@ -33,7 +31,7 @@ public abstract class CtfIteratorManager {
     /*
      * The map of traces to trace managers.
      */
-    private static HashMap<CtfTmfTrace, CtfTraceManager> map = new HashMap<>();
+    private static HashMap<CtfTmfTrace, CtfTraceManager> map = new HashMap<CtfTmfTrace, CtfTraceManager>();
 
     /**
      * Registers a trace to the iterator manager, the trace can now get
@@ -73,22 +71,6 @@ public abstract class CtfIteratorManager {
             final CtfTmfContext ctx) {
         return map.get(trace).getIterator(ctx);
     }
-
-    /**
-     * Remove an iterator for a given trace and context
-     *
-     * @param trace
-     *            the trace
-     * @param ctx
-     *            the context
-     * @since 2.1
-     */
-    public static synchronized void removeIterator(final CtfTmfTrace trace, final CtfTmfContext ctx) {
-        CtfTraceManager traceManager = map.get(trace);
-        if (traceManager != null) {
-            traceManager.removeIterator(ctx);
-        }
-    }
 }
 
 /**
@@ -120,8 +102,8 @@ class CtfTraceManager {
     private final Random fRnd;
 
     public CtfTraceManager(CtfTmfTrace trace) {
-        fMap = new HashMap<>();
-        fRandomAccess = new ArrayList<>();
+        fMap = new HashMap<CtfTmfContext, CtfIterator>();
+        fRandomAccess = new ArrayList<CtfTmfContext>();
         fRnd = new Random(System.nanoTime());
         fTrace = trace;
     }
@@ -139,7 +121,7 @@ class CtfTraceManager {
      *
      * @param context
      *            the context to look up
-     * @return the iterator referring to the context
+     * @return the iterator refering to the context
      */
     public CtfIterator getIterator(final CtfTmfContext context) {
         /*
@@ -170,11 +152,6 @@ class CtfTraceManager {
             }
         }
         return retVal;
-    }
-
-    public void removeIterator(CtfTmfContext context) {
-        fMap.remove(context);
-        fRandomAccess.remove(context);
     }
 
     /**

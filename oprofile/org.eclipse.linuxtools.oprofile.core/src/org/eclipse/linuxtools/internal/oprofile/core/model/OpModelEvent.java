@@ -12,57 +12,39 @@
 
 package org.eclipse.linuxtools.internal.oprofile.core.model;
 
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-
 /**
  * A class which represents the event collected in a given session.
  */
 public class OpModelEvent {
 	private String eventName;
+	private OpModelSession[] sessions;
 	private String printTabs = "";		//for nice output  //$NON-NLS-1$
-	private OpModelImage image;
-	private OpModelSession parentSession;
+	
+	public OpModelEvent(String name) {
+		eventName = name;
+	}
 
+	public OpModelSession[] getSessions() {
+		return sessions;
+	}
 
-	public OpModelEvent(OpModelSession parentSession ,String name) {
-		this.parentSession = parentSession;
-		this.eventName = name;
+	public void setSessions(OpModelSession[] sessions) {
+		this.sessions = sessions;
 	}
 
 	public String getName() {
 		return eventName;
 	}
 
-	public OpModelSession getSession()
-	{
-		return parentSession;
-	}
-
-	public void setSession(OpModelSession session)
-	{
-		this.parentSession = session;
-	}
-	//populate all images & dependent images
+	//populate all sessions
 	public void refreshModel() {
-		image = getNewImage();
-	}
-
-	public OpModelImage getImage() {
-		return image;
-	}
-
-	protected OpModelImage getNewImage() {
-		return Oprofile.getModelData(this.eventName, parentSession.getName());
-	}
-
-	public int getCount() {
-		if (image == null) {
-			return 0;
-		} else {
-			return image.getCount();
+		if (sessions != null) {
+			for (int i = 0; i < sessions.length; i++) {
+				sessions[i].refreshModel();
+			}
 		}
 	}
-
+	
 	public String toString(String tabs) {
 		printTabs = tabs;
 		String s = toString();
@@ -73,9 +55,11 @@ public class OpModelEvent {
 	@Override
 	public String toString() {
 		String s = eventName + "\n"; //$NON-NLS-1$
-		if (image != null) {
-			s += printTabs + "Image: "; //$NON-NLS-1$
-			s += image.toString(printTabs + "\t"); //$NON-NLS-1$
+		if (sessions != null) {
+			for (int i = 0; i < sessions.length; i++) {
+				s += printTabs + "Session: "; //$NON-NLS-1$
+				s += sessions[i].toString(printTabs + "\t"); //$NON-NLS-1$
+			}
 		}
 		return s;
 	}

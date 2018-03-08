@@ -11,8 +11,8 @@
 package org.eclipse.linuxtools.internal.callgraph;
 
 import java.util.ArrayList;
-import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.eclipse.zest.layouts.algorithms.GridLayoutAlgorithm;
 import org.eclipse.zest.layouts.dataStructures.InternalNode;
@@ -40,7 +40,7 @@ public class AggregateLayoutAlgorithm extends GridLayoutAlgorithm{
 	public AggregateLayoutAlgorithm(int styles, TreeSet<Entry<String, Long>> entries, Long time, int width){
 		super(styles);
 
-		list = new ArrayList<>();
+		list = new ArrayList<Long>();
 		for (Entry<String, Long> ent : entries) {
 			list.add(ent.getValue());
 		}

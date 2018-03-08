@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -182,7 +182,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
     @Override
     public List<String> getEventNames() {
-        return new ArrayList<>(fSelectedEvents);
+        return new ArrayList<String>(fSelectedEvents);
     }
 
     @Override
@@ -252,7 +252,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
         // initialize tracepoint fields
         fIsAllTracepoints = false;
-        fSelectedEvents = new ArrayList<>();
+        fSelectedEvents = new ArrayList<String>();
 
         if (fIsTracepoints) {
             List<ITraceControlComponent> comps = fProviderGroup.getChildren(KernelProviderComponent.class);
@@ -269,9 +269,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
         if (fIsDynamicProbe) {
             String temp = fProbeEventNameText.getText();
-            if (temp.isEmpty() ||
-                fProbeText.getText().matches("\\s*") || //$NON-NLS-1$
-                (!temp.matches("^[\\s]{0,}$") && !temp.matches("^[a-zA-Z0-9\\-\\_]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (!temp.matches("^[\\s]{0,}$") && !temp.matches("^[a-zA-Z0-9\\-\\_]{1,}$")) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidProbeNameError + " (" + temp + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -279,9 +277,11 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
                 return false;
             }
 
-            fProbeEventName = temp;
-            // fProbeString will be validated by lttng-tools
-            fProbeString = fProbeText.getText();
+            if(!fProbeText.getText().matches("\\s*")) { //$NON-NLS-1$
+                fProbeEventName = temp;
+                // fProbeString will be validated by lttng-tools
+                fProbeString = fProbeText.getText();
+            }
         }
 
         // initialize function string
@@ -289,9 +289,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
         fFunctionString = null;
         if (fIsDynamicFunctionProbe) {
             String functionTemp = fFunctionEventNameText.getText();
-            if (functionTemp.isEmpty() ||
-                functionTemp.matches("\\s*") || //$NON-NLS-1$
-                (!functionTemp.matches("^[\\s]{0,}$") && !functionTemp.matches("^[a-zA-Z0-9\\-\\_]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (!functionTemp.matches("^[\\s]{0,}$") && !functionTemp.matches("^[a-zA-Z0-9\\-\\_]{1,}$")) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidProbeNameError + " (" + functionTemp + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -299,9 +297,11 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
                 return false;
             }
 
-            fFunctionEventName = functionTemp;
-            // fFunctionString will be validated by lttng-tools
-            fFunctionString = fFunctionText.getText();
+            if(!fFunctionText.getText().matches("\\s*")) { //$NON-NLS-1$
+                fFunctionEventName = functionTemp;
+                // fFunctionString will be validated by lttng-tools
+                fFunctionString = fFunctionText.getText();
+            }
         }
 
         return true;

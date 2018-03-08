@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
 import java.util.ArrayList;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -49,7 +48,7 @@ public class STPReconcilingStrategy  implements IReconcilingStrategy,
     protected int currentTagEnd = 0;
 
 	// List of positions
-	protected final ArrayList<Position> documentPositionList = new ArrayList<>();
+	protected final ArrayList<Position> documentPositionList = new ArrayList<Position>();
 	
     // The end offset of the range to be scanned *//*
     protected int endOfDocumentPostion;

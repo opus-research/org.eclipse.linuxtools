@@ -39,7 +39,7 @@ public final class LaunchConfigurationConstants {
 	// 3.6.0 specific
 	public static final String ATTR_GENERAL_DSYMUTIL = PLUGIN_ID + ".GENERAL_DSYMUTIL"; //$NON-NLS-1$
 
-	public static final String DEFAULT_TOOL = PLUGIN_ID + ".memcheck"; //$NON-NLS-1$
+	public static final String DEFAULT_TOOL = PLUGIN_ID + ".memcheck";;
 
 	public static final boolean DEFAULT_GENERAL_TRACECHILD = false;
 	public static final boolean DEFAULT_GENERAL_CHILDSILENT = true; // necessary for parsing
@@ -49,7 +49,7 @@ public final class LaunchConfigurationConstants {
 	public static final boolean DEFAULT_GENERAL_ERRLIMIT = true;
 	public static final boolean DEFAULT_GENERAL_BELOWMAIN = false;
 	public static final int DEFAULT_GENERAL_MAXFRAME = 2000000;
-	public static final List<String> DEFAULT_GENERAL_SUPPFILES = Collections.emptyList();
+	public static final List<?> DEFAULT_GENERAL_SUPPFILES = Collections.EMPTY_LIST;
 
 	// 3.4.0 specific
 	public static final boolean DEFAULT_GENERAL_MAINSTACK_BOOL = false;

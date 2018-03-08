@@ -1,8 +1,8 @@
 package org.eclipse.linuxtools.internal.gcov.test;
 
-import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.waitForShell;
+import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
 
 import java.io.File;
 import java.io.InputStream;
@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.dataviewers.actions.STExportToCSVAction;
-import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.STAnnotatedSourceEditorActivator;
+import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.actions.AbstractOpenSourceFileAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MenuItem;
@@ -65,35 +65,29 @@ public abstract class GcovTest {
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		treeBot = treeBot.select(projectName);
-		IProject project = ResourcesPlugin.getWorkspace().getRoot()
-				.getProject(projectName);
-		try (InputStream is = FileLocator.openStream(
-				FrameworkUtil.getBundle(GcovTest.class), new Path("resource/"
-						+ projectName + "/content"), false);
-				LineNumberReader lnr = new LineNumberReader(
-						new InputStreamReader(is))) {
-			String filename;
-			while (null != (filename = lnr.readLine())) {
-				final ProgressMonitor pm = new ProgressMonitor();
-				final IFile ifile = project.getFile(filename);
-				InputStream fis = FileLocator.openStream(FrameworkUtil
-						.getBundle(GcovTest.class), new Path("resource/"
-						+ projectName + "/" + filename), false);
-				ifile.create(fis, true, pm);
-				bot.waitUntil(new DefaultCondition() {
+		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+		InputStream is = FileLocator.openStream(FrameworkUtil.getBundle(GcovTest.class), new Path("resource/" + projectName + "/content"), false);
+		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
+		String filename;
+		while (null != (filename = lnr.readLine())) {
+			final ProgressMonitor pm = new ProgressMonitor();
+			final IFile ifile = project.getFile(filename);
+			InputStream fis = FileLocator.openStream(FrameworkUtil.getBundle(GcovTest.class), new Path("resource/" + projectName + "/" + filename), false);
+			ifile.create(fis, true, pm);
+			bot.waitUntil(new DefaultCondition() {
 
-					@Override
-					public boolean test() {
-						return pm.isDone();
-					}
+				@Override
+				public boolean test() {
+					return pm.isDone();
+				}
 
-					@Override
-					public String getFailureMessage() {
-						return ifile + " not yet created after 6000ms";
-					}
-				}, 6000);
-			}
+				@Override
+				public String getFailureMessage() {
+					return ifile + " not yet created after 6000ms";
+				}
+			}, 6000);
 		}
+		lnr.close();
 	}
 
 	public static void compileProject(SWTWorkbenchBot bot, String projectName) {
@@ -110,7 +104,7 @@ public abstract class GcovTest {
 
 	private static TreeSet<String> getGcovFiles(SWTWorkbenchBot bot, String projectName) throws Exception {
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-		TreeSet<String> ret = new TreeSet<>();
+		TreeSet<String> ret = new TreeSet<String>();
 		for (IResource r : project.members()) {
 			if (r.getType() == IResource.FILE && r.exists()) {
 				if (r.getName().endsWith(".gcda") || r.getName().endsWith(".gcno")) {
@@ -182,7 +176,7 @@ public abstract class GcovTest {
 
 		wbShell.activate();
 		
-		SWTBotEditor editor = bot.editorById(STAnnotatedSourceEditorActivator.EDITOR_ID);
+		SWTBotEditor editor = bot.editorById(AbstractOpenSourceFileAction.EDITOR_ID);
 		SWTBotEclipseEditor edt = editor.toTextEditor(); /* just to verify that the correct file was found */
 		edt.close();
 	}

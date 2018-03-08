@@ -49,7 +49,6 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 			if (control != null && !control.isDisposed())
 			{
 				control.getDisplay().asyncExec(new Runnable() {
-					@Override
 					public void run() {
 						if (!control.isDisposed()) {
 							control.setRedraw(false);
@@ -72,8 +71,7 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 
 		TreeViewer viewer= getTreeViewer();
 		viewer.setContentProvider(new SpecfileContentProvider(editor));
-		SpecfileLabelProvider labelProvider = new SpecfileLabelProvider();
-		viewer.setLabelProvider(labelProvider);
+		viewer.setLabelProvider(new SpecfileLabelProvider());
 		viewer.addSelectionChangedListener(this);
 
 		if (input != null) {

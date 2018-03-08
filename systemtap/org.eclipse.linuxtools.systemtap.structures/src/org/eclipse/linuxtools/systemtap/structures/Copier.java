@@ -41,7 +41,7 @@ public final class Copier {
 	 */
 	public static<T> ArrayList<T> copy(ArrayList<T> list) {
 
-		ArrayList<T> list2 = new ArrayList<>();
+		ArrayList<T> list2 = new ArrayList<T>();
 		list2.addAll(list);
 		return list2;
 	}

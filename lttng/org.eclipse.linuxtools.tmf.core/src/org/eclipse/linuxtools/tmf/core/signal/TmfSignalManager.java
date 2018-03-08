@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
@@ -39,11 +37,8 @@ public class TmfSignalManager {
     // Note: listeners could be restricted to ITmfComponents but there is no
     // harm in letting anyone use this since it is not tied to anything but
     // the signal data type.
-    private static Map<Object, Method[]> fListeners = new HashMap<>();
-    private static Map<Object, Method[]> fVIPListeners = new HashMap<>();
-
-    // The signal executor for asynchronous signals
-    private static final ExecutorService fExecutor = Executors.newSingleThreadExecutor();
+    private static Map<Object, Method[]> fListeners = new HashMap<Object, Method[]>();
+    private static Map<Object, Method[]> fVIPListeners = new HashMap<Object, Method[]>();
 
     // If requested, add universal signal tracer
     // TODO: Temporary solution: should be enabled/disabled dynamically
@@ -109,7 +104,7 @@ public class TmfSignalManager {
      * @return
      */
     private static Method[] getSignalHandlerMethods(Object listener) {
-        List<Method> handlers = new ArrayList<>();
+        List<Method> handlers = new ArrayList<Method>();
         Method[] methods = listener.getClass().getMethods();
         for (Method method : methods) {
             if (method.isAnnotationPresent(TmfSignalHandler.class)) {
@@ -122,8 +117,7 @@ public class TmfSignalManager {
     static int fSignalId = 0;
 
     /**
-     * Invokes the handling methods that listens to signals of a given type in
-     * the current thread.
+     * Invokes the handling methods that listens to signals of a given type.
      *
      * The list of handlers is built on-the-fly to allow for the dynamic
      * creation/deletion of signal handlers. Since the number of signal handlers
@@ -144,37 +138,6 @@ public class TmfSignalManager {
         sendSignal(new TmfEndSynchSignal(signalId));
     }
 
-    /**
-     * Invokes the handling methods that listens to signals of a given type
-     * in a separate thread which will call
-     * {@link TmfSignalManager#dispatchSignal(TmfSignal)}.
-     *
-     * If a signal is already processed the signal will be queued and
-     * dispatched after the ongoing signal finishes.
-     *
-     * @param signal
-     *            the signal to dispatch
-     * @since 3.0
-     */
-    public static void dispatchSignalAsync(final TmfSignal signal) {
-        if (!fExecutor.isShutdown()) {
-            fExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    dispatchSignal(signal);
-                }
-            });
-        }
-    }
-
-    /**
-     * Disposes the signal manager
-     * @since 3.0
-     */
-    public static void dispose() {
-        fExecutor.shutdown();
-    }
-
     private static void sendSignal(TmfSignal signal) {
         sendSignal(fVIPListeners, signal);
         sendSignal(fListeners, signal);
@@ -188,10 +151,10 @@ public class TmfSignalManager {
 
         // Build the list of listener methods that are registered for this signal
         Class<?> signalClass = signal.getClass();
-        Map<Object, List<Method>> targets = new HashMap<>();
+        Map<Object, List<Method>> targets = new HashMap<Object, List<Method>>();
         targets.clear();
         for (Map.Entry<Object, Method[]> entry : listeners.entrySet()) {
-            List<Method> matchingMethods = new ArrayList<>();
+            List<Method> matchingMethods = new ArrayList<Method>();
             for (Method method : entry.getValue()) {
                 if (method.getParameterTypes()[0].isAssignableFrom(signalClass)) {
                     matchingMethods.add(method);

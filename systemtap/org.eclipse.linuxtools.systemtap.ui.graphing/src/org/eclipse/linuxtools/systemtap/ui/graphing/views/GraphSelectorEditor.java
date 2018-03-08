@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.systemtap.ui.graphing.views;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.views.Messages;
@@ -25,8 +24,6 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FormAttachment;
@@ -56,48 +53,31 @@ public class GraphSelectorEditor extends EditorPart {
 
 	public GraphSelectorEditor() {
 		super();
-		displaySets = new ArrayList<>();
-		tabListeners = new ArrayList<>();
+		displaySets = new ArrayList<GraphDisplaySet>();
+		tabListeners = new ArrayList<ITabListener>();
 	}
 
 	/**
-	 * This method will create a new script set for each of the provided dataSets.
-	 * Each new script set will be given a new tab item at the end of the list.
-	 * @param scriptName The full name of the script that is being monitored.
-	 * @param titles The names to be shown on each new tab
-	 * @param dataSets The <code>IDataSet</code>s for each new script set
-	 * @since 2.2
+	 * This method will create a new script set for the provided dataSet
+	 * The new script set will be given a new tab item at the end of
+	 * the list.
+	 * @param title The name to be shown on the new tab
+	 * @param dataSet The <code>IDataSet</code> for the new script set
+	 * @since 2.0
 	 */
-	public void createScriptSets(String scriptName, List<String> titles, List<IDataSet> dataSets) {
-		CTabItem item = null;
+	public void createScriptSet(String title, IDataSet dataSet) {
+		CTabItem item;
 
-		for (int i = 0, n = titles.size(); i < n; i++) {
-			item = new CTabItem(scriptFolder, SWT.CLOSE);
-			item.setText(titles.get(i));
-			Composite parent = new Composite(scriptFolder, SWT.NONE);
-			final GraphDisplaySet gds = new GraphDisplaySet(parent, dataSets.get(i));
-			displaySets.add(gds);
-			item.setControl(parent);
-			item.addDisposeListener(new DisposeListener() {
+		item = new CTabItem(scriptFolder, SWT.CLOSE);
+		item.setText(title);
+		Composite parent = new Composite(scriptFolder, SWT.NONE);
+		GraphDisplaySet gds = new GraphDisplaySet(parent, dataSet);
+		displaySets.add(gds);
+		item.setControl(parent);
 
-				@Override
-				public void widgetDisposed(DisposeEvent e) {
-					gds.dispose();
-				}
-			});
-		}
-
-		scriptFolder.setSelection(item); // Choose the last created item.
+		scriptFolder.setSelection(item);
 		fireTabOpenEvent();
-		this.setPartName(NLS.bind(Messages.GraphSelectorEditor_graphsEditorTitle, scriptName.substring(scriptName.lastIndexOf('/')+1)));
-	}
-
-	/**
-	 * @return The current number of script sets (one for each regular expression being watched).
-	 * @since 2.2
-	 */
-	public int numberOfScriptSets() {
-		return displaySets.size();
+		this.setPartName(NLS.bind(Messages.GraphSelectorEditor_graphsEditorTitle, title));
 	}
 
 	/**
@@ -149,25 +129,7 @@ public class GraphSelectorEditor extends EditorPart {
 	 * @since 2.0
 	 */
 	public GraphDisplaySet getActiveDisplaySet() {
-		return getDisplaySet(scriptFolder.getSelectionIndex());
-	}
-
-	/**
-	 * @return The title of the tab containing the active graph.
-	 * @since 3.0
-	 */
-	public String getActiveTitle() {
-		return scriptFolder.getSelection().getText();
-	}
-
-	/**
-	 * Finds and returns the component of the provided index.
-	 * @param index The index of the GraphDisplaySet to return
-	 * @return The <code>GraphDisplaySet</code> of the provided
-	 * index, or null if the index is out of range.
-	 * @since 2.2
-	 */
-	public GraphDisplaySet getDisplaySet(int index) {
+		int index = scriptFolder.getSelectionIndex();
 		if(index >= 0 && index < displaySets.size()) {
 			return displaySets.get(index);
 		} else {
@@ -176,9 +138,7 @@ public class GraphSelectorEditor extends EditorPart {
 	}
 
 	@Override
-	public void setFocus() {
-		// Empty
-	}
+	public void setFocus() {}
 
 	/**
 	 * @since 2.0
@@ -218,30 +178,24 @@ public class GraphSelectorEditor extends EditorPart {
 	 */
 	@Override
 	public void dispose() {
-		for (GraphDisplaySet displaySet : displaySets) {
-			displaySet.dispose();
-		}
-
 		super.dispose();
 
-		if(null != scriptFolder && !scriptFolder.isDisposed()) {
+		if(null != scriptFolder) {
 			scriptFolder.dispose();
 		}
 		scriptFolder = null;
 		if(null != tabListeners) {
-			tabListeners.clear();
+			tabListeners.removeAll(tabListeners);
 		}
 		tabListeners = null;
 	}
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		// TODO
 	}
 
 	@Override
 	public void doSaveAs() {
-		// TODO
 	}
 
 	@Override

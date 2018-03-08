@@ -41,13 +41,12 @@ public class STJunitUtils {
 	 * @return
 	 */
 	public static boolean compareIgnoreEOL(String dumpFile, String refFile, boolean deleteDumpFileIfOk) {
-		String message = "Comparing ref file (" + refFile + ")and dump file ("
-				+ dumpFile + ")";
+		String message = "Comparing ref file ("+refFile+ ")and dump file (" +
+		  dumpFile+")";
 		boolean equals = false;
-		try (LineNumberReader is1 = new LineNumberReader(new FileReader(
-				dumpFile));
-				LineNumberReader is2 = new LineNumberReader(new FileReader(
-						refFile))) {
+		try {
+		LineNumberReader is1 = new LineNumberReader(new FileReader(dumpFile));
+		LineNumberReader is2 = new LineNumberReader(new FileReader(refFile));
 			do {
 				String line1 = is1.readLine();
 				String line2 = is2.readLine();
@@ -62,19 +61,22 @@ public class STJunitUtils {
 			} while (true);
 
 			if (!equals) {
-				assertEquals(message + ": not correspond ", true, false);
+ 				assertEquals(message + ": not correspond ", true, false);
 			}
 
+			is1.close();
+			is2.close();
 			// delete dump only for successful tests
 			if (equals && deleteDumpFileIfOk) {
 				new File(dumpFile).delete();
 			}
-		} catch (FileNotFoundException _) {
+		}catch (FileNotFoundException _) {
 			message += "... FAILED: One of these files may not exist";
 			assertNull(message, _);
-		} catch (Exception e) {
+		}
+		catch (Exception _) {
 			message += ": exception raised ... FAILED";
-			assertNull(message, e);
+			assertNull(message, _);
 		}
 		return equals;
 	}

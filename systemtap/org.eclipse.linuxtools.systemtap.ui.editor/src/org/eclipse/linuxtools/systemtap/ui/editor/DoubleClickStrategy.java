@@ -23,17 +23,15 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 	public void doubleClicked(ITextViewer part) {
 		int pos = part.getSelectedRange().x;
 
-		if (pos < 0) {
+		if (pos < 0)
 			return;
-		}
 
 		fText = part;
 
-		if (!selectComment(pos)) {
+		if (!selectComment(pos))
 			selectWord(pos);
-		}
 	}
-
+	
 	/**
 	 * Method handles the selection of comments in the editor.
 	 * 
@@ -53,15 +51,13 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 					pos -= 2;
 					continue;
 				}
-				if (c == Character.LINE_SEPARATOR || c == '\"') {
+				if (c == Character.LINE_SEPARATOR || c == '\"')
 					break;
-				}
 				--pos;
 			}
 
-			if (c != '\"') {
+			if (c != '\"')
 				return false;
-			}
 
 			startPos = pos;
 
@@ -71,14 +67,12 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 
 			while (pos < length) {
 				c = doc.getChar(pos);
-				if (c == Character.LINE_SEPARATOR || c == '\"') {
+				if (c == Character.LINE_SEPARATOR || c == '\"')
 					break;
-				}
 				++pos;
 			}
-			if (c != '\"') {
+			if (c != '\"')
 				return false;
-			}
 
 			endPos = pos;
 
@@ -87,9 +81,7 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 			fText.setSelectedRange(offset, len);
 
 			return true;
-		} catch (BadLocationException x) {
-			// Pass
-		}
+		} catch (BadLocationException x) {}
 
 		return false;
 	}
@@ -109,9 +101,8 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 
 			while (pos >= 0) {
 				c = doc.getChar(pos);
-				if (!Character.isJavaIdentifierPart(c)) {
+				if (!Character.isJavaIdentifierPart(c))
 					break;
-				}
 				--pos;
 			}
 
@@ -122,9 +113,8 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 
 			while (pos < length) {
 				c = doc.getChar(pos);
-				if (!Character.isJavaIdentifierPart(c)) {
+				if (!Character.isJavaIdentifierPart(c))
 					break;
-				}
 				++pos;
 			}
 
@@ -132,9 +122,7 @@ public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 			selectRange(startPos, endPos);
 
 			return true;
-		} catch (BadLocationException x) {
-			// Pass
-		}
+		} catch (BadLocationException x) {}
 
 		return false;
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2007-2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.rpm.ui.editor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
@@ -68,7 +69,7 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 	@Override
 	public boolean canSaveDocument(Object element) {
 		if (element instanceof FileStoreEditorInput) {
-			FileStoreEditorInput fei = (FileStoreEditorInput) element;
+			FileStoreEditorInput fei = (FileStoreEditorInput)element;
 			IDocument doc = getDocument(element);
 			if (!super.canSaveDocument(element)) {
 				return false;
@@ -78,9 +79,10 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 			}
 			URI uri = fei.getURI();
 			File f = URIUtil.toFile(uri);
-			if (originalLength != 0) {
-				try (BufferedReader input = new BufferedReader(
-						new FileReader(f))) {
+			BufferedReader input = null;
+			try {
+				if (originalLength != 0) {
+					input = new BufferedReader(new FileReader(f));
 					boolean finished = false;
 					char[] buffer = new char[100];
 					int curoffset = 0;
@@ -96,24 +98,28 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 						}
 						curoffset += len;
 					}
-					resetDocument(element);
-					return false;
-				} catch (Exception e) {
-					return true;
+				}
+				resetDocument(element);
+				return false;
+			} catch (Exception e) {
+				return true;
+			} finally {
+				if (input != null) {
+					try {
+						input.close();
+					} catch (IOException e) {
+					}
 				}
 			}
 		}
 		return super.canSaveDocument(element);
 	}
-
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProvider#createSaveOperation(java.lang.Object, org.eclipse.jface.text.IDocument, boolean)
 	 */
-
 	@Override
 	protected DocumentProviderOperation createSaveOperation(final Object element, final IDocument document, final boolean overwrite) throws CoreException {
 		final DocumentProviderOperation saveOperation = super.createSaveOperation(element, document, overwrite);
-
 		if (element instanceof IURIEditorInput) {
 			return new DocumentProviderOperation() {
 				/*
@@ -142,7 +148,6 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 				}
 			};
 		}
-
 		return saveOperation;
 	}
 }

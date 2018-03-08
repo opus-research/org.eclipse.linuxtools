@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -87,7 +87,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
                     Exception error = null;
 
                     try {
-                        List<String> eventNames = new ArrayList<>();
+                        List<String> eventNames = new ArrayList<String>();
                         List<BaseEventComponent> events = param.getEvents();
                         // Create list of event names
                         for (Iterator<BaseEventComponent> iterator = events.iterator(); iterator.hasNext();) {
@@ -127,7 +127,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
 
     @Override
     public boolean isEnabled() {
-        ArrayList<BaseEventComponent> events = new ArrayList<>();
+        ArrayList<BaseEventComponent> events = new ArrayList<BaseEventComponent>();
         TraceSessionComponent[] sessions = null;
         Boolean isKernel = null;
 
@@ -225,7 +225,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
          */
         public Parameter(TraceSessionComponent[] sessions, List<BaseEventComponent> events, boolean isKernel) {
             fSessions = Arrays.copyOf(sessions, sessions.length);
-            fEvents = new ArrayList<>();
+            fEvents = new ArrayList<BaseEventComponent>();
             fEvents.addAll(events);
             fIsKernel = isKernel;
         }

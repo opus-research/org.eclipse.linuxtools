@@ -191,13 +191,6 @@ public class TraceEventComponent extends TraceControlComponent {
     }
 
     /**
-     * @return target node component.
-     */
-    public TargetNodeComponent getTargetNode() {
-        return ((TraceChannelComponent)getParent()).getTargetNode();
-    }
-
-    /**
      * @return session name from parent
      */
     public String getSessionName() {

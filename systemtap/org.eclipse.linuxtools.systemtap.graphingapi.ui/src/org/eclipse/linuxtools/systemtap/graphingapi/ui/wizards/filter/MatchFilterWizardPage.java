@@ -53,11 +53,10 @@ public class MatchFilterWizardPage extends FilterWizardPage {
 		//Column
 		Label lblColumn = new Label(cmpFilterOpts, SWT.NONE);
 		lblColumn.setText(Localization.getString("MatchFilterWizardPage.Column")); //$NON-NLS-1$
-		cboColumn = new Combo(cmpFilterOpts, SWT.DROP_DOWN | SWT.READ_ONLY);
+		cboColumn = new Combo(cmpFilterOpts, SWT.DROP_DOWN);
 		cboColumn.addSelectionListener(selectionListener);
-		for(int i=0; i<wizard.series.length; i++) {
+		for(int i=0; i<wizard.series.length; i++)
 			cboColumn.add(wizard.series[i]);
-		}
 
 		new Label(cmpFilterOpts, SWT.NONE);	//Spacer
 
@@ -78,8 +77,6 @@ public class MatchFilterWizardPage extends FilterWizardPage {
 		radRemoveMatch.setText(Localization.getString("MatchFilterWizardPage.RemoveMatching")); //$NON-NLS-1$
 		radRemoveMatch.addSelectionListener(selectionListener);
 
-		cboColumn.select(0);
-		createFilter();
 		setControl(comp);
 	}
 
@@ -90,16 +87,14 @@ public class MatchFilterWizardPage extends FilterWizardPage {
 
 	@Override
 	protected void createFilter() {
-		filter = null;
-		setErrorMessage(null);
-		String compare = txtCompare.getText().trim();
-		if (compare.length() <= 0) {
-			setErrorMessage(Localization.getString("MatchFilterWizardPage.EmptyError")); //$NON-NLS-1$
-			return;
-		}
 		int selected = cboColumn.getSelectionIndex();
+		String compare = txtCompare.getText().trim();
 		int style = (radKeepMatch.getSelection() ? MatchFilter.KEEP_MATCHING : MatchFilter.REMOVE_MATCHING);
-		filter = new MatchFilter(selected, compare, style);
+		if(selected >=0 && selected < cboColumn.getItemCount()) {
+			if(compare.length() > 0) {
+				wizard.filter = new MatchFilter(selected, compare, style);
+			}
+		}
 	}
 
 	@Override

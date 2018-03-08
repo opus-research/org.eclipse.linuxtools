@@ -86,7 +86,7 @@ public class TmfSignalThrottlerTest {
      */
     @Test
     public void testMultipleChannels() {
-        List<MySignal> signals = new ArrayList<>();
+        List<MySignal> signals = new ArrayList<MySignal>();
         signals.add(new MySignal(sender, 0));
         signals.add(new MySignal(sender, 0));
         signals.add(new MySignal(sender, 0));

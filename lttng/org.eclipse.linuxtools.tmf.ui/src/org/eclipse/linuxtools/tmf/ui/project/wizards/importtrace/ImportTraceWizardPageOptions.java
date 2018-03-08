@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
- *   Marc-Andre Laperle - Use common method to get opened tmf projects
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
@@ -18,8 +17,10 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
+import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -38,7 +39,7 @@ import org.eclipse.ui.IWorkbench;
 public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage {
 
     private List fProjects;
-    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<>();
+    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<String, IProject>();
 
     /**
      * Import page that tells where the trace will go
@@ -65,48 +66,50 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         optionPane.setLayout(new GridLayout());
         optionPane.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
 
-        fProjects = new List(optionPane, SWT.V_SCROLL);
+        IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+
+        fProjects = new List(optionPane, SWT.NONE);
         fProjects.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        for (IProject project : TraceUtils.getOpenedTmfProjects()) {
-            final String name = project.getName();
-            fProjectsMap.put(name, project);
-            fProjects.add(name);
+        for (IProject project : projects) {
+            try {
+                if (project.getNature(TmfProjectNature.ID) != null) {
+                    final String name = project.getName();
+                    fProjectsMap.put(name, project);
+                    fProjects.add(name);
+                }
+            } catch (CoreException e) {
+                // TODO: add a logger to activator and then log it
+            }
         }
 
         fProjects.getSelection();
         fProjects.addSelectionListener(new SelectionListener() {
 
+            private static final String TRACE = "Traces"; //$NON-NLS-1$
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateWithSelection();
+                final String listItem = fProjects.getSelection()[0];
+                IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
+                getBatchWizard().setTraceFolder(folder);
+                ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                updateWithSelection();
+                final String listItem = fProjects.getSelection()[0];
+                IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
+                getBatchWizard().setTraceFolder(folder);
+                ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
         });
         if (proj != null) {
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
-        } else if (fProjects.getItemCount() > 0) {
-            fProjects.setSelection(0);
-        }
-        updateWithSelection();
-        setMessage(Messages.SharedSelectProject);
-        this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
-    }
-
-    private void updateWithSelection() {
-        final String TRACE = "Traces"; //$NON-NLS-1$
-        String[] selection = fProjects.getSelection();
-        if (selection.length > 0) {
-            final String listItem = selection[0];
-            IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
-            getBatchWizard().setTraceFolder(folder);
-            ImportTraceWizardPageOptions.this.setErrorMessage(null);
+            this.setErrorMessage(null);
         } else {
-            ImportTraceWizardPageOptions.this.setErrorMessage(Messages.SharedSelectProject);
+            this.setErrorMessage(Messages.SharedSelectProject);
         }
+        this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
     }
 }

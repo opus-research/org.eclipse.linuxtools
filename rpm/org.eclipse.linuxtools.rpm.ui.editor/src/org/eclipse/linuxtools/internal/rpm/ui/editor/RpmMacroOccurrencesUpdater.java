@@ -35,7 +35,7 @@ public class RpmMacroOccurrencesUpdater implements ISelectionChangedListener {
 
 	private final SpecfileEditor fEditor;
 
-	private final List<Annotation> fOldAnnotations = new LinkedList<>();
+	private final List<Annotation> fOldAnnotations = new LinkedList<Annotation>();
 
 	/**
 	 * Creates a new instance on editor <code>specfileEditor</code>.
@@ -51,7 +51,6 @@ public class RpmMacroOccurrencesUpdater implements ISelectionChangedListener {
 	/*
 	 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
 	 */
-	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
 		update((ISourceViewer) event.getSource());
 	}
@@ -150,7 +149,7 @@ public class RpmMacroOccurrencesUpdater implements ISelectionChangedListener {
 				return macros;
 			}
 		}
-		return new ArrayList<>();
+		return new ArrayList<SpecfileDefine>();
 	}
 
 	/**

@@ -75,6 +75,11 @@ public class ChartFactory {
                 valueLabels[i] = nameField.getValue(objects[i]);
             }
 
+            /*
+             * String [] pieChartNames = new String [valFields.size()]; for (int i = 0; i < valFields.size(); i++) {
+             * pieChartNames[i] = valFields.get(i).getColumnHeaderText(); }
+             */
+
             // pie chart data is grouped by columns
             // row size is the number of pie charts
             // column size is the number of data per pie chart

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.nio.ByteBuffer;
-
 /**
  * The data object to go in a {@link CtfLocation}.
  *
@@ -33,19 +31,6 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
     public CtfLocationInfo(long ts, long index) {
         this.timestamp = ts;
         this.index = index;
-    }
-
-    /**
-     * Construct the location from the ByteBuffer.
-     *
-     * @param bufferIn
-     *            the buffer to read from
-     *
-     * @since 3.0
-     */
-    public CtfLocationInfo(ByteBuffer bufferIn) {
-        timestamp = bufferIn.getLong();
-        index = bufferIn.getLong();
     }
 
     /**
@@ -122,16 +107,4 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
         return 0;
     }
 
-    /**
-     * Write the location to the ByteBuffer so that it can be saved to disk.
-     *
-     * @param bufferOut
-     *            the buffer to write to
-     *
-     * @since 3.0
-     */
-    public void serialize(ByteBuffer bufferOut) {
-        bufferOut.putLong(timestamp);
-        bufferOut.putLong(index);
-    }
 }

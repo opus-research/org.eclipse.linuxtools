@@ -27,7 +27,6 @@ public class ProviderLaunchConfigurationTabGroup extends
 	// Profiling type name to be displayed.
 	private String name;
 
-	@Override
 	public void setInitializationData(IConfigurationElement config,
 			String propertyName, Object data) {
 		Map<String, String> parameters = (Map<String, String>) data;
@@ -37,10 +36,10 @@ public class ProviderLaunchConfigurationTabGroup extends
 				.get(ProviderProfileConstants.INIT_DATA_NAME_KEY);
 
 		if (profilingType == null) {
-			profilingType = ""; //$NON-NLS-1$
+			profilingType = "";
 		}
 		if (profilingTypeName == null) {
-			profilingTypeName = ""; //$NON-NLS-1$
+			profilingTypeName = "";
 		}
 
 		setProfilingType(profilingType);
@@ -49,7 +48,7 @@ public class ProviderLaunchConfigurationTabGroup extends
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
-		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<>();
+		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
 		tabs.add(new ProviderOptionsTab(type, name));
 
 		return tabs.toArray(new AbstractLaunchConfigurationTab [] {});

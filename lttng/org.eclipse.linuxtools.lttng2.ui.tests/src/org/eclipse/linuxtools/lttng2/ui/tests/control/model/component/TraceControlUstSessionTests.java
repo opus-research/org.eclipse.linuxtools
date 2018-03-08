@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceSessionState;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.stubs.dialogs.CreateSessionDialogStub;
 import org.eclipse.linuxtools.internal.lttng2.stubs.dialogs.DestroyConfirmDialogStub;
@@ -40,7 +39,6 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.TraceCont
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceControlComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceChannelComponent;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceEventComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
 import org.eclipse.rse.core.RSECorePlugin;
@@ -174,7 +172,6 @@ public class TraceControlUstSessionTests {
         assertEquals(1, domains.length);
 
         assertEquals("UST global", domains[0].getName());
-        assertEquals("Domain buffer Type", BufferType.BUFFER_TYPE_UNKNOWN, ((TraceDomainComponent)domains[0]).getBufferType());
 
         // Verify that channel was created with correct data
         ITraceControlComponent[] channels =  domains[0].getChildren();
@@ -232,7 +229,7 @@ public class TraceControlUstSessionTests {
         // ------------------------------------------------------------------------
         EnableEventsDialogStub eventsDialogStub = new EnableEventsDialogStub();
         eventsDialogStub.setIsTracePoints(true);
-        List<String> events = new ArrayList<>();
+        List<String> events = new ArrayList<String>();
         events.add("ust_tests_hello:tptest_sighandler");
         eventsDialogStub.setNames(events);
         eventsDialogStub.setIsKernel(false);

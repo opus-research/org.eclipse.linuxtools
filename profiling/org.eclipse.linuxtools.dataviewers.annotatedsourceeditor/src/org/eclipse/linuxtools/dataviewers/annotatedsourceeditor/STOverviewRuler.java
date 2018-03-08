@@ -231,18 +231,18 @@ public class STOverviewRuler implements IOverviewRuler {
      *
      * @since 3.0
      */
-    private Set<Object> fConfiguredAnnotationTypes = new HashSet<>();
+    private Set<Object> fConfiguredAnnotationTypes = new HashSet<Object>();
     /**
      * The list of annotation types to be shown in the header of this ruler.
      *
      * @since 3.0
      */
-    private Set<Object> fConfiguredHeaderAnnotationTypes = new HashSet<>();
+    private Set<Object> fConfiguredHeaderAnnotationTypes = new HashSet<Object>();
     /** The mapping between annotation types and colors */
-    private Map<Object, Color> fAnnotationTypes2Colors = new HashMap<>();
+    private Map<Object, Color> fAnnotationTypes2Colors = new HashMap<Object, Color>();
 
     /** The mapping between annotation and colors */
-    private Map<Annotation, Color> fAnnotationColors = new HashMap<>();
+    private Map<Annotation, Color> fAnnotationColors = new HashMap<Annotation, Color>();
 
     /** The color manager */
     private ISharedTextColors fSharedTextColors;
@@ -251,33 +251,33 @@ public class STOverviewRuler implements IOverviewRuler {
      *
      * @since 3.0
      */
-    private List<Object> fAnnotationsSortedByLayer = new ArrayList<>();
+    private List<Object> fAnnotationsSortedByLayer = new ArrayList<Object>();
     /**
      * All available layers sorted by layer. This list may contain duplicates.
      *
      * @since 3.0
      */
-    private List<Integer> fLayersSortedByLayer = new ArrayList<>();
+    private List<Integer> fLayersSortedByLayer = new ArrayList<Integer>();
     /**
      * Map of allowed annotation types. An allowed annotation type maps to <code>true</code>, a disallowed to
      * <code>false</code>.
      *
      * @since 3.0
      */
-    private Map<Object, Boolean> fAllowedAnnotationTypes = new HashMap<>();
+    private Map<Object, Boolean> fAllowedAnnotationTypes = new HashMap<Object, Boolean>();
     /**
      * Map of allowed header annotation types. An allowed annotation type maps to <code>true</code>, a disallowed to
      * <code>false</code>.
      *
      * @since 3.0
      */
-    private Map<Object, Boolean> fAllowedHeaderAnnotationTypes = new HashMap<>();
+    private Map<Object, Boolean> fAllowedHeaderAnnotationTypes = new HashMap<Object, Boolean>();
     /**
      * The cached annotations.
      *
      * @since 3.0
      */
-    private List<Annotation> fCachedAnnotations = new ArrayList<>();
+    private List<Annotation> fCachedAnnotations = new ArrayList<Annotation>();
 
     /**
      * Constructs a overview ruler of the given width using the given annotation access and the given color manager.

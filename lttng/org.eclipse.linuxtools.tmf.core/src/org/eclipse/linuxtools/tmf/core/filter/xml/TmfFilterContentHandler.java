@@ -49,7 +49,7 @@ public class TmfFilterContentHandler extends DefaultHandler {
 	 */
 	public TmfFilterContentHandler() {
 		super();
-		fFilterTreeStack = new Stack<>();
+		fFilterTreeStack = new Stack<ITmfFilterTreeNode>();
 	}
 
 	/**

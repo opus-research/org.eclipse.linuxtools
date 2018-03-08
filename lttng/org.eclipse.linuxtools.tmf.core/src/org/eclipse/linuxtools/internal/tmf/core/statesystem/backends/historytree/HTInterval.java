@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -25,9 +25,10 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * The interval component, which will be contained in a node of the History
  * Tree.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
+ *
  */
-public final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
+final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
     private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
 
@@ -36,13 +37,6 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
     private static final byte TYPE_INTEGER = 0;
     private static final byte TYPE_STRING = 1;
     private static final byte TYPE_LONG = 2;
-    private static final byte TYPE_DOUBLE = 3;
-
-    /* String entry sizes of different state values */
-    private static final int NO_ENTRY_SIZE = 0;
-    private static final int LONG_ENTRY_SIZE = 8;
-    private static final int DOUBLE_ENTRY_SIZE = 8;
-    // sizes of string values depend on the string itself
 
     private final long start;
     private final long end;
@@ -58,18 +52,12 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
      * Standard constructor
      *
      * @param intervalStart
-     *            Start time of the interval
      * @param intervalEnd
-     *            End time of the interval
      * @param attribute
-     *            Attribute (quark) to which the state represented by this
-     *            interval belongs
      * @param value
-     *            State value represented by this interval
      * @throws TimeRangeException
-     *             If the start time or end time are invalid
      */
-    public HTInterval(long intervalStart, long intervalEnd, int attribute,
+    HTInterval(long intervalStart, long intervalEnd, int attribute,
             TmfStateValue value) throws TimeRangeException {
         if (intervalStart > intervalEnd) {
             throw new TimeRangeException();
@@ -83,35 +71,14 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
     }
 
     /**
-     * "Faster" constructor for inner use only. When we build an interval when
-     * reading it from disk (with {@link #readFrom}), we already know the size
-     * of the strings entry, so there is no need to call
-     * {@link #computeStringsEntrySize()} and do an extra copy.
-     */
-    private HTInterval(long intervalStart, long intervalEnd, int attribute,
-            TmfStateValue value, int size) throws TimeRangeException {
-        if (intervalStart > intervalEnd) {
-            throw new TimeRangeException();
-        }
-
-        this.start = intervalStart;
-        this.end = intervalEnd;
-        this.attribute = attribute;
-        this.sv = value;
-        this.stringsEntrySize = size;
-    }
-
-    /**
-     * Reader factory method. Builds the interval using an already-allocated
+     * Reader constructor. Builds the interval using an already-allocated
      * ByteBuffer, which normally comes from a NIO FileChannel.
      *
      * @param buffer
      *            The ByteBuffer from which to read the information
-     * @return The interval object
      * @throws IOException
-     *             If there was an error reading from the buffer
      */
-    public static final HTInterval readFrom(ByteBuffer buffer) throws IOException {
+    final static HTInterval readFrom(ByteBuffer buffer) throws IOException {
         HTInterval interval;
         long intervalStart, intervalEnd;
         int attribute;
@@ -132,13 +99,11 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
 
         case TYPE_NULL:
             value = TmfStateValue.nullValue();
-            valueSize = NO_ENTRY_SIZE;
             break;
 
         case TYPE_INTEGER:
             /* "ValueOrOffset" is the straight value */
             value = TmfStateValue.newValueInt(valueOrOffset);
-            valueSize = NO_ENTRY_SIZE;
             break;
 
         case TYPE_STRING:
@@ -177,7 +142,6 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             buffer.mark();
             buffer.position(valueOrOffset);
             value = TmfStateValue.newValueLong(buffer.getLong());
-            valueSize = LONG_ENTRY_SIZE;
 
             /*
              * Restore the file pointer's position (so we can read the next
@@ -185,28 +149,13 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
              */
             buffer.reset();
             break;
-
-        case TYPE_DOUBLE:
-            /* Go read the matching entry in the Strings section of the block */
-            buffer.mark();
-            buffer.position(valueOrOffset);
-            value = TmfStateValue.newValueDouble(buffer.getDouble());
-            valueSize = DOUBLE_ENTRY_SIZE;
-
-            /*
-             * Restore the file pointer's position (so we can read the next
-             * interval)
-             */
-            buffer.reset();
-            break;
-
         default:
             /* Unknown data, better to not make anything up... */
             throw new IOException(errMsg);
         }
 
         try {
-            interval = new HTInterval(intervalStart, intervalEnd, attribute, value, valueSize);
+            interval = new HTInterval(intervalStart, intervalEnd, attribute, value);
         } catch (TimeRangeException e) {
             throw new IOException(errMsg);
         }
@@ -227,7 +176,7 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
      *            StateValues.
      * @return The size of the Strings Entry that was written, if any.
      */
-    public int writeInterval(ByteBuffer buffer, int endPosOfStringEntry) {
+    int writeInterval(ByteBuffer buffer, int endPosOfStringEntry) {
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
@@ -237,7 +186,8 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
 
         case TYPE_NULL:
         case TYPE_INTEGER:
-            /* We write the 'valueOffset' field as a straight value. */
+            /* We write the 'valueOffset' field as a straight value. In the case
+             * of a null value, it will be unboxed as -1 */
             try {
                 buffer.putInt(sv.unboxInt());
             } catch (StateValueTypeException e) {
@@ -295,28 +245,6 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             buffer.reset();
             break;
 
-        case TYPE_DOUBLE:
-            /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - stringsEntrySize);
-            buffer.mark();
-            buffer.position(endPosOfStringEntry - stringsEntrySize);
-
-            /* Write the Double in the Strings section */
-            try {
-                buffer.putDouble(sv.unboxDouble());
-            } catch (StateValueTypeException e) {
-                /*
-                 * This should not happen, since the value told us it was of
-                 * type Double (corrupted value?)
-                 */
-                e.printStackTrace();
-            }
-            if (buffer.position() != endPosOfStringEntry) {
-                throw new IllegalStateException();
-            }
-            buffer.reset();
-            break;
-
         default:
             break;
         }
@@ -365,9 +293,9 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
     /**
      * Total serialized size of this interval
      *
-     * @return The interval size
+     * @return
      */
-    public int getIntervalSize() {
+    int getIntervalSize() {
         return stringsEntrySize + HTNode.DATA_ENTRY_SIZE;
     }
 
@@ -376,13 +304,10 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
         case NULL:
         case INTEGER:
             /* Those don't use the strings section at all */
-            return NO_ENTRY_SIZE;
+            return 0;
         case LONG:
             /* The value's bytes are written directly into the strings section */
-            return LONG_ENTRY_SIZE;
-        case DOUBLE:
-            /* The value is also written directly into the strings section */
-            return DOUBLE_ENTRY_SIZE;
+            return 8;
         case STRING:
             try {
                 /* String's length + 2 (1 byte for size, 1 byte for \0 at the end */
@@ -460,8 +385,6 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             return TYPE_STRING;
         case LONG:
             return TYPE_LONG;
-        case DOUBLE:
-            return TYPE_DOUBLE;
         default:
             /* Should not happen if the switch is fully covered */
             throw new IllegalStateException();

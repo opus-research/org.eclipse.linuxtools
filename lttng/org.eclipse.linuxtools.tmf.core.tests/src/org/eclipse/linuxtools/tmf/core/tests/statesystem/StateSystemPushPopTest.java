@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -49,7 +49,7 @@ public class StateSystemPushPopTest {
     private ITmfStateInterval interval;
     private int attribute;
 
-    private File testHtFile;
+    private final File testHtFile;
 
     private final static String errMsg = "Caught exception: ";
 
@@ -60,6 +60,17 @@ public class StateSystemPushPopTest {
     private final static ITmfStateValue value3 = TmfStateValue.nullValue();
     private final static ITmfStateValue value4 = TmfStateValue.newValueString("D");
     private final static ITmfStateValue value5 = TmfStateValue.newValueLong(Long.MAX_VALUE);
+
+    /**
+     * Test case constructor
+     *
+     * @throws IOException
+     *             If we couldn't create the state history test file
+     */
+    public StateSystemPushPopTest() throws IOException {
+        testHtFile = File.createTempFile("test", ".ht");
+        testHtFile.deleteOnExit();
+    }
 
     /**
      * Initialization. We run the checks for the return values of
@@ -79,10 +90,9 @@ public class StateSystemPushPopTest {
     public void setUp() throws IOException, TimeRangeException,
             AttributeNotFoundException, StateValueTypeException {
         ITmfStateValue value;
-        testHtFile = File.createTempFile("test", ".ht");
 
         IStateHistoryBackend backend = new HistoryTreeBackend(testHtFile, 0, 0L);
-        ss = new StateSystem("push-pop-test", backend, true);
+        ss = new StateSystem(backend, true);
 
         /* Build the thing */
         final int attrib = ss.getQuarkAbsoluteAndAdd("Test", "stack");

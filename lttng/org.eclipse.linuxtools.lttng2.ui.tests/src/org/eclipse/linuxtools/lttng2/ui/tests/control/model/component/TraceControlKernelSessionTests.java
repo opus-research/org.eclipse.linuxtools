@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -234,7 +234,7 @@ public class TraceControlKernelSessionTests {
 
         EnableEventsDialogStub eventsDialogStub = new EnableEventsDialogStub();
         eventsDialogStub.setIsTracePoints(true);
-        List<String> events = new ArrayList<>();
+        List<String> events = new ArrayList<String>();
         events.add("sched_kthread_stop");
         events.add("sched_kthread_stop_ret");
         eventsDialogStub.setNames(events);
@@ -612,8 +612,7 @@ public class TraceControlKernelSessionTests {
         probeEvent = (TraceProbeEventComponent) channel0Events[0];
         assertEquals("myevent4", probeEvent.getName());
         assertEquals(TraceLogLevel.LEVEL_UNKNOWN, probeEvent.getLogLevel());
-        // Changed for Bug fix 419454 to function event which was introduced by LTTng 2.2
-        assertEquals(TraceEventType.FUNCTION, probeEvent.getEventType());
+        assertEquals(TraceEventType.PROBE, probeEvent.getEventType());
         assertEquals(TraceEnablement.ENABLED, probeEvent.getState());
         assertEquals("0x0", probeEvent.getOffset());
         assertNull(null, probeEvent.getAddress());
@@ -694,7 +693,7 @@ public class TraceControlKernelSessionTests {
         assertEquals(1, domains.length);
 
         AddContextDialogStub addContextStub = new AddContextDialogStub();
-        List<String> contexts = new ArrayList<>();
+        List<String> contexts = new ArrayList<String>();
         contexts.add("prio");
         contexts.add("perf:branch-misses");
         contexts.add("perf:cache-misses");

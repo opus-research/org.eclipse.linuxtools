@@ -13,18 +13,14 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Vector;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
@@ -79,7 +75,7 @@ public class TmfEventProviderTest {
     public void testGetProviders() {
         // There should be 2 TmfEvent providers: a TmfTraceStub and a
         // TmfEventProviderStub
-        ITmfEventProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class);
+        ITmfDataProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class);
         assertEquals("getProviders", 2, eventProviders.length);
 
         eventProviders = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
@@ -102,17 +98,17 @@ public class TmfEventProviderTest {
      */
     @Test
     public void testGetPlainEvents() {
+        final int BLOCK_SIZE = 100;
         final int NB_EVENTS = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         // Get the TmfSyntheticEventStub provider
-        ITmfEventProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class,
+        ITmfDataProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class,
                 TmfEventProviderStub.class);
-        ITmfEventProvider provider = eventProviders[0];
+        ITmfDataProvider provider = eventProviders[0];
 
         TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
-        final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
-                range, 0, NB_EVENTS, ExecutionType.FOREGROUND) {
+        final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
@@ -142,23 +138,24 @@ public class TmfEventProviderTest {
      */
     @Test
     public void testCancelRequests() {
+
+        final int BLOCK_SIZE = 100;
         final int NB_EVENTS = 1000;
         final int NUMBER_EVENTS_BEFORE_CANCEL_REQ1 = 10;
         final int NUMBER_EVENTS_BEFORE_CANCEL_REQ2 = 800;
 
-        final Vector<ITmfEvent> requestedEventsReq1 = new Vector<>();
-        final Vector<ITmfEvent> requestedEventsReq2 = new Vector<>();
+        final Vector<ITmfEvent> requestedEventsReq1 = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEventsReq2 = new Vector<ITmfEvent>();
 
         // Get the TmfSyntheticEventStub provider
-        ITmfEventProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class,
+        ITmfDataProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class,
                 TmfEventProviderStub.class);
-        ITmfEventProvider provider = eventProviders[0];
+        ITmfDataProvider provider = eventProviders[0];
 
         TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
 
         // Create first request
-        final TmfEventRequest request1 = new TmfEventRequest(ITmfEvent.class,
-                range, 0, NB_EVENTS, ExecutionType.FOREGROUND) {
+        final TmfEventRequest request1 = new TmfEventRequest(ITmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
@@ -185,8 +182,7 @@ public class TmfEventProviderTest {
         assertFalse("isRunning", request1.isRunning());
 
         // Create second request
-        final TmfEventRequest request2 = new TmfEventRequest(ITmfEvent.class,
-                range, 0, NB_EVENTS, ExecutionType.FOREGROUND) {
+        final TmfEventRequest request2 = new TmfEventRequest(ITmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
@@ -250,17 +246,17 @@ public class TmfEventProviderTest {
     }
 
     private static void getSyntheticData(final TmfTimeRange range,
-            final int nbEvents) throws InterruptedException {
+            final int nbEvents, final int blockSize) throws InterruptedException {
 
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         // Get the event provider
-        ITmfEventProvider[] eventProviders = TmfProviderManager
+        ITmfDataProvider[] eventProviders = TmfProviderManager
                 .getProviders(TmfSyntheticEventStub.class);
-        ITmfEventProvider provider = eventProviders[0];
+        ITmfDataProvider provider = eventProviders[0];
 
         final TmfEventRequest request = new TmfEventRequest(TmfSyntheticEventStub.class, range,
-                0, nbEvents, ExecutionType.FOREGROUND) {
+                nbEvents, blockSize) {
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
@@ -292,7 +288,33 @@ public class TmfEventProviderTest {
     public void testGetSyntheticEvents_EqualBlockSizes() {
         TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         try {
-            getSyntheticData(range, 1000);
+            getSyntheticData(range, 1000, TmfSyntheticEventProviderStub.BLOCK_SIZE);
+        } catch (InterruptedException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Test getSyntheticEvents for smaller block sizes.
+     */
+    @Test
+    public void testGetSyntheticEvents_SmallerBlock() {
+        TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
+        try {
+            getSyntheticData(range, 1000, TmfSyntheticEventProviderStub.BLOCK_SIZE / 2);
+        } catch (InterruptedException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Test getSyntheticEvents for larger block sizes.
+     */
+    @Test
+    public void testGetSyntheticEvents_LargerBlock() {
+        TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
+        try {
+            getSyntheticData(range, 1000, TmfSyntheticEventProviderStub.BLOCK_SIZE * 2);
         } catch (InterruptedException e) {
             fail();
         }
@@ -307,7 +329,7 @@ public class TmfEventProviderTest {
         TmfTimestamp end = new TmfTimestamp(1000, (byte) -3, 0);
         TmfTimeRange range = new TmfTimeRange(start, end);
         try {
-            getSyntheticData(range, -1);
+            getSyntheticData(range, -1, TmfSyntheticEventProviderStub.BLOCK_SIZE);
         } catch (InterruptedException e) {
             fail();
         }
@@ -345,7 +367,7 @@ public class TmfEventProviderTest {
 
         // There should be 2 TmfEvent providers: a TmfTraceStub and a
         // TmfEventProviderStub
-        ITmfEventProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class);
+        ITmfDataProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class);
         assertEquals("getProviders", 2, eventProviders.length);
 
         eventProviders = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);

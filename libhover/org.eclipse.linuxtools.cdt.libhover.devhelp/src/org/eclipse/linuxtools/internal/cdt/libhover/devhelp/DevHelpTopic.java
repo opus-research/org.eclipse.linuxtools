@@ -46,7 +46,7 @@ public class DevHelpTopic implements ITopic {
 	DevHelpTopic(String name) {
 		this.name = name;
 		xpath = XPathFactory.newInstance().newXPath();
-		subTopics = new ArrayList<>();
+		subTopics = new ArrayList<ITopic>();
 		label = name;
 		init();
 	}

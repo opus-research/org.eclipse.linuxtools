@@ -109,7 +109,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	protected ILaunchConfiguration config;
 
 	private static final String USER_SELECTED_ALL = "ALL"; //$NON-NLS-1$
-	private static final String MAIN_FUNC_NAME = "main"; //$NON-NLS-1$
 
 	protected String name;
 	protected String binaryPath;
@@ -506,7 +505,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return funcs;
 		}
 		try {
-			ArrayList<ICContainer> list = new ArrayList<>();
+			ArrayList<ICContainer> list = new ArrayList<ICContainer>();
 			TranslationUnitVisitor v = new TranslationUnitVisitor();
 
 			for (ICElement b : bin.getCProject().getChildrenOfType(
@@ -627,7 +626,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		if (testMode) {
 			OKButton.setSelection(true);
 			result = list.toArray();
-			ArrayList<Object> output = new ArrayList<>();
+			ArrayList<Object> output = new ArrayList<Object>();
 			try {
 				for (Object obj : result) {
 					if (obj instanceof ICContainer) {
@@ -636,7 +635,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 							if (!(validElement(c))) {
 								continue;
 							}
-							if (c.getElementName().contains(MAIN_FUNC_NAME) && !output.contains(c)) {
+							if (c.getElementName().contains("main") && !output.contains(c)) { //$NON-NLS-1$
 								output.add(c);
 							}
 						}
@@ -663,7 +662,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return null;
 		}
 
-		ArrayList<Object> output = new ArrayList<>();
+		ArrayList<Object> output = new ArrayList<Object>();
 		try {
 			for (Object obj : result) {
 				if (obj instanceof ICContainer) {
@@ -800,7 +799,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 *
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unused")
 	public String generateScript() throws IOException {
 		return null;
 	}
@@ -812,7 +810,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 		public GetFunctionsJob(String name, ICProject p, Object[] o) {
 			super(name);
-			functionList = new ArrayList<>();
+			functionList = new ArrayList<String>();
 			listOfFiles = Arrays.copyOf(o, o.length);
 			project = p;
 		}
@@ -856,7 +854,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 					m.worked(1);
 				}
-				index.releaseReadLock();
 
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -864,6 +861,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				e.printStackTrace();
 			}
 
+			index.releaseReadLock();
 			return Status.OK_STATUS;
 		}
 

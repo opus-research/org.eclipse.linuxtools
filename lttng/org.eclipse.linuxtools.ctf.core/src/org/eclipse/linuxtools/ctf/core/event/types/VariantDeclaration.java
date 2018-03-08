@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -34,16 +34,17 @@ public class VariantDeclaration implements IDeclaration {
 
     private String tag = null;
     private static final long alignment = 1;
-    private final Map<String, IDeclaration> fields = new HashMap<>();
+    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * constructor
      */
     public VariantDeclaration() {
+
     }
 
     // ------------------------------------------------------------------------
@@ -75,7 +76,7 @@ public class VariantDeclaration implements IDeclaration {
     }
 
     /**
-     * Gets current variant tag
+     * gets current variant tag
      * @return the variant tag.
      */
     public String getTag() {

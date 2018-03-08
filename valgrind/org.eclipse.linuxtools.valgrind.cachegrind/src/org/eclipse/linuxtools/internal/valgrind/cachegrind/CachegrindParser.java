@@ -49,7 +49,9 @@ public class CachegrindParser {
 	}
 
 	public void parse(CachegrindOutput output, File cgOut) throws IOException {
-		try (BufferedReader br = new BufferedReader(new FileReader(cgOut))) {
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(cgOut));
 			output.setPid(ValgrindParserUtils.parsePID(cgOut.getName(), CachegrindLaunchDelegate.OUT_PREFIX));
 
 			String line;
@@ -100,6 +102,10 @@ public class CachegrindParser {
 						ValgrindParserUtils.fail(line);
 					}
 				}
+			}
+		} finally {
+			if (br != null) {
+				br.close();
 			}
 		}
 	}

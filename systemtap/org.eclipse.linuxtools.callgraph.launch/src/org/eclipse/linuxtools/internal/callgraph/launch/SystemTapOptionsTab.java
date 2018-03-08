@@ -64,7 +64,6 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.dialogs.TwoPaneElementSelector;
@@ -403,7 +402,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 				IConfigurationElement[] extensions = reg
 						.getConfigurationElementsFor(PluginConstants.VIEW_RESOURCE,
 								PluginConstants.VIEW_NAME);
-				ArrayList<IConfigurationElement> ext = new ArrayList<>();
+				ArrayList<IConfigurationElement> ext = new ArrayList<IConfigurationElement>();
 				for (IConfigurationElement el : extensions) {
 					if (!el.getNamespaceIdentifier().contains("org.eclipse.linuxtools")) //$NON-NLS-1$
 						continue;
@@ -790,7 +789,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 	}
 
 	protected Shell getActiveWorkbenchShell() {
-		return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		return CallgraphLaunchPlugin.getActiveWorkbenchShell();
 	}
 
 

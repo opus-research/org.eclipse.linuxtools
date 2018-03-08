@@ -54,13 +54,11 @@ public class HelgrindToolPage extends AbstractLaunchConfigurationTab implements 
 		}
 	};
 	protected ModifyListener modifyListener = new ModifyListener() {
-		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();
 		}			
 	};
 	
-	@Override
 	public void createControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
 		GridLayout helgrindLayout = new GridLayout(2, true);
@@ -94,12 +92,10 @@ public class HelgrindToolPage extends AbstractLaunchConfigurationTab implements 
 		cacheSizeSpinner.addModifyListener(modifyListener);
 	}
 
-	@Override
 	public String getName() {
 		return Messages.getString("HelgrindToolPage.Helgrind_Options"); //$NON-NLS-1$
 	}
 
-	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		isInitializing = true;
 		try {
@@ -112,7 +108,6 @@ public class HelgrindToolPage extends AbstractLaunchConfigurationTab implements 
 		isInitializing = false;
 	}
 	
-	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(HelgrindLaunchConstants.ATTR_HELGRIND_LOCKORDERS, lockordersButton.getSelection());
 		configuration.setAttribute(HelgrindLaunchConstants.ATTR_HELGRIND_HISTORYLEVEL, historyCombo.getText());
@@ -130,7 +125,6 @@ public class HelgrindToolPage extends AbstractLaunchConfigurationTab implements 
 		return result;
 	}
 	
-	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, HelgrindPlugin.TOOL_ID);
 		configuration.setAttribute(HelgrindLaunchConstants.ATTR_HELGRIND_LOCKORDERS, HelgrindLaunchConstants.DEFAULT_HELGRIND_LOCKORDERS);
@@ -138,7 +132,6 @@ public class HelgrindToolPage extends AbstractLaunchConfigurationTab implements 
 		configuration.setAttribute(HelgrindLaunchConstants.ATTR_HELGRIND_CACHESIZE, HelgrindLaunchConstants.DEFAULT_HELGRIND_CACHESIZE);
 	}
 		
-	@Override
 	public void setValgrindVersion(Version ver) {
 		valgrindVersion = ver;
 	}

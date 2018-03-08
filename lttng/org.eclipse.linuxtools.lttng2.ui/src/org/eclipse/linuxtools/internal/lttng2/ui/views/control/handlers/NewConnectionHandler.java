@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson and others
+ * Copyright (c) 2012, 2013 Ericsson and others
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -147,8 +147,8 @@ public class NewConnectionHandler extends BaseControlViewHandler {
 
     private static IHost[] getSuitableHosts() {
         // need shells and files
-        ArrayList<IHost> result = new ArrayList<>();
-        ArrayList<IHost> shellConnections = new ArrayList<>(
+        ArrayList<IHost> result = new ArrayList<IHost>();
+        ArrayList<IHost> shellConnections = new ArrayList<IHost>(
                 Arrays.asList(RSECorePlugin.getTheSystemRegistry()
                         .getHostsBySubSystemConfigurationCategory("shells"))); //$NON-NLS-1$
 

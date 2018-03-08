@@ -59,9 +59,8 @@ public class STAnnotatedSourceNotFoundEditorInput extends STCSourceNotFoundEdito
 			return false;
 		final STAnnotatedSourceNotFoundEditorInput other = (STAnnotatedSourceNotFoundEditorInput) obj;
 		if (sourceFile == null) {
-			if (other.sourceFile != null) {
+			if (other.sourceFile != null)
 				return false;
-			}
 		} else if (!sourceFile.equals(other.sourceFile))
 			return false;
 		return true;

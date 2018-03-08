@@ -56,11 +56,10 @@ public class RangeFilterWizardPage extends FilterWizardPage {
 		//Column
 		Label lblColumn = new Label(cmpFilterOpts, SWT.NONE);
 		lblColumn.setText(Localization.getString("RangeFilterWizardPage.Column")); //$NON-NLS-1$
-		cboColumn = new Combo(cmpFilterOpts, SWT.DROP_DOWN | SWT.READ_ONLY);
+		cboColumn = new Combo(cmpFilterOpts, SWT.DROP_DOWN);
 		cboColumn.addSelectionListener(selectionListener);
-		for(int i=0; i<wizard.series.length; i++) {
+		for(int i=0; i<wizard.series.length; i++)
 			cboColumn.add(wizard.series[i]);
-		}
 
 		new Label(cmpFilterOpts, SWT.NONE);	//Spacer
 
@@ -70,6 +69,8 @@ public class RangeFilterWizardPage extends FilterWizardPage {
 		txtLow = new Text(cmpFilterOpts, SWT.BORDER);
 		txtLow.addModifyListener(modifyListener);
 		txtLow.addKeyListener(numberKeyListener);
+
+		new Label(cmpFilterOpts, SWT.NONE);	//Spacer
 
 		//High
 		Label lblHigh = new Label(cmpFilterOpts, SWT.NONE);
@@ -91,12 +92,7 @@ public class RangeFilterWizardPage extends FilterWizardPage {
 
 		chkInclusive = new Button(cmpFilterOpts, SWT.CHECK);
 		chkInclusive.setText(Localization.getString("RangeFilterWizardPage.Inclusive")); //$NON-NLS-1$
-		chkInclusive.addSelectionListener(selectionListener);
 
-		new Label(cmpFilterOpts, SWT.NONE);	//Spacer
-
-		cboColumn.select(0);
-		createFilter();
 		setControl(comp);
 	}
 
@@ -107,36 +103,19 @@ public class RangeFilterWizardPage extends FilterWizardPage {
 
 	@Override
 	protected void createFilter() {
-		filter = null;
-		setErrorMessage(null);
+		int selected = cboColumn.getSelectionIndex();
 
-		String highText = txtHigh.getText().trim();
-		String lowText = txtLow.getText().trim();
-
-		// Allow inside/outside bounds only if the range is bounded (has upper & lower bounds)
-		boolean bounded = highText.length() * lowText.length() != 0;
-		radInside.setEnabled(bounded);
-		radOutside.setEnabled(bounded);
-
-		if (highText.length() + lowText.length() == 0) {
-			setErrorMessage(Localization.getString("RangeFilterWizardPage.EmptyError")); //$NON-NLS-1$
-			return;
-		}
 		try {
-			Double high = highText.length() > 0 ? Double.parseDouble(txtHigh.getText().trim()) : null;
-			Double low = lowText.length() > 0 ? Double.parseDouble(txtLow.getText().trim()) : null;
-			if (low != null && high != null && low >= high) {
-				setErrorMessage(Localization.getString("RangeFilterWizardPage.BoundError")); //$NON-NLS-1$
-				return;
-			}
-
-			// By default, if range is unbounded, force "inside" bounds to apply.
-			int style = (!radInside.isEnabled() || radInside.getSelection() ? RangeFilter.INSIDE_BOUNDS : RangeFilter.OUTSIDE_BOUNDS);
-			int selected = cboColumn.getSelectionIndex();
-			if(chkInclusive.getSelection()) {
+			double high = Double.parseDouble(txtHigh.getText().trim());
+			double low = Double.parseDouble(txtLow.getText().trim());
+			int style = (radInside.getSelection() ? RangeFilter.INSIDE_BOUNDS : RangeFilter.OUTSIDE_BOUNDS);
+			if(chkInclusive.getSelection())
 				style |= RangeFilter.INCLUSIVE;
+
+			if(selected >=0 && selected < cboColumn.getItemCount()) {
+				if(low <= high)
+					wizard.filter = new RangeFilter(selected, new Double(low), new Double(high), style);
 			}
-			filter = new RangeFilter(selected, low, high, style);
 		} catch(NumberFormatException nfe) {}
 	}
 

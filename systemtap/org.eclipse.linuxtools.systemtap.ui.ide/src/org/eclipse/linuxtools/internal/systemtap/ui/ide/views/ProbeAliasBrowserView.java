@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 public class ProbeAliasBrowserView extends BrowserView {
 	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView"; //$NON-NLS-1$
 	private ProbeAliasAction doubleClickAction;
+	private Menu menu;
 
 	/**
 	 * Creates the UI on the given <code>Composite</code>
@@ -81,5 +82,9 @@ public class ProbeAliasBrowserView extends BrowserView {
 			doubleClickAction.dispose();
 		}
 		doubleClickAction = null;
+		if(null != menu) {
+			menu.dispose();
+		}
+		menu = null;
 	}
 }

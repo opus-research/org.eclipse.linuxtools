@@ -15,10 +15,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -31,11 +29,11 @@ import org.osgi.framework.BundleContext;
  */
 public class CallgraphCorePlugin extends AbstractUIPlugin {
 
-
+	
 	public static final String PLUGIN_ID = "org.eclipse.linuxtools.callgraph.core"; //$NON-NLS-1$
 	// The shared instance
 	private static CallgraphCorePlugin plugin;
-
+	
 	/**
 	 * The constructor
 	 */
@@ -60,7 +58,7 @@ public class CallgraphCorePlugin extends AbstractUIPlugin {
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
-
+		
 	}
 
 	/**
@@ -72,9 +70,9 @@ public class CallgraphCorePlugin extends AbstractUIPlugin {
 		return plugin;
 	}
 
-
+	
 	/**
-	 * Returns the location of the plugin by checking the path of the bundle's
+	 * Returns the location of the plugin by checking the path of the bundle's 
 	 * locationURL.
 	 * 
 	 * @return
@@ -86,21 +84,10 @@ public class CallgraphCorePlugin extends AbstractUIPlugin {
 		URL fileUrl = null;
 		try {
 			fileUrl = FileLocator.toFileURL(locationUrl);
-			return fileUrl.getFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return new String();
-	}
-
-	/**
-	 * Log specified exception.
-	 * @param e Exception to log.
-	 */
-	public static void logException(Exception e) {
-		Status status = new Status(IStatus.ERROR, CallgraphCorePlugin.PLUGIN_ID,
-				e.getMessage());
-		CallgraphCorePlugin.getDefault().getLog().log(status);
+		return fileUrl.getFile();
 	}
 
 }

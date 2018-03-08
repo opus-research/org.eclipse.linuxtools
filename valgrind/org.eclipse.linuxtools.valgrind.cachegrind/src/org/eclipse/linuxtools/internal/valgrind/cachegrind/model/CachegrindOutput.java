@@ -24,8 +24,8 @@ public class CachegrindOutput implements ICachegrindElement {
 	protected long[] summary;
 	
 	public CachegrindOutput() {
-		descriptions = new ArrayList<>();
-		files = new ArrayList<>();
+		descriptions = new ArrayList<CachegrindDescription>();
+		files = new ArrayList<CachegrindFile>();
 	}
 	
 	public void addDescription(CachegrindDescription desc) {
@@ -72,12 +72,10 @@ public class CachegrindOutput implements ICachegrindElement {
 		return summary;
 	}
 
-	@Override
 	public ICachegrindElement[] getChildren() {
 		return getFiles();
 	}
 
-	@Override
 	public ICachegrindElement getParent() {
 		return null;
 	}
@@ -86,7 +84,6 @@ public class CachegrindOutput implements ICachegrindElement {
 		return pid;
 	}
 	
-	@Override
 	public int compareTo(ICachegrindElement o) {
 		int result = 0;
 		if (o instanceof CachegrindOutput) {
@@ -95,7 +92,6 @@ public class CachegrindOutput implements ICachegrindElement {
 		return result;
 	}
 
-	@Override
 	public IAdaptable getModel() {
 		return null;
 	}

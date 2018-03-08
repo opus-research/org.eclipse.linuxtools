@@ -306,33 +306,46 @@ public abstract class SystemTapView extends ViewPart {
      * @param sourcePath
      */
     public void saveData(String targetFile) {
-		try {
-			File file = new File(targetFile);
-			file.delete();
-			file.createNewFile();
+        try {
+            File file = new File(targetFile);
+            file.delete();
+            file.createNewFile();
 
-			File sFile = new File(sourcePath);
-			if (!sFile.exists()) {
-				return;
-			}
+            File sFile = new File(sourcePath);
+            if (!sFile.exists()) {
+                return;
+            }
 
-			try  (FileInputStream fileIn = new FileInputStream(sFile); FileOutputStream fileOut = new FileOutputStream(file); 
-					FileChannel channelIn = fileIn.getChannel(); FileChannel channelOut = fileOut.getChannel()){
-				
-				if (channelIn == null || channelOut == null) {
-					return;
-				}
+             FileChannel in = null;
+             FileChannel out = null;
 
-				long size = channelIn.size();
-				MappedByteBuffer buf = channelIn.map(
-						FileChannel.MapMode.READ_ONLY, 0, size);
+             try {
+                  in = new FileInputStream(sFile).getChannel();
+                  out = new FileOutputStream(file).getChannel();
 
-				channelOut.write(buf);
-			}
-		} catch (IOException e) {
-			CallgraphCorePlugin.logException(e);
-		}
-	}
+                  if (in == null || out == null) {
+                      return;
+                  }
+
+                  long size = in.size();
+                  MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, size);
+
+                  out.write(buf);
+
+             } finally {
+                  if (in != null) {
+                      in.close();
+                  }
+                  if (out != null) {
+                      out.close();
+                  }
+             }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void setSourcePath(String file) {
         sourcePath = file;

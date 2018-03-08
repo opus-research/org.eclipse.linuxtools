@@ -40,7 +40,6 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	// Launch configuration type id.
 	private String launchConfigId;
 
-	@Override
 	public void setInitializationData(IConfigurationElement config,
 			String propertyName, Object data) {
 		Map<String, String> parameters = (Map<String, String>) data;
@@ -50,10 +49,10 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 				.get(ProviderProfileConstants.INIT_DATA_CONFIG_ID_KEY);
 
 		if (profilingType == null) {
-			profilingType = ""; //$NON-NLS-1$
+			profilingType = "";
 		}
 		if (configId == null) {
-			configId = ""; //$NON-NLS-1$
+			configId = "";
 		}
 
 		setLaunchConfigID(configId);
@@ -80,7 +79,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 		// check that there exists a provider for the given profiling type
 		if (providerId == null) {
-			handleFail(Messages.ProviderLaunchShortcut_0 + " " + type); //$NON-NLS-1$
+			handleFail(Messages.ProviderLaunchShortcut_0 + " " + type);
 			return null;
 		}
 
@@ -92,18 +91,18 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 		boolean existsConfigForTool = false;
 
 		try {
-			String projectName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""); //$NON-NLS-1$
-			String programName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, ""); //$NON-NLS-1$
+			String projectName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
+			String programName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, "");
 			ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(getLaunchConfigType());
 
 			for(ILaunchConfiguration currConfig : configs){
-				String curProjectName = currConfig.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""); //$NON-NLS-1$
-				String curProgramName = currConfig.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, ""); //$NON-NLS-1$
+				String curProjectName = currConfig.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
+				String curProgramName = currConfig.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, "");
 
 				// check that current configuration belongs to the current project/program
 				if(curProjectName.equals(projectName) && curProgramName.equals(programName)){
 					existsConfigForProject = true;
-					String curProviderId = currConfig.getAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT, ""); //$NON-NLS-1$
+					String curProviderId = currConfig.getAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
 
 					// check that current configuration has the same provider as the provider to run.
 					if(curProviderId.equals(providerId)){
@@ -169,56 +168,46 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 		 */
 		ILaunchConfigurationDialog dialog  = new ILaunchConfigurationDialog() {
 
-			@Override
 			public void run(boolean fork, boolean cancelable,
 					IRunnableWithProgress runnable) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void updateMessage() {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void updateButtons() {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void setName(String name) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void setActiveTab(int index) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void setActiveTab(ILaunchConfigurationTab tab) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public ILaunchConfigurationTab[] getTabs() {
 				return null;
 			}
 
-			@Override
 			public String getMode() {
 				return null;
 			}
 
-			@Override
 			public ILaunchConfigurationTab getActiveTab() {
 				return null;
 			}
 
-			@Override
 			public String generateName(String name) {
 				if (name == null) {
-					name = ""; //$NON-NLS-1$
+					name = "";
 				}
 				String providerConfigutationName = generateProviderConfigurationName(name, providerToolName);
 				return getLaunchManager().generateLaunchConfigurationName(providerConfigutationName);
@@ -298,7 +287,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	 * @since 1.2
 	 */
 	public static String generateProviderConfigurationName(String configName, String toolName){
-		return configName + " " + "[" + toolName + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		return configName + " " + "[" + toolName + "]"; //$NON-NLS-1$
 	}
 
 }

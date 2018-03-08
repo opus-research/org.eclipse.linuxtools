@@ -35,7 +35,7 @@ public class SimpleTopic implements ITopic {
 		this.bookName = bookName;
 		this.node = node;
 		xpath = XPathFactory.newInstance().newXPath();
-		subTopics = new ArrayList<>();
+		subTopics = new ArrayList<ITopic>();
 		initSubtopics();
 	}
 

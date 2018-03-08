@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.systemtap.ui.graphing.views;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.internal.systemtap.ui.graphing.views.Messages;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
@@ -21,21 +19,8 @@ import org.eclipse.ui.IPersistableElement;
  */
 public class GraphSelectorEditorInput implements IEditorInput {
 
-	private String title = null;
-
-	public GraphSelectorEditorInput() {
-		title = Messages.GraphSelectorEditor_graphsEditorDefaultTitle;
-	}
-
-	/**
-	 * @since 2.2
-	 */
-	public GraphSelectorEditorInput(String scriptTitle) {
-		title = NLS.bind(Messages.GraphSelectorEditor_graphsEditorTitle, scriptTitle);
-	}
-
 	@Override
-	public Object getAdapter(Class adapter) {
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		return null;
 	}
 
@@ -61,7 +46,7 @@ public class GraphSelectorEditorInput implements IEditorInput {
 
 	@Override
 	public String getToolTipText() {
-		return title;
+		return null;
 	}
 
 }

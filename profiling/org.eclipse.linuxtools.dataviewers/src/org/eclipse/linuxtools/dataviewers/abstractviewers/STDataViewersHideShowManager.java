@@ -33,7 +33,7 @@ public class STDataViewersHideShowManager {
     private final int[] columnsWidth;
     private final int[] columnsState;
 
-    private final HashMap<Item, STColumnSizeListener> columnsSizeListener = new HashMap<>();
+    private final HashMap<Item, STColumnSizeListener> columnsSizeListener = new HashMap<Item, STColumnSizeListener>();
 
     /**
      * Creates a new instance of STDataViewersHideShowManager.

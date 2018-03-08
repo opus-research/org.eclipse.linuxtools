@@ -37,9 +37,8 @@ public class SystemTapTextView extends SystemTapView {
 	 */
 	@Override
 	public void setFocus() {
-		if (viewer != null && !viewer.isDisposed()) {
+		if (viewer != null && !viewer.isDisposed())
 			viewer.setFocus();
-		}
 	}
 
 	public void createViewer(Composite parent) {
@@ -59,7 +58,7 @@ public class SystemTapTextView extends SystemTapView {
 	 * @param text
 	 */
 	public void prettyPrintln(String text) {
-		List<StyleRange> styles = new ArrayList<>();
+		List<StyleRange> styles = new ArrayList<StyleRange>();
 		String[] txt = text.split("\\n"); //$NON-NLS-1$
 		int lineOffset = 0;
 		int inLineOffset;

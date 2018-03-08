@@ -516,7 +516,7 @@ public class STLink2SourceSupport {
     private IFile getFileForPath(IPath path, IProject project) {
         IFile f = getFileForPathImpl(path, project);
         if (f == null) {
-            Set<IProject> allProjects = new HashSet<>();
+            Set<IProject> allProjects = new HashSet<IProject>();
             try {
                 getAllReferencedProjects(allProjects, project);
             } catch (CoreException _) {

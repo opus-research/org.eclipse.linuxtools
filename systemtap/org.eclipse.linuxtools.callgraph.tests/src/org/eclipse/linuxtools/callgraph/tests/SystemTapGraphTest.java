@@ -41,7 +41,7 @@ public class SystemTapGraphTest {
 		CallgraphView cView = (CallgraphView)  ViewFactory.createView(CallGraphConstants.VIEW_ID);
 
 		if (!manual) {
-			ArrayList<String> tasks = new ArrayList<>();
+			ArrayList<String> tasks = new ArrayList<String>();
 
 
 			tasks.add("(Manually) Maximize CallgraphView");
@@ -61,8 +61,10 @@ public class SystemTapGraphTest {
 			tasks.add("Reload file");
 			tasks.add("Maximize");
 
-			for (int taskNumber = 0; taskNumber < tasks.size(); taskNumber++) {
 
+		    int taskNumber = 0;
+			for (String task : tasks) {
+				taskNumber++;
 				Action act = null;
 				switch (taskNumber) {
 				case 1:

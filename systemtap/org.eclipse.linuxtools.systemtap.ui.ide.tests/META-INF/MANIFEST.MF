@@ -14,7 +14,7 @@ Require-Bundle: org.junit;bundle-version="4.10.0",
  org.apache.log4j,
  org.eclipse.swtbot.go,
  org.eclipse.cdt.managedbuilder.gnu.ui;bundle-version="8.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Fragment-Host: org.eclipse.linuxtools.systemtap.ui.ide
 Import-Package: org.apache.log4j,
  org.eclipse.linuxtools.systemtap.ui.tests,
@@ -23,5 +23,4 @@ Import-Package: org.apache.log4j,
  org.eclipse.swtbot.swt.finder,
  org.eclipse.swtbot.swt.finder.junit,
  org.eclipse.swtbot.swt.finder.waits,
- org.eclipse.swtbot.swt.finder.widgets,
- org.swtchart
+ org.eclipse.swtbot.swt.finder.widgets

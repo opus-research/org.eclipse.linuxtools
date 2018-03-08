@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,11 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 /**
  * Base unit test class for any type of ITmfStatistics. Sub-classes should
@@ -32,11 +28,8 @@ import org.junit.rules.Timeout;
  */
 public abstract class TmfStatisticsTest {
 
-    /** Time-out tests after 30 seconds */
-    @Rule public TestRule globalTimeout= new Timeout(30000);
-
-    /** Test trace used for these tests */
-    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
+    /** The index of the test trace used for these tests */
+    protected static final int TRACE_INDEX = 0;
 
     /** The statistics back-end object */
     protected static ITmfStatistics backend;
@@ -101,7 +94,7 @@ public abstract class TmfStatisticsTest {
 
         /* Check the total number of events */
         long count = 0;
-        for (long val : results) {
+        for (Long val : results) {
             count += val;
         }
         assertEquals(totalNbEvents, count);
@@ -356,7 +349,7 @@ public abstract class TmfStatisticsTest {
 
     private static long sumOfEvents(Map<String, Long> map) {
         long count = 0;
-        for (long val : map.values()) {
+        for (Long val : map.values()) {
             count += val;
         }
         return count;

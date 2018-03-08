@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -71,7 +71,7 @@ public class BaseEventInfoTest {
         assertEquals("unknown", result.getInName());
         assertEquals("UNKNOWN", result.name());
         assertEquals("UNKNOWN", result.toString());
-        assertEquals(4, result.ordinal());
+        assertEquals(3, result.ordinal());
 
         TraceLogLevel level = fixture.getLogLevel();
         assertEquals("TRACE_DEBUG", level.getInName());
@@ -130,14 +130,14 @@ public class BaseEventInfoTest {
         assertEquals("unknown", result.getInName());
         assertEquals("UNKNOWN", result.name());
         assertEquals("UNKNOWN", result.toString());
-        assertEquals(4, result.ordinal());
+        assertEquals(3, result.ordinal());
 
         fixture.setEventType("");
         result = fixture.getEventType();
         assertEquals("unknown", result.getInName());
         assertEquals("UNKNOWN", result.name());
         assertEquals("UNKNOWN", result.toString());
-        assertEquals(4, result.ordinal());
+        assertEquals(3, result.ordinal());
 
         fixture.setEventType("tracepoint");
         result = fixture.getEventType();
@@ -162,15 +162,6 @@ public class BaseEventInfoTest {
         assertEquals("PROBE", result.name());
         assertEquals("PROBE", result.toString());
         assertEquals(2, result.ordinal());
-
-        fixture.setEventType("function");
-        result = fixture.getEventType();
-        assertNotNull(result);
-        assertEquals("function", result.getInName());
-        assertEquals("FUNCTION", result.name());
-        assertEquals("FUNCTION", result.toString());
-        assertEquals(3, result.ordinal());
-
 
     }
 
@@ -197,7 +188,7 @@ public class BaseEventInfoTest {
         assertEquals("unknown", result.getInName());
         assertEquals("UNKNOWN", result.name());
         assertEquals("UNKNOWN", result.toString());
-        assertEquals(4, result.ordinal());
+        assertEquals(3, result.ordinal());
 
         fixture.setEventType(TraceEventType.SYSCALL);
         result = fixture.getEventType();
@@ -214,15 +205,6 @@ public class BaseEventInfoTest {
         assertEquals("PROBE", result.name());
         assertEquals("PROBE", result.toString());
         assertEquals(2, result.ordinal());
-
-        fixture.setEventType(TraceEventType.FUNCTION);
-        result = fixture.getEventType();
-        assertNotNull(result);
-        assertEquals("function", result.getInName());
-        assertEquals("FUNCTION", result.name());
-        assertEquals("FUNCTION", result.toString());
-        assertEquals(3, result.ordinal());
-
 
     }
 
@@ -459,7 +441,7 @@ public class BaseEventInfoTest {
         IFieldInfo field2 =  new FieldInfo("stringfield");
         field2.setFieldType("string");
 
-        List<IFieldInfo> fields = new LinkedList<>();
+        List<IFieldInfo> fields = new LinkedList<IFieldInfo>();
         fields.add(field1);
         fields.add(field2);
         info.setFields(fields);

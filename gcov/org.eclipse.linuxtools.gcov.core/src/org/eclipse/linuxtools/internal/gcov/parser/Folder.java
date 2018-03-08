@@ -20,7 +20,7 @@ public class Folder implements Serializable {
 	 */
 	private static final long serialVersionUID = 5155033391199109661L;
 	private final String path;
-	private final ArrayList<SourceFile> srcFiles = new ArrayList<>();
+	private final ArrayList<SourceFile> srcFiles = new ArrayList<SourceFile>();
 	private int numLines = 0;
 	private int linesInstrumented = 0;
 	private int linesExecuted = 0;
@@ -34,10 +34,10 @@ public class Folder implements Serializable {
 	
 	
 	public void accumulateSourcesCounts(){
-		for (SourceFile srcFile: srcFiles) {
-			numLines += srcFile.getNumLines();
-			linesInstrumented += srcFile.getLinesInstrumented();
-			linesExecuted += srcFile.getLinesExecuted();
+		for (int i = 0; i < srcFiles.size(); i++) {
+			numLines += (srcFiles.get(i)).getNumLines();
+			linesInstrumented += (srcFiles.get(i)).getLinesInstrumented();
+			linesExecuted += (srcFiles.get(i)).getLinesExecuted();
 		}	
 	}
 		

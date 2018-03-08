@@ -15,6 +15,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.FunctionBrowserA
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 
 
 
@@ -29,6 +30,7 @@ public class FunctionBrowserView extends BrowserView {
 	private FunctionBrowserAction doubleClickAction;
 	private TreeNode functions;
 	private TreeNode localFunctions;
+	private Menu menu;
 
 	/**
 	 * Creates the UI on the given <code>Composite</code>
@@ -100,6 +102,10 @@ public class FunctionBrowserView extends BrowserView {
 			functions.dispose();
 		}
 		functions = null;
+		if(null != menu) {
+			menu.dispose();
+		}
+		menu = null;
 		TapsetLibrary.stop();
 	}
 }

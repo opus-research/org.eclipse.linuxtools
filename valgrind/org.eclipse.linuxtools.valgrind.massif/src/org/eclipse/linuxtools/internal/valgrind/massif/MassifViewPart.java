@@ -103,7 +103,7 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		chartInputs = new ArrayList<>();
+		chartInputs = new ArrayList<ChartEditorInput>();
 
 		top = new Composite(parent, SWT.NONE);
 		stackLayout = new StackLayout();
@@ -137,7 +137,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		treeViewer.getViewer().getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				MassifSnapshot snapshot = (MassifSnapshot) ((IStructuredSelection) event
 						.getSelection()).getFirstElement();
@@ -226,7 +225,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		};
 	}
 
-	@Override
 	public IAction[] getToolbarActions() {
 		pidAction = new MassifPidMenuAction(this);
 		pidAction.setId(PID_ACTION);
@@ -310,7 +308,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 
 	protected void displayChart(final ChartEditorInput chartInput) {
 		Display.getDefault().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				try {
 					IWorkbenchPage page = PlatformUI.getWorkbench()
@@ -340,7 +337,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		viewer.getTable().setFocus();
 	}
 
-	@Override
 	public void refreshView() {
 		if (output != null && pid != null) {
 			MassifSnapshot[] snapshots = output.getSnapshots(pid);
@@ -427,7 +423,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 	protected static class MassifLabelProvider extends LabelProvider implements
 	ITableLabelProvider, IFontProvider {
 
-		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
 			Image image = null;
 			if (columnIndex == 0) {
@@ -445,7 +440,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 			return image;
 		}
 
-		@Override
 		public String getColumnText(Object element, int columnIndex) {
 			MassifSnapshot snapshot = (MassifSnapshot) element;
 			DecimalFormat df = new DecimalFormat("#,##0"); //$NON-NLS-1$
@@ -465,7 +459,6 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 			}
 		}
 
-		@Override
 		public Font getFont(Object element) {
 			Font font = null;
 			MassifSnapshot snapshot = (MassifSnapshot) element;
@@ -486,7 +479,7 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 	}
 
 	private MassifSnapshot[] getDetailed(MassifSnapshot[] snapshots) {
-		ArrayList<MassifSnapshot> list = new ArrayList<>();
+		ArrayList<MassifSnapshot> list = new ArrayList<MassifSnapshot>();
 		for (MassifSnapshot snapshot : snapshots) {
 			if (snapshot.getType() != SnapshotType.EMPTY) {
 				list.add(snapshot);

@@ -32,7 +32,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class GprofParserTest {
 	@Parameters
 	public static Collection<Object[]> data() {
-		List<Object[]> params = new ArrayList<>();
+		List<Object[]> params = new ArrayList<Object[]>();
 		for (File testDir : STJunitUtils.getTestDirs()) {
 			params.add(new Object[] { new File(testDir, OUTPUT_FILE),
 					new File(testDir, BINARY_FILE),

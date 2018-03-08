@@ -61,7 +61,7 @@ public class SuppressionsEditor extends TextEditor {
 	
 	public void updateFoldingStructure(Position[] updatedPositions)	{		
 		Annotation[] updatedAnnotations = new Annotation[updatedPositions.length];
-		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<>();
+		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 		for (int i = 0; i < updatedPositions.length; i++) {
 			ProjectionAnnotation annotation = new ProjectionAnnotation();	
 			newAnnotations.put(annotation, updatedPositions[i]);

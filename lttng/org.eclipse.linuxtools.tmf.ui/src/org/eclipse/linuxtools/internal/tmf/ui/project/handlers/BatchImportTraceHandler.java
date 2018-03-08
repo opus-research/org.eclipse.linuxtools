@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,22 +8,20 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
- *   Bernd Hufmann - Simplify selection logic
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
  * Batch import handler, spawn a wizard
@@ -31,29 +29,30 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @author Matthew Khouzam
  * @since 2.0
  */
-public class BatchImportTraceHandler extends AbstractHandler {
+public class BatchImportTraceHandler extends ImportTraceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
-        BatchImportTraceWizard w = new BatchImportTraceWizard();
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-
-        if (window == null) {
-            return false;
+        TmfTraceFolder traceFolder = getTraceFolder();
+        if (traceFolder == null) {
+            return null;
         }
 
-        ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
+        // Fire the Import Trace Wizard
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        if (workbench != null) {
+            final IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+            if (activeWorkbenchWindow != null) {
+                Shell shell = activeWorkbenchWindow.getShell();
 
-        IStructuredSelection sec = StructuredSelection.EMPTY;
-        if (currentSelection instanceof IStructuredSelection) {
-            sec = (IStructuredSelection) currentSelection;
+                BatchImportTraceWizard wizard = new BatchImportTraceWizard();
+                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
+                WizardDialog dialog = new WizardDialog(shell, wizard);
+                dialog.open();
+
+                traceFolder.refresh();
+            }
         }
-
-        w.init(PlatformUI.getWorkbench(), sec);
-        WizardDialog dialog = new WizardDialog(window.getShell(), w);
-        dialog.open();
-
         return null;
     }
 

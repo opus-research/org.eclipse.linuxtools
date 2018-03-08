@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -131,7 +131,7 @@ public class DsfGdbAdaptor {
 
     // To save tracepoints detailed info.  The key is the rank of the
     // breakpoint (tracepoint is a kind of breakpoint)
-    private  Map<Integer, MIBreakpointDMData> fTpInfo = new HashMap<>();
+    private  Map<Integer, MIBreakpointDMData> fTpInfo = new HashMap<Integer, MIBreakpointDMData>();
 
     private TmfEventType tmfEventType = new TmfEventType(ITmfEventType.DEFAULT_CONTEXT_ID, "GDB Tracepoint", TmfEventField.makeRoot(new String[] { "Content" })); //$NON-NLS-1$ //$NON-NLS-2$
 

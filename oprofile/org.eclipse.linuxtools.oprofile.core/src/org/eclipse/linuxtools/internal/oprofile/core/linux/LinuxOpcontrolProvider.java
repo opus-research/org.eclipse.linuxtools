@@ -111,7 +111,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Unload the kernel module and oprofilefs
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void deinitModule() throws OpcontrolException {
 		runOpcontrol(OPD_DEINIT_MODULE);
 	}
@@ -120,7 +119,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Dump collected profiling data
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void dumpSamples() throws OpcontrolException {
 		runOpcontrol(OPD_DUMP);
 	}
@@ -129,7 +127,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Loads the kernel module and oprofilefs
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void initModule() throws OpcontrolException {
 		runOpcontrol(OPD_INIT_MODULE);
 	}
@@ -138,7 +135,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Clears out data from current session
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void reset() throws OpcontrolException {
 		runOpcontrol(OPD_RESET);
 	}
@@ -148,7 +144,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * @param name	the name to which to save the session
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void saveSession(String name) throws OpcontrolException {
 		SessionManager sessMan;
 		try {
@@ -177,7 +172,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * @param eventName The name of the event containing the session
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void deleteSession (String sessionName, String eventName) throws OpcontrolException {
 		File file = new File (SessionManager.OPXML_PREFIX + SessionManager.MODEL_DATA + eventName + sessionName);
 		file.delete();
@@ -191,10 +185,9 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * @param args	list of parameters for daemon
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void setupDaemon(OprofileDaemonOptions options, OprofileDaemonEvent[] events) throws OpcontrolException {
 		// Convert options & events to arguments for opcontrol
-		ArrayList<String> args = new ArrayList<>();
+		ArrayList<String> args = new ArrayList<String>();
 		args.add(OPD_SETUP);
 		optionsToArguments(args, options);
 		if (!Oprofile.getTimerMode()) {
@@ -213,7 +206,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Stop data collection and remove daemon
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void shutdownDaemon() throws OpcontrolException {
 		runOpcontrol(OPD_SHUTDOWN);
 	}
@@ -222,7 +214,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Start data collection (will start daemon if necessary)
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void startCollection() throws OpcontrolException {
 		runOpcontrol(OPD_START_COLLECTION);
 	}
@@ -231,7 +222,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Start daemon without starting profiling
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void startDaemon() throws OpcontrolException {
 		runOpcontrol(OPD_START_DAEMON);
 	}
@@ -240,7 +230,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Stop data collection
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public void stopCollection() throws OpcontrolException {
 		runOpcontrol(OPD_STOP_COLLECTION);
 	}
@@ -249,7 +238,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * Check status. returns true if any status was returned
 	 * @throws OpcontrolException
 	 */
-	@Override
 	public boolean status() throws OpcontrolException {
 		return runOpcontrol(OPD_HELP);
 	}
@@ -262,7 +250,7 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * @throws OpcontrolException
 	 */
 	private boolean runOpcontrol(String cmd) throws OpcontrolException {
-		ArrayList<String> list = new ArrayList<>();
+		ArrayList<String> list = new ArrayList<String>();
 		list.add(cmd);
 		return runOpcontrol(list);
 	}
@@ -337,19 +325,17 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 */
 	protected boolean checkOpcontrolProcess(Process p) throws OpcontrolException {
 		if (p != null) {
+			BufferedReader errout = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+			BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String errOutput = ""; //$NON-NLS-1$
 			String output = "", s; //$NON-NLS-1$
-			try (BufferedReader errout = new BufferedReader(
-					new InputStreamReader(p.getErrorStream()));
-					BufferedReader stdout = new BufferedReader(
-							new InputStreamReader(p.getInputStream()))) {
+			try {
 				while ((s = errout.readLine()) != null) {
 					errOutput += s + "\n"; //$NON-NLS-1$
 				}
 				// Unfortunately, when piped through consolehelper stderr output
 				// is redirected to stdout. Need to read stdout and do some
-				// string matching in order to give some better advice as to how
-				// to
+				// string matching in order to give some better advice as to how to
 				// alleviate the nmi_watchdog problem. See RH BZ #694631
 				while ((s = stdout.readLine()) != null) {
 					output += s + "\n"; //$NON-NLS-1$
@@ -359,10 +345,8 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 
 				int ret = p.waitFor();
 				if (ret != 0) {
-					OpControlErrorHandler errHandler = OpControlErrorHandler
-							.getInstance();
-					OpcontrolException ex = errHandler.handleError(output,
-							errOutput);
+					OpControlErrorHandler errHandler = OpControlErrorHandler.getInstance();
+					OpcontrolException ex = errHandler.handleError(output, errOutput);
 					throw ex;
 				}
 
@@ -370,7 +354,9 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 					return true;
 				}
 
-			} catch (IOException|InterruptedException e) {
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
@@ -490,7 +476,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	 * @throws OpcontrolException if opcontrol not installed
 	 * @since 1.1
 	 */
-	@Override
 	public boolean hasPermissions(IProject project) throws OpcontrolException {
 		String linuxtoolsPath = LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project);
 

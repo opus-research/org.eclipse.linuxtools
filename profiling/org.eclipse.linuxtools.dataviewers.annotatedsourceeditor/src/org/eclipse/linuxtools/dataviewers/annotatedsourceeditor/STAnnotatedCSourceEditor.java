@@ -113,7 +113,7 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
             super(editor, registry);
             fEditor = editor;
             fRegistry = registry;
-            fColumns = new ArrayList<>();
+            fColumns = new ArrayList<ISTAnnotationColumn>();
         }
 
         private int computeIndex(CompositeRuler ruler, RulerColumnDescriptor descriptor) {

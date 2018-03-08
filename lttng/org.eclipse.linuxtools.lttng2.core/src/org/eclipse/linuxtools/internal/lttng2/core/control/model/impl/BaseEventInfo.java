@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -44,7 +44,7 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
     /**
      * The Event fields
      */
-    private final List<IFieldInfo> fFields = new ArrayList<>();
+    private final List<IFieldInfo> fFields = new ArrayList<IFieldInfo>();
     /**
      * The filter expression.
      */
@@ -101,8 +101,6 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
             fEventType = TraceEventType.SYSCALL;
         } else if (TraceEventType.PROBE.getInName().equals(typeName)) {
             fEventType = TraceEventType.PROBE;
-        } else if (TraceEventType.FUNCTION.getInName().equals(typeName)) {
-            fEventType = TraceEventType.FUNCTION;
         } else {
             fEventType = TraceEventType.UNKNOWN;
         }

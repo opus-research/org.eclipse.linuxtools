@@ -27,27 +27,27 @@ public class CTFCallsite implements Comparable<CTFCallsite> {
     /**
      * The event name
      */
-    private final String fEventName;
+    private final String eventName;
 
     /**
      * the file name of the callsite
      */
-    private final String fFileName;
+    private final String fileName;
 
     /**
      * the instruction pointer
      */
-    private final long fIp;
+    private final long ip;
 
     /**
      * the function name
      */
-    private final String fFunctionName;
+    private final String functionName;
 
     /**
      * the line number of the callsite
      */
-    private final long fLineNumber;
+    private final long lineNumber;
 
     /**
      * The callsite constructor
@@ -64,46 +64,46 @@ public class CTFCallsite implements Comparable<CTFCallsite> {
      *            the line number of the callsite
      */
     public CTFCallsite(String en, String func, long ip, String fn, long line) {
-        fEventName = en;
-        fFileName = fn;
-        fFunctionName = func;
-        fIp = ip;
-        fLineNumber = line;
+        eventName = en;
+        fileName = fn;
+        functionName = func;
+        this.ip = ip;
+        this.lineNumber = line;
     }
 
     /**
      * @return the eventName
      */
     public String getEventName() {
-        return fEventName;
+        return eventName;
     }
 
     /**
      * @return the fileName
      */
     public String getFileName() {
-        return fFileName;
+        return fileName;
     }
 
     /**
      * @return the ip
      */
     public long getIp() {
-        return fIp;
+        return ip;
     }
 
     /**
      * @return the functionName
      */
     public String getFunctionName() {
-        return fFunctionName;
+        return functionName;
     }
 
     /**
      * @return the lineNumber
      */
     public long getLineNumber() {
-        return fLineNumber;
+        return lineNumber;
     }
 
     /*
@@ -119,7 +119,7 @@ public class CTFCallsite implements Comparable<CTFCallsite> {
          * will return the lower 32 bits
          */
 
-        long other = o.fIp;
+        long other = o.ip;
         /*
          * To get a high int: we downshift by 32 and bitwise and with the mask
          * to get rid of the sign
@@ -128,8 +128,8 @@ public class CTFCallsite implements Comparable<CTFCallsite> {
          */
         long otherHigh = (other >> 32) & MASK32;
         long otherLow = other & MASK32;
-        long ownHigh = (fIp >> 32) & MASK32;
-        long ownLow = fIp & MASK32;
+        long ownHigh = (ip >> 32) & MASK32;
+        long ownLow = ip & MASK32;
         /* are the high values different, if so ignore the lower values */
         if (ownHigh > otherHigh) {
             return 1;
@@ -150,6 +150,6 @@ public class CTFCallsite implements Comparable<CTFCallsite> {
 
     @Override
     public String toString() {
-        return fFileName + "/" + fFunctionName + ":" + fLineNumber; //$NON-NLS-1$ //$NON-NLS-2$
+        return fileName + "/" + functionName + ":" + lineNumber; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

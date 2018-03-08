@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -127,10 +127,10 @@ public class CommandShell implements ICommandShell {
     @Override
     public ICommandResult executeCommand(final String command, final IProgressMonitor monitor, final boolean checkReturnValue) throws ExecutionException {
         if (fIsConnected) {
-            FutureTask<CommandResult> future = new FutureTask<>(new Callable<CommandResult>() {
+            FutureTask<CommandResult> future = new FutureTask<CommandResult>(new Callable<CommandResult>() {
                 @Override
                 public CommandResult call() throws IOException, CancellationException {
-                    final ArrayList<String> result = new ArrayList<>();
+                    final ArrayList<String> result = new ArrayList<String>();
 
                     synchronized (fHostShell) {
                         // Initialize return value which will be updated in isAliasEchoResult()

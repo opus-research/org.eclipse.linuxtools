@@ -29,7 +29,6 @@ public class SystemTapTextParser extends SystemTapParser{
 
 	@Override
 	protected void initialize() {
-		// Empty
 	}
 
 	@Override

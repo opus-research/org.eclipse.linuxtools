@@ -136,18 +136,17 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse
 	 * .swt.widgets.Composite)
 	 */
-	@Override
 	public void createControl(Composite parent) {
 		Composite comp = new Composite(parent, SWT.NONE);
 		setControl(comp);
 
 		ProfileLaunchPlugin
-		.getDefault()
-		.getWorkbench()
-		.getHelpSystem()
-		.setHelp(
-				getControl(),
-				ICDTLaunchHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
+				.getDefault()
+				.getWorkbench()
+				.getHelpSystem()
+				.setHelp(
+						getControl(),
+						ICDTLaunchHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
 
 		GridLayout topLayout = new GridLayout();
 		comp.setLayout(topLayout);
@@ -201,7 +200,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * org.eclipse.debug.ui.ILaunchConfigurationTab#initializeFrom(org.eclipse
 	 * .debug.core.ILaunchConfiguration)
 	 */
-	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 		filterPlatform = getPlatform(config);
 		updateProjectFromConfig(config);
@@ -301,10 +299,10 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	protected void handleSearchButtonSelected() {
 		if (getCProject() == null) {
 			MessageDialog
-			.openInformation(
-					getShell(),
-					LaunchMessages.CMainTab_Project_required,
-					LaunchMessages.CMainTab_Enter_project_before_searching_for_program);
+					.openInformation(
+							getShell(),
+							LaunchMessages.CMainTab_Project_required,
+							LaunchMessages.CMainTab_Enter_project_before_searching_for_program);
 			return;
 		}
 
@@ -399,7 +397,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		fProjText.setLayoutData(gd);
 		fProjText.addModifyListener(new ModifyListener() {
 
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				// if project changes, invalidate program name cache
 				fPreviouslyCheckedProgram = null;
@@ -499,7 +496,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 
 		copyFromExeText = copyFromExeSelector.getURIText();
 		copyFromExeText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -522,7 +518,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				2, "C/C++ executable", null); //$NON-NLS-1$
 		fProgText = exeSelector.getURIText();
 		fProgText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -531,25 +526,24 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 
 	protected void updateWorkingDirFromConfig(ILaunchConfiguration config) {
 		if (workingDirText != null) {
-			String projectDir = EMPTY_STRING;
+			String workingDir = EMPTY_STRING;
 			try {
-				projectDir = config.getAttribute(ATTR_REMOTE_WORKING_DIRECTORY_NAME, EMPTY_STRING);
+				workingDir = config.getAttribute(ATTR_REMOTE_WORKING_DIRECTORY_NAME, EMPTY_STRING);
 			} catch (CoreException ce) {
 				ProfileLaunchPlugin.log(ce);
 			}
 
-			if (projectDir.equals(EMPTY_STRING)){
-				if(this.fProjText != null){
-					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-					IProject project = root.getProject(this.fProjText.getText());
-					try {
-						projectDir = RemoteProxyManager.getInstance().getRemoteProjectLocation(project);
-					} catch (CoreException e) {
-						setErrorMessage(fPreviouslyCheckedWorkingDirErrorMsg = ProxyLaunchMessages.error_accessing_working_directory);
+			if (workingDir.equals(EMPTY_STRING)){
+					if(this.fProjText != null){
+						IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+						IProject project = root.getProject(this.fProjText.getText());
+						if(project != null){
+							workingDir = project.getLocationURI().toString();
+						}
 					}
-				}
 			}
-			workingDirText.setText(projectDir);
+
+			workingDirText.setText(workingDir);
 		}
 	}
 
@@ -568,7 +562,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				2, "Working directory", null); //$NON-NLS-1$
 		workingDirText = workingDirSelector.getURIText();
 		workingDirText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -596,9 +589,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 		fPreviouslyCheckedCopyFromExe = name;
 		fPreviouslyCheckedCopyFromExeIsValid = true; // we'll flip this below if
-		// not true
+												// not true
 		fPreviouslyCheckedCopyFromExeErrorMsg = null; // we'll set this below if
-		// there's an error
+												// there's an error
 		IPath exePath;
 		URI exeURI = null;
 		boolean passed = false;
@@ -615,8 +608,8 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			if (!exePath.isAbsolute() && exeURI != null && !exeURI.isAbsolute()) {
 				URI projectURI = project.getLocationURI();
 				exeURI = new URI(projectURI.getScheme(),
-						projectURI.getAuthority(), projectURI.getRawPath() + '/'
-						+ exePath.toString(), EMPTY_STRING);
+						projectURI.getAuthority(), projectURI.getRawPath() + "/"
+								+ exePath.toString(), EMPTY_STRING);
 			}
 			if (exeURI != null) {
 				passed = true;
@@ -646,7 +639,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 					if (exeFI != null) {
 						if (exeFI.exists()) {
 							if (exeFI.getAttribute(EFS.ATTRIBUTE_EXECUTABLE) &&
-									!exeFI.isDirectory()) {
+								!exeFI.isDirectory()) {
 								passed = true;
 							} else {
 								setErrorMessage(fPreviouslyCheckedCopyFromExeErrorMsg = ProxyLaunchMessages.copy_from_exe_does_not_have_execution_rights);
@@ -691,9 +684,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 		fPreviouslyCheckedProgram = name;
 		fPreviouslyCheckedProgramIsValid = true; // we'll flip this below if
-		// not true
+												// not true
 		fPreviouslyCheckedProgramErrorMsg = null; // we'll set this below if
-		// there's an error
+												// there's an error
 		IPath exePath;
 		URI exeURI = null;
 		boolean passed = false;
@@ -711,8 +704,8 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			if (!exePath.isAbsolute() && exeURI != null && !exeURI.isAbsolute()) {
 				URI projectURI = project.getLocationURI();
 				exeURI = new URI(projectURI.getScheme(),
-						projectURI.getAuthority(), projectURI.getRawPath() + '/'
-						+ exePath.toString(), EMPTY_STRING);
+						projectURI.getAuthority(), projectURI.getRawPath() + "/"
+								+ exePath.toString(), EMPTY_STRING);
 			}
 			if (exeURI != null) {
 				passed = true;
@@ -746,7 +739,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 						} else {
 							if (exeFI.exists()) {
 								if (exeFI.getAttribute(EFS.ATTRIBUTE_EXECUTABLE) &&
-										!exeFI.isDirectory()) {
+									!exeFI.isDirectory()) {
 									passed = true;
 								} else {
 									setErrorMessage(fPreviouslyCheckedProgramErrorMsg = ProxyLaunchMessages.executable_does_not_have_execution_rights);
@@ -790,9 +783,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 		fPreviouslyCheckedWorkingDir = name;
 		fPreviouslyCheckedWorkingDirIsValid = true; // we'll flip this below if
-		// not true
+												// not true
 		fPreviouslyCheckedWorkingDirErrorMsg = null; // we'll set this below if
-		// there's an error
+												// there's an error
 		IPath wdPath;
 		URI wdURI = null;
 		boolean passed = false;
@@ -810,8 +803,8 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			if (!wdPath.isAbsolute() && wdURI != null && !wdURI.isAbsolute()) {
 				URI projectURI = project.getLocationURI();
 				wdURI = new URI(projectURI.getScheme(),
-						projectURI.getAuthority(), projectURI.getRawPath() + '/'
-						+ wdPath.toString(), EMPTY_STRING);
+						projectURI.getAuthority(), projectURI.getRawPath() + "/"
+								+ wdPath.toString(), EMPTY_STRING);
 			}
 			if (wdURI != null) {
 				passed = true;
@@ -1010,7 +1003,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.
 	 * debug.core.ILaunchConfigurationWorkingCopy)
 	 */
-	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		// We set empty attributes for project & program so that when one config
 		// is
@@ -1093,25 +1085,11 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			binary = (IBinary) cElement;
 		}
 
-		String projectDir = EMPTY_STRING;
-		ConfigUtils configUtils = new ConfigUtils(config);
-		IProject project = null;
-		try {
-			project = ConfigUtils.getProject(configUtils.getProjectName());
-		} catch (CoreException e) {
-			setErrorMessage(fPreviouslyCheckedWorkingDirErrorMsg = ProxyLaunchMessages.error_accessing_working_directory);
-		}
-		if(project != null){
-			try {
-				projectDir = RemoteProxyManager.getInstance().getRemoteProjectLocation(project);
-			} catch (CoreException e) {
-				setErrorMessage(fPreviouslyCheckedWorkingDirErrorMsg = ProxyLaunchMessages.error_accessing_working_directory);
-			}
-		}
-
-		String path = EMPTY_STRING;
 		if (binary != null) {
+			String path;
 			path = binary.getResource().getProjectRelativePath().toOSString();
+			config.setAttribute(
+					ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, path);
 			if (!renamed) {
 				String name = binary.getElementName();
 				int index = name.lastIndexOf('.');
@@ -1123,8 +1101,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				renamed = true;
 			}
 		}
-		config.setAttribute(
-				ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, projectDir + IPath.SEPARATOR + path);
 
 		if (!renamed) {
 			String name = getLaunchConfigurationDialog().generateName(
@@ -1143,7 +1119,6 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 *
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
 	 */
-	@Override
 	public String getName() {
 		return LaunchMessages.CMainTab_Main;
 	}

@@ -67,7 +67,7 @@ public class EventIdCache {
 	public static EventIdCache getInstance(){
 
 		if (cacheMap == null) {
-			cacheMap = new HashMap<>();
+			cacheMap = new HashMap<String, EventIdCache>();
 		}
 
 		IProject project = Oprofile.OprofileProject.getProject();
@@ -76,16 +76,12 @@ public class EventIdCache {
 			EventIdCache eventIdCache = cacheMap.get(project.getLocationURI().getHost());
 			if (eventIdCache == null) {
 				cacheMap.put(project.getLocationURI().getHost(), newCache);
-			} else {
-				return eventIdCache;
 			}
 		} else {
 			// If no project associated we should launch locally
 			EventIdCache eventIdCache = cacheMap.get(LOCAL);
 			if (eventIdCache == null) {
 				cacheMap.put(LOCAL, newCache);
-			} else {
-				return eventIdCache;
 			}
 		}
 
@@ -117,7 +113,7 @@ public class EventIdCache {
 	 * Build the cache
 	 */
 	private void buildCache(EventIdCache eventId) {
-		eventId.nameMap = new HashMap<> ();
+		eventId.nameMap = new HashMap<String, Element> ();
 		NodeList eventList = eventId.eventRoot.getElementsByTagName(EVENT);
 		for (int i = 0; i < eventList.getLength(); i++){
 			Element elem = (Element) eventList.item(i);
@@ -130,10 +126,6 @@ public class EventIdCache {
 	 * Read the XML from ophelp
 	 */
 	private void readXML(EventIdCache eventId) {
-		if (eventId.eventRoot != null) {
-			return;
-		}
-
 		try {
 			Process p = RuntimeProcessFactory.getFactory().exec(OPHELP + " " + "-X", Oprofile.OprofileProject.getProject());
 
@@ -244,7 +236,9 @@ public class EventIdCache {
 				}
 				eventReader.close();
 			} catch (IOException e) {
+				e.printStackTrace();
 			} catch (CoreException e) {
+				e.printStackTrace();
 			} finally {
 				if (bi != null) {
 					try {
@@ -255,12 +249,5 @@ public class EventIdCache {
 			}
 		}
 		return unitMaskType;
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	public void setCacheDoc(Element oldRoot) {
-		eventRoot = oldRoot;
 	}
 }
