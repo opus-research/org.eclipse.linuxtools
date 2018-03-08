@@ -356,7 +356,7 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
     public String getFormattedValue() {
         if (formattedValue == null) {
             List<String> strings = new ArrayList<String>();
-            for (long value : getValue()) {
+            for (Long value : getValue()) {
                 strings.add(formatNumber(value, base, signed));
             }
             formattedValue = strings.toString();

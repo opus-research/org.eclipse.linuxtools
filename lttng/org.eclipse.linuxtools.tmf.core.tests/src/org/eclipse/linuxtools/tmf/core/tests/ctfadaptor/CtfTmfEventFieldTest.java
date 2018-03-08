@@ -14,7 +14,6 @@
 package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
 
 import java.nio.ByteOrder;
 
@@ -154,8 +153,9 @@ public class CtfTmfEventFieldTest {
         Definition fieldDef = fixture.lookupDefinition(SEQ);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         long[] values = (long[]) result.getValue();
-        long[] expected = new long[] { 2, 2 };
-        assertArrayEquals(expected, values);
+        assertEquals(2, values.length);
+        assertEquals(2, values[0]);
+        assertEquals(2, values[1]);
     }
 
     /**

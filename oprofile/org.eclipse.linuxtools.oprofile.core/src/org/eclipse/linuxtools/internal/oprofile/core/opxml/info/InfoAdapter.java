@@ -80,8 +80,8 @@ public class InfoAdapter extends AbstractDataAdapter{
 	public static final String DUMP_STATUS = "dump-status"; //$NON-NLS-1$
 	
 	public static final String CPUINFO = "/proc/cpuinfo"; //$NON-NLS-1$
-	public static String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
-	public static String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
+	public static final String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
+	public static final String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
 	public static final String OP_SHARE = "/usr/share/oprofile/"; //$NON-NLS-1$
 	public static final String EVENTS = "events"; //$NON-NLS-1$
 	
@@ -124,7 +124,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		try {
 			inputStream = resourceFile.openInputStream(EFS.NONE, new NullProgressMonitor());
 			createDOM(inputStream);
-			setEventIdCacheDoc(oldRoot);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -227,11 +226,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		newRoot.appendChild(timerModeTag);
 	}
 
-	public static void setOprofileDir (String dir) {
-		DEV_OPROFILE = dir;
-		CPUTYPE = DEV_OPROFILE + "cpu_type";
-	}
-
 	/**
 	 * Determine whether the cpu supports timer mode
 	 * @return true if it is true, and false otherwise
@@ -276,6 +270,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	 * @return the system's cpu frequency
 	 */
 	private int getCPUFrequency() {
+
 		int val = 0;
 		BufferedReader bi = null;
 		try {
@@ -464,9 +459,5 @@ public class InfoAdapter extends AbstractDataAdapter{
 	@Override
 	public Document getDocument() {
 		return newDoc;
-	}
-
-	public void setEventIdCacheDoc (Element elem) {
-		EventIdCache.getInstance().setCacheDoc(elem);
 	}
 }
