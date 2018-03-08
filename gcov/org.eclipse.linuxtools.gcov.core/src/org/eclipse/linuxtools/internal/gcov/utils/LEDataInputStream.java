@@ -102,7 +102,7 @@ public class LEDataInputStream implements DataInput {
 		(long)(buffer[3]&0xff) << 24 |
 		(long)(buffer[2]&0xff) << 16 |
 		(long)(buffer[1]&0xff) <<  8 |
-		(long)(buffer[0]&0xff);
+		buffer[0]&0xff;
 	}
 
 	/*

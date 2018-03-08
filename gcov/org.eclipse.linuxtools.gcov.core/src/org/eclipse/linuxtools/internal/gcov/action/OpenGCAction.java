@@ -58,15 +58,15 @@ public class OpenGCAction implements IEditorLauncher {
 		}
 
 		if (gcda == null || !gcda.isFile()) {
-			String msg = "File " + gcda + " does not exist.";
-			msg += "\nPlease run your application at least once.";
-			MessageDialog.openError(shell, "gcov Error", msg);
+			String msg = "File " + gcda + " does not exist."; //$NON-NLS-1$ //$NON-NLS-2$
+			msg += "\nPlease run your application at least once."; //$NON-NLS-1$
+			MessageDialog.openError(shell, "gcov Error", msg); //$NON-NLS-1$
 			return;
 		}
 		if (gcno == null || !gcno.isFile()) {
-			String msg = "File " + gcno + " does not exist.";
-			msg += "\nPlease recompile your application.";
-			MessageDialog.openError(shell, "gcov Error", msg);
+			String msg = "File " + gcno + " does not exist."; //$NON-NLS-1$ //$NON-NLS-2$
+			msg += "\nPlease recompile your application."; //$NON-NLS-1$
+			MessageDialog.openError(shell, "gcov Error", msg); //$NON-NLS-1$
 			return;
 		}
 		

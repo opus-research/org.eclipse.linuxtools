@@ -25,7 +25,7 @@ public class FieldTotalLines extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return "Total Lines";
+		return "Total Lines"; //$NON-NLS-1$
 	}
 
 	private int getTotalLines(Object element) {
@@ -56,9 +56,9 @@ public class FieldTotalLines extends AbstractSTDataViewersField {
 	    int v = getTotalLines(element);
 	    if (v < 0) return null;
 	    String s = NumberFormat.getInstance().format(v);
-	    s += " line";
-	    if (v>1) s+= "s";
-	    s += " in total";
+	    s += " line"; //$NON-NLS-1$
+	    if (v>1) s+= "s"; //$NON-NLS-1$
+	    s += " in total"; //$NON-NLS-1$
 	    return s;
 	}
 

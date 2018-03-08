@@ -45,17 +45,17 @@ public class CoverageAnnotationColumn implements ISTAnnotationColumn {
 		try {
 			Line l = lines.get(index+1);
 			if (!l.exists()) {
-				return "non executable line";
+				return "non executable line"; //$NON-NLS-1$
 			} else {
 				long count = l.getCount();
-				if (count == 0) return "line never executed";
-				if (count == 1) return "line executed 1 time";
-				return "line executed "
+				if (count == 0) return "line never executed"; //$NON-NLS-1$
+				if (count == 1) return "line executed 1 time"; //$NON-NLS-1$
+				return "line executed " //$NON-NLS-1$
 				+ Long.toString(count)
-				+ " times";
+				+ " times"; //$NON-NLS-1$
 			}
 		} catch (IndexOutOfBoundsException _) {
-			return "non executable line";
+			return "non executable line"; //$NON-NLS-1$
 		}
 	}
 

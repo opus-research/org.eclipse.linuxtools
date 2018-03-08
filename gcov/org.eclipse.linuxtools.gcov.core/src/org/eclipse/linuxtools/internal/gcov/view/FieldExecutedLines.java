@@ -25,7 +25,7 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return "Executed Lines";
+		return "Executed Lines"; //$NON-NLS-1$
 	}
 
 	/*
@@ -42,8 +42,8 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
 	public String getToolTipText(Object element) {
 	    int v = getExecutedLines(element);
 	    String s = NumberFormat.getInstance().format(v);
-	    s += " executed line";
-	    if (v > 1) s += "s";
+	    s += " executed line"; //$NON-NLS-1$
+	    if (v > 1) s += "s"; //$NON-NLS-1$
 		return s;
 	}
 

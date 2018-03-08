@@ -99,7 +99,7 @@ public class OpenSourceFileAction {
 							STAnnotatedSourceNotFoundEditor.ID, true);
 				} catch (PartInitException e) {
 					Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-							IStatus.ERROR, "Error when opening annotated source view",
+							IStatus.ERROR, "Error when opening annotated source view", //$NON-NLS-1$
 							e);
 					Activator.getDefault().getLog().log(s);
 				}
@@ -122,7 +122,7 @@ public class OpenSourceFileAction {
 					}
 				} catch (PartInitException e) {
 					Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-							IStatus.ERROR, "Error when opening annotated source view",
+							IStatus.ERROR, "Error when opening annotated source view", //$NON-NLS-1$
 							e);
 					Activator.getDefault().getLog().log(s);
 				}

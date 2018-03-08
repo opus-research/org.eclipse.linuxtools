@@ -139,7 +139,7 @@ public class CovManager implements Serializable {
 			traceFile = OpenTraceFileStream(gcdaPath, ".gcda", sourcePath); //$NON-NLS-1$
 			if (traceFile == null) return;
 			if (noRcrd.getFnctns().isEmpty()){
-				String message = gcnoPath + " doesn't contain any function:\n";
+				String message = gcnoPath + " doesn't contain any function:\n"; //$NON-NLS-1$
 				Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 				throw new CoreException(status);
 			}
@@ -217,7 +217,7 @@ public class CovManager implements Serializable {
 		}		
 
 		// fill rootNode model: the entry of the contentProvider
-		rootNode = new CovRootTreeElement("Summary", summaryTotal,summaryExecuted,
+		rootNode = new CovRootTreeElement("Summary", summaryTotal,summaryExecuted, //$NON-NLS-1$
 				summaryInstrumented);
 		IBinaryObject binaryObject = STSymbolManager.sharedInstance.getBinaryObject(new Path(binaryPath));
 		
@@ -279,7 +279,7 @@ public class CovManager implements Serializable {
 			FileDialog fg = new FileDialog(shell, SWT.OPEN);
 			fg.setFilterExtensions(new String[] {"*" + extension, "*.*", "*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			fg.setFileName(filename);
-			fg.setText(filePath + " not found. Please enter location of " + filename);
+			fg.setText(filePath + " not found. Please enter location of " + filename); //$NON-NLS-1$
 			String s = fg.open();
 			if (s == null) return null;
 			else {
@@ -331,11 +331,11 @@ public class CovManager implements Serializable {
 		String binaryPath = binaryObject.getPath().toOSString();
 		List<String> l = new LinkedList<String>();
 		Process p;
-		String stringsTool = "strings";
+		String stringsTool = "strings"; //$NON-NLS-1$
 		p = getStringsProcess(stringsTool, binaryPath);
 		if (p == null) {
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR,
-					"An error occured during analysis: unable to retrieve gcov data", new IOException());
+					"An error occured during analysis: unable to retrieve gcov data", new IOException()); //$NON-NLS-1$
 			Activator.getDefault().getLog().log(status);
 			return l;
 		}
@@ -404,21 +404,21 @@ public class CovManager implements Serializable {
 	}
 
 	public void dumpProcessCovFilesResult(PrintStream ps) {
-		ps.println("Parse gcda and gcno files done, resolve graph algorithm executed, now display results");
-		ps.println("- PRINT FUNCTIONS ARRAY : ");
+		ps.println("Parse gcda and gcno files done, resolve graph algorithm executed, now display results"); //$NON-NLS-1$
+		ps.println("- PRINT FUNCTIONS ARRAY : "); //$NON-NLS-1$
 		for (int i = 0; i < allFnctns.size(); i++) {
-			ps.println("-- FUNCTION " +i);
-			ps.println("     name = " + allFnctns.get(i).getName());
-			ps.println("     instrumentd lines = " + allFnctns.get(i).getCvrge().getLinesInstrumented());
-			ps.println("     executed lines = "+ allFnctns.get(i).getCvrge().getLinesExecuted());
+			ps.println("-- FUNCTION " +i); //$NON-NLS-1$
+			ps.println("     name = " + allFnctns.get(i).getName()); //$NON-NLS-1$
+			ps.println("     instrumentd lines = " + allFnctns.get(i).getCvrge().getLinesInstrumented()); //$NON-NLS-1$
+			ps.println("     executed lines = "+ allFnctns.get(i).getCvrge().getLinesExecuted()); //$NON-NLS-1$
 		}		
-		ps.println("- PRINT SRCS ARRAY : ");
+		ps.println("- PRINT SRCS ARRAY : "); //$NON-NLS-1$
 		for (int i = 0; i < allSrcs.size(); i++) {
-			ps.println("-- FILE " + i);
-			ps.println("     name = " + allSrcs.get(i).getName());
-			ps.println("     total lines = " + allSrcs.get(i).getNumLines());
-			ps.println("     instrumentd lines = "+ allSrcs.get(i).getLinesInstrumented());
-			ps.println("     executed lines = "+ allSrcs.get(i).getLinesExecuted());
+			ps.println("-- FILE " + i); //$NON-NLS-1$
+			ps.println("     name = " + allSrcs.get(i).getName()); //$NON-NLS-1$
+			ps.println("     total lines = " + allSrcs.get(i).getNumLines()); //$NON-NLS-1$
+			ps.println("     instrumentd lines = "+ allSrcs.get(i).getLinesInstrumented()); //$NON-NLS-1$
+			ps.println("     executed lines = "+ allSrcs.get(i).getLinesExecuted()); //$NON-NLS-1$
 		}
 	}
 

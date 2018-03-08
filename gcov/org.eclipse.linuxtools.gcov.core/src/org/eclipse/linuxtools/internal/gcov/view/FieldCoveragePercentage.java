@@ -27,7 +27,7 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 
 	@Override
 	public String getColumnHeaderText() {
-		return "Coverage %";
+		return "Coverage %"; //$NON-NLS-1$
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 	@Override
 	public String getToolTipText(Object element) {
 		TreeElement e = (TreeElement) element;
-		String s =" Coverage % = "+Integer.toString((int)e.getCoveragePercentage());
+		String s =" Coverage % = "+Integer.toString((int)e.getCoveragePercentage()); //$NON-NLS-1$
 		return s ;			
 	}
 

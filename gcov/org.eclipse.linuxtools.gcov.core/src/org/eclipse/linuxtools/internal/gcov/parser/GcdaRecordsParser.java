@@ -67,7 +67,7 @@ public class GcdaRecordsParser {
 			if (magic == GCOV_DATA_MAGIC){
 				stream = new LEDataInputStream((DataInputStream) stream);
 			}else{
-				String message = magic + " :desn't correspond to a correct data file header\n";
+				String message = magic + " :desn't correspond to a correct data file header\n"; //$NON-NLS-1$
 				Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 				throw new CoreException(status);
 			}
@@ -96,8 +96,8 @@ public class GcdaRecordsParser {
 								currentFnctn = f;
 								long fnctnChksm = stream.readInt()&  MasksGenerator.UNSIGNED_INT_MASK;
 								if (f.getCheksum() != fnctnChksm){
-									String message = "Checksums don't correspond for " +
-									currentFnctn.getName() + " (Id: " + fnctnId + ")\n";
+									String message = "Checksums don't correspond for " + //$NON-NLS-1$
+									currentFnctn.getName() + " (Id: " + fnctnId + ")\n"; //$NON-NLS-1$ //$NON-NLS-2$
 									Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 									throw new CoreException(status);
 								}
@@ -132,8 +132,8 @@ public class GcdaRecordsParser {
 
 						if (fnctnFound == false){
 							currentFnctn = null;
-							String message = "Function with Id: " + fnctnId +
-							" not found in function list\n";
+							String message = "Function with Id: " + fnctnId + //$NON-NLS-1$
+							" not found in function list\n"; //$NON-NLS-1$
 							Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 							throw new CoreException(status);
 						}
@@ -144,20 +144,20 @@ public class GcdaRecordsParser {
 
 				case GCOV_COUNTER_ARCS: {
 					if (currentFnctn == null){
-						String message = "Missing function or duplicate counter tag\n";
+						String message = "Missing function or duplicate counter tag\n"; //$NON-NLS-1$
 						Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 						throw new CoreException(status);
 					}
 
 					if (length != 2 * (currentFnctn.getNumCounts())){
-						String message = "GCDA content is inconsistent\n";
+						String message = "GCDA content is inconsistent\n"; //$NON-NLS-1$
 						Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 						throw new CoreException(status);
 					}
 
 					ArrayList<Block> fnctnBlcks = currentFnctn.getFunctionBlocks();
 					if (fnctnBlcks.isEmpty()){
-						String message = "Function block list is empty\n";
+						String message = "Function block list is empty\n"; //$NON-NLS-1$
 						Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 						throw new CoreException(status);
 					}
