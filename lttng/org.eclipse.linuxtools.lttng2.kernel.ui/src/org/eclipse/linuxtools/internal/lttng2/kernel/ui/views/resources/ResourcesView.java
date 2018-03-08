@@ -28,8 +28,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 
@@ -42,12 +44,6 @@ public class ResourcesView extends AbstractTimeGraphView {
 
     /** View ID. */
     public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.views.resources"; //$NON-NLS-1$
-
-    /**
-     * Default value for events with no other value. Since value in this case is
-     * often a CPU number, this constant should be <0
-     */
-    public static final int NO_VALUE_EVENT = -999;
 
     private static final String PROCESS_COLUMN = Messages.ControlFlowView_processColumn;
 
@@ -103,7 +99,7 @@ public class ResourcesView extends AbstractTimeGraphView {
         setEndTime(Long.MIN_VALUE);
 
         ArrayList<ResourcesEntry> entryList = new ArrayList<ResourcesEntry>();
-        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
+        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
             if (monitor.isCanceled()) {
                 return;
             }
@@ -174,18 +170,14 @@ public class ResourcesView extends AbstractTimeGraphView {
     protected List<ITimeEvent> getEventList(TimeGraphEntry entry,
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        ResourcesEntry resourcesEntry = (ResourcesEntry) entry;
+        ITmfStateSystem ssq = resourcesEntry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         final long realStart = Math.max(startTime, ssq.getStartTime());
         final long realEnd = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (realEnd <= realStart) {
             return null;
         }
         List<ITimeEvent> eventList = null;
-
-        if (!(entry instanceof ResourcesEntry)) {
-            return eventList;
-        }
-        ResourcesEntry resourcesEntry = (ResourcesEntry) entry;
         int quark = resourcesEntry.getQuark();
 
         try {
@@ -206,12 +198,11 @@ public class ResourcesView extends AbstractTimeGraphView {
                             eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                         }
                         eventList.add(new TimeEvent(entry, time, duration, status));
-                        lastEndTime = time + duration;
-                    } else {
-                        if (true) {// includeNull) {
-                            eventList.add(new TimeEvent(entry, time, duration, NO_VALUE_EVENT));
-                        }
+                    } else if (lastEndTime == -1 || statusInterval.getEndTime() + 1 >= endTime) {
+                        // add null event if it intersects the start or end time
+                        eventList.add(new NullTimeEvent(entry, time, duration));
                     }
+                    lastEndTime = time + duration;
                 }
             } else if (resourcesEntry.getType().equals(Type.IRQ)) {
                 List<ITmfStateInterval> irqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
@@ -229,11 +220,15 @@ public class ResourcesView extends AbstractTimeGraphView {
                         eventList.add(new TimeEvent(entry, time, duration, cpu));
                         lastIsNull = false;
                     } else {
-                        if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
+                        if (lastEndTime == -1) {
+                            // add null event if it intersects the start time
+                            eventList.add(new NullTimeEvent(entry, time, duration));
+                        } else if (lastEndTime != time && lastIsNull) {
                             /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
                             eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
-                        } else {
-                            eventList.add(new TimeEvent(entry, time, duration, NO_VALUE_EVENT));
+                        } else if (irqInterval.getEndTime() + 1 >= endTime) {
+                            // add null event if it intersects the end time
+                            eventList.add(new NullTimeEvent(entry, time, duration));
                         }
                         lastIsNull = true;
                     }
@@ -254,11 +249,15 @@ public class ResourcesView extends AbstractTimeGraphView {
                         int cpu = softIrqInterval.getStateValue().unboxInt();
                         eventList.add(new TimeEvent(entry, time, duration, cpu));
                     } else {
-                        if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
+                        if (lastEndTime == -1) {
+                            // add null event if it intersects the start time
+                            eventList.add(new NullTimeEvent(entry, time, duration));
+                        } else if (lastEndTime != time && lastIsNull) {
                             /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
                             eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
-                        } else {
-                            eventList.add(new TimeEvent(entry, time, duration, NO_VALUE_EVENT));
+                        } else if (softIrqInterval.getEndTime() + 1 >= endTime) {
+                            // add null event if it intersects the end time
+                            eventList.add(new NullTimeEvent(entry, time, duration));
                         }
                         lastIsNull = true;
                     }
