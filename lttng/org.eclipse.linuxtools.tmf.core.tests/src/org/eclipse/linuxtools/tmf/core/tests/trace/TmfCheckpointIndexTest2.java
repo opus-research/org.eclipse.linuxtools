@@ -146,6 +146,7 @@ public class TmfCheckpointIndexTest2 {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testTmfTraceMultiTimestamps() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());
