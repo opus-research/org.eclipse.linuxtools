@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.lttng2.kernel.ui.analysis;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
+import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow.ControlFlowView;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesView;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
@@ -63,6 +64,11 @@ public class LttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
     @Override
     protected String getSsFileName() {
         return HISTORY_TREE_FILE_NAME;
+    }
+
+    @Override
+    protected String getFullHelpText() {
+        return Messages.LttngKernelAnalysis_Help;
     }
 
 }

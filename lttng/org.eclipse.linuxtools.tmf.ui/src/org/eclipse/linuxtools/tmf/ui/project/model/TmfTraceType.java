@@ -310,18 +310,20 @@ public final class TmfTraceType {
         for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
             String traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
             ITmfTrace trace = new CustomTxtTrace(def);
-            TmfSignalManager.deregister(trace);
             TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_TXT_CATEGORY, def.definitionName, trace);
             fTraceTypes.put(traceTypeId, tt);
             traceTypes.add(traceTypeId);
+            // Deregister trace as signal handler because it is only used for validation
+            TmfSignalManager.deregister(trace);
         }
         for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
             String traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
             ITmfTrace trace = new CustomXmlTrace(def);
-            TmfSignalManager.deregister(trace);
             TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_XML_CATEGORY, def.definitionName, trace);
             fTraceTypes.put(traceTypeId, tt);
             traceTypes.add(traceTypeId);
+            // Deregister trace as signal handler because it is only used for validation
+            TmfSignalManager.deregister(trace);
         }
         return traceTypes;
     }
@@ -361,6 +363,7 @@ public final class TmfTraceType {
                 ITmfTrace trace = null;
                 try {
                     trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    // Deregister trace as signal handler because it is only used for validation
                     TmfSignalManager.deregister(trace);
                 } catch (CoreException e) {
                 }

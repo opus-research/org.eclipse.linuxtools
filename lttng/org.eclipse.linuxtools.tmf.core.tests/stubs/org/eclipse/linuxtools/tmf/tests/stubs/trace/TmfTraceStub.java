@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -379,7 +378,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     public void openTrace() {
         TmfSignalManager.dispatchSignal(new TmfTraceOpenedSignal(this, this, null));
         selectTrace();
-        updateTraceRange();
     }
 
     /**
@@ -387,12 +385,5 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
      */
     public void selectTrace() {
         TmfSignalManager.dispatchSignal(new TmfTraceSelectedSignal(this, this));
-    }
-
-    /**
-     * Simulate time range updated
-     */
-    public void updateTraceRange() {
-        TmfSignalManager.dispatchSignal(new TmfTraceRangeUpdatedSignal(this, this, new TmfTimeRange(this.getStartTime(), TmfTimestamp.BIG_CRUNCH)));
     }
 }
