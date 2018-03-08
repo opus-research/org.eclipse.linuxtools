@@ -179,12 +179,7 @@ public class Metadata {
              * We don't want to expose this ANTLR-specific exception type to the
              * outside..
              */
-            try {
-                tempException = new CTFReaderException(e);
-            } catch (IllegalAccessException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
+            tempException = new CTFReaderException(e);
         }
 
         /* Ghetto resource management. Java 7 will deliver us from this... */
