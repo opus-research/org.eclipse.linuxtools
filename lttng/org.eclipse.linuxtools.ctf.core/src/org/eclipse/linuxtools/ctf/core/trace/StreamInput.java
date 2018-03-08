@@ -125,7 +125,7 @@ public class StreamInput implements IDefinitionScope {
 
     /**
      * Gets the filechannel of the streamInput. This is a limited Java
-     * resource.
+     * ressource.
      *
      * @return the filechannel
      */
@@ -143,7 +143,7 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Gets the last read timestamp of a stream. (this is not necessarily the
+     * gets the last read timestamp of a stream. (this is not necessarily the
      * last time in the stream.)
      *
      * @return the last read timestamp
@@ -457,7 +457,7 @@ public class StreamInput implements IDefinitionScope {
 
         /* Read the end timestamp */
         if (tsEnd != null) {
-            if (tsEnd == -1) {
+            if( tsEnd == -1 ) {
                 tsEnd = Long.MAX_VALUE;
             }
             packetIndex.setTimestampEnd(tsEnd.longValue());
