@@ -3,7 +3,6 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.nio.channels.FileChannel;
 import java.util.Set;
@@ -65,7 +64,6 @@ public class StreamInputReaderTest {
     }
 
     private static StreamInputReader getStreamInputReader() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
         CTFTrace trace = TestParams.createTrace();
         Stream s = trace.getStream((long) 0);
         Set<StreamInput> streamInput = s.getStreamInputs();
