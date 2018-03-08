@@ -53,7 +53,7 @@ public class CtfCorePluginTest {
     @Test
     public void testLog() {
         try {
-            Activator.log("Some message");
+            Activator.getDefault().log("Some message");
         } catch (Exception e) {
             fail();
         }

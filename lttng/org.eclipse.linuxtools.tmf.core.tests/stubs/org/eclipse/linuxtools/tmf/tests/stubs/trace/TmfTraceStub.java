@@ -133,7 +133,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         }
         setParser(new TmfEventParserStub(this));
         if (waitForCompletion) {
-            indexTrace(true);
+            indexTrace();
         }
     }
 
@@ -182,6 +182,10 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
             throw new TmfTraceException(e.getMessage());
         }
         setParser(new TmfEventParserStub(this));
+    }
+
+    public void indexTrace() {
+        indexTrace(true);
     }
 
     @Override
