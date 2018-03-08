@@ -48,4 +48,9 @@ public class ControlFlowEvent extends TimeEvent {
     public int getStatus() {
         return fStatus;
     }
+
+    @Override
+    public String toString() {
+        return "ControlFlowEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " status=" + fStatus; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    }
 }
