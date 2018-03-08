@@ -822,12 +822,6 @@
             id="org.eclipse.linuxtools.tmf.ui.batch_import"
             name="%command.batch_import">
       </command>
-      <command
-            categoryId="org.eclipse.linuxtools.tmf.ui.commands.trace.category"
-            description="Export trace to text..."
-            id="org.eclipse.linuxtools.tmf.ui.exportToText"
-            name="Export to text...">
-      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -1129,10 +1123,6 @@
                </iterate>
             </and>
          </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler"
-            commandId="org.eclipse.linuxtools.tmf.ui.exportToText">
       </handler>
    </extension>
    <extension point="org.eclipse.ui.bindings">
