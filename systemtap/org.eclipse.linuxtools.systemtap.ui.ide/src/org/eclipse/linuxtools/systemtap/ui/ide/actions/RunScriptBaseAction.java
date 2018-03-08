@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -34,18 +33,15 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 
 import com.jcraft.jsch.JSchException;
 
@@ -70,29 +66,21 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	protected Subscription subscription;
 	protected int SCRIPT_ID;
 	protected ScriptConsole console;
-	protected IPath path;
 
 	public RunScriptBaseAction() {
 		super();
 	}
 
-	@Override
 	public void dispose() {
 		fWindow= null;
 	}
 
-	@Override
 	public void init(IWorkbenchWindow window) {
 		fWindow= window;
 	}
 
-	@Override
 	public void run(IAction action) {
 		run();
-	}
-
-	public void setPath(IPath path){
-		this.path = path;
 	}
 
 	/**
@@ -122,8 +110,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
             if(continueRun)
             {
             	Display.getDefault().asyncExec(new Runnable() {
-            		@Override
-					public void run() {
+            		public void run() {
             			final ScriptConsole console;
             			if(getRunLocal() == false) {
             				console = ScriptConsole.getInstance(serverfileName);
@@ -147,24 +134,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	protected void scriptConsoleInitialized(ScriptConsole console){
 	}
 
-	/**
-	 * Returns the path that was set for this action. If one was not set it
-	 * returns the path of the current editor in the window this action is
-	 * associated with.
-	 *
-	 * @return The string representation of the path of the script to run.
-	 */
-	protected String getFilePath() {
-		if (path != null){
-			return path.toOSString();
-		}
-		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
-		if(ed.getEditorInput() instanceof PathEditorInput)
-		 return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
-		else
-	     return ResourceUtil.getFile(ed.getEditorInput()).getLocation().toString();
-
-	}
+	protected abstract String getFilePath();
 
 	protected abstract boolean isValid();
 
@@ -346,7 +316,6 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		return EnvironmentVariablesPreferencePage.getEnvironmentVariables();
 	}
 
-	@Override
 	public void selectionChanged(IAction act, ISelection select) {
 		this.act = act;
 		setEnablement(false);
