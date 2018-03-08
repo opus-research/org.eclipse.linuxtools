@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.abstractviewers;
 
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -27,45 +28,44 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 /**
- * This wrapper extends AbstractSTViewer {@link AbstractSTViewer} It is designed to be instantiated with a TableViewer
- * JFace control
- *
+ * This wrapper extends AbstractSTViewer {@link AbstractSTViewer}
+ * It is designed to be instantiated with a TableViewer JFace control
+ *  
  */
 public abstract class AbstractSTTableViewer extends AbstractSTViewer {
-
+	
 	public AbstractSTTableViewer(Composite parent) {
 		super(parent, SWT.BORDER |SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI| SWT.FULL_SELECTION);
 	}
-
-
+	
+	
 	public AbstractSTTableViewer(Composite parent,boolean init) {
 		super(parent,SWT.BORDER |SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI| SWT.FULL_SELECTION,init);
 	}
-
+	
 	public AbstractSTTableViewer(Composite parent, int style) {
 		super(parent,style,true);
 	}
-
+	
 	public AbstractSTTableViewer(Composite parent, int style,boolean init) {
 		super(parent,style,init);
 	}
 
-	/**
-	 * It creates the wrapped TableViewer
-	 * @param parent - the parent Composite
-	 * @param style - the table style
-	 * @return a TableViewer
-	 * @since 4.1
-	 */
 	@Override
-	protected TableViewer createViewer(Composite parent, int style) {
-		Table t = createTable(parent, style);
-		return new TableViewer(t);
+	/*
+	 * It creates the TableViewer wrapped
+	 * @param parent
+	 * @param style
+	 * @return ColumnViewer
+	 */
+	protected ColumnViewer createViewer(Composite parent, int style) {
+		return new TableViewer(
+				createTable(parent, style));
 	}
-
+	
 	/**
 	 * Create the main table control
-	 *
+	 * 
 	 * @param parent
 	 * @return Table
 	 */
@@ -73,14 +73,14 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 		Table table = new Table(parent, style);
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
-
+		
 		return table;
 	}
-
+	
 	@Override
 	/**
 	 * Create the columns in the table.
-	 *
+	 * 
 	 */
 	protected void createColumns() {
 		Table table = getViewer().getTable();
@@ -88,7 +88,7 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 		table.setLayout(layout);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-
+		
 		for (int i = 0; i < getAllFields().length; i++) {
 			ISTDataViewersField field = getAllFields()[i];
 			TableColumn tc = new TableColumn(table, field.getAlignment(), i);
@@ -98,21 +98,20 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 			tc.setWidth(field.getPreferredWidth());
 			tc.setResizable(true);
 			tc.setMoveable(true);
-
+			
 			tc.addSelectionListener(createHeaderListener());
 			tc.setData(field);
-
+			
 			// defining the column label provider.
 			// this has to be done after setting the column's data.
 			TableViewerColumn viewerColumn =
 				new TableViewerColumn(getViewer(), tc);
 			viewerColumn.setLabelProvider(createColumnLabelProvider(tc));
 		}
-
-
+		
+		
 		table.addMouseListener(new MouseAdapter(){
-					@Override
-                    public void mouseDoubleClick(MouseEvent e) {
+					public void mouseDoubleClick(MouseEvent e) {
 						Table table = (Table)e.widget;
 						TableItem item = table.getItem(new Point(e.x,e.y));
 						if (item != null){
@@ -122,52 +121,50 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 									Rectangle bounds = item.getBounds(i);
 									if (bounds.contains(e.x,e.y)){
 										handleHyperlink(field,item.getData());
-										return;
 									}
 								}
 							}
 						}
 					}
 				});
-
+			
 		table.addMouseMoveListener(new MouseMoveListener(){
-
+			
 						@Override
 						public void mouseMove(MouseEvent e) {
 							Table table = (Table)e.widget;
 							TableItem item = table.getItem(new Point(e.x,e.y));
 							if (item == null) return;
-
+			
 							for(int i=0;i<table.getColumnCount();i++){
 								ISTDataViewersField field = getAllFields()[i];
 								Cursor cursor = null ;
 								if (field.isHyperLink(item.getData())){
 									Rectangle bounds = item.getBounds(i);
 								if (bounds.contains(e.x,e.y)){
-										cursor = e.display.getSystemCursor(SWT.CURSOR_HAND);
+										cursor = new Cursor(e.display,SWT.CURSOR_HAND);
 										table.setCursor(cursor);
 										return;
 									}
 								}
-								cursor = e.display.getSystemCursor(SWT.CURSOR_ARROW);
+								cursor = new Cursor(e.display,SWT.CURSOR_ARROW);
 								table.setCursor(cursor);
 							}
-
+			
 						}
-
+			
 					});
 	}
-
-	/**
+	
+	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getColumns()
-     * @since 4.1
 	 */
 	@Override
-	public TableColumn[] getColumns() {
+	public Item[] getColumns() {
 		return getViewer().getTable().getColumns();
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#updateDirectionIndicator(org.eclipse.swt.widgets.Item)
@@ -180,34 +177,31 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 		else
 			getViewer().getTable().setSortDirection(SWT.DOWN);
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getColumnOrder()
 	 */
-	@Override
-    public int[] getColumnOrder() {
+	public int[] getColumnOrder() {
 		return getViewer().getTable().getColumnOrder();
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#setColumnOrder(int[])
 	 */
-	@Override
-    protected void setColumnOrder(int[] order) {
+	protected void setColumnOrder(int[] order) {
 		getViewer().getTable().setColumnOrder(order);
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getColumnIndex(org.eclipse.swt.widgets.Item)
 	 */
-	@Override
-    public int getColumnIndex(Item column) {
+	public int getColumnIndex(Item column) {
 		return getViewer().getTable().indexOf((TableColumn)column);
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getColumnWidth(org.eclipse.swt.widgets.Item)
@@ -234,16 +228,15 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 	public void setColumnWidth(Item column, int width) {
 		((TableColumn)column).setWidth(width);
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getViewer()
 	 */
-	@Override
-    public TableViewer getViewer() {
+	public TableViewer getViewer() {
 		return (TableViewer)super.getViewer();
 	}
-
+	
 
 	public void handleHyperlink(ISTDataViewersField field,Object data){};
 }

@@ -46,14 +46,14 @@ public abstract class AGraph extends AChart {
 		maxItems = store.getInt(GraphingAPIPreferenceConstants.P_MAX_DATA_ITEMS);
 		viewableItems = store.getInt(GraphingAPIPreferenceConstants.P_VIEWABLE_DATA_ITEMS);
 		
-		createAxis(Localization.getString("AGraph.xAxis"), xSeriesTicks, GraphAxis.HORIZONTAL); //$NON-NLS-1$
-		createAxis(Localization.getString("AGraph.yAxis"), ySeriesTicks, GraphAxis.VERTICAL); //$NON-NLS-1$
+		createAxis(Localization.getString("AGraph.xAxis"), xSeriesTicks, GraphAxis.HORIZONTAL);
+		createAxis(Localization.getString("AGraph.yAxis"), ySeriesTicks, GraphAxis.VERTICAL);
 		
 		GraphingAPIUIPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
 		
-		parent.addCheckOption(Localization.getString("AGraph.GridLines"), gridListener); //$NON-NLS-1$
+		parent.addCheckOption(Localization.getString("AGraph.GridLines"), gridListener);
 		if(adapter.getSeriesCount() > 1)
-			parent.addCheckOption(Localization.getString("AGraph.Normalize"), normalizeListener); //$NON-NLS-1$
+			parent.addCheckOption(Localization.getString("AGraph.Normalize"), normalizeListener);
 	}
 	
 	protected void createAxis(String title, int tickCount, int style) {
@@ -77,6 +77,8 @@ public abstract class AGraph extends AChart {
 		DataPoint p;
 		Object o;
 		
+		//System.out.println("defaults:" + minX + " " + minY + " " + maxX + " " + maxY);
+		
 		for(int j=0; j<elementList.length; j++) {
 			for(int i=lBound; i<uBound; i++) {
 				o = elementList[j].get(i);
@@ -88,14 +90,25 @@ public abstract class AGraph extends AChart {
 			}
 		}
 		
+		//This is to attempt to keep the data series a constant width apart
+		//if(uBound < viewableItems && adapter instanceof ScrollAdapter)
+			//minX = maxX - (int)(((maxX-minX)/(uBound-1.0))*(viewableItems-1));
+		
+		
 		return new Rectangle(minX, minY, maxX-minX, maxY-minY);
 	}
 	
 	private synchronized void rebound() {
 		getDisplay().syncExec(new Runnable() {
+			boolean stop = false;
 			public void run() {
-				setGlobalArea(getArea(maxItems));
-				setLocalArea(getArea(viewableItems));
+				if(stop) return;
+				try {
+					setGlobalArea(getArea(maxItems));
+					setLocalArea(getArea(viewableItems));
+				} catch (Exception e) {
+					stop = true;
+				}
 			}
 		});
 	}
@@ -115,7 +128,7 @@ public abstract class AGraph extends AChart {
 	public void addSeriesAxis(int series) {
 		if(selectedSeries != (series+1)) {
 			removeSeriesAxis();
-			seriesAxis = new GraphAxis2(this, Localization.getString("AGraph.SeriesAxis"), ySeriesTicks, //$NON-NLS-1$
+			seriesAxis = new GraphAxis2(this, Localization.getString("AGraph.SeriesAxis"), ySeriesTicks,
 					GraphAxis2.ALIGN_RIGHT | 
 					GraphAxis2.HIDE_GRID_LINES | 
 					GraphAxis2.UNNORMALIZED | 
@@ -141,9 +154,8 @@ public abstract class AGraph extends AChart {
 	
 	@Override
 	protected void paintAll(GC gc) {
-		for(GraphAxis axis: axes) {
-			axis.paint(gc);
-		}
+		for(int i = 0; i < axes.size(); i++)
+			axes.get(i).paint(gc);
 		super.paintAll(gc);
 	}
 
@@ -151,8 +163,8 @@ public abstract class AGraph extends AChart {
 	public void dispose() {
 		GraphingAPIUIPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
 
-		parent.removeCheckOption(Localization.getString("AGraph.Normalize")); //$NON-NLS-1$
-		parent.removeCheckOption(Localization.getString("AGraph.GridLines")); //$NON-NLS-1$
+		parent.removeCheckOption(Localization.getString("AGraph.Normalize"));
+		parent.removeCheckOption(Localization.getString("AGraph.GridLines"));
 
 		normalizeListener = null;
 		gridListener = null;
@@ -177,17 +189,19 @@ public abstract class AGraph extends AChart {
 				viewableItems = store.getInt(GraphingAPIPreferenceConstants.P_VIEWABLE_DATA_ITEMS);
 			else if(event.getProperty().equals(GraphingAPIPreferenceConstants.P_X_SERIES_TICKS)) {
 				xSeriesTicks = store.getInt(GraphingAPIPreferenceConstants.P_X_SERIES_TICKS);
-				for(GraphAxis a: axes) {
-					if(GraphAxis.HORIZONTAL == a.getType()) {
+				GraphAxis a;
+				for(int i=0; i<axes.size(); i++) {
+					a = axes.get(i);
+					if(GraphAxis.HORIZONTAL == a.getType())
 						a.setTickCount(xSeriesTicks);
-					}
 				}
 			} else if(event.getProperty().equals(GraphingAPIPreferenceConstants.P_Y_SERIES_TICKS)) {
 				ySeriesTicks = store.getInt(GraphingAPIPreferenceConstants.P_Y_SERIES_TICKS);
-				for(GraphAxis a:axes) {
-					if(GraphAxis.VERTICAL == a.getType()) {
+				GraphAxis a;
+				for(int i=0; i<axes.size(); i++) {
+					a = axes.get(i);
+					if(GraphAxis.VERTICAL == a.getType())
 						a.setTickCount(ySeriesTicks);
-					}
 				}
 			} else if(event.getProperty().equals(GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES)) {
 				showXGrid = store.getBoolean(GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES);

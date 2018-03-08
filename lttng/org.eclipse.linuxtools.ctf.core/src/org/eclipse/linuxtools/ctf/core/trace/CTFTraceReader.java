@@ -19,11 +19,13 @@ import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.Activator;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputReaderTimestampComparator;
 
 /**
  * A CTF trace reader. Reads the events of a trace.
- *
+ * 
  * @version 1.0
  * @author Matthew Khouzam
  * @author Alexandre Montplaisir
@@ -63,6 +65,10 @@ public class CTFTraceReader {
      * Timestamp of the last event read so far
      */
     private long endTime;
+
+    protected void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -113,19 +119,6 @@ public class CTFTraceReader {
         return newReader;
     }
 
-    /**
-     * Dispose the CTFTraceReader
-     * @since 2.0
-     */
-    public void dispose() {
-        for (StreamInputReader reader : streamInputReaders) {
-            if (reader != null) {
-                reader.dispose();
-            }
-        }
-        streamInputReaders.clear();
-    }
-
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
@@ -138,17 +131,6 @@ public class CTFTraceReader {
     public long getStartTime() {
         return this.startTime;
     }
-
-    /**
-     * Set the trace's end time
-     *
-     * @param endTime
-     *            The end time to use
-     */
-    protected void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
-
 
     // ------------------------------------------------------------------------
     // Operations
@@ -262,7 +244,8 @@ public class CTFTraceReader {
              * Add it back in the queue.
              */
             this.prio.add(top);
-            final long topEnd = this.trace.timestampCyclesToNanos(top.getCurrentEvent().getTimestamp());
+            final long topEnd = top.getCurrentEvent().getTimestamp()
+                    + this.getTrace().getOffset();
             this.setEndTime(Math.max(topEnd, this.getEndTime()));
             this.eventCountPerTraceFile[top.getName()]++;
 

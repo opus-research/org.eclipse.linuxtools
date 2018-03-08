@@ -17,6 +17,7 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.GraphingPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -25,50 +26,66 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 public class GraphPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public GraphPreferencePage() {
 		super(GRID);
+		LogManager.logDebug("Start GraphPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(GraphingPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("GraphPreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
+		//setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
+		setDescription(Localization.getString("GraphPreferencePage.GraphDisplayPreferences"));
+		LogManager.logDebug("End GraphPreferencePage:", this); //$NON-NLS-1$
 	}
-
+	
 	@Override
 	public void createFieldEditors() {
+		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
+
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES,
-				Localization.getString("GraphPreferencePage.ShowXGridLines"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.ShowXGridLines"),
 				getFieldEditorParent()));
 
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_SHOW_Y_GRID_LINES,
-				Localization.getString("GraphPreferencePage.ShowYGridLines"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.ShowYGridLines"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_MAX_DATA_ITEMS,
-				Localization.getString("GraphPreferencePage.MaxDataItems"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.MaxDataItems"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_VIEWABLE_DATA_ITEMS,
-				Localization.getString("GraphPreferencePage.ViewableDataItems"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.ViewableDataItems"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_X_SERIES_TICKS,
-				Localization.getString("GraphPreferencePage.XSeriesTicks"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.XSeriesTicks"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_Y_SERIES_TICKS,
-				Localization.getString("GraphPreferencePage.YSeriesTicks"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.YSeriesTicks"),
 				getFieldEditorParent()));
-
+		
+		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
 	}
 
 	public void init(IWorkbench workbench) {
+		LogManager.logDebug("Start init:", this); //$NON-NLS-1$
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
+		LogManager.logDebug("End init:", this); //$NON-NLS-1$
 	}
-
+	
+	@Override
+	public void dispose() {
+		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
+		super.dispose();
+		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
+	}
 }
 

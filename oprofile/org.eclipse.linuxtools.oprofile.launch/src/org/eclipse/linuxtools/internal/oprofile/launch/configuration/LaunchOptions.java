@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -43,7 +42,7 @@ public class LaunchOptions {
 	public boolean isValid() {
 		IRemoteFileProxy proxy = null;
 		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(getOprofileProject());
+			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -56,15 +55,7 @@ public class LaunchOptions {
 		
 		return true;
 	}
-
-	/**
-	 * Get project to profile
-	 * @return IProject project to profile
-	 */
-	protected IProject getOprofileProject(){
-		return Oprofile.OprofileProject.getProject();
-	}
-
+	
 	/**
 	 * Saves the global options of this object into the specified launch
 	 * configuration
