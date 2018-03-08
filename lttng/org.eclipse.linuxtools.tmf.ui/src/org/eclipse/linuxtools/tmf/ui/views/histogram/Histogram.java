@@ -826,7 +826,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
     @Override
     public void mouseDown(final MouseEvent event) {
-        if (event.button == 1 && fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
+        if (fScaledData != null && event.button == 1 && fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
             fDragState = DRAG_SELECTION;
             fDragButton = event.button;
             if ((event.stateMask & SWT.MODIFIER_MASK) == SWT.SHIFT) {
