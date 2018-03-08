@@ -13,6 +13,8 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
+import java.util.Map;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
@@ -202,10 +204,10 @@ public interface ITmfTrace extends ITmfDataProvider {
     public long getStreamingInterval();
 
     /**
-     * @return The state system associated with this trace
+     * @return The state systems that are associated with this trace
      * @since 2.0
      */
-    public IStateSystemQuerier getStateSystem();
+    public Map<String, IStateSystemQuerier> getStateSystems();
 
     // ------------------------------------------------------------------------
     // Trace positioning getters

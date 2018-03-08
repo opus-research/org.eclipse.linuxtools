@@ -103,7 +103,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
         Map<String, String> retMap = new LinkedHashMap<String, String>();
         if (event instanceof ControlFlowEvent) {
             ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-            IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
+            IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
             int tid = entry.getThreadId();
 
             try {
