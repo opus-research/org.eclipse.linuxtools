@@ -213,9 +213,6 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
                 LttngKernelAnalysisModule module = ctfKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-                if (module == null) {
-                    return;
-                }
                 module.schedule();
                 if (!module.waitForCompletion(new NullProgressMonitor())) {
                     return;

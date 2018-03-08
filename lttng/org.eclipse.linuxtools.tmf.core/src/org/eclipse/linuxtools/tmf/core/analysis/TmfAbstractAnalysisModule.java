@@ -250,12 +250,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             fStarted = true;
         }
 
-        // Tell the trace that a request is pending (done the in Job below)
-
-        if (fTrace != null) {
-            fTrace.notifyPendingRequest(false);
-        }
-
         /*
          * Actual analysis will be run on a separate thread
          */
@@ -266,18 +260,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                     monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                     broadcast(new TmfStartAnalysisSignal(TmfAbstractAnalysisModule.this, TmfAbstractAnalysisModule.this));
                     fAnalysisCancelled = !executeAnalysis(monitor);
-
-                    // Note:
-                    // execute Analysis is waiting for completion of the state system request
-                    // but the request never actually never dispatch because of the pending flag
-                    // We need to decrement the flag after sending the state system request
-                    //
-
-                    // ... and also we need to decrement the flag here for the case the
-                    // state system was already build
-                    if (fTrace != null) {
-                        fTrace.notifyPendingRequest(false);
-                    }
                 } catch (TmfAnalysisException e) {
                     Activator.logError("Error executing analysis with trace " + getTrace().getName(), e); //$NON-NLS-1$
                 } finally {
