@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -49,13 +48,6 @@ public class ScriptConsole extends IOConsole {
 
 	private ErrorStreamDaemon errorDaemon;
 	private ConsoleStreamDaemon consoleDaemon;
-
-	public static abstract class ActiveConsoleObserver {
-		abstract protected void activeConsoleRunning(boolean running);
-	}
-
-	private static LinkedList<ActiveConsoleObserver> activeConsoleObservers
-		= new LinkedList<ScriptConsole.ActiveConsoleObserver>();
 
 	/**
 	 * This method is used to get a reference to a <code>ScriptConsole</code>.  If there
@@ -103,16 +95,6 @@ public class ScriptConsole extends IOConsole {
 	public static boolean isActiveConsoleRunning(){
 		ScriptConsole active = getActive();
 		return (active != null && getActive().isRunning());
-	}
-
-	public static void addActiveConsoleObserver (ActiveConsoleObserver observer){
-		activeConsoleObservers.add(observer);
-	}
-
-	private static void notifyActiveConsoleObservers(boolean running){
-		for (ActiveConsoleObserver observer : activeConsoleObservers) {
-			observer.activeConsoleRunning(running);
-		}
 	}
 
 	/**
@@ -204,7 +186,6 @@ public class ScriptConsole extends IOConsole {
         cmd.addInputStreamListener(consoleDaemon);
         cmd.start();
         activate();
-        notifyActiveConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
 	}
 
@@ -260,7 +241,7 @@ public class ScriptConsole extends IOConsole {
 	public synchronized void stop() {
 		  if(isRunning()) {
 			  // Remove the readers so the process is not blocked
-			  // on writing to console
+			  // on writing to console 
 			  cmd.removeErrorStreamListener(errorDaemon);
 			  cmd.removeInputStreamListener(consoleDaemon);
 
@@ -269,7 +250,6 @@ public class ScriptConsole extends IOConsole {
 
 			  // Stop the command
 			  cmd.stop();
-			  notifyActiveConsoleObservers(false);
               setName(Localization.getString("ScriptConsole.Terminated") + super.getName()); //$NON-NLS-1$
 		}
 	}
