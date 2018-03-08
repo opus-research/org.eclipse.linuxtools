@@ -27,6 +27,7 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
     // Attributes
     // ------------------------------------------------------------------------
     private TraceDomainComponent fDomain;
+    private TargetNodeComponent fTargetNodeComponent;
     private ChannelInfo fChannelInfo;
     private boolean fIsKernel;
 
@@ -83,6 +84,6 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
 
     @Override
     public void setTargetNodeComponent(TargetNodeComponent node) {
-        // Do nothing
+        fTargetNodeComponent = node;
     }
 }
