@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.rpm.createrepo;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoPreferenceConstants;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -37,6 +38,7 @@ public class Activator extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
+	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
@@ -46,6 +48,7 @@ public class Activator extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
@@ -69,6 +72,26 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+	}
+
+	/**
+	 * Get the enabled status of using the project specific settings of
+	 * createrepo.
+	 *
+	 * @return True if it is being used, false otherwise.
+	 */
+	public static boolean isProjectPrefEnabled() {
+		return getDefault().getPreferenceStore().getBoolean(CreaterepoPreferenceConstants.PREF_GENERAL_ENABLED);
+	}
+
+	/**
+	 * Get the enabled status of using the delta preferences of
+	 * createrepo.
+	 *
+	 * @return True if it is being used, false otherwise.
+	 */
+	public static boolean isDeltaPrefEnabled() {
+		return getDefault().getPreferenceStore().getBoolean(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE);
 	}
 
 	/**

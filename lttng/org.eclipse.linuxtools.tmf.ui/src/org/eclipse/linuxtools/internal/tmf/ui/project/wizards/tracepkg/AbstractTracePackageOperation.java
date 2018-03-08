@@ -139,6 +139,25 @@ abstract public class AbstractTracePackageOperation {
     }
 
     /**
+     * Returns whether or not the Files element is checked under the given trace
+     * package element
+     *
+     * @param tracePackageElement
+     *            the trace package element
+     * @return whether or not the Files element is checked under the given trace
+     *         package element
+     */
+    public static boolean isFilesChecked(TracePackageElement tracePackageElement) {
+        for (TracePackageElement element : tracePackageElement.getChildren()) {
+            if (element instanceof TracePackageFilesElement) {
+                return element.isChecked();
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Common interface between ZipEntry and TarEntry
      */
     protected interface ArchiveEntry {
@@ -199,7 +218,7 @@ abstract public class AbstractTracePackageOperation {
 
         @Override
         public Enumeration<? extends ArchiveEntry> entries() {
-            Vector<ArchiveEntry> v = new Vector<ArchiveEntry>();
+            Vector<ArchiveEntry> v = new Vector<>();
             for (Enumeration<?> e = fTarFile.entries(); e.hasMoreElements();) {
                 v.add(new TarArchiveEntry((TarEntry) e.nextElement()));
             }
@@ -310,7 +329,7 @@ abstract public class AbstractTracePackageOperation {
 
         @Override
         public Enumeration<? extends ArchiveEntry> entries() {
-            Vector<ArchiveEntry> v = new Vector<ArchiveEntry>();
+            Vector<ArchiveEntry> v = new Vector<>();
             for (Enumeration<?> e = fZipFile.entries(); e.hasMoreElements();) {
                 v.add(new ZipAchiveEntry((ZipEntry) e.nextElement()));
             }

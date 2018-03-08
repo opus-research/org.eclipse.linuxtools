@@ -53,14 +53,14 @@ public final class AttributeTree {
     }
 
     /**
-     * "Existing file" constructor Builds a attribute tree from a "mapping file"
-     * or mapping section previously saved somewhere.
+     * "Existing file" constructor. Builds an attribute tree from a
+     * "mapping file" or mapping section previously saved somewhere.
      *
      * @param ss
      *            StateSystem to which this AT is attached
      * @param fis
      *            File stream where to read the AT information. Make sure it's
-     *            seeked at the right place!
+     *            sought at the right place!
      * @throws IOException
      */
     AttributeTree(StateSystem ss, FileInputStream fis) throws IOException {
@@ -70,7 +70,7 @@ public final class AttributeTree {
         /* Message for exceptions, shouldn't be externalized */
         final String errorMessage = "The attribute tree file section is either invalid or corrupted."; //$NON-NLS-1$
 
-        ArrayList<String[]> list = new ArrayList<String[]>();
+        ArrayList<String[]> list = new ArrayList<>();
         byte[] curByteArray;
         String curFullString;
         String[] curStringArray;
@@ -138,17 +138,15 @@ public final class AttributeTree {
      * FileOutputStream defines where (which file/position).
      *
      * @param fos
-     *            Where to write. Make sure it's seeked at the right position
+     *            Where to write. Make sure it's sought at the right position
      *            you want.
      * @return The total number of bytes written.
      */
     int writeSelf(File file, long pos) {
-        RandomAccessFile raf = null;
         int total = 0;
         byte[] curByteArray;
 
-        try {
-            raf = new RandomAccessFile(file, "rw"); //$NON-NLS-1$
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw");) { //$NON-NLS-1$
             raf.seek(pos);
 
             /* Write the almost-magic number */
@@ -186,14 +184,6 @@ public final class AttributeTree {
 
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (raf != null) {
-                try {
-                    raf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return total;
     }
@@ -329,7 +319,7 @@ public final class AttributeTree {
      */
     List<Integer> getSubAttributes(int attributeQuark, boolean recursive)
             throws AttributeNotFoundException {
-        List<Integer> listOfChildren = new ArrayList<Integer>();
+        List<Integer> listOfChildren = new ArrayList<>();
         Attribute startingAttribute;
 
         /* Check if the quark is valid */

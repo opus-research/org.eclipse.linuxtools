@@ -169,6 +169,7 @@ public class TestCreateSystemtapScript {
 	}
 
 	public static void createScript(SWTWorkbenchBot bot, String scriptName) {
+
 		SWTBotMenu fileMenu = bot.menu("File");
 		SWTBotMenu newMenu = fileMenu.menu("New");
 		SWTBotMenu projectMenu = newMenu.menu("Other...");
@@ -498,68 +499,6 @@ public class TestCreateSystemtapScript {
 		assertEquals("3", dataTable.cell(3, 2));
 	}
 
-	@Test
-	public void testGenerateFromPrintf() {
-		String scriptName = "testGenerates.stp";
-		createScript(bot, scriptName);
-
-		// Write a script
-		SWTBotEclipseEditor editor = bot.editorByTitle(scriptName).toTextEditor();
-		editor.setText("#!/usr/bin/env stap"
-				+ "\nglobal i,j,k,a"
-				+ "\nprobe begin{i=0;j=5;k=20;a=65}"
-				+ "\n#probe begin{printf(\"%1b%1b%1blo %1b%1brld\\n\", 72,101,108,87,111)}"
-				+ "\nprobe timer.ms(100){printf(\"%5i|\\n%10.5d|\\n%-10.5i|\\n%05c\\n\",i,j,k,a);i++;j+=5;k+=20;a++}"
-				+ "\n//printf(\"this is a comment\\n\");"
-				+ "\n/*printf(\"this is a...\\n\");"
-				+ "\nprintf(\"...multiline comment\\n\");*/"
-				+ "\nprobe begin{b = sprintf(\"Here\"); printf(\"-->%s<--\\n\", b)}"
-				+ "\nprobe timer.ms(100){printf(\"%x - %#x - %#X\\n\",i,i,i);}"
-				+ "\nprobe timer.ms(100){printf(\"%o - %#o\\n\",i,i);}"
-				+ "\nprobe begin{printf(\"%1b-\\\\n-%p\\n\", 65, 0x8000000002345678)}");
-		editor.save();
-
-		openRunConfigurations(scriptName);
-		SWTBotShell shell = bot.shell("Run Configurations");
-		shell.setFocus();
-		SWTBotTree runConfigurationsTree = bot.tree();
-		runConfigurationsTree.select("SystemTap").contextMenu("New").click();
-
-		// Select the "Graphing" tab.
-		SWTBotCTabItem tab = bot.cTabItem(Messages.SystemTapScriptGraphOptionsTab_7);
-		tab.activate();
-
-		// Generate regexs.
-		bot.checkBox(Messages.SystemTapScriptGraphOptionsTab_2).click();
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsButton).click();
-
-		SWTBotShell shell2 = bot.shell(Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsTitle);
-		shell2.setFocus();
-		bot.button("Yes").click();
-		bot.waitUntil(new ShellIsClosed(shell2));
-		shell.setFocus();
-
-		SWTBotCombo combo = bot.comboBoxWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
-		assertEquals(9, combo.itemCount()); // One extra entry for "Add New Regex"
-
-		String[] expectedRegexs = new String[]{
-				" {0,4}(-?\\d+)\\|",
-				" {0,9}(-?\\d+)\\|",
-				"(-?\\d+) {0,9}\\|",
-				" {0,4}(.)",
-				"-->(.+)<--",
-				"([a-f0-9]+) - (0x[a-f0-9]+) - (0X[A-F0-9]+)",
-				"(\\d+) - (0\\d+)",
-				"(.)-\\\\n-(0x[a-f0-9]+)",
-				Messages.SystemTapScriptGraphOptionsTab_regexAddNew
-		};
-		for (int i = 0, n = combo.itemCount(); i < n; i++) {
-			assertEquals(expectedRegexs[i], combo.items()[i]);
-		}
-		bot.button("Apply").click();
-		bot.button("Close").click();
-	}
-
 	private void openRunConfigurations(String scriptName) {
 		// Focus on project explorer view.
 		bot.viewByTitle("Project Explorer").setFocus();
@@ -584,7 +523,7 @@ public class TestCreateSystemtapScript {
 		assertEquals(title, text.getText());
 
 		SWTBotCombo combo_x = bot.comboBoxWithLabel("X Series:");
-		assertEquals(3, combo_x.itemCount()); // X Series includes "Row ID" as a selection
+		assertEquals(3, combo_x.itemCount()); // X Series includes "Row Num" as a selection
 		SWTBotCombo combo_y0 = bot.comboBoxWithLabel("Y Series 0:");
 		assertEquals(2, combo_y0.itemCount()); // Y Series 0 only includes series entries
 		combo_y0.setSelection(0);

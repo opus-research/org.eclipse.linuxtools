@@ -72,7 +72,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	 * @return The path of the chosen script the Run Configuration will be applied to,
 	 * or <code>null</code> if no file exists at the given path.
 	 */
-	IPath getScriptPath() {
+	private IPath getScriptPath() {
 		IPath scriptPath = new Path(scriptPathText.getText());
 		return scriptPath.toFile().exists() ? scriptPath : null;
 	}
@@ -285,16 +285,19 @@ public class SystemTapScriptLaunchConfigurationTab extends
 
 		IPath scriptPath = getScriptPath();
 		if (scriptPath == null) {
-			setErrorMessage(MessageFormat.format(Messages.SystemTapScriptLaunchConfigurationTab_couldNotFindFile, scriptPathText.getText()));
+			setErrorMessage(MessageFormat.format(Messages.SystemTapScriptLaunchConfigurationTab_fileNotFound, scriptPathText.getText()));
 			return false;
 		}
-		if (!scriptPath.getFileExtension().equals("stp")) { //$NON-NLS-1$
+		String extension = scriptPath.getFileExtension();
+		if (extension == null || !extension.equals("stp")) { //$NON-NLS-1$
 			setErrorMessage(Messages.SystemTapScriptLaunchConfigurationTab_fileNotStp);
+			return false;
 		}
 
 		return true;
 	}
 
+	@Override
 	public String getName() {
 		return Messages.SystemTapScriptLaunchConfigurationTab_9;
 	}

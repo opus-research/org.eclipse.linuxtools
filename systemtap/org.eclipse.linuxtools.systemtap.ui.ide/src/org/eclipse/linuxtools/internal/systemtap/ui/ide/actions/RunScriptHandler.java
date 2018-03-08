@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,10 @@ import java.util.regex.Pattern;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandlerListener;
+import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -45,10 +50,14 @@ import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentV
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
-
 import com.jcraft.jsch.JSchException;
 
 /**
@@ -67,11 +76,14 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	protected boolean continueRun = true;
 	private boolean runLocal = true;
+	private IEditorPart ed = null;
+	private Shell shell = null;
 	private String fileName = null;
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private List<String> cmdList;
+	private IProject project;
+	private final List<String> cmdList;
 
 
 	public RunScriptHandler(){
@@ -83,6 +95,64 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	public void setPath(IPath path){
 		this.path = path;
+		URI uri = URIUtil.toURI(path);
+		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
+		if (files.length > 0)
+			this.project = files[0].getProject();
+	}
+	
+	/**
+	 * @since 2.1
+	 */
+	public IProject getProject() {
+		return project;
+	}
+
+	/**
+	 * Finds the editor containing the target script to run, so the script can be saved
+	 * when it is run, if appropriate.
+	 * The script is saved when it is run with the "simple" run button on the toolbar (path == null),
+	 * or if the script is outside of a project (working with a PathEditorInput).
+	 */
+	private void findTargetEditor() {
+		ed = null;
+		shell = null;
+
+		if (path == null) {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			ed = window.getActivePage().getActiveEditor();
+			shell = window.getShell();
+			return;
+		}
+
+		for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+			IEditorPart ed_test = window.getActivePage().getActiveEditor();
+			if (matchesEditor(ed_test.getEditorInput(), ed_test, window.getShell())) {
+				return;
+			}
+			for (IEditorReference ref : window.getActivePage().getEditorReferences()) {
+				try {
+					if (matchesEditor(ref.getEditorInput(), ref.getEditor(false), window.getShell())) {
+						return;
+					}
+				} catch (PartInitException e) {
+					continue;
+				}
+			}
+		}
+	}
+
+	private boolean matchesEditor(IEditorInput input, IEditorPart editor, Shell shell) {
+		if (input instanceof IPathEditorInput && ((IPathEditorInput) (input)).getPath().equals(this.path)) {
+			// Only save the editor when working with a file without a project (PathEditorInput),
+			// otherwise the editor isn't needed at all (saving is handled elsewhere in that case).
+			if (input instanceof PathEditorInput) {
+				this.ed = editor;
+				this.shell = shell;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -92,7 +162,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	@Override
 	public Object execute(ExecutionEvent event){
-
+		findTargetEditor();
 		if(isValid()) {
 			if(getRunLocal() == false) {
 				try{
@@ -125,7 +195,7 @@ public class RunScriptHandler extends AbstractHandler {
             				console.run(script, envVars, new StapErrorParser());
             			} else {
             				console = ScriptConsole.getInstance(fileName);
-            				console.runLocally(script, envVars, new StapErrorParser());
+            				console.runLocally(script, envVars, new StapErrorParser(), getProject());
             			}
                         scriptConsoleInitialized(console);
             		}
@@ -156,7 +226,9 @@ public class RunScriptHandler extends AbstractHandler {
 		if (path != null){
 			return path.toOSString();
 		}
-		IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (ed == null) {
+			return ""; //$NON-NLS-1$
+		}
 		if(ed.getEditorInput() instanceof PathEditorInput){
 			return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
 		} else {
@@ -172,26 +244,30 @@ public class RunScriptHandler extends AbstractHandler {
 	private boolean isValid() {
 		// If the path is not set this action will run the script from
 		// the active editor
-		if (this.path == null){
-			IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			if(!isValidEditor(ed)){
+		if(!tryEditorSave()){
+			if (this.path == null){
+				String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null); //$NON-NLS-1$
+				MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
 				return false;
 			}
 		}
-
-		return this.getFilePath().endsWith(".stp") //$NON-NLS-1$
-				&& isValidDirectory(this.getFilePath());
+		String filePath = this.getFilePath();
+		return filePath.endsWith(".stp") //$NON-NLS-1$
+				&& isValidDirectory(filePath);
 	}
 
-	private boolean isValidEditor(IEditorPart ed) {
+	private boolean tryEditorSave() {
 		if(null == ed) {
-			String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null); //$NON-NLS-1$
-			MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
 			return false;
 		}
 
 		if(ed.isDirty()) {
-			ed.doSave(new ProgressMonitorPart(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new FillLayout()));
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					ed.doSave(new ProgressMonitorPart(shell, new FillLayout()));
+				}
+			});
 		}
 
 		return true;
