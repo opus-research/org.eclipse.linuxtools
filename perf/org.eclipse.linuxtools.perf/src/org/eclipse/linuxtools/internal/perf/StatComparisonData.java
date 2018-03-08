@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.linuxtools.internal.perf.handlers.Messages;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry.Type;
@@ -28,12 +27,19 @@ import org.eclipse.linuxtools.internal.perf.model.PMStatEntry.Type;
  * Class containing all functionality for comparting perf statistics data.
  */
 public class StatComparisonData {
-	private IFile oldFile;
-	private IFile newFile;
+	// Old stats file.
+	private File oldFile;
+
+	// New stats file.
+	private File newFile;
+
+	// Comparison result string.
 	private String result = ""; //$NON-NLS-1$
+
+	// Title for this comparison run.
 	private String title;
 
-	public StatComparisonData(String title, IFile oldFile, IFile newFile) {
+	public StatComparisonData(String title, File oldFile, File newFile) {
 		this.title = title;
 		this.oldFile = oldFile;
 		this.newFile = newFile;
@@ -47,6 +53,9 @@ public class StatComparisonData {
 		return title;
 	}
 
+	/**
+	 * Compare stat data files and store the result in the result field.
+	 */
 	public void runComparison() {
 		ArrayList<PMStatEntry> statsDiff = getComparisonStats();
 
@@ -74,6 +83,11 @@ public class StatComparisonData {
 		}
 	}
 
+	/**
+	 * Return a PMStatEntry array with the result of the comparison between the
+	 * old and new stat data files
+	 * @return
+	 */
 	public ArrayList<PMStatEntry> getComparisonStats() {
 		ArrayList<PMStatEntry> oldStats = collectStats(oldFile);
 		ArrayList<PMStatEntry> newStats = collectStats(newFile);
@@ -91,9 +105,14 @@ public class StatComparisonData {
 		return result;
 	}
 
-	public ArrayList<PMStatEntry> collectStats(IFile file) {
+	/**
+	 * Collect statistics entries from the specified stat data file.
+	 *
+	 * @param file file to collect from
+	 * @return List containing statistics entries from the given file.
+	 */
+	public static ArrayList<PMStatEntry> collectStats(File statFile) {
 		ArrayList<PMStatEntry> result = new ArrayList<PMStatEntry>();
-		File statFile = file.getLocation().toFile();
 		BufferedReader statReader = null;
 		try {
 			statReader = new BufferedReader(new FileReader(statFile));
@@ -153,7 +172,9 @@ public class StatComparisonData {
 			PerfPlugin.getDefault().openError(e, Messages.MsgError);
 		} finally {
 			try {
-				statReader.close();
+				if (statReader != null) {
+					statReader.close();
+				}
 			} catch (IOException e) {
 				PerfPlugin.getDefault().openError(e, Messages.PerfResourceLeak_title);
 			}
@@ -162,6 +183,13 @@ public class StatComparisonData {
 		return result;
 	}
 
+	/**
+	 * Get formatting string from unformatted table.
+	 *
+	 * @param table array to construct formatting for.
+	 * @return Formatting string representing the proper way to format the given
+	 *         table.
+	 */
 	public String getFormat(String[][] table) {
 		// all entries have the same number of columns
 		int[] maxCharLen = new int[table[0].length];
@@ -187,10 +215,17 @@ public class StatComparisonData {
 		return entryFormat;
 	}
 
+	/**
+	 * Get float representation of specified string.
+	 *
+	 * @param str String convert
+	 * @return Float representation of string.
+	 */
 	public static float toFloat(String str) {
 		try {
 			// remove commas from number string representation
-			return (str == null) ? 0 : Float.parseFloat(str.replace(",", "")); //$NON-NLS-1$//$NON-NLS-2$
+			return (str == null) ? 0
+					: Float.parseFloat(str.replace(",", "")); //$NON-NLS-1$//$NON-NLS-2$
 		} catch (NumberFormatException e) {
 			return 0;
 		}
