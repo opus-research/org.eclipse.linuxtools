@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.rpm.createrepo.wizard;
 
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 
 /**
@@ -34,15 +33,6 @@ public class CreaterepoNewWizardPageOne extends
 		super(pageName);
 		setTitle(Messages.CreaterepoNewWizardPageOne_wizardPageTitle);
 		setDescription(Messages.CreaterepoNewWizardPageOne_wizardPageDescription);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.dialogs.WizardNewProjectCreationPage#createControl(org.eclipse.swt.widgets.Composite)
-	 */
-	@Override
-	public void createControl(Composite parent) {
-		super.createControl(parent);
 	}
 
 }
