@@ -78,7 +78,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfDataP
     /** Size of the fDataQueue */
     protected int fQueueSize = DEFAULT_QUEUE_SIZE;
 
-    private TmfRequestExecutor fExecutor;
+    private final TmfRequestExecutor fExecutor;
 
     private int fSignalDepth = 0;
     private final Object fLock = new Object();
@@ -112,7 +112,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfDataP
         fType = type;
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
-        fExecutor = new TmfRequestExecutor();
+        fExecutor.init();
         fSignalDepth = 0;
 
         fLogData = TmfCoreTracer.isEventTraced();
@@ -186,7 +186,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfDataP
      *
      * @return The type of ITmfEvent
      */
-    public Class<? extends ITmfEvent> getType() {
+    public Class<?> getType() {
         return fType;
     }
 

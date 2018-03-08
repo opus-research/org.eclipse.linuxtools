@@ -16,6 +16,7 @@ import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub;
 
 /**
  * Available CTF TMF test traces. Kind-of-extends {@link CtfTestTrace}.
@@ -45,7 +46,7 @@ public enum CtfTmfTestTrace {
 
 
     private final String fPath;
-    private CtfTmfTrace fTrace = null;
+    private CtfTmfTraceStub fTrace = null;
 
     private CtfTmfTestTrace() {
         /* This makes my head spin */
@@ -60,23 +61,24 @@ public enum CtfTmfTestTrace {
     }
 
     /**
-     * Return a CtfTmfTrace object of this test trace. It will be already
-     * initTrace()'ed.
+     * Return a CtfTmfTraceStub object of this test trace. It will be already
+     * initTrace()'ed. You do not have to .dispose() the trace after use (the
+     * old one is disposed automatically when this method is called again).
      *
      * Make sure you call {@link #exists()} before calling this!
      *
      * @return A CtfTmfTrace reference to this trace
      */
-    public CtfTmfTrace getTrace() {
-        if (fTrace == null) {
-            CtfTmfTrace trace = new CtfTmfTrace();
-            try {
-                trace.initTrace(null, fPath, CtfTmfEvent.class);
-            } catch (TmfTraceException e) {
-                /* Should not happen if tracesExist() passed */
-                throw new RuntimeException(e);
-            }
-            fTrace = trace;
+    public synchronized CtfTmfTrace getTrace() {
+        if (fTrace != null) {
+            fTrace.dispose();
+        }
+        fTrace = new CtfTmfTraceStub();
+        try {
+            fTrace.initTrace(null, fPath, CtfTmfEvent.class);
+        } catch (TmfTraceException e) {
+            /* Should not happen if tracesExist() passed */
+            throw new RuntimeException(e);
         }
         return fTrace;
     }
