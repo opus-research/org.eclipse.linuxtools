@@ -16,16 +16,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.text.MessageFormat;
-import java.util.List;
-
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
@@ -37,7 +33,6 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotCTabItem;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotCombo;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -270,23 +265,30 @@ public class TestCreateSystemtapScript {
 		bot.checkBox(Messages.SystemTapScriptGraphOptionsTab_2).click();
 
 		// As soon as the Graphing tab is entered, no regular expression exists & nothing can be run.
-		SWTBotText text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
+		SWTBotText text = bot.textWithLabel("Regular Expression:");
 		assertEquals("", text.getText());
 		assertTrue(!bot.button("Run").isEnabled());
-		assertTrue(!bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).isEnabled());
+		assertTrue(!bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).isEnabled());
 		text.setText("(1)(2)");
 		assertEquals("(1)(2)", text.getText());
 		assertTrue(bot.button("Run").isEnabled());
-		assertTrue(bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).isEnabled());
+		assertTrue(bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).isEnabled());
 
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).click();
+		text = bot.text("", 1);
+		text.setText("Val 1");
+		assertEquals("Val 1", text.getText());
+		text = bot.text("", 1);
+		text.setText("Val 2");
+		assertEquals("Val 2", text.getText());
+
+		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).click();
 		setupGraph("Graph");
 
 		shell.setFocus();
 		assertTrue(bot.button("Run").isEnabled());
 
 		// Removing groups from the regex disables graphs that rely on those groups.
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
+		text = bot.textWithLabel("Regular Expression:");
 		text.setText("(1)");
 		assertTrue(!bot.button("Run").isEnabled());
 		text.setText("(1)(2)(3)");
@@ -296,138 +298,6 @@ public class TestCreateSystemtapScript {
 		bot.button("Apply").click();
 		bot.button("Close").click();
 		bot.waitUntil(new ShellIsClosed(shell));
-	}
-
-	@Test
-	public void testGraphScript(){
-		String scriptName = "testGraph.stp";
-		createScript(bot, scriptName);
-
-		// Write a script
-		SWTBotEclipseEditor editor = bot.editorByTitle(scriptName).toTextEditor();
-		editor.setText("#!/usr/bin/env stap"
-				+ "\nglobal i,j,k"
-				+ "\nprobe begin{i=0;j=0;k=0}"
-				+ "\nprobe timer.ms(100){printf(\"Value:%d %d\\n\",i,j);i++;j+=2}"
-				+ "\nprobe timer.ms(250){printf(\"Other:%d %d\\n\",i,k);k++}");
-		editor.save();
-
-		String val0 = "i";
-		String val1 = "j";
-		String val2 = "k";
-
-		// Focus on project explorer view.
-		bot.viewByTitle("Project Explorer").setFocus();
-		bot.activeShell();
-		SWTBotTree treeBot = bot.tree();
-		treeBot.setFocus();
-		SWTBotTreeItem node = treeBot.expandNode((SYSTEMTAP_PROJECT_NAME));
-		bot.waitUntil(new NodeAvaiable(node, scriptName));
-
-		treeBot.expandNode(SYSTEMTAP_PROJECT_NAME).expand().select(scriptName);
-
-		MenuItem menu = ContextMenuHelper.contextMenu(treeBot, "Run As", "Run Configurations...");
-		click(menu);
-
-		SWTBotShell shell = bot.shell("Run Configurations");
-		shell.setFocus();
-
-		SWTBotTree runConfigurationsTree = bot.tree();
-		runConfigurationsTree.select("SystemTap").contextMenu("New").click();
-
-		// Select the "Graphing" tab.
-		SWTBotCTabItem tab = bot.cTabItem(Messages.SystemTapScriptGraphOptionsTab_7);
-		tab.activate();
-
-		// Enable output graphing.
-		bot.checkBox(Messages.SystemTapScriptGraphOptionsTab_2).click();
-		SWTBotText text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
-		text.setText("Value:(\\d+) (\\d+)");
-		assertEquals("Value:(\\d+) (\\d+)", text.getText());
-
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_sampleOutputLabel);
-		text.setText("Value:1 2");
-		assertEquals("Value:1 2", text.getText());
-
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "0"));
-		text.setText(val0);
-		assertEquals(val0, text.getText());
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "1"));
-		text.setText(val1);
-		assertEquals(val1, text.getText());
-
-		// Add a graph.
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).click();
-		setupGraph("Values");
-
-		// Make a second regex, and a graph for it.
-		shell.setFocus();
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 0).click();
-
-		SWTBotShell shell2 = bot.shell(Messages.SystemTapScriptGraphOptionsTab_setRegexTitleAdd);
-		shell2.setFocus();
-		bot.button("OK").click();
-
-		bot.waitUntil(new ShellIsClosed(shell2));
-
-		shell.setFocus();
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
-		assertEquals("", text.getText());
-		text.setText("Other:(\\d+) (\\d+)");
-		assertEquals("Other:(\\d+) (\\d+)", text.getText());
-
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "0"));
-		text.setText(val0);
-		assertEquals(val0, text.getText());
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "1"));
-		text.setText(val2);
-		assertEquals(val2, text.getText());
-
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_sampleOutputLabel);
-		assertEquals("", text.getText());
-
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).click();
-		setupGraph("Others");
-
-		shell.setFocus();
-		// If Systemtap is not installed, don't test graph output. Otherwise, do.
-		if (!stapInstalled) {
-			bot.button("Apply").click();
-			bot.button("Close").click();
-			bot.waitUntil(new ShellIsClosed(shell));
-			return;
-		}
-
-		bot.button("Run").click();
-		bot.waitUntil(new ShellIsClosed(shell));
-		bot.sleep(2500); // Let the script run for a moment
-		SWTBotView console = bot.viewById("org.eclipse.ui.console.ConsoleView");
-		console.setFocus();
-		console.toolbarButton("Stop Script").click(); // Stop the script manually
-		bot.waitUntil(new StapHasExited(), 10000);
-
-		bot.sleep(1000); // Give time for the table to be fully constructed
-		SWTBotEditor graphDisplay = bot.activeEditor();
-		graphDisplay.setFocus();
-		graphDisplay.bot().cTabItem(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultRegexTitleBase, "0")).activate();
-		graphDisplay.bot().cTabItem("Data View").activate();
-		SWTBotTable dataTable = bot.table(0);
-		List<String> colNames = dataTable.columns();
-		assertEquals(3, colNames.size());
-		assertEquals(val0, colNames.get(1));
-		assertEquals(val1, colNames.get(2));
-		assertEquals("3", dataTable.cell(3, 1));
-		assertEquals("6", dataTable.cell(3, 2));
-
-		graphDisplay.bot().cTabItem(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultRegexTitleBase, "1")).activate();
-		graphDisplay.bot().cTabItem("Data View").activate();
-		dataTable = bot.table(0);
-		colNames = dataTable.columns();
-		assertEquals(3, colNames.size());
-		assertEquals(val0, colNames.get(1));
-		assertEquals(val2, colNames.get(2));
-		assertEquals("10", dataTable.cell(3, 1));
-		assertEquals("3", dataTable.cell(3, 2));
 	}
 
 	private void setupGraph(String title) {
