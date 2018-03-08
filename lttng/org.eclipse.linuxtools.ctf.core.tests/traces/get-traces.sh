@@ -5,4 +5,7 @@
 wget http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2 -O-  | tar xvjf - &&
 
 # Trace used by the lttng2 kernel state provider tests
-wget http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2 -O- | tar xvjf -
+wget http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2 -O- | tar xvjf - &&
+
+# Trace used by the lttng2 kernel to match packets and synchronize
+wget http://www.dorsal.polymtl.ca/~gbastien/traces/synctraces.tgz -O- | tar xvzf -
