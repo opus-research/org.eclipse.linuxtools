@@ -22,11 +22,10 @@ import java.util.Map;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -268,36 +267,16 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Suppressing the warning, because the 'throws' will usually happen in
      * sub-classes.
      *
-     * @throws TmfTraceException
-     *             If there is a problem during the build
-     * @since 2.0
+     * @return An IStatus indicating if the state system could be build
+     *         successfully or not.
+     * @since 3.0
      */
-    @SuppressWarnings("unused")
-    protected void buildStateSystem() throws TmfTraceException {
+    protected IStatus buildStateSystem() {
         /*
          * Nothing is done in the base implementation, please specify
          * how/if to register a new state system in derived classes.
          */
-        return;
-    }
-
-    /**
-     * Executes the analysis modules that are meant to be automatically executed
-     *
-     * @since 3.0
-     */
-    protected void executeAnalysis() {
-        Map<String, IAnalysisModule> modules = TmfAnalysisManager.getAnalysisModules(this);
-        for (IAnalysisModule module : modules.values()) {
-            if (module.isAutomatic()) {
-                try {
-                    module.setTrace(this);
-                } catch (TmfAnalysisException e) {
-                }
-                module.execute();
-            }
-        }
-
+        return Status.OK_STATUS;
     }
 
     /**
@@ -693,7 +672,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         try {
             buildStatistics();
             buildStateSystem();
-            executeAnalysis();
         } catch (TmfTraceException e) {
             e.printStackTrace();
         }
