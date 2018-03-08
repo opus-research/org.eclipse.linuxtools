@@ -26,9 +26,8 @@ import org.eclipse.linuxtools.systemtap.ui.structures.IFormattingStyles;
 import org.eclipse.linuxtools.systemtap.ui.structures.StringFormatter;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.events.MenuEvent;
-import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -156,23 +155,24 @@ public class DataGrid implements IUpdateListener {
 		return cols.length-1;
 	}
 	
-	public class MainMenuListener extends MenuAdapter {
-		@Override
+	public class MainMenuListener implements MenuListener {
+		public void menuHidden(MenuEvent e) {}
+
 		public void menuShown(MenuEvent e) {
 			MenuItem item = ((Menu)e.widget).getItem(1);
 			item.setSelection(manualResize);
 		}
 	}
 
-	public class MenuManualyResizedSelection extends SelectionAdapter {
-		@Override
+	public class MenuManualyResizedSelection implements SelectionListener {
 		public void widgetSelected(SelectionEvent e) {
 			manualResize = !manualResize;
 		}
+		
+		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 
-	public class AddFilterSelection extends SelectionAdapter {
-		@Override
+	public class AddFilterSelection implements SelectionListener {
 		public void widgetSelected(SelectionEvent e) {
 			SelectFilterWizard wizard = new SelectFilterWizard(dataSet.getTitles());
 			IWorkbench workbench = PlatformUI.getWorkbench();
@@ -195,6 +195,8 @@ public class DataGrid implements IUpdateListener {
 				item.addSelectionListener(new RemoveFilterSelection());
 			}
 		}
+		
+		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 
 	public class RemoveFilterSelection implements SelectionListener {
@@ -211,8 +213,9 @@ public class DataGrid implements IUpdateListener {
 		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 	
-	public class FormatMenuListener extends MenuAdapter {
-		@Override
+	public class FormatMenuListener implements MenuListener {
+		public void menuHidden(MenuEvent e) {}
+
 		public void menuShown(MenuEvent e) {
 			MenuItem[] items = ((Menu)e.widget).getItems();
 			boolean doubleValid = false, longValid = false;
@@ -246,8 +249,7 @@ public class DataGrid implements IUpdateListener {
 		}
 	}
 	
-	public class MenuFormatSelection extends SelectionAdapter {
-		@Override
+	public class MenuFormatSelection implements SelectionListener {
 		public void widgetSelected(SelectionEvent e) {
 			int format = IFormattingStyles.UNFORMATED;
 			int column = Math.max(1, getSelectedColumn());
@@ -262,6 +264,8 @@ public class DataGrid implements IUpdateListener {
 				table.getItem(i).setText(column, columnFormat[column-1].format(data[i].toString()));
 			table.redraw();
 		}
+		
+		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 	
 	public void handleUpdateEvent() {

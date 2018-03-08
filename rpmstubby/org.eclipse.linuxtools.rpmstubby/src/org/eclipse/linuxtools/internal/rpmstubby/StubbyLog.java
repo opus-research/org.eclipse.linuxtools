@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.internal.rpmstubby;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 
 /**
@@ -101,6 +100,6 @@ public class StubbyLog {
     * @param status The status to log.
     */
    public static void log(IStatus status) {
-	   Platform.getLog(Platform.getBundle(StubbyPlugin.PLUGIN_ID)).log(status);
+	   StubbyPlugin.getDefault().getLog().log(status);
    }
 }

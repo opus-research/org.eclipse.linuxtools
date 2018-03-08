@@ -245,7 +245,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                     ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
 
                     try {
-                        retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.CALENDAR, Resolution.NANOSEC));
+                        retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.ABSOLUTE, Resolution.NANOSEC));
                         int cpuQuark = entry.getQuark();
                         int currentThreadQuark = ssq.getQuarkRelative(cpuQuark, Attributes.CURRENT_THREAD);
                         ITmfStateInterval interval = ssq.querySingleState(hoverTime, currentThreadQuark);
@@ -303,8 +303,8 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
         ResourcesEntry entry = (ResourcesEntry) event.getEntry();
         ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
         long time = event.getTime();
-        try {
-            while (time < event.getTime() + event.getDuration()) {
+        while (time < event.getTime() + event.getDuration()) {
+            try {
                 int cpuQuark = entry.getQuark();
                 int currentThreadQuark = ss.getQuarkRelative(cpuQuark, Attributes.CURRENT_THREAD);
                 ITmfStateInterval tidInterval = ss.querySingleState(time, currentThreadQuark);
@@ -352,15 +352,15 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                         gc.drawLine(x, bounds.y + 1, x, bounds.y + bounds.height - 2);
                     }
                 }
+            } catch (AttributeNotFoundException e) {
+                e.printStackTrace();
+            } catch (TimeRangeException e) {
+                e.printStackTrace();
+            } catch (StateValueTypeException e) {
+                e.printStackTrace();
+            } catch (StateSystemDisposedException e) {
+                /* Ignored */
             }
-        } catch (AttributeNotFoundException e) {
-            e.printStackTrace();
-        } catch (TimeRangeException e) {
-            e.printStackTrace();
-        } catch (StateValueTypeException e) {
-            e.printStackTrace();
-        } catch (StateSystemDisposedException e) {
-            /* Ignored */
         }
     }
 
