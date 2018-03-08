@@ -9,7 +9,11 @@
  * Contributors: Matthew Khouzam - Initial Design and implementation
  * Contributors: Francis Giraldeau - Initial API and implementation
  * Contributors: Philippe Proulx - Some refinement and optimization
+<<<<<<< HEAD
  * Contributors: Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
+=======
+ * Contributors: Etienne Bergeron - Helped with getLong()
+>>>>>>> ctf: add getLong to bitBuffer
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -22,6 +26,7 @@ import java.nio.ByteOrder;
  * <b><u>BitBuffer</u></b>
  * <p>
  * A bitwise buffer capable of accessing fields with bit offsets.
+ *
  * @since 2.0
  */
 public final class BitBuffer {
@@ -101,6 +106,34 @@ public final class BitBuffer {
     }
 
     /**
+     * Relative <i>get</i> method for reading 64-bit integer.
+     *
+     * Reads next eight bytes from the current bit position according to current
+     * byte order.
+     *
+     * @return The long value read from the buffer
+     */
+    public long getLong() {
+        if ((pos & 0x00FFL) == 0) {
+            long retVal = this.buf.getLong((int) (pos / 8));
+            pos += 64;
+            return retVal;
+        }
+        /* safe fall-back for non-aligned longs */
+        long a = getInt();
+        long b = getInt();
+
+        /* Cast the signed-extended int into a unsigned int. */
+        a &= 0xFFFFFFFFL;
+        b &= 0xFFFFFFFFL;
+
+        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
+            return (a << 32) | b;
+        }
+        return (b << 32) | a;
+    }
+
+    /**
      * Relative <i>get</i> method for reading integer of <i>length</i> bits.
      *
      * Reads <i>length</i> bits starting at the current position. The result is
@@ -115,22 +148,32 @@ public final class BitBuffer {
      */
     public int getInt(int length, boolean signed) {
 
+
         /* Nothing to read. */
         if (length == 0) {
             return 0;
         }
+        if (!canRead(length)) {
+            throw new BufferOverflowException();
+        }
+        if (length > BIT_INT) {
+            throw new IllegalArgumentException("Maximum size of value is 32 requested size" + length); //$NON-NLS-1$
+        }
+        if (length < 0) {
+            throw new IllegalArgumentException("Cannot handle negative reads"); //$NON-NLS-1$
+        }
 
         /* Validate that the buffer has enough bits. */
+        int val = 0;
         if (!canRead(length)) {
             throw new BufferOverflowException();
         }
 
         /* Get the value from the byte buffer. */
-        int val = 0;
         boolean gotIt = false;
 
-        /* Try a fast read when the position is byte-aligned by using the */
-        /* native methods of ByteBuffer. */
+        // Fall back to fast ByteBuffer reader if we want to read byte-aligned
+        // bytes
         if (this.pos % BitBuffer.BIT_CHAR == 0) {
             switch (length) {
             case BitBuffer.BIT_CHAR:
