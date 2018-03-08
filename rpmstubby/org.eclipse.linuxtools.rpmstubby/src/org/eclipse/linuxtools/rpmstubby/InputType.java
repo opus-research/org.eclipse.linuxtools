@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     Alexander Kurtakov - initial API and implementation
- *     Neil Guzman        - python, ruby implementation
+ *     Neil Guzman        - python implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.rpmstubby;
@@ -23,9 +23,7 @@ public enum InputType {
 	/** Maven pom.xml file. */
 	MAVEN_POM("pom.xml"),
 	/** Python Egg setup.py file */
-	PYTHON_EGG("setup.py"),
-	/** Ruby *.gemspec file */
-	RUBY_GEM("*.gemspec");
+	PYTHON_EGG("setup.py");
 
 	private String fileNamePattern;
 
