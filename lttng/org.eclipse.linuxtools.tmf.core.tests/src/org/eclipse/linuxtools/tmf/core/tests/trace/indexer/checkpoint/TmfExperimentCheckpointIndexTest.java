@@ -52,6 +52,8 @@ public class TmfExperimentCheckpointIndexTest {
     // ------------------------------------------------------------------------
 
     private static final String EXPERIMENT   = "MyExperiment";
+    private static final TmfTestTrace TEST_TRACE1   = TmfTestTrace.O_TEST_10K;
+    private static final TmfTestTrace TEST_TRACE2   = TmfTestTrace.E_TEST_10K;
     private static int          NB_EVENTS    = 20000;
     private static int          BLOCK_SIZE   = 1000;
 
@@ -83,11 +85,11 @@ public class TmfExperimentCheckpointIndexTest {
 
         fTestTraces = new ITmfTrace[2];
         try {
-            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.O_TEST_10K.getFullPath()), null);
+            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE1.getFullPath()), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
             final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             fTestTraces[0] = trace1;
-            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.E_TEST_10K.getFullPath()), null);
+            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE2.getFullPath()), null);
             test = new File(FileLocator.toFileURL(location).toURI());
             final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             fTestTraces[1] = trace2;
@@ -137,11 +139,11 @@ public class TmfExperimentCheckpointIndexTest {
     public void testGrowingIndex() {
         ITmfTrace[] testTraces = new TmfTraceStub[2];
         try {
-            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.O_TEST_10K.getFullPath()), null);
+            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE1.getFullPath()), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
             final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, false, null, null);
             testTraces[0] = trace1;
-            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.E_TEST_10K.getFullPath()), null);
+            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE2.getFullPath()), null);
             test = new File(FileLocator.toFileURL(location).toURI());
             final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, false, null, null);
             testTraces[1] = trace2;

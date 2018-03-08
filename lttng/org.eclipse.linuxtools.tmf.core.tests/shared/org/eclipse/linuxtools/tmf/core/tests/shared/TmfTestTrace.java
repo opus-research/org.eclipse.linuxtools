@@ -31,24 +31,23 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
  */
 public enum TmfTestTrace {
     /** A test */
-    A_TEST_10K("testfiles", "A-Test-10K"),
+    A_TEST_10K("A-Test-10K"),
     /** A second trace */
-    A_TEST_10K2("testfiles", "A-Test-10K-2"),
+    A_TEST_10K2("A-Test-10K-2"),
     /** A third trace */
-    E_TEST_10K("testfiles", "E-Test-10K"),
+    E_TEST_10K("E-Test-10K"),
     /** A fourth trace */
-    O_TEST_10K("testfiles", "O-Test-10K"),
+    O_TEST_10K("O-Test-10K"),
     /** And oh! a fifth trace */
-    R_TEST_10K("testfiles", "R-Test-10K");
+    R_TEST_10K("R-Test-10K");
 
 
     private final String fPath;
-    private final String fDirectory;
+    private final String fDirectory = "testfiles";
     private ITmfTrace fTrace = null;
 
-    private TmfTestTrace(String directory, String file) {
+    private TmfTestTrace(String file) {
         fPath = file;
-        fDirectory = directory;
     }
 
     /**
