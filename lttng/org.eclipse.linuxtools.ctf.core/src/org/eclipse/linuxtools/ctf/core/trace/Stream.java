@@ -257,6 +257,10 @@ public class Stream {
         inputs.add(input);
     }
 
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return "Stream [id=" + id + ", packetContextDecl=" + packetContextDecl //$NON-NLS-1$ //$NON-NLS-2$

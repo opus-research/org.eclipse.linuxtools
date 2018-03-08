@@ -241,6 +241,10 @@ public class DrawableToolTip implements PaintListener {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
+     */
     @Override
     public void paintControl(PaintEvent event) {
         fMessage = SDMessages._138 + " " +  fCurrentValue.toString(); //$NON-NLS-1$

@@ -1896,6 +1896,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // ISelectionProvider
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+     */
     /**
      * @since 2.0
      */
@@ -1904,6 +1907,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         selectionChangedListeners.add(listener);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
+     */
     /**
      * @since 2.0
      */
@@ -1921,6 +1927,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         return new StructuredSelection(list);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+     */
     /**
      * @since 2.0
      */
@@ -1929,6 +1938,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         selectionChangedListeners.remove(listener);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
+     */
     /**
      * @since 2.0
      */
@@ -2092,6 +2104,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // Listeners
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.views.colors.IColorSettingsListener#colorSettingsChanged(org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting[])
+     */
     @Override
     public void colorSettingsChanged(final ColorSetting[] colorSettings) {
         fTable.refresh();

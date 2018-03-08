@@ -72,6 +72,10 @@ public class PagesDialog extends Dialog {
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public Control createDialogArea(Composite parent) {
 
@@ -101,6 +105,10 @@ public class PagesDialog extends Dialog {
         return ret;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     public void okPressed() {
         int currentPageValue = fCurrentPage.getValue() - 1;
@@ -131,7 +139,6 @@ public class PagesDialog extends Dialog {
     // ------------------------------------------------------------------------
     // Helper classes
     // ------------------------------------------------------------------------
-
     /**
      * This is a Text Control that accepts only digits and ensures that bounds are respected
      */

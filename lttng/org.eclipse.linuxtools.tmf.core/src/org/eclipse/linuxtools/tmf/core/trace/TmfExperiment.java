@@ -174,10 +174,16 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // ITmfTrace - Initializers
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#initTrace(org.eclipse.core.resources.IResource, java.lang.String, java.lang.Class)
+     */
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) {
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(org.eclipse.core.resources.IProject, java.lang.String)
+     */
     /**
      * @since 2.0
      */
@@ -190,11 +196,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // Accessors
     // ------------------------------------------------------------------------
 
-    /**
-     * Get the traces contained in this experiment.
-     *
-     * @return The array of contained traces
-     */
+    @Override
     public ITmfTrace[] getTraces() {
         return fTraces;
     }
@@ -264,6 +266,13 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // ITmfTrace trace positioning
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     *
+     * Returns a brand new context based on the location provided and
+     * initializes the event queues
+     *
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#seekEvent(org.eclipse.linuxtools.tmf.core.trace.ITmfLocation)
+     */
     @Override
     public synchronized ITmfContext seekEvent(final ITmfLocation location) {
         // Validate the location
@@ -310,12 +319,18 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // ITmfTrace - SeekEvent operations (returning a trace context)
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#seekEvent(double)
+     */
     @Override
     public ITmfContext seekEvent(final double ratio) {
         final ITmfContext context = seekEvent(Math.round(ratio * getNbEvents()));
         return context;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getLocationRatio(org.eclipse.linuxtools.tmf.core.trace.ITmfLocation)
+     */
     @Override
     public double getLocationRatio(final ITmfLocation location) {
         if (location instanceof TmfExperimentLocation) {
@@ -329,6 +344,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         return 0.0;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentLocation()
+     */
     @Override
     public ITmfLocation getCurrentLocation() {
         // never used
@@ -339,6 +357,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // ITmfTrace trace positioning
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser#parseEvent(org.eclipse.linuxtools.tmf.core.trace.ITmfContext)
+     */
     @Override
     public synchronized ITmfEvent parseEvent(final ITmfContext context) {
         final ITmfContext tmpContext = seekEvent(context.getLocation());
@@ -346,6 +367,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         return event;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#getNext(org.eclipse.linuxtools.tmf.core.trace.ITmfContext)
+     */
     @Override
     public synchronized ITmfEvent getNext(ITmfContext context) {
 
@@ -405,6 +429,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         return event;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#getInitialRangeOffset()
+     */
     /**
      * @since 2.0
      */
@@ -424,6 +451,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         return initTs;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public synchronized String toString() {
@@ -504,6 +534,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         thread.start();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.trace.ITmfTrace#getStreamingInterval()
+     */
     @Override
     public long getStreamingInterval() {
         long interval = 0;
@@ -517,6 +550,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // Signal handlers
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#traceOpened(org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal)
+     */
     @Override
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
