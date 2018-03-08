@@ -80,11 +80,6 @@ public class Messages extends NLS {
     public static String TmfTimeLegend_TRACE_STATES_TITLE;
     public static String TmfTimeLegend_WINDOW_TITLE;
     public static String TmfTimeLegend_StateTypeName;
-    public static String TmfTimeFilterDialog_WINDOW_TITLE;
-    public static String TmfTimeFilterDialog_MESSAGE;
-    public static String TmfTimeFilterDialog_SELECT_ALL;
-    public static String TmfTimeFilterDialog_DESELECT_ALL;
-
 
     public static String TmfTimeTipHandler_DURATION;
     public static String TmfTimeTipHandler_TRACE_DATE;
@@ -92,9 +87,6 @@ public class Messages extends NLS {
     public static String TmfTimeTipHandler_TRACE_START_TIME;
     public static String TmfTimeTipHandler_TRACE_STATE;
     public static String TmfTimeTipHandler_TRACE_STOP_TIME;
-
-    public static String TmfTimeGraphCombo_FilterActionNameText;
-    public static String TmfTimeGraphCombo_FilterActionToolTipText;
 
     public static String TmfTimeGraphViewer_ResetScaleActionNameText;
     public static String TmfTimeGraphViewer_ResetScaleActionToolTipText;
@@ -112,7 +104,7 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_ZoomInActionToolTipText;
     public static String TmfTimeGraphViewer_ZoomOutActionNameText;
     public static String TmfTimeGraphViewer_ZoomOutActionToolTipText;
-
+    
     public static String ColorsView_AddActionToolTipText;
     public static String ColorsView_BackgroundButtonText;
     public static String ColorsView_BackgroundDialogText;

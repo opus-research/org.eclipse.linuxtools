@@ -20,7 +20,6 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
@@ -1334,22 +1333,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         int increment = 1;
         int pageIncrement = Math.max(1, countPerPage);
         _verticalScrollBar.setValues(selection, min, max, thumb, increment, pageIncrement);
-    }
-
-    /**
-     * @since 1.1
-     */
-    public void addFilter(ViewerFilter filter) {
-        _stateCtrl.addFilter(filter);
-        refresh();
-    }
-
-    /**
-     * @since 1.1
-     */
-    public void removeFilter(ViewerFilter filter) {
-        _stateCtrl.removeFilter(filter);
-        refresh();
     }
 
 
