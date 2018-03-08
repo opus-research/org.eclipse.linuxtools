@@ -122,7 +122,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
         /* Adjust the timestamp depending on the trace's offset */
         long currTimestamp = ctfLocationData.getTimestamp();
-        final long offsetTimestamp = currTimestamp - this.getTrace().getOffset();
+        final long offsetTimestamp = this.getCtfTmfTrace().getCTFTrace().timestampNanoToCycles(currTimestamp);
         if (offsetTimestamp < 0) {
             ret = super.seek(0L);
         } else {
@@ -133,17 +133,21 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
          * Check if there is already one or more events for that timestamp, and
          * assign the location index correctly
          */
-        currTimestamp = this.getCurrentEvent().getTimestampValue();
         long index = 0;
-        for (long i = 0; i < ctfLocationData.getIndex(); i++) {
-            if (currTimestamp == this.getCurrentEvent().getTimestampValue()) {
-                index++;
-            } else {
-                index = 0;
-            }
-            this.advance();
-        }
+        if (this.getCurrentEvent() != null) {
+            currTimestamp = this.getCurrentEvent().getTimestampValue();
 
+            for (long i = 0; i < ctfLocationData.getIndex(); i++) {
+                if (currTimestamp == this.getCurrentEvent().getTimestampValue()) {
+                    index++;
+                } else {
+                    index = 0;
+                }
+                this.advance();
+            }
+        } else {
+            ret= false;
+        }
         /* Seek the current location accordingly */
         if (ret) {
             curLocation.setLocation(new CtfLocationData(getCurrentEvent().getTimestampValue(), index));
@@ -181,7 +185,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     @Override
     public CtfIterator clone() {
         CtfIterator clone = null;
-        clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocationData(), curRank);
+        clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocation(), curRank);
         return clone;
     }
 
@@ -203,7 +207,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     public void setLocation(final ITmfLocation<?> location) {
         // FIXME alex: isn't there a cleaner way than a cast here?
         this.curLocation = (CtfLocation) location;
-        seek(((CtfLocation) location).getLocationData());
+        seek(((CtfLocation) location).getLocation());
     }
 
     /**
@@ -244,8 +248,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      */
     @Override
     public boolean advance() {
-        long index = curLocation.getLocationData().getIndex();
-        long timestamp = curLocation.getLocationData().getTimestamp();
+        long index = curLocation.getLocation().getIndex();
+        long timestamp = curLocation.getLocation().getTimestamp();
         boolean ret = super.advance();
 
         if (ret) {

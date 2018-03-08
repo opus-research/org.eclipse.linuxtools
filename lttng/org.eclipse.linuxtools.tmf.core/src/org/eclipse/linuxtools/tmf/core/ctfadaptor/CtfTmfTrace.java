@@ -166,8 +166,8 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         final CtfLocation curLocation = (CtfLocation) location;
         final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         context.setLocation(curLocation);
-        context.seek(curLocation.getLocationData());
-        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocationData());
+        context.seek(curLocation.getLocation());
+        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocation());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
         return ((double) currentTime.getTimestamp() - startTime)
@@ -209,11 +209,17 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
             currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
             context.setRank(0);
         }
-        if (currentLocation.getLocationData() == CtfLocation.INVALID_LOCATION) {
+        if (currentLocation.getLocation() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
             currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
+        if (location == null) {
+            CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
+            if (event != null) {
+                currentLocation.setLocation(event.getTimestampValue(), 0);
+            }
+        }
         if(context.getRank() != 0) {
             context.setRank(ITmfContext.UNKNOWN_RANK);
         }
@@ -224,7 +230,11 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     @Override
     public ITmfContext seekEvent(double ratio) {
         CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
-        context.seek((long) (this.getNbEvents() * ratio));
+        final long end = this.getEndTime().getValue();
+        final long start = this.getStartTime().getValue();
+        final long diff = end - start;
+        final long ratioTs = (long) (diff * ratio) + start;
+        context.seek(ratioTs);
         context.setRank(ITmfContext.UNKNOWN_RANK);
         return context;
     }
@@ -239,7 +249,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     public synchronized CtfTmfEvent getNext(final ITmfContext context) {
         CtfTmfEvent event = null;
         if (context instanceof CtfTmfLightweightContext) {
-            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocationData())) {
+            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocation())) {
                 return null;
             }
             CtfTmfLightweightContext ctfContext = (CtfTmfLightweightContext) context;
