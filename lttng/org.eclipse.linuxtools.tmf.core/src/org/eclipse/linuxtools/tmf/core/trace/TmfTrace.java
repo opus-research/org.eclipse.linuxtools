@@ -26,8 +26,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatistics;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -86,9 +84,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // The trace parser
     private ITmfEventParser fParser;
-
-    // The trace's statistics
-    private ITmfStatistics fStatistics;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -227,8 +222,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             }
         }
         super.init(traceName, type);
-
-        buildStatistics();
     }
 
     /**
@@ -249,20 +242,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
-    }
-
-    /**
-     * The default implementation of TmfTrace uses a TmfStatistics backend.
-     * Override this if you want to specify another type (or none at all).
-     *
-     * @since 2.0
-     */
-    protected void buildStatistics() throws TmfTraceException {
-        /*
-         * Initialize the statistics provider, but only if a Resource has been
-         * set (so we don't build it for experiments, for unit tests, etc.)
-         */
-        fStatistics = (fResource == null ? null : new TmfStatistics(this) );
     }
 
     /**
@@ -333,14 +312,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected ITmfEventParser getParser() {
         return fParser;
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ITmfStatistics getStatistics() {
-        return fStatistics;
     }
 
     /**
@@ -578,9 +549,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             if (fNbEvents <= rank) {
                 fNbEvents = rank + 1;
             }
-            if (fIndexer != null) {
-                fIndexer.updateIndex(context, timestamp);
-            }
+            fIndexer.updateIndex(context, timestamp);
         }
     }
 
