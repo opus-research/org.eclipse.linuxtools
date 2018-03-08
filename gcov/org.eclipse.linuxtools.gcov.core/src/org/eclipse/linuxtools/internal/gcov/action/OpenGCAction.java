@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.gcov.dialog.OpenGCDialog;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorLauncher;
 import org.eclipse.ui.PlatformUI;
@@ -58,15 +59,13 @@ public class OpenGCAction implements IEditorLauncher {
 		}
 
 		if (gcda == null || !gcda.isFile()) {
-			String msg = "File " + gcda + " does not exist.";
-			msg += "\nPlease run your application at least once.";
-			MessageDialog.openError(shell, "gcov Error", msg);
+			String msg = NLS.bind(Messages.OpenGCAction_file_dne_run, gcda);
+			MessageDialog.openError(shell, Messages.OpenGCAction_gcov_error, msg);
 			return;
 		}
 		if (gcno == null || !gcno.isFile()) {
-			String msg = "File " + gcno + " does not exist.";
-			msg += "\nPlease recompile your application.";
-			MessageDialog.openError(shell, "gcov Error", msg);
+			String msg = NLS.bind(Messages.OpenGCAction_file_dne_compile, gcno);
+			MessageDialog.openError(shell, Messages.OpenGCAction_gcov_error, msg);
 			return;
 		}
 		

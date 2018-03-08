@@ -15,6 +15,7 @@ import java.text.NumberFormat;
 
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField;
 import org.eclipse.linuxtools.internal.gcov.model.TreeElement;
+import org.eclipse.osgi.util.NLS;
 
 
 
@@ -25,7 +26,7 @@ public class FieldTotalLines extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return "Total Lines";
+		return Messages.FieldTotalLines_column_header;
 	}
 
 	private int getTotalLines(Object element) {
@@ -56,10 +57,13 @@ public class FieldTotalLines extends AbstractSTDataViewersField {
 	    int v = getTotalLines(element);
 	    if (v < 0) return null;
 	    String s = NumberFormat.getInstance().format(v);
-	    s += " line";
-	    if (v>1) s+= "s";
-	    s += " in total";
-	    return s;
+	    String message;
+		if (v > 1) {
+			message = NLS.bind(Messages.FieldTotalLines_column_tooltip_1, s);
+		} else {
+			message = NLS.bind(Messages.FieldTotalLines_column_tooltip_0, s);
+		}
+		return message;
 	}
 
 
