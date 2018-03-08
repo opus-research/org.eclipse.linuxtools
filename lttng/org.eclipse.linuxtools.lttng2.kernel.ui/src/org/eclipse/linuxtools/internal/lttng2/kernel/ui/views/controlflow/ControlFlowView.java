@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventList;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
@@ -216,6 +215,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                             return;
                         }
                         TimeGraphEntry entry = null;
+                        ArrayList<ITimeEvent> eventList = new ArrayList<ITimeEvent>(1);
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -238,10 +238,17 @@ public class ControlFlowView extends AbstractTimeGraphView {
                                     // latest execName
                                     entry.setName(execName);
                                 }
-                                entry.addEvent(new TimeEvent(entry, startTime, endTime - startTime));
+                                eventList.add(new TimeEvent(entry, startTime, endTime - startTime));
                             } else {
+                                if (entry != null) {
+                                    entry.setEventList(eventList);
+                                }
                                 entry = null;
+                                eventList = new ArrayList<ITimeEvent>(1);
                             }
+                        }
+                        if (entry != null) {
+                            entry.setEventList(eventList);
                         }
                     } catch (AttributeNotFoundException e) {
                         e.printStackTrace();
@@ -331,7 +338,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
             List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
-            eventList = new EventList(statusIntervals.size(), realStart, realEnd);
+            eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
             long lastEndTime = -1;
             for (ITmfStateInterval statusInterval : statusIntervals) {
                 if (monitor.isCanceled()) {

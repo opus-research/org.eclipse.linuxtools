@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventList;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
@@ -187,7 +186,7 @@ public class ResourcesView extends AbstractTimeGraphView {
             if (resourcesEntry.getType().equals(Type.CPU)) {
                 int statusQuark = ssq.getQuarkRelative(quark, Attributes.STATUS);
                 List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new EventList(statusIntervals.size(), realStart, realEnd);
+                eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
                 long lastEndTime = -1;
                 for (ITmfStateInterval statusInterval : statusIntervals) {
                     if (monitor.isCanceled()) {
@@ -206,7 +205,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             } else if (resourcesEntry.getType().equals(Type.IRQ)) {
                 List<ITmfStateInterval> irqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new EventList(irqIntervals.size(), realStart, realEnd);
+                eventList = new ArrayList<ITimeEvent>(irqIntervals.size());
                 long lastEndTime = -1;
                 boolean lastIsNull = true;
                 for (ITmfStateInterval irqInterval : irqIntervals) {
@@ -230,7 +229,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             } else if (resourcesEntry.getType().equals(Type.SOFT_IRQ)) {
                 List<ITmfStateInterval> softIrqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new EventList(softIrqIntervals.size(), realStart, realEnd);
+                eventList = new ArrayList<ITimeEvent>(softIrqIntervals.size());
                 long lastEndTime = -1;
                 boolean lastIsNull = true;
                 for (ITmfStateInterval softIrqInterval : softIrqIntervals) {

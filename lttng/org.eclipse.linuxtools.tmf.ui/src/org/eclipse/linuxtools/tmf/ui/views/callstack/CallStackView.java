@@ -68,9 +68,9 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphCombo;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphRangeUpdateEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphViewer;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventList;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphSelection;
@@ -846,7 +846,7 @@ public class CallStackView extends TmfView {
         List<ITimeEvent> eventList = null;
         try {
             List<ITmfStateInterval> stackIntervals = ss.queryHistoryRange(entry.getQuark(), start, end - 1, resolution, monitor);
-            eventList = new EventList(stackIntervals.size(), start, end);
+            eventList = new ArrayList<ITimeEvent>(stackIntervals.size());
             long lastEndTime = -1;
             boolean lastIsNull = true;
             for (ITmfStateInterval statusInterval : stackIntervals) {
@@ -864,6 +864,7 @@ public class CallStackView extends TmfView {
                     if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
                         eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                     }
+                    eventList.add(new NullTimeEvent(entry, time, duration));
                     lastIsNull = true;
                 }
                 lastEndTime = time + duration;

@@ -12,59 +12,58 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Event list
  *
  * This class is intended to be used to store a zoomed list that can contain
  * non-contiguous events (e.g. empty time range between events). The start and
- * end time in this class represent the range that was used to collect the zoomed
- * list events, and are used by the Event Iterator to properly split the full range
- * 'aggregated' events that intersect with the zoom range.
+ * end time in this class represent the range of the query that was used to
+ * collect the zoomed list events, and are used by the Event Iterator to
+ * properly split the full range 'aggregated' events that intersect with the
+ * zoom range.
  *
  * @since 2.1
  */
-public class EventList extends ArrayList<ITimeEvent> {
+public class EventList {
 
-    private static final long serialVersionUID = 1L;
-    private long fStartTime;
-    private long fEndTime;
-
-    /**
-     * Constructs an empty list with the specified initial capacity.
-     *
-     * @param initialCapacity
-     *            the initial capacity of the list
-     * @param startTime
-     *            The start time
-     * @param endTime
-     *            The end time
-     * @throws IllegalArgumentException
-     *             if the specified initial capacity is negative
-     */
-    public EventList(int initialCapacity, long startTime, long endTime) {
-        super(initialCapacity);
-        fStartTime = startTime;
-        fEndTime = endTime;
-    }
+    private final List<ITimeEvent> fEventList;
+    private final long fStartTime;
+    private final long fEndTime;
 
     /**
      * Constructs an empty list with an initial capacity of ten.
      *
+     * @param list
+     *            The event list
      * @param startTime
-     *            The start time
+     *            The start time of the query used to collect the list
      * @param endTime
-     *            The end time
+     *            The end time of the query used to collect the list
      */
-    public EventList(long startTime, long endTime) {
-        super();
+    public EventList(List<ITimeEvent> list, long startTime, long endTime) {
+        if (list != null) {
+            fEventList = Collections.unmodifiableList(list);
+        } else {
+            fEventList = null;
+        }
         fStartTime = startTime;
         fEndTime = endTime;
     }
 
     /**
-     * Get the start time
+     * Get the event list
+     *
+     * @return the event list
+     */
+    public List<ITimeEvent> getList() {
+        return fEventList;
+    }
+
+    /**
+     * Get the start time of the query used to collect the list
      *
      * @return the start time
      */
@@ -73,7 +72,7 @@ public class EventList extends ArrayList<ITimeEvent> {
     }
 
     /**
-     * Get the end time
+     * Get the end time of the query used to collect the list
      *
      * @return the end time
      */
