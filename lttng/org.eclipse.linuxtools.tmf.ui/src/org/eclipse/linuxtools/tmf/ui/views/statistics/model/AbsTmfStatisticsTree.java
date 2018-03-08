@@ -174,6 +174,18 @@ public abstract class AbsTmfStatisticsTree {
     public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
 
     /**
+     * Register an event within a time range.
+     *
+     * This method must be implemented by subclass.
+     *
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
+     */
+    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo);
+
+    /**
      * Register that a new node was created.
      *
      * Must make sure the {@link #getChildren(TmfFixedArray)} on the parent node
@@ -196,6 +208,21 @@ public abstract class AbsTmfStatisticsTree {
         for (TmfStatisticsTreeNode node : getAllChildren(path)) {
             reset(node.getPath());
             fNodes.remove(node.getPath());
+        }
+    }
+
+    /**
+     * Reset the time range value of a node.
+     *
+     * Work recursively.
+     *
+     * @param path
+     *            Path to the node.
+     */
+    public void resetTimeRangeValue(final TmfFixedArray<String> path) {
+        for (TmfStatisticsTreeNode node : getChildren(path)) {
+            resetTimeRangeValue(node.getPath());
+            node.resetTimeRangeValue();
         }
     }
 }
