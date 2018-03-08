@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
@@ -22,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,37 +34,16 @@ import org.junit.Test;
 public class IntegerDefinitionTest {
 
     private IntegerDefinition fixture;
-    String name = "testInt"; //$NON-NLS-1$
-    String clockName = "clock"; //$NON-NLS-1$
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(IntegerDefinitionTest.class);
-    }
+    String name = "testInt";
+    String clockName = "clock";
 
     /**
-     * Perform pre-test initialization. We know the structDef won't be null (or
-     * else the tests will fail), so we can safely suppress the warning.
+     * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-
-//        StructDefinition structDef = null;
-//        boolean found = false;
         IntegerDeclaration id = new IntegerDeclaration( 1, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
         fixture = id.createDefinition(null, name);
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -78,7 +55,7 @@ public class IntegerDefinitionTest {
         IntegerDeclaration declaration = new IntegerDeclaration(1, true, 1,
                 ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
         IDefinitionScope definitionScope = null;
-        String fieldName = ""; //$NON-NLS-1$
+        String fieldName = "";
 
         IntegerDefinition result = new IntegerDefinition(declaration,
                 definitionScope, fieldName);
@@ -116,55 +93,6 @@ public class IntegerDefinitionTest {
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
 
         fixture.read(input);
-    }
-
-    /**
-     * Test the read endianness in a big endian bit buffer
-     */
-    @Test
-    public void testReadEndianness() {
-
-      ByteBuffer bb = java.nio.ByteBuffer.allocateDirect(8);
-      bb.put((byte) 0xab);
-      bb.put((byte) 0xcd);
-      bb.put((byte) 0xef);
-      bb.put((byte) 0x12);
-      bb.put((byte) 0x34);
-      bb.put((byte) 0x56);
-      bb.put((byte) 0x78);
-      bb.put((byte) 0x9a);
-      BitBuffer input = new BitBuffer(bb);
-
-      /* Read 32-bits BE */
-      IntegerDeclaration be = new IntegerDeclaration( 32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-      IntegerDefinition fixture_be = be.createDefinition(null, name);
-      fixture_be.read(input);
-      assertEquals(0xabcdef12, fixture_be.getValue());
-
-      /* Read 64-bits BE */
-      be = new IntegerDeclaration( 64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-      fixture_be = be.createDefinition(null, name);
-      bb.position(0);
-      input.position(0);
-      fixture_be.read(input);
-      assertEquals(0xabcdef123456789aL, fixture_be.getValue());
-
-      /* Read 32-bits LE */
-      IntegerDeclaration le = new IntegerDeclaration( 32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-      IntegerDefinition fixture_le = le.createDefinition(null, name);
-      bb.position(0);
-      input.position(0);
-      fixture_le.read(input);
-      assertEquals(0x12efcdab, fixture_le.getValue());
-
-      /* Read 64-bits LE */
-      le = new IntegerDeclaration( 64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-      fixture_le = le.createDefinition(null, name);
-      bb.position(0);
-      input.position(0);
-      fixture_le.read(input);
-      assertEquals(0x9a78563412efcdabL, fixture_le.getValue());
-
     }
 
     /**

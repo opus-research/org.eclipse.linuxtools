@@ -66,7 +66,7 @@ public class RpmlintParser {
 	 * @return
 	 * 		a <code>RpmlintItem</code> ArrayList.
 	 */
-	public ArrayList<RpmlintItem> parseVisisted(ArrayList<String> visitedResources) {
+	public List<RpmlintItem> parseVisisted(List<String> visitedResources) {
 		String rpmlintPath = new ScopedPreferenceStore(InstanceScope.INSTANCE,Activator.PLUGIN_ID).getString(
 				PreferenceConstants.P_RPMLINT_PATH);
 		/*
@@ -223,11 +223,13 @@ public class RpmlintParser {
 				}
 
 				if (line.equals(EMPTY_STRING)) {
-					if (item.getMessage() == null)
+					if (item.getMessage() == null) {
 						item.setMessage(description.substring(0, description.length() - 2));
+					}
 					int useOfTabsAndSpaces = getMixedUseOfTabsAndSpaces(item.getRefferedContent());
-					if (useOfTabsAndSpaces != -1)
+					if (useOfTabsAndSpaces != -1) {
 						item.setLineNbr(useOfTabsAndSpaces);
+					}
 					rpmlintItems.add(item);
 					item = new RpmlintItem();
 

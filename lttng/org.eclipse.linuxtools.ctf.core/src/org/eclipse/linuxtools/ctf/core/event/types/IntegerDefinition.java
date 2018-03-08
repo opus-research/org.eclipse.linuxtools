@@ -111,18 +111,8 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
         int length = declaration.getLength();
         long bits = 0;
 
-        /*
-         * Is the endianness of this field the same as the endianness of
-         * the input buffer?
-         * No, then temporarily set the buffer's endianness to this field's
-         * just to read the data
-         */
-        ByteOrder byteOrder = input.getByteOrder();
-        if ( (this.declaration.getByteOrder() != null) && (this.declaration.getByteOrder() != input.getByteOrder()) ) {
-            input.setByteOrder(this.declaration.getByteOrder());
-        }
-
         // TODO: use the eventual getLong from BitBuffer
+
         if (length == 64) {
             long low = input.getInt(32, false);
             low = low & 0x00000000FFFFFFFFL;
@@ -143,13 +133,6 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
             if( (longNegBit == (bits & longNegBit)) && signed) {
                 bits |= 0xffffffff00000000L;
             }
-        }
-        /*
-         * Put the input buffer's endianness back to original if it was
-         * changed
-         */
-        if (byteOrder != input.getByteOrder()) {
-            input.setByteOrder(byteOrder);
         }
 
         value = bits;

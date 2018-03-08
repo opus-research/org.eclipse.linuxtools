@@ -39,21 +39,21 @@ import com.ibm.icu.util.StringTokenizer;
 
 /**
  * Hyperlink detector for source, patch and defines in the spec file.
- * 
+ *
  */
 public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector {
 
 	private static final String PATCH_IDENTIFIER = "%patch"; //$NON-NLS-1$
 	private static final String SOURCE_IDENTIFIER = "%{SOURCE"; //$NON-NLS-1$
 	private Specfile specfile;
-	
+
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
 			IRegion region, boolean canShowMultipleHyperlinks) {
-		
+
 		if (region == null || textViewer == null) {
 			return null;
 		}
-		
+
 		if (specfile == null) {
 			SpecfileEditor a = ((SpecfileEditor) this.getAdapter(SpecfileEditor.class));
 			if (a != null) {
@@ -90,7 +90,7 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 			Pattern defineRegexp = Pattern.compile("%\\{(.*?)\\}"); //$NON-NLS-1$
 			Matcher fit = defineRegexp.matcher(tempWord);
 			while (fit.find()){
-				if ((fit.start() <= offsetInLine) && (offsetInLine <= fit.end())){
+				if ((fit.start()+tempLineOffset <= offsetInLine) && (offsetInLine <= fit.end()+tempLineOffset)){
 					tempWord = fit.group();
 					wordOffsetInLine = fit.start();
 					tempLineOffset += fit.start();
@@ -108,16 +108,18 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 					word.substring(SOURCE_IDENTIFIER.length(),
 							word.length() - 1)).intValue();
 			SpecfileSource source = specfile.getSource(sourceNumber);
-			if (source != null)
+			if (source != null) {
 				return prepareHyperlink(lineInfo, line, word, source);
+			}
 		} else if (word.startsWith(PATCH_IDENTIFIER)) {
 
 			int sourceNumber = Integer.valueOf(
 					word.substring(PATCH_IDENTIFIER.length(), word.length()))
 					.intValue();
 			SpecfileSource source = specfile.getPatch(sourceNumber);
-			if (source != null)
+			if (source != null) {
 				return prepareHyperlink(lineInfo, line, word, source);
+			}
 		} else {
 			String defineName = getDefineName(word);
 			SpecfileDefine define = specfile.getDefine(defineName);
@@ -150,19 +152,19 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 		if (editor.getEditorInput() instanceof FileEditorInput) {
 			IFile original = ((FileEditorInput) editor.getEditorInput()).getFile();
 			return new IHyperlink[] { new SpecfileElementHyperlink(urlRegion,
-					source, original) };			
+					source, original) };
 		} else {
 			return null;
 		}
-		
+
 
 	}
-	
+
 	private IHyperlink[] prepareHyperlink(IRegion lineInfo, String line,
 			String word, SpecfileElement source) {
 		return prepareHyperlink(lineInfo, line, word, source, 0);
 	}
-	
+
 	public void setSpecfile(Specfile specfile) {
 		this.specfile = specfile;
 	}
