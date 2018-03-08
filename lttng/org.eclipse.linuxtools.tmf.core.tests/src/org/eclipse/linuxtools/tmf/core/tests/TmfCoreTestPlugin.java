@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.tmf.core.tests;
 
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.linuxtools.internal.tmf.core.Tracer;
+import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -21,7 +21,6 @@ import org.osgi.framework.BundleContext;
  * <p>
  * The activator class controls the plug-in life cycle
  */
-@SuppressWarnings({ "nls" })
 public class TmfCoreTestPlugin extends Plugin {
 
     // ------------------------------------------------------------------------
@@ -72,12 +71,12 @@ public class TmfCoreTestPlugin extends Plugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		setDefault(this);
-		Tracer.init();
+		TmfCoreTracer.init();
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		Tracer.stop();
+		TmfCoreTracer.stop();
 		setDefault(null);
 		super.stop(context);
 	}

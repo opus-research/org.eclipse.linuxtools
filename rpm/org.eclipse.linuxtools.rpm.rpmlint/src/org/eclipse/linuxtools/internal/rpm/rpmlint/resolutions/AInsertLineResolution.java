@@ -20,22 +20,22 @@ import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
  * Defines the common functionality for a resolution which fix is only inserting line.
  *
  */
-abstract public class AInsertLineResolution extends ARpmlintResolution {
+public abstract class AInsertLineResolution extends ARpmlintResolution {
 
 	protected int markerLine;
-	
+
 	/**
 	 * Returns the line to be inserted for the fix.
-	 * Note: If there are some whitespace requirements for this line(e.g. an empty line after it) 
+	 * Note: If there are some whitespace requirements for this line(e.g. an empty line after it)
 	 * just append it to the real fix.
-	 * 
+	 *
 	 * @return The entire line for the fix.
 	 */
 	public abstract String getLineToInsert();
-	
+
 	/**
 	 * Returns the number of the line, which will succeed the inserted line.
-	 * 
+	 *
 	 * @param editor The Specfile editor if it's needed for determining the correct place.
 	 * @return The number of the line following the inserted line.
 	 */
@@ -43,7 +43,7 @@ abstract public class AInsertLineResolution extends ARpmlintResolution {
 
 	/**
 	 * Inserts an entire line at a given position as a resolution for a problem.
-	 * 
+	 *
 	 * @see org.eclipse.ui.IMarkerResolution#run(org.eclipse.core.resources.IMarker)
 	 */
 	public void run(IMarker marker) {
@@ -53,8 +53,8 @@ abstract public class AInsertLineResolution extends ARpmlintResolution {
 			return;
 		}
 		// Get the document
-		IDocument doc = editor.getSpecfileSourceViewer().getDocument();
-		
+		IDocument doc = (IDocument) editor.getAdapter(IDocument.class);
+
 		try {
 			int index = doc.getLineOffset(getLineNumberForInsert(editor));
 			doc.replace(index, 0, getLineToInsert());

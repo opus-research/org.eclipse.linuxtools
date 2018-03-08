@@ -12,7 +12,9 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
+import java.util.Arrays;
+
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF array definiton
@@ -68,7 +70,7 @@ public class ArrayDefinition extends Definition {
      * @return the definitions
      */
     public Definition[] getDefinitions() {
-        return definitions;
+        return Arrays.copyOf(definitions, definitions.length);
     }
 
     /**
@@ -76,7 +78,7 @@ public class ArrayDefinition extends Definition {
      *            the definitions to set
      */
     public void setDefinitions(Definition[] definitions) {
-        this.definitions = definitions;
+        this.definitions = Arrays.copyOf(definitions, definitions.length);
     }
 
     /**

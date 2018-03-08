@@ -22,9 +22,13 @@ public class SystemTapScriptLaunchConfigurationTabGroup extends
 	public SystemTapScriptLaunchConfigurationTabGroup() {
 	}
 
+	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		AbstractLaunchConfigurationTab[] tabs = new AbstractLaunchConfigurationTab[] {
-				new SystemTapScriptLaunchConfigurationTab(), new CommonTab() };
+				new SystemTapScriptLaunchConfigurationTab(),
+				new SystemTapScriptOptionsTab(),
+				new SystemTapScriptGraphOptionsTab(),
+				new CommonTab() };
 		setTabs(tabs);
 	}
 

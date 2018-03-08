@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Eclipse Linuxtools Changelog Tests
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.linuxtools.changelog.tests
 Bundle-Version: 2.7.0.qualifier
-Bundle-Vendor: Eclipse.org
+Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: 
  org.eclipse.jdt.core,
  org.eclipse.jdt.ui,
- org.junit4;bundle-version="4.8.1"
+ org.junit;bundle-version="4.8.1"
 Fragment-Host: org.eclipse.linuxtools.changelog.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy

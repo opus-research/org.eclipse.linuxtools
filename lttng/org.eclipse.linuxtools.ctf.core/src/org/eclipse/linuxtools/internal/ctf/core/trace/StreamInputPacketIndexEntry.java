@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -104,11 +104,6 @@ public class StreamInputPacketIndexEntry {
         return (ts >= timestampBegin) && (ts <= timestampEnd);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return "StreamInputPacketIndexEntry [offsetBytes=" + offsetBytes //$NON-NLS-1$
@@ -203,7 +198,7 @@ public class StreamInputPacketIndexEntry {
     }
 
     /**
-     * @return the lostEvents
+     * @return the lostEvents in this packet
      */
     public long getLostEvents() {
         return lostEvents;
@@ -220,7 +215,7 @@ public class StreamInputPacketIndexEntry {
      * Add an attribute to this index entry
      *
      * @param field
-     *            The name of the atrribute
+     *            The name of the attribute
      * @param value
      *            The value to insert
      */

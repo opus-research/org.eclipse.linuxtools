@@ -2,9 +2,11 @@
 <feature
       id="org.eclipse.linuxtools.systemtap"
       label="%description"
-      version="1.2.0.qualifier"
+      version="2.0.0.qualifier"
       provider-name="%featureProvider"
-      os="linux">
+      os="linux"
+      license-feature="org.eclipse.linuxtools.license.feature"
+      license-feature-version="1.0.0.qualifier">
 
    <description>
       %description
@@ -56,7 +58,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui"
+         id="org.eclipse.linuxtools.systemtap.graphingapi.core"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -69,21 +71,14 @@
          version="0.0.0"/>
 
    <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.graphingapi.ui"
+         id="org.eclipse.linuxtools.systemtap.graphingapi.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.logging"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.structures"
+         id="org.eclipse.linuxtools.systemtap.structures"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -105,27 +100,6 @@
 
    <plugin
          id="org.eclipse.linuxtools.systemtap.ui.ide"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.dashboard"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.dashboardextension"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.linuxtools.systemtap.ui.graphicalrun"
          download-size="0"
          install-size="0"
          version="0.0.0"

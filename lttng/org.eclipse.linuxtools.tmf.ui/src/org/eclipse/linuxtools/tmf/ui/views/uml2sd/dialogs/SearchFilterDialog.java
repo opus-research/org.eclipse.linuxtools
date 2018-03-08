@@ -1,16 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -76,46 +75,48 @@ public class SearchFilterDialog extends Dialog {
     /**
      * The sequence diagram view reference.
      */
-    protected SDView fSdView = null;
+    private final SDView fSdView;
 
     /**
      * The tab with the controls for a Criteria
      */
-    protected TabFolder fTabFolder = null;
+    private final TabFolder fTabFolder = null;
 
     /**
      * The Criteria updated by this dialog
      */
-    protected Criteria fCriteria = null;
+    private Criteria fCriteria = null;
 
     /**
      * The find/filter provider telling which graph nodes are supported
      */
-    protected ISDGraphNodeSupporter fProvider = null;
+    private final ISDGraphNodeSupporter fProvider;
 
     /**
-     * The okText is the text for the Ok button and title is the title of the dialog.<br>
-     * Both depend (okText and title (below)) on the usage that is done of this dialog
-     * (find or filter).
+     * The okText is the text for the Ok button and title is the title of the
+     * dialog.<br>
+     * Both depend (okText and title (below)) on the usage that is done of this
+     * dialog (find or filter).
      */
-    protected String fOkText;
+    private String fOkText;
 
     /**
      * The title is the title of the dialog.<br>
      * Both depend (okText and title) on the usage that is done of this dialog
      * (find or filter).
      */
-    protected String fTitle;
+    private String fTitle;
 
     /**
      * List of string expressions that have been searched already
      */
-    protected String[] fExpressionList;
+    private String[] fExpressionList;
 
     /**
-     * find is true if the dialog is for the find feature and false for filter feature
+     * find is true if the dialog is for the find feature and false for filter
+     * feature
      */
-    protected boolean fIsFind;
+    private boolean fIsFind;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -123,10 +124,14 @@ public class SearchFilterDialog extends Dialog {
     /**
      * Standard constructor
      *
-     * @param view A sequence diagram view reference
-     * @param provider A graph node supporter provider
-     * @param filter A flag to indicate filtering (true) or finding (false)
-     * @param style Style bits
+     * @param view
+     *            A sequence diagram view reference
+     * @param provider
+     *            A graph node supporter provider
+     * @param filter
+     *            A flag to indicate filtering (true) or finding (false)
+     * @param style
+     *            Style bits
      */
     public SearchFilterDialog(SDView view, ISDGraphNodeSupporter provider, boolean filter, int style) {
         super(view.getSDWidget().getShell());
@@ -140,10 +145,6 @@ public class SearchFilterDialog extends Dialog {
     // Methods
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     public Control createDialogArea(Composite arg0) {
         if (fIsFind) {
@@ -182,11 +183,11 @@ public class SearchFilterDialog extends Dialog {
         if (fOkText != null) {
             getButton(IDialogConstants.OK_ID).setText(fOkText);
         } else {
-            getButton(IDialogConstants.OK_ID).setText(SDMessages._21);
+            getButton(IDialogConstants.OK_ID).setText(Messages.SequenceDiagram_Find);
         }
 
         if (fIsFind) {
-            getButton(IDialogConstants.CANCEL_ID).setText(SDMessages._22);
+            getButton(IDialogConstants.CANCEL_ID).setText(Messages.SequenceDiagram_Close);
         }
 
         Button okButton = getButton(IDialogConstants.OK_ID);
@@ -199,7 +200,7 @@ public class SearchFilterDialog extends Dialog {
         if (fTitle != null) {
             getShell().setText(fTitle);
         } else {
-            getShell().setText(SDMessages._24);
+            getShell().setText(Messages.SequenceDiagram_SequenceDiagramFind);
         }
 
         getShell().pack();
@@ -210,8 +211,8 @@ public class SearchFilterDialog extends Dialog {
     }
 
     /**
-	 * Loads criteria from the dialog settings which are saved in the workspace.
-	 */
+     * Loads criteria from the dialog settings which are saved in the workspace.
+     */
     @SuppressWarnings("rawtypes")
     protected void loadCriteria() {
 
@@ -249,8 +250,8 @@ public class SearchFilterDialog extends Dialog {
     }
 
     /**
-     * Called when the dialog box ok button is pressed and calls back
-     * the appropriate action provider (ISDFilterProvider or ISDFindProvider).
+     * Called when the dialog box ok button is pressed and calls back the
+     * appropriate action provider (ISDFilterProvider or ISDFindProvider).
      */
     @Override
     public void okPressed() {
@@ -266,10 +267,6 @@ public class SearchFilterDialog extends Dialog {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#cancelPressed()
-     */
     @Override
     public void cancelPressed() {
         if (fIsFind) {
@@ -283,8 +280,8 @@ public class SearchFilterDialog extends Dialog {
     }
 
     /**
-	 * Saves the criteria to the dialog settings within the workspace.
-	 */
+     * Saves the criteria to the dialog settings within the workspace.
+     */
     public void saveCriteria() {
         String CRITERIA = FIND_CRITERIA;
         String EXPRESSION_LIST = FIND_EXPRESSION_LIST;
@@ -320,10 +317,10 @@ public class SearchFilterDialog extends Dialog {
     }
 
     /**
-	 * Returns the criteria
-	 *
-	 * @return the criteria
-	 */
+     * Returns the criteria
+     *
+     * @return the criteria
+     */
     public Criteria getCriteria() {
         return fCriteria;
     }
@@ -331,7 +328,8 @@ public class SearchFilterDialog extends Dialog {
     /**
      * Sets the criteria.
      *
-     * @param criteria the criteria to set.
+     * @param criteria
+     *            the criteria to set.
      */
     public void setCriteria(Criteria criteria) {
         fCriteria = criteria;
@@ -372,7 +370,8 @@ public class SearchFilterDialog extends Dialog {
      * Initialize the dialog with the settings of an existing Criteria<br>
      * Criteria must not be null and the TabContents must have been created
      *
-     * @param from the criteria to copy from
+     * @param from
+     *            the criteria to copy from
      */
     public void copyFromCriteria(Criteria from) {
         TabContents content = getTabContents();
@@ -391,7 +390,8 @@ public class SearchFilterDialog extends Dialog {
     /**
      * Sets the text to be used for the ok button
      *
-     * @param okText text to set
+     * @param okText
+     *            text to set
      */
     public void setOkText(String okText) {
         fOkText = okText;
@@ -400,9 +400,53 @@ public class SearchFilterDialog extends Dialog {
     /**
      * Sets the title to be used for the dialog box.
      *
-     * @param title The title to set
+     * @param title
+     *            The title to set
      */
     public void setTitle(String title) {
         fTitle = title;
     }
+
+    /**
+     * Gets the text to be used for the ok button
+     *
+     * @return the text to be used for the ok button
+     * @since 2.0
+     */
+    public String getOkText() {
+        return fOkText;
+    }
+
+    /**
+     * Sets the IsFind flag (true for find, else for filter)
+     *
+     * @param flag value to set
+     * @since 2.0
+     */
+    protected void setIsFind(boolean flag) {
+        fIsFind = flag;
+    }
+
+    /**
+     * Gets the title to be used for the dialog box.
+     *
+     * @return the title to be used for the dialog box.
+     * @since 2.0
+     */
+    public String getTitle() {
+        return fTitle;
+    }
+
+    /**
+     * Gets the IsFind flag (true for find, else for filter)
+     *
+     * @return true for find, else for filter
+     * @since 2.0
+     */
+    protected boolean isFind() {
+        return fIsFind;
+    }
+
+
+
 }

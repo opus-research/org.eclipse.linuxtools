@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,7 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Changed to updated histogram data model
+ *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -27,8 +28,8 @@ import org.eclipse.swt.widgets.Display;
  * A histogram widget that displays the event distribution of a whole trace.
  * <p>
  * It also features a selected range window that can be dragged and zoomed.
- * 
- * @version 1.0
+ *
+ * @version 1.1
  * @author Francois Chouinard
  */
 public class FullTraceHistogram extends Histogram implements MouseMoveListener {
@@ -46,7 +47,7 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
 
     private final HistogramZoom fZoom;
 
-    private long fRangeStartTime;
+    private long fRangeStartTime = 0L;
     private long fRangeDuration;
 
     // ------------------------------------------------------------------------
@@ -54,14 +55,15 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
     // ------------------------------------------------------------------------
 
     /**
-     * Standard Constructor.
-     * 
-     * @param view A reference to the parent histogram view 
+     * Full Constructor
+     *
+     * @param view A reference to the parent histogram view
      * @param parent A reference to the parent composite
      */
     public FullTraceHistogram(HistogramView view, Composite parent) {
         super(view, parent);
-        fZoom = new HistogramZoom(this, fCanvas, getStartTime(), getTimeLimit());
+        fZoom = new HistogramZoom(this, getStartTime(), getTimeLimit());
+        addMouseWheelListener(fZoom);
         fCanvas.addMouseMoveListener(this);
     }
 
@@ -75,9 +77,20 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
     // Operations
     // ------------------------------------------------------------------------
 
+    @Override
+    public void clear() {
+        fRangeStartTime = 0L;
+        fRangeDuration = 0L;
+        if (fZoom != null) {
+            fZoom.setFullRange(0L, 0L);
+            fZoom.setNewRange(0L, 0L);
+        }
+        super.clear();
+    }
+
     /**
-     * Sets the time range of the full histogram.  
-     * 
+     * Sets the time range of the full histogram.
+     *
      * @param startTime A start time
      * @param endTime A end time
      */
@@ -87,9 +100,9 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
 
     /**
      * Sets the selected time range.
-     * 
-     * @param startTime A start time
-     * @param duration A window duration
+     *
+     * @param startTime The histogram start time
+     * @param duration The histogram duration
      */
     public void setTimeRange(long startTime, long duration) {
         fRangeStartTime = startTime;
@@ -115,7 +128,7 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         fMouseDown = true;
         fStartPosition = event.x;
     }
- 
+
     @Override
     public void mouseUp(MouseEvent event) {
         if (fMouseDown) {
@@ -125,13 +138,13 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
                 super.mouseDown(event);
                 return;
             }
- 
-            ((HistogramView) fParentView).updateTimeRange(fRangeStartTime, fRangeStartTime + fZoom.getDuration());
+
+            ((HistogramView) fParentView).updateTimeRange(fRangeStartTime, fRangeStartTime + fRangeDuration);
 
         }
     }
- 
-    
+
+
     // ------------------------------------------------------------------------
     // MouseMoveListener
     // ------------------------------------------------------------------------
@@ -171,7 +184,7 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         GC rangeWindowGC = new GC(rangeRectangleImage);
 
         if ((fScaledData != null) && (fRangeStartTime != 0)) {
-            drawTimeRangeWindow(rangeWindowGC, rangeRectangleImage);
+            drawTimeRangeWindow(rangeWindowGC);
         }
 
         // Draws the buffer image onto the canvas.
@@ -181,10 +194,10 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         rangeRectangleImage.dispose();
     }
 
-    private void drawTimeRangeWindow(GC imageGC, Image image) {
+    private void drawTimeRangeWindow(GC imageGC) {
 
         // Map times to histogram coordinates
-        long bucketSpan = Math.max(fScaledData.fBucketDuration,1);
+        long bucketSpan = Math.max(fScaledData.fBucketDuration, 1);
         int rangeWidth = (int) (fRangeDuration / bucketSpan);
 
         int left = (int) ((fRangeStartTime - fDataModel.getFirstBucketTime()) / bucketSpan);
@@ -214,4 +227,12 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         imageGC.drawLine(center, (height / 2) - chHalfWidth, center, (height / 2) + chHalfWidth);
     }
 
+    /**
+     * Get the histogram zoom
+     * @return the histogram zoom
+     * @since 2.0
+     */
+    public HistogramZoom getZoom() {
+        return fZoom;
+    }
 }

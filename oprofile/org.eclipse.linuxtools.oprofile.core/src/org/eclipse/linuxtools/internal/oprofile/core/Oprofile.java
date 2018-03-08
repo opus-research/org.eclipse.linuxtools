@@ -7,8 +7,8 @@
  *
  * Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation
- *    Kent Sebastian <ksebasti@redhat.com> - 
- *******************************************************************************/ 
+ *    Kent Sebastian <ksebasti@redhat.com> -
+ *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.oprofile.core;
 
@@ -38,21 +38,22 @@ public class Oprofile
 		"/dev/oprofile/cpu_type", //$NON-NLS-1$
 		"/proc/sys/dev/oprofile/cpu_type"  //$NON-NLS-1$
 	};
-	
-	// Oprofile information
+
+	/**
+	 *  Oprofile information
+	 */
 	private static OpInfo info;
 
-	@Deprecated
-	public static IProject currentProject;
-	
-	// Make sure that oprofile is ready to go
+	/**
+	 *  Make sure that oprofile is ready to go
+	 */
 	static {
 		initializeOprofileModule();
 	}
-	
+
 	/**
 	 * Initialize the oprofile module
-	 * 
+	 *
 	 * This function will check if the kernel module is
 	 * loaded. If it is not, it will attempt to load it
 	 * (which will cause the system to prompt the user for
@@ -62,7 +63,7 @@ public class Oprofile
 		// Check if kernel module is loaded, if not, try to load it
 		if (!isKernelModuleLoaded())
 			initializeOprofile();
-		
+
 		//it still may not have loaded, if not, critical error
 		if (!isKernelModuleLoaded()) {
 			OprofileCorePlugin.showErrorDialog("oprofileInit", null); //$NON-NLS-1$
@@ -71,11 +72,15 @@ public class Oprofile
 			initializeOprofileCore();
 		}
 	}
-	
+
 	// This requires more inside knowledge about Oprofile than one would like,
 	// but it is the only way of knowing whether the module is loaded (and we can
 	// succesfully call into the oprofile wrapper library without causing it to print out
 	// a lot of warnings).
+	/**
+	 * Check whether oprofile kernel module is loaded
+	 * @return true if the module is loaded, otherwise false
+	 */
 	private static boolean isKernelModuleLoaded() {
 		IRemoteFileProxy proxy = null;
 		try {
@@ -89,31 +94,35 @@ public class Oprofile
 			if (f.fetchInfo().exists())
 				return true;
 		}
-		
+
 		return false;
 	}
-	
-	// initialize oprofile module by calling `opcontrol --init`
+
+	/**
+	 *  Initialize oprofile module by calling <code>`opcontrol --init`</code>
+	 */
 	private static void initializeOprofile() {
 		try {
 			OprofileCorePlugin.getDefault().getOpcontrolProvider().initModule();
 		} catch (OpcontrolException e) {
 			OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
-		} 
+		}
 	}
 
 
-	// Initializes static data for oprofile.
+	/**
+	 *  Initializes static data for oprofile.
+	 */
 	private static void initializeOprofileCore () {
 		if (isKernelModuleLoaded()){
 			info = OpInfo.getInfo();
-			
+
 			if (info == null) {
 				throw new ExceptionInInitializerError(OprofileProperties.getString("fatal.opinfoNotParsed")); //$NON-NLS-1$
 			}
 		}
 	}
-	
+
 	/**
 	 * Queries oprofile for the number of counters on the current CPU.
 	 * Used only in launch config tabs.
@@ -125,7 +134,7 @@ public class Oprofile
 		}
 		return info.getNrCounters();
 	}
-	
+
 	/**
 	 * Returns the CPU speed of the current configuration.
 	 * @return the cpu speed in MHz
@@ -151,7 +160,7 @@ public class Oprofile
 	public static OpEvent[] getEvents(int num) {
 		return info.getEvents(num);
 	}
-	
+
 	/**
 	 * Returns the default location of the oprofile samples directory.
 	 * @return the default samples directory
@@ -159,7 +168,7 @@ public class Oprofile
 	public static String getDefaultSamplesDirectory() {
 		return info.getDefault(OpInfo.DEFAULT_SAMPLE_DIR);
 	}
-	
+
 	/**
 	 * Returns the oprofile daemon log file.
 	 * @return the log file (absolute pathname)
@@ -167,7 +176,7 @@ public class Oprofile
 	public static String getLogFile() {
 		return info.getDefault(OpInfo.DEFAULT_LOG_FILE);
 	}
-	
+
 	/**
 	 * Returns whether or not oprofile is in timer mode.
 	 * @return true if oprofile is in timer mode, false otherwise
@@ -178,7 +187,7 @@ public class Oprofile
 		}
 		return info.getTimerMode();
 	}
-	
+
 	/**
 	 * Checks the requested counter, event, and unit mask for vailidity.
 	 * @param ctr	the counter
@@ -194,10 +203,10 @@ public class Oprofile
 		} catch (InvocationTargetException e) {
 		} catch (InterruptedException e) {
 		}
-		
+
 		return (validResult[0] == CheckEventsProcessor.EVENT_OK);
 	}
-	
+
 	/**
 	 * Returns a list of all the events collected on the system, as well as
 	 * the sessions under each of them.
@@ -205,7 +214,7 @@ public class Oprofile
 	 */
 	public static OpModelEvent[] getEvents() {
 		OpModelEvent[] events = null;
-		
+
 		ArrayList<OpModelEvent> sessionList = new ArrayList<OpModelEvent>();
 		try {
 			IRunnableWithProgress opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().sessions(sessionList);
@@ -223,21 +232,22 @@ public class Oprofile
 	 * @param session the session for which to get samples
 	 * @param shell the composite shell to use for the progress dialog
 	 */
-	public static OpModelImage getModelData(String eventName, String sessionName) {		
+	public static OpModelImage getModelData(String eventName, String sessionName) {
 		OpModelImage image = new OpModelImage();
-		
+
 		final IRunnableWithProgress opxml;
 		try {
 			opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().modelData(eventName, sessionName, image);
 			opxml.run(null);
-		} catch (InvocationTargetException e) { 
-		} catch (InterruptedException e) { 
+		} catch (InvocationTargetException e) {
+		} catch (InterruptedException e) {
 		}
 
 		return image;
 	}
-	
+
 	/**
+	 * Check if oprofile kernel module is loaded and update Oprofile's information.
 	 * @since 1.1
 	 */
 	public static void updateInfo(){
@@ -248,43 +258,32 @@ public class Oprofile
 			info = OpInfo.getInfo();
 		}
 	}
-	
+
 	// Oprofile class has a static initializer and the code inside it needs to know which project
 	// is being profiled in order to get the path for the Linux Tools' binaries set for that project.
 	// For this reason the project property has to be set outside the Oprofile class
 	/**
+	 * OProfileProject class to set/get which project is being profiled
 	 * @since 1.1
 	 */
 	public static class OprofileProject {
 		private static IProject project;
 
+		/**
+		 * Set the project to be profiled
+		 * @param project
+		 */
 		public static void setProject(IProject project) {
 			OprofileProject.project = project;
 
 		}
+		/**
+		 * Get the project to be profiled
+		 * @return project
+		 */
 		public static IProject getProject() {
 			return project;
 		}
-	}
-
-	/**
-	 * @deprecated
-	 *
-	 * Use {@link OprofileProject#getProject()} instead.
-	 */
-	@Deprecated
-	public static IProject getCurrentProject() {
-		return currentProject;
-	}
-
-	/**
-	 * @deprecated
-	 *
-	 * Use {@link OprofileProject#setProject(IProject)} instead.
-	 */
-	@Deprecated
-	public static void setCurrentProject(IProject project) {
-		currentProject = project;
 	}
 
 }

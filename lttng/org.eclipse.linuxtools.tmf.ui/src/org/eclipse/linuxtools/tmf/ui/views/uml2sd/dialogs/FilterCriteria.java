@@ -1,16 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import java.util.Iterator;
@@ -49,19 +48,19 @@ public class FilterCriteria {
     /**
      * The criteria reference.
      */
-    protected Criteria fCriteria;
+    private Criteria fCriteria;
     /**
      * Flag whether this criteria is active or not
      */
-    protected boolean fIsActive;
+    private boolean fIsActive;
     /**
      * Flag whether this criteria is for positive filter or not
      */
-    protected boolean fIsPositive;
+    private boolean fIsPositive;
     /**
      * The loader class name.
      */
-    protected String fLoaderClassName;
+    private String fLoaderClassName;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -112,10 +111,7 @@ public class FilterCriteria {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(super.toString());

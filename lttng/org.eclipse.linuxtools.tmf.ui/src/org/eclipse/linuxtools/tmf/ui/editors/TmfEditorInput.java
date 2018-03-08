@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -30,7 +30,7 @@ import org.eclipse.ui.ide.IDE;
 public class TmfEditorInput implements IEditorInput {
 
     private final IFile fFile;
-    private final ITmfTrace<?> fTrace;
+    private final ITmfTrace fTrace;
 
     /**
      * Standard constructor
@@ -38,40 +38,42 @@ public class TmfEditorInput implements IEditorInput {
      * @param file The IFile pointer
      * @param trace Reference to the trace
      */
-    public TmfEditorInput(IFile file, ITmfTrace<?> trace) {
+    public TmfEditorInput(IFile file, ITmfTrace trace) {
         fFile = file;
         fTrace = trace;
     }
 
     @Override
-	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public Object getAdapter(Class adapter) {
         return null;
     }
 
     @Override
-	public boolean exists() {
-        return fFile.exists();
+    public boolean exists() {
+        /* prevent this input from appearing in "Files Most Recently Used" list,
+         * as this causes lingering reference to ITmfTrace in the platform */
+        return false;
     }
 
     @Override
-	public ImageDescriptor getImageDescriptor() {
+    public ImageDescriptor getImageDescriptor() {
         IContentType contentType = IDE.getContentType(fFile);
         return PlatformUI.getWorkbench().getEditorRegistry()
                 .getImageDescriptor(fFile.getName(), contentType);
     }
 
     @Override
-	public String getName() {
+    public String getName() {
         return fTrace.getName();
     }
 
     @Override
-	public IPersistableElement getPersistable() {
+    public IPersistableElement getPersistable() {
         return null;
     }
 
     @Override
-	public String getToolTipText() {
+    public String getToolTipText() {
         return fFile.getFullPath().makeRelative().toString();
     }
 
@@ -89,13 +91,10 @@ public class TmfEditorInput implements IEditorInput {
      *
      * @return The trace
      */
-    public ITmfTrace<?> getTrace() {
+    public ITmfTrace getTrace() {
         return fTrace;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -105,9 +104,6 @@ public class TmfEditorInput implements IEditorInput {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

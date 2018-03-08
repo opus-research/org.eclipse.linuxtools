@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,24 +15,24 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
 /**
  * Parser implementation for Uml2SD Test Traces.
  *
  */
-public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
+public class TmfUml2SDTestTrace implements ITmfEventParser {
 
-    ITmfTrace<TmfEvent> fEventStream;
+    ITmfTrace fEventStream;
 
     /**
      * Default Constructor
@@ -44,20 +44,19 @@ public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
      * Constructor
      * @param eventStream ITmfTrace implementation
      */
-    public TmfUml2SDTestTrace(ITmfTrace<TmfEvent> eventStream) {
+    public TmfUml2SDTestTrace(ITmfTrace eventStream) {
         fEventStream = eventStream;
     }
 
     /**
      * @param eventStream ITmfTrace implementation to set
      */
-    public void setTrace(ITmfTrace<TmfEvent> eventStream) {
+    public void setTrace(ITmfTrace eventStream) {
         fEventStream = eventStream;
     }
 
     @Override
-    @SuppressWarnings({ "nls" })
-    public TmfEvent parseEvent(ITmfContext context) {
+    public ITmfEvent parseEvent(ITmfContext context) {
         if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
         }
@@ -70,7 +69,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
 
         long location = 0;
         if (context != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
+            location = (Long) context.getLocation().getLocationInfo();
         }
 
         try {
@@ -96,12 +95,12 @@ public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
 
             // Pre-parse the content
             TmfEventField[] fields = new TmfEventField[3];
-            fields[0] = new TmfEventField("sender", sender);
-            fields[1] = new TmfEventField("receiver", receiver);
-            fields[2] = new TmfEventField("signal", signal);
+            fields[0] = new TmfEventField("sender", sender, null);
+            fields[1] = new TmfEventField("receiver", receiver, null);
+            fields[2] = new TmfEventField("signal", signal, null);
 
             ITmfEventField tmfContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content, fields);
-            TmfEvent tmfEvent = new TmfEvent(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
+            ITmfEvent tmfEvent = new TmfEvent(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
 
             return tmfEvent;
         } catch (final EOFException e) {

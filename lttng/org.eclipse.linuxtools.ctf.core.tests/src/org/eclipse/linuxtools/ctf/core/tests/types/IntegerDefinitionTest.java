@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
@@ -5,12 +16,11 @@ import static org.junit.Assert.assertNotNull;
 
 import java.nio.ByteOrder;
 
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,37 +34,16 @@ import org.junit.Test;
 public class IntegerDefinitionTest {
 
     private IntegerDefinition fixture;
-    String name = "testInt"; //$NON-NLS-1$
-    String clockName = "clock"; //$NON-NLS-1$
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(IntegerDefinitionTest.class);
-    }
+    String name = "testInt";
+    String clockName = "clock";
 
     /**
-     * Perform pre-test initialization. We know the structDef won't be null (or
-     * else the tests will fail), so we can safely suppress the warning.
+     * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-
-//        StructDefinition structDef = null;
-//        boolean found = false;
-        IntegerDeclaration id = new IntegerDeclaration( 1, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDeclaration id = new IntegerDeclaration(1, false, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
         fixture = id.createDefinition(null, name);
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -63,10 +52,10 @@ public class IntegerDefinitionTest {
      */
     @Test
     public void testIntegerDefinition() {
-        IntegerDeclaration declaration = new IntegerDeclaration(1, true, 1,
+        IntegerDeclaration declaration = new IntegerDeclaration(1, false, 1,
                 ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
         IDefinitionScope definitionScope = null;
-        String fieldName = ""; //$NON-NLS-1$
+        String fieldName = "";
 
         IntegerDefinition result = new IntegerDefinition(declaration,
                 definitionScope, fieldName);

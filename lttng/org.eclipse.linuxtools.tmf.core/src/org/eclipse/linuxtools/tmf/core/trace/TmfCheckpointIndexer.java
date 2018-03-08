@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,16 +20,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
+import org.eclipse.linuxtools.internal.tmf.core.Messages;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * A simple indexer that manages the trace index as an array of trace
@@ -44,27 +44,25 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
  * Locating a specific checkpoint is trivial for both rank (rank % interval) and
  * timestamp (bsearch in the array).
  *
- * @param <T> The trace event type
- *
  * @version 1.0
  * @author Francois Chouinard
  *
  * @see ITmfTrace
  * @see ITmfEvent
  */
-public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITmfTraceIndexer<T> {
+public class TmfCheckpointIndexer implements ITmfTraceIndexer {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    // The event trace to index
-    protected final ITmfTrace<ITmfEvent> fTrace;
+    /** The event trace to index */
+    protected final ITmfTrace fTrace;
 
-    // The interval between checkpoints
+    /** The interval between checkpoints */
     private final int fCheckpointInterval;
 
-    // The event trace to index
+    /** The event trace to index */
     private boolean fIsIndexing;
 
     /**
@@ -76,7 +74,7 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
     /**
      * The indexing request
      */
-    private ITmfEventRequest<ITmfEvent> fIndexingRequest = null;
+    private ITmfEventRequest fIndexingRequest = null;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -88,7 +86,7 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
      *
      * @param trace the trace to index
      */
-    public TmfCheckpointIndexer(final ITmfTrace<ITmfEvent> trace) {
+    public TmfCheckpointIndexer(final ITmfTrace trace) {
         this(trace, TmfDataProvider.DEFAULT_BLOCK_SIZE);
     }
 
@@ -98,16 +96,13 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
      * @param trace the trace to index
      * @param interval the checkpoints interval
      */
-    public TmfCheckpointIndexer(final ITmfTrace<ITmfEvent> trace, final int interval) {
+    public TmfCheckpointIndexer(final ITmfTrace trace, final int interval) {
         fTrace = trace;
         fCheckpointInterval = interval;
         fTraceIndex = new ArrayList<ITmfCheckpoint>();
         fIsIndexing = false;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#dispose()
-     */
     @Override
     public void dispose() {
         if ((fIndexingRequest != null) && !fIndexingRequest.isCompleted()) {
@@ -120,9 +115,6 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
     // ITmfTraceIndexer - isIndexing
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#isIndexing()
-     */
     @Override
     public boolean isIndexing() {
         return fIsIndexing;
@@ -132,15 +124,8 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
     // ITmfTraceIndexer - buildIndex
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     *
-     * The index is a list of contexts that point to events at regular interval
-     * (rank-wise) in the trace. After it is built, the index can be used to
-     * quickly access any event by rank or timestamp (using seekIndex()).
-     *
-     * The index is built simply by reading the trace
-     *
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#buildIndex(long, org.eclipse.linuxtools.tmf.core.event.TmfTimeRange, boolean)
+    /**
+     * @since 2.0
      */
     @Override
     public void buildIndex(final long offset, final TmfTimeRange range, final boolean waitForCompletion) {
@@ -157,9 +142,16 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
+                monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                 while (!monitor.isCanceled()) {
                     try {
-                        Thread.sleep(100);
+                        long prevNbEvents = fTrace.getNbEvents();
+                        Thread.sleep(250);
+                        long nbEvents = fTrace.getNbEvents();
+                        setName(Messages.TmfCheckpointIndexer_Indexing + ' ' + fTrace.getName() + " (" + nbEvents + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                        // setName doesn't refresh the UI, setTaskName does
+                        long rate = (nbEvents - prevNbEvents) * 4;
+                        monitor.setTaskName(rate + " " + Messages.TmfCheckpointIndexer_EventsPerSecond); //$NON-NLS-1$
                     } catch (final InterruptedException e) {
                         return Status.OK_STATUS;
                     }
@@ -172,7 +164,7 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
 
         // Build a background request for all the trace data. The index is
         // updated as we go by readNextEvent().
-        fIndexingRequest = new TmfEventRequest<ITmfEvent>(ITmfEvent.class,
+        fIndexingRequest = new TmfEventRequest(ITmfEvent.class,
                 range, offset, TmfDataRequest.ALL_DATA, fCheckpointInterval, ITmfDataRequest.ExecutionType.BACKGROUND)
         {
             @Override
@@ -229,18 +221,17 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
     // ITmfTraceIndexer - updateIndex
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#updateIndex(org.eclipse.linuxtools.tmf.core.trace.ITmfContext, org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp)
+    /**
+     * @since 2.0
      */
     @Override
     public synchronized void updateIndex(final ITmfContext context, final ITmfTimestamp timestamp) {
-        final long rank = context.getRank();
-        if ((rank % fCheckpointInterval) == 0) {
+        if ((context.getRank() % fCheckpointInterval) == 0) {
             // Determine the table position
-            final long position = rank / fCheckpointInterval;
+            final long position = context.getRank() / fCheckpointInterval;
             // Add new entry at proper location (if empty)
             if (fTraceIndex.size() == position) {
-                fTraceIndex.add(new TmfCheckpoint(timestamp.clone(), saveContext(context)));
+                fTraceIndex.add(new TmfCheckpoint(timestamp, context.getLocation()));
             }
         }
     }
@@ -249,8 +240,8 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
     // ITmfTraceIndexer - seekIndex
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#seekIndex(org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp)
+    /**
+     * @since 2.0
      */
     @Override
     public synchronized ITmfContext seekIndex(final ITmfTimestamp timestamp) {
@@ -267,15 +258,16 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
         int index = Collections.binarySearch(fTraceIndex, new TmfCheckpoint(timestamp, null));
         if (index < 0) {
             index = Math.max(0, -(index + 2));
+        } else {
+            // If timestamp was in the list, use previous index to be able to find the
+            // first event with the same timestamp before the checkpoint
+            index = Math.max(0, index - 1);
         }
 
         // Position the trace at the checkpoint
         return restoreCheckpoint(index);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#seekIndex(long)
-     */
     @Override
     public ITmfContext seekIndex(final long rank) {
 
@@ -298,7 +290,7 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
      * @return the corresponding context
      */
     private ITmfContext restoreCheckpoint(final int checkpoint) {
-        ITmfLocation<?> location = null;
+        ITmfLocation location = null;
         int index = 0;
         synchronized (fTraceIndex) {
             if (!fTraceIndex.isEmpty()) {
@@ -306,7 +298,7 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
                 if (index >= fTraceIndex.size()) {
                     index = fTraceIndex.size() - 1;
                 }
-                return restoreContext(fTraceIndex.get(index).getContext());
+                location = fTraceIndex.get(index).getLocation();
             }
         }
         final ITmfContext context = fTrace.seekEvent(location);
@@ -323,67 +315,6 @@ public class TmfCheckpointIndexer<T extends ITmfTrace<ITmfEvent>> implements ITm
      */
     protected List<ITmfCheckpoint> getTraceIndex() {
         return fTraceIndex;
-    }
-
-    // ------------------------------------------------------------------------
-    // Context conversion functions
-    // ------------------------------------------------------------------------
-
-    private static ITmfContext saveContext(ITmfContext context) {
-        if (context instanceof TmfExperimentContext) {
-            return saveExpContext(context);
-        }
-        TmfContext ctx = new TmfContext(context.getLocation().clone(), context.getRank());
-        return ctx;
-    }
-
-    private static ITmfContext saveExpContext(ITmfContext context) {
-        TmfExperimentContext expContext = (TmfExperimentContext) context;
-        int size = expContext.getContexts().length;
-        ITmfContext[] trcCtxts = new TmfContext[size];
-        for (int i = 0; i < size; i++) {
-            ITmfContext ctx = expContext.getContexts()[i];
-            trcCtxts[i] = (ctx != null) ? new TmfContext(ctx.getLocation().clone(), ctx.getRank()) : null;
-        }
-        TmfExperimentContext expCtx = new TmfExperimentContext(trcCtxts);
-        expCtx.setLocation(context.getLocation().clone());
-        expCtx.setRank(context.getRank());
-        ITmfEvent[] trcEvts = expCtx.getEvents();
-        for (int i = 0; i < size; i++) {
-            ITmfEvent event = expContext.getEvents()[i];
-            trcEvts[i] = (event != null) ? event.clone() : null;
-        }
-        return expCtx;
-    }
-
-    private ITmfContext restoreContext(ITmfContext context) {
-        if (context instanceof TmfExperimentContext) {
-            return restoreExpContext(context);
-        }
-        ITmfContext ctx = fTrace.seekEvent(context.getLocation());
-        ctx.setRank(context.getRank());
-        return ctx;
-    }
-
-    private ITmfContext restoreExpContext(ITmfContext context) {
-        TmfExperimentContext expContext = (TmfExperimentContext) context;
-        int size = expContext.getContexts().length;
-        ITmfContext[] trcCtxts = new ITmfContext[size];
-        for (int i = 0; i < size; i++) {
-            ITmfTrace<?> trace = ((TmfExperiment<?>) fTrace).getTraces()[i];
-            ITmfContext ctx = expContext.getContexts()[i];
-            trcCtxts[i] = trace.seekEvent(ctx.getLocation().clone());
-            trcCtxts[i].setRank(ctx.getRank());
-        }
-        TmfExperimentContext ctx = new TmfExperimentContext(trcCtxts);
-        ctx.setLocation(context.getLocation().clone());
-        ctx.setRank(context.getRank());
-        ITmfEvent[] trcEvts = expContext.getEvents();
-        for (int i = 0; i < size; i++) {
-            ITmfEvent event = trcEvts[i];
-            ctx.getEvents()[i] = (event != null) ? event.clone() : null;
-        }
-        return ctx;
     }
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
@@ -19,17 +20,20 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
@@ -37,8 +41,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-@SuppressWarnings({"nls","javadoc"})
-public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<TmfEvent> {
+@SuppressWarnings("javadoc")
+public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -52,6 +56,8 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
 
     // The synchronization lock
     private final ReentrantLock fLock = new ReentrantLock();
+
+    private ITmfTimestamp fInitialRangeOffset = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -85,9 +91,9 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final String path, final int cacheSize, final long interval) throws TmfTraceException {
-        super(null, TmfEvent.class, path, cacheSize, interval);
+        super(null, ITmfEvent.class, path, cacheSize, interval, null, null);
         try {
-            fTrace = new RandomAccessFile(path, "r");
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -99,7 +105,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @param cacheSize
      * @throws FileNotFoundException
      */
-    public TmfTraceStub(final String path, final int cacheSize, final ITmfTraceIndexer<?> indexer) throws TmfTraceException {
+    public TmfTraceStub(final String path, final int cacheSize, final ITmfTraceIndexer indexer) throws TmfTraceException {
         this(path, cacheSize, false, null, indexer);
     }
 
@@ -119,15 +125,15 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
-        super(null, TmfEvent.class, path, cacheSize);
+        super(null, ITmfEvent.class, path, cacheSize, 0, null, null);
         try {
-            fTrace = new RandomAccessFile(path, "r");
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
         setParser(new TmfEventParserStub(this));
         if (waitForCompletion) {
-            indexTrace();
+            indexTrace(true);
         }
     }
 
@@ -138,9 +144,9 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final IResource resource,  final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
-        super(resource, TmfEvent.class, path, cacheSize);
+        super(resource, ITmfEvent.class, path, cacheSize, 0, null, null);
         try {
-            fTrace = new RandomAccessFile(path, "r");
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -155,10 +161,10 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion,
-            final ITmfEventParser<TmfEvent> parser, final ITmfTraceIndexer<?> indexer) throws TmfTraceException {
-        super(null, TmfEvent.class, path, cacheSize, 0, indexer);
+            final ITmfEventParser parser, final ITmfTraceIndexer indexer) throws TmfTraceException {
+        super(null, ITmfEvent.class, path, cacheSize, 0, indexer, null);
         try {
-            fTrace = new RandomAccessFile(path, "r");
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -171,21 +177,17 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     public TmfTraceStub(final TmfTraceStub trace) throws TmfTraceException {
         super(trace);
         try {
-            fTrace = new RandomAccessFile(getPath(), "r");
+            fTrace = new RandomAccessFile(getPath(), "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
         setParser(new TmfEventParserStub(this));
     }
 
-    public void indexTrace() {
-        indexTrace(true);
-    }
-
     @Override
-    public void initTrace(final IResource resource, final String path, final Class<TmfEvent> type) throws TmfTraceException {
+    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         try {
-            fTrace = new RandomAccessFile(path, "r");
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -194,7 +196,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public void initialize(final IResource resource, final String path, final Class<TmfEvent> type) throws TmfTraceException {
+    public void initialize(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         super.initialize(resource, path, type);
     }
 
@@ -206,13 +208,24 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
         return fTrace;
     }
 
+    public void setInitialRangeOffset(ITmfTimestamp initOffset) {
+        fInitialRangeOffset = initOffset;
+    }
+
+    @Override
+    public ITmfTimestamp getInitialRangeOffset() {
+        if (fInitialRangeOffset != null) {
+            return fInitialRangeOffset;
+        }
+        return super.getInitialRangeOffset();
+    }
+
     // ------------------------------------------------------------------------
     // Operators
     // ------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
-    public TmfContext seekEvent(final ITmfLocation<?> location) {
+    public TmfContext seekEvent(final ITmfLocation location) {
         try {
             fLock.lock();
             try {
@@ -222,7 +235,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
                     long loc  = 0;
                     long rank = 0;
                     if (location != null) {
-                        loc = ((TmfLocation<Long>) location).getLocation();
+                        loc = (Long) location.getLocationInfo();
                         rank = ITmfContext.UNKNOWN_RANK;
                     }
                     if (loc != fTrace.getFilePointer()) {
@@ -251,7 +264,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
         fLock.lock();
         try {
             if (fTrace != null) {
-                final ITmfLocation<?> location = new TmfLocation<Long>(Math.round(ratio * fTrace.length()));
+                final ITmfLocation location = new TmfLongLocation(Long.valueOf(Math.round(ratio * fTrace.length())));
                 final TmfContext context = seekEvent(location);
                 context.setRank(ITmfContext.UNKNOWN_RANK);
                 return context;
@@ -266,12 +279,12 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public double getLocationRatio(ITmfLocation<?> location) {
+    public double getLocationRatio(ITmfLocation location) {
         fLock.lock();
         try {
             if (fTrace != null) {
-                if (location.getLocation() instanceof Long) {
-                    return (double) ((Long) location.getLocation()) / fTrace.length();
+                if (location.getLocationInfo() instanceof Long) {
+                    return (double) ((Long) location.getLocationInfo()) / fTrace.length();
                 }
             }
         } catch (final IOException e) {
@@ -283,11 +296,11 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public TmfLocation<Long> getCurrentLocation() {
+    public ITmfLocation getCurrentLocation() {
         fLock.lock();
         try {
             if (fTrace != null) {
-                return new TmfLocation<Long>(fTrace.getFilePointer());
+                return new TmfLongLocation(fTrace.getFilePointer());
             }
         } catch (final IOException e) {
             e.printStackTrace();
@@ -298,12 +311,12 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public TmfEvent parseEvent(final ITmfContext context) {
+    public ITmfEvent parseEvent(final ITmfContext context) {
         fLock.lock();
         try {
             // parseNextEvent will update the context
             if (fTrace != null && getParser() != null && context != null) {
-                final TmfEvent event = getParser().parseEvent(context.clone());
+                final ITmfEvent event = getParser().parseEvent(context);
                 return event;
             }
         } finally {
@@ -353,12 +366,12 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
         super.dispose();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(org.eclipse.core.resources.IProject, java.lang.String)
-     */
     @Override
-    public boolean validate(IProject project, String path) {
-        return fileExists(path);
+    public IStatus validate(IProject project, String path) {
+        if (fileExists(path)) {
+            return Status.OK_STATUS;
+        }
+        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
     }
 
 }

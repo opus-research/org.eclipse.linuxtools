@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -15,11 +15,11 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF variant definition (similar to a C union).
- * 
+ *
  * A variant is similar to a C union, only taking the minimum size of the types,
  * it is a compound data type that contains other datatypes in fields. they are
  * stored in an hashmap and indexed by names which are strings.
@@ -37,7 +37,7 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
     private VariantDeclaration declaration;
 
     private EnumDefinition tagDefinition;
-    private HashMap<String, Definition> definitions = new HashMap<String, Definition>();
+    private Map<String, Definition> definitions = new HashMap<String, Definition>();
     private String currentField;
 
     // ------------------------------------------------------------------------
@@ -57,13 +57,6 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
         this.declaration = declaration;
 
         Definition tagDef = definitionScope.lookupDefinition(declaration.getTag());
-        /*
-         * if (tagDef == null) { throw new
-         * Exception("Variant tag field not found"); }
-         *
-         * if (!(tagDef instanceof EnumDefinition)) { throw new
-         * Exception("Variant tag field not enum"); }
-         */
         this.tagDefinition = (EnumDefinition) tagDef;
 
         for (Map.Entry<String, IDeclaration> field : declaration.getFields().entrySet()) {
@@ -109,16 +102,18 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
     /**
      * Get the definitions in the variant
      * @return the definitions
+     * @since 2.0
      */
-    public HashMap<String, Definition> getDefinitions() {
+    public Map<String, Definition> getDefinitions() {
         return definitions;
     }
 
     /**
      * Set the definitions in a variant
      * @param definitions the definitions
+     * @since 2.0
      */
-    public void setDefinitions(HashMap<String, Definition> definitions) {
+    public void setDefinitions(Map<String, Definition> definitions) {
         this.definitions = definitions;
     }
 
@@ -128,11 +123,6 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
      */
     public void setCurrentField(String currentField) {
         this.currentField = currentField;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
     }
 
     /**
@@ -267,4 +257,10 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
                 : null);
     }
 
+    @Override
+    public String toString() {
+        return "{ " + getCurrentFieldName() + //$NON-NLS-1$
+                " = " + getCurrentField() + //$NON-NLS-1$
+                " }"; //$NON-NLS-1$
+    }
 }

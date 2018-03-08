@@ -1,24 +1,27 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2012 Ericsson.
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Intel Corporation - Initial API and implementation
- *   Ruslan A. Scherbakov, Intel - Initial API and implementation
- *   Alvaro Sanchez-Leon - Udpated for TMF
- *   Patrick Tasse - Refactoring
- *
+ *     Intel Corporation - Initial API and implementation
+ *     Ruslan A. Scherbakov, Intel - Initial API and implementation
+ *     Alvaro Sanchez-Leon - Udpated for TMF
+ *     Patrick Tasse - Refactoring
+ *     Marc-Andre Laperle - Add time zone preference
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.TimeZone;
 
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.graphics.Color;
@@ -37,29 +40,59 @@ import org.eclipse.swt.widgets.Display;
  */
 public class Utils {
 
+    private Utils() {
+    }
+
     /** Time format for dates and timestamp */
     public enum TimeFormat {
         /** Relative to the start of the trace */
         RELATIVE,
-        /** Absolute timestamp (ie, relative to the Unix epoch) */
-        ABSOLUTE
+
+        /**
+         * Absolute timestamp (ie, relative to the Unix epoch)
+         * @since 2.0
+         */
+        CALENDAR,
+
+        /**
+         * Timestamp displayed as a simple number
+         * @since 2.0
+         */
+        NUMBER,
     }
 
-    static public final int IMG_THREAD_RUNNING = 0;
-    static public final int IMG_THREAD_SUSPENDED = 1;
-    static public final int IMG_THREAD_STOPPED = 2;
-    static public final int IMG_METHOD_RUNNING = 3;
-    static public final int IMG_METHOD = 4;
-    static public final int IMG_NUM = 5;
-
-    static public final Object[] _empty = new Object[0];
-
+    /**
+     * Timestamp resolution
+     */
     public static enum Resolution {
-        SECONDS, MILLISEC, MICROSEC, NANOSEC
+        /** seconds */
+        SECONDS,
+
+        /** milliseconds */
+        MILLISEC,
+
+        /** microseconds */
+        MICROSEC,
+
+        /** nanoseconds */
+        NANOSEC
     }
 
-    static private final SimpleDateFormat stimeformat = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
-    static private final SimpleDateFormat sdateformat = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
+    private static final long SEC_IN_NS = 1000000000;
+    private static final long MILLISEC_IN_NS = 1000000;
+
+    /**
+     * Update the time and date formats to use the current time zone
+     *
+     * @since 2.1
+     */
+    public static void updateTimeZone() {
+        TimeZone timeZone = TmfTimePreferences.getInstance().getTimeZone();
+        TIME_FORMAT.setTimeZone(timeZone);
+        DATE_FORMAT.setTimeZone(timeZone);
+    }
 
     static Rectangle clone(Rectangle source) {
         return new Rectangle(source.x, source.y, source.width, source.height);
@@ -71,7 +104,7 @@ public class Utils {
      * @param rect
      *            The Rectangle to initialize
      */
-    static public void init(Rectangle rect) {
+    public static void init(Rectangle rect) {
         rect.x = 0;
         rect.y = 0;
         rect.width = 0;
@@ -92,7 +125,7 @@ public class Utils {
      * @param height
      *            The height of the rectangle
      */
-    static public void init(Rectangle rect, int x, int y, int width, int height) {
+    public static void init(Rectangle rect, int x, int y, int width, int height) {
         rect.x = x;
         rect.y = y;
         rect.width = width;
@@ -107,7 +140,7 @@ public class Utils {
      * @param source
      *            The reference Rectangle to copy
      */
-    static public void init(Rectangle rect, Rectangle source) {
+    public static void init(Rectangle rect, Rectangle source) {
         rect.x = source.x;
         rect.y = source.y;
         rect.width = source.width;
@@ -124,7 +157,7 @@ public class Utils {
      * @param y
      *            The reduction in height
      */
-    static public void deflate(Rectangle rect, int x, int y) {
+    public static void deflate(Rectangle rect, int x, int y) {
         rect.x += x;
         rect.y += y;
         rect.width -= x + x;
@@ -141,7 +174,7 @@ public class Utils {
      * @param y
      *            The augmentation in height
      */
-    static public void inflate(Rectangle rect, int x, int y) {
+    public static void inflate(Rectangle rect, int x, int y) {
         rect.x -= x;
         rect.y -= y;
         rect.width += x + x;
@@ -170,7 +203,7 @@ public class Utils {
      *            The gamma level for color 2
      * @return The resulting color
      */
-    static public Color mixColors(Device display, Color c1, Color c2, int w1,
+    public static Color mixColors(Device display, Color c1, Color c2, int w1,
             int w2) {
         return new Color(display, (w1 * c1.getRed() + w2 * c2.getRed())
                 / (w1 + w2), (w1 * c1.getGreen() + w2 * c2.getGreen())
@@ -185,7 +218,7 @@ public class Utils {
      *            The color ID
      * @return The resulting color
      */
-    static public Color getSysColor(int id) {
+    public static Color getSysColor(int id) {
         Color col = Display.getCurrent().getSystemColor(id);
         return new Color(col.getDevice(), col.getRGB());
     }
@@ -204,7 +237,7 @@ public class Utils {
      *            The gamma level for color 2
      * @return The resulting color
      */
-    static public Color mixColors(Color col1, Color col2, int w1, int w2) {
+    public static Color mixColors(Color col1, Color col2, int w1, int w2) {
         return mixColors(Display.getCurrent(), col1, col2, w1, w2);
     }
 
@@ -221,7 +254,7 @@ public class Utils {
      *            Should we transpose the color
      * @return The X coordinate where we have written
      */
-    static public int drawText(GC gc, String text, Rectangle rect, boolean transp) {
+    public static int drawText(GC gc, String text, Rectangle rect, boolean transp) {
         Point size = gc.stringExtent(text);
         gc.drawText(text, rect.x, rect.y, transp);
         return size.x;
@@ -242,10 +275,54 @@ public class Utils {
      *            Should we transpose the color
      * @return The X coordinate where we have written
      */
-    static public int drawText(GC gc, String text, int x, int y, boolean transp) {
+    public static int drawText(GC gc, String text, int x, int y, boolean transp) {
         Point size = gc.stringExtent(text);
         gc.drawText(text, x, y, transp);
         return size.x;
+    }
+
+    /**
+     * Draw text in a rectangle, trimming the text to prevent exceeding the specified width.
+     *
+     * @param gc
+     *            The SWT GC object
+     * @param text
+     *            The string to be drawn
+     * @param x
+     *            The x coordinate of the top left corner of the rectangular area where the text is to be drawn
+     * @param y
+     *            The y coordinate of the top left corner of the rectangular area where the text is to be drawn
+     * @param width
+     *            The width of the area to be drawn
+     * @param isCentered
+     *            If <code>true</code> the text will be centered in the available width if space permits
+     * @param isTransparent
+     *            If <code>true</code> the background will be transparent, otherwise it will be opaque
+     * @return The number of characters written
+     *
+     * @since 2.0
+     */
+    public static int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
+        int len = text.length();
+        int textWidth = 0;
+        boolean isReallyCentered = isCentered;
+        int realX = x;
+
+        while (len > 0) {
+            textWidth = gc.stringExtent(text.substring(0, len)).x;
+            if (textWidth <= width) {
+                break;
+            }
+            isReallyCentered = false;
+            len--;
+        }
+        if (len > 0) {
+            if (isReallyCentered) {
+                realX += (width - textWidth) / 2;
+            }
+            gc.drawText(text.substring(0, len), realX, y, isTransparent);
+        }
+        return len;
     }
 
     /**
@@ -256,31 +333,25 @@ public class Utils {
      * @param resolution the resolution
      * @return the formatted time
      */
-    static public String formatTime(long time, TimeFormat format, Resolution resolution) {
+    public static String formatTime(long time, TimeFormat format, Resolution resolution) {
         // if format is absolute (Calendar)
-        if (format == TimeFormat.ABSOLUTE) {
+        if (format == TimeFormat.CALENDAR) {
             return formatTimeAbs(time, resolution);
+        } else if (format == TimeFormat.NUMBER) {
+            return NumberFormat.getInstance().format(time);
         }
 
         StringBuffer str = new StringBuffer();
-        boolean neg = time < 0;
+        long t = time;
+        boolean neg = t < 0;
         if (neg) {
-            time = -time;
+            t = -t;
             str.append('-');
         }
 
-        long sec = (long) (time * 1E-9);
-        // TODO: Expand to make it possible to select the minute, second, nanosecond format
-        //printing minutes is suppressed just sec and ns
-        // if (sec / 60 < 10)
-        // str.append('0');
-        // str.append(sec / 60);
-        // str.append(':');
-        // sec %= 60;
-        // if (sec < 10)
-        // str.append('0');
+        long sec = t / SEC_IN_NS;
         str.append(sec);
-        String ns = formatNs(time, resolution);
+        String ns = formatNs(t, resolution);
         if (!ns.equals("")) { //$NON-NLS-1$
             str.append('.');
             str.append(ns);
@@ -297,7 +368,7 @@ public class Utils {
      * @return the formatted date
      */
     public static String formatDate(long absTime) {
-        String sdate = sdateformat.format(new Date((long) (absTime * 1E-6)));
+        String sdate = DATE_FORMAT.format(new Date(absTime / MILLISEC_IN_NS));
         return sdate;
     }
 
@@ -310,11 +381,11 @@ public class Utils {
      *            The resolution to use
      * @return the formatted time
      */
-    static public String formatTimeAbs(long time, Resolution res) {
+    public static String formatTimeAbs(long time, Resolution res) {
         StringBuffer str = new StringBuffer();
 
         // format time from nanoseconds to calendar time HH:MM:SS
-        String stime = stimeformat.format(new Date((long) (time * 1E-6)));
+        String stime = TIME_FORMAT.format(new Date(time / MILLISEC_IN_NS));
         str.append(stime);
         str.append('.');
         // append the Milliseconds, MicroSeconds and NanoSeconds as specified in
@@ -329,44 +400,24 @@ public class Utils {
      * seconds can be obtained by removing the last 9 digits: 1241207054 the
      * fractional portion of seconds, expressed in ns is: 171080214
      *
-     * @param time
+     * @param srcTime
      *            The source time in ns
      * @param res
      *            The Resolution to use
      * @return the formatted nanosec
      */
-    public static String formatNs(long time, Resolution res) {
+    public static String formatNs(long srcTime, Resolution res) {
         StringBuffer str = new StringBuffer();
-        boolean neg = time < 0;
-        if (neg) {
+        long time = srcTime;
+        if (time < 0) {
             time = -time;
         }
 
-        // The following approach could be used although performance
-        // decreases in half.
-        // String strVal = String.format("%09d", time);
-        // String tmp = strVal.substring(strVal.length() - 9);
-
         long ns = time;
-        ns %= 1000000000;
-        if (ns < 10) {
-            str.append("00000000"); //$NON-NLS-1$
-        } else if (ns < 100) {
-            str.append("0000000"); //$NON-NLS-1$
-        } else if (ns < 1000) {
-            str.append("000000"); //$NON-NLS-1$
-        } else if (ns < 10000) {
-            str.append("00000"); //$NON-NLS-1$
-        } else if (ns < 100000) {
-            str.append("0000"); //$NON-NLS-1$
-        } else if (ns < 1000000) {
-            str.append("000"); //$NON-NLS-1$
-        } else if (ns < 10000000) {
-            str.append("00"); //$NON-NLS-1$
-        } else if (ns < 100000000) {
-            str.append("0"); //$NON-NLS-1$
-        }
-        str.append(ns);
+        ns %= SEC_IN_NS;
+        String nanos = Long.toString(ns);
+        str.append("000000000".substring(nanos.length())); //$NON-NLS-1$
+        str.append(nanos);
 
         if (res == Resolution.MILLISEC) {
             return str.substring(0, 3);
@@ -391,15 +442,7 @@ public class Utils {
      *            The maximal accepted value
      * @return The value that was read
      */
-    static public int loadIntOption(String opt, int def, int min, int max) {
-        // int val =
-        // TraceUIPlugin.getDefault().getPreferenceStore().getInt(opt);
-        // if (0 == val)
-        // val = def;
-        // if (val < min)
-        // val = min;
-        // if (val > max)
-        // val = max;
+    public static int loadIntOption(String opt, int def, int min, int max) {
         return def;
     }
 
@@ -411,8 +454,7 @@ public class Utils {
      * @param val
      *            The option value
      */
-    static public void saveIntOption(String opt, int val) {
-        // TraceUIPlugin.getDefault().getPreferenceStore().setValue(opt, val);
+    public static void saveIntOption(String opt, int val) {
     }
 
     static ITimeEvent getFirstEvent(ITimeGraphEntry entry) {
@@ -456,7 +498,8 @@ public class Utils {
                 break;
             }
 
-            if (currEvent == null || currEvent.getTime() != nextStartTime) {
+            if (currEvent == null || currEvent.getTime() != nextStartTime ||
+                    (nextStartTime != time && currEvent.getDuration() != nextEvent.getDuration())) {
                 prevEvent = currEvent;
                 currEvent = nextEvent;
             }
@@ -487,11 +530,12 @@ public class Utils {
     /**
      * Pretty-print a method signature.
      *
-     * @param sig
+     * @param origSig
      *            The original signature
      * @return The pretty signature
      */
-    static public String fixMethodSignature(String sig) {
+    public static String fixMethodSignature(String origSig) {
+        String sig = origSig;
         int pos = sig.indexOf('(');
         if (pos >= 0) {
             String ret = sig.substring(0, pos);
@@ -504,12 +548,14 @@ public class Utils {
     /**
      * Restore an original method signature from a pretty-printed one.
      *
-     * @param sig
+     * @param ppSig
      *            The pretty-printed signature
      * @return The original method signature
      */
-    static public String restoreMethodSignature(String sig) {
+    public static String restoreMethodSignature(String ppSig) {
         String ret = ""; //$NON-NLS-1$
+        String sig = ppSig;
+
         int pos = sig.indexOf('(');
         if (pos >= 0) {
             ret = sig.substring(0, pos);
@@ -535,14 +581,14 @@ public class Utils {
     /**
      * Get the mangled type information from an array of types.
      *
-     * @param type
+     * @param typeStr
      *            The types to convert. See method implementation for what it
      *            expects.
      * @return The mangled string of types
      */
-    @SuppressWarnings("nls")
-    static public String getTypeSignature(String type) {
+    public static String getTypeSignature(String typeStr) {
         int dim = 0;
+        String type = typeStr;
         for (int j = 0; j < type.length(); j++) {
             if (type.charAt(j) == '[') {
                 dim++;
@@ -555,7 +601,7 @@ public class Utils {
         StringBuffer sig = new StringBuffer(""); //$NON-NLS-1$
         for (int j = 0; j < dim; j++)
          {
-            sig.append("[");                 //$NON-NLS-1$
+            sig.append("["); //$NON-NLS-1$
         }
         if (type.equals("boolean")) { //$NON-NLS-1$
             sig.append('Z');
@@ -594,7 +640,7 @@ public class Utils {
      *         same number obtained in two different ways to actually look
      *         different.
      */
-    static public int compare(double d1, double d2) {
+    public static int compare(double d1, double d2) {
         if (d1 > d2) {
             return 1;
         }
@@ -617,7 +663,7 @@ public class Utils {
      *         is smaller, equal, or bigger (alphabetically) than the second
      *         one.
      */
-    static public int compare(String s1, String s2) {
+    public static int compare(String s1, String s2) {
         if (s1 != null && s2 != null) {
             return s1.compareToIgnoreCase(s2);
         }

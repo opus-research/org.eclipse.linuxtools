@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,13 +12,13 @@
 package org.eclipse.linuxtools.tmf.core.uml2sd;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * <p>
  * A basic implementation of ITmfSyncSequenceDiagramEvent.
  * </p>
- * 
+ *
  * @version 1.0
  * @author Bernd Hufmann
  */
@@ -30,31 +30,31 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     /**
      * The start time of the sequence diagram event (i.e. time when signal was sent).
      */
-    final protected ITmfTimestamp fStartTime;
+    private final ITmfTimestamp fStartTime;
     /**
      * The name of the sender of the signal.
      */
-    final protected String fSender;
+    private final String fSender;
     /**
      * The name of the receiver of the signal.
      */
-    final protected String fReceiver;
+    private final String fReceiver;
     /**
      * The name of the signal
      */
-    final protected String fName;
+    private final String fName;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
     /**
      * Constructor
-     * 
+     *
      * @param startEvent The start event (on sender side).
      * @param sender The name of sender of signal.
      * @param receiver The Name of receiver of signal.
      * @param name - The signal name
-     */    
+     */
     public TmfSyncSequenceDiagramEvent(ITmfEvent startEvent, String sender, String receiver, String name) {
 
         if ((startEvent == null) || (sender == null) || (receiver == null) || (name == null)) {
@@ -65,7 +65,7 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
                     (name == null ? ", name=null" : "")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        fStartTime = startEvent.getTimestamp().clone();
+        fStartTime = startEvent.getTimestamp();
 
         fSender = sender;
         fReceiver = receiver;
@@ -76,36 +76,24 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getSender()
-     */
+
     @Override
     public String getSender() {
         return fSender;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getReceiver()
-     */
     @Override
     public String getReceiver() {
         return fReceiver;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getName()
-     */
     @Override
     public String getName() {
         return fName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getStartTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getStartTime() {

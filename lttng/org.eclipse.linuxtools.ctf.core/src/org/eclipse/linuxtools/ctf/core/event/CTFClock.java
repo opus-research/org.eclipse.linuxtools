@@ -13,40 +13,74 @@
 package org.eclipse.linuxtools.ctf.core.event;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Clock description used in CTF traces
  */
 public class CTFClock {
 
+    private static final long ONE_BILLION_L = 1000000000L;
+    private static final double ONE_BILLION_D = 1000000000.0;
+
+    private static final String NAME = "name"; //$NON-NLS-1$
+    private static final String FREQ = "freq"; //$NON-NLS-1$
+    private static final String OFFSET = "offset"; //$NON-NLS-1$
+
+    private long clockOffset = 0;
+    private double clockScale = 1.0;
+    private double clockAntiScale = 1.0;
+
     /**
      * Field properties.
      */
-    final private HashMap<String, Object> properties = new HashMap<String, Object>();
+    private final Map<String, Object> properties = new HashMap<String, Object>();
     /**
      * Field name.
      */
     private String name;
+    private boolean isScaled = false;
 
     /**
      * Default constructor
      */
-    public CTFClock() {}
+    public CTFClock() {
+    }
 
     /**
      * Method addAttribute.
-     * @param key String
-     * @param value Object
+     *
+     * @param key
+     *            String
+     * @param value
+     *            Object
      */
     public void addAttribute(String key, Object value) {
         this.properties.put(key, value);
-        if (key.equals("name")) { //$NON-NLS-1$
+        if (key.equals(NAME)) {
             this.name = (String) value;
+        }
+        if (key.equals(FREQ)) {
+            /*
+             * Long is converted to a double. the double is then dividing
+             * another double that double is saved. this is precise as long as
+             * the long is under 53 bits long. this is ok as long as we don't
+             * have a system with a frequency of > 1 600 000 000 GHz with
+             * 200 ppm precision
+             */
+            isScaled = !((Long) getProperty(FREQ)).equals(ONE_BILLION_L);
+            clockScale = ONE_BILLION_D / ((Long) getProperty(FREQ)).doubleValue();
+            clockAntiScale = 1.0 / clockScale;
+
+        }
+        if (key.equals(OFFSET)) {
+            clockOffset = (Long) getProperty(OFFSET);
         }
     }
 
     /**
      * Method getName.
+     *
      * @return String
      */
     public String getName() {
@@ -55,11 +89,45 @@ public class CTFClock {
 
     /**
      * Method getProperty.
-     * @param key String
+     *
+     * @param key
+     *            String
      * @return Object
      */
     public Object getProperty(String key) {
         return properties.get(key);
+    }
+
+    /**
+     * @return the clockOffset
+     * @since 2.0
+     */
+    public long getClockOffset() {
+        return clockOffset;
+    }
+
+    /**
+     * @return the clockScale
+     * @since 2.0
+     */
+    public double getClockScale() {
+        return clockScale;
+    }
+
+    /**
+     * @return the clockAntiScale
+     * @since 2.0
+     */
+    public double getClockAntiScale() {
+        return clockAntiScale;
+    }
+
+    /**
+     * @return is the clock in ns or cycles?
+     * @since 2.0
+     */
+    public boolean isClockScaled() {
+        return isScaled;
     }
 
 }

@@ -10,72 +10,78 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view;
 
+import java.text.NumberFormat;
+
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField;
 import org.eclipse.linuxtools.dataviewers.charts.provider.IChartField;
 import org.eclipse.linuxtools.internal.gcov.model.TreeElement;
 
+public class FieldInstrumentedLines extends AbstractSTDataViewersField implements IChartField {
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
+     */
+    @Override
+    public String getColumnHeaderText() {
+        return Messages.FieldInstrumentedLines_column_header;
+    }
 
-public class FieldInstrumentedLines extends AbstractSTDataViewersField implements IChartField{
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getValue(java.lang.Object)
+     */
+    @Override
+    public String getValue(Object obj) {
+        int v = getInstrumentedLines(obj);
+        return NumberFormat.getInstance().format(v);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
-	 */
-	@Override
-	public String getColumnHeaderText() {
-		return "Instrumented Lines";
-	}
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getToolTipText(java.lang.Object)
+     */
+    @Override
+    public String getToolTipText(Object element) {
+        int v = getInstrumentedLines(element);
+        String s = NumberFormat.getInstance().format(v);
+        s += Messages.FieldInstrumentedLines_column_tooltip;
+        if (v > 1)
+            s += "s"; //$NON-NLS-1$
+        return s;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getValue(java.lang.Object)
-	 */
-	@Override
-	public String getValue(Object obj) {
-		TreeElement e = (TreeElement) obj;
-		return Integer.toString(e.getInstrumentedLines());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#compare(java.lang.Object,
+     * java.lang.Object)
+     */
+    @Override
+    public int compare(Object obj1, Object obj2) {
+        int i1 = getInstrumentedLines(obj1);
+        int i2 = getInstrumentedLines(obj2);
+        if (i1 > i2)
+            return 1;
+        if (i1 < i2)
+            return -1;
+        return 0;
+    }
 
+    private int getInstrumentedLines(Object o) {
+        if (o instanceof TreeElement) {
+            return ((TreeElement) o).getInstrumentedLines();
+        }
+        return 0;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getToolTipText(java.lang.Object)
-	 */
-	@Override
-	public String getToolTipText(Object element) {
-		TreeElement e = (TreeElement) element;
-		String s = "Instrumented lines number = "+Integer.toString(e.getInstrumentedLines());
-		return s;
-	}
-
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#compare(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public int compare(Object obj1, Object obj2) {
-		TreeElement e1 = (TreeElement) obj1;
-		TreeElement e2 = (TreeElement) obj2;
-		String s1 = Integer.toString(e1.getInstrumentedLines());
-		String s2 = Integer.toString(e2.getInstrumentedLines());
-		if (s1 == null) {
-			if (s2 == null) return 0;
-			return -1;
-		}
-		if (s2 == null) return 1;
-		return s1.compareTo(s2);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.charts.provider.IChartField#getNumber(java.lang.Object)
-	 */
-	@Override
-	public Number getNumber(Object obj) {
-		TreeElement e = (TreeElement) obj;
-		return e.getInstrumentedLines();
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.charts.provider.IChartField#getNumber(java.lang.Object)
+     */
+    @Override
+    public Integer getNumber(Object obj) {
+        return getInstrumentedLines(obj);
+    }
 
 }

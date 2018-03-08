@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2011, 2012 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Bernd Hufmann - Implement getParent()
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -40,28 +41,45 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
     // ------------------------------------------------------------------------
     // ICommonContentProvider
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ITreeContentProvider#getElements(java.lang.Object)
-     */
+
     @Override
     public Object[] getElements(Object inputElement) {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
-     */
     @Override
     public Object getParent(Object element) {
+        if (element instanceof IProject) {
+            IProject project = (IProject) element;
+            return project.getParent();
+        }
+
+        if (element instanceof TmfTraceFolder) {
+            TmfTraceFolder folder = (TmfTraceFolder) element;
+            // Return the corresponding IProject as parent because from CNF point of view the IProject is the parent.
+            // The IProject is needed e.g. for link with Editor to work correctly.
+            return folder.getParent().getResource();
+        }
+
+        if (element instanceof TmfTraceElement) {
+            TmfTraceElement traceElement = (TmfTraceElement) element;
+            return traceElement.getParent();
+        }
+
+        if (element instanceof TmfExperimentFolder) {
+            TmfExperimentFolder folder = (TmfExperimentFolder) element;
+            // Return the corresponding IProject as parent because from CNF point of view the IProject is the parent.
+            // The IProject is needed e.g. for link with Editor to work correctly.
+            return folder.getParent().getResource();
+        }
+
+        if (element instanceof TmfExperimentElement) {
+            TmfExperimentElement expElement = (TmfExperimentElement) element;
+            return expElement.getParent();
+        }
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
-     */
     @Override
     public boolean hasChildren(Object element) {
         if (element instanceof IProject) {
@@ -83,42 +101,22 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.IContentProvider#dispose()
-     */
     @Override
     public void dispose() {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-     */
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IMementoAware#restoreState(org.eclipse.ui.IMemento)
-     */
     @Override
     public void restoreState(IMemento aMemento) {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IMementoAware#saveState(org.eclipse.ui.IMemento)
-     */
     @Override
     public void saveState(IMemento aMemento) {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.ICommonContentProvider#init(org.eclipse.ui.navigator.ICommonContentExtensionSite)
-     */
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
     }
@@ -126,10 +124,7 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
     // ------------------------------------------------------------------------
     // ICommonContentProvider - getChildren()
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
-     */
+
     @Override
     public synchronized Object[] getChildren(Object parentElement) {
 
@@ -159,6 +154,7 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
     // ------------------------------------------------------------------------
     // Helper method
     // ------------------------------------------------------------------------
+
     private Object[] getProjectChildren(IProject project) {
         // The children structure
         List<Object> children = new ArrayList<Object>();
@@ -340,22 +336,12 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
     // IPipelinedTreeContentProvider
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedChildren(java.lang.Object, java.util.Set)
-     */
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void getPipelinedChildren(Object parent, Set currentChildren) {
         customizeTmfElements(getChildren(parent), currentChildren);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedElements(java.lang.Object, java.util.Set)
-     */
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void getPipelinedElements(Object input, Set currentElements) {
         customizeTmfElements(getElements(input), currentElements);
     }
@@ -387,46 +373,26 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedParent(java.lang.Object, java.lang.Object)
-     */
     @Override
     public Object getPipelinedParent(Object anObject, Object aSuggestedParent) {
         return aSuggestedParent;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#interceptAdd(org.eclipse.ui.navigator.PipelinedShapeModification)
-     */
     @Override
     public PipelinedShapeModification interceptAdd(PipelinedShapeModification anAddModification) {
         return anAddModification;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#interceptRemove(org.eclipse.ui.navigator.PipelinedShapeModification)
-     */
     @Override
     public PipelinedShapeModification interceptRemove(PipelinedShapeModification aRemoveModification) {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#interceptRefresh(org.eclipse.ui.navigator.PipelinedViewerUpdate)
-     */
     @Override
     public boolean interceptRefresh(PipelinedViewerUpdate aRefreshSynchronization) {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#interceptUpdate(org.eclipse.ui.navigator.PipelinedViewerUpdate)
-     */
     @Override
     public boolean interceptUpdate(PipelinedViewerUpdate anUpdateSynchronization) {
         return false;

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.service;
 
@@ -35,7 +36,15 @@ public interface ILttngControlService {
     /**
      * @return the version string.
      */
-    public String getVersion();
+    String getVersion();
+
+    /**
+     * Checks if given version is supported by this ILTTngControlService implementation.
+     *
+     * @param version The version to check
+     * @return <code>true</code> if version is supported else <code>false</code>
+     */
+    boolean isVersionSupported(String version);
 
     /**
      * Retrieves the existing sessions names from the node.
@@ -46,7 +55,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public String[] getSessionNames(IProgressMonitor monitor)
+    String[] getSessionNames(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -60,7 +69,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public ISessionInfo getSession(String sessionName, IProgressMonitor monitor)
+    ISessionInfo getSession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -72,7 +81,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public List<IBaseEventInfo> getKernelProvider(IProgressMonitor monitor)
+    List<IBaseEventInfo> getKernelProvider(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -93,7 +102,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public List<IUstProviderInfo> getUstProvider(IProgressMonitor monitor)
+    List<IUstProviderInfo> getUstProvider(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -109,8 +118,27 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public ISessionInfo createSession(String sessionName, String sessionPath,
-            IProgressMonitor monitor) throws ExecutionException;
+    ISessionInfo createSession(String sessionName, String sessionPath, IProgressMonitor monitor) throws ExecutionException;
+
+    /**
+     * Creates a session with given session name and location.
+     *
+     * @param sessionName
+     *            - a session name to create
+     * @param networkUrl
+     *            - a network URL for common definition of data and control channel
+     *              or null if separate definition of data and control channel
+     * @param controlUrl
+     *            - a URL for control channel (networkUrl has to be null, dataUrl has to be set)
+     * @param dataUrl
+     *            - a URL for data channel (networkUrl has to be null, controlUrl has to be set)
+     * @param monitor
+     *            - a progress monitor
+     * @return the session information
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * Destroys a session with given session name.
@@ -122,7 +150,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void destroySession(String sessionName, IProgressMonitor monitor)
+    void destroySession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -135,7 +163,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void startSession(String sessionName, IProgressMonitor monitor)
+    void startSession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -148,7 +176,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void stopSession(String sessionName, IProgressMonitor monitor)
+    void stopSession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -170,7 +198,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableChannels(String sessionName, List<String> channelNames,
+    void enableChannels(String sessionName, List<String> channelNames,
             boolean isKernel, IChannelInfo info, IProgressMonitor monitor)
             throws ExecutionException;
 
@@ -190,7 +218,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void disableChannels(String sessionName, List<String> channelNames,
+    void disableChannels(String sessionName, List<String> channelNames,
             boolean isKernel, IProgressMonitor monitor)
             throws ExecutionException;
 
@@ -206,14 +234,18 @@ public interface ILttngControlService {
      *            0)for all events .
      * @param isKernel
      *            - a flag for indicating kernel or UST.
+     * @param filterExpression
+     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableEvents(String sessionName, String channelName,
-            List<String> eventNames, boolean isKernel, IProgressMonitor monitor)
+    void enableEvents(String sessionName, String channelName,
+            List<String> eventNames, boolean isKernel, String filterExpression,
+            IProgressMonitor monitor)
             throws ExecutionException;
+
 
     /**
      * Enables all syscall events.
@@ -227,7 +259,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableSyscalls(String sessionName, String channelName,
+    void enableSyscalls(String sessionName, String channelName,
             IProgressMonitor monitor) throws ExecutionException;
 
     /**
@@ -248,7 +280,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableProbe(String sessionName, String channelName,
+    void enableProbe(String sessionName, String channelName,
             String eventName, boolean isFunction, String probe,
             IProgressMonitor monitor) throws ExecutionException;
 
@@ -265,13 +297,16 @@ public interface ILttngControlService {
      *            - a log level type
      * @param level
      *            - a log level
+     * @param filterExpression
+     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableLogLevel(String sessionName, String channelName,
+    void enableLogLevel(String sessionName, String channelName,
             String eventName, LogLevelType logLevelType, TraceLogLevel level,
+            String filterExpression,
             IProgressMonitor monitor) throws ExecutionException;
 
     /**
@@ -290,7 +325,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void disableEvent(String sessionName, String channelName,
+    void disableEvent(String sessionName, String channelName,
             List<String> eventNames, boolean isKernel, IProgressMonitor monitor)
             throws ExecutionException;
 
@@ -303,7 +338,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public List<String> getContextList(IProgressMonitor monitor)
+    List<String> getContextList(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -324,7 +359,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void addContexts(String sessionName, String channelName,
+    void addContexts(String sessionName, String channelName,
             String eventName, boolean isKernel, List<String> contexts,
             IProgressMonitor monitor) throws ExecutionException;
 
@@ -338,6 +373,6 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    public void calibrate(boolean isKernel, IProgressMonitor monitor)
+    void calibrate(boolean isKernel, IProgressMonitor monitor)
             throws ExecutionException;
 }

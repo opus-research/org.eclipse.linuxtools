@@ -1,22 +1,21 @@
 /**********************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- * 
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: 
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *
+ * Contributors:
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.Comparator;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -29,12 +28,12 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SortSyncMessageComparator
  * <br>
  * <br>
  * Usage example:
- * 
+ *
  * <pre>
  * Frame frame;
  * Lifeline lifeLine1;
  * Lifeline lifeLine2;
- * 
+ *
  * SyncMessage message = new SyncMessage();
  * // Create a new event occurrence on each lifeline
  * lifeline1.getNewOccurrenceIndex();
@@ -46,11 +45,11 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SortSyncMessageComparator
  * // add the message to the frame
  * frame.addMessage(message);
  * </pre>
- * 
+ *
  * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.Lifeline Lifeline for more event occurence details
  * @version 1.0
  * @author sveyrier
- * 
+ *
  */
 public class SyncMessage extends BaseMessage implements ITimeRange {
 
@@ -69,15 +68,15 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
     /**
      * The associated message return
      */
-    protected SyncMessageReturn fMessageReturn;
+    private SyncMessageReturn fMessageReturn;
     /**
      * The time when the message occurs
      */
-    protected ITmfTimestamp fEventTime = new TmfTimestamp();
+    private ITmfTimestamp fEventTime = new TmfTimestamp();
     /**
      * Flag whether the message has time information available or not
      */
-    protected boolean fHasTimeInfo = false;
+    private boolean fHasTimeInfo = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -87,7 +86,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * Default constructor
      */
     public SyncMessage() {
-        fPrefId = ISDPreferences.PREF_SYNC_MESS;
+        setColorPrefId(ISDPreferences.PREF_SYNC_MESS);
     }
 
     // ------------------------------------------------------------------------
@@ -117,7 +116,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * SyncMessage must occur at the same event occurrence on both lifeline, this method is responsible to synchronize the
      * event occurrence on each lifeline (the greater value will be used).<br>
      * This synchronization is only done if the end lifeline has already been set.
-     * 
+     *
      * @param lifeline the message sender
      */
     public void autoSetStartLifeline(Lifeline lifeline) {
@@ -131,7 +130,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * SyncMessage must occur at the same event occurrence on both lifeline, this method is responsible to synchronize the
      * event occurrence on each lifeline (the greater value will be used).<br>
      * This synchronization is only done if the start lifeline has already been set.
-     * 
+     *
      * @param lifeline the message receiver
      */
     public void autoSetEndLifeline(Lifeline lifeline) {
@@ -144,7 +143,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * SyncMessage must occur at the same event occurrence on both lifeline, this method is responsible to synchronize the
      * event occurrence on each lifeline (the greater value will be used).<br>
      * This synchronization is only done if the start lifeline has already been set.
-     * 
+     *
      * @param lifeline the message receiver
      */
     @Override
@@ -162,7 +161,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * SyncMessage must occur at the same event occurrence on both lifelines, this method is responsible to synchronize the
      * event occurrence on each lifeline (the greater value will be used).<br>
      * This synchronization is only done if the start lifeline has already been set.
-     * 
+     *
      * @param lifeline the message receiver
      */
     @Override
@@ -177,19 +176,19 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
     /**
      * Set the event occurrence when this message occurs.<br>
-     * 
+     *
      * @param occurrence the event occurrence to assign to this message.<br>
      * @see Lifeline Lifeline for more event occurence details
      */
     @Override
     protected void setEventOccurrence(int occurrence) {
-        fStartEventOccurrence = occurrence;
-        fEndEventOccurrence = occurrence;
+        setStartOccurrence(occurrence);
+        setEndOccurrence(occurrence);
     }
 
     /**
      * Set the message return associated with this message.
-     * 
+     *
      * @param message the message return to associate
      */
     protected void setMessageReturn(SyncMessageReturn message) {
@@ -198,7 +197,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
     /**
      * Returns the syncMessageReturn associated to this syncMessage
-     * 
+     *
      * @return the message return
      */
     public SyncMessageReturn getMessageReturn() {
@@ -207,11 +206,12 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
     /**
      * Set the time when the message occurs
-     * 
+     *
      * @param time the time when the message occurs
+     * @since 2.0
      */
     public void setTime(ITmfTimestamp time) {
-        fEventTime = time.clone();
+        fEventTime = time;
         fHasTimeInfo = true;
         if (getStartLifeline() != null && getStartLifeline().getFrame() != null) {
             getStartLifeline().getFrame().setHasTimeInfo(true);
@@ -220,37 +220,27 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getEndTime() {
         return fEventTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
-     */ 
+    /**
+     * @since 2.0
+     */
     @Override
     public ITmfTimestamp getStartTime() {
         return fEventTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
-     */ 
     @Override
     public boolean hasTimeInfo() {
         return fHasTimeInfo;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -261,16 +251,12 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
         // Draw it selected?
         if (!isSelected()) {
-            context.setBackground(pref.getBackGroundColor(fPrefId));
-            context.setForeground(pref.getForeGroundColor(fPrefId));
+            context.setBackground(pref.getBackGroundColor(getColorPrefId()));
+            context.setForeground(pref.getForeGroundColor(getColorPrefId()));
         }
         super.draw(context);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage#isVisible(int, int, int, int)
-     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         if (getY() > y + height +
@@ -281,7 +267,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
         // UML2 lost/found message visibility special case
         // Others visibility cases are perform in the ***common*** case
-        if ((fEndLifeline == null && fStartLifeline != null) || (fEndLifeline != null && fStartLifeline == null)) {
+        if ((getEndLifeline() == null && getStartLifeline() != null) || (getEndLifeline() != null && getStartLifeline() == null)) {
             if (x + width > getX() + getWidth() && x < getX() + getWidth()) {
                 return true;
             }
@@ -290,28 +276,16 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         return super.isVisible(x, y, width, height);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getComparator()
-     */
     @Override
     public Comparator<GraphNode> getComparator() {
         return new SortSyncMessageComparator();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return SYNC_MESS_TAG;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#positiveDistanceToPoint(int, int)
-     */
     @Override
     public boolean positiveDistanceToPoint(int x, int y) {
         if (getY() > y) {

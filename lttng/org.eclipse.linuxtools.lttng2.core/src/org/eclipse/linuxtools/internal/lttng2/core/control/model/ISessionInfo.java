@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.core.control.model;
 
@@ -25,44 +26,56 @@ public interface ISessionInfo extends ITraceInfo {
     /**
      * @return the session state state (active or inactive).
      */
-    public TraceSessionState getSessionState();
+    TraceSessionState getSessionState();
     /**
      * Sets the session state  to the given value.
      * @param state - state to set.
      */
-    public void setSessionState(TraceSessionState state);
+    void setSessionState(TraceSessionState state);
 
     /**
      * Sets the event state to the value specified by the given name.
      * @param stateName - state to set.
      */
-    public void setSessionState(String stateName);
+    void setSessionState(String stateName);
 
     /**
      * @return path string where session is located.
      */
-    public String getSessionPath();
+    String getSessionPath();
 
     /**
      * Sets the path string (where session is located) to the given value.
      * @param path - session path to set.
      */
-    public void setSessionPath(String path);
+    void setSessionPath(String path);
 
     /**
      * @return all domain information as array.
      */
-    public IDomainInfo[] getDomains();
+    IDomainInfo[] getDomains();
 
     /**
      * Sets all domain information specified by given list.
      * @param domains - all domain information to set.
      */
-    public void setDomains(List<IDomainInfo> domains);
+    void setDomains(List<IDomainInfo> domains);
 
     /**
      * Adds a single domain information.
      * @param domainInfo domain information to add.
      */
-    public void addDomain(IDomainInfo domainInfo);
+    void addDomain(IDomainInfo domainInfo);
+
+    /**
+     * Returns if session is streamed over network
+     * @return <code>true</code> if streamed over network else <code>false</code>
+     */
+    boolean isStreamedTrace();
+
+    /**
+     * Sets whether the trace is streamed or not
+     * @param isStreamedTrace <code>true</code> if streamed over network else <code>false</code>
+     */
+    void setStreamedTrace(boolean isStreamedTrace);
 }

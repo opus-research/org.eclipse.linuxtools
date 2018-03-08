@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
- * 
+ * Copyright (c) 2011, 2013 Ericsson
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -25,8 +25,8 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
 
 /**
- * The implementation of TMF project model element. 
- * 
+ * The implementation of TMF project model element.
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -44,8 +44,8 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // ------------------------------------------------------------------------
     /**
      * Constructor.
-     * 
-     * Creates the TMF project model element. 
+     *
+     * Creates the TMF project model element.
      * @param name The name of the project.
      * @param project The project reference.
      * @param parent The parent element
@@ -58,19 +58,11 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // TmfProjectModelElement
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#getResource()
-     */
     @Override
     public IProject getResource() {
         return (IProject) fResource;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#addChild(org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement)
-     */
     @Override
     public void addChild(ITmfProjectModelElement child) {
         super.addChild(child);
@@ -87,8 +79,9 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
+
     /**
-     * Returns the containing trace folder element. 
+     * Returns the containing trace folder element.
      * @return the TMF trace folder element.
      */
     public TmfTraceFolder getTracesFolder() {
@@ -107,10 +100,6 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // TmfProjectElement
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#refresh()
-     */
     @Override
     public void refresh() {
         Display.getDefault().asyncExec(new Runnable(){
@@ -122,6 +111,10 @@ public class TmfProjectElement extends TmfProjectModelElement {
                     return;
                 }
                 IWorkbenchPage activePage = wbWindow.getActivePage();
+                if (activePage == null) {
+                    return;
+                }
+
                 for (IViewReference viewReference : activePage.getViewReferences()) {
                     IViewPart viewPart = viewReference.getView(false);
                     if (viewPart instanceof CommonNavigator) {
@@ -132,10 +125,6 @@ public class TmfProjectElement extends TmfProjectModelElement {
             }});
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
-     */
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
@@ -143,10 +132,6 @@ public class TmfProjectElement extends TmfProjectModelElement {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getProject()
-     */
     @Override
     public TmfProjectElement getProject() {
         return this;

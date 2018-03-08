@@ -11,60 +11,48 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.preferences;
 
-import org.eclipse.jface.preference.*;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.preferences.Messages;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
-
-
-
-
+import org.eclipse.ui.IWorkbenchPreferencePage;
 
 public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public ConsoleLogPreferencePage() {
 		super(GRID);
-	//	LogManager.logDebug("Start ConsoleLogPreferencePage:", this);
 		setPreferenceStore(ConsoleLogPlugin.getDefault().getPreferenceStore());
-		setDescription("Preferences when accessing a remote server");
-		//LogManager.logDebug("End ConsoleLogPreferencePage:", this);
+		setDescription(Messages.ConsoleLogPreferencePage_PreferencesTitle);
 	}
-	
+
 	@Override
 	public void createFieldEditors() {
-		
+
 		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.HOST_NAME,
-				"Host Name: ", getFieldEditorParent()));
-		
+				Messages.ConsoleLogPreferencePage_Host, getFieldEditorParent()));
+
 		addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.PORT_NUMBER,
-				"Port: ", getFieldEditorParent()));
-		
+				Messages.ConsoleLogPreferencePage_Port, getFieldEditorParent()));
+
 		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.SCP_USER,
-				"User Name: ", getFieldEditorParent()));
-		
+				Messages.ConsoleLogPreferencePage_User, getFieldEditorParent()));
+
 		StringFieldEditor passwordField = new StringFieldEditor(
-				ConsoleLogPreferenceConstants.SCP_PASSWORD, "Password: ",
+				ConsoleLogPreferenceConstants.SCP_PASSWORD, Messages.ConsoleLogPreferencePage_Password,
                 getFieldEditorParent());
         passwordField.getTextControl(getFieldEditorParent()).setEchoChar('*');
         addField(passwordField);
 
-	//	addField(new StringFieldEditor(ConsoleLogPreferenceConstants.SCP_PASSWORD,
-		//		"Password: ", getFieldEditorParent()));
-
 		addField(new BooleanFieldEditor(ConsoleLogPreferenceConstants.REMEMBER_SERVER,
-				"Always connect to this host.", getFieldEditorParent()));
-		
+				Messages.ConsoleLogPreferencePage_AlwaysConnectToHost, getFieldEditorParent()));
+
 		addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.SAVE_LENGTH,
-				"Seconds to Save Data: ", getFieldEditorParent()));
+				Messages.ConsoleLogPreferencePage_SecondsToSaveData, getFieldEditorParent()));
 
-	}
-
-	public void init(IWorkbench workbench) {
-	
 	}
 
 	@Override
-	public void dispose() {
-	
-		super.dispose();
-	}
+	public void init(IWorkbench workbench) {}
 }

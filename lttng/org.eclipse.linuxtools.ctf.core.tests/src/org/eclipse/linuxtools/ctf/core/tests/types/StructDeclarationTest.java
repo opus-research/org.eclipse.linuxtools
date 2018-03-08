@@ -1,17 +1,27 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,29 +37,11 @@ public class StructDeclarationTest {
     private StructDeclaration fixture;
 
     /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(StructDeclarationTest.class);
-    }
-
-    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new StructDeclaration(1L);
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -60,7 +52,7 @@ public class StructDeclarationTest {
         assertNotNull(fixture);
         assertEquals(1L, fixture.getMaxAlign());
 
-        String regex = "^\\[declaration\\] struct\\[[0-9a-f]{1,8}\\]$"; //$NON-NLS-1$
+        String regex = "^\\[declaration\\] struct\\[[0-9a-f]{1,8}\\]$";
         assertTrue(fixture.toString().matches(regex));
     }
 
@@ -69,7 +61,7 @@ public class StructDeclarationTest {
      */
     @Test
     public void testAddField() {
-        String name = ""; //$NON-NLS-1$
+        String name = "";
         IDeclaration declaration = new StringDeclaration();
         fixture.addField(name, declaration);
     }
@@ -80,7 +72,7 @@ public class StructDeclarationTest {
      */
     @Test
     public void testCreateDefinition() {
-        String fieldName = ""; //$NON-NLS-1$
+        String fieldName = "";
         StructDefinition result = fixture.createDefinition(null, fieldName);
         assertNotNull(result);
     }
@@ -90,7 +82,7 @@ public class StructDeclarationTest {
      */
     @Test
     public void testGetFields() {
-        HashMap<String, IDeclaration> result = fixture.getFields();
+        Map<String, IDeclaration> result = fixture.getFields();
 
         assertNotNull(result);
         assertEquals(0, result.size());
@@ -121,7 +113,7 @@ public class StructDeclarationTest {
      */
     @Test
     public void testHasField() {
-        String name = ""; //$NON-NLS-1$
+        String name = "";
         boolean result = fixture.hasField(name);
 
         assertEquals(false, result);
@@ -135,6 +127,6 @@ public class StructDeclarationTest {
         String result = fixture.toString();
         String trunc = result.substring(0, 21);
 
-        assertEquals("[declaration] struct[", trunc); //$NON-NLS-1$
+        assertEquals("[declaration] struct[", trunc);
     }
 }

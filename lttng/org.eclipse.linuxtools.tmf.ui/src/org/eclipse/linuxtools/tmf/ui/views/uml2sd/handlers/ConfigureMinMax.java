@@ -1,68 +1,45 @@
 /**********************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- * 
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: 
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *
+ * Contributors:
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.MinMaxDialog;
-import org.eclipse.ui.IViewPart;
 
 /**
  * Action class implementation to configure minimum and maximum time range values.
- * 
+ *
  * @version 1.0
  * @author sveyrier
- * 
+ *
  */
-public class ConfigureMinMax extends Action {
+public class ConfigureMinMax extends BaseSDAction {
 
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
     /**
-     * The corresponding sequence diagram view reference.
+     * Constructor
+     * @param view
+     *          the sequence diagram view reference
+     * @since 2.0
      */
-    protected SDView fView = null;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-    
-    /**
-     * Standard constructor.
-     * 
-     * @param view The sequence diagram view for the action 
-     */
-    public ConfigureMinMax(IViewPart view) {
-        super();
-        if (view instanceof SDView) {
-            fView = (SDView) view;
-        }
+    public ConfigureMinMax(SDView view) {
+        super(view);
     }
-
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.action.Action#run()
-     */
     @Override
     public void run() {
-        if ((fView != null) && (fView.getSDWidget() != null)) {
-            MinMaxDialog minMax = new MinMaxDialog(fView.getSite().getShell(), fView.getSDWidget());
+        if ((getView() != null) && (getView().getSDWidget() != null)) {
+            MinMaxDialog minMax = new MinMaxDialog(getView().getSite().getShell(), getView().getSDWidget());
             minMax.open();
         }
     }

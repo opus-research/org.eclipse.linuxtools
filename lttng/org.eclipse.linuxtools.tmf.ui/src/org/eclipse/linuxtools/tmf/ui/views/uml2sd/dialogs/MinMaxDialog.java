@@ -1,24 +1,23 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- * 
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: 
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *
+ * Contributors:
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -32,12 +31,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Dialog box for entering minimum and maximum time range for time compression bar. 
- * 
+ * Dialog box for entering minimum and maximum time range for time compression bar.
+ *
  * @version 1.0
  * @author sveyrier
  * @author Bernd Hufmann
- * 
+ *
  */
 public class MinMaxDialog extends Dialog {
 
@@ -45,41 +44,25 @@ public class MinMaxDialog extends Dialog {
     // Attributes
     // ------------------------------------------------------------------------
     /**
-     * Label for minimum. 
+     * Text field for minimum.
      */
-    protected Label fMinLabel;
+    private Text fMinText;
     /**
-     * Label for maximum.
+     * Text field for maximum.
      */
-    protected Label fMaxLabel;
+    private Text fMaxText;
     /**
-     * Label for scale
+     * Text field for scale.
      */
-    protected Label fScaleLabel;
+    private Text fScaleText;
     /**
-     * Label for precision.
+     * Text field for precision.
      */
-    protected Label fPrecisionLabel;
-    /**
-     * Text field for minimum. 
-     */
-    protected Text fMinText;
-    /**
-     * Text field for maximum. 
-     */
-    protected Text fMaxText;
-    /**
-     * Text field for scale. 
-     */
-    protected Text fScaleText;
-    /**
-     * Text field for precision. 
-     */
-    protected Text fPrecisionText;
+    private Text fPrecisionText;
     /**
      * The sequence diagram widget reference.
      */
-    protected SDWidget fSdWidget;
+    private SDWidget fSdWidget;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -87,7 +70,7 @@ public class MinMaxDialog extends Dialog {
     /**
      * Standard constructor.
      * @param shell The shell
-     * @param viewer The sequence diagram widget reference. 
+     * @param viewer The sequence diagram widget reference.
      */
     public MinMaxDialog(Shell shell, SDWidget viewer) {
         super(shell);
@@ -108,13 +91,9 @@ public class MinMaxDialog extends Dialog {
         return data;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(Composite p) {
-        p.getShell().setText(SDMessages._123);
+        p.getShell().setText(Messages.SequenceDiagram_TimeCompressionBarConfig);
         Composite parent = (Composite) super.createDialogArea(p);
 
         GridLayout parentLayout = new GridLayout();
@@ -127,34 +106,34 @@ public class MinMaxDialog extends Dialog {
         g1layout.numColumns = 3;
         g1.setLayout(g1layout);
 
-        fMinLabel = new Label(g1, SWT.RADIO);
-        fMinLabel.setText(SDMessages._124);
-        fMinLabel.setLayoutData(newGridData(1));
+        Label minLabel = new Label(g1, SWT.RADIO);
+        minLabel.setText(Messages.SequenceDiagram_MinTime);
+        minLabel.setLayoutData(newGridData(1));
 
         fMinText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fMinText.setLayoutData(newGridData(2));
         fMinText.setText(String.valueOf(fSdWidget.getFrame().getMinTime().getValue()));
 
-        fMaxLabel = new Label(g1, SWT.RADIO);
-        fMaxLabel.setText(SDMessages._125);
-        fMaxLabel.setLayoutData(newGridData(1));
+        Label maxLabel = new Label(g1, SWT.RADIO);
+        maxLabel.setText(Messages.SequenceDiagram_MaxTime);
+        maxLabel.setLayoutData(newGridData(1));
 
         fMaxText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fMaxText.setLayoutData(newGridData(2));
         fMaxText.setText(String.valueOf(fSdWidget.getFrame().getMaxTime().getValue()));
 
-        fScaleLabel = new Label(g1, SWT.RADIO);
-        fScaleLabel.setText(SDMessages._136);
-        fScaleLabel.setLayoutData(newGridData(1));
+        Label scaleLabel = new Label(g1, SWT.RADIO);
+        scaleLabel.setText(Messages.SequenceDiagram_Scale);
+        scaleLabel.setLayoutData(newGridData(1));
 
         fScaleText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fScaleText.setLayoutData(newGridData(2));
         fScaleText.setText(String.valueOf(fSdWidget.getFrame().getMinTime().getScale()));
 
-        
-        fPrecisionLabel = new Label(g1, SWT.RADIO);
-        fPrecisionLabel.setText(SDMessages._137);
-        fPrecisionLabel.setLayoutData(newGridData(1));
+
+        Label precisionLabel = new Label(g1, SWT.RADIO);
+        precisionLabel.setText(Messages.SequenceDiagram_Precision);
+        precisionLabel.setLayoutData(newGridData(1));
 
         fPrecisionText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fPrecisionText.setLayoutData(newGridData(2));
@@ -163,10 +142,6 @@ public class MinMaxDialog extends Dialog {
         return parent;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
-     */
     @Override
     protected void okPressed() {
         long min = 0;
@@ -186,23 +161,16 @@ public class MinMaxDialog extends Dialog {
 
             super.okPressed();
         } catch (Exception e) {
-            MessageDialog.openError(getShell(), SDMessages._98, SDMessages._99);
+            MessageDialog.openError(getShell(), Messages.SequenceDiagram_Error, Messages.SequenceDiagram_InvalidRange);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
-        createButton(parent, IDialogConstants.CLIENT_ID, SDMessages._126, false);
+        createButton(parent, IDialogConstants.CLIENT_ID, Messages.SequenceDiagram_Default, false);
         getButton(IDialogConstants.CLIENT_ID).addSelectionListener(new SelectionListener() {
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-             */
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 fSdWidget.getFrame().resetCustomMinMax();
@@ -213,10 +181,6 @@ public class MinMaxDialog extends Dialog {
                 fMaxText.getParent().layout(true);
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-             */
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 // nothing to do

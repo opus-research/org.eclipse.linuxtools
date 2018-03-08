@@ -1,17 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
- *
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd;
 
 import java.util.ArrayList;
@@ -19,8 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage;
@@ -69,77 +67,81 @@ import org.eclipse.swt.widgets.Display;
 public class TimeCompressionBar extends ScrollView implements DisposeListener {
 
     // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+    private static final int BASE_RED_VALUE = 255;
+    private static final int BASE_GREEN_BLUE_VALUE = 225;
+    private static final int COLOR_STEP = 25;
+    private static final int NUMBER_STEPS = 10;
+
+    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
     /**
      * The listener list
      */
-    protected List<ITimeCompressionListener> fListenerList = null;
+    private List<ITimeCompressionListener> fListenerList = null;
     /**
      * The current frame displayed.
      */
-    protected Frame fFrame = null;
+    private Frame fFrame = null;
     /**
      * List of time events.
      */
-    protected List<SDTimeEvent> fNodeList = null;
+    private List<SDTimeEvent> fNodeList = null;
     /**
      * The minimum time delta.
      */
-    protected ITmfTimestamp fMinTime = new TmfTimestamp();
+    private ITmfTimestamp fMinTime = new TmfTimestamp();
     /**
      * The maximum time delta.
      */
-    protected ITmfTimestamp fMaxTime = new TmfTimestamp();
+    private ITmfTimestamp fMaxTime = new TmfTimestamp();
     /**
      * The current zoom value.
      */
-    protected float fZoomValue = 1;
+    private float fZoomValue = 1;
     /**
      * The tooltip to display.
      */
-    protected DrawableToolTip fTooltip = null;
+    private DrawableToolTip fTooltip = null;
     /**
      *  Array of colors for displaying wight of time deltas.
      */
-    protected ColorImpl[] fColors;
+    private ColorImpl[] fColors;
     /**
      * The accessible object reference.
      */
-    protected Accessible fAccessible = null;
+    private Accessible fAccessible = null;
     /**
      * The focused widget reference.
      */
-    protected int fFocusedWidget = -1;
-    /**
-     * The sequence diagram view reference.
-     */
-    protected SDView view = null;
+    private int fFocusedWidget = -1;
     /**
      * The current lifeline.
      */
-    protected Lifeline fLifeline = null;
+    private Lifeline fLifeline = null;
     /**
      * The current start event value.
      */
-    protected int fLifelineStart = 0;
+    private int fLifelineStart = 0;
     /**
      * The current number of events.
      */
-    protected int fLifelineNumEvents = 0;
+    private int fLifelineNumEvents = 0;
     /**
      * The Current color of range to display.
      */
-    protected IColor fLifelineColor = null;
+    private IColor fLifelineColor = null;
     /**
      *  The next graph node y coordinate.
      */
-    protected int fNextNodeY = 0;
+    private int fNextNodeY = 0;
     /**
      *  The previous graph node y coordinate.
      */
-    protected int fPrevNodeY = 0;
+    private int fPrevNodeY = 0;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -155,17 +157,13 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setVScrollBarMode(ScrollView.ALWAYS_OFF);
         setHScrollBarMode(ScrollView.ALWAYS_OFF);
         fListenerList = new ArrayList<ITimeCompressionListener>();
-        fColors = new ColorImpl[10];
-        fColors[0] = new ColorImpl(Display.getDefault(), 255, 229, 229);
-        fColors[1] = new ColorImpl(Display.getDefault(), 255, 204, 204);
-        fColors[2] = new ColorImpl(Display.getDefault(), 255, 178, 178);
-        fColors[3] = new ColorImpl(Display.getDefault(), 255, 153, 153);
-        fColors[4] = new ColorImpl(Display.getDefault(), 255, 127, 127);
-        fColors[5] = new ColorImpl(Display.getDefault(), 255, 102, 102);
-        fColors[6] = new ColorImpl(Display.getDefault(), 255, 76, 76);
-        fColors[7] = new ColorImpl(Display.getDefault(), 255, 51, 51);
-        fColors[8] = new ColorImpl(Display.getDefault(), 255, 25, 25);
-        fColors[9] = new ColorImpl(Display.getDefault(), 255, 0, 0);
+        fColors = new ColorImpl[NUMBER_STEPS];
+        int greenBlue = BASE_GREEN_BLUE_VALUE;
+        final int step = COLOR_STEP;
+        for (int i = 0; i < fColors.length; i++) {
+            fColors[i] = new ColorImpl(Display.getDefault(), BASE_RED_VALUE, greenBlue, greenBlue);
+            greenBlue -= step;
+        }
         super.addDisposeListener(this);
 
         fAccessible = getViewControl().getAccessible();
@@ -186,10 +184,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         });
 
         fAccessible.addAccessibleControlListener(new AccessibleControlAdapter() {
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getFocus(org.eclipse.swt.accessibility.AccessibleControlEvent)
-             */
             @Override
             public void getFocus(AccessibleControlEvent e) {
                 if (fFocusedWidget == -1) {
@@ -200,10 +194,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                 }
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getRole(org.eclipse.swt.accessibility.AccessibleControlEvent)
-             */
             @Override
             public void getRole(AccessibleControlEvent e) {
                 switch (e.childID) {
@@ -221,10 +211,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                 }
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getState(org.eclipse.swt.accessibility.AccessibleControlEvent)
-             */
             @Override
             public void getState(AccessibleControlEvent e) {
                 e.detail = ACC.STATE_FOCUSABLE;
@@ -244,20 +230,11 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         addTraverseListener(new LocalTraverseListener());
 
         getViewControl().addFocusListener(new FocusListener() {
-
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.FocusListener#focusGained(org.eclipse.swt.events.FocusEvent)
-             */
             @Override
             public void focusGained(FocusEvent e) {
                 redraw();
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.FocusListener#focusLost(org.eclipse.swt.events.FocusEvent)
-             */
             @Override
             public void focusLost(FocusEvent e) {
                 redraw();
@@ -294,10 +271,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         fMaxTime = fFrame.getMaxTime();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#drawContents(org.eclipse.swt.graphics.GC, int, int, int, int)
-     */
     @Override
     protected void drawContents(GC gc, int clipx, int clipy, int clipw, int cliph) {
         if (fFrame == null) {
@@ -406,7 +379,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             fMinTime = fFrame.getMinTime();
             fMaxTime = fFrame.getMaxTime();
             ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-            double gr = (minMaxdelta.getValue()) / (double) 10;
+            double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
 
             ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime()).getDelta(fMinTime);
             long absDelta = Math.abs(delta.getValue());
@@ -484,12 +457,13 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
     /**
      * Checks for focus of children.
      *
-     * @param children Control to check
+     * @param children
+     *            Control to check
      * @return true if child is on focus else false
      */
-    protected boolean checkFocusOnChilds(Control childs) {
-        if (childs instanceof Composite) {
-            Control[] child = ((Composite) childs).getChildren();
+    protected boolean checkFocusOnChilds(Control children) {
+        if (children instanceof Composite) {
+            Control[] child = ((Composite) children).getChildren();
             for (int i = 0; i < child.length; i++) {
                 if (child[i].isFocusControl()) {
                     return true;
@@ -500,10 +474,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.swt.widgets.Control#isFocusControl()
-     */
     @Override
     public boolean isFocusControl() {
         Control[] child = getChildren();
@@ -516,10 +486,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseMoveEvent(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseMoveEvent(MouseEvent event) {
         if (fTooltip != null) {
@@ -537,10 +503,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setFocus(-1);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseHover(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseHover(MouseEvent e) {
         if (fTooltip == null) {
@@ -600,10 +562,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setFocus(0);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseExit(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseExit(MouseEvent e) {
         if (fTooltip != null) {
@@ -611,10 +569,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseUpEvent(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseUpEvent(MouseEvent event) {
         selectTimeDelta(event.y, 0);
@@ -700,7 +654,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
 
         ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-        double gr = (minMaxdelta.getValue()) / (double) 10;
+        double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
 
         ITmfTimestamp delta = time2.getDelta(time1).getDelta(fMinTime);
         long absDelta = Math.abs(delta.getValue());
@@ -744,10 +698,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         });
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#scrollBy(int, int)
-     */
     @Override
     public void scrollBy(int x, int y) {
     }
@@ -782,10 +732,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         fListenerList.remove(listener);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(org.eclipse.swt.events.DisposeEvent)
-     */
     @Override
     public void widgetDisposed(DisposeEvent e) {
         if (fTooltip != null) {
@@ -797,10 +743,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#keyPressedEvent(org.eclipse.swt.events.KeyEvent)
-     */
     @Override
     protected void keyPressedEvent(KeyEvent event) {
         if (fTooltip != null) {
@@ -810,7 +752,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             Control[] child = getParent().getChildren();
             for (int i = 0; i < child.length; i++) {
                 if (child[i].isFocusControl()) {
-                    // getViewControl().setFocus();
                     break;
                 }
             }
@@ -955,7 +896,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                     fPrevNodeY = m1Y;
                     fNextNodeY = m2Y;
                     ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-                    double gr = (minMaxdelta.getValue()) / (double) 10;
+                    double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
 
                     ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime()).getDelta(fMinTime);
                     long absDelta = Math.abs(delta.getValue());
@@ -1084,11 +1025,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
      * Traverse Listener implementation.
      */
     protected static class LocalTraverseListener implements TraverseListener {
-
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt.events.TraverseEvent)
-         */
         @Override
         public void keyTraversed(TraverseEvent e) {
             if ((e.detail == SWT.TRAVERSE_TAB_NEXT) || (e.detail == SWT.TRAVERSE_TAB_PREVIOUS)) {

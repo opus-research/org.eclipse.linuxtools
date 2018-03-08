@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
- * 
+ * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
+ *   Geneviève Bastien - Moved the actual copy code to model element's class
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -27,8 +28,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
@@ -51,6 +50,7 @@ import org.eclipse.ui.dialogs.SelectionStatusDialog;
 /**
  * Implementation of the copy experiement dialog box.
  * <p>
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -60,8 +60,8 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
     // Members
     // ------------------------------------------------------------------------
 
-	private final TmfExperimentElement fExperiment;
-	private Text fNewExperimentName;
+    private final TmfExperimentElement fExperiment;
+    private Text fNewExperimentName;
     private IFolder fExperimentFolder;
     private TmfProjectElement fProject;
 
@@ -71,8 +71,11 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
 
     /**
      * Constructor
-     * @param shell The parent shell
-     * @param experiment The TMF experiment model element
+     *
+     * @param shell
+     *            The parent shell
+     * @param experiment
+     *            The TMF experiment model element
      */
     public CopyExperimentDialog(Shell shell, TmfExperimentElement experiment) {
         super(shell);
@@ -87,11 +90,7 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-    
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -138,27 +137,27 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
         fNewExperimentName.addListener(SWT.Modify, new Listener() {
             @Override
             public void handleEvent(Event event) {
-            	validateNewExperimentName();
+                validateNewExperimentName();
             }
         });
     }
 
     private void validateNewExperimentName() {
-        
-    	String name = fNewExperimentName.getText();
+
+        String name = fNewExperimentName.getText();
         IWorkspace workspace = fExperimentFolder.getWorkspace();
         IStatus nameStatus = workspace.validateName(name, IResource.FOLDER);
 
         if ("".equals(name)) { //$NON-NLS-1$
-        	updateStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, Messages.Dialog_EmptyNameError, null));
-        	return;
+            updateStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, Messages.Dialog_EmptyNameError, null));
+            return;
         }
-        
+
         if (!nameStatus.isOK()) {
-        	updateStatus(nameStatus);
-        	return;
+            updateStatus(nameStatus);
+            return;
         }
-        
+
         IPath path = new Path(name);
         if (fExperimentFolder.getFolder(path).exists() || fExperimentFolder.getFile(path).exists()) {
             updateStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, Messages.Dialog_ExistingNameError, null));
@@ -171,28 +170,17 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#computeResult()
-     */
+
     @Override
     protected void computeResult() {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#create()
-     */
     @Override
     public void create() {
         super.create();
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#okPressed()
-     */
     @Override
     protected void okPressed() {
         IFolder folder = copyExperiment(fNewExperimentName.getText());
@@ -209,10 +197,7 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
 
     private IFolder copyExperiment(final String newName) {
 
-    	IPath oldPath = fExperiment.getResource().getFullPath();
-    	final IPath newPath = oldPath.append("../" + newName); //$NON-NLS-1$
-
-    	WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
+        WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
             @Override
             public void execute(IProgressMonitor monitor) throws CoreException {
                 try {
@@ -220,16 +205,9 @@ public class CopyExperimentDialog extends SelectionStatusDialog {
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
-                    fExperiment.getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
-                    // Delete any bookmarks file found in copied experiment folder
-                    IFolder folder = fExperimentFolder.getFolder(newName);
-                    if (folder.exists()) {
-                        for (IResource member : folder.members()) {
-                            if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
-                                member.delete(true, null);
-                            }
-                        }
-                    }
+
+                    fExperiment.copy(newName, true);
+
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,9 +9,13 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adapted for TMF Trace Model 1.0
+ *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,26 +23,27 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfCheckpointIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfEmptyTraceStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test suite for the TmfCheckpointIndexTest class.
  */
-@SuppressWarnings({"nls","javadoc"})
-public class TmfCheckpointIndexTest extends TestCase {
+@SuppressWarnings("javadoc")
+public class TmfCheckpointIndexTest {
 
     // ------------------------------------------------------------------------
     // Variables
@@ -55,22 +60,13 @@ public class TmfCheckpointIndexTest extends TestCase {
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    /**
-     * @param name the test name
-     */
-    public TmfCheckpointIndexTest(final String name)  {
-        super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() {
         setupTrace(DIRECTORY + File.separator + TEST_STREAM);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() {
         fTrace.dispose();
         fTrace = null;
         fEmptyTrace.dispose();
@@ -81,14 +77,14 @@ public class TmfCheckpointIndexTest extends TestCase {
     // Helper classes
     // ------------------------------------------------------------------------
 
-    private static class TestIndexer extends TmfCheckpointIndexer<ITmfTrace<ITmfEvent>> {
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static class TestIndexer extends TmfCheckpointIndexer {
+        @SuppressWarnings({ })
         public TestIndexer(TestTrace testTrace) {
-            super((ITmfTrace) testTrace, BLOCK_SIZE);
+            super(testTrace, BLOCK_SIZE);
         }
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ })
         public TestIndexer(EmptyTestTrace testTrace) {
-            super((ITmfTrace) testTrace, BLOCK_SIZE);
+            super(testTrace, BLOCK_SIZE);
         }
         public List<ITmfCheckpoint> getCheckpoints() {
             return getTraceIndex();
@@ -127,7 +123,7 @@ public class TmfCheckpointIndexTest extends TestCase {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 final File test = new File(FileLocator.toFileURL(location).toURI());
                 fTrace = new TestTrace(test.toURI().getPath(), BLOCK_SIZE);
-                fTrace.indexTrace();
+                fTrace.indexTrace(true);
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
             } catch (final URISyntaxException e) {
@@ -139,7 +135,7 @@ public class TmfCheckpointIndexTest extends TestCase {
 
         if (fEmptyTrace == null) {
             fEmptyTrace = new EmptyTestTrace();
-            fEmptyTrace.indexTrace();
+            fEmptyTrace.indexTrace(true);
         }
     }
 
@@ -147,7 +143,7 @@ public class TmfCheckpointIndexTest extends TestCase {
     // Verify checkpoints
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("null")
+    @Test
     public void testTmfTraceIndexing() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());
@@ -171,13 +167,13 @@ public class TmfCheckpointIndexTest extends TestCase {
         }
     }
 
-    @SuppressWarnings("null")
+    @Test
     public void testEmptyTmfTraceIndexing() {
         assertEquals("getCacheSize",   ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, fEmptyTrace.getCacheSize());
         assertEquals("getTraceSize",   0,  fEmptyTrace.getNbEvents());
-        assertEquals("getRange-start", TmfTimestamp.BIG_CRUNCH, fEmptyTrace.getTimeRange().getStartTime());
+        assertEquals("getRange-start", TmfTimestamp.BIG_BANG, fEmptyTrace.getTimeRange().getStartTime());
         assertEquals("getRange-end",   TmfTimestamp.BIG_BANG, fEmptyTrace.getTimeRange().getEndTime());
-        assertEquals("getStartTime",   TmfTimestamp.BIG_CRUNCH, fEmptyTrace.getStartTime());
+        assertEquals("getStartTime",   TmfTimestamp.BIG_BANG, fEmptyTrace.getStartTime());
         assertEquals("getEndTime",     TmfTimestamp.BIG_BANG, fEmptyTrace.getEndTime());
 
         List<ITmfCheckpoint> checkpoints = fEmptyTrace.getIndexer().getCheckpoints();

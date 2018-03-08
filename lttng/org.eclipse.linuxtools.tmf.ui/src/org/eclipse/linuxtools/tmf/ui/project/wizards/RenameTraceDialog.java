@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
- * 
+ * Copyright (c) 2011, 2013 Ericsson
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
+ *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -32,7 +33,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -50,7 +50,7 @@ import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of a dialog box to rename a trace.
- * <p> 
+ * <p>
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -63,8 +63,8 @@ public class RenameTraceDialog extends SelectionStatusDialog {
     private final TmfTraceElement fTrace;
     private Text fNewTraceNameText;
     private String fNewTraceName;
-    private IContainer fTraceFolder;
-    private TmfProjectElement fProject;
+    private final IContainer fTraceFolder;
+    private final TmfProjectElement fProject;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -87,10 +87,7 @@ public class RenameTraceDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -180,26 +177,17 @@ public class RenameTraceDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#computeResult()
-     */
+
     @Override
     protected void computeResult() {
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#create()
-     */
+
     @Override
     public void create() {
         super.create();
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#okPressed()
-     */
+
     @Override
     protected void okPressed() {
         IResource trace = renameTrace(fNewTraceNameText.getText());
@@ -227,10 +215,13 @@ public class RenameTraceDialog extends SelectionStatusDialog {
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
+                    // Close the trace if open
+                    fTrace.closeEditors();
+
                     if (fTrace.getResource() instanceof IFolder) {
                         IFolder folder = (IFolder) fTrace.getResource();
-                        IFile bookmarksFile = folder.getFile(fTrace.getName() + '_');
-                        IFile newBookmarksFile = folder.getFile(newName + '_');
+                        IFile bookmarksFile = fTrace.getBookmarksFile();
+                        IFile newBookmarksFile = folder.getFile(bookmarksFile.getName().replace(fTrace.getName(), newName));
                         if (bookmarksFile.exists()) {
                             if (!newBookmarksFile.exists()) {
                                 IPath newBookmarksPath = newBookmarksFile.getFullPath();
@@ -255,7 +246,7 @@ public class RenameTraceDialog extends SelectionStatusDialog {
         } catch (InterruptedException exception) {
             return null;
         } catch (InvocationTargetException exception) {
-            MessageDialog.openError(getShell(), "", NLS.bind("", exception.getTargetException().getMessage())); //$NON-NLS-1$ //$NON-NLS-2$
+            MessageDialog.openError(getShell(), "", exception.getTargetException().getMessage()); //$NON-NLS-1$
             return null;
         } catch (RuntimeException exception) {
             return null;

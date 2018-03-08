@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-
 /**
  * The generic trace location in TMF.
  * <p>
@@ -21,31 +20,23 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * enough information to allow the positioning of the trace 'pointer' to read an
  * arbitrary event.
  * <p>
- * This location is trace-specific and must be comparable.
+ * This location is trace-specific, must be comparable and immutable.
  *
- * @param <L> The trace location type
- *
- * @version 1.0
+ * @version 2.0
  * @author Francois Chouinard
  */
-public interface ITmfLocation<L extends Comparable<?>> {
+public interface ITmfLocation {
 
     // ------------------------------------------------------------------------
     // Getters
     // ------------------------------------------------------------------------
 
     /**
-     * @return the location
+     * Returns the concrete trace location information
+     *
+     * @return the location information
+     * @since 2.0
      */
-    public L getLocation();
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
-
-    /**
-     * @return a clone of the location
-     */
-    public ITmfLocation<L> clone();
+    Comparable<?> getLocationInfo();
 
 }

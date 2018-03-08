@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,13 +13,11 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * The generic trace indexer in TMF with support for incremental indexing.
- *
- * @param <T> The trace event type
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -27,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
  * @see ITmfTrace
  * @see ITmfEvent
  */
-public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
+public interface ITmfTraceIndexer {
 
     /**
      * Start an asynchronous index building job and waits for the job completion
@@ -68,8 +66,9 @@ public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
      * @param waitForCompletion
      *            Should we block the calling thread until the build is
      *            complete?
+     * @since 2.0
      */
-    public void buildIndex(long offset, TmfTimeRange range, boolean waitForCompletion);
+    void buildIndex(long offset, TmfTimeRange range, boolean waitForCompletion);
 
     /**
      * Indicates that the indexer is busy indexing the trace.
@@ -77,15 +76,16 @@ public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
      *
      * @return the state of the indexer (indexing or not)
      */
-    public boolean isIndexing();
+    boolean isIndexing();
 
     /**
      * Adds an entry to the trace index.
      *
      * @param context The trace context to save
      * @param timestamp The timestamp matching this context
+     * @since 2.0
      */
-    public void updateIndex(ITmfContext context, ITmfTimestamp timestamp);
+    void updateIndex(ITmfContext context, ITmfTimestamp timestamp);
 
     /**
      * Returns the context of the checkpoint immediately preceding the requested
@@ -93,8 +93,9 @@ public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
      *
      * @param timestamp the requested timestamp
      * @return the checkpoint context
+     * @since 2.0
      */
-    public ITmfContext seekIndex(ITmfTimestamp timestamp);
+    ITmfContext seekIndex(ITmfTimestamp timestamp);
 
     /**
      * Returns the context of the checkpoint immediately preceding the requested
@@ -103,11 +104,11 @@ public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
      * @param rank the requested event rank
      * @return the checkpoint context
      */
-    public ITmfContext seekIndex(long rank);
+    ITmfContext seekIndex(long rank);
 
     /**
      * Perform cleanup when the indexer is no longer required.
      */
-    public void dispose();
+    void dispose();
 
 }

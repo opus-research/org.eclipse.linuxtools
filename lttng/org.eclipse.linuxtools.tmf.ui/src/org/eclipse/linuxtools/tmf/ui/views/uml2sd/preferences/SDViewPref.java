@@ -1,19 +1,19 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl.ColorImpl;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl.FontImpl;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
@@ -64,7 +64,7 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     /**
      * A 2nd array of preference names
      */
-    private static final String[] FONT_LIST2 = { SDMessages._88, SDMessages._89, SDMessages._90, SDMessages._91, SDMessages._92, SDMessages._93, SDMessages._94, SDMessages._95, SDMessages._96 };
+    private static final String[] FONT_LIST2 = { Messages.SequenceDiagram_Lifeline, Messages.SequenceDiagram_ExecutionOccurrence, Messages.SequenceDiagram_SyncMessage, Messages.SequenceDiagram_SyncMessageReturn, Messages.SequenceDiagram_AsyncMessage, Messages.SequenceDiagram_AsyncMessageReturn, Messages.SequenceDiagram_Frame, Messages.SequenceDiagram_LifelineHeader, Messages.SequenceDiagram_FrameTitle };
     /**
      * Array of background color preference names
      */
@@ -79,8 +79,9 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     private static final String[] PREF_TEXT_COLOR_LIST = { PREF_LIFELINE, PREF_SYNC_MESS, PREF_SYNC_MESS_RET, PREF_ASYNC_MESS, PREF_ASYNC_MESS_RET, PREF_LIFELINE_HEADER, PREF_FRAME_NAME };
     /**
      * Temporary tag
+     * @since 2.0
      */
-    protected static final String TEMP_TAG = "_TEMP";//$NON-NLS-1$
+    public static final String TEMP_TAG = "_TEMP";//$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -93,31 +94,32 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     /**
      * Hashtable for font preferences
      */
-    protected Map<String, IFont> fFontPref;
+    private Map<String, IFont> fFontPref;
+
     /**
      * Hashtable for foreground color preferences
      */
-    protected Map<String, IColor> fForeColorPref;
+    private Map<String, IColor> fForeColorPref;
     /**
      * Hashtable for background color preferences
      */
-    protected Map<String, IColor> fBackColorPref;
+    private Map<String, IColor> fBackColorPref;
     /**
      * Hashtable for text color preferences
      */
-    protected Map<String, IColor> fTextColorPref;
+    private Map<String, IColor> fTextColorPref;
     /**
      * The reference to the preference store.
      */
-    protected IPreferenceStore fPrefStore = null;
+    private IPreferenceStore fPrefStore = null;
     /**
      * Color for the time compression selection
      */
-    protected IColor fTimeCompressionSelectionColor = null;
+    private IColor fTimeCompressionSelectionColor = null;
     /**
      * Flag whether no focus selection or not.
      */
-    protected boolean fNoFocusSelection = false;
+    private boolean fNoFocusSelection = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -239,10 +241,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return fHandle;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getForeGroundColor(java.lang.String)
-     */
     @Override
     public IColor getForeGroundColor(String prefName) {
         if ((fForeColorPref.get(prefName + FORE_COLOR_POSTFIX) != null) && (fForeColorPref.get(prefName + FORE_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -251,10 +249,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_BLACK);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getBackGroundColor(java.lang.String)
-     */
     @Override
     public IColor getBackGroundColor(String prefName) {
         if ((fBackColorPref.get(prefName + BACK_COLOR_POSTFIX) != null) && (fBackColorPref.get(prefName + BACK_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -263,10 +257,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getFontColor(java.lang.String)
-     */
     @Override
     public IColor getFontColor(String prefName) {
         if ((fTextColorPref.get(prefName + TEXT_COLOR_POSTFIX) != null) && (fTextColorPref.get(prefName + TEXT_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -275,10 +265,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_BLACK);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getForeGroundColorSelection()
-     */
     @Override
     public IColor getForeGroundColorSelection() {
         if (fNoFocusSelection) {
@@ -287,10 +273,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getBackGroundColorSelection()
-     */
     @Override
     public IColor getBackGroundColorSelection() {
         if (fNoFocusSelection) {
@@ -299,10 +281,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_LIST_SELECTION);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getFont(java.lang.String)
-     */
     @Override
     public IFont getFont(String prefName) {
         if (fFontPref.get(prefName) != null) {
@@ -348,19 +326,11 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return fPrefStore.getBoolean(PREF_EXCLUDE_EXTERNAL_TIME);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#useGradienColor()
-     */
     @Override
     public boolean useGradienColor() {
         return fPrefStore.getBoolean(PREF_USE_GRADIENT);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getTimeCompressionSelectionColor()
-     */
     @Override
     public IColor getTimeCompressionSelectionColor() {
         return fTimeCompressionSelectionColor;
@@ -432,10 +402,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         fPrefStore.removePropertyChangeListener(listener);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
-     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (!event.getProperty().equals("PREFOK")) { //$NON-NLS-1$
@@ -452,6 +418,66 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
      */
     public void setNoFocusSelection(boolean v) {
         fNoFocusSelection = v;
+    }
+
+    /**
+     * Returns a unmodifiable map with font preferences.
+     *
+     * @return map with font preferences
+     * @since 2.0
+     */
+    protected Map<String, IFont> getFontPref() {
+        return Collections.unmodifiableMap(fFontPref);
+    }
+
+    /**
+     * Returns a unmodifiable map with foreground color preferences
+     *
+     * @return map with foreground color preferences
+     * @since 2.0
+     */
+    public Map<String, IColor> getForeColorPref() {
+        return Collections.unmodifiableMap(fForeColorPref);
+    }
+
+    /**
+     * Returns a unmodifiable map with background color preferences
+     *
+     * @return map with background color preferences
+     * @since 2.0
+     */
+    public Map<String, IColor> getBackColorPref() {
+        return Collections.unmodifiableMap(fBackColorPref);
+    }
+
+    /**
+     * Returns a unmodifiable map with text color preferences
+     *
+     * @return map with text color preferences
+     * @since 2.0
+     */
+    public Map<String, IColor> getTextColorPref() {
+        return Collections.unmodifiableMap(fTextColorPref);
+    }
+
+    /**
+     * Returns the preference store.
+     *
+     * @return the preference store
+     * @since 2.0
+     */
+    public IPreferenceStore getPrefStore() {
+        return fPrefStore;
+    }
+
+    /**
+     * Returns flag about focus selection
+     *
+     * @return flag about focus selection
+     * @since 2.0
+     */
+    public boolean isNoFocusSelection() {
+        return fNoFocusSelection;
     }
 
     /**

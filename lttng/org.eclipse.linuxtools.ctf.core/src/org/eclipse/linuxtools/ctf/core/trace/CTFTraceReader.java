@@ -1,31 +1,31 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial API and implementation
- * Contributors: Alexandre Montplaisir - Initial API and implementation
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *     Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.Activator;
-import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
-import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputReaderTimestampComparator;
 
 /**
  * A CTF trace reader. Reads the events of a trace.
- * 
+ *
  * @version 1.0
  * @author Matthew Khouzam
  * @author Alexandre Montplaisir
@@ -44,12 +44,12 @@ public class CTFTraceReader {
     /**
      * Vector of all the trace file readers.
      */
-    private final Vector<StreamInputReader> streamInputReaders = new Vector<StreamInputReader>();
+    private final List<StreamInputReader> streamInputReaders = new ArrayList<StreamInputReader>();
 
     /**
      * Priority queue to order the trace file readers by timestamp.
      */
-    protected PriorityQueue<StreamInputReader> prio;
+    private PriorityQueue<StreamInputReader> prio;
 
     /**
      * Array to count the number of event per trace file.
@@ -65,10 +65,6 @@ public class CTFTraceReader {
      * Timestamp of the last event read so far
      */
     private long endTime;
-
-    protected void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -98,7 +94,7 @@ public class CTFTraceReader {
          * Get the start Time of this trace bear in mind that the trace could be
          * empty.
          */
-        this.startTime = 0;// prio.peek().getPacketReader().getCurrentPacket().getTimestampBegin();
+        this.startTime = 0;
         if (hasMoreEvents()) {
             this.startTime = prio.peek().getCurrentEvent().getTimestamp();
             this.setEndTime(this.startTime);
@@ -119,6 +115,19 @@ public class CTFTraceReader {
         return newReader;
     }
 
+    /**
+     * Dispose the CTFTraceReader
+     * @since 2.0
+     */
+    public void dispose() {
+        for (StreamInputReader reader : streamInputReaders) {
+            if (reader != null) {
+                reader.dispose();
+            }
+        }
+        streamInputReaders.clear();
+    }
+
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
@@ -131,6 +140,27 @@ public class CTFTraceReader {
     public long getStartTime() {
         return this.startTime;
     }
+
+    /**
+     * Set the trace's end time
+     *
+     * @param endTime
+     *            The end time to use
+     */
+    protected final void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    /**
+     * Get the priority queue of this trace reader.
+     *
+     * @return The priority queue of input readers
+     * @since 2.0
+     */
+    protected PriorityQueue<StreamInputReader> getPrio() {
+        return prio;
+    }
+
 
     // ------------------------------------------------------------------------
     // Operations
@@ -176,6 +206,11 @@ public class CTFTraceReader {
      * lower next event timestamp.
      */
     private void populateStreamInputReaderHeap() {
+        if (this.streamInputReaders.isEmpty()) {
+            this.prio = new PriorityQueue<StreamInputReader>();
+            return;
+        }
+
         /*
          * Create the priority queue with a size twice as bigger as the number
          * of reader in order to avoid constant resizing.
@@ -244,8 +279,7 @@ public class CTFTraceReader {
              * Add it back in the queue.
              */
             this.prio.add(top);
-            final long topEnd = top.getCurrentEvent().getTimestamp()
-                    + this.getTrace().getOffset();
+            final long topEnd = this.trace.timestampCyclesToNanos(top.getCurrentEvent().getTimestamp());
             this.setEndTime(Math.max(topEnd, this.getEndTime()));
             this.eventCountPerTraceFile[top.getName()]++;
 
@@ -307,23 +341,6 @@ public class CTFTraceReader {
         return hasMoreEvents();
     }
 
-//    /**
-//     * Go to the first entry of a trace
-//     *
-//     * @return 0, the first index.
-//     */
-//    private long goToZero() {
-//        long tempIndex;
-//        for (StreamInputReader streamInputReader : this.streamInputReaders) {
-//            /*
-//             * Seek the trace reader.
-//             */
-//            streamInputReader.seek(0);
-//        }
-//        tempIndex = 0;
-//        return tempIndex;
-//    }
-
     /**
      * gets the stream with the oldest event
      *
@@ -338,7 +355,7 @@ public class CTFTraceReader {
      *
      * @return true if yes.
      */
-    public boolean hasMoreEvents() {
+    public final boolean hasMoreEvents() {
         return this.prio.size() > 0;
     }
 
@@ -371,7 +388,8 @@ public class CTFTraceReader {
             long len = (width * this.eventCountPerTraceFile[se.getName()])
                     / numEvents;
 
-            StringBuilder sb = new StringBuilder(se.getFilename() + "\t["); //$NON-NLS-1$
+            StringBuilder sb = new StringBuilder(se.getFilename());
+            sb.append("\t["); //$NON-NLS-1$
 
             for (int i = 0; i < len; i++) {
                 sb.append('+');
@@ -382,7 +400,7 @@ public class CTFTraceReader {
             }
 
             sb.append("]\t" + this.eventCountPerTraceFile[se.getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
-            Activator.getDefault().log(sb.toString());
+            Activator.log(sb.toString());
         }
     }
 
@@ -401,9 +419,7 @@ public class CTFTraceReader {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + (int) (startTime ^ (startTime >>> 32));
-        result = (prime * result)
-                + ((streamInputReaders == null) ? 0 : streamInputReaders
-                        .hashCode());
+        result = (prime * result) + streamInputReaders.hashCode();
         result = (prime * result) + ((trace == null) ? 0 : trace.hashCode());
         return result;
     }
@@ -420,11 +436,7 @@ public class CTFTraceReader {
             return false;
         }
         CTFTraceReader other = (CTFTraceReader) obj;
-        if (streamInputReaders == null) {
-            if (other.streamInputReaders != null) {
-                return false;
-            }
-        } else if (!streamInputReaders.equals(other.streamInputReaders)) {
+        if (!streamInputReaders.equals(other.streamInputReaders)) {
             return false;
         }
         if (trace == null) {
@@ -437,11 +449,6 @@ public class CTFTraceReader {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         /* Only for debugging, shouldn't be externalized */

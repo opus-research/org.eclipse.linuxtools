@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2012 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -82,86 +82,63 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
+    private void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+    }
+
     // ------------------------------------------------------------------------
     // ITmfProjectModelElement
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getName()
-     */
+
     @Override
     public String getName() {
         return fName;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getResource()
-     */
+
     @Override
     public IResource getResource() {
         return fResource;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getPath()
-     */
+
     @Override
     public IPath getPath() {
         return fPath;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getLocation()
-     */
+
     @Override
     public URI getLocation() {
         return fLocation;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getParent()
-     */
+
     @Override
     public ITmfProjectModelElement getParent() {
         return fParent;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#hasChildren()
-     */
+
     @Override
     public boolean hasChildren() {
         return fChildren.size() > 0;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getChildren()
-     */
+
     @Override
     public List<ITmfProjectModelElement> getChildren() {
         return fChildren;
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#addChild(org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement)
-     */
+
     @Override
     public void addChild(ITmfProjectModelElement child) {
         fChildren.add(child);
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#removeChild(org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement)
-     */
+
     @Override
     public void removeChild(ITmfProjectModelElement child) {
         fChildren.remove(child);
+        if (child instanceof TmfProjectModelElement) {
+            ((TmfProjectModelElement) child).dispose();
+        }
         refresh();
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#refresh()
-     */
+
     @Override
     public void refresh() {
         // Do nothing by default: sub-classes override this on an "as-needed"
@@ -171,10 +148,7 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
     // ------------------------------------------------------------------------
     // IResourceChangeListener
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
-     */
+
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         // Do nothing by default: sub-classes override this on an "as-needed"
@@ -184,23 +158,15 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fLocation == null) ? 0 : fLocation.hashCode());
-        result = prime * result + ((fName == null) ? 0 : fName.hashCode());
         result = prime * result + ((fPath == null) ? 0 : fPath.hashCode());
         return result;
     }
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -213,7 +179,7 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
             return false;
         }
         TmfProjectModelElement element = (TmfProjectModelElement) other;
-        return element.fName.equals(fName) && element.fLocation.equals(fLocation);
+        return element.fPath.equals(fPath);
     }
 
     /**

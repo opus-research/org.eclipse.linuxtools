@@ -24,21 +24,21 @@ public class AuthorEmailRule implements IPredicateRule {
 	/** The success token */
 	IToken token;
 
-	protected final static char START_CHAR = '<';
+	protected static final char START_CHAR = '<';
 
-	protected final static char END_CHAR = '>';
+	protected static final char END_CHAR = '>';
 
-	protected final static char[] INTER_CHARS = { '@', '.' };
+	protected static final char[] INTER_CHARS = { '@', '.' };
 
-	protected final static int STATE_START = 0;
+	protected static final int STATE_START = 0;
 
-	protected final static int STATE_OPENED = 1;
+	protected static final int STATE_OPENED = 1;
 
-	protected final static int STATE_AT = 2;
+	protected static final int STATE_AT = 2;
 
-	protected final static int STATE_PERIOD = 3;
+	protected static final int STATE_PERIOD = 3;
 
-	protected final static int STATE_DONE = 4;
+	protected static final int STATE_DONE = 4;
 
 	public AuthorEmailRule(IToken token) {
 		this.token = token;
@@ -82,7 +82,7 @@ public class AuthorEmailRule implements IPredicateRule {
 					unreadBuffer(scanner, fBuffer);
 					return Token.UNDEFINED;
 				}
-				
+
 				// we just keep reading
 
 			} else if (state == STATE_AT) {
@@ -90,7 +90,7 @@ public class AuthorEmailRule implements IPredicateRule {
 				if ((char) c == INTER_CHARS[1]) {
 					state++;
 				}
-				
+
 				// check if we have a valid char
 				if (! (Character.isLetterOrDigit((char) c) || c == '.' || c == '_' || c == '-')){
 					unreadBuffer(scanner, fBuffer);
@@ -99,9 +99,9 @@ public class AuthorEmailRule implements IPredicateRule {
 				// we just keep reading
 			} else if (state == STATE_PERIOD) {
 				// the last char before the ending char cannot be a '.'
-				if ((char) c == END_CHAR && fBuffer.charAt(fBuffer.length() - 1) != '.')
+				if ((char) c == END_CHAR && fBuffer.charAt(fBuffer.length() - 1) != '.') {
 					state++;
-				else if ((char) c == END_CHAR){
+				} else if ((char) c == END_CHAR){
 					unreadBuffer(scanner, fBuffer);
 					return Token.UNDEFINED;
 				}
@@ -111,7 +111,7 @@ public class AuthorEmailRule implements IPredicateRule {
 			}
 
 		} while (state != STATE_DONE);
-		
+
 		// we've gone through all states until we've reached STATE_DONE, success
 		return token;
 	}
@@ -122,13 +122,14 @@ public class AuthorEmailRule implements IPredicateRule {
 
 	/**
 	 * Returns the characters in the buffer to the scanner.
-	 * 
+	 *
 	 * @param scanner
 	 *            the scanner to be used
 	 */
 	protected void unreadBuffer(ICharacterScanner scanner, StringBuilder buffer) {
-		for (int i = buffer.length() - 1; i >= 0; i--)
+		for (int i = buffer.length() - 1; i >= 0; i--) {
 			scanner.unread();
+		}
 	}
 
 }

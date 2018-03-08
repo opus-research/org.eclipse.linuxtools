@@ -1,24 +1,23 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -45,68 +44,68 @@ public class BasicFrame extends GraphNode {
     /**
      * Contains the max elapsed time between two consecutive messages in the whole frame
      */
-    protected ITmfTimestamp fMaxTime = new TmfTimestamp(0);
+    private ITmfTimestamp fMaxTime = new TmfTimestamp(0);
     /**
      * Contains the min elapsed time between two consecutive messages in the whole frame
      */
-    protected ITmfTimestamp fMinTime = new TmfTimestamp(0);
+    private ITmfTimestamp fMinTime = new TmfTimestamp(0);
     /**
      * Indicate if the min and max elapsed time between two consecutive messages in the whole frame need to be computed
      */
-    protected boolean fComputeMinMax = true;
+    private boolean fComputeMinMax = true;
     /**
      * Store the preference set by the user regarding the external time. This flag is used determine if the min and max
      * need to be recomputed in case this preference is changed.
      */
-    protected boolean fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
+    private boolean fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
     /**
      * The greater event occurrence created on graph nodes drawn in this Frame This directly impact the Frame height
      */
-    protected int fVerticalIndex = 0;
+    private int fVerticalIndex = 0;
     /**
      * The index along the x axis where the next lifeline will is drawn This directly impact the Frame width
      */
-    protected int fHorizontalIndex = 0;
+    private int fHorizontalIndex = 0;
     /**
      * The time information flag.
      */
-    protected boolean fHasTimeInfo = false;
+    private boolean fHasTimeInfo = false;
     /**
      * The current Frame visible area - x coordinates
      */
-    protected int fVisibleAreaX;
+    private int fVisibleAreaX;
     /**
      * The current Frame visible area - y coordinates
      */
-    protected int fVisibleAreaY;
+    private int fVisibleAreaY;
     /**
      * The current Frame visible area - width
      */
-    protected int fVisibleAreaWidth;
+    private int fVisibleAreaWidth;
     /**
      * The current Frame visible area - height
      */
-    protected int fVisibleAreaHeight;
+    private int fVisibleAreaHeight;
     /**
      * The event occurrence spacing (-1 for none)
      */
-    protected int fForceEventOccurrenceSpacing = -1;
+    private int fForceEventOccurrenceSpacing = -1;
     /**
      * Flag to indicate customized minumum and maximum.
      */
-    protected boolean fCustomMinMax = false;
+    private boolean fCustomMinMax = false;
     /**
      * The minimum time between messages of the sequence diagram frame.
      */
-    protected ITmfTimestamp fMinSDTime = new TmfTimestamp();
+    private ITmfTimestamp fMinSDTime = new TmfTimestamp();
     /**
      * The maximum time between messages of the sequence diagram frame.
      */
-    protected ITmfTimestamp fMaxSDTime = new TmfTimestamp();
+    private ITmfTimestamp fMaxSDTime = new TmfTimestamp();
     /**
      * Flag to indicate that initial minimum has to be computed.
      */
-    protected boolean fInitSDMin = true;
+    private boolean fInitSDMin = true;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -164,39 +163,22 @@ public class BasicFrame extends GraphNode {
         return fHorizontalIndex;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#addNode(org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode)
-     */
     @Override
     public void addNode(GraphNode nodeToAdd) {
-        fComputeMinMax = true;
+        setComputeMinMax(true);
         super.addNode(nodeToAdd);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
-     */
     @Override
     public int getX() {
         return Metrics.FRAME_H_MARGIN;
     }
 
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         return Metrics.FRAME_V_MARGIN;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         if (fHorizontalIndex == 0) {
@@ -205,10 +187,6 @@ public class BasicFrame extends GraphNode {
         return fHorizontalIndex * Metrics.swimmingLaneWidth() + Metrics.LIFELINE_H_MAGIN * 2 + 1 - Metrics.LIFELINE_SPACING;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         // The Frame height depends on the maximum number of messages added to a lifeline
@@ -221,6 +199,32 @@ public class BasicFrame extends GraphNode {
         }
         return fVerticalIndex * (Metrics.getMessagesSpacing() + Metrics.getMessageFontHeigth()) + Metrics.LIFELINE_NAME_H_MARGIN + Metrics.FRAME_NAME_H_MARGIN + Metrics.getFrameFontHeigth() + Metrics.LIFELINE_VT_MAGIN + Metrics.LIFELINE_VB_MAGIN
                 + Metrics.LIFELINE_NAME_H_MARGIN + Metrics.FRAME_NAME_H_MARGIN + Metrics.getLifelineFontHeigth() * 2;
+    }
+
+    /**
+     * @return true if mininum and maximum time needs to be calculated else false
+     * @since 2.0
+     */
+    protected boolean isComputeMinMax() {
+        return fComputeMinMax;
+    }
+
+    /**
+     * @return true if mininum and maximum time needs to be calculated else false
+     * @since 2.0
+     */
+    protected boolean isCustomMinMax() {
+        return fCustomMinMax;
+    }
+
+    /**
+     * gets the initialization flag for SD minimum.
+     *
+     * @return the initialization flag for SD minimum
+     * @since 2.0
+     */
+    protected boolean getInitSDMin() {
+        return fInitSDMin;
     }
 
     /**
@@ -310,10 +314,6 @@ public class BasicFrame extends GraphNode {
         context.setForeground(pref.getForeGroundColor(ISDPreferences.PREF_FRAME));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         draw(context, true);
@@ -392,15 +392,16 @@ public class BasicFrame extends GraphNode {
      * Return the minimum time stored in the frame taking all GraphNodes into account
      *
      * @return the minimum GraphNode time
+     * @since 2.0
      */
     public ITmfTimestamp getMinTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
             fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
-            fComputeMinMax = true;
+            setComputeMinMax(true);
         }
         if ((fComputeMinMax) && (!fCustomMinMax)) {
             computeMinMax();
-            fComputeMinMax = false;
+            setComputeMinMax(false);
         }
         return fMinTime;
     }
@@ -410,6 +411,7 @@ public class BasicFrame extends GraphNode {
      *
      * @param min
      *            The minimum timestamp
+     * @since 2.0
      */
     public void setMin(ITmfTimestamp min) {
         fMinTime = min;
@@ -421,6 +423,7 @@ public class BasicFrame extends GraphNode {
      *
      * @param max
      *            The maximum timestamp
+     * @since 2.0
      */
     public void setMax(ITmfTimestamp max) {
         fMaxTime = max;
@@ -432,22 +435,23 @@ public class BasicFrame extends GraphNode {
      */
     public void resetCustomMinMax() {
         fCustomMinMax = false;
-        fComputeMinMax = true;
+        setComputeMinMax(true);
     }
 
     /**
      * Return the maximum time stored in the frame taking all GraphNodes into account
      *
      * @return the maximum GraphNode time
+     * @since 2.0
      */
     public ITmfTimestamp getMaxTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
             fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
-            fComputeMinMax = true;
+            setComputeMinMax(true);
         }
         if (fComputeMinMax) {
             computeMinMax();
-            fComputeMinMax = false;
+            setComputeMinMax(false);
         }
         return fMaxTime;
     }
@@ -483,6 +487,7 @@ public class BasicFrame extends GraphNode {
      * Returns the minimum time between consecutive messages.
      *
      * @return the minimum time between consecutive messages
+     * @since 2.0
      */
     public ITmfTimestamp getSDMinTime() {
         computeMaxMinTime();
@@ -493,6 +498,7 @@ public class BasicFrame extends GraphNode {
      * Returns the maximum time between consecutive messages.
      *
      * @return the maximum time between consecutive messages
+     * @since 2.0
      */
     public ITmfTimestamp getSDMaxTime() {
         computeMaxMinTime();
@@ -525,20 +531,20 @@ public class BasicFrame extends GraphNode {
     protected void updateMinMax(SDTimeEvent m1, SDTimeEvent m2) {
         ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime());
         if (fComputeMinMax) {
-            fMinTime = delta.clone();
+            fMinTime = delta;
             if (fMinTime.compareTo(TmfTimestamp.ZERO, false) < 0) {
                 fMinTime = new TmfTimestamp(0, m1.getTime().getScale(), m1.getTime().getPrecision());
             }
-            fMaxTime = fMinTime.clone();
-            fComputeMinMax = false;
+            fMaxTime = fMinTime;
+            setComputeMinMax(false);
         }
 
         if ((delta.compareTo(fMinTime, true) < 0) && (delta.compareTo(TmfTimestamp.ZERO, false) > 0)) {
-            fMinTime = delta.clone();
+            fMinTime = delta;
         }
 
         if ((delta.compareTo(fMaxTime, true) > 0) && (delta.compareTo(TmfTimestamp.ZERO, false) > 0)) {
-            fMaxTime = delta.clone();
+            fMaxTime = delta;
         }
     }
 
@@ -548,15 +554,15 @@ public class BasicFrame extends GraphNode {
      * @return the time array else empty list.
      */
     protected List<SDTimeEvent> buildTimeArray() {
-        if (!fHasChilden) {
+        if (!hasChildren()) {
             return new ArrayList<SDTimeEvent>();
         }
 
-        Iterator<String> it = fForwardSort.keySet().iterator();
+        Iterator<String> it = getForwardSortMap().keySet().iterator();
         List<SDTimeEvent> timeArray = new ArrayList<SDTimeEvent>();
         while (it.hasNext()) {
             String nodeType = it.next();
-            List<GraphNode> list = fNodes.get(nodeType);
+            List<GraphNode> list = getNodeMap().get(nodeType);
             for (int i = 0; i < list.size(); i++) {
                 Object timedNode = list.get(i);
                 if ((timedNode instanceof ITimeRange) && ((ITimeRange) timedNode).hasTimeInfo()) {
@@ -565,7 +571,7 @@ public class BasicFrame extends GraphNode {
                     SDTimeEvent f = new SDTimeEvent(time, event, (ITimeRange) list.get(i));
                     timeArray.add(f);
                     if (event != list.get(i).getEndOccurrence()) {
-                        event = ((AsyncMessage) list.get(i)).getEndOccurrence();
+                        event = (list.get(i)).getEndOccurrence();
                         time = ((ITimeRange) list.get(i)).getEndTime();
                         f = new SDTimeEvent(time, event, (ITimeRange) list.get(i));
                         timeArray.add(f);
@@ -576,21 +582,52 @@ public class BasicFrame extends GraphNode {
         return timeArray;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int x, int y) {
         return false;
+    }
+
+    /**
+     * @return true if frame has time info else false
+     * @since 2.0
+     */
+    public boolean hasTimeInfo() {
+        return fHasTimeInfo;
+    }
+
+    /**
+     * Sets the flag whether the frame has time info or not
+     * @since 2.0
+     * @param hasTimeInfo
+     *          true if frame has time info else false
+     */
+    public void setHasTimeInfo(boolean hasTimeInfo) {
+        fHasTimeInfo = hasTimeInfo;
+    }
+
+    /**
+     * Sets the flag for minimum and maximum computation.
+     * @param computeMinMax
+     *          true if mininum and maximum time needs to be calculated else false
+     * @since 2.0
+     */
+    public void setComputeMinMax(boolean computeMinMax) {
+        fComputeMinMax = computeMinMax;
+    }
+
+    /**
+     * Sets the initialization flag for SD minimum.
+     *
+     * @param initSDMin
+     *          the flag to set
+     * @since 2.0
+     */
+    public void setInitSDMin(boolean initSDMin) {
+        fInitSDMin = initSDMin;
     }
 }

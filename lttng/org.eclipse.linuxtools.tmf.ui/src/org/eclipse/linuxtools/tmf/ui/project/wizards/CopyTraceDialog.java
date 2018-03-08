@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
- * 
+ * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
+ *   Geneviève Bastien - Moved the actual copy code to model element's class
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -27,8 +28,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
@@ -62,8 +61,8 @@ public class CopyTraceDialog extends SelectionStatusDialog {
 
     private final TmfTraceElement fTrace;
     private Text fNewTraceName;
-    private IFolder fTraceFolder;
-    private TmfProjectElement fProject;
+    private final IFolder fTraceFolder;
+    private final TmfProjectElement fProject;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -86,10 +85,7 @@ public class CopyTraceDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -172,28 +168,16 @@ public class CopyTraceDialog extends SelectionStatusDialog {
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#computeResult()
-     */
     @Override
     protected void computeResult() {
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#create()
-     */
+
     @Override
     public void create() {
         super.create();
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#okPressed()
-     */
     @Override
     protected void okPressed() {
         IResource trace = copyTrace(fNewTraceName.getText());
@@ -210,9 +194,6 @@ public class CopyTraceDialog extends SelectionStatusDialog {
 
     private IResource copyTrace(final String newName) {
 
-        IPath oldPath = fTrace.getResource().getFullPath();
-        final IPath newPath = oldPath.append("../" + newName); //$NON-NLS-1$
-
         WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
             @Override
             public void execute(IProgressMonitor monitor) throws CoreException {
@@ -221,19 +202,7 @@ public class CopyTraceDialog extends SelectionStatusDialog {
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
-                    // Copy supplementary files first
-                    fTrace.copySupplementaryFolder(newName);
-                    // Copy the trace
-                    fTrace.getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
-                    // Delete any bookmarks file found in copied trace folder
-                    IFolder folder = fTraceFolder.getFolder(newName);
-                    if (folder.exists()) {
-                        for (IResource member : folder.members()) {
-                            if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
-                                member.delete(true, null);
-                            }
-                        }
-                    }
+                    fTrace.copy(newName, true);
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
@@ -255,6 +224,7 @@ public class CopyTraceDialog extends SelectionStatusDialog {
         }
 
         return fTrace.getResource();
+
     }
 
 }

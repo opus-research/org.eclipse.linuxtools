@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -25,34 +25,27 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.core;
  *
  */
 @SuppressWarnings({"nls", "javadoc"})
-public abstract class Attributes {
+public interface Attributes {
 
     /* First-level attributes */
-    public static final String CPUS = "CPUs";
-    public static final String THREADS = "Threads";
-    public static final String RESOURCES = "Resources";
+    static final String CPUS = "CPUs";
+    static final String THREADS = "Threads";
+    static final String RESOURCES = "Resources";
 
     /* Sub-attributes of the CPU nodes */
-    public static final String CURRENT_THREAD = "Current_thread";
-    public static final String STATUS = "Status";
+    static final String CURRENT_THREAD = "Current_thread";
+    static final String STATUS = "Status";
 
     /* Sub-attributes of the Thread nodes */
-    public static final String PPID = "PPID";
-    //public static final String STATUS = "Status"
-    public static final String EXEC_NAME = "Exec_name";
-    public static final String SYSTEM_CALL = "System_call";
+    static final String PPID = "PPID";
+    //static final String STATUS = "Status"
+    static final String EXEC_NAME = "Exec_name";
+    static final String SYSTEM_CALL = "System_call";
 
     /* Attributes under "Resources" */
-    public static final String IRQS = "IRQs";
-    public static final String SOFT_IRQS = "Soft_IRQs";
-
-    /*
-     * Statistics sub-nodes
-     * (Written all out, because "Stats" is easy to confuse with "Status")
-     */
-    public static final String STATISTICS = "Stats";
-    public static final String EVENT_TYPES = "Event_types";
+    static final String IRQS = "IRQs";
+    static final String SOFT_IRQS = "Soft_IRQs";
 
     /* Misc stuff */
-    public static final String UNKNOWN = "Unknown";
+    static final String UNKNOWN = "Unknown";
 }

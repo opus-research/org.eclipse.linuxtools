@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -24,8 +24,8 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
 final class NullStateValue extends TmfStateValue {
 
     @Override
-    public byte getType() {
-        return ITmfStateValue.TYPE_NULL;
+    public Type getType() {
+        return Type.NULL;
     }
 
     @Override
@@ -35,11 +35,6 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public Object getValue() {
-        return null;
-    }
-
-    @Override
-    public byte[] toByteArray() {
         return null;
     }
 

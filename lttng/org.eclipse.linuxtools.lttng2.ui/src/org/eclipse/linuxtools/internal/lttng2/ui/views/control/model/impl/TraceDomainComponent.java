@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -15,7 +16,6 @@ import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
@@ -82,10 +82,6 @@ public class TraceDomainComponent extends TraceControlComponent {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
-     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -145,16 +141,6 @@ public class TraceDomainComponent extends TraceControlComponent {
     /**
      * Retrieves the session configuration from the node.
      *
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void getConfigurationFromNode() throws ExecutionException {
-        getConfigurationFromNode(new NullProgressMonitor());
-    }
-
-    /**
-     * Retrieves the session configuration from the node.
-     *
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
@@ -163,23 +149,6 @@ public class TraceDomainComponent extends TraceControlComponent {
     public void getConfigurationFromNode(IProgressMonitor monitor) throws ExecutionException {
         TraceSessionComponent session = (TraceSessionComponent) getParent();
         session.getConfigurationFromNode(monitor);
-    }
-
-    /**
-     * Enables channels with given names which are part of this domain. If a
-     * given channel doesn't exists it creates a new channel with the given
-     * parameters (or default values if given parameter is null).
-     *
-     * @param channelNames
-     *            - a list of channel names to enable on this domain
-     * @param info
-     *            - channel information to set for the channel (use null for
-     *            default)
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void enableChannels(List<String> channelNames, IChannelInfo info) throws ExecutionException {
-        enableChannels(channelNames, info, new NullProgressMonitor());
     }
 
     /**
@@ -201,19 +170,6 @@ public class TraceDomainComponent extends TraceControlComponent {
             IProgressMonitor monitor) throws ExecutionException {
         getControlService().enableChannels(getParent().getName(), channelNames,
                 isKernel(), info, monitor);
-    }
-
-    /**
-     * Disables channels with given names which are part of this domain.
-     *
-     * @param channelNames
-     *            - a list of channel names to enable on this domain
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void disableChannels(List<String> channelNames)
-            throws ExecutionException {
-        disableChannels(channelNames, new NullProgressMonitor());
     }
 
     /**
@@ -245,17 +201,7 @@ public class TraceDomainComponent extends TraceControlComponent {
     public void enableEvents(List<String> eventNames, IProgressMonitor monitor)
             throws ExecutionException {
         getControlService().enableEvents(getSessionName(), null, eventNames,
-                isKernel(), monitor);
-    }
-
-    /**
-     * Enables all syscalls (for kernel domain)
-     *
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void enableSyscalls() throws ExecutionException {
-        enableSyscalls(new NullProgressMonitor());
+                isKernel(), null, monitor);
     }
 
     /**
@@ -270,23 +216,6 @@ public class TraceDomainComponent extends TraceControlComponent {
     public void enableSyscalls(IProgressMonitor monitor)
             throws ExecutionException {
         getControlService().enableSyscalls(getSessionName(), null, monitor);
-    }
-
-    /**
-     * Enables a dynamic probe (for kernel domain)
-     *
-     * @param eventName
-     *            - event name for probe
-     * @param isFunction
-     *            - true for dynamic function entry/return probe else false
-     * @param probe
-     *            - the actual probe
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void enableProbe(String eventName, boolean isFunction, String probe)
-            throws ExecutionException {
-        enableProbe(eventName, isFunction, probe, new NullProgressMonitor());
     }
 
     /**
@@ -318,46 +247,18 @@ public class TraceDomainComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level) throws ExecutionException {
-        enableLogLevel(eventName, logLevelType, level,
-                new NullProgressMonitor());
-    }
-
-    /**
-     * Enables events using log level.
-     *
-     * @param eventName
-     *            - a event name
-     * @param logLevelType
-     *            - a log level type
-     * @param level
-     *            - a log level
+     * @param filterExpression
+     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, IProgressMonitor monitor)
+            TraceLogLevel level, String filterExpression, IProgressMonitor monitor)
             throws ExecutionException {
         getControlService().enableLogLevel(getSessionName(), null, eventName,
-                logLevelType, level, monitor);
-    }
-
-    /**
-     * Add contexts to given channels and or events
-     *
-     * @param contexts
-     *            - a list of contexts to add
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void addContexts(List<String> contexts) throws ExecutionException {
-        addContexts(contexts, new NullProgressMonitor());
+                logLevelType, level, filterExpression, monitor);
     }
 
     /**
@@ -374,16 +275,6 @@ public class TraceDomainComponent extends TraceControlComponent {
             throws ExecutionException {
         getControlService().addContexts(getSessionName(), null, null,
                 isKernel(), contexts, monitor);
-    }
-
-    /**
-     * Executes calibrate command to quantify LTTng overhead.
-     *
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void calibrate() throws ExecutionException {
-        calibrate(new NullProgressMonitor());
     }
 
     /**

@@ -87,6 +87,28 @@ public class ProfileUIUtils {
 	}
 	
 	/**
+	 * @since 2.0
+	 */
+	public static void openEditorAndSelect(IFile file, int line) throws PartInitException, BadLocationException {
+		if (file.exists()) {
+			IWorkbenchPage activePage = ProfileUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+			IEditorPart editor = IDE.openEditor(activePage, file);
+			if (editor instanceof ITextEditor) {
+				ITextEditor textEditor = (ITextEditor) editor;
+
+				if (line > 0) {
+					IDocumentProvider provider = textEditor.getDocumentProvider();
+					IDocument document = provider.getDocument(textEditor.getEditorInput());
+
+					int start = document.getLineOffset(line - 1); //zero-indexed
+					textEditor.selectAndReveal(start, 0);
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Opens the specified file in an editor (or selects an already open
 	 * editor) and highlights the specified line.
 	 * @param result - result of performing source lookup with a ISourceLocator

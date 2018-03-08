@@ -12,12 +12,12 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF sequence definition (a fixed-size array).
- * 
+ *
  * An array where the size is fixed but declared in the trace, unlike array
  * where it is declared with a literal
  *
@@ -145,15 +145,13 @@ public class SequenceDefinition extends Definition {
             int i = 0;
 
             if (definitions != null) {
-                for (; i < definitions.length; i++) {
-                    newDefinitions[i] = definitions[i];
-                }
+                System.arraycopy(definitions, 0, newDefinitions, 0, definitions.length);
             }
 
             for (; i < currentLength; i++) {
                 newDefinitions[i] = declaration.getElementType()
-                        .createDefinition(definitionScope,
-                                fieldName + "[" + i + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+                        .createDefinition(getDefinitionScope(),
+                                getFieldName() + "[" + i + "]"); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             definitions = newDefinitions;

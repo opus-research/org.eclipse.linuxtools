@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,22 +23,30 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  */
 public interface ITmfStateValue {
 
-    /** The 'byte' value associated to null state values (-1) */
-    public static final byte TYPE_NULL = -1;
-
-    /** The 'byte' value associated to integer state values (0) */
-    public static final byte TYPE_INTEGER = 0;
-
-    /** The 'byte' value associated to null state values (1) */
-    public static final byte TYPE_STRING = 1;
+    /**
+     * The supported types of state values
+     * @since 2.0
+     */
+    public enum Type {
+        /** Null value, for an interval not carrying any information */
+        NULL,
+        /** 32-bit integer value */
+        INTEGER,
+        /** Variable-length string value */
+        STRING,
+        /** 64-bit integer value */
+        LONG
+    }
 
     /**
-     * Each implementation has to supply a "type" number. This will get written
-     * as-is in the History file to recognize the type, so it needs to be unique
+     * Each implementation has to define which one (among the supported types)
+     * they implement. There could be more than one implementation of each type,
+     * depending on the needs of the different users.
      *
-     * @return The unique "int8" assigned to this state value type
+     * @return The ITmfStateValue.Type enum representing the type of this value
+     * @since 2.0
      */
-    public byte getType();
+    Type getType();
 
     /**
      * Only "null values" should return true here
@@ -46,7 +54,7 @@ public interface ITmfStateValue {
      * @return True if this type of SV is considered "null", false if it
      *         contains a real value.
      */
-    public boolean isNull();
+    boolean isNull();
 
     /**
      * Read the contained value as an 'int' primitive
@@ -55,7 +63,7 @@ public interface ITmfStateValue {
      * @throws StateValueTypeException
      *             If the contained value cannot be read as an integer
      */
-    public int unboxInt() throws StateValueTypeException;
+    int unboxInt() throws StateValueTypeException;
 
     /**
      * Read the contained value as a String
@@ -64,5 +72,15 @@ public interface ITmfStateValue {
      * @throws StateValueTypeException
      *             If the contained value cannot be read as a String
      */
-    public String unboxStr() throws StateValueTypeException;
+    String unboxStr() throws StateValueTypeException;
+
+    /**
+     * Read the contained value as a 'long' primitive
+     *
+     * @return The long contained in the state value
+     * @throws StateValueTypeException
+     *             If the contained value cannot be read as a long
+     * @since 2.0
+     */
+    long unboxLong() throws StateValueTypeException;
 }

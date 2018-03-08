@@ -8,13 +8,11 @@
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
  *    Red Hat Inc. - modification to use code in this plug-in
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.launch;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.linuxtools.gprof.launch.GprofLaunchPlugin;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public class GprofLaunchShortcut extends ProfileLaunchShortcut {
@@ -22,7 +20,7 @@ public class GprofLaunchShortcut extends ProfileLaunchShortcut {
 
 	@Override
 	protected void setDefaultProfileAttributes(
-			ILaunchConfigurationWorkingCopy wc) throws CoreException {
+			ILaunchConfigurationWorkingCopy wc) {
 	}
 
 	/**
@@ -31,7 +29,7 @@ public class GprofLaunchShortcut extends ProfileLaunchShortcut {
 	 */
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
-		return getLaunchManager().getLaunchConfigurationType(GprofLaunchPlugin.LAUNCH_ID);
+		return getLaunchManager().getLaunchConfigurationType(GprofLaunch.LAUNCH_ID);
 	}
 
 }

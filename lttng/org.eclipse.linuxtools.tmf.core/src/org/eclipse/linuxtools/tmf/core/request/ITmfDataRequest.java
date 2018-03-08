@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,12 +17,10 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 /**
  * The TMF data request
  *
- * @param <T> The request data type
- *
  * @version 1.0
  * @author Francois Chouinard
  */
-public interface ITmfDataRequest<T extends ITmfEvent> {
+public interface ITmfDataRequest {
 
 	// ------------------------------------------------------------------------
 	// Constants
@@ -49,37 +47,37 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     /**
      * @return request data type (T)
      */
-    public Class<T> getDataType();
+    Class<? extends ITmfEvent> getDataType();
 
     /**
      * @return request ID
      */
-    public int getRequestId();
+    int getRequestId();
 
     /**
      * @return request ID
      */
-    public ExecutionType getExecType();
+    ExecutionType getExecType();
 
     /**
 	 * @return the index of the first event requested
      */
-    public long getIndex();
+    long getIndex();
 
     /**
      * @return the number of requested events
      */
-    public int getNbRequested();
+    int getNbRequested();
 
     /**
      * @return the block size (for BG requests)
      */
-    public int getBlockSize();
+    int getBlockSize();
 
     /**
      * @return the number of events read so far
      */
-    public int getNbRead();
+    int getNbRead();
 
 	// ------------------------------------------------------------------------
 	// Request state predicates
@@ -88,22 +86,22 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     /**
      * @return true if the request is still active
      */
-    public boolean isRunning();
+    boolean isRunning();
 
     /**
      * @return true if the request is completed
      */
-    public boolean isCompleted();
+    boolean isCompleted();
 
     /**
      * @return true if the request has failed
      */
-    public boolean isFailed();
+    boolean isFailed();
 
     /**
      * @return true if the request was cancelled
      */
-    public boolean isCancelled();
+    boolean isCancelled();
 
 	// ------------------------------------------------------------------------
 	// Data handling
@@ -114,7 +112,7 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
      *
      * @param data the data to process
      */
-    public void handleData(T data);
+    void handleData(ITmfEvent data);
 
 	// ------------------------------------------------------------------------
 	// Request notifications
@@ -123,27 +121,27 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     /**
      * Request processing start notification
      */
-    public void handleStarted();
+    void handleStarted();
 
     /**
      * Request processing completion notification
      */
-    public void handleCompleted();
+    void handleCompleted();
 
     /**
      * Request successful completion notification
      */
-    public void handleSuccess();
+    void handleSuccess();
 
     /**
      * Request failure notification
      */
-    public void handleFailure();
+    void handleFailure();
 
     /**
      * Request cancellation notification
      */
-    public void handleCancel();
+    void handleCancel();
 
     /**
      * To suspend the client thread until the request completes
@@ -151,7 +149,7 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
      *
      * @throws InterruptedException thrown if the request was cancelled
      */
-    public void waitForCompletion() throws InterruptedException;
+    void waitForCompletion() throws InterruptedException;
 
 	// ------------------------------------------------------------------------
 	// Request state modifiers
@@ -160,20 +158,20 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     /**
      * Put the request in the running state
      */
-    public void start();
+    void start();
 
     /**
      * Put the request in the completed state
      */
-    public void done();
+    void done();
 
     /**
      * Put the request in the failed completed state
      */
-    public void fail();
+    void fail();
 
     /**
      * Put the request in the cancelled completed state
      */
-    public void cancel();
+    void cancel();
 }

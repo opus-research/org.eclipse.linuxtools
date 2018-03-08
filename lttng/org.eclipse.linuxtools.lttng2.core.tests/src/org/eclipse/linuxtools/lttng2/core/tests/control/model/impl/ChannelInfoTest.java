@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,29 +8,34 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
+
 package org.eclipse.linuxtools.lttng2.core.tests.control.model.impl;
+
+import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * The class <code>ChannelInfoTest</code> contains tests for the class <code>{@link ChannelInfo}</code>.
- *
+ * The class <code>ChannelInfoTest</code> contains tests for the class
+ * <code>{@link ChannelInfo}</code>.
  */
-@SuppressWarnings({"nls", "javadoc"})
-public class ChannelInfoTest extends TestCase {
+public class ChannelInfoTest {
+
     // ------------------------------------------------------------------------
     // Test data
     // ------------------------------------------------------------------------
+
     private IChannelInfo fChannelInfo1 = null;
     private IChannelInfo fChannelInfo2 = null;
 
@@ -40,27 +45,12 @@ public class ChannelInfoTest extends TestCase {
 
     /**
      * Perform pre-test initialization.
-     *
-     * @throws Exception
-     *         if the initialization fails for some reason
-     *
      */
-    @Override
+    @Before
     public void setUp() {
         ModelImplFactory factory = new ModelImplFactory();
         fChannelInfo1 = factory.getChannel1();
         fChannelInfo2 = factory.getChannel2();
-    }
-
-    /**
-     * Perform post-test clean-up.
-     *
-     * @throws Exception
-     *         if the clean-up fails for some reason
-     *
-     */
-    @Override
-    public void tearDown() {
     }
 
     // ------------------------------------------------------------------------
@@ -73,8 +63,8 @@ public class ChannelInfoTest extends TestCase {
 
     /**
      * Run the ChannelInfo() constructor test.
-     *
      */
+    @Test
     public void testChannelInfo() {
         ChannelInfo result = new ChannelInfo("test");
         assertNotNull(result);
@@ -87,8 +77,15 @@ public class ChannelInfoTest extends TestCase {
         assertEquals("disabled", result.getState().getInName());
         assertEquals(0, result.getSubBufferSize());
         assertEquals(0, result.getSwitchTimer());
+        assertEquals(0, result.getMaxSizeTraceFiles());
+        assertEquals(0, result.getMaxNumberTraceFiles());
+        assertEquals(false, result.isBuffersUID());
     }
 
+    /**
+     * Test copy constructor.
+     */
+    @Test
     public void testChannelInfoCopy() {
         ChannelInfo channelInfo = new ChannelInfo((ChannelInfo)fChannelInfo1);
 
@@ -100,6 +97,9 @@ public class ChannelInfoTest extends TestCase {
         assertEquals(fChannelInfo1.getState(), channelInfo.getState());
         assertEquals(fChannelInfo1.getSwitchTimer(), channelInfo.getSwitchTimer());
         assertEquals(fChannelInfo1.getEvents().length, channelInfo.getEvents().length);
+        assertEquals(fChannelInfo1.getMaxSizeTraceFiles(), channelInfo.getMaxSizeTraceFiles());
+        assertEquals(fChannelInfo1.getMaxNumberTraceFiles(), channelInfo.getMaxNumberTraceFiles());
+        assertEquals(fChannelInfo1.isBuffersUID(), channelInfo.isBuffersUID());
 
         IEventInfo[] orignalEvents = fChannelInfo1.getEvents();
         IEventInfo[] resultEvents = channelInfo.getEvents();
@@ -108,6 +108,10 @@ public class ChannelInfoTest extends TestCase {
         }
     }
 
+    /**
+     * Test copy constructor with a null value.
+     */
+    @Test
     public void testChannelCopy2() {
         try {
             ChannelInfo channel = null;
@@ -121,8 +125,8 @@ public class ChannelInfoTest extends TestCase {
 
     /**
      * Run the IEventInfo[] getEvents() method test.
-     *
      */
+    @Test
     public void testAddAndGetEvents_1() {
         ChannelInfo fixture = new ChannelInfo("test");
         fixture.setSwitchTimer(1L);
@@ -148,8 +152,8 @@ public class ChannelInfoTest extends TestCase {
 
     /**
      * Run the long getNumberOfSubBuffers() method test.
-     *
      */
+    @Test
     public void testGetAndSetters() {
         ChannelInfo fixture = new ChannelInfo("test");
         fixture.setSwitchTimer(2L);
@@ -159,6 +163,9 @@ public class ChannelInfoTest extends TestCase {
         fixture.setNumberOfSubBuffers(4);
         fixture.setOutputType("splice()");
         fixture.setSubBufferSize(1L);
+        fixture.setMaxSizeTraceFiles(1024);
+        fixture.setMaxNumberTraceFiles(20);
+        fixture.setBuffersUID(true);
         fixture.addEvent(new EventInfo("event"));
 
         long switchTimer = fixture.getSwitchTimer();
@@ -182,6 +189,15 @@ public class ChannelInfoTest extends TestCase {
         long subBufferSize = fixture.getSubBufferSize();
         assertEquals(1L, subBufferSize);
 
+        int maxSizeTraceFiles = fixture.getMaxSizeTraceFiles();
+        assertEquals(1024, maxSizeTraceFiles);
+
+        int maxNumberTraceFiles = fixture.getMaxNumberTraceFiles();
+        assertEquals(20, maxNumberTraceFiles);
+
+        boolean buffersUID = fixture.isBuffersUID();
+        assertTrue(buffersUID);
+
         fixture.setSwitchTimer(5L);
         fixture.setOverwriteMode(false);
         fixture.setReadTimer(6L);
@@ -189,6 +205,9 @@ public class ChannelInfoTest extends TestCase {
         fixture.setNumberOfSubBuffers(7);
         fixture.setOutputType("mmap()");
         fixture.setSubBufferSize(8L);
+        fixture.setMaxSizeTraceFiles(4096);
+        fixture.setMaxNumberTraceFiles(10);
+        fixture.setBuffersUID(false);
 
         switchTimer = fixture.getSwitchTimer();
         assertEquals(5L, switchTimer);
@@ -210,12 +229,21 @@ public class ChannelInfoTest extends TestCase {
 
         subBufferSize = fixture.getSubBufferSize();
         assertEquals(8L, subBufferSize);
+
+        maxSizeTraceFiles = fixture.getMaxSizeTraceFiles();
+        assertEquals(4096, maxSizeTraceFiles);
+
+        maxNumberTraceFiles = fixture.getMaxNumberTraceFiles();
+        assertEquals(10, maxNumberTraceFiles);
+
+        buffersUID = fixture.isBuffersUID();
+        assertFalse(buffersUID);
     }
 
     /**
      * Run the void setEvents(List<IEventInfo>) method test.
-     *
      */
+    @Test
     public void testSetEvents_1() {
         ChannelInfo fixture = new ChannelInfo("test");
         fixture.setSwitchTimer(1L);
@@ -245,6 +273,10 @@ public class ChannelInfoTest extends TestCase {
         }
     }
 
+    /**
+     * Run the String toString() method test.
+     */
+    @Test
     public void testToString_1() {
         ChannelInfo fixture = new ChannelInfo("channel");
         fixture.setSwitchTimer(1L);
@@ -262,9 +294,9 @@ public class ChannelInfoTest extends TestCase {
     }
 
     /**
-     * Run the String toString() method test.
-     *
+     * Run another String toString() method test.
      */
+    @Test
     public void testToString_2() {
         String result = fChannelInfo1.toString();
 
@@ -276,6 +308,10 @@ public class ChannelInfoTest extends TestCase {
     // equals
     // ------------------------------------------------------------------------
 
+    /**
+     * Run the equals() method test.
+     */
+    @Test
     public void testEqualsReflexivity() {
         assertTrue("equals", fChannelInfo1.equals(fChannelInfo1));
         assertTrue("equals", fChannelInfo2.equals(fChannelInfo2));
@@ -284,6 +320,10 @@ public class ChannelInfoTest extends TestCase {
         assertTrue("equals", !fChannelInfo2.equals(fChannelInfo1));
     }
 
+    /**
+     * Run the equals() method test.
+     */
+    @Test
     public void testEqualsSymmetry() {
         ChannelInfo event1 = new ChannelInfo((ChannelInfo)fChannelInfo1);
         ChannelInfo event2 = new ChannelInfo((ChannelInfo)fChannelInfo2);
@@ -295,6 +335,10 @@ public class ChannelInfoTest extends TestCase {
         assertTrue("equals", fChannelInfo2.equals(event2));
     }
 
+    /**
+     * Run the equals() method test.
+     */
+    @Test
     public void testEqualsTransivity() {
         ChannelInfo channel1 = new ChannelInfo((ChannelInfo)fChannelInfo1);
         ChannelInfo channel2 = new ChannelInfo((ChannelInfo)fChannelInfo1);
@@ -305,6 +349,10 @@ public class ChannelInfoTest extends TestCase {
         assertTrue("equals", channel1.equals(channel3));
     }
 
+    /**
+     * Run the equals() method test.
+     */
+    @Test
     public void testEqualsNull() {
         assertTrue("equals", !fChannelInfo1.equals(null));
         assertTrue("equals", !fChannelInfo2.equals(null));
@@ -314,6 +362,10 @@ public class ChannelInfoTest extends TestCase {
     // hashCode
     // ------------------------------------------------------------------------
 
+    /**
+     * Run the hashCode() method test.
+     */
+    @Test
     public void testHashCode() {
         ChannelInfo channel1 = new ChannelInfo((ChannelInfo)fChannelInfo1);
         ChannelInfo channel2 = new ChannelInfo((ChannelInfo)fChannelInfo2);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,71 +8,42 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Geneviève Bastien - Move code to provide base classes for time graph view
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier2;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.views.TmfView;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphSelectionListener;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTimeListener;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphCombo;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphRangeUpdateEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphSelectionEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
+import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.ui.IActionBars;
 
 /**
  * The Control Flow view main object
  *
  */
-public class ControlFlowView extends TmfView {
+public class ControlFlowView extends AbstractTimeGraphView {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -83,18 +54,13 @@ public class ControlFlowView extends TmfView {
      */
     public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.views.controlflow"; //$NON-NLS-1$
 
-    /**
-     * Initial time range
-     */
-    private static final long INITIAL_WINDOW_OFFSET = (1L * 100  * 1000 * 1000); // .1sec
-
-    private static final String PROCESS_COLUMN    = Messages.ControlFlowView_processColumn;
-    private static final String TID_COLUMN        = Messages.ControlFlowView_tidColumn;
-    private static final String PTID_COLUMN       = Messages.ControlFlowView_ptidColumn;
+    private static final String PROCESS_COLUMN = Messages.ControlFlowView_processColumn;
+    private static final String TID_COLUMN = Messages.ControlFlowView_tidColumn;
+    private static final String PTID_COLUMN = Messages.ControlFlowView_ptidColumn;
     private static final String BIRTH_TIME_COLUMN = Messages.ControlFlowView_birthTimeColumn;
-    private static final String TRACE_COLUMN      = Messages.ControlFlowView_traceColumn;
+    private static final String TRACE_COLUMN = Messages.ControlFlowView_traceColumn;
 
-    private final String[] COLUMN_NAMES = new String[] {
+    private static final String[] COLUMN_NAMES = new String[] {
             PROCESS_COLUMN,
             TID_COLUMN,
             PTID_COLUMN,
@@ -102,142 +68,49 @@ public class ControlFlowView extends TmfView {
             TRACE_COLUMN
     };
 
+    private static final String[] FILTER_COLUMN_NAMES = new String[] {
+            PROCESS_COLUMN,
+            TID_COLUMN
+    };
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /**
-     * Redraw state enum
+     * Constructor
      */
-    private enum State { IDLE, BUSY, PENDING }
-
-    // ------------------------------------------------------------------------
-    // Fields
-    // ------------------------------------------------------------------------
-
-    // The timegraph combo
-    private TimeGraphCombo fTimeGraphCombo;
-
-    // The selected experiment
-    private TmfExperiment<ITmfEvent> fSelectedExperiment;
-
-    // The timegraph entry list
-    private ArrayList<ControlFlowEntry> fEntryList;
-
-    // The time graph entry list synchronization object
-    final private Object fEntryListSyncObj = new Object();
-
-    // The start time
-    private long fStartTime;
-
-    // The end time
-    private long fEndTime;
-
-    // The display width
-    private final int fDisplayWidth;
-
-    // The zoom thread
-    private ZoomThread fZoomThread;
-
-    // The next resource action
-    private Action fNextResourceAction;
-
-    // The previous resource action
-    private Action fPreviousResourceAction;
-
-    // A comparator class
-    private final ControlFlowEntryComparator fControlFlowEntryComparator = new ControlFlowEntryComparator();
-
-    // The redraw state used to prevent unnecessary queuing of display runnables
-    private State fRedrawState = State.IDLE;
-
-    // The redraw synchronization object
-    final private Object fSyncObj = new Object();
-
-    // ------------------------------------------------------------------------
-    // Classes
-    // ------------------------------------------------------------------------
-
-    private class TreeContentProvider implements ITreeContentProvider {
-
-        @Override
-        public void dispose() {
-        }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        }
-
-        @Override
-        public Object[] getElements(Object inputElement) {
-            return (ITimeGraphEntry[]) inputElement;
-        }
-
-        @Override
-        public Object[] getChildren(Object parentElement) {
-            ITimeGraphEntry entry = (ITimeGraphEntry) parentElement;
-            return entry.getChildren();
-        }
-
-        @Override
-        public Object getParent(Object element) {
-            ITimeGraphEntry entry = (ITimeGraphEntry) element;
-            return entry.getParent();
-        }
-
-        @Override
-        public boolean hasChildren(Object element) {
-            ITimeGraphEntry entry = (ITimeGraphEntry) element;
-            return entry.hasChildren();
-        }
-
+    public ControlFlowView() {
+        super(ID, COLUMN_NAMES, FILTER_COLUMN_NAMES, new ControlFlowPresentationProvider());
+        setTreeLabelProvider(new ControlFlowTreeLabelProvider());
+        setEntryComparator(new ControlFlowEntryComparator());
     }
 
-    private class TreeLabelProvider implements ITableLabelProvider {
+    @Override
+    protected String getNextText() {
+        return Messages.ControlFlowView_nextProcessActionNameText;
+    }
 
-        @Override
-        public void addListener(ILabelProviderListener listener) {
-        }
+    @Override
+    protected String getNextTooltip() {
+        return Messages.ControlFlowView_nextProcessActionToolTipText;
+    }
 
-        @Override
-        public void dispose() {
-        }
+    @Override
+    protected String getPrevText() {
+        return Messages.ControlFlowView_previousProcessActionNameText;
+    }
 
-        @Override
-        public boolean isLabelProperty(Object element, String property) {
-            return false;
-        }
-
-        @Override
-        public void removeListener(ILabelProviderListener listener) {
-        }
-
-        @Override
-        public Image getColumnImage(Object element, int columnIndex) {
-            return null;
-        }
-
-        @Override
-        public String getColumnText(Object element, int columnIndex) {
-            ControlFlowEntry entry = (ControlFlowEntry) element;
-            if (columnIndex == 0) {
-                return entry.getName();
-            } else if (columnIndex == 1) {
-                return Integer.toString(entry.getThreadId());
-            } else if (columnIndex == 2) {
-                if (entry.getParentThreadId() > 0) {
-                    return Integer.toString(entry.getParentThreadId());
-                }
-            } else if (columnIndex == 3) {
-                return Utils.formatTime(entry.getBirthTime(), TimeFormat.ABSOLUTE, Resolution.NANOSEC);
-            } else if (columnIndex == 4) {
-                return entry.getTrace().getName();
-            }
-            return ""; //$NON-NLS-1$
-        }
-
+    @Override
+    protected String getPrevTooltip() {
+        return Messages.ControlFlowView_previousProcessActionToolTipText;
     }
 
     private static class ControlFlowEntryComparator implements Comparator<ITimeGraphEntry> {
 
         @Override
         public int compare(ITimeGraphEntry o1, ITimeGraphEntry o2) {
+
             int result = 0;
 
             if ((o1 instanceof ControlFlowEntry) && (o2 instanceof ControlFlowEntry)) {
@@ -260,318 +133,64 @@ public class ControlFlowView extends TmfView {
         }
     }
 
-
-    private class ZoomThread extends Thread {
-        private final long fZoomStartTime;
-        private final long fZoomEndTime;
-        private final long fResolution;
-        private final IProgressMonitor fMonitor;
-
-        public ZoomThread(long startTime, long endTime) {
-            super("ControlFlowView zoom"); //$NON-NLS-1$
-            fZoomStartTime = startTime;
-            fZoomEndTime = endTime;
-            fResolution = Math.max(1, (fZoomEndTime - fZoomStartTime) / fDisplayWidth);
-            fMonitor = new NullProgressMonitor();
-        }
+    /**
+     * @author gbastien
+     *
+     */
+    protected static class ControlFlowTreeLabelProvider extends TreeLabelProvider {
 
         @Override
-        public void run() {
-            ArrayList<ControlFlowEntry> entryList = null;
-            synchronized (fEntryListSyncObj) {
-                entryList = fEntryList;
-            }
-            if (entryList == null) {
-                return;
-            }
-            for (ControlFlowEntry entry : entryList) {
-                if (fMonitor.isCanceled()) {
-                    break;
+        public String getColumnText(Object element, int columnIndex) {
+            ControlFlowEntry entry = (ControlFlowEntry) element;
+
+            if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_processColumn)) {
+                return entry.getName();
+            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_tidColumn)) {
+                return Integer.toString(entry.getThreadId());
+            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_ptidColumn)) {
+                if (entry.getParentThreadId() > 0) {
+                    return Integer.toString(entry.getParentThreadId());
                 }
-                zoom(entry, fMonitor);
+            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_birthTimeColumn)) {
+                return Utils.formatTime(entry.getStartTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
+            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_traceColumn)) {
+                return entry.getTrace().getName();
             }
+            return ""; //$NON-NLS-1$
         }
 
-        private void zoom(ControlFlowEntry entry, IProgressMonitor monitor) {
-            if (fZoomStartTime <= fStartTime && fZoomEndTime >= fEndTime) {
-                entry.setZoomedEventList(null);
-            } else {
-                List<ITimeEvent> zoomedEventList = getEventList(entry, fZoomStartTime, fZoomEndTime, fResolution, monitor);
-                if (zoomedEventList != null) {
-                    entry.setZoomedEventList(zoomedEventList);
-                }
-            }
-            redraw();
-            for (ControlFlowEntry child : entry.getChildren()) {
-                if (fMonitor.isCanceled()) {
-                    return;
-                }
-                zoom(child, monitor);
-            }
-        }
-
-        public void cancel() {
-            fMonitor.setCanceled(true);
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
-    /**
-     * Constructor
-     */
-    public ControlFlowView() {
-        super(ID);
-        fDisplayWidth = Display.getDefault().getBounds().width;
-    }
-
-    // ------------------------------------------------------------------------
-    // ViewPart
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#createPartControl(org.eclipse.swt.widgets.Composite)
-     */
-    @Override
-    public void createPartControl(Composite parent) {
-        fTimeGraphCombo = new TimeGraphCombo(parent, SWT.NONE);
-
-        fTimeGraphCombo.setTreeContentProvider(new TreeContentProvider());
-
-        fTimeGraphCombo.setTreeLabelProvider(new TreeLabelProvider());
-
-        fTimeGraphCombo.setTimeGraphProvider(new ControlFlowPresentationProvider());
-
-        fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
-
-        fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
-            @Override
-            public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
-                final long startTime = event.getStartTime();
-                final long endTime = event.getEndTime();
-                TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
-                TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
-                broadcast(new TmfRangeSynchSignal(ControlFlowView.this, range, time));
-                if (fZoomThread != null) {
-                    fZoomThread.cancel();
-                }
-                startZoomThread(startTime, endTime);
-            }
-        });
-
-        fTimeGraphCombo.getTimeGraphViewer().addTimeListener(new ITimeGraphTimeListener() {
-            @Override
-            public void timeSelected(TimeGraphTimeEvent event) {
-                long time = event.getTime();
-                broadcast(new TmfTimeSynchSignal(ControlFlowView.this, new CtfTmfTimestamp(time)));
-            }
-        });
-
-        fTimeGraphCombo.addSelectionListener(new ITimeGraphSelectionListener() {
-            @Override
-            public void selectionChanged(TimeGraphSelectionEvent event) {
-                //ITimeGraphEntry selection = event.getSelection();
-            }
-        });
-
-        fTimeGraphCombo.getTimeGraphViewer().setTimeCalendarFormat(true);
-
-        final Thread thread = new Thread("ControlFlowView build") { //$NON-NLS-1$
-            @Override
-            public void run() {
-                if (TmfExperiment.getCurrentExperiment() != null) {
-                    selectExperiment(TmfExperiment.getCurrentExperiment());
-                }
-            }
-        };
-        thread.start();
-
-        // View Action Handling
-        makeActions();
-        contributeToActionBars();
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
-    @Override
-    public void setFocus() {
-        fTimeGraphCombo.setFocus();
-    }
-
-    // ------------------------------------------------------------------------
-    // Signal handlers
-    // ------------------------------------------------------------------------
-
-    /**
-     * Handler for the experiment selected signal
-     *
-     * @param signal
-     *            The signal that's received
-     */
-    @TmfSignalHandler
-    public void experimentSelected(final TmfExperimentSelectedSignal<? extends ITmfEvent> signal) {
-        if (signal.getExperiment().equals(fSelectedExperiment)) {
-            return;
-        }
-
-        final Thread thread = new Thread("ControlFlowView build") { //$NON-NLS-1$
-            @Override
-            public void run() {
-                selectExperiment(signal.getExperiment());
-            }
-        };
-        thread.start();
-    }
-
-    /**
-     * Handler for the synch signal
-     *
-     * @param signal
-     *            The signal that's received
-     */
-    @TmfSignalHandler
-    public void synchToTime(final TmfTimeSynchSignal signal) {
-        if (signal.getSource() == this || fSelectedExperiment == null || fSelectedExperiment.getTraces() == null) {
-            return;
-        }
-        final long time = signal.getCurrentTime().normalize(0, -9).getValue();
-
-        int thread = -1;
-        for (ITmfTrace<?> trace : fSelectedExperiment.getTraces()) {
-            if (thread > 0) {
-                break;
-            }
-            if (trace instanceof CtfKernelTrace) {
-                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
-                IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();
-                if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
-                    List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);  //$NON-NLS-1$
-                    for (int currentThreadQuark : currentThreadQuarks) {
-                        try {
-                            ITmfStateInterval currentThreadInterval = ssq.querySingleState(time, currentThreadQuark);
-                            int currentThread = currentThreadInterval.getStateValue().unboxInt();
-                            if (currentThread > 0) {
-                                int statusQuark = ssq.getQuarkAbsolute(Attributes.THREADS, Integer.toString(currentThread), Attributes.STATUS);
-                                ITmfStateInterval statusInterval = ssq.querySingleState(time, statusQuark);
-                                if (statusInterval.getStartTime() == time) {
-                                    thread = currentThread;
-                                    break;
-                                }
-                            }
-                        } catch (AttributeNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (TimeRangeException e) {
-                            e.printStackTrace();
-                        } catch (StateValueTypeException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-        final int selectedThread = thread;
-
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (fTimeGraphCombo.isDisposed()) {
-                    return;
-                }
-                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, true);
-                startZoomThread(fTimeGraphCombo.getTimeGraphViewer().getTime0(), fTimeGraphCombo.getTimeGraphViewer().getTime1());
-
-                if (selectedThread > 0) {
-                    for (Object element : fTimeGraphCombo.getTimeGraphViewer().getExpandedElements()) {
-                        if (element instanceof ControlFlowEntry) {
-                            ControlFlowEntry entry = (ControlFlowEntry) element;
-                            if (entry.getThreadId() == selectedThread) {
-                                fTimeGraphCombo.setSelection(entry);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Handler for the range sync signal
-     *
-     * @param signal
-     *            The signal that's received
-     */
-    @TmfSignalHandler
-    public void synchToRange(final TmfRangeSynchSignal signal) {
-        if (signal.getSource() == this || fSelectedExperiment == null) {
-            return;
-        }
-        final long startTime = signal.getCurrentRange().getStartTime().normalize(0, -9).getValue();
-        final long endTime = signal.getCurrentRange().getEndTime().normalize(0, -9).getValue();
-        final long time = signal.getCurrentTime().normalize(0, -9).getValue();
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (fTimeGraphCombo.isDisposed()) {
-                    return;
-                }
-                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
-                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, false);
-                startZoomThread(startTime, endTime);
-            }
-        });
-    }
-
-    /**
-     * Handler for the state system build completed signal
-     *
-     * @param signal
-     *            The signal that's received
-     */
-    @TmfSignalHandler
-    public void stateSystemBuildCompleted (final TmfStateSystemBuildCompleted signal) {
-        final TmfExperiment<?> selectedExperiment = fSelectedExperiment;
-        if (selectedExperiment == null || selectedExperiment.getTraces() == null) {
-            return;
-        }
-        for (ITmfTrace<?> trace : selectedExperiment.getTraces()) {
-            if (trace == signal.getTrace() && trace instanceof CtfKernelTrace) {
-                final Thread thread = new Thread("ControlFlowView build") { //$NON-NLS-1$
-                    @Override
-                    public void run() {
-                        // rebuild the model
-                        selectExperiment(selectedExperiment);
-                    }
-                };
-                thread.start();
-            }
-        }
     }
 
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("unchecked")
-    private void selectExperiment(TmfExperiment<?> experiment) {
-        fStartTime = Long.MAX_VALUE;
-        fEndTime = Long.MIN_VALUE;
-        fSelectedExperiment = (TmfExperiment<ITmfEvent>) experiment;
-        ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace<?> trace : experiment.getTraces()) {
-            if (trace instanceof CtfKernelTrace) {
-                ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
-                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
-                IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();
+    @Override
+    protected void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
+        setStartTime(Long.MAX_VALUE);
+        setEndTime(Long.MIN_VALUE);
+
+        ArrayList<TimeGraphEntry> rootList = new ArrayList<TimeGraphEntry>();
+        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
+            if (monitor.isCanceled()) {
+                return;
+            }
+            if (aTrace instanceof LttngKernelTrace) {
+                ArrayList<TimeGraphEntry> entryList = new ArrayList<TimeGraphEntry>();
+                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+                if (!ssq.waitUntilBuilt()) {
+                    return;
+                }
                 long start = ssq.getStartTime();
                 long end = ssq.getCurrentEndTime() + 1;
-                fStartTime = Math.min(fStartTime, start);
-                fEndTime = Math.max(fEndTime, end);
+                setStartTime(Math.min(getStartTime(), start));
+                setEndTime(Math.max(getEndTime(), end));
                 List<Integer> threadQuarks = ssq.getQuarks(Attributes.THREADS, "*"); //$NON-NLS-1$
                 for (int threadQuark : threadQuarks) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
                     String threadName = ssq.getAttributeName(threadQuark);
                     int threadId = -1;
                     try {
@@ -591,25 +210,36 @@ public class ControlFlowView extends TmfView {
                         }
                         int ppidQuark = ssq.getQuarkRelative(threadQuark, Attributes.PPID);
                         List<ITmfStateInterval> execNameIntervals = ssq.queryHistoryRange(execNameQuark, start, end - 1);
-                        long birthTime = -1;
+                        // use monitor when available in api
+                        if (monitor.isCanceled()) {
+                            return;
+                        }
+                        TimeGraphEntry entry = null;
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
-                            if (!execNameInterval.getStateValue().isNull() && execNameInterval.getStateValue().getType() == 1) {
+                            if (monitor.isCanceled()) {
+                                return;
+                            }
+                            if (!execNameInterval.getStateValue().isNull() &&
+                                    execNameInterval.getStateValue().getType() == ITmfStateValue.Type.STRING) {
                                 String execName = execNameInterval.getStateValue().unboxStr();
                                 long startTime = execNameInterval.getStartTime();
                                 long endTime = execNameInterval.getEndTime() + 1;
-                                if (birthTime == -1) {
-                                    birthTime = startTime;
-                                }
                                 int ppid = -1;
                                 if (ppidQuark != -1) {
                                     ITmfStateInterval ppidInterval = ssq.querySingleState(startTime, ppidQuark);
                                     ppid = ppidInterval.getStateValue().unboxInt();
                                 }
-                                ControlFlowEntry entry = new ControlFlowEntry(threadQuark, ctfKernelTrace, execName, threadId, ppid, birthTime, startTime, endTime);
-                                entryList.add(entry);
+                                if (entry == null) {
+                                    entry = new ControlFlowEntry(threadQuark, ctfKernelTrace, execName, threadId, ppid, startTime, endTime);
+                                    entryList.add(entry);
+                                } else {
+                                    // update the name of the entry to the
+                                    // latest execName
+                                    entry.setName(execName);
+                                }
                                 entry.addEvent(new TimeEvent(entry, startTime, endTime - startTime));
                             } else {
-                                birthTime = -1;
+                                entry = null;
                             }
                         }
                     } catch (AttributeNotFoundException e) {
@@ -618,27 +248,35 @@ public class ControlFlowView extends TmfView {
                         e.printStackTrace();
                     } catch (StateValueTypeException e) {
                         e.printStackTrace();
+                    } catch (StateSystemDisposedException e) {
+                        /* Ignored */
                     }
                 }
                 buildTree(entryList, rootList);
             }
-            Collections.sort(rootList, fControlFlowEntryComparator);
-            synchronized (fEntryListSyncObj) {
-                fEntryList = (ArrayList<ControlFlowEntry>) rootList.clone();
+            Collections.sort(rootList, getEntryComparator());
+            putEntryList(trace, (ArrayList<TimeGraphEntry>) rootList.clone());
+
+            if (trace.equals(getTrace())) {
+                refresh();
             }
-            refresh(INITIAL_WINDOW_OFFSET);
         }
-        for (ControlFlowEntry entry : rootList) {
-            buildStatusEvents(entry);
+        for (TimeGraphEntry entry : rootList) {
+            if (monitor.isCanceled()) {
+                return;
+            }
+            buildStatusEvents(trace, entry, monitor);
         }
     }
 
-    private static void buildTree(ArrayList<ControlFlowEntry> entryList,
-            ArrayList<ControlFlowEntry> rootList) {
-        for (ControlFlowEntry entry : entryList) {
+    private static void buildTree(ArrayList<TimeGraphEntry> entryList,
+            ArrayList<TimeGraphEntry> rootList) {
+        for (TimeGraphEntry listentry : entryList) {
+            ControlFlowEntry entry = (ControlFlowEntry) listentry;
             boolean root = true;
             if (entry.getParentThreadId() > 0) {
-                for (ControlFlowEntry parent : entryList) {
+                for (TimeGraphEntry parententry : entryList) {
+                    ControlFlowEntry parent = (ControlFlowEntry) parententry;
                     if (parent.getThreadId() == entry.getParentThreadId() &&
                             entry.getStartTime() >= parent.getStartTime() &&
                             entry.getStartTime() <= parent.getEndTime()) {
@@ -654,32 +292,44 @@ public class ControlFlowView extends TmfView {
         }
     }
 
-    private void buildStatusEvents(ControlFlowEntry entry) {
-        IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
+    private void buildStatusEvents(ITmfTrace trace, TimeGraphEntry entry, IProgressMonitor monitor) {
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
-        long resolution = Math.max(1, (end - start) / fDisplayWidth);
-        List<ITimeEvent> eventList = getEventList(entry, entry.getStartTime(), entry.getEndTime(), resolution, new NullProgressMonitor());
+        long resolution = Math.max(1, (end - start) / getDisplayWidth());
+        List<ITimeEvent> eventList = getEventList(entry, entry.getStartTime(), entry.getEndTime(), resolution, monitor);
+        if (monitor.isCanceled()) {
+            return;
+        }
         entry.setEventList(eventList);
-        redraw();
+        if (trace.equals(getTrace())) {
+            redraw();
+        }
         for (ITimeGraphEntry child : entry.getChildren()) {
-            buildStatusEvents((ControlFlowEntry) child);
+            if (monitor.isCanceled()) {
+                return;
+            }
+            buildStatusEvents(trace, (TimeGraphEntry) child, monitor);
         }
     }
 
-    private static List<ITimeEvent> getEventList(ControlFlowEntry entry,
-            long startTime, long endTime, long resolution,
-            IProgressMonitor monitor) {
-        startTime = Math.max(startTime, entry.getStartTime());
-        endTime = Math.min(endTime, entry.getEndTime());
-        if (endTime <= startTime) {
+    @Override
+    protected List<ITimeEvent> getEventList(TimeGraphEntry tgentry, long startTime, long endTime, long resolution, IProgressMonitor monitor) {
+        List<ITimeEvent> eventList = null;
+        if (!(tgentry instanceof ControlFlowEntry)) {
+            return eventList;
+        }
+        ControlFlowEntry entry = (ControlFlowEntry) tgentry;
+        final long realStart = Math.max(startTime, entry.getStartTime());
+        final long realEnd = Math.min(endTime, entry.getEndTime());
+        if (realEnd <= realStart) {
             return null;
         }
-        IStateSystemQuerier2 ssq = (IStateSystemQuerier2) entry.getTrace().getStateSystem();
-        List<ITimeEvent> eventList = null;
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
-            List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, startTime, endTime - 1, resolution, monitor);
+            List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
             eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
             long lastEndTime = -1;
             for (ITmfStateInterval statusInterval : statusIntervals) {
@@ -695,110 +345,83 @@ public class ControlFlowView extends TmfView {
                     e.printStackTrace();
                 }
                 if (lastEndTime != time && lastEndTime != -1) {
-                    eventList.add(new ControlFlowEvent(entry, lastEndTime, time - lastEndTime, 0));
+                    eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                 }
-                eventList.add(new ControlFlowEvent(entry, time, duration, status));
+                eventList.add(new TimeEvent(entry, time, duration, status));
                 lastEndTime = time + duration;
             }
         } catch (AttributeNotFoundException e) {
             e.printStackTrace();
         } catch (TimeRangeException e) {
             e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            /* Ignored */
         }
         return eventList;
     }
 
-    private void refresh(final long windowRange) {
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (fTimeGraphCombo.isDisposed()) {
-                    return;
-                }
-                ITimeGraphEntry[] entries = null;
-                synchronized (fEntryListSyncObj) {
-                    entries = fEntryList.toArray(new ITimeGraphEntry[0]);
-                }
-                Arrays.sort(entries, fControlFlowEntryComparator);
-                fTimeGraphCombo.setInput(entries);
-                fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
-
-                long endTime = fStartTime + windowRange;
-
-                if (fEndTime < endTime) {
-                    endTime = fEndTime;
-                }
-                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(fStartTime, endTime);
-                for (TreeColumn column : fTimeGraphCombo.getTreeViewer().getTree().getColumns()) {
-                    column.pack();
-                }
-
-                startZoomThread(fStartTime, endTime);
+    /**
+     * Returns a value corresponding to the selected entry.
+     *
+     * Used in conjunction with selectEntry to change the selected entry. If one
+     * of these methods is overridden in child class, then both should be.
+     *
+     * @param time
+     *            The currently selected time
+     * @return a value identifying the entry
+     */
+    private int getSelectionValue(long time) {
+        int thread = -1;
+        for (ITmfTrace trace : fTraceManager.getActiveTraceSet()) {
+            if (thread > 0) {
+                break;
             }
-        });
-    }
-
-    private void redraw() {
-        synchronized (fSyncObj) {
-            if (fRedrawState == State.IDLE) {
-                fRedrawState = State.BUSY;
-            } else {
-                fRedrawState = State.PENDING;
-                return;
-            }
-        }
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (fTimeGraphCombo.isDisposed()) {
-                    return;
-                }
-                fTimeGraphCombo.redraw();
-                fTimeGraphCombo.update();
-                synchronized (fSyncObj) {
-                    if (fRedrawState == State.PENDING) {
-                        fRedrawState = State.IDLE;
-                        redraw();
-                    } else {
-                        fRedrawState = State.IDLE;
+            if (trace instanceof LttngKernelTrace) {
+                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) trace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+                if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
+                    List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
+                    for (int currentThreadQuark : currentThreadQuarks) {
+                        try {
+                            ITmfStateInterval currentThreadInterval = ssq.querySingleState(time, currentThreadQuark);
+                            int currentThread = currentThreadInterval.getStateValue().unboxInt();
+                            if (currentThread > 0) {
+                                int statusQuark = ssq.getQuarkAbsolute(Attributes.THREADS, Integer.toString(currentThread), Attributes.STATUS);
+                                ITmfStateInterval statusInterval = ssq.querySingleState(time, statusQuark);
+                                if (statusInterval.getStartTime() == time) {
+                                    thread = currentThread;
+                                    break;
+                                }
+                            }
+                        } catch (AttributeNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (TimeRangeException e) {
+                            e.printStackTrace();
+                        } catch (StateValueTypeException e) {
+                            e.printStackTrace();
+                        } catch (StateSystemDisposedException e) {
+                            /* Ignored */
+                        }
                     }
                 }
             }
-        });
-    }
-
-    private void startZoomThread(long startTime, long endTime) {
-        if (fZoomThread != null) {
-            fZoomThread.cancel();
         }
-        fZoomThread = new ZoomThread(startTime, endTime);
-        fZoomThread.start();
+        return thread;
     }
 
-    private void makeActions() {
-        fPreviousResourceAction = fTimeGraphCombo.getTimeGraphViewer().getPreviousItemAction();
-        fPreviousResourceAction.setText(Messages.ControlFlowView_previousProcessActionNameText);
-        fPreviousResourceAction.setToolTipText(Messages.ControlFlowView_previousProcessActionToolTipText);
-        fNextResourceAction = fTimeGraphCombo.getTimeGraphViewer().getNextItemAction();
-        fNextResourceAction.setText(Messages.ControlFlowView_nextProcessActionNameText);
-        fNextResourceAction.setToolTipText(Messages.ControlFlowView_nextProcessActionToolTipText);
-    }
-
-    private void contributeToActionBars() {
-        IActionBars bars = getViewSite().getActionBars();
-        fillLocalToolBar(bars.getToolBarManager());
-    }
-
-    private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(fTimeGraphCombo.getTimeGraphViewer().getShowLegendAction());
-        manager.add(new Separator());
-        manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
-        manager.add(fTimeGraphCombo.getTimeGraphViewer().getPreviousEventAction());
-        manager.add(fTimeGraphCombo.getTimeGraphViewer().getNextEventAction());
-        manager.add(fPreviousResourceAction);
-        manager.add(fNextResourceAction);
-        manager.add(fTimeGraphCombo.getTimeGraphViewer().getZoomInAction());
-        manager.add(fTimeGraphCombo.getTimeGraphViewer().getZoomOutAction());
-        manager.add(new Separator());
+    @Override
+    protected void synchingToTime(long time) {
+        int selected = getSelectionValue(time);
+        if (selected > 0) {
+            for (Object element : getTimeGraphCombo().getTimeGraphViewer().getExpandedElements()) {
+                if (element instanceof ControlFlowEntry) {
+                    ControlFlowEntry entry = (ControlFlowEntry) element;
+                    if (entry.getThreadId() == selected) {
+                        getTimeGraphCombo().setSelection(entry);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

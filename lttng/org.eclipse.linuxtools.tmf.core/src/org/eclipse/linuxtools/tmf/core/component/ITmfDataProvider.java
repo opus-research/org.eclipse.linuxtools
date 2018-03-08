@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,27 +20,25 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * This is the interface of the data providers in TMF. Data providers have the
  * capability of handling data requests.
  *
- * @param <T> The provider event type
- *
  * @version 1.0
  * @author Francois Chouinard
  *
  * @see TmfDataProvider
  * @see TmfEventProvider
  */
-public interface ITmfDataProvider<T extends ITmfEvent> extends ITmfComponent {
+public interface ITmfDataProvider extends ITmfComponent {
 
     /**
      * Queue the request for processing.
      *
      * @param request The request to process
      */
-    public void sendRequest(ITmfDataRequest<T> request);
+    void sendRequest(ITmfDataRequest request);
 
     /**
      * Queue the coalesced requests.
      */
-    public void fireRequest();
+    void fireRequest();
 
     /**
      * Increments/decrements the pending requests counters and fires the request
@@ -51,7 +49,7 @@ public interface ITmfDataProvider<T extends ITmfEvent> extends ITmfComponent {
      *            Should we increment (true) or decrement (false) the pending
      *            counter
      */
-    public void notifyPendingRequest(boolean isIncrement);
+    void notifyPendingRequest(boolean isIncrement);
 
     /**
      * Return the next event based on the context supplied. The context
@@ -60,5 +58,5 @@ public interface ITmfDataProvider<T extends ITmfEvent> extends ITmfComponent {
      * @param context the trace read context (updated)
      * @return the event referred to by context
      */
-    public T getNext(ITmfContext context);
+    ITmfEvent getNext(ITmfContext context);
 }

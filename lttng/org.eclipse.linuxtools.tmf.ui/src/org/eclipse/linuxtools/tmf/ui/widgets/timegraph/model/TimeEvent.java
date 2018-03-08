@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Geneviève Bastien - Added the fValue parameter to avoid subclassing
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
@@ -19,9 +20,22 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
  * @author Patrick Tasse
  */
 public class TimeEvent implements ITimeEvent {
+
+    /** TimeGraphEntry matching this time event */
     protected ITimeGraphEntry fEntry;
+
+    /** Beginning timestamp of this time event */
     protected long fTime;
+
+    /** Duration of this time event */
     protected long fDuration;
+
+    private final int fValue;
+
+    /**
+     * Default value when no other value present
+     */
+    private static final int NOVALUE = Integer.MIN_VALUE;
 
     /**
      * Standard constructor
@@ -34,9 +48,49 @@ public class TimeEvent implements ITimeEvent {
      *            The duration of the event
      */
     public TimeEvent(ITimeGraphEntry entry, long time, long duration) {
+        this(entry, time, duration, NOVALUE);
+
+    }
+
+    /**
+     * Constructor
+     *
+     * @param entry
+     *            The entry to which this time event is assigned
+     * @param time
+     *            The timestamp of this event
+     * @param duration
+     *            The duration of this event
+     * @param value
+     *            The status assigned to the event
+     * @since 2.1
+     */
+    public TimeEvent(ITimeGraphEntry entry, long time, long duration,
+            int value) {
         fEntry = entry;
         fTime = time;
         fDuration = duration;
+        fValue = value;
+    }
+
+    /**
+     * Get this event's status
+     *
+     * @return The integer matching this status
+     * @since 2.1
+     */
+    public int getValue() {
+        return fValue;
+    }
+
+    /**
+     * Return whether an event has a value
+     *
+     * @return true if the event has a value
+     * @since 2.1
+     */
+    public boolean hasValue() {
+        return (fValue != NOVALUE);
     }
 
     @Override
@@ -52,5 +106,10 @@ public class TimeEvent implements ITimeEvent {
     @Override
     public long getDuration() {
         return fDuration;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + (hasValue() ? (" value=" + fValue) : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 }

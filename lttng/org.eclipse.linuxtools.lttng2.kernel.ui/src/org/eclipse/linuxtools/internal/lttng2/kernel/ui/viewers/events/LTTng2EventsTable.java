@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -68,19 +68,15 @@ public class LTTng2EventsTable extends TmfEventsTable {
         fTable.getColumns()[3].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_CONTENT);
     }
 
-    /**
-     * @param event
-     * @return
-     */
     @Override
     protected ITmfEventField[] extractItemFields(ITmfEvent event) {
         ITmfEventField[] fields = new TmfEventField[0];
         if (event != null) {
             fields = new TmfEventField[] {
-                     new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, event.getTimestamp().toString()),
-                     new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, event.getReference()),
-                     new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, event.getType().getName()),
-                     new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, event.getContent().toString())
+                     new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, event.getTimestamp().toString(), null),
+                     new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, event.getReference(), null),
+                     new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, event.getType().getName(), null),
+                     new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, event.getContent().toString(), null)
                     };
         }
         return fields;

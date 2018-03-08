@@ -1,14 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2011, 2012 Ericsson
- * 
+ * Copyright (c) 2011, 2013 Ericsson
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.loader;
 
 import org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent;
@@ -19,7 +20,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage;
  * <p>
  * Extends SyncMessage class to provide additional information about the trace event.
  * </p>
- * 
+ *
  * @version 1.0
  * @author Bernd Hufmann
  */
@@ -28,17 +29,19 @@ public class TmfSyncMessage extends SyncMessage implements ITmfSyncSequenceDiagr
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * A synchronous sequence diagram event implementation
      */
-    protected ITmfSyncSequenceDiagramEvent fSdEvent;
-    
+    private ITmfSyncSequenceDiagramEvent fSdEvent;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
+
     /**
      * Standard constructor
-     * 
+     *
      * @param sdEvent The synchronous sequence diagram event implementation
      * @param eventOccurrence The event index
      */
@@ -52,19 +55,12 @@ public class TmfSyncMessage extends SyncMessage implements ITmfSyncSequenceDiagr
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getSender()
-     */
+
     @Override
     public String getSender() {
         return fSdEvent.getSender();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getReceiver()
-     */
     @Override
     public String getReceiver() {
         return fSdEvent.getReceiver();

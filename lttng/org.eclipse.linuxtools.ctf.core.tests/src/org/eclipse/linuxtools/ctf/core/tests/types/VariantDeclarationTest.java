@@ -1,7 +1,19 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
@@ -10,9 +22,8 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.TestParams;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,17 +36,9 @@ import org.junit.Test;
  */
 public class VariantDeclarationTest {
 
-    private VariantDeclaration fixture;
+    private static final int TRACE_INDEX = 0;
 
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(VariantDeclarationTest.class);
-    }
+    private VariantDeclaration fixture;
 
     /**
      * Perform pre-test initialization.
@@ -46,21 +49,13 @@ public class VariantDeclarationTest {
     }
 
     /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
-    /**
      * Run the VariantDeclaration() constructor test.
      */
     @Test
     public void testVariantDeclaration() {
         assertNotNull(fixture);
         assertEquals(false, fixture.isTagged());
-        String left = "[declaration] variant["; //$NON-NLS-1$
+        String left = "[declaration] variant[";
         assertEquals(left, fixture.toString().substring(0, left.length()));
     }
 
@@ -69,8 +64,8 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testAddField() {
-        fixture.setTag(""); //$NON-NLS-1$
-        String tag = ""; //$NON-NLS-1$
+        fixture.setTag("");
+        String tag = "";
         IDeclaration declaration = new StringDeclaration();
         fixture.addField(tag, declaration);
     }
@@ -83,25 +78,25 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testCreateDefinition() throws CTFReaderException {
-        fixture.setTag(""); //$NON-NLS-1$
+        fixture.setTag("");
         IDefinitionScope definitionScope = createDefinitionScope();
-        String fieldName = ""; //$NON-NLS-1$
-        VariantDefinition result = fixture.createDefinition(definitionScope,
-                fieldName);
+        String fieldName = "";
+        VariantDefinition result = fixture.createDefinition(definitionScope, fieldName);
 
         assertNotNull(result);
     }
 
     private static IDefinitionScope createDefinitionScope() throws CTFReaderException {
+        assumeTrue(CtfTestTraces.tracesExist());
         VariantDeclaration declaration = new VariantDeclaration();
-        declaration.setTag(""); //$NON-NLS-1$
+        declaration.setTag("");
         VariantDeclaration variantDeclaration = new VariantDeclaration();
-        variantDeclaration.setTag(""); //$NON-NLS-1$
+        variantDeclaration.setTag("");
         VariantDefinition variantDefinition = new VariantDefinition(
-                variantDeclaration, TestParams.createTrace(), ""); //$NON-NLS-1$
+                variantDeclaration, CtfTestTraces.getTestTrace(TRACE_INDEX), "");
         IDefinitionScope definitionScope = new StructDefinition(
-                new StructDeclaration(1L), variantDefinition, ""); //$NON-NLS-1$
-        String fieldName = ""; //$NON-NLS-1$
+                new StructDeclaration(1L), variantDefinition, "");
+        String fieldName = "";
 
         VariantDefinition result = new VariantDefinition(declaration,
                 definitionScope, fieldName);
@@ -113,8 +108,8 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testHasField() {
-        fixture.setTag(""); //$NON-NLS-1$
-        String tag = ""; //$NON-NLS-1$
+        fixture.setTag("");
+        String tag = "";
         boolean result = fixture.hasField(tag);
 
         assertEquals(false, result);
@@ -125,7 +120,7 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testIsTagged() {
-        fixture.setTag(""); //$NON-NLS-1$
+        fixture.setTag("");
         boolean result = fixture.isTagged();
 
         assertEquals(true, result);
@@ -147,8 +142,8 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testSetTag() {
-        fixture.setTag(""); //$NON-NLS-1$
-        String tag = ""; //$NON-NLS-1$
+        fixture.setTag("");
+        String tag = "";
         fixture.setTag(tag);
     }
 
@@ -157,9 +152,9 @@ public class VariantDeclarationTest {
      */
     @Test
     public void testToString() {
-        fixture.setTag(""); //$NON-NLS-1$
+        fixture.setTag("");
         String result = fixture.toString();
-        String left = "[declaration] variant["; //$NON-NLS-1$
+        String left = "[declaration] variant[";
         String right = result.substring(0, left.length());
 
         assertEquals(left, right);

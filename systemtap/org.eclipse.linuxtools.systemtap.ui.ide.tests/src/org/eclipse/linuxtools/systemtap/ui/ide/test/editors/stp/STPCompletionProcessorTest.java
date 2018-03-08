@@ -1,10 +1,19 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
-
-import java.io.IOException;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -13,12 +22,10 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
+import org.eclipse.linuxtools.systemtap.ui.tests.SystemtapTest;
 import org.junit.Test;
 
-public class STPCompletionProcessorTest {
+public class STPCompletionProcessorTest extends SystemtapTest{
 
 	private static String TEST_STP_SCRIPT = ""+
 			"\n"+
@@ -50,14 +57,6 @@ public class STPCompletionProcessorTest {
 		}
 	}
 
-	private static class MyUpdateListener implements IUpdateListener {
-		public void handleUpdateEvent() {
-			synchronized (this) {
-				this.notifyAll();
-			}
-		}
-	}
-
 	@Test
 	public void testCompletionRequest() {
 		Document testDocument = new Document("");
@@ -79,14 +78,17 @@ public class STPCompletionProcessorTest {
 
 	@Test
 	public void testGlobalCompletion() {
-		Document testDocument = new Document(TEST_STP_SCRIPT);
+		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
+		IDocument testDocument = provider.createDocument(null);
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+		completionProcessor.waitForInitialization();
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
 
+		printProposals(proposals);
 		assertTrue(proposalsContain(proposals, "probe "));
 		assertTrue(proposalsContain(proposals, "global "));
 		assertTrue(proposalsContain(proposals, "function "));
@@ -103,7 +105,7 @@ public class STPCompletionProcessorTest {
 
 	@Test
 	public void testProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 		String prefix = "probe ";
 		ICompletionProposal[] proposals = getCompletionsForPrefix(prefix);
 		assertTrue(proposalsContain(proposals, "syscall"));
@@ -111,9 +113,22 @@ public class STPCompletionProcessorTest {
 	}
 
 	@Test
+	public void testMultiProbeCompletion() throws BadLocationException {
+		assumeTrue(stapInstalled);
+		String prefix = "probe begin,e";
+		ICompletionProposal[] proposals = getCompletionsForPrefix(prefix);
+		assertTrue(proposalsContain(proposals, "end"));
+		assertTrue(proposalsContain(proposals, "error"));
+
+		prefix = "probe myBegin = b";
+		proposals = getCompletionsForPrefix(prefix);
+		assertTrue(proposalsContain(proposals, "begin"));
+	}
+
+	@Test
 	public void testGlobalInvalidCompletion() throws BadLocationException {
 		ICompletionProposal[] proposals = getCompletionsForPrefix("probe fake.fake");
-		assertTrue(proposalsContain(proposals, "No completion data found."));
+		assertTrue(proposals.length == 0);
 	}
 
 	@Test
@@ -124,8 +139,32 @@ public class STPCompletionProcessorTest {
 	}
 
 	@Test
+	public void testEndProbeCompletion() throws BadLocationException {
+		assumeTrue(stapInstalled);
+
+		Document testDocument = new Document(TEST_STP_SCRIPT);
+		@SuppressWarnings("unused")
+		MockSTPEditor editor = new MockSTPEditor(testDocument);
+
+		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
+		String prefix = "probe end{}";
+		testDocument.replace(offset, 0, prefix);
+		offset += prefix.length() - 1;
+
+		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+		completionProcessor.waitForInitialization();
+		ICompletionProposal[] proposals = completionProcessor
+				.computeCompletionProposals(testDocument,
+						offset);
+
+		assertTrue(proposalsContain(proposals, "addr"));
+		assertTrue(proposalsContain(proposals, "backtrace"));
+		assertTrue(proposalsContain(proposals, "cmdline_args"));
+	}
+
+	@Test
 	public void testProbeVariableCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
@@ -165,65 +204,60 @@ public class STPCompletionProcessorTest {
 	}
 
 	private ICompletionProposal[] getCompletionsForPrefix(String prefix) throws BadLocationException{
-		Document testDocument = new Document(TEST_STP_SCRIPT);
+		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
+		IDocument testDocument = provider.createDocument(null);
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 		testDocument.replace(offset, 0, prefix);
 		offset += prefix.length();
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+		completionProcessor.waitForInitialization();
+
+		System.out.println(testDocument.get());
+		
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
 		return proposals;
 	}
 
-	private boolean stapInstalled(){
-		try {
-			Process process = RuntimeProcessFactory.getFactory().exec(new String[]{"stap", "-V"}, null);
-			return (process != null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
 	@Test
-	public void testFunctionCompletion() throws BadLocationException, InterruptedException {
-		assumeTrue(stapInstalled());
+	public void testFunctionCompletion() throws BadLocationException {
+		assumeTrue(stapInstalled);
 
-		MyUpdateListener updateListiner = new MyUpdateListener();
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
 		MockSTPEditor editor = new MockSTPEditor(testDocument);
 
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
-		String prefix = "probe syscall.write{user_}";
+		String prefix = "probe syscall.write{addr}";
 		testDocument.replace(offset, 0, prefix);
 		offset += prefix.length() - 1;
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		TapsetLibrary.addListener(updateListiner);
-
-		synchronized (updateListiner) {
-			if(!TapsetLibrary.isFinishSuccessful())
-				updateListiner.wait();
-		}
+		completionProcessor.waitForInitialization();
 
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
 
-		assertTrue(proposalsContain(proposals, "user_int16"));
-		assertTrue(proposalsContain(proposals, "user_int32"));
-		assertTrue(proposalsContain(proposals, "user_int64"));
+		assertTrue(proposalsContain(proposals, "addr"));
+		assertTrue(proposalsContain(proposals, "addr_from_rqst"));
+		assertTrue(proposalsContain(proposals, "addr_from_rqst_str"));
 	}
 
 	private boolean proposalsContain(ICompletionProposal[] proposals, String proposal){
 		for (ICompletionProposal p : proposals) {
-			if (p.getDisplayString().contains(proposal))
+			if (p.getDisplayString().contains(proposal)) {
 				return true;
+			}
 		}
 		return false;
 	}
-
+	
+	private void printProposals(ICompletionProposal[] proposals){
+		for (ICompletionProposal p : proposals) {
+			System.out.println(p.getDisplayString());
+		}
+	}
 }

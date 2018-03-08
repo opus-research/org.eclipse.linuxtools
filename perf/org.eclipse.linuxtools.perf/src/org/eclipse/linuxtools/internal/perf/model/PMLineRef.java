@@ -24,6 +24,6 @@ public class PMLineRef extends TreeParent {
 
 	@Override
 	public String toString() {
-		return getPercent() + "% on line " + ln;
+		return getPercent() + "% (" + getFormattedSamples() + " samples) on line " + ln;
 	}
 }
