@@ -48,12 +48,12 @@ import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -451,7 +451,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         }
                         Point pt = fTable.toDisplay(event.x, y);
                         pt.x += BOOKMARK_IMAGE.getBounds().width;
-                        pt.y += item.getBounds().height;
+                        pt.y += size.y;
                         tooltipShell.setBounds(pt.x, pt.y, size.x, size.y);
                         tooltipShell.setVisible(true);
                         break;
@@ -1493,14 +1493,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             final String source = event.getSource();
             final String type = event.getType().getName();
             final String reference = event.getReference();
-            final ITmfEventField content = event.getContent();
-            final String value = (content.getValue() != null) ? content.getValue().toString() : content.toString();
+            final String content = event.getContent().toString();
             fields = new TmfEventField[] {
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, value)
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content)
             };
         }
         return fields;
@@ -1705,11 +1704,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     }
                     defaultMessage.append(tableItem.getText(i));
                 }
-                final InputDialog dialog = new MultiLineInputDialog(
-                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                        Messages.TmfEventsTable_AddBookmarkDialogTitle,
-                        Messages.TmfEventsTable_AddBookmarkDialogMessage,
-                        defaultMessage.toString());
+                final InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                        Messages.TmfEventsTable_AddBookmarkDialogTitle, Messages.TmfEventsTable_AddBookmarkDialogText,
+                        defaultMessage.toString(), null);
                 if (dialog.open() == Window.OK) {
                     final String message = dialog.getValue();
                     try {
