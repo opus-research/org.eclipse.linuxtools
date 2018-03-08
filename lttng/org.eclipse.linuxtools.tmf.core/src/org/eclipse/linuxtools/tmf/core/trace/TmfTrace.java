@@ -30,6 +30,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
@@ -177,8 +178,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         super();
         fCacheSize = (cacheSize > 0) ? cacheSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE;
         fStreamingInterval = interval;
+        fIndexer = (indexer != null) ? indexer : new TmfCheckpointIndexer(this, fCacheSize);
         fParser = parser;
-        fIndexer = indexer;
         initialize(resource, path, type);
     }
 
@@ -195,21 +196,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
         fCacheSize = trace.getCacheSize();
         fStreamingInterval = trace.getStreamingInterval();
+        fIndexer = new TmfCheckpointIndexer(this);
         fParser = trace.fParser;
         initialize(trace.getResource(), trace.getPath(), trace.getEventType());
-    }
-
-    /**
-     * Creates the indexer instance. Classes extending this class can override
-     * this to provide a different indexer implementation.
-     *
-     * @param interval the checkpoints interval
-     *
-     * @return the indexer
-     * @since 3.0
-     */
-    protected ITmfTraceIndexer createIndexer(int interval) {
-        return new TmfCheckpointIndexer(this, interval);
     }
 
     // ------------------------------------------------------------------------
@@ -218,6 +207,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
+        fIndexer = new TmfCheckpointIndexer(this, fCacheSize);
         initialize(resource, path, type);
     }
 
@@ -242,7 +232,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         String traceName = (resource != null) ? resource.getName() : null;
         // If no resource was provided, extract the display name the trace path
         if (traceName == null) {
-            final int sep = path.lastIndexOf(File.separator);
+            final int sep = path.lastIndexOf(IPath.SEPARATOR);
             traceName = (sep >= 0) ? path.substring(sep + 1) : path;
         }
         if (fParser == null) {
@@ -255,9 +245,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         super.init(traceName, type);
         // register as VIP after super.init() because TmfComponent registers to signal manager there
         TmfSignalManager.registerVIP(this);
-        if (fIndexer == null) {
-            fIndexer = createIndexer(fCacheSize);
-        }
     }
 
     /**
@@ -477,10 +464,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * during indexing or for live traces.
      *
      * @param nbEvents The number of events
-     * @since 3.0
      */
-    @Override
-    public synchronized void setNbEvents(long nbEvents) {
+    protected synchronized void setNbEvents(final long nbEvents) {
         fNbEvents = (nbEvents > 0) ? nbEvents : 0;
     }
 
@@ -488,10 +473,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Update the trace events time range
      *
      * @param range the new time range
-     * @since 3.0
+     * @since 2.0
      */
-    @Override
-    public void setTimeRange(final TmfTimeRange range) {
+    protected void setTimeRange(final TmfTimeRange range) {
         fStartTime = range.getStartTime();
         fEndTime = range.getEndTime();
     }

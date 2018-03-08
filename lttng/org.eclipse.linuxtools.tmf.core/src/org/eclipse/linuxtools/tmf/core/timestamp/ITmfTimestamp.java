@@ -138,4 +138,5 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      * @since 2.0
      */
     String toString(final TmfTimestampFormat format);
+
 }

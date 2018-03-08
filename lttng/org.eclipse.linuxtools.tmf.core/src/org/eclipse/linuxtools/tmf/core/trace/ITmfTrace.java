@@ -15,7 +15,6 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
 
@@ -252,23 +251,6 @@ public interface ITmfTrace extends ITmfDataProvider {
     TmfTimeRange getTimeRange();
 
     /**
-     * Set the trace known number of events. This can be quite dynamic
-     * during indexing or for live traces.
-     *
-     * @param nbEvents The number of events
-     * @since 3.0
-     */
-    void setNbEvents(long nbEvents);
-
-    /**
-     * Update the trace events time range
-     *
-     * @param range the new time range
-     * @since 3.0
-     */
-    void setTimeRange(TmfTimeRange range);
-
-    /**
      * @return the timestamp of the first trace event
      * @since 2.0
      */
@@ -424,20 +406,4 @@ public interface ITmfTrace extends ITmfDataProvider {
      */
     ITmfTimestamp createTimestamp(long ts);
 
-    /**
-     * Instantiate a ITmfLocation from a ByteBuffer, typically from disk.
-     * @param bufferIn the buffer to read from
-     * @return the instantiated location
-     *
-     * @since 3.0
-     */
-    ITmfLocation restoreLocation(ByteBuffer bufferIn);
-
-    /**
-     * Get the checkpoint size for this trace
-     * @return the checkpoint size
-     *
-     * @since 3.0
-     */
-    public int getCheckpointSize();
 }
