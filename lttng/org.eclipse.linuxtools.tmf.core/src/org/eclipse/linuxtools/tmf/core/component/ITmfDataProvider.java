@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.tmf.core.component;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -33,7 +33,7 @@ public interface ITmfDataProvider extends ITmfComponent {
      *
      * @param request The request to process
      */
-    public void sendRequest(ITmfRequest request);
+    public void sendRequest(ITmfDataRequest request);
 
     /**
      * Queue the coalesced requests.
