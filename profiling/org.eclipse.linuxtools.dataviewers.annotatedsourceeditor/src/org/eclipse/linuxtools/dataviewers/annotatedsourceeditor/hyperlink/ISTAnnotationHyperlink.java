@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.hyperlink;
 
 public interface ISTAnnotationHyperlink {
-    boolean isAnnotationHyperlink(int line);
-
-    void handleHyperlink(int line);
+	boolean isAnnotationHyperlink(int line);
+	void handleHyperlink(int line);
 }

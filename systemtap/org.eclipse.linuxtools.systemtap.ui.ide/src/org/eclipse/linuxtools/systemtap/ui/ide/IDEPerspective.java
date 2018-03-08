@@ -15,6 +15,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserVie
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.KernelBrowserView;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -29,14 +30,16 @@ import org.eclipse.ui.console.IConsoleConstants;
  * @author Ryan Morse
  */
 public class IDEPerspective implements IPerspectiveFactory {
-	public static String ID = "org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"; //$NON-NLS-1$
+	public static String ID = "org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective";
 
 	public void createInitialLayout(IPageLayout layout) {
+		LogManager.logDebug("Start createInitialLayout: layout-" + layout, this); //$NON-NLS-1$
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 		String editorArea = layout.getEditorArea();
 		layout.setEditorAreaVisible(true);
 
-		IFolderLayout browsers = layout.createFolder("browsers", IPageLayout.LEFT, 0.25f, editorArea); //$NON-NLS-1$
-		browsers.addPlaceholder(ProbeAliasBrowserView.ID + ":*"); //$NON-NLS-1$
+		IFolderLayout browsers = layout.createFolder("browsers", IPageLayout.LEFT, 0.25f, editorArea);
+		browsers.addPlaceholder(ProbeAliasBrowserView.ID + ":*");
 
 		browsers.addView(ProbeAliasBrowserView.ID);
 		browsers.addView(FunctionBrowserView.ID);
@@ -46,11 +49,11 @@ public class IDEPerspective implements IPerspectiveFactory {
 		layout.getViewLayout(FunctionBrowserView.ID).setCloseable(false);
 		layout.getViewLayout(KernelBrowserView.ID).setCloseable(false);
 
-		IFolderLayout output = layout.createFolder("output", IPageLayout.BOTTOM, 0.75f, editorArea); //$NON-NLS-1$
-		output.addPlaceholder(ErrorView.ID + ":*"); //$NON-NLS-1$
+		IFolderLayout output = layout.createFolder("output", IPageLayout.BOTTOM, 0.75f, editorArea);
+		output.addPlaceholder(ErrorView.ID + ":*");
 		output.addView(ErrorView.ID);
 		output.addView(IConsoleConstants.ID_CONSOLE_VIEW);
-
+		
 		layout.getViewLayout(IConsoleConstants.ID_CONSOLE_VIEW).setCloseable(false);
 		layout.getViewLayout(ErrorView.ID).setCloseable(false);
 
@@ -61,5 +64,6 @@ public class IDEPerspective implements IPerspectiveFactory {
 		layout.addShowViewShortcut(IConsoleConstants.ID_CONSOLE_VIEW);
 
 		layout.addPerspectiveShortcut(ID);
+		LogManager.logDebug("End createInitialLayout:", this); //$NON-NLS-1$
 	}
 }

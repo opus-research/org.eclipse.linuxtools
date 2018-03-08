@@ -12,15 +12,26 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
- * Runner for the lttng2.kernel unit tests.
+ * <b><u>AllTests</u></b>
+ * <p>
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    ActivatorTest.class,
-    org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider.TestAll.class
-})
-public class AllTests { }
+public class AllTests {
+
+    /**
+     * @return The test suite
+     */
+    public static Test suite() {
+        TestSuite suite = new TestSuite(AllTests.class.getName());
+        // $JUnit-BEGIN$
+
+        // Plug-in
+        suite.addTestSuite(ActivatorTest.class);
+
+        // $JUnit-END$
+        return suite;
+    }
+}

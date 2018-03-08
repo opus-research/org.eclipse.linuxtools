@@ -22,6 +22,9 @@ package org.eclipse.linuxtools.internal.perf.launch;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
+
+import org.eclipse.ui.console.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -39,10 +42,6 @@ import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IOConsole;
 
 public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate {
 
@@ -55,7 +54,8 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 	public void launch(ILaunchConfiguration config, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		// check if Perf exists in $PATH
-		if (! PerfCore.checkPerfInPath()) {
+		if (! PerfCore.checkPerfInPath()) 
+		{
 			IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID, "Error: Perf was not found on PATH"); //$NON-NLS-1$
 			throw new CoreException(status);
 		}
@@ -69,16 +69,14 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			wd = new File( System.getProperty( "user.home", "." ) ); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		
-		// Build the commandline string to run perf recording the given project
-		// Program args from launch config.
-		String arguments[] = getProgramArgumentsArray(config);
-		ArrayList<String> command = new ArrayList<String>();
-		// Get the base commandline string (with flags/options based on config)
-		command.addAll(Arrays.asList(PerfCore.getRecordString(config)));
-		// Add the path to the executable
-		command.add(exePath.toOSString());
-		command.addAll(Arrays.asList( arguments));
-		String[] commandArray = command.toArray(new String[] {});
+		//Build the commandline string to run perf recording the given project
+		String arguments[] = getProgramArgumentsArray( config ); //Program args from launch config.
+		ArrayList<String> command = new ArrayList<String>( 4 + arguments.length );
+		command.addAll(Arrays.asList(PerfCore.getRecordString(config))); //Get the base commandline string (with flags/options based on config)
+		command.add( exePath.toOSString() ); // Add the path to the executable
+		//Compile string
+		command.addAll( Arrays.asList( arguments ) ); 
+		String[] commandArray = command.toArray( new String[command.size()] );
 		boolean usePty = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL, ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
 		
 		Process process;
@@ -86,6 +84,13 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			//Spawn the process
 			process = execute( commandArray, getEnvironment( config ), wd, usePty ); 			
 			createNewProcess( launch, process, commandArray[0] ); //Spawn IProcess using Debug plugin (CDT)
+			
+			/* This commented part is the basic method to run perf record without integrating into eclipse.
+			String binCall = exePath.toOSString();
+			for(String arg : arguments) {
+				binCall.concat(" " + arg);
+			}
+			PerfCore.Run(binCall);*/
 			
 			//Wait for recording to complete.
 			process.waitFor();
@@ -98,14 +103,13 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				IConsole[] existing = conMan.getConsoles();
 				IOConsole binaryOutCons = null;
 
-				// Find the console
+				//Find the console
 				for(IConsole x : existing) {
 					if (x.getName().contains(renderProcessLabel(commandArray[0]))) {
 						binaryOutCons = (IOConsole)x;
 					}
 				}
-				// If can't be found get the most recent opened, this should probably never happen.
-				if ((binaryOutCons == null) && (existing.length != 0)) {
+				if ((binaryOutCons == null) && (existing.length != 0)) { //if can't be found get the most recent opened, this should probably never happen.
 					if (existing[existing.length - 1] instanceof IOConsole)
 						binaryOutCons = (IOConsole)existing[existing.length - 1];
 				}
@@ -115,8 +119,11 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				OutputStream outputTo;
 				if (binaryOutCons != null) {
 					outputTo = binaryOutCons.newOutputStream();
+					//Get the printstream for that console
 					print = new PrintStream(outputTo);
+				}		
 
+				if (print != null) {
 					for (int i = 0; i < commandArray.length; i++) {
 						print.print(commandArray[i] + " ");
 					}

@@ -18,19 +18,17 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier2;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
@@ -47,37 +45,18 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public class StateSystem implements ITmfStateSystemBuilder {
+public class StateSystem implements IStateSystemBuilder, IStateSystemQuerier2{
 
     /* References to the inner structures */
     private final AttributeTree attributeTree;
     private final TransientState transState;
     private final IStateHistoryBackend backend;
 
-    /* Latch tracking if the state history is done building or not */
-    private final CountDownLatch finishedLatch = new CountDownLatch(1);
-
-    private boolean buildCancelled = false;
-    private boolean isDisposed = false;
-
-    /**
-     * New-file constructor. For when you build a state system with a new file,
-     * or if the back-end does not require a file on disk.
-     *
-     * @param backend
-     *            Back-end plugin to use
-     */
-    public StateSystem(IStateHistoryBackend backend) {
-        this.backend = backend;
-        this.transState = new TransientState(backend);
-        this.attributeTree = new AttributeTree(this);
-    }
-
     /**
      * General constructor
      *
      * @param backend
-     *            The "state history storage" back-end to use.
+     *            The "state history storage" backend to use.
      * @param newFile
      *            Put true if this is a new history started from scratch. It is
      *            used to tell the state system where to get its attribute tree.
@@ -95,28 +74,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* We're opening an existing file */
             this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
             transState.setInactive();
-            finishedLatch.countDown(); /* The history is already built */
         }
-    }
-
-    @Override
-    public boolean waitUntilBuilt() {
-        try {
-            finishedLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return !buildCancelled;
-    }
-
-    @Override
-    public synchronized void dispose() {
-        isDisposed = true;
-        if (transState.isActive()) {
-            transState.setInactive();
-            buildCancelled = true;
-        }
-        backend.dispose();
     }
 
     //--------------------------------------------------------------------------
@@ -134,11 +92,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public int getNbAttributes() {
         return attributeTree.getNbAttributes();
-    }
-
-    @Override
-    public boolean isLastAttribute(int quark) {
-        return (quark == getNbAttributes() - 1) ? true : false;
     }
 
     @Override
@@ -190,7 +143,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
              */
             attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
-        finishedLatch.countDown(); /* Mark the history as finished building */
     }
 
     //--------------------------------------------------------------------------
@@ -365,29 +317,27 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         stackDepth++;
-        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, stackDepth.toString());
+        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark,
+                stackDepth.toString());
 
-        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
     }
 
     @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public void popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
-        /* These are the state values of the stack-attribute itself */
-        ITmfStateValue previousSV = queryOngoingState(attributeQuark);
+        Integer stackDepth;
+        int subAttributeQuark;
+        ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
-            /*
-             * Trying to pop an empty stack. This often happens at the start of
-             * traces, for example when we see a syscall_exit, without having
-             * the corresponding syscall_entry in the trace. Just ignore
-             * silently.
-             */
-            return null;
+            /* Same as if stackDepth == 0, see below */
+            return;
         }
-        if (previousSV.getType() != ITmfStateValue.TYPE_INTEGER) {
+        if (previousSV.getType() != 0) {
             /*
              * The existing value was a string, this doesn't look like a valid
              * stack attribute.
@@ -395,34 +345,33 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        Integer stackDepth = previousSV.unboxInt();
+        stackDepth = previousSV.unboxInt();
 
-        if (stackDepth <= 0) {
+        if (stackDepth == 0) {
+            /*
+             * Trying to pop an empty stack. This often happens at the start of
+             * traces, for example when we see a syscall_exit, without having
+             * the corresponding syscall_entry in the trace. Just ignore
+             * silently.
+             */
+            return;
+        }
+
+        if (stackDepth < 0) {
             /* This on the other hand should not happen... */
-            /* the case where == -1 was handled previously by .isNull() */
-            String message = "A top-level stack attribute cannot " + //$NON-NLS-1$
-                    "have a value of 0 or less (except -1/null)."; //$NON-NLS-1$
+            String message = "A top-level stack attribute " + //$NON-NLS-1$
+                    "cannot have a negative integer value."; //$NON-NLS-1$
             throw new StateValueTypeException(message);
         }
 
-        /* The attribute should already exist at this point */
-        int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
-        ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
+        /* The attribute should already exist... */
+        subAttributeQuark = getQuarkRelative(attributeQuark,
+                stackDepth.toString());
 
-        /* Update the state value of the stack-attribute */
-        ITmfStateValue nextSV;
-        if (--stackDepth == 0 ) {
-            /* Jump over "0" and store -1 (a null state value) */
-            nextSV = TmfStateValue.nullValue();
-        } else {
-            nextSV = TmfStateValue.newValueInt(stackDepth);
-        }
-        modifyAttribute(t, nextSV, attributeQuark);
-
-        /* Delete the sub-attribute that contained the user's state value */
+        stackDepth--;
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         removeAttribute(t, subAttributeQuark);
-
-        return poppedValue;
     }
 
     @Override
@@ -477,11 +426,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public synchronized List<ITmfStateInterval> queryFullState(long t)
-            throws TimeRangeException, StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            throws TimeRangeException {
         List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
                 attributeTree.getNbAttributes());
 
@@ -517,13 +462,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            throws AttributeNotFoundException, TimeRangeException {
         ITmfStateInterval ret;
+
         if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
             ret = transState.getOngoingInterval(attributeQuark);
         } else {
@@ -543,35 +484,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
-            throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException, StateSystemDisposedException {
-        Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
-
-        if (curStackDepth == -1) {
-            /* There is nothing stored in this stack at this moment */
-            return null;
-        } else if (curStackDepth < -1 || curStackDepth == 0) {
-            /*
-             * This attribute is an integer attribute, but it doesn't seem like
-             * it's used as a stack-attribute...
-             */
-            throw new StateValueTypeException();
-        }
-
-        int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
-        ITmfStateInterval ret = querySingleState(t, subAttribQuark);
-        return ret;
-    }
-
-    @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2) throws TimeRangeException,
-            AttributeNotFoundException, StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
@@ -606,21 +521,18 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
+            long t1, long t2, long resolution) throws TimeRangeException,
+            AttributeNotFoundException {
+        return queryHistoryRange(attributeQuark, t1, t2, resolution, new NullProgressMonitor());
+    }
 
+    @Override
+    public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
+            long t1, long t2, long resolution, IProgressMonitor monitor) throws TimeRangeException,
+            AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
-
-        IProgressMonitor mon = monitor;
-        if (mon == null) {
-            mon = new NullProgressMonitor();
-        }
 
         /* Make sure the time range makes sense */
         if (t2 < t1 || resolution <= 0) {
@@ -645,7 +557,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          */
         for (ts = t1; (currentInterval.getEndTime() != -1) && (ts < tEnd);
                 ts += resolution) {
-            if (mon.isCanceled()) {
+            if (monitor.isCanceled()) {
                 return intervals;
             }
             if (ts <= currentInterval.getEndTime()) {
@@ -668,7 +580,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     static void logMissingInterval(int attribute, long timestamp) {
-        Activator.logInfo("No data found in history for attribute " + //$NON-NLS-1$
+        Tracer.traceInfo("No data found in history for attribute " + //$NON-NLS-1$
                 attribute + " at time " + timestamp + //$NON-NLS-1$
                 ", returning dummy interval"); //$NON-NLS-1$
     }

@@ -16,7 +16,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -271,9 +270,9 @@ class TransientState {
         assert (this.isActive);
 
         for (int i = 0; i < ongoingStateInfo.size(); i++) {
-            if (ongoingStateStartTimes.get(i) > endTime) {
+            if (ongoingStateStartTimes.get(i) >= endTime) {
                 /*
-                 * Handle the cases where trace end > timestamp of last state
+                 * Handle the cases where trace end >= timetamp of last state
                  * change. This can happen when inserting "future" changes.
                  */
                 continue;
