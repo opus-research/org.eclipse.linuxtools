@@ -48,11 +48,13 @@ public class RunScriptChartHandler extends RunScriptHandler {
 	protected void scriptConsoleInitialized(ScriptConsole console){
 		console.getCommand().addInputStreamListener(new ChartStreamDaemon2(console, dataSet, parser));
 		try {
-			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-			GraphSelectorEditor ivp = (GraphSelectorEditor)p.openEditor(new GraphSelectorEditorInput(), GraphSelectorEditor.ID);
-
 			String name = console.getName();
-			ivp.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
+			String title = name.substring(name.lastIndexOf('/')+1);
+
+			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			GraphSelectorEditor ivp = (GraphSelectorEditor)p.openEditor(new GraphSelectorEditorInput(title), GraphSelectorEditor.ID);
+
+			ivp.createScriptSet(title, dataSet);
 
 			for (GraphData graph : graphs) {
 				ivp.getActiveDisplaySet().addGraph(graph);
