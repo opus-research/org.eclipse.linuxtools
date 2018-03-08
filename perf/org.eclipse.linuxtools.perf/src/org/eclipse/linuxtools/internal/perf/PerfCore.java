@@ -61,8 +61,6 @@ public class PerfCore {
 		if (!str.trim().equals("")) {
 			if (print != null) {
 				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
-			} else {
-				System.out.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
 			}
 		}
 		return str;
@@ -360,7 +358,6 @@ public class PerfCore {
 		}
 
 		//(Annotate string per symbol)
-		//if (PerfPlugin.DEBUG_ON) System.out.println(Arrays.toString( (String[])base.toArray( new String[base.size()] ) ));
 		return base.toArray( new String[base.size()] );
 	}
 	//Runs Perf Record on the given binary and records into perf.data before calling Report() to feed in the results. 
