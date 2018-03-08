@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.nio.ByteBuffer;
-
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
@@ -34,22 +32,6 @@ public final class CtfTmfTimestamp extends TmfTimestamp {
      */
     public CtfTmfTimestamp(long timestamp) {
         super(timestamp, ITmfTimestamp.NANOSECOND_SCALE, 0);
-    }
-
-    private CtfTmfTimestamp() {
-    }
-
-    /**
-     * Create a new CtfTmfTimestamp and serialize it in.
-     *
-     * @param bufferIn the buffer to read the time stamp from
-     * @return the created time stamp
-     * @since 3.0
-     */
-    public static CtfTmfTimestamp newAndSerialize(ByteBuffer bufferIn) {
-        CtfTmfTimestamp c = new CtfTmfTimestamp();
-        c.serializeIn(bufferIn);
-        return c;
     }
 
 }
