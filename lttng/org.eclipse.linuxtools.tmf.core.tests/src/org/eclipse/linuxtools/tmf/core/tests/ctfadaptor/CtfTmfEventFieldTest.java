@@ -25,7 +25,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -80,12 +79,12 @@ public class CtfTmfEventFieldTest {
         sDec.addField(STR, strDec);
         sDec.addField(ARRAY, arrDec);
         sDec.addField(SEQ, seqDec);
-        structDec.addField(STR, strDec);
+        structDec.addField(STR,strDec);
         structDec.addField(INT, intDec);
         sDec.addField(STRUCT, structDec);
         enumDec.add(0, 1, LEN);
         enumDec.add(2, 3, FLOAT);
-        sDec.addField(ENUM, enumDec);
+        sDec.addField(ENUM,  enumDec);
         varDec.addField(LEN, intDec);
         varDec.addField(FLOAT, flDec);
         varDec.setTag(ENUM);
@@ -195,38 +194,4 @@ public class CtfTmfEventFieldTest {
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=float=9.551467814359616E-38", result.toString());
     }
-
-    /**
-     * Run the CtfTmfEventField formatNumber(Long, int, boolean) method test.
-     */
-    @Test
-    public void formatNumber_unsigned_long() {
-
-        long unsignedLongValue = -64;
-        String result = CtfTmfEventField.formatNumber(unsignedLongValue, 10, false);
-        // -64 + 2^64 = 18446744073709551552
-        assertEquals("18446744073709551552", result);
-
-        unsignedLongValue = -131940199973272L;
-        result = CtfTmfEventField.formatNumber(unsignedLongValue, 10, false);
-        // -131940199973272l + 2^64 = 18446612133509578344
-        assertEquals("18446612133509578344", result);
-
-        unsignedLongValue = 123456789L;
-        result = CtfTmfEventField.formatNumber(unsignedLongValue, 10, false);
-        assertEquals("123456789", result);
-
-        long signedValue = -64L;
-        result = CtfTmfEventField.formatNumber(signedValue, 10, true);
-        assertEquals("-64", result);
-
-        signedValue = -131940199973272L;
-        result = CtfTmfEventField.formatNumber(signedValue, 10, true);
-        assertEquals("-131940199973272", result);
-
-        signedValue = 123456789L;
-        result = CtfTmfEventField.formatNumber(signedValue, 10, true);
-        assertEquals("123456789", result);
-    }
-
 }
