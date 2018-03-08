@@ -82,7 +82,8 @@ public final class TmfStateSystemFactory extends TmfComponent {
                     stateProvider.getVersion();
             try {
                 htBackend = new HistoryTreeBackend(htFile, version);
-                return HistoryBuilder.openExistingHistory(htBackend);
+                ITmfStateSystem ss = HistoryBuilder.openExistingHistory(htBackend);
+                return ss;
             } catch (IOException e) {
                 /*
                  * There was an error opening the existing file. Perhaps it was
