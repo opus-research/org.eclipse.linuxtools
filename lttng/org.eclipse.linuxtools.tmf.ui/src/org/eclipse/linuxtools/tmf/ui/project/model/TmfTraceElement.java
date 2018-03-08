@@ -12,6 +12,8 @@
  *   Geneviève Bastien - Moved supplementary files handling to parent class,
  *                       added code to copy trace
  *   Patrick Tasse - Close editors to release resources
+ *   Jean-Christian Kouame - added trace properties to be shown into
+ *                           the properties view
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -38,8 +40,11 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefin
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.Messages;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IEditorReference;
@@ -77,12 +82,13 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     public static final String IS_LINKED = "isLinked"; //$NON-NLS-1$
 
     // Property View stuff
-    private static final String sfInfoCategory = "Info"; //$NON-NLS-1$
-    private static final String sfName = "name"; //$NON-NLS-1$
-    private static final String sfPath = "path"; //$NON-NLS-1$
-    private static final String sfLocation = "location"; //$NON-NLS-1$
-    private static final String sfEventType = "type"; //$NON-NLS-1$
-    private static final String sfIsLinked = "linked"; //$NON-NLS-1$
+    private static final String sfResourcePropertiesCategory = Messages.TmfTraceElement_ResourceProperties;
+    private static final String sfName = Messages.TmfTraceElement_Name;
+    private static final String sfPath = Messages.TmfTraceElement_Path;
+    private static final String sfLocation = Messages.TmfTraceElement_Location;
+    private static final String sfEventType = Messages.TmfTraceElement_EventType;
+    private static final String sfIsLinked = Messages.TmfTraceElement_IsLinked;
+    private static final String sfTracePropertiesCategory = Messages.TmfTraceElement_TraceProperties;
 
     private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
     private static final ReadOnlyTextPropertyDescriptor sfPathDescriptor = new ReadOnlyTextPropertyDescriptor(sfPath, sfPath);
@@ -94,11 +100,11 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             sfTypeDescriptor, sfIsLinkedDescriptor };
 
     static {
-        sfNameDescriptor.setCategory(sfInfoCategory);
-        sfPathDescriptor.setCategory(sfInfoCategory);
-        sfLocationDescriptor.setCategory(sfInfoCategory);
-        sfTypeDescriptor.setCategory(sfInfoCategory);
-        sfIsLinkedDescriptor.setCategory(sfInfoCategory);
+        sfNameDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfPathDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfLocationDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfTypeDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfIsLinkedDescriptor.setCategory(sfResourcePropertiesCategory);
     }
 
     private static final String BOOKMARKS_HIDDEN_FILE = ".bookmarks"; //$NON-NLS-1$
@@ -408,8 +414,43 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         return null;
     }
 
+    /**
+     * get the trace properties of this traceElement if the
+     * corresponding trace is opened in an editor
+     *
+     * @return a map with the names and values of the trace properties
+     *         respectively as keys and values
+     */
+    private Map<String, String> getTraceProperties() {
+        for (ITmfTrace fTrace : TmfTraceManager.getInstance().getOpenedTraces()) {
+            if (fTrace.getResource().equals(this.getResource())) {
+                if (fTrace instanceof ITmfTraceProperties) {
+                    ITmfTraceProperties traceProperties = (ITmfTraceProperties) fTrace;
+                    return traceProperties.getTraceProperties();
+                }
+            }
+        }
+        return new HashMap<String, String>();
+    }
+
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
+        Map<String, String> envVariables = getTraceProperties();
+        if (!envVariables.isEmpty()) {
+            IPropertyDescriptor[] propertyDescriptorArray = new IPropertyDescriptor[envVariables.size()+sfDescriptors.length];
+            int index =0;
+            for (Map.Entry<String, String> varName : envVariables.entrySet()) {
+                ReadOnlyTextPropertyDescriptor descriptor = new ReadOnlyTextPropertyDescriptor(varName.getKey(), varName.getKey());
+                descriptor.setCategory(sfTracePropertiesCategory);
+                propertyDescriptorArray[index] = descriptor;
+                index++;
+            }
+            for(int i=0; i<sfDescriptors.length; i++) {
+                propertyDescriptorArray[index] = sfDescriptors[i];
+                index++;
+            }
+            return propertyDescriptorArray;
+        }
         return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
@@ -436,6 +477,14 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             if (fTraceTypeId != null) {
                 IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
                 return (ce != null) ? (getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR)) : ""; //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+
+        Map<String, String> envVariables = getTraceProperties();
+        if (!envVariables.isEmpty()) {
+            String value = envVariables.get(id);
+            if (value != null) {
+                return value;
             }
         }
 
@@ -488,6 +537,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
     /**
      * Close opened editors associated with this trace.
+     *
      * @since 2.0
      */
     public void closeEditors() {
