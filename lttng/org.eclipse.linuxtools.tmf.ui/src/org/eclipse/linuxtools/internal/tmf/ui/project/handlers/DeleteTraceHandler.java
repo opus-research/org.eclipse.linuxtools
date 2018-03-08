@@ -137,13 +137,14 @@ public class DeleteTraceHandler extends AbstractHandler {
 
                     IPath path = resource.getLocation();
                     if (path != null && (trace.getParent() instanceof TmfTraceFolder)) {
+                        String location = path.toString();
                         TmfExperimentFolder experimentFolder = trace.getProject().getExperimentsFolder();
 
                         // Propagate the removal to traces
                         for (ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
                             List<ITmfProjectModelElement> toRemove = new LinkedList<ITmfProjectModelElement>();
                             for (ITmfProjectModelElement child : experiment.getChildren()) {
-                                if (child.getName().equals(trace.getName())) {
+                                if (child.getResource().getLocation().toString().equals(location)) {
                                     toRemove.add(child);
                                 }
                             }
