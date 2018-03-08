@@ -42,7 +42,6 @@ import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 
 public abstract class AbstractValgrindTest extends AbstractTest {
 
@@ -50,23 +49,23 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 	private static final FileFilter TEMPLATE_FILTER = new FileFilter() {
 		public boolean accept(File pathname) {
 			return pathname.getName().startsWith(TEMPLATE_PREFIX) && !pathname.isHidden();
-		}
+		}			
 	};
 	private static final FileFilter NOT_TEMPLATE_FILTER = new FileFilter() {
 		public boolean accept(File pathname) {
 			return !pathname.getName().startsWith(TEMPLATE_PREFIX) && !pathname.isHidden();
-		}
+		}			
 	};
-
+	
 	private static final String SEARCH_STRING_WS = "XXXXXXXXXXXX"; //$NON-NLS-1$
 	private static final String SEARCH_STRING_BL = "YYYYYYYYYYYY"; //$NON-NLS-1$
-
+	
 	private List<ILaunch> launches;
-
+	
 	@Override
 	protected void setUp() throws Exception {
 		launches = new ArrayList<ILaunch>();
-
+		
 		// Substitute Valgrind command line interaction
 		ValgrindLaunchPlugin.getDefault().setValgrindCommand(getValgrindCommand());
 
@@ -87,7 +86,7 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 		}
 		super.tearDown();
 	}
-
+	
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
 		return getLaunchManager().getLaunchConfigurationType(ValgrindLaunchPlugin.LAUNCH_ID);
@@ -96,7 +95,7 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 	protected ILaunch doLaunch(ILaunchConfiguration config, String testName) throws Exception {
 		ILaunch launch;
 		IPath pathToFiles = getPathToFiles(testName);
-
+		
 		if (!ValgrindTestsPlugin.RUN_VALGRIND) {
 			bindLocation(pathToFiles);
 		}
@@ -107,7 +106,7 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 
 		ValgrindTestLaunchDelegate delegate = new ValgrindTestLaunchDelegate();
 		launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
-
+		
 		DebugPlugin.getDefault().getLaunchManager().addLaunch(launch);
 		launches.add(launch);
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
@@ -193,12 +192,10 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 		return createProjectAndBuild(getBundle(), projname);
 	}
 
-	protected Bundle getBundle(){
-		return FrameworkUtil.getBundle(this.getClass());
-	}
+	protected abstract Bundle getBundle();
 
 	protected abstract String getToolID();
-
+	
 	private ValgrindCommand getValgrindCommand() {
 		if (!ValgrindTestsPlugin.RUN_VALGRIND) {
 			return new ValgrindStubCommand();
