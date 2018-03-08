@@ -138,29 +138,35 @@ public class SystemTapCommandLineTest extends TestCase {
 		
 	}
 
-	public void testFailure() throws CoreException{
-		LaunchStapGraph shortcut = new LaunchStapGraph();
-		ILaunchConfiguration config = shortcut.outsideGetLaunchConfigType()
-				.newInstance(null, "Temp Name");
-		ILaunchConfigurationWorkingCopy wc = config.copy("Temp Name");
-
-		wc.setAttribute(LaunchConfigurationConstants.BINARY_PATH, currentPath
-				+ "/basic");
-		wc.setAttribute(LaunchConfigurationConstants.SCRIPT_PATH, scriptPath);
-		wc.setAttribute(LaunchConfigurationConstants.ARGUMENTS, "-e'()'");
-		wc.setAttribute(LaunchConfigurationConstants.OUTPUT_PATH, graphDataPath);
-		config = wc.doSave();
-		config.launch("profile", null);
-
+	public void testFailure(){
+		try {
+			LaunchStapGraph shortcut = new LaunchStapGraph();
+			ILaunchConfiguration config = shortcut.outsideGetLaunchConfigType().newInstance(null, "Temp Name");
+			ILaunchConfigurationWorkingCopy wc = config.copy("Temp Name");
+			
+			wc.setAttribute(LaunchConfigurationConstants.BINARY_PATH,currentPath + "/basic");
+			wc.setAttribute(LaunchConfigurationConstants.SCRIPT_PATH,scriptPath);
+			wc.setAttribute(LaunchConfigurationConstants.ARGUMENTS,"-e'()'");
+			wc.setAttribute(LaunchConfigurationConstants.OUTPUT_PATH,graphDataPath);
+			config = wc.doSave();
+			config.launch("profile", null);
+			
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
-	public void initializeFiles() throws IOException{
+	public void initializeFiles(){
 		File scriptFile = new File(scriptPath);
 		File graphDataFile = new File(graphDataPath);
-
-		scriptFile.createNewFile();
-		graphDataFile.createNewFile();
+		
+		try {
+			scriptFile.createNewFile();
+			graphDataFile.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

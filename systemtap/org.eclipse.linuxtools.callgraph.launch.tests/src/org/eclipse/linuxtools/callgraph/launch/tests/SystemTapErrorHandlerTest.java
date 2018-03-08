@@ -18,13 +18,9 @@ import org.eclipse.linuxtools.internal.callgraph.core.SystemTapErrorHandler;
 
 public class SystemTapErrorHandlerTest extends TestCase {
 
-	private SystemTapErrorHandler errHandler;
-	private String errorString;
-	
-	@Override
-	protected void setUp() {
-		errHandler = new SystemTapErrorHandler();
-	}
+	SystemTapErrorHandler errHandler;
+	String errorString;
+
 	
 	public void testErrorNotRecognized(){
 
@@ -34,9 +30,10 @@ public class SystemTapErrorHandlerTest extends TestCase {
 				"Not found \n" +
 				"Error";
 		
+		errHandler = new SystemTapErrorHandler();
 		errHandler.handle(new NullProgressMonitor(), errorString);
 		
-		assertFalse(errHandler.isErrorRecognized());
+		assertTrue(!errHandler.isErrorRecognized());
 	}
 	
 		
@@ -44,6 +41,7 @@ public class SystemTapErrorHandlerTest extends TestCase {
 
 		errorString = "As long as the word stapdev or stapusr is here, error is recognized";
 		
+		errHandler = new SystemTapErrorHandler();
 		errHandler.handle(new NullProgressMonitor(), errorString);
 		
 		assertTrue(errHandler.isErrorRecognized());
@@ -56,6 +54,7 @@ public class SystemTapErrorHandlerTest extends TestCase {
 			"You should either be root, or be part of either " +
 			"group \"stapdev\" or group \"stapusr.\n";
 		
+		errHandler = new SystemTapErrorHandler();
 		errHandler.handle(new NullProgressMonitor(), errorString);
 		
 		assertTrue(errHandler.isErrorRecognized());
@@ -67,6 +66,7 @@ public class SystemTapErrorHandlerTest extends TestCase {
 		
 		errorString = "missing [architecture] kernel/module debuginfo under '[kernel-build-tree]'";
 		
+		errHandler = new SystemTapErrorHandler();
 		errHandler.handle(new NullProgressMonitor(), errorString);
 		
 		assertTrue(errHandler.isErrorRecognized());
@@ -78,11 +78,12 @@ public class SystemTapErrorHandlerTest extends TestCase {
 		
 		errorString = "SystemTap's version of uprobes is out of date. As root, or a member of the 'root' group, run \"make -C /usr/local/share/systemtap/runtime/uprobes\".";
 		
+		errHandler = new SystemTapErrorHandler();
 		errHandler.handle(new NullProgressMonitor(), errorString);
 		
 		assertTrue(errHandler.isErrorRecognized());
-		System.out.println(errHandler.getErrorMessage());
-		assertTrue(errHandler.getErrorMessage().contains("SystemTap's version of uprobes is out of date."));
-		assertTrue(errHandler.getErrorMessage().contains("make -C /usr/local/share/systemtap/runtime/uprobes\"."));
+		assertTrue(errHandler.getErrorMessage().contains("SystemTap's version of uprobes is out of date. As root, please run \"make -C /usr/local/share/systemtap/runtime/uprobes\"."));
+		
 	}
+
 }

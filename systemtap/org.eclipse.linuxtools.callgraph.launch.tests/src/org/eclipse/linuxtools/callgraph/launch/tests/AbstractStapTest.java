@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.callgraph.launch.tests;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +22,9 @@ import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.launch.SystemTapOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
-import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.Bundle;
 
-public class AbstractStapTest extends AbstractTest {
+public abstract class AbstractStapTest extends AbstractTest {
 
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
@@ -41,22 +39,17 @@ public class AbstractStapTest extends AbstractTest {
 	
 
 	protected ICProject createProjectAndBuild(String projname) throws Exception {
-		return createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), projname);
+		return createProjectAndBuild(getBundle(), projname);
 	}
-	
-	public void killStap() {
-		try {
-			RuntimeProcessFactory.getFactory().exec("kill stap", null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+
+	protected abstract Bundle getBundle();
 
 	private List<ILaunch> launches;
 
 	@Override
 	protected void setUp() throws Exception {
 		launches = new ArrayList<ILaunch>();
+
 		super.setUp();
 	}
 	
