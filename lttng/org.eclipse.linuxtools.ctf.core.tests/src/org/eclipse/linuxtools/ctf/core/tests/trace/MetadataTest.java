@@ -2,7 +2,6 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assume.assumeTrue;
 
 import java.nio.ByteOrder;
 
@@ -42,7 +41,6 @@ public class MetadataTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
         fixture = new Metadata(TestParams.createTrace());
     }
 
