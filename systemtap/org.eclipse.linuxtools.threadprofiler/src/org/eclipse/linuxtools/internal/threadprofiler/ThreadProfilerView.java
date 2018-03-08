@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 
+@SuppressWarnings("restriction")
 public class ThreadProfilerView extends SystemTapView {
 	private static final int CPU_BUFFER = 0;
 	private static final int MEM_BUFFER = 1;
