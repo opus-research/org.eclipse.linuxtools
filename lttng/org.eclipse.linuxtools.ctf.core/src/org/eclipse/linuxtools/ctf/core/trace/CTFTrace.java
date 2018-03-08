@@ -22,20 +22,16 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 
-import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
@@ -63,14 +59,6 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
  * @version $Revision: 1.0 $
  */
 public class CTFTrace implements IDefinitionScope {
-
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-
-    private static final String OFFSET = "offset"; //$NON-NLS-1$
-
-
 
     /*
      * (non-Javadoc)
@@ -121,6 +109,11 @@ public class CTFTrace implements IDefinitionScope {
     private StructDeclaration packetHeaderDecl = null;
 
     /**
+     * The clock of the trace
+     */
+    private CTFClock singleClock;
+
+    /**
      * Packet header structure definition
      *
      * This is only used when opening the trace files, to read the first packet
@@ -157,11 +150,6 @@ public class CTFTrace implements IDefinitionScope {
     private final HashMap<StreamInput,HashMap<Long, EventDefinition>> eventDefs;
     /** map of all the indexes */
     private final HashMap<StreamInput, StreamInputPacketIndex> indexes;
-
-    /** Callsite helpers */
-    private HashMap<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
-    /** Callsite helpers */
-    private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
 
 
 
@@ -578,18 +566,17 @@ public class CTFTrace implements IDefinitionScope {
                 }
             }
 
-            /* Read stream ID */
-            // TODO: it hasn't been checked that the stream_id field exists and
-            // is an unsigned
-            // integer
-            IntegerDefinition streamIDDef = (IntegerDefinition) packetHeaderDef
-                    .lookupDefinition("stream_id"); //$NON-NLS-1$
-            assert (streamIDDef != null);
+            /* Read the stream ID */
+            Definition streamIDDef = packetHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
 
-            long streamID = streamIDDef.getValue();
+            if (streamIDDef instanceof IntegerDefinition) { //this doubles as a null check
+                long streamID = ((IntegerDefinition) streamIDDef).getValue();
+                stream = streams.get(streamID);
+            } else {
+                /* No stream_id in the packet header */
+                stream = streams.get(null);
+            }
 
-            /* Get the stream to which this trace file belongs to */
-            stream = streams.get(streamID);
         } else {
             /* No packet header, we suppose there is only one stream */
             stream = streams.get(null);
@@ -637,7 +624,8 @@ public class CTFTrace implements IDefinitionScope {
         }
 
         /*
-         * If the stream we try to add has the null key, it must be the onl         * one. Thus, if the streams container is not empty, it is not valid.
+         * If the stream we try to add has the null key, it must be the only
+         * one. Thus, if the streams container is not empty, it is not valid.
          */
         if ((stream.getId() == null) && (streams.size() != 0)) {
             throw new ParseException("Stream without id with multiple streams"); //$NON-NLS-1$
@@ -697,23 +685,18 @@ public class CTFTrace implements IDefinitionScope {
         return clocks.get(name);
     }
 
-    private CTFClock singleClock;
-    private long singleOffset;
+
+
 
     /**
-     * gets the clock if there is only one. (this is 100% of the use cases as of June 2012)
+     * gets the clock if there is only one. (this is 100% of the use cases as of
+     * June 2012)
+     *
      * @return the clock
      */
     public final CTFClock getClock() {
         if (clocks.size() == 1) {
-            if (singleClock == null) {
-                singleClock = clocks.get(clocks.keySet().toArray()[0]);
-                if (singleClock.getProperty(OFFSET) != null) {
-                    singleOffset = (Long) getClock().getProperty(OFFSET);
-                } else {
-                    singleClock.addAttribute(OFFSET, 0);
-                }
-            }
+            singleClock = clocks.get(clocks.keySet().iterator().next());
             return singleClock;
         }
         return null;
@@ -721,13 +704,86 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * gets the time offset of a clock with respect to UTC in nanoseconds
+     *
      * @return the time offset of a clock with respect to UTC in nanoseconds
      */
     public final long getOffset() {
         if (getClock() == null) {
             return 0;
         }
-        return singleOffset;
+        return singleClock.getClockOffset();
+    }
+
+    /**
+     * gets the time offset of a clock with respect to UTC in nanoseconds
+     *
+     * @return the time offset of a clock with respect to UTC in nanoseconds
+     */
+    private final double getTimeScale() {
+        if (getClock() == null) {
+            return 1.0;
+        }
+        return singleClock.getClockScale();
+    }
+
+    /**
+     * Does the trace need to time scale?
+     *
+     * @return if the trace is in ns or cycles.
+     */
+    private final boolean clockNeedsScale() {
+        if (getClock() == null) {
+            return false;
+        }
+        return singleClock.isClockScaled();
+    }
+
+    /**
+     * the inverse clock for returning to a scale.
+     *
+     * @return 1.0 / scale
+     */
+    private final double getInverseTimeScale() {
+        if (getClock() == null) {
+            return 1.0;
+        }
+        return singleClock.getClockAntiScale();
+    }
+
+    /**
+     * @param cycles
+     *            clock cycles since boot
+     * @return time in nanoseconds UTC offset
+     */
+    public long timestampCyclesToNanos(long cycles) {
+        long retVal = cycles + getOffset();
+        /*
+         * this fix is since quite often the offset will be > than 53 bits and
+         * therefore the conversion will be lossy
+         */
+        if (clockNeedsScale()) {
+            retVal = (long) (retVal * getTimeScale());
+        }
+        return retVal;
+    }
+
+    /**
+     * @param nanos
+     *            time in nanoseconds UTC offset
+     * @return clock cycles since boot.
+     */
+    public long timestampNanoToCycles(long nanos) {
+        long retVal;
+        /*
+         * this fix is since quite often the offset will be > than 53 bits and
+         * therefore the conversion will be lossy
+         */
+        if (clockNeedsScale()) {
+            retVal = (long) (nanos * getInverseTimeScale());
+        } else {
+            retVal = nanos;
+        }
+        return retVal - getOffset();
     }
 
     /**
@@ -751,104 +807,6 @@ public class CTFTrace implements IDefinitionScope {
             eventDecs.put(id, value);
         }
         return value;
-    }
-
-    /**
-     * Adds a callsite
-     *
-     * @param eventName
-     *            the event name of the callsite
-     * @param funcName
-     *            the name of the callsite function
-     * @param ip
-     *            the ip of the callsite
-     * @param fileName
-     *            the filename of the callsite
-     * @param lineNumber
-     *            the line number of the callsite
-     */
-    public void addCallsite(String eventName, String funcName, long ip,
-            String fileName, long lineNumber) {
-        final CTFCallsite cs = new CTFCallsite(eventName, funcName, ip,
-                fileName, lineNumber);
-        LinkedList<CTFCallsite> csl = callsitesByName.get(eventName);
-        if (csl == null) {
-            csl = new LinkedList<CTFCallsite>();
-            callsitesByName.put(eventName, csl);
-        }
-
-        ListIterator<CTFCallsite> iter = csl.listIterator();
-        int index = 0;
-        for (; index < csl.size(); index++) {
-            if (iter.next().compareTo(cs) < 0) {
-                break;
-            }
-        }
-
-        csl.add(index, cs);
-
-        callsitesByIP.add(cs);
-    }
-
-    /**
-     * Gets the list of callsites associated to an event name. O(1)
-     *
-     * @param eventName
-     *            the event name
-     * @return the callsite list can be empty
-     * @since 1.2
-     */
-    public List<CTFCallsite> getCallsiteCandidates(String eventName) {
-        LinkedList<CTFCallsite> retVal = callsitesByName.get(eventName);
-        if( retVal == null ) {
-            retVal = new LinkedList<CTFCallsite>();
-        }
-        return retVal;
-    }
-
-    /**
-     * The I'm feeling lucky of getCallsiteCandidates O(1)
-     *
-     * @param eventName
-     *            the event name
-     * @return the first callsite that has that event name, can be null
-     * @since 1.2
-     */
-    public CTFCallsite getCallsite(String eventName) {
-        return callsitesByName.get(eventName).getFirst();
-    }
-
-    /**
-     * Gets a callsite from the instruction pointer O(log(n))
-     *
-     * @param ip
-     *            the instruction pointer to lookup
-     * @return the callsite just before that IP in the list remember the IP is
-     *         backwards on X86, can be null if no callsite is before the IP.
-     * @since 1.2
-     */
-    public CTFCallsite getCallsite(long ip) {
-        CTFCallsite cs = new CTFCallsite(null, null, ip, null, 0L);
-        return callsitesByIP.ceiling(cs);
-    }
-
-    /**
-     * Gets a callsite using the event name and instruction pointer O(log(n))
-     *
-     * @param eventName
-     *            the name of the event
-     * @param ip
-     *            the instruction pointer
-     * @return the closest matching callsite, can be null
-     */
-    public CTFCallsite getCallsite(String eventName, long ip) {
-        final LinkedList<CTFCallsite> candidates = callsitesByName.get(eventName);
-        final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
-        final int pos = Collections.binarySearch(candidates, dummyCs)+1;
-        if( pos >= candidates.size()) {
-            return null;
-        }
-        return candidates.get(pos);
     }
 
 }
