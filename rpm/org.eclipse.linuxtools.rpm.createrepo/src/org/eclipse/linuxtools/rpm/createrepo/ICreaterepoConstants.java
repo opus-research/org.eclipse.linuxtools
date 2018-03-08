@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.rpm.createrepo;
 
 
-
 /**
  * Common constants used in createrepo.
  */
@@ -27,11 +26,6 @@ public interface ICreaterepoConstants {
 	 * The file extension of RPM files.
 	 */
 	String REPO_FILE_EXTENSION = "repo"; //$NON-NLS-1$
-
-	/**
-	 * The delimiter of preferences.
-	 */
-	String DELIMITER = ";"; //$NON-NLS-1$
 
 	/**
 	 * The file extension of RPM files.

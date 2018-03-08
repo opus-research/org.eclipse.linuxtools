@@ -44,14 +44,14 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
      *
      * @param parentView A parent histogram view
      * @param parent A parent composite to draw in
-     * @param label A label
+     * @param groupLabel A group value
      * @param value A value
      * @since 2.0
      */
     public HistogramCurrentTimeControl(HistogramView parentView, Composite parent,
-            String label, long value)
+            String groupLabel, long value)
     {
-        super(parentView, parent, label, value);
+        super(parentView, parent, groupLabel, value);
         TmfSignalManager.register(this);
     }
 
@@ -92,21 +92,10 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
 
             // Set and propagate
             setValue(value);
-            updateSelectionTime(value);
+            fParentView.updateSelectionTime(value, value);
         } else {
             setValue(value);
         }
-    }
-
-    /**
-     * Update the selection time
-     *
-     * @param time
-     *            the new selected time
-     * @since 2.2
-     */
-    protected void updateSelectionTime(long time) {
-        fParentView.updateSelectionTime(time, time);
     }
 
     @Override

@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,25 +17,15 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
-import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.osgi.framework.FrameworkUtil;
 
 /**
  * This class will contain the current project and basic operations of the
  * createrepo command.
  */
 public class CreaterepoProject {
-
-	private IEclipsePreferences projectPreferences;
 
 	private IProject project;
 	private IFolder content;
@@ -47,26 +34,14 @@ public class CreaterepoProject {
 	private IProgressMonitor monitor;
 
 	/**
-	 * Constructor without repo file.
-	 *
-	 * @param project The project.
-	 * @throws CoreException Thrown when unable to initialize project.
-	 */
-	public CreaterepoProject(IProject project) throws CoreException {
-		this(project, null);
-	}
-
-	/**
 	 * Default constructor.
 	 *
 	 * @param project The project.
 	 * @throws CoreException Thrown when unable to initialize project.
 	 */
-	public CreaterepoProject(IProject project, IFile repoFile) throws CoreException {
+	public CreaterepoProject(IProject project) throws CoreException {
 		this.project = project;
-		this.repoFile = repoFile;
 		monitor = new NullProgressMonitor();
-		projectPreferences = new ProjectScope(project.getProject()).getNode(Activator.PLUGIN_ID);
 		intitialize();
 		// if something is deleted from the project while outside of eclipse,
 		// the tree/preferences will be updated accordingly after refreshing
@@ -80,54 +55,18 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when unable to create the folders.
 	 */
 	private void intitialize() throws CoreException {
-		createContentFolder();
-		if (repoFile == null) {
-			for (IResource child : getProject().members()) {
-				String extension = child.getFileExtension();
-				if (extension != null && extension.equals(ICreaterepoConstants.REPO_FILE_EXTENSION)) {
-					// assumes that there will only be 1 .repo file in the folder
-					repoFile = (IFile) child;
-				}
-				// if no repo file then keep it null
-			}
-		}
-	}
-
-	/**
-	 * Create the content folder if it doesn't exist.
-	 *
-	 * @throws CoreException
-	 */
-	private void createContentFolder() throws CoreException {
 		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
 		if (!content.exists()) {
 			content.create(false, true, monitor);
 		}
-	}
-
-	/**
-	 * Import an RPM file outside of the eclipse workspace.
-	 *
-	 * @param externalFile The external file to import.
-	 * @throws CoreException Thrown when failure to create a workspace file.
-	 */
-	public void importRPM(File externalFile) throws CoreException {
-		// must put imported RPMs into the content folder; create if missing
-		if (content == null) {
-			createContentFolder();
-		}
-		IFile file = getContentFolder().getFile(new Path(externalFile.getName()));
-		if (!file.exists()) {
-			try {
-				file.create(new FileInputStream(externalFile), false, monitor);
-			} catch (FileNotFoundException e) {
-				IStatus status = new Status(
-						IStatus.ERROR,
-						FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
-						Messages.CreaterepoProject_errorGettingFile, null);
-				throw new CoreException(status);
+		// tries to check if a .repo file already exists in the project
+		for (IResource child : getProject().members()) {
+			String extension = child.getFileExtension();
+			if (extension != null && extension.equals(ICreaterepoConstants.REPO_FILE_EXTENSION)) {
+				// assumes that there will only be 1 .repo file in the folder
+				repoFile = (IFile) child;
 			}
-			getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+			// if no repo file then keep it null
 		}
 	}
 
@@ -175,15 +114,6 @@ public class CreaterepoProject {
 			}
 		}
 		return rpms;
-	}
-
-	/**
-	 * Get the eclipse preferences of this project.
-	 *
-	 * @return The eclipse preferences for the project.
-	 */
-	public IEclipsePreferences getEclipsePreferences() {
-		return projectPreferences;
 	}
 
 }

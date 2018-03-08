@@ -55,18 +55,6 @@ public final class Messages {
 	/****/
 	public static String CreaterepoNewWizardPageTwo_errorURL;
 
-	// CreaterepoProject
-	/****/
-	public static String CreaterepoProject_executeCreaterepo;
-	/****/
-	public static String CreaterepoProject_errorGettingFile;
-	/****/
-	public static String CreaterepoProject_consoleName;
-
-	// Createrepo
-	/****/
-	public static String Createrepo_jobName;
-
 	// RepoFormEditor
 	/****/
 	public static String RepoFormEditor_errorInitializingForm;
@@ -90,16 +78,6 @@ public final class Messages {
 	public static String ImportRPMsPage_buttonCreateRepo;
 	/****/
 	public static String ImportRPMsPage_errorRefreshingTree;
-	/****/
-	public static String ImportRPMsPage_errorResourceChanged;
-
-	// ImportRPMsPage$ImportButtonListener
-	/****/
-	public static String ImportButtonListener_error;
-
-	// ImportRPMsPage$RemoveButtonListener
-	/****/
-	public static String RemoveButtonListener_error;
 
 	// MetadataPage
 	/****/
@@ -117,19 +95,11 @@ public final class Messages {
 	/****/
 	public static String MetadataPage_sectionInstructionTags;
 	/****/
-	public static String MetadataPage_labelTags;
-	/****/
 	public static String MetadataPage_buttonAddTag;
 	/****/
 	public static String MetadataPage_buttonEditTag;
 	/****/
 	public static String MetadataPage_buttonRemoveTag;
-	/****/
-	public static String MetadataPage_errorSavingPreferences;
-
-	// CreaterepoResourceChangeListener
-	/****/
-	public static String CreaterepoResourceChangeListener_errorGettingResource;
 
 	static {
 		// initialize resource bundle
