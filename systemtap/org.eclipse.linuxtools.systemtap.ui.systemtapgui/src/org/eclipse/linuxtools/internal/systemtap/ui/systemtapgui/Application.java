@@ -26,7 +26,7 @@ public class Application implements IApplication {
 	 *
 	 * @return an IPlatformRunnable condition, either EXIT_RESTART or EXIT_OK
 	 */
-	public Object start(IApplicationContext context) {
+	public Object start(IApplicationContext context) throws Exception {
 		Display display = PlatformUI.createDisplay();
 
 		if(!SystemTapGUISettings.settingsFolder.exists()) {
