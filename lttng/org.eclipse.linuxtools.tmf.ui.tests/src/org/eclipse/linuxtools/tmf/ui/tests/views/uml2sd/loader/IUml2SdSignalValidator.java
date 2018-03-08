@@ -23,81 +23,81 @@ public interface IUml2SdSignalValidator {
     /**
      * @return if signal is received or not
      */
-    boolean isSignalReceived();
+    public boolean isSignalReceived();
     /**
      * Sets signal received value
      * @param received boolean value to set
      */
-    void setSignalReceived(boolean received);
+    public void setSignalReceived(boolean received);
 
     /**
      * @return whether source of signal is correct or not
      */
-    boolean isSourceError();
+    public boolean isSourceError();
     /**
      * Sets the source error flag.
      * @param fIsSourceError boolean value to set
      */
-    void setSourceError(boolean fIsSourceError);
+    public void setSourceError(boolean fIsSourceError);
 
     /**
      * @return whether received current time is correct or not
      */
-    boolean isCurrentTimeError();
+    public boolean isCurrentTimeError();
     /**
      * Sets the current time error flag.
      * @param fIsCurrentTimeError boolean value to set
      */
-    void setCurrentTimeError(boolean fIsCurrentTimeError);
+    public void setCurrentTimeError(boolean fIsCurrentTimeError);
 
     /**
      * @return whether received range is correct or not
      */
-    boolean isRangeError();
+    public boolean isRangeError();
     /**
      * Sets the range error flag.
      * @param fIsRangeError boolean value to set
      */
-    void setRangeError(boolean fIsRangeError);
+    public void setRangeError(boolean fIsRangeError);
 
     /**
      * @return whether signal was received or not
      */
-    boolean isSignalError();
+    public boolean isSignalError();
     /**
      * Sets signal error flag.
      * @param fIsSignalError boolean value to set
      */
-    void setSignalError(boolean fIsSignalError);
+    public void setSignalError(boolean fIsSignalError);
 
     /**
      * @return source of expected signal.
      */
-    Object getSource();
+    public Object getSource();
     /**
      * Sets source of expected signal
      * @param source expected source component
      */
-    void setSource(Object source);
+    public void setSource(Object source);
 
     /**
      * @return the expected current time.
      */
-    TmfTimestamp getCurrentTime();
+    public TmfTimestamp getCurrentTime();
     /**
      * Sets the expected current time
      * @param currentTime Time to set
      */
-    void setCurrentTime(TmfTimestamp currentTime);
+    public void setCurrentTime(TmfTimestamp currentTime);
 
     /**
      * @return the expected current time range.
      */
-    TmfTimeRange getCurrentRange();
+    public TmfTimeRange getCurrentRange();
     /**
      * Sets the expected current time range.
      * @param currentRange the expected current time range to set
      */
-    void setCurrentRange(TmfTimeRange currentRange);
+    public void setCurrentRange(TmfTimeRange currentRange);
 
 }
