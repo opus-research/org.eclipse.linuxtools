@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,7 +19,7 @@ import java.util.Map;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -77,7 +77,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             int status = ((ControlFlowEvent) event).getStatus();
             return getMatchingState(status).ordinal();
         }
-        return State.UNKNOWN.ordinal();
+        return TRANSPARENT;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             int status = ((ControlFlowEvent) event).getStatus();
             return getMatchingState(status).toString();
         }
-        return State.UNKNOWN.toString();
+        return Messages.ControlFlowView_multipleStates;
     }
 
     private static State getMatchingState(int status) {
@@ -111,7 +111,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
         Map<String, String> retMap = new LinkedHashMap<String, String>();
         if (event instanceof ControlFlowEvent) {
             ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-            ITmfStateSystem ssq = entry.getTrace().getStateSystem(LttngKernelTrace.STATE_ID);
+            ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(CtfKernelTrace.STATE_ID);
             int tid = entry.getThreadId();
 
             try {
@@ -172,7 +172,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             return;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        ITmfStateSystem ss = entry.getTrace().getStateSystem(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CtfKernelTrace.STATE_ID);
         int status = ((ControlFlowEvent) event).getStatus();
         if (status != StateValues.PROCESS_STATUS_RUN_SYSCALL) {
             return;

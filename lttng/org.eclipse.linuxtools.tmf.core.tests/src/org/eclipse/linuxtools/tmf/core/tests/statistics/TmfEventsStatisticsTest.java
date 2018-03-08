@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,8 +12,10 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.statistics;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import static org.junit.Assume.assumeTrue;
+
 import org.eclipse.linuxtools.tmf.core.statistics.TmfEventsStatistics;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 
 /**
@@ -28,10 +30,7 @@ public class TmfEventsStatisticsTest extends TmfStatisticsTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        try {
-            backend = new TmfEventsStatistics(TestParams.createTrace());
-        } catch (TmfTraceException e) {
-            e.printStackTrace();
-        }
+        assumeTrue(CtfTmfTestTraces.tracesExist());
+        backend = new TmfEventsStatistics(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
     }
 }

@@ -138,6 +138,20 @@ public abstract class TmfStateValue implements ITmfStateValue {
         return new StringStateValue(strValue);
     }
 
+    /**
+     * Factory constructor for Long state values
+     *
+     * @param longValue The long value to contain
+     * @return The newly-create TmfStateValue object
+     * @since 2.0
+     */
+    public static TmfStateValue newValueLong(long longValue) {
+        if (longValue == -1) {
+            return nullValue();
+        }
+        return new LongStateValue(longValue);
+    }
+
     @Override
     public int unboxInt() throws StateValueTypeException {
         if (this.isNull()) {
@@ -145,7 +159,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return -1;
         }
 
-        if (this.getType() != 0) { /* 0 = int type */
+        if (this.getType() != Type.INTEGER) {
             throw new StateValueTypeException();
         }
         return (Integer) this.getValue();
@@ -158,9 +172,25 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return "nullValue"; //$NON-NLS-1$
         }
 
-        if (this.getType() != 1) { /* 1 = string type */
+        if (this.getType() != Type.STRING) {
             throw new StateValueTypeException();
         }
         return (String) this.getValue();
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public long unboxLong() throws StateValueTypeException {
+        if (this.isNull()) {
+            /* Long value expected, return "-1" instead */
+            return -1;
+        }
+
+        if (this.getType() != Type.LONG) {
+            throw new StateValueTypeException();
+        }
+        return (Long) this.getValue();
     }
 }

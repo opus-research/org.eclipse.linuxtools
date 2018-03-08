@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
@@ -5,6 +16,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.nio.ByteOrder;
@@ -14,12 +27,11 @@ import java.util.UUID;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.TestParams;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,29 +40,20 @@ import org.junit.Test;
  * <code>{@link CTFTrace}</code>.
  *
  * @author ematkho
- * @version $Revision: 1.0 $
  */
-@SuppressWarnings("javadoc")
 public class CTFTraceTest {
 
-    private CTFTrace fixture;
+    private static final int TRACE_INDEX = 0;
 
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(CTFTraceTest.class);
-    }
+    private CTFTrace fixture;
 
     /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-        fixture = TestParams.createTraceFromFile();
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
         fixture.setMinor(1L);
         fixture.setUUID(UUID.randomUUID());
         fixture.setPacketHeader(new StructDeclaration(1L));
@@ -59,19 +62,11 @@ public class CTFTraceTest {
     }
 
     /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
-    /**
      * Run the CTFTrace(File) constructor test with a known existing trace.
      */
     @Test
     public void testOpen_existing() {
-        CTFTrace result = TestParams.createTraceFromFile();
+        CTFTrace result = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
         assertNotNull(result.getUUID());
     }
 
@@ -79,10 +74,11 @@ public class CTFTraceTest {
      * Run the CTFTrace(File) constructor test with an invalid path.
      *
      * @throws CTFReaderException
+     *             is expected
      */
     @Test(expected = org.eclipse.linuxtools.ctf.core.trace.CTFReaderException.class)
     public void testOpen_invalid() throws CTFReaderException {
-        File path = new File(""); //$NON-NLS-1$
+        File path = new File("");
         CTFTrace result = new CTFTrace(path);
         assertNotNull(result);
     }
@@ -98,19 +94,24 @@ public class CTFTraceTest {
 
     /**
      * Run the void addStream(Stream) method test.
-     *
-     * @throws ParseException
-     * @throws CTFReaderException
      */
     @Test
-    public void testAddStream() throws ParseException, CTFReaderException {
+    public void testAddStream() {
         // test number of streams
         int nbStreams = fixture.nbStreams();
         assertEquals(1, nbStreams);
+
         // Add a stream
-        Stream stream = new Stream(TestParams.createTrace());
-        stream.setId(1234);
-        fixture.addStream(stream);
+        try {
+            Stream stream = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
+            stream.setId(1234);
+            fixture.addStream(stream);
+        } catch (CTFReaderException e) {
+            fail();
+        } catch (ParseException e) {
+            fail();
+        }
+
         // test number of streams
         nbStreams = fixture.nbStreams();
         assertEquals(2, nbStreams);
@@ -212,7 +213,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testLookupDefinition() {
-        String lookupPath = "trace.packet.header"; //$NON-NLS-1$
+        String lookupPath = "trace.packet.header";
         Definition result = fixture.lookupDefinition(lookupPath);
         assertNotNull(result);
     }
@@ -250,7 +251,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testPacketHeaderIsSet_invalid() {
-        CTFTrace fixture2 = TestParams.createTraceFromFile();
+        CTFTrace fixture2 = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
         fixture2.setMinor(1L);
         fixture2.setUUID(UUID.randomUUID());
         fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
@@ -307,41 +308,11 @@ public class CTFTraceTest {
     }
 
     /**
-     * Run the CTFClock getClock() method test.
+     * Run the CTFClock getClock/setClock method test.
      */
     @Test
-    public void testGetClock_1() {
-        CTFClock result = fixture.getClock();
-        assertNotNull(result);
-    }
-
-    /**
-     * Run the CTFClock getClock() method test.
-     *
-     */
-    @Test
-    public void testGetClock_2() {
-        CTFClock result = fixture.getClock("Blabla"); //$NON-NLS-1$
-        assertNull(result);
-    }
-
-    /**
-     * Run the CTFClock getClock(String) method test.
-     */
-    @Test
-    public void testGetClock_3() {
-        String name = "invisibleClock"; //$NON-NLS-1$
-        CTFClock result = fixture.getClock(name);
-        assertNull(result);
-    }
-
-
-    /**
-     * Run the CTFClock getClock(String) method test.
-     */
-    @Test
-    public void testSetClock_1() {
-        String name = "clockyClock"; //$NON-NLS-1$
+    public void testGetSetClock_1() {
+        String name = "clockyClock";
         fixture.addClock(name, new CTFClock());
         CTFClock result = fixture.getClock(name);
 
@@ -349,20 +320,20 @@ public class CTFTraceTest {
     }
 
     /**
-     * Run the CTFClock getClock(String) method test.
+     * Run the CTFClock getClock/setClock method test.
      */
     @Test
-    public void testSetClock_2() {
-        String name = ""; //$NON-NLS-1$
+    public void testGetSetClock_2() {
+        String name = "";
         CTFClock ctfClock = new CTFClock();
-        ctfClock.addAttribute("name", "Bob"); //$NON-NLS-1$ //$NON-NLS-2$
-        ctfClock.addAttribute("pi", new Double(java.lang.Math.PI)); //$NON-NLS-1$
+        ctfClock.addAttribute("name", "Bob");
+        ctfClock.addAttribute("pi", new Double(java.lang.Math.PI));
         fixture.addClock(name, ctfClock);
         CTFClock result = fixture.getClock(name);
 
         assertNotNull(result);
-        assertTrue( (Double)ctfClock.getProperty("pi")> 3.0); //$NON-NLS-1$
-        assertTrue( ctfClock.getName().equals("Bob")); //$NON-NLS-1$
+        assertTrue((Double) ctfClock.getProperty("pi") > 3.0);
+        assertTrue(ctfClock.getName().equals("Bob"));
     }
 
     /**
@@ -370,7 +341,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testLookupEnvironment_1() {
-        String key = ""; //$NON-NLS-1$
+        String key = "";
         String result = fixture.lookupEnvironment(key);
         assertNull(result);
     }
@@ -380,7 +351,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testLookupEnvironment_2() {
-        String key = "otherTest"; //$NON-NLS-1$
+        String key = "otherTest";
         String result = fixture.lookupEnvironment(key);
         assertNull(result);
     }
@@ -390,7 +361,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testLookupEnvironment_3() {
-        String key = "test"; //$NON-NLS-1$
+        String key = "test";
         fixture.addEnvironmentVar(key, key);
         String result = fixture.lookupEnvironment(key);
         assertTrue(result.equals(key));
@@ -401,9 +372,9 @@ public class CTFTraceTest {
      */
     @Test
     public void testLookupEnvironment_4() {
-        String key = "test"; //$NON-NLS-1$
-        fixture.addEnvironmentVar(key, "bozo"); //$NON-NLS-1$
-        fixture.addEnvironmentVar(key, "the clown"); //$NON-NLS-1$
+        String key = "test";
+        fixture.addEnvironmentVar(key, "bozo");
+        fixture.addEnvironmentVar(key, "the clown");
         String result = fixture.lookupEnvironment(key);
         assertNotNull(result);
     }

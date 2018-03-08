@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,13 +13,12 @@
 package org.eclipse.linuxtools.tmf.core.statistics;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -44,8 +43,11 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  */
 class StatsStateProvider extends AbstractStateChangeInput {
 
-    /* Commonly-used attributes */
-    private int typeAttribute = -1;
+    /**
+     * Version number of this input handler. Please bump this if you modify the
+     * contents of the generated state history in some way.
+     */
+    private static final int VERSION = 0;
 
     /**
      * Constructor
@@ -58,11 +60,13 @@ class StatsStateProvider extends AbstractStateChangeInput {
     }
 
     @Override
-    public void assignTargetStateSystem(ITmfStateSystemBuilder ssb) {
-        super.assignTargetStateSystem(ssb);
+    public int getVersion() {
+        return VERSION;
+    }
 
-        /* Setup common locations */
-        typeAttribute = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES);
+    @Override
+    public StatsStateProvider getNewInstance() {
+        return new StatsStateProvider(this.getTrace());
     }
 
     @Override
@@ -82,7 +86,7 @@ class StatsStateProvider extends AbstractStateChangeInput {
             ss.incrementAttribute(ts, quark);
 
             /* Number of events of each type, globally */
-            quark = ss.getQuarkRelativeAndAdd(typeAttribute, eventName);
+            quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
             ss.incrementAttribute(ts, quark);
 
 //            /* Number of events per CPU */

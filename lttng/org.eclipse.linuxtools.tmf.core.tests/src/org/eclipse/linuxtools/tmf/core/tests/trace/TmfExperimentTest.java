@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,13 +10,13 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Trace Model
  *   Alexandre Montplaisir - Port to JUnit4
+ *   Patrick Tasse - Updated for rank in experiment location
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -33,14 +32,14 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -54,7 +53,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfExperiment class (single trace).
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("javadoc")
 public class TmfExperimentTest {
 
     // ------------------------------------------------------------------------
@@ -184,15 +183,8 @@ public class TmfExperimentTest {
     @Test
     public void testGetStateSystem() {
         /* There should not be any experiment-specific state system */
-        ITmfStateSystem ss = fExperiment.getStateSystem("something");
+        ITmfStateSystem ss = fExperiment.getStateSystems().get("something");
         assertNull(ss);
-    }
-
-    @Test
-    public void testListStateSystem() {
-        Collection<String> sss = fExperiment.listStateSystems();
-        assertNotNull(sss);
-        assertEquals(0, sss.size());
     }
 
     // ------------------------------------------------------------------------
@@ -261,23 +253,17 @@ public class TmfExperimentTest {
         // First event
         ITmfContext context = fExperiment.seekEvent((ITmfLocation) null);
         double ratio = fExperiment.getLocationRatio(context.getLocation());
-        context = fExperiment.seekEvent(ratio);
-        double ratio2 = fExperiment.getLocationRatio(context.getLocation());
-        assertEquals("getLocationRatio", ratio, ratio2, DELTA);
+        assertEquals("getLocationRatio", 0.0, ratio, DELTA);
 
         // Middle event
         context = fExperiment.seekEvent(NB_EVENTS / 2);
         ratio = fExperiment.getLocationRatio(context.getLocation());
-        context = fExperiment.seekEvent(ratio);
-        ratio2 = fExperiment.getLocationRatio(context.getLocation());
-        assertEquals("getLocationRatio", ratio, ratio2, DELTA);
+        assertEquals("getLocationRatio", (double) (NB_EVENTS / 2) / NB_EVENTS, ratio, DELTA);
 
         // Last event
         context = fExperiment.seekEvent(NB_EVENTS - 1);
         ratio = fExperiment.getLocationRatio(context.getLocation());
-        context = fExperiment.seekEvent(ratio);
-        ratio2 = fExperiment.getLocationRatio(context.getLocation());
-        assertEquals("getLocationRatio", ratio, ratio2, DELTA);
+        assertEquals("getLocationRatio", (double) (NB_EVENTS - 1) / NB_EVENTS, ratio, DELTA);
     }
 
 //    @SuppressWarnings("rawtypes")

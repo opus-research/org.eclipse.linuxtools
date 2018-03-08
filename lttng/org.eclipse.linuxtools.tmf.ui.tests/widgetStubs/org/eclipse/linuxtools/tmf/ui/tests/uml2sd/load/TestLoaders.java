@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Bernd Hufmann - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.tests.uml2sd.load;
 
 import java.net.URL;
@@ -8,7 +19,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence;
@@ -50,7 +61,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     private Frame savedFrame = null;
 
     public TestLoaders() {
-        this(""); //$NON-NLS-1$
+        this("");
     }
 
     @SuppressWarnings("unused")
@@ -91,7 +102,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         createFrame();
     }
 
-    @SuppressWarnings("nls")
     private void createFrame() {
         Frame testFrame = new Frame();
         if (page == 1) {
@@ -375,7 +385,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         return null;
     }
 
-    @SuppressWarnings("nls")
     @Override
     public String getTitleString() {
         return "Test Loader";
@@ -437,7 +446,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             img = img_;
         }
 
-        @SuppressWarnings("nls")
         public Image getResourceImage(String _name) {
             ImageDescriptor imgage;
             try {

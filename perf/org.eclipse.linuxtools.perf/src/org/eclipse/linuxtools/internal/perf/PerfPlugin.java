@@ -14,11 +14,18 @@
  *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.perf;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -35,6 +42,8 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// View ID
 	public static final String VIEW_ID = "org.eclipse.linuxtools.perf.ui.ProfileView";
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
+	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
+	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -58,6 +67,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final boolean ATTR_HideUnresolvedSymbols_default = true;
 	public static final String ATTR_ShowSourceDisassembly = "org.eclipse.linuxtools.internal.perf.attr.ShowSourceDisassembly";
 	public static final boolean ATTR_ShowSourceDisassembly_default = false;
+	public static final String ATTR_ShowStat = "org.eclipse.linuxtools.internal.perf.attr.ShowStat";
+	public static final boolean ATTR_ShowStat_default = false;
+	public static final String ATTR_StatRunCount = "org.eclipse.linuxtools.internal.perf.attr.StatRunCount";
+	public static final int ATTR_StatRunCount_default = 1;
 	
 	//Perf Events tab attribs.
 	public static final String ATTR_DefaultEvent = "org.eclipse.linuxtools.internal.perf.attr.DefaultEvent";
@@ -85,14 +98,12 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String STRINGS_UnfiledSymbols = "Unfiled Symbols";
 	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
 	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
+	public static final String STRINGS_ShowStat = "Show Stat View";
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
-
-	
-	  
 	
 	// The shared instance
 	private static PerfPlugin plugin;
@@ -103,8 +114,20 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Source Disassembly Data
 	private SourceDisassemblyData sourceDisassemblyData;
 
-	//Profile view
+	// Stat Data
+	private StatData statData;
+
+	// Profile view
 	private PerfProfileView _ProfileView = null;
+
+	// Current profile data
+	private IPath curProfileData;
+
+	// Current working directory
+	private IPath curWorkingDir;
+
+	// Current stat comparison data
+	private StatComparisonData statDiffData;
 
 	public TreeParent getModelRoot() {
 		return _modelRoot;
@@ -112,6 +135,22 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public SourceDisassemblyData getSourceDisassemblyData () {
 		return sourceDisassemblyData;
+	}
+
+	public StatData getStatData () {
+		return statData;
+	}
+
+	public IPath getPerfProfileData() {
+		return curProfileData;
+	}
+
+	public StatComparisonData getStatDiffData() {
+		return statDiffData;
+	}
+
+	public IPath getWorkingDir(){
+		return curWorkingDir;
 	}
 
 	/**
@@ -133,6 +172,22 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public void setSourceDisassemblyData (SourceDisassemblyData sourceDisassemblyData) {
 		this.sourceDisassemblyData = sourceDisassemblyData;
+	}
+
+	public void setStatData (StatData statData) {
+		this.statData = statData;
+	}
+
+	public void setPerfProfileData(IPath perfProfileData) {
+		this.curProfileData = perfProfileData;
+	}
+
+	public void setStatDiffData(StatComparisonData diffData){
+		this.statDiffData = diffData;
+	}
+
+	public void setWorkingDir(IPath workingDir){
+		curWorkingDir = workingDir;
 	}
 
 	public PerfProfileView getProfileView() {
@@ -195,4 +250,30 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
+
+	/**
+	 * Log the given exception and display the message/reason in an error
+	 * message box. (From org.eclipse.linuxtools.packagekit.ui.Activator)
+	 *
+	 * @param ex the given exception to display
+	 * @since 2.0
+	 */
+	public void openError(Exception ex, final String title) {
+		StringWriter writer = new StringWriter();
+		ex.printStackTrace(new PrintWriter(writer));
+
+		final String message = ex.getMessage();
+		final String formattedMessage = PLUGIN_ID + " : " + message; //$NON-NLS-1$
+		final Status status = new Status(IStatus.ERROR, PLUGIN_ID, formattedMessage, new Throwable(writer.toString()));
+
+		getLog().log(status);
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				ErrorDialog.openError(Display.getDefault().getActiveShell(),
+						title, message, status);
+			}
+		});
+	}
+
 }

@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -30,22 +31,22 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 
 public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 
-	private IDocument document;
 	private int originalLength;
 
 	private void setDocumentLength(Object element) {
 		IDocument doc = getDocument(element);
-		if (doc == null)
+		if (doc == null) {
 			originalLength = 0;
-		else
+		} else {
 			originalLength = doc.getLength();
+		}
 	}
 
 	@Override
 	public IDocument getDocument(Object element) {
-		document = super.getDocument(element);
+		IDocument document = super.getDocument(element);
 		if (document != null && document.getDocumentPartitioner() == null) {
-			SpecfilePartitioner partitioner = new SpecfilePartitioner(
+			FastPartitioner partitioner = new FastPartitioner(
 					new SpecfilePartitionScanner(),
 					SpecfilePartitionScanner.SPEC_PARTITION_TYPES);
 			partitioner.connect(document, false);
@@ -61,7 +62,7 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 		super.connect(element);
 		setDocumentLength(element);
 	}
-	
+
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProvider#canSaveDocument(java.lang.Object)
 	 */
@@ -70,10 +71,12 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 		if (element instanceof FileStoreEditorInput) {
 			FileStoreEditorInput fei = (FileStoreEditorInput)element;
 			IDocument doc = getDocument(element);
-			if (!super.canSaveDocument(element))
+			if (!super.canSaveDocument(element)) {
 				return false;
-			if (doc.getLength() != originalLength)
+			}
+			if (doc.getLength() != originalLength) {
 				return true;
+			}
 			URI uri = fei.getURI();
 			File f = URIUtil.toFile(uri);
 			BufferedReader input = null;
@@ -85,12 +88,14 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 					int curoffset = 0;
 					while (!finished) {
 						int len = input.read(buffer);
-						if (len <= 0)
+						if (len <= 0) {
 							break;
+						}
 						String origbytes = new String(buffer, 0, len);
 						String curbytes = doc.get(curoffset, len);
-						if (!curbytes.equals(origbytes))
+						if (!curbytes.equals(origbytes)) {
 							return true;
+						}
 						curoffset += len;
 					}
 				}

@@ -58,7 +58,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		this.colorManager = colorManager;
 		this.editor = editor;
 	}
-	
+
 	/**
 	 * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getConfiguredContentTypes(org.eclipse.jface.text.source.ISourceViewer)
 	 */
@@ -66,7 +66,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		return SpecfilePartitionScanner.SPEC_PARTITION_TYPES;
 	}
-	
+
 	/**
 	 * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getDoubleClickStrategy(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
 	 */
@@ -74,8 +74,9 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
 		ISourceViewer sourceViewer,
 		String contentType) {
-		if (doubleClickStrategy == null)
+		if (doubleClickStrategy == null) {
 			doubleClickStrategy = new SpecfileDoubleClickStrategy();
+		}
 		return doubleClickStrategy;
 	}
 
@@ -89,7 +90,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		}
 		return scanner;
 	}
-	
+
 	protected SpecfileChangelogScanner getSpecfileChangelogScanner() {
 		if  (changelogScanner == null) {
 			changelogScanner = new SpecfileChangelogScanner(colorManager);
@@ -100,7 +101,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		}
 		return changelogScanner;
 	}
-	
+
 	protected SpecfilePackagesScanner getSpecfilePackagesScanner() {
 		if  (packagesScanner == null) {
 			packagesScanner = new SpecfilePackagesScanner(colorManager);
@@ -111,15 +112,16 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		}
 		return packagesScanner;
 	}
-	
-	
+
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.editors.text.TextSourceViewerConfiguration#getTextHover(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
 	 */
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		if (specfileHover == null)
+		if (specfileHover == null) {
 			specfileHover = new SpecfileHover(this.editor);
+		}
 		return specfileHover;
 	}
 
@@ -133,31 +135,27 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(getSpecfileScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-//
-//                dr = new DefaultDamagerRepairer(getSpecfileScanner());
-//                reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_DEFAULT);
-//                reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_DEFAULT);
 
 		dr = new DefaultDamagerRepairer(getSpecfilePackagesScanner());
 		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_PACKAGES);
 		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_PACKAGES);
-		
+
 		dr = new DefaultDamagerRepairer(getSpecfileScanner());
 		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_PREP);
 		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_PREP);
-		
+
 		dr = new DefaultDamagerRepairer(getSpecfileScanner());
 		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_SCRIPT);
 		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_SCRIPT);
-		
+
 		dr = new DefaultDamagerRepairer(getSpecfileScanner());
 		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_FILES);
 		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_FILES);
-		
+
 		dr = new DefaultDamagerRepairer(getSpecfileScanner());
 		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_GROUP);
 		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_GROUP);
-		
+
 		dr = new DefaultDamagerRepairer(getSpecfileChangelogScanner());
 		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_CHANGELOG);
 		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_CHANGELOG);
@@ -179,7 +177,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		}
 		return null;
 	}
-	
+
 	/*
 	 * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentAssistant(org.eclipse.jface.text.source.ISourceViewer)
 	 */
@@ -192,7 +190,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		assistant.setContentAssistProcessor(processor, SpecfilePartitionScanner.SPEC_PREP);
 		assistant.setContentAssistProcessor(processor, SpecfilePartitionScanner.SPEC_SCRIPT);
 		assistant.setContentAssistProcessor(processor,SpecfilePartitionScanner.SPEC_FILES);
-		assistant.setContentAssistProcessor(processor,SpecfilePartitionScanner.SPEC_CHANGELOG);		
+		assistant.setContentAssistProcessor(processor,SpecfilePartitionScanner.SPEC_CHANGELOG);
 		assistant.setContentAssistProcessor(processor,SpecfilePartitionScanner.SPEC_PACKAGES);
 		assistant.setContentAssistProcessor(processor,
 				SpecfilePartitionScanner.SPEC_GROUP);
@@ -205,7 +203,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		assistant.setStatusMessage(Messages.SpecfileConfiguration_0);
 		return assistant;
 	}
-	
+
 	private IInformationControlCreator getInformationControlCreator() {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
@@ -213,17 +211,18 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 			}
 		};
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getHyperlinkDetectors(org.eclipse.jface.text.source.ISourceViewer)
 	 */
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-		if (sourceViewer == null)
+		if (sourceViewer == null) {
 			return null;
+		}
 		return getRegisteredHyperlinkDetectors(sourceViewer);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.editors.text.TextSourceViewerConfiguration#getHyperlinkDetectorTargets(org.eclipse.jface.text.source.ISourceViewer)
 	 */
@@ -244,10 +243,10 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		return Activator.getDefault().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_SPACES_FOR_TABS);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.eclipse.jface.text.source.SourceViewerConfiguration#getAutoEditStrategies
 	 * (org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
@@ -263,5 +262,5 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		}
 		return null;
 	}
-		
+
 }

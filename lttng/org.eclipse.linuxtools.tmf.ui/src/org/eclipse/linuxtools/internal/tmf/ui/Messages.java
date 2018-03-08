@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c)  2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,11 +68,15 @@ public class Messages extends NLS {
     public static String TmfEventsTable_AddBookmarkDialogTitle;
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
-    public static String TmfEventsTable_NavigateToModelActionText;
     public static String TmfEventsTable_ContentColumnHeader;
     public static String TmfEventsTable_FilterHint;
     public static String TmfEventsTable_HideRawActionText;
     public static String TmfEventsTable_HideTableActionText;
+    public static String TmfEventsTable_OpenCallsiteActionText;
+    public static String TmfEventsTable_OpenCallsiteNotFound;
+    public static String TmfEventsTable_OpenCallsiteSelectFileDialogTitle;
+    public static String TmfEventsTable_OpenModelActionText;
+    public static String TmfEventsTable_OpenModelUnsupportedURI;
     public static String TmfEventsTable_ReferenceColumnHeader;
     public static String TmfEventsTable_RemoveBookmarkActionText;
     public static String TmfEventsTable_SearchHint;
@@ -97,8 +101,12 @@ public class Messages extends NLS {
     public static String TmfTimeLegend_StateTypeName;
     public static String TmfTimeFilterDialog_WINDOW_TITLE;
     public static String TmfTimeFilterDialog_MESSAGE;
-    public static String TmfTimeFilterDialog_SELECT_ALL;
-    public static String TmfTimeFilterDialog_DESELECT_ALL;
+    public static String TmfTimeFilterDialog_CHECK_ALL;
+    public static String TmfTimeFilterDialog_UNCHECK_ALL;
+    public static String TmfTimeFilterDialog_CHECK_SELECTED;
+    public static String TmfTimeFilterDialog_UNCHECK_SELECTED;
+    public static String TmfTimeFilterDialog_CHECK_SUBTREE;
+    public static String TmfTimeFilterDialog_UNCHECK_SUBTREE;
 
     public static String TmfTimeTipHandler_DURATION;
     public static String TmfTimeTipHandler_TRACE_DATE;
