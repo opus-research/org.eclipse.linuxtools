@@ -33,14 +33,6 @@ public abstract class ProviderLaunchShortcut extends ProfileLaunchShortcut {
 
 	@Override
 	protected ILaunchConfiguration findLaunchConfiguration(IBinary bin, String mode) {
-		String type = getProfilingType();
-
-		// check that there exists a provider for the given profiling type
-		if (ProviderLaunchConfigurationDelegate.getProviderIdToRun(type) == null) {
-			handleFail(Messages.ProviderLaunchShortcut_0 + type);
-			return null;
-		}
-
 		// create a launch configuration based on the shortcut
 		ILaunchConfiguration config = createConfiguration(bin, false);
 		boolean exists = false;
