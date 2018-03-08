@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.internal.tmf.ui.parsers.custom;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
@@ -398,15 +396,5 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser {
             return Status.OK_STATUS;
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CustomTrace_FileNotFound + ": " + path); //$NON-NLS-1$
-    }
-
-    @Override
-    public ITmfCheckpoint restoreCheckpoint(ByteBuffer bufferIn) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getCheckpointSize() {
-        throw new UnsupportedOperationException();
     }
 }

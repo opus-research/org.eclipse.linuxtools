@@ -12,6 +12,10 @@
 
 package org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,15 +31,13 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndex;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfMemoryIndex;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * A simple indexer that manages the trace index as an array of trace
- * checkpoints. Checkpoints are stored in memory at fixed intervals (event rank) in
+ * checkpoints. Checkpoints are stored at fixed intervals (event rank) in
  * ascending timestamp order.
  * <p>
  * The goal being to access a random trace event reasonably fast from the user's
@@ -71,7 +73,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
      * The trace index. It is composed of checkpoints taken at intervals of
      * fCheckpointInterval events.
      */
-    protected final ITmfTraceIndex fTraceIndex;
+    protected final List<ITmfCheckpoint> fTraceIndex;
 
     /**
      * The indexing request
@@ -101,29 +103,16 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     public TmfCheckpointIndexer(final ITmfTrace trace, final int interval) {
         fTrace = trace;
         fCheckpointInterval = interval;
-        fTraceIndex = createIndex(trace);
+        fTraceIndex = new ArrayList<ITmfCheckpoint>();
         fIsIndexing = false;
-    }
-
-    /**
-     * Creates the index instance. Classes extending this class
-     * can override this to provide a different index implementation.
-     *
-     * @param trace the trace to index
-     * @return the index
-     * @since 3.0
-     */
-    protected ITmfTraceIndex createIndex(final ITmfTrace trace) {
-        return new TmfMemoryIndex(trace);
     }
 
     @Override
     public void dispose() {
         if ((fIndexingRequest != null) && !fIndexingRequest.isCompleted()) {
             fIndexingRequest.cancel();
+            fTraceIndex.clear();
         }
-
-        fTraceIndex.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -151,15 +140,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
                 return;
             }
             fIsIndexing = true;
-        }
-
-        // No need to build the index, it has been restored
-        if (!fTraceIndex.isCreatedFromScratch()) {
-            // Set some trace attributes that depends on indexing
-            fTrace.setNbEvents(fTraceIndex.getNbEvents());
-            fTrace.setTimeRange(fTraceIndex.getTimeRange());
-            signalNewTimeRange(fTrace.getTimeRange().getStartTime(), fTrace.getTimeRange().getEndTime());
-            return;
         }
 
         // The monitoring job
@@ -204,9 +184,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
 
             @Override
             public void handleSuccess() {
-                fTraceIndex.setTimeRange(fTrace.getTimeRange());
-                fTraceIndex.setNbEvents(fTrace.getNbEvents());
-                fTraceIndex.setIndexComplete();
                 updateTraceStatus();
             }
 
@@ -282,7 +259,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         // In the very likely event that the timestamp is not at a checkpoint
         // boundary, bsearch will return index = (- (insertion point + 1)).
         // It is then trivial to compute the index of the previous checkpoint.
-        int index = fTraceIndex.binarySearch(new TmfCheckpoint(timestamp, null));
+        int index = Collections.binarySearch(fTraceIndex, new TmfCheckpoint(timestamp, null));
         if (index < 0) {
             index = Math.max(0, -(index + 2));
         } else {
@@ -339,9 +316,8 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
 
     /**
      * @return the trace index
-     * @since 3.0
      */
-    protected ITmfTraceIndex getTraceIndex() {
+    protected List<ITmfCheckpoint> getTraceIndex() {
         return fTraceIndex;
     }
 

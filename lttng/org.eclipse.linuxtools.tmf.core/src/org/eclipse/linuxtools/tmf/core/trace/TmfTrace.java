@@ -36,7 +36,6 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -179,9 +178,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         super();
         fCacheSize = (cacheSize > 0) ? cacheSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE;
         fStreamingInterval = interval;
+        fIndexer = (indexer != null) ? indexer : new TmfCheckpointIndexer(this, fCacheSize);
         fParser = parser;
         initialize(resource, path, type);
-        fIndexer = (indexer != null) ? indexer : createIndexer(fCacheSize);
     }
 
     /**
@@ -197,22 +196,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
         fCacheSize = trace.getCacheSize();
         fStreamingInterval = trace.getStreamingInterval();
+        fIndexer = new TmfCheckpointIndexer(this);
         fParser = trace.fParser;
         initialize(trace.getResource(), trace.getPath(), trace.getEventType());
-        fIndexer = createIndexer(TmfDataProvider.DEFAULT_BLOCK_SIZE);
-    }
-
-    /**
-     * Creates the indexer instance. Classes extending this class can override
-     * this to provide a different indexer implementation.
-     *
-     * @param interval the checkpoints interval
-     *
-     * @return the indexer
-     * @since 3.0
-     */
-    protected ITmfTraceIndexer createIndexer(int interval) {
-        return new TmfCheckpointIndexer(this, interval);
     }
 
     // ------------------------------------------------------------------------
@@ -221,8 +207,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
+        fIndexer = new TmfCheckpointIndexer(this, fCacheSize);
         initialize(resource, path, type);
-        fIndexer = createIndexer(fCacheSize);
     }
 
     /**
@@ -478,10 +464,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * during indexing or for live traces.
      *
      * @param nbEvents The number of events
-     * @since 3.0
      */
-    @Override
-    public synchronized void setNbEvents(long nbEvents) {
+    protected synchronized void setNbEvents(final long nbEvents) {
         fNbEvents = (nbEvents > 0) ? nbEvents : 0;
     }
 
@@ -489,10 +473,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Update the trace events time range
      *
      * @param range the new time range
-     * @since 3.0
+     * @since 2.0
      */
-    @Override
-    public void setTimeRange(final TmfTimeRange range) {
+    protected void setTimeRange(final TmfTimeRange range) {
         fStartTime = range.getStartTime();
         fEndTime = range.getEndTime();
     }

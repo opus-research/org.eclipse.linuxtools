@@ -27,10 +27,7 @@ public abstract class TmfLocation implements ITmfLocation {
     // Attributes
     // ------------------------------------------------------------------------
 
-    /**
-     * The concrete trace location
-     */
-    protected Comparable<?> fLocationInfo;
+    private final Comparable<?> fLocationInfo;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -54,12 +51,6 @@ public abstract class TmfLocation implements ITmfLocation {
      */
     public TmfLocation(final TmfLocation location) {
         fLocationInfo = location.fLocationInfo;
-    }
-
-    /**
-     * Empty constructor. Useful for serialization.
-     */
-    protected TmfLocation() {
     }
 
     // ------------------------------------------------------------------------

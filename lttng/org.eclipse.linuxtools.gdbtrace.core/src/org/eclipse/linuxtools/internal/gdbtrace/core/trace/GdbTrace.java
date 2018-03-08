@@ -16,7 +16,6 @@
 package org.eclipse.linuxtools.internal.gdbtrace.core.trace;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -30,13 +29,10 @@ import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
@@ -198,24 +194,5 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
      */
     public void selectFrame(long rank) {
         fGdbTpRef.selectDataFrame(rank, true);
-    }
-
-    @Override
-    public ITmfCheckpoint restoreCheckpoint(ByteBuffer bufferIn) {
-        ITmfLocation location = TmfLongLocation.newAndserialize(bufferIn);
-        TmfTimestamp timeStamp = TmfTimestamp.newAndSerialize(bufferIn);
-        TmfCheckpoint tmfCheckpoint = new TmfCheckpoint(timeStamp, location);
-        tmfCheckpoint.serializeIn(bufferIn);
-        return tmfCheckpoint;
-    }
-
-    @Override
-    public int getCheckpointSize() {
-        TmfCheckpoint c = new TmfCheckpoint(new TmfTimestamp(0), new TmfLongLocation(0L));
-        ByteBuffer b = ByteBuffer.allocate(1024);
-
-        c.serializeOut(b);
-
-        return b.position();
     }
 }
