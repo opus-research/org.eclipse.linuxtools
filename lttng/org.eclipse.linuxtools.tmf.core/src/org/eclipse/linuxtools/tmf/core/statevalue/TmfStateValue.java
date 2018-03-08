@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 
 /**
@@ -29,6 +28,54 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * @author Alexandre Montplaisir
  */
 public abstract class TmfStateValue implements ITmfStateValue {
+
+    /**
+     * Retrieve directly the value object contained within. Implementing
+     * subclasses may limit the return type here.
+     *
+     * It's protected, since we do not want to expose this directly in the
+     * public API (and require all its users to manually cast to the right
+     * types). All accesses to the values should go through the "unbox-"
+     * methods.
+     *
+     * @return The underneath object assigned to this state value.
+     */
+    protected abstract Object getValue();
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof TmfStateValue)) {
+            return false;
+        }
+
+        /* If both types are different they're necessarily not equal */
+        if (this.getType() != ((TmfStateValue) other).getType()) {
+            return false;
+        }
+
+        /*
+         * This checks for the case where we'd compare two null values (and so
+         * avoid a NPE below)
+         */
+        if (this.isNull()) {
+            return true;
+        }
+
+        /* The two are valid and comparable, let's compare them */
+        return this.getValue().equals(((TmfStateValue) other).getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.isNull()) {
+            return 0;
+        }
+        return this.getValue().hashCode();
+    }
+
     // ------------------------------------------------------------------------
     // Factory methods to instantiate new state values
     // ------------------------------------------------------------------------
@@ -56,6 +103,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueInt(int intValue) {
+        if (intValue == -1) {
+            return nullValue();
+        }
         return new IntegerStateValue(intValue);
     }
 
@@ -68,6 +118,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @since 2.0
      */
     public static TmfStateValue newValueLong(long longValue) {
+        if (longValue == -1) {
+            return nullValue();
+        }
         return new LongStateValue(longValue);
     }
 
@@ -79,6 +132,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueDouble(double value) {
+        if (value == Double.NaN) {
+            return nullValue();
+        }
         return new DoubleStateValue(value);
     }
 
@@ -89,7 +145,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The string value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueString(@Nullable String strValue) {
+    public static TmfStateValue newValueString(String strValue) {
         if (strValue == null) {
             return nullValue();
         }

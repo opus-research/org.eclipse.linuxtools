@@ -14,12 +14,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -37,14 +40,14 @@ import org.eclipse.linuxtools.internal.perf.model.PMSymbol;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Version;
 
 public class PerfCore {
-
 	public static String spitStream(BufferedReader br, String blockTitle, PrintStream print) {
 
 		StringBuffer strBuf = new StringBuffer();
@@ -59,7 +62,7 @@ public class PerfCore {
 		}
 		String str = strBuf.toString();
 		if (!str.trim().isEmpty() && print != null) {
-			print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle); //$NON-NLS-1$ //$NON-NLS-2$
+				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return str;
 	}
@@ -140,7 +143,11 @@ public class PerfCore {
 		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		IProject project = getProject(config);
 
-		if (!PerfCore.checkPerfInPath(project)) {
+		if (project == null) {
+			if (!PerfCore.checkPerfInPath()) {
+				return events;
+			}
+		} else if (!PerfCore.checkRemotePerfInPath(project)) {
 			return events;
 		}
 
@@ -207,36 +214,41 @@ public class PerfCore {
 	}
 
 	//Gets the current version of perf
-	public static Version getPerfVersion(ILaunchConfiguration config) {
+	public static String getPerfVersion(ILaunchConfiguration config, String[] environ, IPath workingDir) {
 		IProject project = getProject(config);
 		Process p = null;
+		IRemoteFileProxy proxy = null;
+		IFileStore workingDirFileStore = null;
 
-		try {
-			p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
-		} catch (IOException e) {
-			logException(e);
-		}
-		if (p == null) {
-			return null;
+		if (workingDir == null) {
+			try {
+				p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
+			} catch (IOException e) {
+				logException(e);
+			}
+		} else {
+			try {
+				proxy = RemoteProxyManager.getInstance().getFileProxy(new URI(workingDir.toOSString()));
+				workingDirFileStore = proxy.getResource(workingDir.toOSString());
+				p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, environ, workingDirFileStore, project); //$NON-NLS-1$
+			} catch (IOException e) {
+				logException(e);
+			} catch (CoreException e) {
+				logException(e);
+			} catch (URISyntaxException e) {
+				logException(e);
+			}
 		}
 
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-		String perfVersion = spitStream(input, "Perf --version", null); //$NON-NLS-1$
-		int index = perfVersion.indexOf('-');
-		if (index > 0) {
-			perfVersion = perfVersion.substring(0, index);
-		}
-		perfVersion = perfVersion.replace("perf version", "").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-		return new Version(perfVersion);
+		return spitStream(input, "Perf --version", null);
 	}
 
-
-	public static boolean checkPerfInPath(IProject project)
+	public static boolean checkPerfInPath()
 	{
 		try
 		{
-			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
+			Process p = Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}); //$NON-NLS-1$
 			return (p != null);
 		}
 		catch (IOException e)
@@ -245,19 +257,28 @@ public class PerfCore {
 		}
 	}
 
+	public static boolean checkRemotePerfInPath(IProject project) {
+		try
+		{
+			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
+			return (p != null);
+		}
+		catch (IOException e)
+		{
+			logException(e);
+			return false;
+		}
+	}
+
 	//Generates a perf record command string with the options set in the given config. (If null uses default).
-	public static String [] getRecordString(ILaunchConfiguration config, Version perfVersion) {
-		String [] base = new String [] {PerfPlugin.PERF_COMMAND, "record"}; //$NON-NLS-1$
+	public static String [] getRecordString(ILaunchConfiguration config) {
+		String [] base = new String [] {PerfPlugin.PERF_COMMAND, "record", "-f"}; //$NON-NLS-1$ //$NON-NLS-2$
 		if (config == null) {
 			return base;
 		} else {
 			ArrayList<String> newCommand = new ArrayList<String>();
 			newCommand.addAll(Arrays.asList(base));
 			try {
-				if (new Version(3, 11, 0).compareTo(perfVersion) > 0) {
-					// Removed as of 4a4d371a4dfbd3b84a7eab8d535d4c7c3647b09e from perf upstream (kernel)
-					newCommand.add("-f"); //$NON-NLS-1$
-				}
 				if (config.getAttribute(PerfPlugin.ATTR_Record_Realtime, PerfPlugin.ATTR_Record_Realtime_default))
 					newCommand.add("-r"); //$NON-NLS-1$
 				if (config.getAttribute(PerfPlugin.ATTR_Record_Verbose, PerfPlugin.ATTR_Record_Verbose_default))
@@ -343,12 +364,10 @@ public class PerfCore {
 	//whatever project is being profiled. It is only used for junit tests atm.
 	public static void Report(ILaunchConfiguration config, String[] environ, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
 		IProject project = getProject(config);
-
 		TreeParent invisibleRoot = PerfPlugin.getDefault().clearModelRoot();
 
-		Version perfVersion = getPerfVersion(config);
 		boolean OldPerfVersion = false;
-		if (new Version(0, 0, 2).compareTo(perfVersion) > 0) {
+		if (getPerfVersion(config, environ, workingDir).contains("perf version 0.0.2.PERF")) {
 			OldPerfVersion = true;
 			if (print != null) { print.println("WARNING: You are running an older version of Perf, please update if you can. The plugin may produce unpredictable results."); }
 		}
@@ -381,8 +400,10 @@ public class PerfCore {
 			logException(e);
 		}
 
+
 		PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
 				invisibleRoot, OldPerfVersion, input, error, project);
+
 	}
 
 	/**
@@ -527,6 +548,8 @@ public class PerfCore {
 							if (monitor != null && monitor.isCanceled()) {
 								return;
 							}
+
+
 							currentSym = (PMSymbol)s;
 							String[] annotateCmd;
 							if (workingDir == null) {
@@ -545,7 +568,8 @@ public class PerfCore {
 								logException(e);
 							}
 
-							PerfCore.parseAnnotation(monitor, input, workingDir, currentDso, currentSym);
+							PerfCore.parseAnnotation(monitor, input,
+									workingDir, currentDso, currentSym);
 						}
 
 						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {

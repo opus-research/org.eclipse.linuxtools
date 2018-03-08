@@ -21,6 +21,10 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tracing.rcp.ui.messages.messages"; //$NON-NLS-1$
 
+    /** The name of the default tracing project. */
+    public static String ApplicationWorkbenchWindowAdvisor_DefaultProjectName;
+    /** The RCP title. */
+    public static String ApplicationWorkbenchWindowAdvisor_WindowTitle;
     /** Error title for error during workspace creation */
     public static String Application_WorkspaceCreationError;
     /** Error message if workspace root doesn't exist */
@@ -31,6 +35,10 @@ public class Messages extends NLS {
     public static String CliParser_MalformedCommand;
     /** Unkown command */
     public static String CliParser_UnknownCommand;
+    /** Select trace type title */
+    public static String OpenDirHandler_SelectTraceType;
+    /** Select trace file */
+    public static String OpenFileHandler_SelectTraceFile;
 
     static {
         // initialize resource bundle

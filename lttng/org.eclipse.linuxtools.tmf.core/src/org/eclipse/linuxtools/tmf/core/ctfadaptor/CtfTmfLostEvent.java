@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
  * An implementation of {@link ITmfLostEvent} for use in the CTF adaptor.
  *
  * @author Alexandre Montplaisir
- * @since 2.2
+ * @since 2.1
  */
 public class CtfTmfLostEvent extends CtfTmfEvent implements ITmfLostEvent {
 
@@ -40,7 +40,7 @@ public class CtfTmfLostEvent extends CtfTmfEvent implements ITmfLostEvent {
      * @param fileName
      *            The name of the trace file from which this event comes
      * @param cpu
-     *            The CPU on which this event happened
+     *            The CPU on which this event happend
      * @param declaration
      *            The CTF Event Declaration object that created this event
      * @param timeRange
@@ -74,5 +74,6 @@ public class CtfTmfLostEvent extends CtfTmfEvent implements ITmfLostEvent {
     public long getNbLostEvents() {
         return fNbLost;
     }
+
 
 }

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-<extension
+
+   <extension
          id="application"
          point="org.eclipse.core.runtime.applications">
       <application>org.eclipse.linuxtools.tracing.rcp.product
@@ -9,6 +10,57 @@
                class="org.eclipse.linuxtools.internal.tracing.rcp.ui.Application">
          </run>
       </application>
+   </extension>
+   
+      <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.linuxtools.tracing.rcp.ui.application"
+            name="Linux Tools Trace Viewer">
+            <property
+               name="appName"
+               value="Linux Tools Trace Viewer">
+            </property>
+            <property
+               name="cssTheme"
+               value="org.eclipse.e4.ui.css.theme.e4_default">
+            </property>
+            
+            <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+            </property>
+            <property
+                  name="aboutImage"
+                  value="icons/alt_about.gif">
+            </property>
+            <property
+                  name="aboutText"
+                  value="Linux Tools Trace Viewer&#x0A;&#x0A;Version: 0.0.1&#x0A;&#x0A;Copyright (c) 2013 Ericsson&#x0A;&#x0A;All rights reserved. This program and the accompanying materials are&#x0A;made available under the terms of the Eclipse Public License v1.0 which&#x0A;accompanies this distribution, and is available at&#x0A;http://www.eclipse.org/legal/epl-v10.html">
+            </property>
+            <property
+                  name="windowImages"
+                  value="icons/alt_window_16.gif,icons/alt_window_32.gif">
+            </property>
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            defaultHandler="org.eclipse.linuxtools.internal.tracing.rcp.ui.commands.OpenFileHandler"
+            description="%command.OpenFile.description"
+            id="org.eclipse.linuxtools.lttng2.rcp.ui.openFile"
+            name="%command.OpenFile.name">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            defaultHandler="org.eclipse.linuxtools.internal.tracing.rcp.ui.commands.OpenDirHandler"
+            description="%command.OpenDirectory.description"
+            id="org.eclipse.linuxtools.lttng2.rcp.ui.openDir"
+            name="%command.OpenDirectory.name">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -39,18 +91,13 @@
                label="%menu.main.file"
                mnemonic="%menu.mnemonic">
             <command
-                  commandId="org.eclipse.linuxtools.tmf.ui.openFile"
+                  commandId="org.eclipse.linuxtools.lttng2.rcp.ui.openFile"
                   label="%command.OpenFile.label"
                   style="push">
             </command>
             <command
-                  commandId="org.eclipse.linuxtools.tmf.ui.openDir"
+                  commandId="org.eclipse.linuxtools.lttng2.rcp.ui.openDir"
                   label="%command.OpenDirectory.label"
-                  style="push">
-            </command>
-            <command
-                  commandId="org.eclipse.linuxtools.tmf.ui.batch_import"
-                  label="%command.batch_import"
                   style="push">
             </command>
             <separator
@@ -133,13 +180,5 @@
          </menu>
       </menuContribution>
    </extension>
-   <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="org.eclipse.ui.help.helpContents"
-            contextId="org.eclipse.ui.contexts.window"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="F1">
-      </key>
-   </extension>
+
 </plugin>

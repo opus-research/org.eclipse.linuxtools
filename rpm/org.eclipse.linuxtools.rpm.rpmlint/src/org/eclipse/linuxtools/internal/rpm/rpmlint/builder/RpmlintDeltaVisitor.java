@@ -40,7 +40,7 @@ public class RpmlintDeltaVisitor implements IResourceDeltaVisitor {
 				paths.add(resource.getLocation().toOSString());
 				break;
 			case IResourceDelta.CHANGED:
-				RpmlintParser.deleteMarkers(resource);
+				RpmlintParser.getInstance().deleteMarkers(resource);
 				paths.add(resource.getLocation().toOSString());
 				break;
 			}
