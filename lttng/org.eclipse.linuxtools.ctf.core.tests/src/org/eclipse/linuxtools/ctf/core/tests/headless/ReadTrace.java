@@ -32,10 +32,10 @@ public class ReadTrace {
      */
     @SuppressWarnings("nls")
     public static void main(String[] args) {
-        final String TRACE_PATH = "traces/kernel";
+        final String TRACE_PATH = "/home/ematkho/lttng-traces/trace-arm/kernel";
 
         // Change this to enable text output
-        final boolean USE_TEXT = false;
+        final boolean USE_TEXT = true;
 
         final int LOOP_COUNT = 1;
 
@@ -49,7 +49,7 @@ public class ReadTrace {
                 nbEvent = 0L;
                 trace = new CTFTrace(TRACE_PATH);
             } catch (CTFReaderException e) {
-                // do nothing
+                e.printStackTrace();
             }
             @SuppressWarnings("unused")
             long prev = -1;
