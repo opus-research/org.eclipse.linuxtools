@@ -12,6 +12,9 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+
+
 /**
  * This is the wrapper class that exposes the different types of 'state values'
  * available to use in the State System.
@@ -74,10 +77,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
         return this.getValue().hashCode();
     }
 
-    // ------------------------------------------------------------------------
-    // Factory methods to instantiate new state values
-    // ------------------------------------------------------------------------
-
     /*
      * Since all "null state values" are the same, we only need one copy in
      * memory.
@@ -131,5 +130,47 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return nullValue();
         }
         return new LongStateValue(longValue);
+    }
+
+    @Override
+    public int unboxInt() throws StateValueTypeException {
+        if (this.isNull()) {
+            /* Int value expected, return "-1" instead */
+            return -1;
+        }
+
+        if (this.getType() != Type.INTEGER) {
+            throw new StateValueTypeException();
+        }
+        return (Integer) this.getValue();
+    }
+
+    @Override
+    public String unboxStr() throws StateValueTypeException {
+        if (this.isNull()) {
+            /* String value expected, return "nullValue" instead */
+            return "nullValue"; //$NON-NLS-1$
+        }
+
+        if (this.getType() != Type.STRING) {
+            throw new StateValueTypeException();
+        }
+        return (String) this.getValue();
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public long unboxLong() throws StateValueTypeException {
+        if (this.isNull()) {
+            /* Long value expected, return "-1" instead */
+            return -1;
+        }
+
+        if (this.getType() != Type.LONG) {
+            throw new StateValueTypeException();
+        }
+        return (Long) this.getValue();
     }
 }
