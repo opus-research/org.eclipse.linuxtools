@@ -6,22 +6,30 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Red Hat Inc. - initial API and implementation
- *******************************************************************************/ 
-package org.eclipse.linuxtools.internal.valgrind.cachegrind;
+ *    Red Hat initial API and implementation
+ *******************************************************************************/
+package org.eclipse.linuxtools.profiling.memory;
+
+import java.util.ArrayList;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindSingleToolOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 
-public class CachegrindLaunchConfigurationTabGroup extends
+/**
+ * 
+ * Special version of ProfileLaunchConfigurationTabGroup that accesses the tab group from
+ * the chosen memory profiling provider.
+ *
+ */
+public class MemoryLaunchConfigurationTabGroup extends
 		ProfileLaunchConfigurationTabGroup {
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
-		return new AbstractLaunchConfigurationTab[] {
-			new ValgrindSingleToolOptionsTab("org.eclipse.linuxtools.valgrind.launch.cachegrind"), //$NON-NLS-1$
-		};
-	}	
-	
+		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
+		tabs.add(new MemoryOptionsTab());
+
+		return tabs.toArray(new AbstractLaunchConfigurationTab [] {});
+	}
+
 }

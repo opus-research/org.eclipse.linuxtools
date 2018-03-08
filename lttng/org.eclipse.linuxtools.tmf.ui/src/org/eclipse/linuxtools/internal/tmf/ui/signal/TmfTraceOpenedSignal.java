@@ -19,7 +19,7 @@ import org.eclipse.linuxtools.tmf.ui.viewers.events.ITmfEventsFilterProvider;
 
 /**
  * Signal that a trace was opened
- *
+ * 
  * @version 1.0
  * @author Patrick Tasse
  */
