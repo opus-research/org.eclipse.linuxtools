@@ -221,8 +221,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     private static String fDefaultIntervalPattern = null;
     private static TmfTimestampFormat fDefaultIntervalFormat = null;
 
-    private static String fTimeZone;
-
     // The timestamp pattern
     private String fPattern;
 
@@ -269,18 +267,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     }
 
     /**
-     * The full constructor
-     *
-     * @param pattern the format pattern
-     * @param timeZone the time zone
-     */
-    public TmfTimestampFormat(String pattern, String timeZone) {
-        fTimeZone = timeZone;
-        setTimeZone(TimeZone.getTimeZone(fTimeZone));
-        applyPattern(pattern);
-    }
-
-    /**
      * The copy constructor
      *
      * @param other the other format pattern
@@ -296,9 +282,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     /**
      * @param pattern the new default time pattern
      */
-    public static void setDefaultTimeFormat(final String pattern, final String timeZone) {
+    public static void setDefaultTimeFormat(final String pattern) {
         fDefaultTimePattern = pattern;
-        fDefaultTimeFormat = new TmfTimestampFormat(fDefaultTimePattern, timeZone);
+        fDefaultTimeFormat = new TmfTimestampFormat(fDefaultTimePattern);
         TmfSignalManager.dispatchSignal(new TmfTimestampFormatUpdateSignal(null));
     }
 
@@ -627,11 +613,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
             sb.delete(l + pt.length() - 1, l + pt.length());
             sb.delete(l, l + 1);
         }
-    }
-
-    public static void setTimeZonePattern(String fStaticTimeZone) {
-        fTimeZone = fStaticTimeZone;
-
     }
 
 }
