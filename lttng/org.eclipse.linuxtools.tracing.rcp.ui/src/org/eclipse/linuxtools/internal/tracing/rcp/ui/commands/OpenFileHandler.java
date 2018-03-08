@@ -10,19 +10,18 @@
  *   Matthew Khouzam - Initial API and implementation
  **********************************************************************/
 
-package org.eclipse.linuxtools.internal.tmf.ui.commands;
+package org.eclipse.linuxtools.internal.tracing.rcp.ui.commands;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tracing.rcp.ui.TracingRcpPlugin;
+import org.eclipse.linuxtools.internal.tracing.rcp.ui.messages.Messages;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
  * Open file handler, used to open files (not directories)
@@ -40,14 +39,11 @@ public class OpenFileHandler extends AbstractHandler {
         if (filePath == null) {
             return null;
         }
-
         TmfOpenTraceHelper oth = new TmfOpenTraceHelper();
         try {
-            IProject project = TmfHandlerUtil.getProjectFromSelection(HandlerUtil.getCurrentSelection(event));
-            String projectName = project != null ? project.getName() : TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME;
-            oth.openTraceFromPath(projectName, filePath, shell);
+            oth.openTraceFromPath(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME, filePath, shell);
         } catch (CoreException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
+            TracingRcpPlugin.getDefault().logError(e.getMessage(), e);
         }
         return null;
     }
