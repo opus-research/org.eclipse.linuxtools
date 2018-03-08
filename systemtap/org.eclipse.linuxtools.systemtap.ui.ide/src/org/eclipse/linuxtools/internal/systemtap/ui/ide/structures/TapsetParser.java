@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -64,15 +63,6 @@ public abstract class TapsetParser extends Job {
 	protected void canceling() {
 		super.canceling();
 		this.cancelRequested = true;
-	}
-
-	/**
-	 * This method checks to see if the parser completed executing on its own.
-	 * @return Boolean indicating whether or not the thread finished on its own.
-	 */
-	public boolean isFinishSuccessful() {
-		IStatus result = getResult();
-		return result != null && result.isOK();
 	}
 
 	/**
@@ -158,6 +148,11 @@ public abstract class TapsetParser extends Job {
 				output = str.toString();
 			} else {
 				Process process = SystemtapProcessFactory.exec(args, null);
+				if(process == null){
+					displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
+					return output;
+				}
+
 				StringStreamGobbler gobbler = new StringStreamGobbler(process.getInputStream());
 				gobbler.start();
 				process.waitFor();
