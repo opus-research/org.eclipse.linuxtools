@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +19,6 @@ import java.util.Arrays;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.ui.structures.StructuresPlugin;
-import org.eclipse.linuxtools.systemtap.ui.structures.LoggingStreamDaemon;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 
@@ -61,7 +59,6 @@ public class Command implements Runnable {
 	private String[] cmd;
 	private String[] envVars;
 	protected Process process;
-	private LoggingStreamDaemon logger;
 
 	public static final int ERROR_STREAM = 0;
 	public static final int INPUT_STREAM = 1;
@@ -83,8 +80,6 @@ public class Command implements Runnable {
 		if (envVars != null) {
 			this.envVars = Arrays.copyOf(envVars, envVars.length);
 		}
-		logger = new LoggingStreamDaemon();
-		addInputStreamListener(logger);
 	}
 
 	/**
@@ -152,7 +147,7 @@ public class Command implements Runnable {
 
 	/**
 	 * Stops the process from running and stops the <code>StreamGobblers</code> from monitering
-	 * the dead process and unregisters the StreamListener.
+	 * the dead process.
 	 */
 	public synchronized void stop() {
 		if(!stopped) {
@@ -170,7 +165,6 @@ public class Command implements Runnable {
 				// to make sure it exits.
 				process.destroy();
 			}
-			removeInputStreamListener(logger);
 			stopped = true;
 		}
 	}
@@ -268,26 +262,6 @@ public class Command implements Runnable {
 	}
 
 	/**
-	 * Saves the input stream data to a permanent file.  Any new data on the
-	 * stream will automatically be saved to the file.
-	 * @param file The file to save the InputStream to.
-	 */
-	public boolean saveLog(File file) {
-		return logger.saveLog(file);
-	}
-
-	/**
-	 * Gets all of the output from the input stream.
-	 * @return String containing the entire output from the input stream.
-	 */
-	public String getOutput() {
-		if(!isDisposed())
-			return logger.getOutput();
-		else
-			return null;
-	}
-
-	/**
 	 * Disposes of all internal components of this class. Nothing in the class should be
 	 * referenced after this is called.
 	 */
@@ -309,7 +283,6 @@ public class Command implements Runnable {
 			if(null != errorGobbler)
 				errorGobbler.dispose();
 			errorGobbler = null;
-			logger.dispose();
 		}
 	}
 
