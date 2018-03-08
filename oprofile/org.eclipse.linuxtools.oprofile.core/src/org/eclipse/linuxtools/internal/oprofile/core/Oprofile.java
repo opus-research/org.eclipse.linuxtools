@@ -59,7 +59,7 @@ public class Oprofile
 	 * (which will cause the system to prompt the user for
 	 * root access).
 	 */
-	public static void initializeOprofileModule() {
+	static private void initializeOprofileModule() {
 		// Check if kernel module is loaded, if not, try to load it
 		if (!isKernelModuleLoaded())
 			initializeOprofile();
@@ -67,9 +67,10 @@ public class Oprofile
 		//it still may not have loaded, if not, critical error
 		if (!isKernelModuleLoaded()) {
 			OprofileCorePlugin.showErrorDialog("oprofileInit", null); //$NON-NLS-1$
-			//			throw new ExceptionInInitializerError(OprofileProperties.getString("fatal.kernelModuleNotLoaded")); //$NON-NLS-1$
+//			throw new ExceptionInInitializerError(OprofileProperties.getString("fatal.kernelModuleNotLoaded")); //$NON-NLS-1$
+		}  else {
+			initializeOprofileCore();
 		}
-		initializeOprofileCore();
 	}
 
 	// This requires more inside knowledge about Oprofile than one would like,
@@ -81,24 +82,22 @@ public class Oprofile
 	 * @return true if the module is loaded, otherwise false
 	 */
 	private static boolean isKernelModuleLoaded() {
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			IRemoteFileProxy proxy = null;
-			try {
-				proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-
-			for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
-				IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
-				if (f.fetchInfo().exists())
-					return true;
-			}
-			return false;
-		} else {
-			return true;
+		IRemoteFileProxy proxy = null;
+		try {
+			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
+		} catch (CoreException e) {
+			e.printStackTrace();
 		}
+
+		for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
+			IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
+			if (f.fetchInfo().exists())
+				return true;
+		}
+
+		return false;
 	}
+
 	/**
 	 *  Initialize oprofile module by calling <code>`opcontrol --init`</code>
 	 */
@@ -163,8 +162,7 @@ public class Oprofile
 	}
 
 	/**
-	 * Returns the default location of the opcontrol samples directory
-	 * or the project directory if the profiler is operf.
+	 * Returns the default location of the oprofile samples directory.
 	 * @return the default samples directory
 	 */
 	public static String getDefaultSamplesDirectory() {
@@ -191,7 +189,7 @@ public class Oprofile
 	}
 
 	/**
-	 * Checks the requested counter, event, and unit mask for validity.
+	 * Checks the requested counter, event, and unit mask for vailidity.
 	 * @param ctr	the counter
 	 * @param event	the event name
 	 * @param um	the unit mask
@@ -255,7 +253,7 @@ public class Oprofile
 	public static void updateInfo(){
 		if (!isKernelModuleLoaded()){
 			initializeOprofile();
-		}
+			}
 		if(isKernelModuleLoaded()){
 			info = OpInfo.getInfo();
 		}
@@ -270,10 +268,6 @@ public class Oprofile
 	 */
 	public static class OprofileProject {
 		private static IProject project;
-		public final static String OPERF_BINARY = "operf"; //$NON-NLS-1$
-		public final static String OPCONTROL_BINARY = "opcontrol"; //$NON-NLS-1$
-		private static String binary = OPERF_BINARY;
-
 
 		/**
 		 * Set the project to be profiled
@@ -290,25 +284,6 @@ public class Oprofile
 		public static IProject getProject() {
 			return project;
 		}
-
-		/**
-		 * Set the profiling binary to be used (operf or opcontrol)
-		 * @param binary
-		 * @since 2.1
-		 */
-		public static void setProfilingBinary(String binary) {
-			OprofileProject.binary = binary;
-
-		}
-		/**
-		 * Get the profiling binary (operf or opcontrol)
-		 * @return binary
-		 * @since 2.1
-		 */
-		public static String getProfilingBinary() {
-			return binary;
-		}
-
 	}
 
 }
