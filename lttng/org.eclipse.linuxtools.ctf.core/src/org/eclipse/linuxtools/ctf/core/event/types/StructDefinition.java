@@ -220,24 +220,28 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("{ "); //$NON-NLS-1$
+        int size = this.declaration.getFieldsList().size();
+        int n = 0;
+
+        if (size > 1) {
+            builder.append("{ "); //$NON-NLS-1$
+        }
 
         ListIterator<String> listIterator = this.declaration.getFieldsList()
                 .listIterator();
 
         while (listIterator.hasNext()) {
             String field = listIterator.next();
-
-            builder.append(field);
-            builder.append(" = "); //$NON-NLS-1$
             builder.append(lookupDefinition(field).toString());
-
-            if (listIterator.hasNext()) {
+            n++;
+            if (n != size) {
                 builder.append(", "); //$NON-NLS-1$
             }
         }
 
-        builder.append(" }"); //$NON-NLS-1$
+        if (size > 1) {
+            builder.append(" }"); //$NON-NLS-1$
+        }
 
         return builder.toString();
     }

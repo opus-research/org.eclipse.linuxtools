@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventField;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,9 +51,18 @@ public class CtfTmfEventFieldTest {
     private static final String LEN = "len";
     private static final String INT = "int";
     private static final String NAME = "test";
-    private static final String STRUCT = "struct";
 
     private StructDefinition fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CtfTmfEventFieldTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -67,28 +77,30 @@ public class CtfTmfEventFieldTest {
                 ByteOrder.BIG_ENDIAN, 8);
         ArrayDeclaration arrDec = new ArrayDeclaration(2, intDec);
         SequenceDeclaration seqDec = new SequenceDeclaration(LEN, intDec);
-        StructDeclaration structDec = new StructDeclaration(32);
         sDec.addField(INT, intDec);
         sDec.addField(LEN, intDec);
         sDec.addField(FLOAT, flDec);
         sDec.addField(STR, strDec);
         sDec.addField(ARRAY, arrDec);
         sDec.addField(SEQ, seqDec);
-        structDec.addField(STR,strDec);
-        structDec.addField(INT, intDec);
-        sDec.addField(STRUCT, structDec);
         fixture = sDec.createDefinition(fixture, ROOT);
-        int capacity = 2048;
+        int capacity = 1024;
         java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocateDirect(capacity);
         for (int i = 0; i < capacity; i++) {
             bb.put((byte) 2);
         }
         bb.position(20);
         bb.put((byte) 0);
-        bb.position(40);
-        bb.put((byte) 0);
         bb.position(0);
         fixture.read(new BitBuffer(bb));
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -149,15 +161,5 @@ public class CtfTmfEventFieldTest {
         Definition fieldDef = fixture.lookupDefinition(STR);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=", result.toString());
-    }
-
-    /**
-     * Run the CtfTmfEventField parseField(Definition,String) method test.
-     */
-    @Test
-    public void testParseField_struct() {
-        Definition fieldDef = fixture.lookupDefinition(STRUCT);
-        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=[str=, int=02]", result.toString());
     }
 }

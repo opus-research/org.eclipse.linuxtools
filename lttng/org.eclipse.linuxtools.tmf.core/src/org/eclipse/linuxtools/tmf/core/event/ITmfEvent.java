@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -38,7 +36,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfEventField
  * @see TmfEvent
  */
-public interface ITmfEvent extends IAdaptable {
+public interface ITmfEvent {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -85,7 +83,6 @@ public interface ITmfEvent extends IAdaptable {
 
     /**
      * @return the event timestamp
-     * @since 2.0
      */
     public ITmfTimestamp getTimestamp();
 
@@ -108,5 +105,10 @@ public interface ITmfEvent extends IAdaptable {
      * @return the event reference
      */
     public String getReference();
+
+    /**
+     * @return a clone of the event
+     */
+    public ITmfEvent clone();
 
 }

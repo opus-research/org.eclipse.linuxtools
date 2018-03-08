@@ -64,7 +64,6 @@ public class LaunchTest extends AbstractTest {
 		PerfEventsTab eventsTab = new PerfEventsTab();
 		PerfOptionsTab optionsTab = new PerfOptionsTab();
 		wc.setAttribute(PerfPlugin.ATTR_SourceLineNumbers, false);
-		wc.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, true);
 		eventsTab.setDefaults(wc);
 		optionsTab.setDefaults(wc);
 	}

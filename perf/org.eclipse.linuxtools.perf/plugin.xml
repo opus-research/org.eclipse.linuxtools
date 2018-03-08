@@ -19,14 +19,6 @@
             name="Remote Perf Profile View"
             restorable="true">
       </view>
-      <view
-            allowMultiple="true"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView"
-            icon="icons/symbol.gif"
-            id="org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"
-            name="Source Disassembly">
-      </view>
    </extension>
    <extension
          point="org.eclipse.help.contexts">
@@ -134,7 +126,7 @@
          point="org.eclipse.ui.editors">
       <editor
             default="true"
-            filenames="*.data, *.data.old"
+            filenames="perf.data, perf.data.old"
             id="org.eclipse.linuxtools.perf.editor"
             launcher="org.eclipse.linuxtools.internal.perf.launch.PerfOpenData"
             name="Perf Viewer">
@@ -153,26 +145,5 @@
             tabgroup="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigurationTabGroup"
             type="timing">
       </provider>
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.linuxtools.perf.ui.ProfileView">
-         <command
-               commandId="org.eclipse.linuxtools.perf.SaveData"
-               id="org.eclipse.linuxtools.perf.SaveCommand"
-               label="Save Current Session"
-               style="push">
-         </command>
-      </menuContribution>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.ui.PerfSaveSessionHandler"
-            id="org.eclipse.linuxtools.perf.SaveData"
-            name="Save Current Session">
-      </command>
    </extension>   
 </plugin>

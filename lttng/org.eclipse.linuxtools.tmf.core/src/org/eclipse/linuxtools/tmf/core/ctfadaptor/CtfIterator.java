@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @author Matthew Khouzam
  */
 public class CtfIterator extends CTFTraceReader implements ITmfContext,
-        Comparable<CtfIterator> {
+        Comparable<CtfIterator>, Cloneable {
 
     private final CtfTmfTrace ctfTmfTrace;
 
@@ -72,7 +72,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @since 2.0
      */
     public CtfIterator(final CtfTmfTrace trace,
-            final CtfLocationInfo ctfLocationData, final long rank) {
+            final CtfLocationData ctfLocationData, final long rank) {
         super(trace.getCTFTrace());
 
         this.ctfTmfTrace = trace;
@@ -103,8 +103,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     public CtfTmfEvent getCurrentEvent() {
         final StreamInputReader top = super.prio.peek();
         if (top != null) {
-            return CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
-                    top.getFilename(), ctfTmfTrace);
+            return new CtfTmfEvent(top.getCurrentEvent(), top.getFilename(),
+                    ctfTmfTrace);
         }
         return null;
     }
@@ -114,7 +114,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      */
     @Override
     public boolean seek(long timestamp) {
-        return seek(new CtfLocationInfo(timestamp, 0));
+        return seek(new CtfLocationData(timestamp, 0));
     }
 
     /**
@@ -125,7 +125,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @return boolean
      * @since 2.0
      */
-    public boolean seek(final CtfLocationInfo ctfLocationData) {
+    public boolean seek(final CtfLocationData ctfLocationData) {
         boolean ret = false;
 
         /* Adjust the timestamp depending on the trace's offset */
@@ -158,7 +158,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         }
         /* Seek the current location accordingly */
         if (ret) {
-            curLocation = new CtfLocation(new CtfLocationInfo(getCurrentEvent().getTimestamp().getValue(), index));
+            curLocation = new CtfLocation(new CtfLocationData(getCurrentEvent().getTimestamp().getValue(), index));
         } else {
             curLocation = NULL_LOCATION;
         }
