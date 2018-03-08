@@ -30,8 +30,8 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -59,7 +59,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
      * A partial history needs the state input plugin to re-generate state
      * between checkpoints.
      */
-    private final IStateChangeInput partialInput;
+    private final ITmfStateProvider partialInput;
 
     /**
      * Fake state system that is used for partially rebuilding the states (when
@@ -98,7 +98,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
      *            Configuration parameter indicating how many trace events there
      *            should be between each checkpoint
      */
-    public PartialHistoryBackend(IStateChangeInput partialInput, PartialStateSystem pss,
+    public PartialHistoryBackend(ITmfStateProvider partialInput, PartialStateSystem pss,
             IStateHistoryBackend realBackend, long granularity) {
         if (granularity <= 0 || partialInput == null || pss == null) {
             throw new IllegalArgumentException();
@@ -213,7 +213,13 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
 
         /* Send an event request to update the state system to the target time. */
         TmfTimeRange range = new TmfTimeRange(
-                new TmfTimestamp(checkpointTime, -9), new TmfTimestamp(t, -9));
+                /*
+                 * The state at the checkpoint already includes any state change
+                 * caused by the event(s) happening exactly at 'checkpointTime',
+                 * if any. We must not include those events in the query.
+                 */
+                new TmfTimestamp(checkpointTime + 1, -9),
+                new TmfTimestamp(t, -9));
         ITmfEventRequest request = new PartialStateSystemRequest(partialInput, range);
         partialInput.getTrace().sendRequest(request);
 
@@ -287,7 +293,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         private long eventCount;
         private long lastCheckpointAt;
 
-        public CheckpointsRequest(IStateChangeInput input, Map<Long, Long> checkpoints) {
+        public CheckpointsRequest(ITmfStateProvider input, Map<Long, Long> checkpoints) {
             super(input.getExpectedEventType(),
                     TmfTimeRange.ETERNITY,
                     TmfDataRequest.ALL_DATA,
@@ -326,10 +332,10 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     private class PartialStateSystemRequest extends TmfEventRequest {
 
         private final static int chunkSize = 50000;
-        private final IStateChangeInput sci;
+        private final ITmfStateProvider sci;
         private final ITmfTrace trace;
 
-        PartialStateSystemRequest(IStateChangeInput sci, TmfTimeRange range) {
+        PartialStateSystemRequest(ITmfStateProvider sci, TmfTimeRange range) {
             super(sci.getExpectedEventType(),
                     range,
                     TmfDataRequest.ALL_DATA,
@@ -354,8 +360,8 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
              * all events have been handled by the state system before doing
              * queries on it.
              */
-            if (partialInput instanceof AbstractStateChangeInput) {
-                ((AbstractStateChangeInput) partialInput).waitForEmptyQueue();
+            if (partialInput instanceof AbstractTmfStateProvider) {
+                ((AbstractTmfStateProvider) partialInput).waitForEmptyQueue();
             }
             super.handleCompleted();
         }

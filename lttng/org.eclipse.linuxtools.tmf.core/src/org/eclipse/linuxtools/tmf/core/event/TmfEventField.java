@@ -47,26 +47,6 @@ public class TmfEventField implements ITmfEventField {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor for a structural field
-     *
-     * @param name the event field id
-     * @param fields the list of subfields
-     */
-    public TmfEventField(final String name, final ITmfEventField[] fields) {
-        this(name, null, fields);
-    }
-
-    /**
-     * Constructor for a terminal field (no subfields)
-     *
-     * @param name the event field id
-     * @param value the event field value
-     */
-    public TmfEventField(final String name, final Object value) {
-        this(name, value, null);
-    }
-
-    /**
      * Full constructor
      *
      * @param name the event field id
@@ -113,33 +93,21 @@ public class TmfEventField implements ITmfEventField {
     // ITmfEventField
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getName()
-     */
     @Override
     public String getName() {
         return fName;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
-     */
     @Override
     public Object getValue() {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldNames()
-     */
     @Override
     public String[] getFieldNames() {
         return fFieldNames;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldName(int)
-     */
     @Override
     public String getFieldName(final int index) {
         final ITmfEventField field = getField(index);
@@ -149,25 +117,16 @@ public class TmfEventField implements ITmfEventField {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFields()
-     */
     @Override
     public ITmfEventField[] getFields() {
         return (fFields != null) ? fFields : new ITmfEventField[0];
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(java.lang.String)
-     */
     @Override
     public ITmfEventField getField(final String name) {
         return fNameMapping.get(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(int)
-     */
     @Override
     public ITmfEventField getField(final int index) {
         if (fFields != null && index >= 0 && index < fFields.length) {
@@ -189,19 +148,16 @@ public class TmfEventField implements ITmfEventField {
     public final static ITmfEventField makeRoot(final String[] labels) {
         final ITmfEventField[] fields = new ITmfEventField[labels.length];
         for (int i = 0; i < labels.length; i++) {
-            fields[i] = new TmfEventField(labels[i], null);
+            fields[i] = new TmfEventField(labels[i], null, null);
         }
         // Return a new root field;
-        return new TmfEventField(ITmfEventField.ROOT_FIELD_ID, fields);
+        return new TmfEventField(ITmfEventField.ROOT_FIELD_ID, null, fields);
     }
 
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -211,9 +167,6 @@ public class TmfEventField implements ITmfEventField {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -239,9 +192,6 @@ public class TmfEventField implements ITmfEventField {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder ret = new StringBuilder();

@@ -48,6 +48,9 @@ public abstract class AbstractDataManipulator {
 		return text;
 	}
 
+	protected File getWorkDir(){
+		return workDir;
+	}
 	public String getTitle () {
 		return title;
 	}
@@ -137,7 +140,8 @@ public abstract class AbstractDataManipulator {
 
 				// Find the console
 				for (IConsole x : existing) {
-					if (x.getName().contains(configName)) { //$NON-NLS-1$
+					if (x.getName().contains(configName) &&
+							x instanceof IOConsole) {
 						binaryOutCons = (IOConsole) x;
 					}
 				}

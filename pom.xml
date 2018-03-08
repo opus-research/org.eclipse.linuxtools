@@ -154,7 +154,7 @@
                 </dependency>
               </dependencies>
               <product>org.eclipse.sdk.ide</product>
-	      <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.linuxtools.oprofile.launch.tests.runOprofile=no -Dorg.eclipse.linuxtools.oprofile.core.tests.runOprofile=no -Dorg.eclipse.linuxtools.perf.tests.runPerf=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
+	      <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
 	    </configuration>
 	  </plugin>
         </plugins>
@@ -225,7 +225,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.1.201212231917</version>
+        <version>0.6.2.201302030002</version>
         <executions>
           <execution>
            <id>pre-test</id>

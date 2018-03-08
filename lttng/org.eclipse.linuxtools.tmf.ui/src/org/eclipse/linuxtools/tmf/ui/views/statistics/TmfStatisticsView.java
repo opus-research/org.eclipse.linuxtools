@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -26,8 +26,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
@@ -36,7 +34,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.tabsview.TmfViewerFolder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 
 /**
  * The generic Statistics View displays statistics for any kind of traces.
@@ -95,31 +92,17 @@ public class TmfStatisticsView extends TmfView {
         this(TMF_STATISTICS_VIEW);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     public void createPartControl(Composite parent) {
         fStatsViewers.setParent(parent);
         createStatisticsViewers();
 
-        IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor instanceof ITmfTraceEditor) {
-            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
-            if (trace != null) {
-                traceSelected(new TmfTraceSelectedSignal(this, trace));
-            }
+        ITmfTrace trace = getActiveTrace();
+        if (trace != null) {
+            traceSelected(new TmfTraceSelectedSignal(this, trace));
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#dispose()
-     */
     @Override
     public void dispose() {
         super.dispose();
@@ -216,11 +199,6 @@ public class TmfStatisticsView extends TmfView {
         fStatsViewers.layout();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         fStatsViewers.setFocus();
@@ -257,15 +235,8 @@ public class TmfStatisticsView extends TmfView {
 
             String traceName;
             IResource traceResource;
-            ITmfTrace[] traces;
-            if (fTrace instanceof TmfExperiment) {
-                TmfExperiment experiment = (TmfExperiment) fTrace;
-                traces = experiment.getTraces();
-            } else {
-                traces = new ITmfTrace[] { fTrace };
-            }
             // Creates a statistics viewer for each trace.
-            for (ITmfTrace trace : traces) {
+            for (ITmfTrace trace : fTraceManager.getActiveTraceSet()) {
                 traceName = trace.getName();
                 traceResource = trace.getResource();
                 TmfStatisticsViewer viewer = getStatisticsViewer(traceResource);

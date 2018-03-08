@@ -3,13 +3,13 @@
 <plugin>
 	<extension
 		point="org.eclipse.ui.commands">
-		<command
+	  <command
         categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.file"
         defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.actions.ExportScriptHandler"
         description="%command.exportScript.desc"
         id="org.eclipse.linuxtools.systemtap.ui.dashboardextension.commands.ExportScript"
         name="%command.exportScript.name"/>
-			<command
+	  <command
          categoryId="org.eclipse.linuxtools.systemtap.ui.dashboard.category.file"
          defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.actions.CreateModuleHandler"
          description="%command.createModule.desc"
@@ -24,7 +24,7 @@
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M1+4"/>
 		<key
-			commandId="org.eclipse.linuxtools.systemtap.ui.dashboardextension.commands.CreateModuleAction"
+			commandId="org.eclipse.linuxtools.systemtap.ui.dashboardextension.commands.CreateModuleCommand"
 			contextId="org.eclipse.ui.contexts.window"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M1+5"/>
@@ -43,22 +43,6 @@
 				menubarPath="file.ext"
 				id="org.eclipse.linuxtools.systemtap.ui.dashboardextension.ViewScriptAction"
 				style="push"/>
-   <!--<action
-         class="org.eclipse.linuxtools.systemtap.ui.dashboardextension.actions.AddScriptAction"
-         icon="icons/actions/file_obj.gif"
-         id="org.eclipse.linuxtools.systemtap.ui.dashboardextension.AddScriptAction"
-         label="%action.addScript.name"
-         menubarPath="file.ext"
-         style="push">
-   </action>-->
-   ,<!--<action
-         class="org.eclipse.linuxtools.systemtap.ui.dashboardextension.actions.DeleteScriptAction"
-         icon="icons/actions/file_obj.gif"
-         id="org.eclipse.linuxtools.systemtap.ui.dashboardextension.DeleteScriptAction"
-         label="%action.deleteScript.name"
-         menubarPath="file.ext"
-         style="push">
-   </action>-->
 		</objectContribution>
 	</extension>
 

@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -26,8 +27,8 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -52,7 +53,7 @@ public abstract class TapsetParser extends Job {
 
 	protected TapsetParser(String[] tapsets, String jobTitle) {
 		super(jobTitle);
-		this.tapsets = tapsets;
+		this.tapsets = Arrays.copyOf(tapsets, tapsets.length);
 		listeners = new ArrayList<IUpdateListener>();
 		cancelRequested = false;
 	}

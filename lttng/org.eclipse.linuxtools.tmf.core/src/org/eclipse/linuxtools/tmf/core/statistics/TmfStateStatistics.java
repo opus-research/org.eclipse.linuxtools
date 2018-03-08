@@ -30,9 +30,9 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -94,9 +94,10 @@ public class TmfStateStatistics implements ITmfStatistics {
         }
 
         final File htFile = new File(supplDirectory + File.separator + STATS_STATE_FILENAME);
-        final IStateChangeInput htInput = new StatsStateProvider(trace);
+        final ITmfStateProvider htInput = new StatsStateProvider(trace);
 
-        this.stats = StateSystemManager.loadStateHistory(htFile, htInput, false);
+        this.stats = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
+        registerStateSystems();
     }
 
     /**
@@ -113,8 +114,16 @@ public class TmfStateStatistics implements ITmfStatistics {
      */
     public TmfStateStatistics(ITmfTrace trace, File historyFile) throws TmfTraceException {
         this.trace = trace;
-        final IStateChangeInput htInput = new StatsStateProvider(trace);
-        this.stats = StateSystemManager.loadStateHistory(historyFile, htInput, true);
+        final ITmfStateProvider htInput = new StatsStateProvider(trace);
+        this.stats = TmfStateSystemFactory.newFullHistory(historyFile, htInput, true);
+        registerStateSystems();
+    }
+
+    /**
+     * Register the state systems used here into the trace's state system array.
+     */
+    private void registerStateSystems() {
+        trace.registerStateSystem(STATE_ID, stats);
     }
 
     // ------------------------------------------------------------------------

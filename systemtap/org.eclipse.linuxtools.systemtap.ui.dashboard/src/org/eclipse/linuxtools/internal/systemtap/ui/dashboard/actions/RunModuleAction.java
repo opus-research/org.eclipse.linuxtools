@@ -20,6 +20,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
+import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.structures.listeners.IActionListener;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
@@ -30,10 +35,6 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetFactory;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IActionListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewActionDelegate;
@@ -118,7 +119,7 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ActiveModuleBrowserView.ID);
 		ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 		boolean paused = ambv.isPaused(module);
-		fileName = module.script.getAbsolutePath();
+		String fileName = module.script.getAbsolutePath();
 		String tmpfileName = fileName;
 		String serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
 		if(ConsoleLogPlugin.getDefault().getPreferenceStore().getBoolean(ConsoleLogPreferenceConstants.REMEMBER_SERVER)!=true &&
@@ -133,9 +134,9 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 				tmpfileName = "/tmp/" + serverfileName; //$NON-NLS-1$
 				scpclient.transfer(fileName, tmpfileName);
 			} catch (JSchException e) {
-				e.printStackTrace();
+				ExceptionErrorDialog.openError(Messages.RunModuleAction_connectionError, e);
 			} catch (IOException e) {
-				e.printStackTrace();
+				ExceptionErrorDialog.openError(Messages.RunModuleAction_ioError, e);
 			}
 		}
 		String modname = serverfileName.substring(0, serverfileName.indexOf('.'));
@@ -344,7 +345,6 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 
 	private IViewPart view;
 	private static ArrayList<IActionListener> listeners = new ArrayList<IActionListener>();
-	private String fileName = null;
 	protected IWorkbenchWindow fWindow = null;
 	private IAction act;
 

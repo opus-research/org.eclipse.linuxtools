@@ -6,10 +6,11 @@ import java.io.InputStream;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
+import org.eclipse.linuxtools.systemtap.structures.runnable.StreamGobbler;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
-import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobbler;
 import org.eclipse.ui.PlatformUI;
 
 import com.jcraft.jsch.Channel;
@@ -18,7 +19,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-public class ScpExec extends LoggedCommand {
+public class ScpExec extends Command {
 
 	private Session session;
 	private Channel channel;
@@ -97,7 +98,7 @@ public class ScpExec extends LoggedCommand {
 			}
 
 		} catch (JSchException e) {
-			e.printStackTrace();
+			ExceptionErrorDialog.openError(Messages.ScpExec_errorConnectingToServer, e);
 		}
 	}
 
@@ -118,10 +119,12 @@ public class ScpExec extends LoggedCommand {
 		// 1 for error,
 		// 2 for fatal error,
 		// -1
-		if (b == 0)
+		if (b == 0) {
 			return b;
-		if (b == -1)
+		}
+		if (b == -1) {
 			return b;
+		}
 
 		if (b == 1 || b == 2) {
 			StringBuilder sb = new StringBuilder();
