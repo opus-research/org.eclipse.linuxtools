@@ -30,7 +30,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
@@ -356,6 +356,9 @@ public class ControlFlowView extends TmfView {
     // ViewPart
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#createPartControl(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public void createPartControl(Composite parent) {
         fTimeGraphCombo = new TimeGraphCombo(parent, SWT.NONE);
@@ -419,6 +422,9 @@ public class ControlFlowView extends TmfView {
         getSite().setSelectionProvider(fTimeGraphCombo.getTreeViewer());
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
     @Override
     public void setFocus() {
         fTimeGraphCombo.setFocus();
@@ -502,9 +508,9 @@ public class ControlFlowView extends TmfView {
             if (thread > 0) {
                 break;
             }
-            if (trace instanceof LttngKernelTrace) {
-                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) trace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+            if (trace instanceof CtfKernelTrace) {
+                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(CtfKernelTrace.STATE_ID);
                 if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);  //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
@@ -600,10 +606,10 @@ public class ControlFlowView extends TmfView {
             if (monitor.isCanceled()) {
                 return;
             }
-            if (aTrace instanceof LttngKernelTrace) {
+            if (aTrace instanceof CtfKernelTrace) {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
-                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) aTrace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(CtfKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
                     return;
                 }
@@ -715,7 +721,7 @@ public class ControlFlowView extends TmfView {
     }
 
     private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(CtfKernelTrace.STATE_ID);
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
         long resolution = Math.max(1, (end - start) / fDisplayWidth);
@@ -743,7 +749,7 @@ public class ControlFlowView extends TmfView {
         if (realEnd <= realStart) {
             return null;
         }
-        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(CtfKernelTrace.STATE_ID);
         List<ITimeEvent> eventList = null;
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);

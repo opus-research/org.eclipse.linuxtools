@@ -31,12 +31,10 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The process ID of the UST provider.
      */
     private int fPid = 0;
-
     /**
      * List of event information.
      */
@@ -45,7 +43,6 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructor
      * @param name - name of UST provider
@@ -75,21 +72,37 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
     // Accessors
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IUstProviderInfo#getPid()
+     */
     @Override
     public int getPid() {
         return fPid;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IUstProviderInfo#setPid(int)
+     */
     @Override
     public void setPid(int pid) {
         fPid = pid;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IUstProviderInfo#getEvents()
+     */
     @Override
     public IBaseEventInfo[] getEvents() {
         return fEvents.toArray(new IBaseEventInfo[fEvents.size()]);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IUstProviderInfo#setEvents(java.util.List)
+     */
     @Override
     public void setEvents(List<IBaseEventInfo> events) {
         fEvents.clear();
@@ -99,6 +112,10 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IUstProviderInfo#addEvent(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo)
+     */
     @Override
     public void addEvent(IBaseEventInfo event) {
         fEvents.add(event);
@@ -108,6 +125,10 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -117,6 +138,10 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -138,6 +163,10 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {
@@ -158,5 +187,6 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
             output.append(")]");
             return output.toString();
     }
+
 
 }

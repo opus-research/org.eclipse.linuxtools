@@ -13,12 +13,11 @@
  *     Jeff Johnston (Red Hat Inc.) - Modified for usage in Linux Tools project
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.profiling.tests;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.zip.ZipFile;
+
+import junit.framework.Assert;
 
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CCorePlugin;
@@ -63,7 +62,7 @@ import org.osgi.framework.Bundle;
 public class CProjectHelper {
 
 	public final static String PLUGIN_ID = "org.eclipse.linuxtools.profiling.tests"; //$NON-NLS-1$
-
+	
 	private final static IOverwriteQuery OVERWRITE_QUERY= new IOverwriteQuery() {
 		public String queryOverwrite(String file) {
 			return ALL;
@@ -73,7 +72,7 @@ public class CProjectHelper {
 	public static ICProject createCProject(final String projectName, String binFolderName) throws CoreException {
 		return createCCProject(projectName, binFolderName);
 	}
-
+	
 	/**
 	 * Creates a ICProject.
 	 */
@@ -108,9 +107,9 @@ public class CProjectHelper {
 
 	/**
 	 * Add the default binary parser if no binary parser configured.
-	 *
+	 * 
 	 * @param project
-	 * @throws CoreException
+	 * @throws CoreException 
 	 */
 	public static boolean addDefaultBinaryParser(IProject project) throws CoreException {
 		ICConfigExtensionReference[] binaryParsers= CCorePlugin.getDefault().getDefaultBinaryParserExtensions(project);
@@ -119,14 +118,14 @@ public class CProjectHelper {
 			if (desc == null) {
 				return false;
 			}
-
+			
 			desc.getDefaultSettingConfiguration().create(CCorePlugin.BINARY_PARSER_UNIQ_ID, CCorePlugin.DEFAULT_BINARY_PARSER_UNIQ_ID);
 			CCorePlugin.getDefault().setProjectDescription(project, desc);
 		}
 		return true;
 	}
 
-
+	
 	private static String getMessage(IStatus status) {
 		StringBuffer message = new StringBuffer("[");
 		message.append(status.getMessage());
@@ -172,7 +171,7 @@ public class CProjectHelper {
 					System.runFinalization();
 					cproject.getProject().delete(true, true, null);
 				} catch (CoreException e2) {
-					fail(getMessage(e2.getStatus()));
+					Assert.fail(getMessage(e2.getStatus()));
 				}
 			}
 		}
@@ -278,7 +277,7 @@ public class CProjectHelper {
 
 	/**
 	 * Attempts to find a TranslationUnit with the given name in the workspace
-	 * @throws InterruptedException
+	 * @throws InterruptedException 
 	 */
 	public static ITranslationUnit findTranslationUnit(ICProject testProject, String name) throws CModelException, InterruptedException {
 		for (int j=0; j<20; j++) {
@@ -338,7 +337,7 @@ public class CProjectHelper {
 		}
 	}
 
-
+	
 	public static void importSourcesFromPlugin(ICProject project, Bundle bundle, String sources) throws CoreException {
 		try {
 			String baseDir= FileLocator.toFileURL(FileLocator.find(bundle, new Path(sources), null)).getFile();
@@ -355,15 +354,15 @@ public class CProjectHelper {
 	/**
 	 * @return the location of a newly created directory in temporary area.
 	 *    Note that cleanup should be done with {@link ResourceHelper#cleanUp()}.
-	 * @throws CoreException
+	 * @throws CoreException 
 	 */
 	public static File freshDir() throws CoreException {
 		IPath folderPath = ResourceHelper.createTemporaryFolder();
 		File folder = new File(folderPath.toOSString());
-		assertTrue(folder.exists());
-		assertTrue(folder.isDirectory());
-		assertTrue(folder.canWrite());
-
+		Assert.assertTrue(folder.exists());
+		Assert.assertTrue(folder.isDirectory());
+		Assert.assertTrue(folder.canWrite());
+		
 		return folder;
 	}
 }

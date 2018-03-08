@@ -184,6 +184,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         });
 
         fAccessible.addAccessibleControlListener(new AccessibleControlAdapter() {
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getFocus(org.eclipse.swt.accessibility.AccessibleControlEvent)
+             */
             @Override
             public void getFocus(AccessibleControlEvent e) {
                 if (fFocusedWidget == -1) {
@@ -194,6 +198,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                 }
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getRole(org.eclipse.swt.accessibility.AccessibleControlEvent)
+             */
             @Override
             public void getRole(AccessibleControlEvent e) {
                 switch (e.childID) {
@@ -211,6 +219,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                 }
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getState(org.eclipse.swt.accessibility.AccessibleControlEvent)
+             */
             @Override
             public void getState(AccessibleControlEvent e) {
                 e.detail = ACC.STATE_FOCUSABLE;
@@ -230,11 +242,20 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         addTraverseListener(new LocalTraverseListener());
 
         getViewControl().addFocusListener(new FocusListener() {
+
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.FocusListener#focusGained(org.eclipse.swt.events.FocusEvent)
+             */
             @Override
             public void focusGained(FocusEvent e) {
                 redraw();
             }
 
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.FocusListener#focusLost(org.eclipse.swt.events.FocusEvent)
+             */
             @Override
             public void focusLost(FocusEvent e) {
                 redraw();
@@ -271,6 +292,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         fMaxTime = fFrame.getMaxTime();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#drawContents(org.eclipse.swt.graphics.GC, int, int, int, int)
+     */
     @Override
     protected void drawContents(GC gc, int clipx, int clipy, int clipw, int cliph) {
         if (fFrame == null) {
@@ -474,6 +499,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.swt.widgets.Control#isFocusControl()
+     */
     @Override
     public boolean isFocusControl() {
         Control[] child = getChildren();
@@ -486,6 +515,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseMoveEvent(org.eclipse.swt.events.MouseEvent)
+     */
     @Override
     protected void contentsMouseMoveEvent(MouseEvent event) {
         if (fTooltip != null) {
@@ -503,6 +536,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setFocus(-1);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseHover(org.eclipse.swt.events.MouseEvent)
+     */
     @Override
     protected void contentsMouseHover(MouseEvent e) {
         if (fTooltip == null) {
@@ -562,6 +599,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setFocus(0);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseExit(org.eclipse.swt.events.MouseEvent)
+     */
     @Override
     protected void contentsMouseExit(MouseEvent e) {
         if (fTooltip != null) {
@@ -569,6 +610,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseUpEvent(org.eclipse.swt.events.MouseEvent)
+     */
     @Override
     protected void contentsMouseUpEvent(MouseEvent event) {
         selectTimeDelta(event.y, 0);
@@ -698,6 +743,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         });
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#scrollBy(int, int)
+     */
     @Override
     public void scrollBy(int x, int y) {
     }
@@ -732,6 +781,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         fListenerList.remove(listener);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(org.eclipse.swt.events.DisposeEvent)
+     */
     @Override
     public void widgetDisposed(DisposeEvent e) {
         if (fTooltip != null) {
@@ -743,6 +796,10 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#keyPressedEvent(org.eclipse.swt.events.KeyEvent)
+     */
     @Override
     protected void keyPressedEvent(KeyEvent event) {
         if (fTooltip != null) {
@@ -1026,6 +1083,11 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
      * Traverse Listener implementation.
      */
     protected static class LocalTraverseListener implements TraverseListener {
+
+        /*
+         * (non-Javadoc)
+         * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt.events.TraverseEvent)
+         */
         @Override
         public void keyTraversed(TraverseEvent e) {
             if ((e.detail == SWT.TRAVERSE_TAB_NEXT) || (e.detail == SWT.TRAVERSE_TAB_PREVIOUS)) {
