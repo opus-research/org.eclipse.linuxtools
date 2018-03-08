@@ -164,10 +164,10 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 if (status == StateValues.CPU_STATUS_IRQ) {
                     // In IRQ state get the IRQ that caused the interruption
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
+                    IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
                     int cpu = entry.getId();
 
-                    IStateSystemQuerier ss = entry.getTrace().getKernelStateSystem();
+                    IStateSystemQuerier ss = entry.getTrace().getStateSystem();
                     try {
                         List<ITmfStateInterval> fullState = ss.queryFullState(event.getTime());
                         List<Integer> irqQuarks = ss.getQuarks(Attributes.RESOURCES, Attributes.IRQS, "*"); //$NON-NLS-1$
@@ -192,10 +192,10 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (status == StateValues.CPU_STATUS_SOFTIRQ) {
                     // In SOFT_IRQ state get the SOFT_IRQ that caused the interruption
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
+                    IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
                     int cpu = entry.getId();
 
-                    IStateSystemQuerier ss = entry.getTrace().getKernelStateSystem();
+                    IStateSystemQuerier ss = entry.getTrace().getStateSystem();
                     try {
                         List<ITmfStateInterval> fullState = ss.queryFullState(event.getTime());
                         List<Integer> softIrqQuarks = ss.getQuarks(Attributes.RESOURCES, Attributes.SOFT_IRQS, "*"); //$NON-NLS-1$
@@ -220,7 +220,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (status == StateValues.CPU_STATUS_RUN_USERMODE || status == StateValues.CPU_STATUS_RUN_SYSCALL){
                     // In running state get the current tid
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
+                    IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
 
                     try {
                         retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.ABSOLUTE, Resolution.NANOSEC));

@@ -250,7 +250,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 		
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Initializing optionsTab from previous config.");
 		try {
 			
 			if (! PerfCore.checkPerfInPath()) 
@@ -276,7 +275,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy wconfig) {
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Saving optionsTab values");
 		wconfig.setAttribute(PerfPlugin.ATTR_Kernel_Location, _txtKernel_Location.getText());
 		wconfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, _chkRecord_Realtime.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, _chkRecord_Verbose.getSelection());
@@ -285,18 +283,10 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, _chkMultiplexEvents.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, _chkModuleSymbols.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, _chkHideUnresolvedSymbols.getSelection());
-		try {
-			//if (this.canSave())
-				wconfig.doSave();
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy wconfig) {
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Loading optionsTab defaults");
 		wconfig.setAttribute(PerfPlugin.ATTR_Kernel_Location, PerfPlugin.ATTR_Kernel_Location_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, PerfPlugin.ATTR_Record_Realtime_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, PerfPlugin.ATTR_Record_Verbose_default);
@@ -305,13 +295,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, PerfPlugin.ATTR_ModuleSymbols_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, PerfPlugin.ATTR_HideUnresolvedSymbols_default);
-		try {
-			//if (this.canSave())
-				wconfig.doSave();
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 }

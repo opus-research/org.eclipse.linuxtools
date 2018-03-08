@@ -83,8 +83,8 @@ public class ResourcesEntry implements ITimeGraphEntry {
     }
 
     @Override
-    public List<ITimeGraphEntry> getChildren() {
-        return null;
+    public ITimeGraphEntry[] getChildren() {
+        return children;
     }
 
     @Override
