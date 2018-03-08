@@ -16,6 +16,11 @@ public final class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.rpm.ui.editor.actions.messages"; //$NON-NLS-1$
 	public static String SpecfileChangelogFormatter_0;
 	public static String SpecfileChangelogFormatter_1;
+
+	// SpecfileEditorDownloadSourcesActionDelegate
+	public static String DownloadSources_malformedURL;
+	public static String DownloadSources_cannotConnectToURL;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
