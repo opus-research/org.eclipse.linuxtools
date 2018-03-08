@@ -21,6 +21,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -68,7 +69,7 @@ class HistoryTree {
     private int nodeCount;
 
     /** "Cache" to keep the active nodes in memory */
-    private final List<CoreNode> latestBranch;
+    private List<CoreNode> latestBranch;
 
     // ------------------------------------------------------------------------
     // Constructors/"Destructors"
@@ -183,7 +184,7 @@ class HistoryTree {
          */
         this.treeIO = new HT_IO(this, false);
 
-        latestBranch = rebuildLatestBranch(rootNodeSeqNb);
+        rebuildLatestBranch(rootNodeSeqNb);
         this.treeEnd = latestBranch.get(0).getNodeEnd();
 
         /*
@@ -223,7 +224,7 @@ class HistoryTree {
         /* Close off the latest branch of the tree */
         for (i = 0; i < latestBranch.size(); i++) {
             latestBranch.get(i).closeThisNode(treeEnd);
-            treeIO.writeNode(getInLatestBranch(i));
+            treeIO.writeNode(latestBranch.get(i));
         }
 
         fc = treeIO.getFcOut();
@@ -291,14 +292,8 @@ class HistoryTree {
         return treeIO;
     }
 
-    CoreNode getInLatestBranch(int index) {
-        CoreNode node = latestBranch.get(index);
-        if (node == null) { throw new IllegalStateException(); }
-        return node;
-    }
-
-    int getLatestBranchSize() {
-        return latestBranch.size();
+    List<CoreNode> getLatestBranch() {
+        return Collections.unmodifiableList(latestBranch);
     }
 
     // ------------------------------------------------------------------------
@@ -315,18 +310,17 @@ class HistoryTree {
      *            start
      * @throws ClosedChannelException
      */
-    private List<CoreNode> rebuildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
+    private void rebuildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
         HTNode nextChildNode;
 
-        List<CoreNode> branch = new ArrayList<CoreNode>();
+        this.latestBranch = new ArrayList<CoreNode>();
 
         nextChildNode = treeIO.readNodeFromDisk(rootNodeSeqNb);
-        branch.add((CoreNode) nextChildNode);
-        while (branch.get(branch.size() - 1).getNbChildren() > 0) {
-            nextChildNode = treeIO.readNodeFromDisk(branch.get(branch.size() - 1).getLatestChild());
-            branch.add((CoreNode) nextChildNode);
+        latestBranch.add((CoreNode) nextChildNode);
+        while (latestBranch.get(latestBranch.size() - 1).getNbChildren() > 0) {
+            nextChildNode = treeIO.readNodeFromDisk(latestBranch.get(latestBranch.size() - 1).getLatestChild());
+            latestBranch.add((CoreNode) nextChildNode);
         }
-        return branch;
     }
 
     /**
@@ -415,7 +409,7 @@ class HistoryTree {
         /* Split off the new branch from the old one */
         for (i = indexOfNode; i < latestBranch.size(); i++) {
             latestBranch.get(i).closeThisNode(splitTime);
-            treeIO.writeNode(getInLatestBranch(i));
+            treeIO.writeNode(latestBranch.get(i));
 
             prevNode = latestBranch.get(i - 1);
             newNode = initNewCoreNode(prevNode.getSequenceNumber(),
@@ -445,7 +439,7 @@ class HistoryTree {
         /* Close off the whole current latestBranch */
         for (i = 0; i < latestBranch.size(); i++) {
             latestBranch.get(i).closeThisNode(splitTime);
-            treeIO.writeNode(getInLatestBranch(i));
+            treeIO.writeNode(latestBranch.get(i));
         }
 
         /* Link the new root to its first child (the previous root node) */
@@ -453,7 +447,7 @@ class HistoryTree {
 
         /* Rebuild a new latestBranch */
         depth = latestBranch.size();
-        latestBranch.clear();
+        latestBranch = new ArrayList<CoreNode>();
         latestBranch.add(newRootNode);
         for (i = 1; i < depth + 1; i++) {
             prevNode = latestBranch.get(i - 1);
@@ -675,12 +669,12 @@ class HistoryTree {
     void debugPrintFullTree(PrintWriter writer, boolean printIntervals) {
         /* Only used for debugging, shouldn't be externalized */
         curDepth = 0;
-        this.preOrderPrint(writer, false, getInLatestBranch(0));
+        this.preOrderPrint(writer, false, latestBranch.get(0));
 
         if (printIntervals) {
             writer.println("\nDetails of intervals:"); //$NON-NLS-1$
             curDepth = 0;
-            this.preOrderPrint(writer, true, getInLatestBranch(0));
+            this.preOrderPrint(writer, true, latestBranch.get(0));
         }
         writer.println('\n');
     }

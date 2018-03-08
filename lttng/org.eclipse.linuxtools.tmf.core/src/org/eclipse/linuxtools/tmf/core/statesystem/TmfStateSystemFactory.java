@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.HistoryBuilder;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
@@ -55,8 +54,8 @@ public final class TmfStateSystemFactory extends TmfComponent {
      *            created with this name/path.
      * @param stateProvider
      *            The {@link ITmfStateProvider} to use for building the history
-     *            file. It may be null, but only if the file is already
-     *            available on disk (if it's not, brace for exception).
+     *            file. It may be required even if we are opening an
+     *            already-existing history (ie, for partial histories).
      * @param buildManually
      *            If false, the construction will wait for a signal before
      *            starting. If true, it will build everything right now and
@@ -69,7 +68,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
      * @since 2.0
      */
     public static ITmfStateSystem newFullHistory(File htFile,
-            @Nullable ITmfStateProvider stateProvider, boolean buildManually)
+            ITmfStateProvider stateProvider, boolean buildManually)
             throws TmfTraceException {
         IStateHistoryBackend htBackend;
 
@@ -97,8 +96,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
         HistoryBuilder builder;
 
         if (stateProvider == null) {
-            throw new TmfTraceException("The history file cannot be found and " //$NON-NLS-1$
-                    + "no state provider was... provided."); //$NON-NLS-1$
+            return null;
         }
         try {
             htBackend = new ThreadedHistoryTreeBackend(htFile,

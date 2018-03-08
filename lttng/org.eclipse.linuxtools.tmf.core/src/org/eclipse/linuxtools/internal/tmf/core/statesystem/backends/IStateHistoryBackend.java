@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -95,20 +94,18 @@ public interface IStateHistoryBackend {
      * already-existing history. Refer to the file format documentation.
      *
      * @return A FileInputStream object pointing to the correct file/location in
-     *         the file where to read the attribute tree information. Or null if
-     *         this backend does not save a file to disk.
+     *         the file where to read the attribute tree information.
      */
-    @Nullable FileInputStream supplyAttributeTreeReader();
+    FileInputStream supplyAttributeTreeReader();
 
     // FIXME change to FOS too?
     /**
      * Supply the File object to which we will write the attribute tree. The
      * position in this file is supplied by -TreeWriterFilePosition.
      *
-     * @return The target File, or null if this backend does not save a file to
-     *         disk.
+     * @return The target File
      */
-    @Nullable File supplyAttributeTreeWriterFile();
+    File supplyAttributeTreeWriterFile();
 
     /**
      * Supply the position in the file where we should write the attribute tree
