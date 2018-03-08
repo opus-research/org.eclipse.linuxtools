@@ -214,6 +214,18 @@ public interface LTTngControlServiceConstants {
      * Command line option for configuring the streaming data URL.
      */
     static final String OPTION_DATA_URL = " -D "; //$NON-NLS-1$
+    /**
+     * Command line option for per UID buffers
+     */
+    static final String OPTION_PER_UID_BUFFERS = " --buffers-uid "; //$NON-NLS-1$
+    /**
+     * Command line option for maximum size of trace files
+     */
+    static final String OPTION_MAX_SIZE_TRACE_FILES = " -C "; //$NON-NLS-1$
+    /**
+     * Command line option for maximum trace files
+     */
+    static final String OPTION_MAX_TRACE_FILES = " -W "; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Parsing constants

@@ -18,8 +18,11 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
+import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -94,6 +97,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
      */
     private TraceDomainComponent fDomain = null;
     /**
+     * The target node component
+     */
+    private TargetNodeComponent fTargetNodeComponent = null;
+    /**
      * Common verify listener for numeric text input.
      */
     private VerifyListener fVerifyListener = null;
@@ -109,6 +116,27 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
      *  Flag which indicates whether Kernel domain is available or not
      */
     private boolean fHasKernel;
+    /**
+     * Maximum size of trace files of the channel.
+     */
+    private Text fMaxSizeTraceText = null;
+    /**
+     * Maximum number of trace files of the channel.
+     */
+    private Text fMaxNumberTraceText = null;
+    /**
+     * CheckBox for selecting per UID buffers.
+     */
+    private Button fUIDBuffersButton = null;
+    /**
+     * CheckBox to configure metadata channel
+     */
+    private Button fMetadataChannelButton = null;
+    /**
+     * Previous channel name
+     */
+    private String fPreviousChannelName = null;
+
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -168,6 +196,11 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fHasKernel = hasKernel;
     }
 
+    @Override
+    public void setTargetNodeComponent(TargetNodeComponent node) {
+        fTargetNodeComponent = node;
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -216,6 +249,42 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fReadTimerText.setToolTipText(Messages.TraceControl_EnableChannelReadTimerTooltip);
         fReadTimerText.addVerifyListener(fVerifyListener);
 
+        if (fTargetNodeComponent.isTraceFileRotationSupported()) {
+            Label maxSizeTraceFilesLabel = new Label(dialogComposite, SWT.RIGHT);
+            maxSizeTraceFilesLabel.setText(Messages.TraceControl_MaxSizeTraceFilesPropertyName);
+            fMaxSizeTraceText = new Text(dialogComposite, SWT.NONE);
+            fMaxSizeTraceText.setToolTipText(Messages.TraceControl_EnbleChannelMaxSizeTraceFilesTooltip);
+            fMaxSizeTraceText.addVerifyListener(fVerifyListener);
+
+            Label maxNumTraceFilesLabel = new Label(dialogComposite, SWT.RIGHT);
+            maxNumTraceFilesLabel.setText(Messages.TraceControl_MaxNumTraceFilesPropertyName);
+            fMaxNumberTraceText = new Text(dialogComposite, SWT.NONE);
+            fMaxNumberTraceText.setToolTipText(Messages.TraceControl_EnbleChannelMaxNumTraceFilesTooltip);
+            fMaxNumberTraceText.addVerifyListener(fVerifyListener);
+        }
+
+        if (fTargetNodeComponent.isPeriodicalMetadataFlushSupported()) {
+            fMetadataChannelButton = new Button(dialogComposite, SWT.CHECK);
+            fMetadataChannelButton.setText(Messages.TraceControl_ConfigureMetadataChannelName);
+            fMetadataChannelButton.setSelection(false);
+
+            fMetadataChannelButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (fMetadataChannelButton.getSelection()) {
+                        fPreviousChannelName = fChannelNameText.getText();
+                        fChannelNameText.setText("metadata"); //$NON-NLS-1$
+                        fChannelNameText.setEnabled(false);
+                        fSwitchTimerText.setText(String.valueOf(IChannelInfo.DEFAULT_SWITCH_TIMER_METADATA));
+                    } else {
+                        fChannelNameText.setText(fPreviousChannelName);
+                        fChannelNameText.setEnabled(true);
+                        fSwitchTimerText.setText(String.valueOf(IChannelInfo.DEFAULT_SWITCH_TIMER));
+                    }
+                }
+            });
+        }
+
         Group discardModeGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
         discardModeGroup.setText(Messages.TraceControl_EnableChannelDiscardModeGroupName);
         layout = new GridLayout(2, true);
@@ -243,6 +312,24 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fUstButton.setText(Messages.TraceControl_UstDisplayName);
         fUstButton.setSelection(!fIsKernel);
 
+        if (fTargetNodeComponent.isPerUIDBuffersSupported()) {
+            fUIDBuffersButton = new Button(domainGroup, SWT.CHECK);
+            fUIDBuffersButton.setText(Messages.TraceControl_PerUidBuffersDisplayName); // "Per UID buffers (UST only)"
+            fUIDBuffersButton.setSelection(false);
+            fUIDBuffersButton.setEnabled(!fIsKernel);
+
+            fUstButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (fUstButton.getSelection()) {
+                        fUIDBuffersButton.setEnabled(true);
+                    } else {
+                        fUIDBuffersButton.setEnabled(false);
+                    }
+                }
+            });
+        }
+
         if ((fDomain != null) || (!fHasKernel)) {
             fKernelButton.setEnabled(false);
             fUstButton.setEnabled(false);
@@ -263,6 +350,14 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fKernelButton.setLayoutData(data);
         data = new GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
         fUstButton.setLayoutData(data);
+        if (fTargetNodeComponent.isPerUIDBuffersSupported()) {
+            data = new GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
+            fUIDBuffersButton.setLayoutData(data);
+        }
+        if (fTargetNodeComponent.isPeriodicalMetadataFlushSupported()) {
+            data = new GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
+            fMetadataChannelButton.setLayoutData(data);
+        }
 
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
@@ -272,6 +367,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fNumberOfSubBuffersText.setLayoutData(data);
         fSwitchTimerText.setLayoutData(data);
         fReadTimerText.setLayoutData(data);
+        if (fTargetNodeComponent.isTraceFileRotationSupported()) {
+            fMaxNumberTraceText.setLayoutData(data);
+            fMaxSizeTraceText.setLayoutData(data);
+        }
 
         setDefaults();
 
@@ -294,6 +393,13 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fChannelInfo.setSwitchTimer(Long.parseLong(fSwitchTimerText.getText()));
         fChannelInfo.setReadTimer(Long.parseLong(fReadTimerText.getText()));
         fChannelInfo.setOverwriteMode(fOverwriteModeButton.getSelection());
+        if (fTargetNodeComponent.isTraceFileRotationSupported()) {
+            fChannelInfo.setMaxSizeTraceFiles(Integer.parseInt(fMaxSizeTraceText.getText()));
+            fChannelInfo.setMaxNumberTraceFiles(Integer.parseInt(fMaxNumberTraceText.getText()));
+        }
+        if (fTargetNodeComponent.isPerUIDBuffersSupported()) {
+            fChannelInfo.setBuffersUID(fUIDBuffersButton.getSelection());
+        }
 
         fIsKernel = fKernelButton.getSelection();
 
@@ -337,6 +443,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         fSwitchTimerText.setText(String.valueOf(IChannelInfo.DEFAULT_SWITCH_TIMER));
         fReadTimerText.setText(String.valueOf(IChannelInfo.DEFAULT_READ_TIMER));
         fOverwriteModeButton.setSelection(IChannelInfo.DEFAULT_OVERWRITE_MODE);
+        if (fTargetNodeComponent.isTraceFileRotationSupported()) {
+            fMaxSizeTraceText.setText(String.valueOf(IChannelInfo.DEFAULT_MAXIMUM_SIZE_TRACE_FILES));
+            fMaxNumberTraceText.setText(String.valueOf(IChannelInfo.DEFAULT_MAXIMUM_NUMBER_TRACE_FILES));
+        }
         if (fKernelButton.getSelection()) {
             fSubBufferSizeText.setText(String.valueOf(IChannelInfo.DEFAULT_SUB_BUFFER_SIZE_KERNEL));
             fNumberOfSubBuffersText.setText(String.valueOf(IChannelInfo.DEFAULT_NUMBER_OF_SUB_BUFFERS_KERNEL));

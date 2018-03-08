@@ -590,6 +590,21 @@ public class LTTngControlService implements ILttngControlService {
 //            --read-timer USEC    Read timer interval in usec (default: 200)
             command.append(LTTngControlServiceConstants.OPTION_READ_TIMER);
             command.append(String.valueOf(info.getReadTimer()));
+
+            if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
+//                --buffer-uid  Every application sharing the same UID use the same buffers
+                if (!isKernel && info.isBuffersUID()) {
+                    command.append(LTTngControlServiceConstants.OPTION_PER_UID_BUFFERS);
+                }
+
+//                -C SIZE   Maximum size of trace files in bytes (default: 0)
+                command.append(LTTngControlServiceConstants.OPTION_MAX_SIZE_TRACE_FILES);
+                command.append(String.valueOf(info.getMaxSizeTraceFiles()));
+
+//                -W NUM   Maximum number of trace files (default: 0)
+                command.append(LTTngControlServiceConstants.OPTION_MAX_TRACE_FILES);
+                command.append(String.valueOf(info.getMaxNumberTraceFiles()));
+            }
         }
 
         executeCommand(command.toString(), monitor);
