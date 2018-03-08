@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ConsoleStreamDaemon;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsoleManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobbler;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +35,8 @@ public class ConsoleStreamDaemonTest {
 
 		ConsoleStreamDaemon csd = new ConsoleStreamDaemon(null);
 		assertNotNull(csd);
-		
-		csd = new ConsoleStreamDaemon(ScriptConsole.getInstance("test"));
+
+		csd = new ConsoleStreamDaemon(ScriptConsoleManager.getInstance().getConsoleInstance("test"));
 		assertNotNull(csd);
 	}
 	@Test
@@ -56,6 +56,6 @@ public class ConsoleStreamDaemonTest {
 		daemon.dispose();
 		assertNotNull(daemon);
 	}
-	
+
 	private ConsoleStreamDaemon daemon;
 }
