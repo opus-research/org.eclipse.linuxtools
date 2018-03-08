@@ -8,17 +8,20 @@
  * Contributors:
  *    Red Hat Inc. - initial API and implementation
  *******************************************************************************/ 
-package org.eclipse.linuxtools.internal.gprof.launch;
+package org.eclipse.linuxtools.internal.valgrind.cachegrind;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindSingleToolOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 
-public class GprofLaunchConfigurationTabGroup extends
+public class CachegrindLaunchConfigurationTabGroup extends
 		ProfileLaunchConfigurationTabGroup {
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
-		return new AbstractLaunchConfigurationTab[0];
+		return new AbstractLaunchConfigurationTab[] {
+			new ValgrindSingleToolOptionsTab("org.eclipse.linuxtools.valgrind.launch.cachegrind"), //$NON-NLS-1$
+		};
 	}	
 	
 }

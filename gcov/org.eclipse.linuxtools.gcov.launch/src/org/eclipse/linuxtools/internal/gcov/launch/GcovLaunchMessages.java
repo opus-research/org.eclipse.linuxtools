@@ -8,19 +8,17 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.gprof.launch;
+package org.eclipse.linuxtools.internal.gcov.launch;
 
 import org.eclipse.osgi.util.NLS;
 
-public class GprofLaunchMessages extends NLS {
+public class GcovLaunchMessages extends NLS {
 
-	public static String GprofCompilerOptions_msg;
-	public static String GprofCompileAgain_msg;
-	public static String GprofGmonStale_msg;
-	public static String GprofGmonStaleExplanation_msg;
+	public static String GcovCompilerOptions_msg;
+	public static String GcovCompileAgain_msg;;
 
 	static {
-		NLS.initializeMessages(GprofLaunchMessages.class.getName(), GprofLaunchMessages.class);
+		NLS.initializeMessages(GcovLaunchMessages.class.getName(), GcovLaunchMessages.class);
 	}
 
 }

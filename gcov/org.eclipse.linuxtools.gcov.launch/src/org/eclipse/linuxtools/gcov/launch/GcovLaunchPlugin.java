@@ -8,7 +8,7 @@
  * Contributors:
  *    Red Hat Inc. - initial API and implementation
  *******************************************************************************/ 
-package org.eclipse.linuxtools.gprof.launch;
+package org.eclipse.linuxtools.gcov.launch;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -21,19 +21,19 @@ import org.osgi.framework.BundleContext;
 /**
  * The main plugin class to be used in the desktop.
  */
-public class GprofLaunchPlugin extends AbstractUIPlugin {
+public class GcovLaunchPlugin extends AbstractUIPlugin {
 	//The shared instance.
-	private static GprofLaunchPlugin plugin;
+	private static GcovLaunchPlugin plugin;
 	//shared cache instance for configuration
 
-	private static final String PLUGIN_ID = "org.eclipse.linuxtools.gprof.launch"; //$NON-NLS-1$
+	private static final String PLUGIN_ID = "org.eclipse.linuxtools.gcov.launch"; //$NON-NLS-1$
 	public static final String ID_GCOV_VIEW = "org.eclipse.linuxtools.gcov.view"; //$NON-NLS-1$
 	public static final String LAUNCH_ID = PLUGIN_ID + ".gcovLaunch"; //$NON-NLS-1$
 
 	/**
 	 * The constructor.
 	 */
-	public GprofLaunchPlugin() {
+	public GcovLaunchPlugin() {
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class GprofLaunchPlugin extends AbstractUIPlugin {
 		plugin = null;
 	}	
 
-	public static GprofLaunchPlugin getDefault() {
+	public static GcovLaunchPlugin getDefault() {
 		return plugin;
 	}
 

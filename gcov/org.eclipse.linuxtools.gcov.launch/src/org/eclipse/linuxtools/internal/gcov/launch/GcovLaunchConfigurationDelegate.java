@@ -13,12 +13,12 @@
  *        method, and the exec method
  *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here
  *******************************************************************************/ 
-package org.eclipse.linuxtools.internal.gprof.launch;
+package org.eclipse.linuxtools.internal.gcov.launch;
 
 import java.net.URI;
+import java.util.List;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -30,17 +30,17 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchesListener2;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.gprof.launch.GprofLaunchPlugin;
-import org.eclipse.linuxtools.internal.gprof.view.GmonView;
+import org.eclipse.linuxtools.gcov.launch.GcovLaunchPlugin;
+import org.eclipse.linuxtools.internal.gcov.parser.CovManager;
+import org.eclipse.linuxtools.internal.gcov.view.CovView;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
-import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
-public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
+public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
 	protected ILaunchConfiguration config;
 	
 	@Override
@@ -74,23 +74,6 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 	class LaunchTerminationWatcher implements ILaunchesListener2 {
 		private ILaunch launch;
 		private IPath exePath;
-		
-		class LaunchTerminationWatcherRunnable implements Runnable {
-
-			private String exePath;
-			private String gmonPath;
-			
-			public LaunchTerminationWatcherRunnable(String exePath, String gmonPath) {
-				this.exePath = exePath;
-				this.gmonPath = gmonPath;
-			}
-			
-			@Override
-			public void run() {
-				GmonView.displayGprofView(exePath, gmonPath, getProject());
-			}
-		}
-		
 		public LaunchTerminationWatcher(ILaunch il, IPath exePath) {
 			launch = il;
 			this.exePath = exePath;
@@ -109,43 +92,27 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 					// based on concurrency issues
 					Display.getDefault().syncExec(new Runnable() {
 						public void run() {
-							try {
-								String s = exePath.toOSString();			
-								URI workingDirURI = getProject().getLocationURI();
-								RemoteProxyManager rpmgr = RemoteProxyManager.getInstance();
-								IRemoteFileProxy proxy = rpmgr.getFileProxy(getProject());
-								String workingDirPath = proxy.toPath(workingDirURI);
-								// Because we set the working directory on execution to the top-level
-								// project directory, the gmon.out file should be found there
-								String gmonExpected = workingDirPath + "/gmon.out"; //$NON-NLS-1$
-								IFileStore f = proxy.getResource(gmonExpected);
-								if (!f.fetchInfo().exists()) {
-									String title = GprofLaunchMessages.GprofCompilerOptions_msg;
-									String message = GprofLaunchMessages.GprofCompileAgain_msg;
-									Shell parent = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-									MessageDialog.openWarning(parent, title, message);
-								}
-								// We found gmon.out.  Make sure it was generated after the executable was formed.
-								IFileStore exe = proxy.getResource(exePath.toString());
-								if (exe.fetchInfo().getLastModified() > f.fetchInfo().getLastModified()) {
-									String title = GprofLaunchMessages.GprofGmonStale_msg;
-									String message = GprofLaunchMessages.GprofGmonStaleExplanation_msg;
-									Shell parent = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-									MessageDialog.openWarning(parent, title, message);
-								}
-								Display.getDefault().asyncExec(new LaunchTerminationWatcherRunnable(s, gmonExpected));
+							String s = exePath.toOSString();			
+							CovManager cvrgeMnger = new CovManager(s, getProject());
 
-							} catch (NullPointerException e) {
-								// Do nothing
-							} catch (CoreException e) {
+							try {
+								List<String> gcdaPaths = cvrgeMnger.getGCDALocations();
+								if (gcdaPaths.size() == 0) {
+									String title = GcovLaunchMessages.GcovCompilerOptions_msg;
+									String message = GcovLaunchMessages.GcovCompileAgain_msg;
+									Shell parent = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+									MessageDialog.openWarning(parent, title, message);
+								}
+								CovView.displayCovResults(s, null);
+							} catch (InterruptedException e) {
 								// Do nothing
 							}
 						}
 					});
 				}
 			}
-		}
 
+		}
 		public void launchesAdded(ILaunch[] launches) { /* dont care */}
 		public void launchesChanged(ILaunch[] launches) { /* dont care */ }
 		public void launchesRemoved(ILaunch[] launches) { /* dont care */ }
@@ -154,7 +121,7 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 	
 	@Override
 	protected String getPluginID() {
-		return GprofLaunchPlugin.getUniqueIdentifier();
+		return GcovLaunchPlugin.getUniqueIdentifier();
 	}
 	
 	/* all these functions exist to be overridden by the test class in order to allow launch testing */
