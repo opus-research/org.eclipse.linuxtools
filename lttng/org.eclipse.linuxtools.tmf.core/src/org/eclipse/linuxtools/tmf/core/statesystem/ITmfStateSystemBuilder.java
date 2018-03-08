@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +9,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API
+ *   Florian Wininger - add peekAttribute()
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
@@ -192,6 +194,29 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @since 2.0
      */
     ITmfStateValue popAttribute(long t, int attributeQuark)
+            throws AttributeNotFoundException, TimeRangeException,
+            StateValueTypeException;
+
+    /**
+     * "Peek" helper method. This function give the head's value of the stack.
+     * It works like "Pop" without delete the stack-attribute.
+     *
+     * @param t
+     *            Timestamp of the state change
+     * @param attributeQuark
+     *            Quark of the stack-attribute to pop
+     * @return The state value that was popped, or 'null' if nothing was
+     *         actually removed from the stack.
+     * @throws AttributeNotFoundException
+     *             If the attribute is invalid
+     * @throws TimeRangeException
+     *             If the timestamp is invalid
+     * @throws StateValueTypeException
+     *             If the target attribute already exists, but its state value
+     *             type is invalid (not an integer)
+     * @since 2.1
+     */
+    ITmfStateValue peekAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException;
 
