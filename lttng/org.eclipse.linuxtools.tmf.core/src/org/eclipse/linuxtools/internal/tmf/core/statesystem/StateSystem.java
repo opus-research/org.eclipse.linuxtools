@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -27,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
@@ -44,12 +45,15 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public class StateSystem implements IStateSystemBuilder {
+public class StateSystem implements ITmfStateSystemBuilder {
 
     /* References to the inner structures */
     private final AttributeTree attributeTree;
     private final TransientState transState;
     private final IStateHistoryBackend backend;
+
+    /* Latch tracking if the state history is done building or not */
+    private final CountDownLatch finishedLatch = new CountDownLatch(1);
 
     /**
      * General constructor
@@ -73,6 +77,16 @@ public class StateSystem implements IStateSystemBuilder {
             /* We're opening an existing file */
             this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
             transState.setInactive();
+            finishedLatch.countDown(); /* The history is already built */
+        }
+    }
+
+    @Override
+    public void waitUntilBuilt() {
+        try {
+            finishedLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -147,6 +161,7 @@ public class StateSystem implements IStateSystemBuilder {
              */
             attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
+        finishedLatch.countDown(); /* Mark the history as finished building */
     }
 
     //--------------------------------------------------------------------------

@@ -423,6 +423,8 @@
          </command>
          <command
                commandId="org.eclipse.ui.edit.copy"
+               disabledIcon="icons/dtool16/copy_edit.gif"
+               icon="icons/etool16/copy_edit.gif"
                label="%command.copy"
                mnemonic="%command.copy.mnemonic"
                style="push">
@@ -479,6 +481,8 @@
          </command>
          <command
                commandId="org.eclipse.ui.edit.delete"
+               disabledIcon="icons/dtool16/delete.gif"
+               icon="icons/etool16/delete.gif"
                label="%command.delete"
                mnemonic="%command.delete.mnemonic"
                style="push">
@@ -511,6 +515,8 @@
          </command>
          <command
                commandId="org.eclipse.ui.edit.delete"
+               disabledIcon="icons/dtool16/delete.gif"
+               icon="icons/etool16/delete.gif"
                label="%command.remove"
                mnemonic="%command.remove.mnemonic"
                style="push">
@@ -631,7 +637,7 @@
          </separator>
          <command
                commandId="org.eclipse.linuxtools.tmf.ui.command.select_traces"
-               icon="IMG_OBJ_ADD"
+               icon="icons/obj16/add_obj.gif"
                label="%command.select_traces"
                mnemonic="%command.select_traces.mnemonic"
                style="push"
@@ -838,7 +844,9 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     ifEmpty="false"
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
                   </instanceof>
@@ -854,7 +862,9 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     ifEmpty="false"
+                     operator="and">
                   <or>
                      <instanceof
                            value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
@@ -878,7 +888,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
                   </instanceof>
@@ -894,7 +905,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
                   </instanceof>
@@ -910,7 +922,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
                   </instanceof>
@@ -926,7 +939,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
                   </instanceof>
@@ -942,7 +956,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
                   </instanceof>
@@ -958,7 +973,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
                   </instanceof>
@@ -970,26 +986,26 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.DeleteTraceHandler"
             commandId="org.eclipse.ui.edit.delete">
          <activeWhen>
-            <and>
-               <iterate>
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                  </instanceof>
-               </iterate>
-            </and>
+            <iterate
+                  ifEmpty="false"
+                  operator="and">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+               </instanceof>
+            </iterate>
          </activeWhen>
       </handler>
       <handler
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.DeleteExperimentHandler"
             commandId="org.eclipse.ui.edit.delete">
          <activeWhen>
-            <and>
-               <iterate>
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
-                  </instanceof>
-               </iterate>
-            </and>
+            <iterate
+                  ifEmpty="false"
+                  operator="and">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+               </instanceof>
+            </iterate>
          </activeWhen>
       </handler>
       <handler
@@ -1000,7 +1016,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
                   </instanceof>
@@ -1016,7 +1033,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
                   </instanceof>
@@ -1032,7 +1050,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder">
                   </instanceof>
@@ -1044,13 +1063,13 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTraceTypeHandler"
             commandId="org.eclipse.linuxtools.tmf.ui.command.select_trace_type">
          <activeWhen>
-            <and>
-               <iterate>
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                  </instanceof>
-               </iterate>
-            </and>
+            <iterate
+                  ifEmpty="false"
+                  operator="and">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+               </instanceof>
+            </iterate>
          </activeWhen>
       </handler>
       <handler
@@ -1061,7 +1080,8 @@
                <count
                      value="1">
                </count>
-               <iterate>
+               <iterate
+                     operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
                   </instanceof>
@@ -1161,6 +1181,12 @@
             class="org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewerPage"
             id="org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewerPage"
             name="%preference.page.uml2sd.name">
+      </page>
+      <page
+            category="org.eclipse.linuxtools.tmf.ui.TmfTracingPreferences"
+            class="org.eclipse.linuxtools.tmf.ui.properties.TmfTimestampFormatPage"
+            id="org.eclipse.linuxtools.tmf.ui.preferences.timestamp.format"
+            name="%preferences.page.timestamp.format">
       </page>
    </extension>
    <extension

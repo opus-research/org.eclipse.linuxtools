@@ -17,6 +17,7 @@ import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 
 /**
  * Test suite for the TmfTimestamp class.
@@ -29,9 +30,9 @@ public class TmfTimestampTest extends TestCase {
     // ------------------------------------------------------------------------
 
     private final ITmfTimestamp ts0 = new TmfTimestamp();
-    private final ITmfTimestamp ts1 = new TmfTimestamp(12345);
+    private final ITmfTimestamp ts1 = new TmfTimestamp(12345,  0);
     private final ITmfTimestamp ts2 = new TmfTimestamp(12345, -1);
-    private final ITmfTimestamp ts3 = new TmfTimestamp(12345, 2, 5);
+    private final ITmfTimestamp ts3 = new TmfTimestamp(12345,  2, 5);
 
     // ------------------------------------------------------------------------
     // Housekeping
@@ -152,6 +153,50 @@ public class TmfTimestampTest extends TestCase {
     }
 
     // ------------------------------------------------------------------------
+    // clone
+    // ------------------------------------------------------------------------
+
+    private static class MyTimestamp extends TmfTimestamp {
+
+        @Override
+        public boolean equals(final Object other) {
+            return super.equals(other);
+        }
+
+        @Override
+        public MyTimestamp clone() {
+            return (MyTimestamp) super.clone();
+        }
+    }
+
+    /**
+     *
+     */
+    public void testClone() {
+        final ITmfTimestamp clone = ts0.clone();
+
+        assertTrue("clone", ts0.clone().equals(ts0));
+        assertTrue("clone", clone.clone().equals(clone));
+
+        assertEquals("clone", clone, ts0);
+        assertEquals("clone", ts0, clone);
+    }
+
+    /**
+     *
+     */
+    public void testClone2() {
+        final MyTimestamp timestamp = new MyTimestamp();
+        final MyTimestamp clone = timestamp.clone();
+
+        assertTrue("clone", timestamp.clone().equals(timestamp));
+        assertTrue("clone", clone.clone().equals(clone));
+
+        assertEquals("clone", clone, timestamp);
+        assertEquals("clone", timestamp, clone);
+    }
+
+    // ------------------------------------------------------------------------
     // hashCode
     // ------------------------------------------------------------------------
 
@@ -247,12 +292,22 @@ public class TmfTimestampTest extends TestCase {
     /**
      *
      */
-    public void testToString() {
-        assertEquals("toString", "TmfTimestamp [fValue=0, fScale=0, fPrecision=0]", ts0.toString());
-        assertEquals("toString", "TmfTimestamp [fValue=12345, fScale=0, fPrecision=0]", ts1.toString());
-        assertEquals("toString", "TmfTimestamp [fValue=12345, fScale=-1, fPrecision=0]", ts2.toString());
-        assertEquals("toString", "TmfTimestamp [fValue=12345, fScale=2, fPrecision=5]", ts3.toString());
+    public void testToStringDefault() {
+        assertEquals("toString", "00:00:00.000 000 000", ts0.toString());
+        assertEquals("toString", "03:25:45.000 000 000", ts1.toString());
+        assertEquals("toString", "00:20:34.500 000 000", ts2.toString());
+        assertEquals("toString", "06:55:00.000 000 000", ts3.toString());
     }
+
+    /**
+    *
+    */
+   public void testToStringInterval() {
+       assertEquals("toString", "000.000 000 000", ts0.toString(TmfTimestampFormat.getDefaulIntervalFormat()));
+       assertEquals("toString", "12345.000 000 000", ts1.toString(TmfTimestampFormat.getDefaulIntervalFormat()));
+       assertEquals("toString", "1234.500 000 000", ts2.toString(TmfTimestampFormat.getDefaulIntervalFormat()));
+       assertEquals("toString", "1234500.000 000 000", ts3.toString(TmfTimestampFormat.getDefaulIntervalFormat()));
+   }
 
     // ------------------------------------------------------------------------
     // normalize
@@ -287,7 +342,7 @@ public class TmfTimestampTest extends TestCase {
      *
      */
     public void testNormalizeOffsetLowerLimits() {
-        final ITmfTimestamp ref = new TmfTimestamp(Long.MIN_VALUE + 5);
+        final ITmfTimestamp ref = new TmfTimestamp(Long.MIN_VALUE + 5, 0);
 
         ITmfTimestamp ts = ref.normalize(-4, 0);
         assertEquals("getValue", Long.MIN_VALUE + 1, ts.getValue());
@@ -309,7 +364,7 @@ public class TmfTimestampTest extends TestCase {
      *
      */
     public void testNormalizeOffsetUpperLimits() {
-        final ITmfTimestamp ref = new TmfTimestamp(Long.MAX_VALUE - 5);
+        final ITmfTimestamp ref = new TmfTimestamp(Long.MAX_VALUE - 5, 0);
 
         ITmfTimestamp ts = ref.normalize(4, 0);
         assertEquals("getValue", Long.MAX_VALUE - 1, ts.getValue());

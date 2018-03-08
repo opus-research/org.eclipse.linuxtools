@@ -17,11 +17,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp.TimestampType;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -49,7 +49,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     //-------------------------------------------
 
     /** Reference to the state system assigned to this trace */
-    protected IStateSystemQuerier ss = null;
+    protected ITmfStateSystem ss = null;
 
     /* Reference to the CTF Trace */
     private CTFTrace fTrace;
@@ -79,7 +79,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
          * because the super needs to know the cache size.
          */
         setCacheSize();
-        super.initTrace(resource, path, eventType);
 
         @SuppressWarnings("unused")
         CtfTmfEventType type;
@@ -108,6 +107,8 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
              */
             throw new TmfTraceException(e.getMessage(), e);
         }
+
+        super.initTrace(resource, path, eventType);
 
         //FIXME This should be called via the ExperimentUpdated signal
         buildStateSystem();
@@ -233,7 +234,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         final long end = this.getEndTime().getValue();
         final long start = this.getStartTime().getValue();
         final long diff = end - start;
-        final long ratioTs = (long) (diff * ratio) + start;
+        final long ratioTs = Math.round(diff * ratio) + start;
         context.seek(ratioTs);
         context.setRank(ITmfContext.UNKNOWN_RANK);
         return context;
@@ -281,11 +282,10 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     }
 
     /**
-     * Method getStateSystem.
-     *
-     * @return IStateSystemQuerier
+     * @since 2.0
      */
-    public IStateSystemQuerier getStateSystem() {
+    @Override
+    public ITmfStateSystem getStateSystem() {
         return this.ss;
     }
 

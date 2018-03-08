@@ -132,9 +132,12 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     @Override
     public TmfLostEvent clone() {
         TmfLostEvent clone = null;
-        clone = (TmfLostEvent) super.clone();
-        clone.fTimeRange = fTimeRange;
-        clone.fNbLostEvents = fNbLostEvents;
+        try {
+            clone = (TmfLostEvent) super.clone();
+            clone.fTimeRange = fTimeRange.clone();
+            clone.fNbLostEvents = fNbLostEvents;
+        } catch (CloneNotSupportedException e) {
+        }
         return clone;
     }
 

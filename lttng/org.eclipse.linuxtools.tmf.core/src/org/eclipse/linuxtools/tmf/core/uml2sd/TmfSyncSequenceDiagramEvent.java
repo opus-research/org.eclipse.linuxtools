@@ -65,7 +65,7 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
                     (name == null ? ", name=null" : "")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        fStartTime = startEvent.getTimestamp();
+        fStartTime = startEvent.getTimestamp().clone();
 
         fSender = sender;
         fReceiver = receiver;

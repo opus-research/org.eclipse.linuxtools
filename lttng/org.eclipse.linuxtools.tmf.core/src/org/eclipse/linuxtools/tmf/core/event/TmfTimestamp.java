@@ -10,19 +10,20 @@
  *   Francois Chouinard - Initial API and implementation
  *   Thomas Gatterweh	- Updated scaling / synchronization
  *   Francois Chouinard - Refactoring to align with TMF Event Model 1.0
+ *   Francois Chouinard - Implement augmented interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-
 /**
  * A generic timestamp implementation. The timestamp is represented by the
- * tuple { value, scale, precision }.
+ * tuple { value, scale, precision }. By default, timestamps are scaled in
+ * seconds.
  *
- * @version 1.0
+ * @version 1.1
  * @author Francois Chouinard
  */
-public class TmfTimestamp implements ITmfTimestamp {
+public class TmfTimestamp implements ITmfTimestamp, Cloneable {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -41,6 +42,18 @@ public class TmfTimestamp implements ITmfTimestamp {
             new TmfTimestamp(Long.MAX_VALUE, Integer.MAX_VALUE, 0);
 
     /**
+     * A more practical definition of "beginning of time"
+     * @since 2.0
+     */
+    public static final ITmfTimestamp PROJECT_IS_FUNDED = BIG_BANG;
+
+    /**
+     * A more practical definition of "end of time"
+     * @since 2.0
+     */
+    public static final ITmfTimestamp PROJECT_IS_CANNED = BIG_CRUNCH;
+
+    /**
      * Zero
      */
     public static final ITmfTimestamp ZERO =
@@ -53,17 +66,17 @@ public class TmfTimestamp implements ITmfTimestamp {
     /**
      * The timestamp raw value (mantissa)
      */
-    private final long fValue;
+    private long fValue;
 
     /**
      * The timestamp scale (magnitude)
      */
-    private final int fScale;
+    private int fScale;
 
     /**
      * The value precision (tolerance)
      */
-    private final int fPrecision;
+    private int fPrecision;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -73,7 +86,7 @@ public class TmfTimestamp implements ITmfTimestamp {
      * Default constructor
      */
     public TmfTimestamp() {
-        this(0, 0, 0);
+        this(0, ITmfTimestamp.SECOND_SCALE, 0);
     }
 
     /**
@@ -82,7 +95,7 @@ public class TmfTimestamp implements ITmfTimestamp {
      * @param value the timestamp value
      */
     public TmfTimestamp(final long value) {
-        this(value, 0, 0);
+        this(value, ITmfTimestamp.SECOND_SCALE, 0);
     }
 
     /**
@@ -120,6 +133,16 @@ public class TmfTimestamp implements ITmfTimestamp {
         fValue = timestamp.getValue();
         fScale = timestamp.getScale();
         fPrecision = timestamp.getPrecision();
+    }
+
+    // ------------------------------------------------------------------------
+    // Setters
+    // ------------------------------------------------------------------------
+
+    protected void setValue(long value, int scale, int precision) {
+        fValue = value;
+        fScale = scale;
+        fPrecision = precision;
     }
 
     // ------------------------------------------------------------------------
@@ -278,6 +301,26 @@ public class TmfTimestamp implements ITmfTimestamp {
     }
 
     // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfTimestamp clone() {
+        TmfTimestamp clone = null;
+        try {
+            clone = (TmfTimestamp) super.clone();
+            clone.fValue = fValue;
+            clone.fScale = fScale;
+            clone.fPrecision = fPrecision;
+        } catch (final CloneNotSupportedException e) {
+        }
+        return clone;
+    }
+
+    // ------------------------------------------------------------------------
     // Comparable
     // ------------------------------------------------------------------------
 
@@ -328,9 +371,25 @@ public class TmfTimestamp implements ITmfTimestamp {
      * @see java.lang.Object#toString()
      */
     @Override
-    @SuppressWarnings("nls")
     public String toString() {
-        return "TmfTimestamp [fValue=" + fValue + ", fScale=" + fScale + ", fPrecision=" + fPrecision + "]";
+        return toString(TmfTimestampFormat.getDefaulTimeFormat());
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp#toString(org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat)
+     */
+    /**
+     * @since 2.0
+     */
+    @Override
+    public String toString(final TmfTimestampFormat format) {
+        try {
+            ITmfTimestamp ts = normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
+            return format.format(ts.getValue());
+        }
+        catch (ArithmeticException e) {
+            return format.format(0);
+        }
     }
 
 }

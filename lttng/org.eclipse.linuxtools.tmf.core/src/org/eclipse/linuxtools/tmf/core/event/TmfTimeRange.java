@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2012 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
@@ -15,13 +15,13 @@ package org.eclipse.linuxtools.tmf.core.event;
 
 /**
  * A utility class to define and manage time ranges.
- *
+ * 
  * @version 1.0
  * @author Francois Chouinard
- *
+ * 
  * @see ITmfTimestamp
  */
-public final class TmfTimeRange {
+public final class TmfTimeRange implements Cloneable {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -43,16 +43,23 @@ public final class TmfTimeRange {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final ITmfTimestamp fStartTime;
-    private final ITmfTimestamp fEndTime;
+    private ITmfTimestamp fStartTime;
+    private ITmfTimestamp fEndTime;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
+     * Default constructor
+     */
+    @SuppressWarnings("unused")
+    private TmfTimeRange() {
+    }
+
+    /**
      * Full constructor
-     *
+     * 
      * @param startTime start of the time range
      * @param endTime end of the time range
      */
@@ -66,7 +73,7 @@ public final class TmfTimeRange {
 
     /**
      * Copy constructor
-     *
+     * 
      * @param range the other time range
      */
     public TmfTimeRange(final TmfTimeRange range) {
@@ -101,7 +108,7 @@ public final class TmfTimeRange {
 
     /**
      * Check if the timestamp is within the time range
-     *
+     * 
      * @param ts the timestamp to check
      * @return true if [startTime] <= [ts] <= [endTime]
      */
@@ -115,7 +122,7 @@ public final class TmfTimeRange {
 
     /**
      * Check if the time range is within the time range
-     *
+     * 
      * @param range the other time range
      * @return true if [range] is fully contained
      */
@@ -131,7 +138,7 @@ public final class TmfTimeRange {
 
     /**
      * Get intersection of two time ranges
-     *
+     * 
      * @param range the other time range
      * @return the intersection time range, or null if no intersection exists
      */
@@ -140,11 +147,31 @@ public final class TmfTimeRange {
             return null; // no intersection
         }
 
-        return new TmfTimeRange(fStartTime.compareTo(range.fStartTime, true) < 0
-                ? range.fStartTime
-                : fStartTime, fEndTime.compareTo(range.fEndTime, true) > 0
-                        ? range.fEndTime
+        return new TmfTimeRange(fStartTime.compareTo(range.fStartTime, true) < 0 
+                ? range.fStartTime 
+                : fStartTime, fEndTime.compareTo(range.fEndTime, true) > 0 
+                        ? range.fEndTime 
                         : fEndTime);
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfTimeRange clone() throws CloneNotSupportedException {
+        TmfTimeRange clone = null;
+        try {
+            clone = (TmfTimeRange) super.clone();
+            clone.fStartTime = fStartTime.clone();
+            clone.fEndTime = fEndTime.clone();
+        }
+        catch (final CloneNotSupportedException e) {
+        }
+        return clone;
     }
 
     // ------------------------------------------------------------------------
