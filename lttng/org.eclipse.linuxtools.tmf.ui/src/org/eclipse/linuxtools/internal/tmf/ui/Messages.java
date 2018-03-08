@@ -297,6 +297,11 @@ public class Messages extends NLS {
     public static String CallStackView_DurationColumn;
     public static String CallStackView_StackInfoNotAvailable;
 
+    public static String ExportToTextJob_Export_to;
+    public static String ExportToTextJob_Export_trace_to;
+    public static String ExportToTextJob_Header;
+    public static String ExportToTextJob_Unable_to_export_trace;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
