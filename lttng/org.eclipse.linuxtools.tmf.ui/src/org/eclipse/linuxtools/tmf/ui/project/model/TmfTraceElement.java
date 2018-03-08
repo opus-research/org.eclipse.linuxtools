@@ -207,6 +207,9 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
                     }
                 }
                 IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
+                if( ce == null ){
+                    return null;
+                }
                 ITmfTrace trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
                 return trace;
             }
@@ -239,6 +242,9 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
                     }
                 }
                 IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
+                if( ce == null ){
+                    return null;
+                }
                 ITmfEvent event = (ITmfEvent) ce.createExecutableExtension(TmfTraceType.EVENT_TYPE_ATTR);
                 return event;
             }
