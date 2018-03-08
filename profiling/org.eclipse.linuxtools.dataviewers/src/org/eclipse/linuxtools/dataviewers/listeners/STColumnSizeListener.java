@@ -23,8 +23,7 @@ public class STColumnSizeListener implements Listener {
         this.hideshowMng = hideshowMng;
     }
 
-    @Override
-	public void handleEvent(Event event) {
+    public void handleEvent(Event event) {
         if (hideshowMng != null) {
             Item column = (Item) event.widget;
             AbstractSTViewer stViewer = hideshowMng.getSTViewer();
