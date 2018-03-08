@@ -20,7 +20,6 @@ public class TreeNodeTest extends TestCase {
 		super(name);
 	}
 
-	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		
@@ -218,7 +217,6 @@ public class TreeNodeTest extends TestCase {
 		t.dispose();
 	}
 	
-	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

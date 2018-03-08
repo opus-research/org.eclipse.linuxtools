@@ -53,7 +53,7 @@ public final class MockDataSet {
 	
 	@SuppressWarnings("unchecked")
 	public static <T> ArrayList<T>[] createArrayList(int size, T instance) {
-		return new ArrayList[size];
+		return (ArrayList<T>[])new ArrayList[size];
 	}
 
 	public static Integer[] buildIntegerArray(int[] arr) {

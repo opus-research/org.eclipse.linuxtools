@@ -41,17 +41,14 @@ public class LineChartBuilder extends AbstractChartWithAxisBuilder {
      * 
      * @see com.ibm.examples.chart.widget.AbstractChartBuilder#buildChart()
      */
-    @Override
-	protected void createChart() {
+    protected void createChart() {
 		super.createChart();
     }
 
-	@Override
 	public void updateDataSet() {
 		buildXSeries();
 	}
 
-	@Override
 	protected ISeries createChartISeries(int i) {
 		ILineSeries series = (ILineSeries) chart.getSeriesSet().
 			createSeries(SeriesType.LINE, adapter.getLabels()[i+1]);

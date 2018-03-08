@@ -51,7 +51,6 @@ public class OpenFileAction extends EditorAction {
 	/**
 	 * Opens the editor input.
 	 */
-	@Override
 	public void run() {
 		successful = false;
 		if (window == null)

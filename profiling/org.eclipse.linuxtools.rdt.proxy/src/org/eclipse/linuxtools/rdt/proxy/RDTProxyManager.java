@@ -36,17 +36,19 @@ public class RDTProxyManager implements IRemoteProxyManager {
 	}
 
 	@Override
-	public IRemoteCommandLauncher getLauncher(URI uri) {
+	public IRemoteCommandLauncher getLauncher(URI uri)
+			throws CoreException {
 		return new RDTCommandLauncher(uri);
 	}
 
 	@Override
-	public IRemoteCommandLauncher getLauncher(IProject project) {
+	public IRemoteCommandLauncher getLauncher(IProject project)
+			throws CoreException {
 		return new RDTCommandLauncher(project);
 	}
 
 	@Override
-	public String getOS(URI uri) {
+	public String getOS(URI uri) throws CoreException {
 		IRemoteServices services = PTPRemoteCorePlugin.getDefault().getRemoteServices(uri);
 		IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
 		String os = connection.getProperty(IRemoteConnection.OS_NAME_PROPERTY);
@@ -57,7 +59,7 @@ public class RDTProxyManager implements IRemoteProxyManager {
 	}
 
 	@Override
-	public String getOS(IProject project) {
+	public String getOS(IProject project) throws CoreException {
 		URI uri = project.getLocationURI();
 		return getOS(uri);
 	}

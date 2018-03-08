@@ -143,7 +143,6 @@ public class ValgrindRemoteTab extends RemoteTab {
 		return valid;
 	}
 
-	@Override
 	public String getName() {
 		return Messages.ValgrindRemoteTab_tab_name;
 	}

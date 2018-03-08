@@ -1,22 +1,22 @@
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.datasets.row;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataEntry;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.row.RowDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.row.RowParser;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.XMLMemento;
-import org.junit.Before;
-import org.junit.Test;
 
-public class RowParserTest {
 
-	@Before
-	public void setUp() {
+import junit.framework.TestCase;
+
+public class RowParserTest extends TestCase {
+	public RowParserTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+		
 		parser = new RowParser(new String[] {"\\d+", "(\\D+)", "\\d+", "\\D+"});
 		
 		IMemento m = XMLMemento.createWriteRoot("a");
@@ -24,7 +24,6 @@ public class RowParserTest {
 		parser2 = new RowParser(m);
 	}
 	
-	@Test
 	public void testParse() {
 		assertNull(parser.parse(null));
 		assertNull(parser.parse(new StringBuilder("")));
@@ -45,7 +44,6 @@ public class RowParserTest {
 		assertEquals("1", entry.getRow(0)[0]);
 	}
 	
-	@Test
 	public void testSaveXML() {
 		IMemento m = XMLMemento.createWriteRoot("a");
 		parser.saveXML(m);
@@ -57,6 +55,10 @@ public class RowParserTest {
 		assertSame("(\\D+)", children[0].getString("parsingSpacer"));
 		assertSame("\\d+", children[1].getString("parsingExpression"));
 		assertSame("\\D+", children[1].getString("parsingSpacer"));
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 	
 	RowParser parser;

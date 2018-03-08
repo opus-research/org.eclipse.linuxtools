@@ -30,7 +30,6 @@ public class SaveLogAction extends ConsoleAction {
 	 * The main method of this class. Handles getting the currnet <code>ScriptConsole</code>
 	 * and telling it to save the output to the selected file.
 	 */
-	@Override
 	public void run() {
 		ScriptConsole console = getActive();
 		if(null != console && console.isRunning()) {

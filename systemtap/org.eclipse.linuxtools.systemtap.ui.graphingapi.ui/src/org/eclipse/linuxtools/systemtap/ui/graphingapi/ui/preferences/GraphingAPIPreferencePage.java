@@ -26,13 +26,11 @@ public class GraphingAPIPreferencePage extends FieldEditorPreferencePage impleme
 		setDescription(Localization.getString("GraphingAPIPreferencePage.GraphDisplayPreferences"));
 	}
 	
-	@Override
 	public void createFieldEditors() {
 	}
 
 	public void init(IWorkbench workbench) {}
 	
-	@Override
 	public void dispose() {
 		super.dispose();
 	}

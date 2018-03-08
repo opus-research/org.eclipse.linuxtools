@@ -54,7 +54,7 @@ public class TestSetup extends AbstractTest {
 	}
 	
 	@Override
-	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
+	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) throws CoreException {
 		OprofileEventConfigTab configTab = new OprofileEventConfigTab();
 		OprofileSetupTab setupTab = new OprofileSetupTab();
 		configTab.setDefaults(wc);

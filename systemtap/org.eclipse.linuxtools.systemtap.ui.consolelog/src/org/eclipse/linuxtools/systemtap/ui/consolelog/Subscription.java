@@ -115,8 +115,7 @@ public class Subscription extends Thread {
 	 * Contains blocking reads.
 	 * 
 	 */
-	  @Override
-	public void run () {
+	  public void run () {
 		running = true;
 		DMResponse subrep = null;
 		//long timeToRemove = 0;

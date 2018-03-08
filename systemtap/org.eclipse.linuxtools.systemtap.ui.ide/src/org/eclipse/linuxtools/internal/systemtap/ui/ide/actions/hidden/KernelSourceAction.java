@@ -23,8 +23,10 @@ import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
@@ -116,7 +118,6 @@ public class KernelSourceAction extends Action implements ISelectionListener, IW
 	 * @see TreeNode#isClickable()
 	 * @see TreeExpandCollapseAction
 	 */
-	@Override
 	public void run() {
 		LogManager.logDebug("Start run", this); //$NON-NLS-1$
 		IWorkbench wb = PlatformUI.getWorkbench();

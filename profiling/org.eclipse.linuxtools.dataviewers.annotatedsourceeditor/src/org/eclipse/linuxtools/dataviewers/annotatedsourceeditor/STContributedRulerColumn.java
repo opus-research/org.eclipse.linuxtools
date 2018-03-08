@@ -98,7 +98,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerColumn#createControl(org.eclipse.jface.text.source.CompositeRuler, org.eclipse.swt.widgets.Composite)
 	 */
-	@Override
 	public Control createControl(CompositeRuler parentRuler, Composite parentControl) {
 		Assert.isTrue(fDelegate != null);
 		ITextViewer viewer= parentRuler.getTextViewer();
@@ -116,7 +115,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerColumn#getControl()
 	 */
-	@Override
 	public Control getControl() {
 		return fDelegate.getControl();
 	}
@@ -131,7 +129,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerColumn#getWidth()
 	 */
-	@Override
 	public int getWidth() {
 		return fDelegate.getWidth();
 	}
@@ -139,7 +136,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerColumn#redraw()
 	 */
-	@Override
 	public void redraw() {
 		fDelegate.redraw();
 	}
@@ -147,7 +143,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerColumn#setFont(org.eclipse.swt.graphics.Font)
 	 */
-	@Override
 	public void setFont(Font font) {
 		fDelegate.setFont(font);
 	}
@@ -155,7 +150,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerColumn#setModel(org.eclipse.jface.text.source.IAnnotationModel)
 	 */
-	@Override
 	public void setModel(IAnnotationModel model) {
 		if (getQuickDiffPreference())
 			fDelegate.setModel(model);
@@ -164,7 +158,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerInfo#getLineOfLastMouseButtonActivity()
 	 */
-	@Override
 	public int getLineOfLastMouseButtonActivity() {
 		if (fDelegate instanceof IVerticalRulerInfo)
 			((IVerticalRulerInfo) fDelegate).getLineOfLastMouseButtonActivity();
@@ -174,7 +167,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerInfo#toDocumentLineNumber(int)
 	 */
-	@Override
 	public int toDocumentLineNumber(int y_coordinate) {
 		if (fDelegate instanceof IVerticalRulerInfo)
 			return ((IVerticalRulerInfo) fDelegate).toDocumentLineNumber(y_coordinate);
@@ -184,7 +176,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#addVerticalRulerListener(org.eclipse.jface.text.source.IVerticalRulerListener)
 	 */
-	@Override
 	public void addVerticalRulerListener(IVerticalRulerListener listener) {
 		if (fDelegate instanceof IVerticalRulerInfoExtension)
 			((IVerticalRulerInfoExtension) fDelegate).addVerticalRulerListener(listener);
@@ -193,7 +184,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#getHover()
 	 */
-	@Override
 	public IAnnotationHover getHover() {
 		if (fDelegate instanceof IVerticalRulerInfoExtension)
 			return ((IVerticalRulerInfoExtension) fDelegate).getHover();
@@ -203,7 +193,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#getModel()
 	 */
-	@Override
 	public IAnnotationModel getModel() {
 		if (fDelegate instanceof IVerticalRulerInfoExtension)
 			return ((IVerticalRulerInfoExtension) fDelegate).getModel();
@@ -213,7 +202,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#removeVerticalRulerListener(org.eclipse.jface.text.source.IVerticalRulerListener)
 	 */
-	@Override
 	public void removeVerticalRulerListener(IVerticalRulerListener listener) {
 		if (fDelegate instanceof IVerticalRulerInfoExtension)
 			((IVerticalRulerInfoExtension) fDelegate).removeVerticalRulerListener(listener);
@@ -222,7 +210,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 	/*
 	 * @see org.eclipse.ui.texteditor.rulers.AbstractContributedRulerColumn#columnRemoved()
 	 */
-	@Override
 	public void columnRemoved() {
 		if (fDispatcher != null) {
 			fDispatcher.dispose();
@@ -272,14 +259,12 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 		fDispatcher= new PropertyEventDispatcher(store);
 
 		fDispatcher.addPropertyChangeListener(FG_COLOR_KEY, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateForegroundColor(store, fDelegate);
 				fDelegate.redraw();
 			}
 		});
 		IPropertyChangeListener backgroundHandler= new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateBackgroundColor(store, fDelegate);
 				fDelegate.redraw();
@@ -289,7 +274,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 		fDispatcher.addPropertyChangeListener(USE_DEFAULT_BG_KEY, backgroundHandler);
 
 		fDispatcher.addPropertyChangeListener(ST_KEY, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				// only handle quick diff on/off information, but not ruler visibility (handled by AbstractDecoratedTextEditor)
 				
@@ -298,35 +282,30 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 		});
 
 		fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_CHARACTER_MODE, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateCharacterMode(store, fDelegate);
 			}
 		});
 
 		fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_RENDERING_MODE, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateRevisionRenderingMode(store, fDelegate);
 			}
 		});
 		
 		fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_SHOW_AUTHOR, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateRevisionAuthorVisibility(store, fDelegate);
 			}
 		});
 		
 		fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_SHOW_REVISION, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateRevisionIdVisibility(store, fDelegate);
 			}
 		});
 		
 		fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_ALWAYS_ON, new IPropertyChangeListener() {
-			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateQuickDiffVisibility(fDelegate);
 			}
@@ -334,7 +313,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 
 		if (changedPref != null) {
 			fDispatcher.addPropertyChangeListener(changedPref.getColorPreferenceKey(), new IPropertyChangeListener() {
-				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					updateChangedColor(changedPref, store, fDelegate);
 					fDelegate.redraw();
@@ -343,7 +321,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 		}
 		if (addedPref != null) {
 			fDispatcher.addPropertyChangeListener(addedPref.getColorPreferenceKey(), new IPropertyChangeListener() {
-				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					updateAddedColor(addedPref, store, fDelegate);
 					fDelegate.redraw();
@@ -352,7 +329,6 @@ public class STContributedRulerColumn extends AbstractContributedRulerColumn imp
 		}
 		if (deletedPref != null) {
 			fDispatcher.addPropertyChangeListener(deletedPref.getColorPreferenceKey(), new IPropertyChangeListener() {
-				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					updateDeletedColor(deletedPref, store, fDelegate);
 					fDelegate.redraw();

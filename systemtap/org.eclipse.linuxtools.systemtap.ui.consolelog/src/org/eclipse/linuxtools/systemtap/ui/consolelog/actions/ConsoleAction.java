@@ -43,7 +43,6 @@ public abstract class ConsoleAction extends Action implements IWorkbenchWindowAc
 		run();
 	}
 	
-	@Override
 	public abstract void run();
 	
 

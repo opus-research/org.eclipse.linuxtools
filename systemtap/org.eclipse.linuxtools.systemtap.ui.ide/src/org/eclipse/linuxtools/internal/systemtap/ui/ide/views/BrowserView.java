@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
+import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -49,7 +50,7 @@ public abstract class BrowserView extends ViewPart {
 	 * @author Ryan Morse
 	 *
 	 */
-	static class ViewContentProvider implements ITreeContentProvider {
+	static class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 		
 		public void dispose() {}
@@ -84,12 +85,10 @@ public abstract class BrowserView extends ViewPart {
 	 * @author Ryan Morse
 	 */
 	static class ViewLabelProvider extends LabelProvider {
-		@Override
 		public String getText(Object obj) {
 			return obj.toString();
 		}
 
-		@Override
 		public Image getImage(Object obj) {
 			TreeNode treeObj = (TreeNode)obj;
 			Image img;
@@ -133,7 +132,6 @@ public abstract class BrowserView extends ViewPart {
 		}
 	}	
 	
-	@Override
 	public void createPartControl(Composite parent) {
 		parent.getShell().setCursor(new Cursor(parent.getShell().getDisplay(), SWT.CURSOR_WAIT));
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
@@ -146,12 +144,10 @@ public abstract class BrowserView extends ViewPart {
 		return viewer;
 	}
 
-	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
 	
-	@Override
 	public void dispose() {
 		super.dispose();
 		viewer = null;
