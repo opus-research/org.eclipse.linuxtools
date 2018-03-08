@@ -101,6 +101,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
         return this.toString();
     }
 
+    /**
+     * @since 2.0
+     */
     @Override
     public void read(BitBuffer input) {
         final long longNegBit = 0x0000000080000000L;
