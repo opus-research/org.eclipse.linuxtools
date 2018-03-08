@@ -39,7 +39,7 @@ public class DashboardCloseMonitor implements IWorkbenchListener {
 				ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 				if(ambv.anyRunning()) {
 					String msg = MessageFormat.format(Localization.getString("DashboardCloseMonitor.StillRunning"), (Object[])null); //$NON-NLS-1$
-					close = MessageDialog.openQuestion(window.getShell(), "Closing...", msg);
+					close = MessageDialog.openQuestion(window.getShell(), Localization.getString("DashboardCloseMonitor.closing"), msg); //$NON-NLS-1$
 				}
 			}
 			
