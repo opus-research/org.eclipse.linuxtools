@@ -28,9 +28,6 @@ import org.junit.Test;
  */
 public abstract class TmfStatisticsTest {
 
-    /** The index of the test trace used for these tests */
-    protected static final int TRACE_INDEX = 0;
-
     /** The statistics back-end object */
     protected static ITmfStatistics backend;
 

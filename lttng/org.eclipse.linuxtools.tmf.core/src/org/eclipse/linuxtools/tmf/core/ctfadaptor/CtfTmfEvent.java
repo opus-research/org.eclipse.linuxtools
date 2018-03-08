@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,17 +12,24 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.Definition;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventPropertySource;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
@@ -33,74 +40,195 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public final class CtfTmfEvent extends TmfEvent {
+public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
 
-    static final String NO_STREAM = "No stream"; //$NON-NLS-1$
+    private static final String NO_STREAM = "No stream"; //$NON-NLS-1$
     private static final String EMPTY_CTF_EVENT_NAME = "Empty CTF event"; //$NON-NLS-1$
+
+    /** Prefix for Context information stored as CtfTmfEventfield */
+    private static final String CONTEXT_FIELD_PREFIX = "context."; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
+    private final CtfTmfTrace fTrace;
+    private final ITmfTimestamp fTimestamp;
     private final int sourceCPU;
     private final long typeId;
     private final String eventName;
-    private final IEventDeclaration fDeclaration;
+    private final String fileName;
+
+    private final TmfEventField fContent;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor used by {@link CtfTmfEventFactory#createEvent}
+     * Usual CTFEvent constructor, where we read an event from the trace (via
+     * the StreamInputReader).
+     *
+     * @param eventDef
+     *            CTF EventDefinition object corresponding to this trace event
+     * @param fileName
+     *            The path to the trace file
+     * @param originTrace
+     *            The trace from which this event originates
      */
-    CtfTmfEvent(CtfTmfTrace trace, long rank, CtfTmfTimestamp timestamp,
-            ITmfEventField content, String fileName, int cpu,
-            IEventDeclaration declaration) {
-        super(trace,
-                rank,
-                timestamp,
-                String.valueOf(cpu), // Source
-                null, // Event type. We don't use TmfEvent's field here, we re-implement getType()
-                content,
-                fileName // Reference
-        );
+    public CtfTmfEvent(EventDefinition eventDef, String fileName,
+            CtfTmfTrace originTrace) {
+        this.fTrace = originTrace;
 
-        fDeclaration = declaration;
-        sourceCPU = cpu;
-        typeId = declaration.getId();
-        eventName = declaration.getName();
+        if (eventDef == null) {
+            this.fTimestamp = new CtfTmfTimestamp(-1);
+            this.sourceCPU = -1;
+            this.typeId = -1;
+            this.fileName = NO_STREAM;
+            this.eventName = EMPTY_CTF_EVENT_NAME;
+            this.fContent = null;
+            return;
+        }
+
+        /* Read the base event info */
+        long ts = this.getTrace().getCTFTrace().timestampCyclesToNanos(eventDef.getTimestamp());
+        this.fTimestamp = new CtfTmfTimestamp(ts);
+        this.sourceCPU = eventDef.getCPU();
+        this.typeId = eventDef.getDeclaration().getId();
+        this.eventName = eventDef.getDeclaration().getName();
+        this.fileName =  fileName;
+
+        /* Read the fields */
+        this.fContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, parseFields(eventDef));
+    }
+
+    /**
+     * Extract the field information from the structDefinition haze-inducing
+     * mess, and put them into something ITmfEventField can cope with.
+     */
+    private CtfTmfEventField[] parseFields(EventDefinition eventDef) {
+        List<CtfTmfEventField> fields = new ArrayList<CtfTmfEventField>();
+
+        StructDefinition structFields = eventDef.getFields();
+        HashMap<String, Definition> definitions = structFields.getDefinitions();
+        String curFieldName = null;
+        Definition curFieldDef;
+        CtfTmfEventField curField;
+        Iterator<Entry<String, Definition>> it = definitions.entrySet().iterator();
+        while(it.hasNext()) {
+            Entry<String, Definition> entry = it.next();
+            curFieldName = entry.getKey();
+            curFieldDef = entry.getValue();
+            curField = CtfTmfEventField.parseField(curFieldDef, curFieldName);
+            fields.add(curField);
+        }
+
+        /* Add context information as CtfTmfEventField */
+        long ip = -1;
+        StructDefinition structContext = eventDef.getContext();
+        if (structContext != null) {
+            definitions = structContext.getDefinitions();
+            String curContextName;
+            Definition curContextDef;
+            CtfTmfEventField curContext;
+            it = definitions.entrySet().iterator();
+            while(it.hasNext()) {
+                Entry<String, Definition> entry = it.next();
+                /* This is to get the instruction pointer if available */
+                if (entry.getKey().equals("_ip") && //$NON-NLS-1$
+                        (entry.getValue() instanceof IntegerDefinition)) {
+                    ip = ((IntegerDefinition) entry.getValue()).getValue();
+                }
+                /* Prefix field name to */
+                curContextName = CONTEXT_FIELD_PREFIX + entry.getKey();
+                curContextDef = entry.getValue();
+                curContext = CtfTmfEventField.parseField(curContextDef, curContextName);
+                fields.add(curContext);
+            }
+        }
+        /* Add callsite */
+        final String name = eventDef.getDeclaration().getName();
+        List<CTFCallsite> eventList = fTrace.getCTFTrace().getCallsiteCandidates(name);
+        if (!eventList.isEmpty()) {
+            final String callsite = "callsite"; //$NON-NLS-1$
+            if (eventList.size() == 1 || ip == -1) {
+                CTFCallsite cs = eventList.get(0);
+                fields.add(new CTFStringField(cs.toString(), callsite));
+            } else {
+                fields.add(new CTFStringField(
+                        fTrace.getCTFTrace().getCallsite(name, ip).toString(),
+                        callsite));
+            }
+        }
+
+        return fields.toArray(new CtfTmfEventField[fields.size()]);
+    }
+
+    /**
+     * Copy constructor
+     *
+     * @param other
+     *            CtfTmfEvent to copy
+     */
+    public CtfTmfEvent(CtfTmfEvent other) {
+        /* There is only one reference to the trace, so we can shallow-copy it */
+        this.fTrace = other.getTrace();
+
+        /*
+         * Copy the timestamp
+         * FIXME This can be switched to a shallow-copy once timestamps are
+         * made immutable.
+         */
+        this.fTimestamp = new CtfTmfTimestamp(other.fTimestamp.getValue());
+
+        /* Primitives, those will be copied by value */
+        this.sourceCPU = other.sourceCPU;
+        this.typeId = other.typeId;
+
+        /* Strings are immutable, it's safe to shallow-copy them */
+        this.eventName = other.eventName;
+        this.fileName = other.fileName;
+
+        /* Copy the fields over */
+        this.fContent = other.fContent.clone();
     }
 
     /**
      * Inner constructor to create "null" events. Don't use this directly in
-     * normal usage, use {@link CtfTmfEventFactory#getNullEvent()} to get an
-     * instance of an empty event.
+     * normal usage, use CtfTmfEvent.getNullEvent() to get an instance of an
+     * empty event.
      *
      * This needs to be public however because it's used in extension points,
      * and the framework will use this constructor to get the class type.
      */
     public CtfTmfEvent() {
-        super(null,
-                ITmfContext.UNKNOWN_RANK,
-                new CtfTmfTimestamp(-1),
-                null,
-                null,
-                new TmfEventField("", new CtfTmfEventField[0]), //$NON-NLS-1$
-                NO_STREAM);
+        this.fTrace = null;
+        this.fTimestamp = new CtfTmfTimestamp(-1);
         this.sourceCPU = -1;
         this.typeId = -1;
+        this.fileName = NO_STREAM;
         this.eventName = EMPTY_CTF_EVENT_NAME;
-        this.fDeclaration = null;
+        this.fContent = new TmfEventField("", new CtfTmfEventField[0]); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
+
+    private static CtfTmfEvent nullEvent = new CtfTmfEvent();
+
+    /**
+     * Get a null event
+     *
+     * @return An empty event.
+     */
+    public static CtfTmfEvent getNullEvent() {
+        return nullEvent;
+    }
 
     /**
      * Gets the cpu core the event was recorded on.
@@ -132,79 +260,64 @@ public final class CtfTmfEvent extends TmfEvent {
         return eventName;
     }
 
+    /**
+     * Gets the channel name of a field.
+     *
+     * @return The channel name.
+     */
+    public String getChannelName() {
+        return this.fileName;
+    }
+
     @Override
     public CtfTmfTrace getTrace() {
-        /* Should be of the right type, since we take a CtfTmfTrace at the constructor */
-        return (CtfTmfTrace) super.getTrace();
+        return fTrace;
+    }
+
+    @Override
+    public long getRank() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public ITmfTimestamp getTimestamp() {
+        return fTimestamp;
+    }
+
+    @Override
+    public String getSource() {
+        // TODO Returns CPU for now
+        return Integer.toString(getCPU());
     }
 
     @Override
     public ITmfEventType getType() {
         CtfTmfEventType ctfTmfEventType = CtfTmfEventType.get(eventName);
-        if (ctfTmfEventType == null) {
-            /* Should only return null the first time */
-            ctfTmfEventType = new CtfTmfEventType(this.getEventName(), this.getContent());
+        if( ctfTmfEventType == null ){
+            ctfTmfEventType = new CtfTmfEventType( this.getEventName(), this.getContent());
         }
         return ctfTmfEventType;
     }
 
-    /**
-     * List the custom CTF attributes for events of this type.
-     *
-     * @return The list of custom attribute names. Should not be null, but could
-     *         be empty.
-     * @since 2.0
-     */
-    public Set<String> listCustomAttributes() {
-        if (fDeclaration == null) {
-            return new HashSet<String>();
-        }
-        return fDeclaration.getCustomAttributes();
+    @Override
+    public ITmfEventField getContent() {
+        return fContent;
     }
 
-    /**
-     * Get the value of a custom CTF attributes for this event's type.
-     *
-     * @param name
-     *            Name of the the custom attribute
-     * @return Value of this attribute, or null if there is no attribute with
-     *         that name
-     * @since 2.0
-     */
-    public String getCustomAttribute(String name) {
-        if (fDeclaration == null) {
-            return null;
-        }
-        return fDeclaration.getCustomAttribute(name);
+    @Override
+    public String getReference() {
+        return getChannelName();
     }
 
-    /**
-     * Get the callsite for this event.
-     *
-     * @return the callsite information, or null if there is none
-     * @since 2.0
-     */
-    public CtfTmfCallsite getCallsite() {
-        CTFCallsite callsite = null;
-        if (getTrace() == null) {
-            return null;
-        }
-        if (getContent() != null) {
-            ITmfEventField ipField = getContent().getField(CtfConstants.CONTEXT_FIELD_PREFIX + CtfConstants.IP_KEY);
-            if (ipField != null && ipField.getValue() instanceof Long) {
-                long ip = (Long) ipField.getValue();
-                callsite = getTrace().getCTFTrace().getCallsite(eventName, ip);
-            }
-        }
-        if (callsite == null) {
-            callsite = getTrace().getCTFTrace().getCallsite(eventName);
-        }
-        if (callsite != null) {
-            return new CtfTmfCallsite(callsite);
-        }
-        return null;
+    @Override
+    public CtfTmfEvent clone() {
+        return new CtfTmfEvent(this);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+     */
     /**
      * @since 2.0
      */

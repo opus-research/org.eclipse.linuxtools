@@ -100,11 +100,6 @@ public class ControlFlowView extends TmfView {
             TRACE_COLUMN
     };
 
-    private final String[] FILTER_COLUMN_NAMES = new String[] {
-            PROCESS_COLUMN,
-            TID_COLUMN
-    };
-
     /**
      * Redraw state enum
      */
@@ -232,7 +227,7 @@ public class ControlFlowView extends TmfView {
                     return Integer.toString(entry.getParentThreadId());
                 }
             } else if (columnIndex == 3) {
-                return Utils.formatTime(entry.getStartTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
+                return Utils.formatTime(entry.getBirthTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
             } else if (columnIndex == 4) {
                 return entry.getTrace().getName();
             }
@@ -373,12 +368,6 @@ public class ControlFlowView extends TmfView {
 
         fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
 
-        fTimeGraphCombo.setFilterContentProvider(new TreeContentProvider());
-
-        fTimeGraphCombo.setFilterLabelProvider(new TreeLabelProvider());
-
-        fTimeGraphCombo.setFilterColumns(FILTER_COLUMN_NAMES);
-
         fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
             @Override
             public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
@@ -422,9 +411,6 @@ public class ControlFlowView extends TmfView {
                 traceSelected(new TmfTraceSelectedSignal(this, trace));
             }
         }
-
-        // make selection available to other views
-        getSite().setSelectionProvider(fTimeGraphCombo.getTreeViewer());
     }
 
     /* (non-Javadoc)
@@ -663,7 +649,7 @@ public class ControlFlowView extends TmfView {
                         if (monitor.isCanceled()) {
                             return;
                         }
-                        ControlFlowEntry entry = null;
+                        long birthTime = -1;
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -672,21 +658,19 @@ public class ControlFlowView extends TmfView {
                                 String execName = execNameInterval.getStateValue().unboxStr();
                                 long startTime = execNameInterval.getStartTime();
                                 long endTime = execNameInterval.getEndTime() + 1;
+                                if (birthTime == -1) {
+                                    birthTime = startTime;
+                                }
                                 int ppid = -1;
                                 if (ppidQuark != -1) {
                                     ITmfStateInterval ppidInterval = ssq.querySingleState(startTime, ppidQuark);
                                     ppid = ppidInterval.getStateValue().unboxInt();
                                 }
-                                if (entry == null) {
-                                    entry = new ControlFlowEntry(threadQuark, ctfKernelTrace, execName, threadId, ppid, startTime, endTime);
-                                    entryList.add(entry);
-                                } else {
-                                    // update the name of the entry to the latest execName
-                                    entry.setName(execName);
-                                }
+                                ControlFlowEntry entry = new ControlFlowEntry(threadQuark, ctfKernelTrace, execName, threadId, ppid, birthTime, startTime, endTime);
+                                entryList.add(entry);
                                 entry.addEvent(new TimeEvent(entry, startTime, endTime - startTime));
                             } else {
-                                entry = null;
+                                birthTime = -1;
                             }
                         }
                     } catch (AttributeNotFoundException e) {
@@ -890,7 +874,6 @@ public class ControlFlowView extends TmfView {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(fTimeGraphCombo.getShowFilterAction());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getShowLegendAction());
         manager.add(new Separator());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());

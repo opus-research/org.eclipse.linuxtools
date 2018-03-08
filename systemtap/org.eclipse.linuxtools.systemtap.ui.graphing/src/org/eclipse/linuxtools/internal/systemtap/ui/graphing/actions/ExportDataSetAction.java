@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
 import org.eclipse.linuxtools.systemtap.ui.graphing.structures.GraphDisplaySet;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.ITabListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
@@ -28,15 +29,19 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 
+
+
 /**
  * This action handles exporting all of the data that was collected for the DataSet.  It
  * exports everything as a table, that can easily be read back in at a later time.
  * @author Ryan Morse
  */
 public class ExportDataSetAction extends Action implements IWorkbenchWindowActionDelegate {
-	@Override
 	public void init(IWorkbenchWindow window) {
+		LogManager.logDebug("Start ExportDataSetAction.init", this); //$NON-NLS-1$
+		LogManager.logInfo("Initialize ExportDataSetAction", this); //$NON-NLS-1$
 		fWindow = window;
+		LogManager.logDebug("End ExportDataSetAction.init", this); //$NON-NLS-1$
 	}
 
 	/**
@@ -44,8 +49,8 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 	 * and then saving it to a file that can be accessed later.
 	 * @param act The action that fired this method.
 	 */
-	@Override
 	public void run(IAction act) {
+		LogManager.logDebug("Start ExportDataSetAction.run", this); //$NON-NLS-1$
 		File f = null;
 		IDataSet data = getDataSet();
 
@@ -54,6 +59,7 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 
 		if(f != null && data != null)
 			data.writeToFile(f);
+		LogManager.logDebug("End ExportDataSetAction.run", this); //$NON-NLS-1$
 	}
 	
 	/**
@@ -62,11 +68,13 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 	 * @return The IDataSet in tha active display set.
 	 */
 	public IDataSet getDataSet() {
+		LogManager.logDebug("Start ExportDataSetAction.getDataSet", this); //$NON-NLS-1$
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
 		IDataSet data = null;
 		GraphDisplaySet gds = ((GraphSelectorView)ivp).getActiveDisplaySet();
 		if(null != gds)
 			data = gds.getDataSet();
+		LogManager.logDebug("End ExportDataSetAction.getDataSet", this); //$NON-NLS-1$
 		return data;
 	}
 	
@@ -76,22 +84,23 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 	 * @return The File selected to save the image to.
 	 */
 	public File getFile() {
+		LogManager.logDebug("Start ExportDataSetAction.getFile", this); //$NON-NLS-1$
 		String path = null;
 		FileDialog dialog= new FileDialog(fWindow.getShell(), SWT.SAVE);
-		dialog.setText(Localization.getString("ExportDataSetAction.NewFile")); //$NON-NLS-1$
+		dialog.setText(Localization.getString("ExportDataSetAction.NewFile"));
 
 		path = dialog.open();
 		
 		if(null == path)
 			return null;
 
+		LogManager.logDebug("End ExportDataSetAction.getFile", this); //$NON-NLS-1$
 		return new File(path);
 	}
 	
-	@Override
 	public void selectionChanged(IAction a, ISelection s) {
 		action = a;
-		action.setEnabled(false);
+		setEnablement(false);
 		buildEnablementChecks();
 	}
 	
@@ -103,32 +112,35 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
 		if(null != ivp) {
 			final GraphSelectorView gsv = (GraphSelectorView)ivp;
-			action.setEnabled(null != gsv.getActiveDisplaySet());
+			setEnablement(null != gsv.getActiveDisplaySet());
 			gsv.addTabListener(new ITabListener() {
-				@Override
 				public void tabClosed() {
-					action.setEnabled(null != gsv.getActiveDisplaySet());
+					setEnablement(null != gsv.getActiveDisplaySet());
 				}
 				
-				@Override
 				public void tabOpened() {
-					action.setEnabled(true);
+					setEnablement(true);
 				}
 				
-				@Override
 				public void tabChanged() {}
 			});
 		}
+	}
+	
+	private void setEnablement(boolean enable) {
+		action.setEnabled(enable);
 	}
 	
 	/**
 	 * Removes all internal references in this class.  Nothing should make any references
 	 * to anyting in this class after calling the dispose method.
 	 */
-	@Override
 	public void dispose() {
+		LogManager.logDebug("Start ExportDataSetAction.dispose", this); //$NON-NLS-1$
+		LogManager.logInfo("Dispose ExportDataSetAction", this); //$NON-NLS-1$
 		fWindow = null;
 		action = null;
+		LogManager.logDebug("End ExportDataSetAction.dispose", this); //$NON-NLS-1$
 	}
 	
 	private IWorkbenchWindow fWindow;

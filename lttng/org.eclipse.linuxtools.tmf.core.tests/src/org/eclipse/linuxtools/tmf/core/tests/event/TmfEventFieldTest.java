@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,27 +9,20 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Event Model
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
-import org.junit.Test;
 
 /**
  * Test suite for the TmfEventField class.
  */
-@SuppressWarnings({"nls", "javadoc"})
-public class TmfEventFieldTest {
+@SuppressWarnings("nls")
+public class TmfEventFieldTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Variables
@@ -59,10 +52,33 @@ public class TmfEventFieldTest {
             new ITmfEventField[] { fField1, fField2 });
 
     // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    /**
+     * @param name the test name
+     */
+    public TmfEventFieldTest(final String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testTerminalStructConstructor() {
         assertSame("getName", fFieldName1, fStructTerminalField1.getName());
         assertNull("getValue", fStructTerminalField1.getValue());
@@ -74,7 +90,9 @@ public class TmfEventFieldTest {
         assertNull("getFieldName", fStructTerminalField1.getFieldName(0));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonTerminalStructConstructor() {
         assertSame("getName", fStructRootFieldName, fStructRootField.getName());
         assertNull("getValue", fStructRootField.getValue());
@@ -94,7 +112,9 @@ public class TmfEventFieldTest {
         assertNull("getFieldName", fStructRootField.getFieldName(names.length));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testTerminalConstructor() {
         assertSame("getName", fFieldName1, fField1.getName());
         assertSame("getValue", fValue1, fField1.getValue());
@@ -113,7 +133,9 @@ public class TmfEventFieldTest {
         assertNull("getFieldName", fField2.getFieldName(0));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonTerminalConstructor() {
         assertSame("getName", fRootFieldName, fRootField.getName());
         assertNull("getValue", fRootField.getValue());
@@ -133,7 +155,9 @@ public class TmfEventFieldTest {
         assertNull("getFieldName", fRootField.getFieldName(names.length));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testConstructorBadArg() {
         try {
             new TmfEventField(null, fValue1, null);
@@ -142,7 +166,9 @@ public class TmfEventFieldTest {
         }
     }
 
-    @Test
+    /**
+     *
+     */
     public void testTerminalCopyConstructor() {
         final TmfEventField copy = new TmfEventField(fField1);
         assertSame("getName", fFieldName1, copy.getName());
@@ -154,7 +180,9 @@ public class TmfEventFieldTest {
         assertNull("getFieldName", copy.getFieldName(0));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonTerminalCopyConstructor() {
         assertSame("getName", fRootFieldName, fRootField.getName());
         assertNull("getValue", fRootField.getValue());
@@ -173,7 +201,9 @@ public class TmfEventFieldTest {
         assertNull("getFieldName", fRootField.getFieldName(names.length));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testCopyConstructorBadArg() {
         try {
             new TmfEventField(null);
@@ -183,10 +213,84 @@ public class TmfEventFieldTest {
     }
 
     // ------------------------------------------------------------------------
+    // Modifiers
+    // ------------------------------------------------------------------------
+
+    private static class MyField extends TmfEventField {
+
+        public MyField(final String id, final Object value) {
+            super(id, value);
+        }
+
+        public MyField(final TmfEventField field) {
+            super(field);
+        }
+
+        @Override
+        public void setValue(final Object value, final ITmfEventField[] subfields) {
+            super.setValue(value, subfields);
+        }
+    }
+
+    /**
+     *
+     */
+    public void testSetValue() {
+        final TmfEventField field = new TmfEventField(fFieldName1, fValue1, null);
+
+        final MyField myField = new MyField(field);
+        assertSame("getValue", fValue1, myField.getValue());
+        myField.setValue(fValue2, null);
+        assertSame("getValue", fValue2, myField.getValue());
+        myField.setValue(fValue2, new TmfEventField[] { field });
+        assertSame("getValue", fValue2, myField.getValue());
+    }
+
+    // ------------------------------------------------------------------------
+    // clone
+    // ------------------------------------------------------------------------
+
+    /**
+     *
+     */
+    public void testFieldClone() {
+        TmfEventField clone = fField1.clone();
+        assertTrue("clone", fField1.clone().equals(fField1));
+        assertTrue("clone", clone.clone().equals(clone));
+        assertEquals("clone", fField1, clone);
+        assertEquals("clone", clone, fField1);
+
+        clone = fRootField.clone();
+        assertTrue("clone", fRootField.clone().equals(fRootField));
+        assertTrue("clone", clone.clone().equals(clone));
+        assertEquals("clone", fRootField, clone);
+        assertEquals("clone", clone, fRootField);
+    }
+
+    /**
+     *
+     */
+    public void testStructFieldClone() {
+        TmfEventField clone = fStructTerminalField1.clone();
+        assertTrue("clone", fStructTerminalField1.clone().equals(fStructTerminalField1));
+        assertTrue("clone", clone.clone().equals(clone));
+        assertEquals("clone", fStructTerminalField1, clone);
+        assertEquals("clone", clone, fStructTerminalField1);
+
+        clone = fStructRootField.clone();
+        assertTrue("clone", fStructRootField.clone().equals(fStructRootField));
+        assertTrue("clone", clone.clone().equals(clone));
+        assertEquals("clone", fStructRootField, clone);
+        assertEquals("clone", clone, fStructRootField);
+    }
+
+    // ------------------------------------------------------------------------
     // hashCode
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testHashCode() {
         TmfEventField copy = new TmfEventField(fField1);
         assertTrue("hashCode", fField1.hashCode() == copy.hashCode());
@@ -201,7 +305,9 @@ public class TmfEventFieldTest {
     // equals
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsReflexivity() {
         assertTrue("equals", fField1.equals(fField1));
         assertTrue("equals", fField2.equals(fField2));
@@ -216,7 +322,9 @@ public class TmfEventFieldTest {
         assertFalse("equals", fStructTerminalField2.equals(fStructTerminalField1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsSymmetry() {
         final TmfEventField copy0 = new TmfEventField(fField1);
         assertTrue("equals", fField1.equals(copy0));
@@ -227,7 +335,9 @@ public class TmfEventFieldTest {
         assertTrue("equals", copy3.equals(fField2));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsTransivity() {
         TmfEventField copy1 = new TmfEventField(fField1);
         TmfEventField copy2 = new TmfEventField(copy1);
@@ -242,7 +352,9 @@ public class TmfEventFieldTest {
         assertTrue("equals", fField2.equals(copy2));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEquals() {
         assertTrue("equals", fStructTerminalField1.equals(fStructTerminalField3));
         assertTrue("equals", fStructTerminalField3.equals(fStructTerminalField1));
@@ -251,19 +363,25 @@ public class TmfEventFieldTest {
         assertFalse("equals", fField3.equals(fStructTerminalField1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsNull() {
         assertFalse("equals", fField1.equals(null));
         assertFalse("equals", fField2.equals(null));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualClasses() {
         assertFalse("equals", fField1.equals(fStructTerminalField1));
         assertFalse("equals", fField1.equals(fValue1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualValues() {
         final TmfEventField copy1 = new TmfEventField(fFieldName1, fValue1);
         TmfEventField copy2 = new TmfEventField(fFieldName1, fValue1);
@@ -279,7 +397,9 @@ public class TmfEventFieldTest {
         assertFalse("equals", copy2.equals(copy1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEquals() {
         assertFalse("equals", fField1.equals(fField2));
         assertFalse("equals", fField2.equals(fField1));
@@ -291,7 +411,9 @@ public class TmfEventFieldTest {
     // toString
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testToString() {
         final String expected1 = fFieldName1 + "=" + fValue1.toString();
         TmfEventField field = new TmfEventField(fFieldName1, fValue1, null);
@@ -306,7 +428,9 @@ public class TmfEventFieldTest {
     // makeRoot
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testMakeRoot() {
         ITmfEventField root = TmfEventField.makeRoot(fStructFieldNames);
         String[] names = root.getFieldNames();

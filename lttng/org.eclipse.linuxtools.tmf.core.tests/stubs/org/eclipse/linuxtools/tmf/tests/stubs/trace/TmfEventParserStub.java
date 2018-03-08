@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Vector;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
@@ -68,7 +67,7 @@ public class TmfEventParserStub implements ITmfEventParser {
 
     static final String typePrefix = "Type-";
     @Override
-    public ITmfEvent parseEvent(final ITmfContext context) {
+    public TmfEvent parseEvent(final ITmfContext context) {
 
         if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
@@ -107,7 +106,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 content.append("]");
 
                 final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString());
-                final ITmfEvent event = new TmfEvent(fEventStream,
+                final TmfEvent event = new TmfEvent(fEventStream, context.getRank(),
                         new TmfTimestamp(ts, -3, 0),     // millisecs
                         source, fTypes[typeIndex], root, reference.toString());
                 return event;

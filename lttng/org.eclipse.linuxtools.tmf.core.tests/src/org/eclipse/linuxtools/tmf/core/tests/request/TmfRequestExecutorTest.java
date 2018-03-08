@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,36 +8,29 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 /**
  * Test suite for the TmfRequestExecutor class.
  */
-@SuppressWarnings({ "nls" })
-public class TmfRequestExecutorTest {
+@SuppressWarnings("nls")
+public class TmfRequestExecutorTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Variables
@@ -45,155 +38,139 @@ public class TmfRequestExecutorTest {
 
     private TmfRequestExecutor fExecutor;
 
-    // ------------------------------------------------------------------------
-    // Housekeeping
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Housekeeping
+	// ------------------------------------------------------------------------
 
-    /**
-     * Setup
-     */
-    @Before
-    public void setUp() {
+	/**
+	 * @param name the test name
+	 */
+	public TmfRequestExecutorTest(String name) {
+		super(name);
+	}
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         fExecutor = new TmfRequestExecutor();
+
     }
 
-    /**
-     * Cleanup
-     */
-    @After
-    public void tearDown() {
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
         fExecutor.stop();
     }
 
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Constructors
+	// ------------------------------------------------------------------------
 
-    /**
-     * Test method for
-     * {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#TmfRequestExecutor()}
-     */
-    @Test
-    public void testTmfRequestExecutor() {
-        TmfRequestExecutor executor = new TmfRequestExecutor();
-        assertFalse("isShutdown", executor.isShutdown());
-        assertFalse("isTerminated", executor.isTerminated());
-    }
+	/**
+	 * Test method for {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#TmfRequestExecutor()}.
+	 */
+	public void testTmfRequestExecutor() {
+		TmfRequestExecutor executor = new TmfRequestExecutor();
+		assertFalse("isShutdown",   executor.isShutdown());
+		assertFalse("isTerminated", executor.isTerminated());
+	}
 
-    /**
-     * Test method for
-     * {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#stop()}
-     */
-    @Test
-    public void testStop() {
-        TmfRequestExecutor executor = new TmfRequestExecutor();
-        executor.stop();
-        assertTrue("isShutdown", executor.isShutdown());
-        assertTrue("isTerminated", executor.isTerminated());
-    }
+	/**
+	 * Test method for {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#stop()}.
+	 */
+	public void testStop() {
+		TmfRequestExecutor executor = new TmfRequestExecutor();
+		executor.stop();
+		assertTrue("isShutdown",   executor.isShutdown());
+		assertTrue("isTerminated", executor.isTerminated());
+	}
 
-    // ------------------------------------------------------------------------
-    // execute
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// execute
+	// ------------------------------------------------------------------------
 
-    // Dummy context
-    private static class MyContext implements ITmfContext {
-        private long fNbRequested;
+	// Dummy context
+	private static class MyContext implements ITmfContext {
+	    private long fNbRequested;
         private long fRank;
 
         public MyContext(long requested) {
             fNbRequested = requested;
             fRank = 0;
         }
-
         @Override
         public long getRank() {
             return (fRank <= fNbRequested) ? fRank : -1;
         }
-
         @Override
         public ITmfLocation getLocation() {
             return null;
         }
-
         @Override
         public boolean hasValidRank() {
             return true;
         }
-
         @Override
         public void setLocation(ITmfLocation location) {
         }
-
         @Override
         public void setRank(long rank) {
             fRank = rank;
         }
-
         @Override
         public void increaseRank() {
             fRank++;
         }
-
         @Override
         public void dispose() {
         }
-
         @Override
         public MyContext clone() {
             return this;
         }
-    }
+	}
 
-    // Dummy provider
-    private static class MyProvider extends TmfDataProvider {
-        private ITmfEvent fEvent = new TmfEvent();
+	// Dummy provider
+	private static class MyProvider extends TmfDataProvider {
+	    private ITmfEvent fEvent = new TmfEvent();
 
         @Override
         public String getName() {
             return null;
         }
-
         @Override
         public void dispose() {
         }
-
         @Override
         public void broadcast(TmfSignal signal) {
         }
-
         @Override
-        public void sendRequest(ITmfDataRequest request) {
+        public void sendRequest(ITmfRequest request) {
         }
-
         @Override
         public void fireRequest() {
         }
-
         @Override
         public void notifyPendingRequest(boolean isIncrement) {
         }
-
         @Override
         public ITmfEvent getNext(ITmfContext context) {
             context.increaseRank();
             return context.getRank() >= 0 ? fEvent : null;
         }
-
         @Override
-        public ITmfContext armRequest(ITmfDataRequest request) {
+        public ITmfContext armRequest(ITmfRequest request) {
             return new MyContext(request.getNbRequested());
         }
-    }
+	}
 
-    // Dummy request
-    private static class MyRequest extends TmfDataRequest {
-        public MyRequest(ExecutionType priority, int requested) {
-            super(ITmfEvent.class, 0, requested, priority);
+	// Dummy request
+    private static class MyRequest extends TmfRequest {
+        public MyRequest(TmfRequestPriority priority, int requested) {
+            super(TmfTimeRange.ETERNITY, 0, requested, priority);
         }
-
         @Override
-        public void done() {
+        public synchronized void done() {
             synchronized (monitor) {
                 monitor.notifyAll();
             }
@@ -202,7 +179,7 @@ public class TmfRequestExecutorTest {
 
     // Dummy thread
     private static class MyThread extends TmfEventThread {
-        public MyThread(TmfDataProvider provider, ITmfDataRequest request) {
+        public MyThread(TmfDataProvider provider, ITmfRequest request) {
             super(provider, request);
         }
     }
@@ -210,18 +187,16 @@ public class TmfRequestExecutorTest {
     private final static Object monitor = new Object();
 
     /**
-     * Test method for
-     * {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#execute(java.lang.Runnable)}
-     */
-    @Test
-    public void testExecute() {
+	 * Test method for {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#execute(java.lang.Runnable)}.
+	 */
+	public void testExecute() {
         MyProvider provider = new MyProvider();
-        MyRequest request1 = new MyRequest(ExecutionType.BACKGROUND, Integer.MAX_VALUE / 5);
-        MyThread thread1 = new MyThread(provider, request1);
-        MyRequest request2 = new MyRequest(ExecutionType.FOREGROUND, Integer.MAX_VALUE / 10);
-        MyThread thread2 = new MyThread(provider, request2);
-        MyRequest request3 = new MyRequest(ExecutionType.FOREGROUND, Integer.MAX_VALUE / 10);
-        MyThread thread3 = new MyThread(provider, request3);
+        MyRequest  request1 = new MyRequest(ITmfRequest.TmfRequestPriority.NORMAL, Integer.MAX_VALUE /  50);
+        MyThread   thread1  = new MyThread(provider, request1);
+        MyRequest  request2 = new MyRequest(ITmfRequest.TmfRequestPriority.HIGH, Integer.MAX_VALUE / 100);
+        MyThread   thread2  = new MyThread(provider, request2);
+        MyRequest  request3 = new MyRequest(ITmfRequest.TmfRequestPriority.HIGH, Integer.MAX_VALUE / 100);
+        MyThread   thread3  = new MyThread(provider, request3);
 
         // Start thread1
         fExecutor.execute(thread1);
@@ -229,7 +204,7 @@ public class TmfRequestExecutorTest {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
-        assertTrue("isRunning", thread1.isRunning());
+       assertTrue("isRunning", thread1.isRunning());
 
         // Start higher priority thread2
         fExecutor.execute(thread2);
@@ -281,19 +256,17 @@ public class TmfRequestExecutorTest {
         assertTrue("isCompleted", thread1.isCompleted());
     }
 
-    // ------------------------------------------------------------------------
-    // toString
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// toString
+	// ------------------------------------------------------------------------
 
-    /**
-     * Test method for
-     * {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#toString()}
-     */
-    @Test
-    public void testToString() {
+	/**
+	 * Test method for {@link org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor#toString()}.
+	 */
+	public void testToString() {
         TmfRequestExecutor executor = new TmfRequestExecutor();
         String expected = "[TmfRequestExecutor(ThreadPoolExecutor)]";
         assertEquals("toString", expected, executor.toString());
-    }
+	}
 
 }

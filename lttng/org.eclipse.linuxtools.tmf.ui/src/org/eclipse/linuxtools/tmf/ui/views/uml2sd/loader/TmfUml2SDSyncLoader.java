@@ -98,6 +98,7 @@ import org.eclipse.ui.progress.IProgressConstants;
  * @version 1.0
  * @author Bernd Hufmann
  */
+@SuppressWarnings("deprecation")
 public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, ISDFindProvider, ISDFilterProvider, ISDAdvancedPagingProvider, ISelectionListener  {
 
     // ------------------------------------------------------------------------
@@ -268,7 +269,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     @TmfSignalHandler
     public void traceSelected(TmfTraceSelectedSignal signal) {
 
-        ITmfEventRequest indexRequest = null;
         fLock.lock();
         try {
             // Update the trace reference
@@ -283,9 +283,12 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             job.setUser(false);
             job.schedule();
 
-            indexRequest = fIndexRequest;
+            if (fIndexRequest != null && !fIndexRequest.isCompleted()) {
+                fIndexRequest.cancel();
+            }
 
             cancelOngoingRequests();
+            resetLoader();
 
             TmfTimeRange window = TmfTimeRange.ETERNITY;
 
@@ -301,10 +304,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                  * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
                  */
                 @Override
-                public void handleData(ITmfEvent event) {
-                    super.handleData(event);
+                public synchronized void handleEvent(ITmfEvent event) {
+                    super.handleEvent(event);
 
-                    ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+                    ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
                     if (sdEvent != null) {
                         ++fNbSeqEvents;
@@ -373,7 +376,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                  * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleCompleted()
                  */
                 @Override
-                public void handleCompleted() {
+                public synchronized void handleCompleted() {
                     if (fEvents.isEmpty()) {
                         fFrame = new Frame();
                         fView.setFrameSync(fFrame);
@@ -383,14 +386,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 }
             };
 
+            fTrace.sendRequest(fIndexRequest);
         } finally {
             fLock.unlock();
         }
-        if (indexRequest != null && !indexRequest.isCompleted()) {
-            indexRequest.cancel();
-        }
-        resetLoader();
-        fTrace.sendRequest(fIndexRequest);
 
     }
 
@@ -405,11 +404,14 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         if (signal.getTrace() != fTrace) {
             return;
         }
-        ITmfEventRequest indexRequest = null;
         fLock.lock();
         try {
-            indexRequest = fIndexRequest;
-            fIndexRequest = null;
+            if (fIndexRequest != null) {
+                if (!fIndexRequest.isCompleted()) {
+                    fIndexRequest.cancel();
+                }
+                fIndexRequest = null;
+            }
 
             cancelOngoingRequests();
 
@@ -418,15 +420,12 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             }
 
             FilterListDialog.deactivateSavedGlobalFilters();
+
+            resetLoader();
         } finally {
             fTrace = null;
             fLock.unlock();
         }
-        if (indexRequest != null && !indexRequest.isCompleted()) {
-            indexRequest.cancel();
-        }
-
-        resetLoader();
     }
 
     /**
@@ -519,7 +518,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     @Override
     public void dispose() {
        super.dispose();
-       ITmfEventRequest indexRequest = null;
        fLock.lock();
        try {
            IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -528,8 +526,12 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                window.getSelectionService().removePostSelectionListener(this);
            }
 
-           indexRequest = fIndexRequest;
-           fIndexRequest = null;
+           if (fIndexRequest != null) {
+               if (!fIndexRequest.isCompleted()) {
+                   fIndexRequest.cancel();
+               }
+               fIndexRequest = null;
+           }
            cancelOngoingRequests();
 
            fView.setSDFindProvider(null);
@@ -538,9 +540,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
            fView = null;
        } finally {
            fLock.unlock();
-       }
-       if (indexRequest != null && !indexRequest.isCompleted()) {
-           indexRequest.cancel();
        }
     }
 
@@ -871,7 +870,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      */
     protected void cancelOngoingRequests() {
         fLock.lock();
-        ITmfEventRequest pageRequest = null;
         try {
             // Cancel the search thread
             if (fFindJob != null) {
@@ -882,13 +880,14 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             fFindCriteria = null;
             fCurrentFindIndex = 0;
 
-            pageRequest = fPageRequest;
-            fPageRequest = null;
+            if (fPageRequest != null) {
+                if (!fPageRequest.isCompleted()) {
+                    fPageRequest.cancel();
+                }
+                fPageRequest = null;
+            }
         } finally {
             fLock.unlock();
-        }
-        if (pageRequest != null && !pageRequest.isCompleted()) {
-            pageRequest.cancel();
         }
     }
 
@@ -1139,10 +1138,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             private final List<ITmfSyncSequenceDiagramEvent> fSdEvent = new ArrayList<ITmfSyncSequenceDiagramEvent>();
 
             @Override
-            public void handleData(ITmfEvent event) {
-                super.handleData(event);
+            public synchronized void handleEvent(ITmfEvent event) {
+                super.handleEvent(event);
 
-                ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+                ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
                 if (sdEvent != null) {
                     fSdEvent.add(sdEvent);
@@ -1431,15 +1430,15 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          * @see org.eclipse.linuxtools.tmf.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.event.TmfData)
          */
         @Override
-        public void handleData(ITmfEvent event) {
-            super.handleData(event);
+        public synchronized void handleEvent(ITmfEvent event) {
+            super.handleEvent(event);
 
             if ((fMonitor!= null) && fMonitor.isCanceled()) {
                 super.cancel();
                 return;
             }
 
-            ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+            ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
             if (sdEvent != null) {
 
@@ -1529,16 +1528,15 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      *
      * @param tmfEvent Event to parse for sequence diagram event details
      * @return sequence diagram event if details are available else null
-     * @since 2.0
      */
-    protected ITmfSyncSequenceDiagramEvent getSequenceDiagramEvent(ITmfEvent tmfEvent){
+    protected ITmfSyncSequenceDiagramEvent getSequnceDiagramEvent(ITmfEvent tmfEvent){
         //type = .*RECEIVE.* or .*SEND.*
         //content = sender:<sender name>:receiver:<receiver name>,signal:<signal name>
         String eventType = tmfEvent.getType().toString();
-        if (eventType.contains(Messages.TmfUml2SDSyncLoader_EventTypeSend) || eventType.contains(Messages.TmfUml2SDSyncLoader_EventTypeReceive)) {
-            Object sender = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldSender);
-            Object receiver = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldReceiver);
-            Object name = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldSignal);
+        if (eventType.contains(Messages.TmfUml2SDSyncCloader_EventTypeSend) || eventType.contains(Messages.TmfUml2SDSyncCloader_EventTypeReceive)) {
+            Object sender = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldSender);
+            Object receiver = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldReceiver);
+            Object name = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldSignal);
             if ((sender instanceof ITmfEventField) && (receiver instanceof ITmfEventField) && (name instanceof ITmfEventField)) {
                 ITmfSyncSequenceDiagramEvent sdEvent = new TmfSyncSequenceDiagramEvent(tmfEvent,
                                 ((ITmfEventField) sender).getValue().toString(),

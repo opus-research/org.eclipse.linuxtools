@@ -25,8 +25,8 @@ import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.linuxtools.tools.launch.core.LaunchCoreConstants;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
+import org.eclipse.linuxtools.tools.launch.ui.Activator;
 import org.eclipse.linuxtools.tools.launch.ui.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -38,22 +38,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
-/**
- * <p>
- * Preference page and property page implementation for configuring the Linuxtools Path property.
- * </p>
- *
- * <p>
- * In this property page, it is possible to change the PATH used to run LinuxTools commands.
- * This is necessary for users that want to use tools not located in system PATH.
- * With this page you can, for example, have 2 different versions of valgrind installed in your
- * system and select which one will be used to profile your application.
- * </p>
- *
- * @author Otavio Pontes
- */
 public class LinuxtoolsPathPropertyPage extends PropertyPage {
-	public static final String LINUXTOOLS_PATH_COMBO_NAME = LaunchCoreConstants.PLUGIN_ID + ".LinuxtoolsPathCombo"; //$NON-NLS-1$
+	private static final String CORE_PLUGIN_ID = "org.eclipse.linuxtools.tools.launch.core"; //$NON-NLS-1$
+	public static final String LINUXTOOLS_PATH_COMBO_NAME = CORE_PLUGIN_ID + ".LinuxtoolsPathCombo"; //$NON-NLS-1$
 	private static final String LINUXTOOLS_PATH_EXT_POINT = "LinuxtoolsPathOptions"; //$NON-NLS-1$
 	private static final String LINUXTOOLS_PATH_OPTION = "option"; //$NON-NLS-1$
 	private static final String LINUXTOOLS_PATH_OPTION_NAME = "name"; //$NON-NLS-1$
@@ -74,7 +61,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		for (String[] t : DEFAULT_PATHS)
 			list.add(t);
 
-		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(LaunchCoreConstants.PLUGIN_ID, LINUXTOOLS_PATH_EXT_POINT);
+		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(Activator.PLUGIN_ID, LINUXTOOLS_PATH_EXT_POINT);
 		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs)
 			if (config.getName().equals(LINUXTOOLS_PATH_OPTION)) {
@@ -98,7 +85,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		String paths[][] = fillPaths();
 
 		//defaults
-		getPreferenceStore().setDefault(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME, LinuxtoolsPathProperty.getInstance().getLinuxtoolsPathSystemDefault());
+		getPreferenceStore().setDefault(LinuxtoolsPathProperty.LINUXTOOLS_PATH_SYSTEM_NAME, LinuxtoolsPathProperty.getInstance().getLinuxtoolsPathSystemDefault());
 		getPreferenceStore().setDefault(LINUXTOOLS_PATH_COMBO_NAME, LinuxtoolsPathProperty.getInstance().getLinuxtoolsPathDefault());
 
 		// Add radio buttons
@@ -109,7 +96,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		radios.setLayout(layoutRadios);
 		Composite space = new Composite(result, SWT.NONE);
 
-		boolean systemPathSelected = getPreferenceStore().getBoolean(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME);
+		boolean systemPathSelected = getPreferenceStore().getBoolean(LinuxtoolsPathProperty.LINUXTOOLS_PATH_SYSTEM_NAME);
 		systemEnvButton = new Button(radios, SWT.RADIO);
 		systemEnvButton.setText(Messages.LINUXTOOLS_PATH_SYSTEM_ENV);
 		systemEnvButton.setSelection(systemPathSelected);
@@ -146,8 +133,9 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 
 		//Add textbox
 		linuxtoolsPath = new StringFieldEditor(
-				LaunchCoreConstants.LINUXTOOLS_PATH_NAME,
-				Messages.LINUXTOOLS_PATH, result);
+									LinuxtoolsPathProperty.LINUXTOOLS_PATH_NAME,
+									Messages.LINUXTOOLS_PATH,
+									result);
 
 		linuxtoolsPath.setPage(this);
 		linuxtoolsPath.setPreferenceStore(getPreferenceStore());
@@ -155,7 +143,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 
 		String selected = getPreferenceStore().getString(LINUXTOOLS_PATH_COMBO_NAME);
 		customSelected = selected.equals(""); //$NON-NLS-1$
-		getPreferenceStore().setDefault(LaunchCoreConstants.LINUXTOOLS_PATH_NAME, LinuxtoolsPathProperty.getInstance().getLinuxtoolsPathDefault());
+		getPreferenceStore().setDefault(LinuxtoolsPathProperty.LINUXTOOLS_PATH_NAME, LinuxtoolsPathProperty.getInstance().getLinuxtoolsPathDefault());
 		linuxtoolsPath.load();
 
 		Dialog.applyDialogFont(result);
@@ -186,7 +174,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 	public boolean performOk() {
 		linuxtoolsPath.store();
 		linuxtoolsPathCombo.store();
-		getPreferenceStore().setValue(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME, systemEnvButton.getSelection());
+		getPreferenceStore().setValue(LinuxtoolsPathProperty.LINUXTOOLS_PATH_SYSTEM_NAME, systemEnvButton.getSelection());
 		return super.performOk();
 	}
 
@@ -194,7 +182,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 	protected void performApply() {
 		linuxtoolsPath.store();
 		linuxtoolsPathCombo.store();
-		getPreferenceStore().setValue(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME, systemEnvButton.getSelection());
+		getPreferenceStore().setValue(LinuxtoolsPathProperty.LINUXTOOLS_PATH_SYSTEM_NAME, systemEnvButton.getSelection());
 		super.performApply();
 	}
 
@@ -210,7 +198,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		if (e != null) {
 			setPreferenceStore(new ScopedPreferenceStore(
 						new ProjectScope((IProject) e),
-						LaunchCoreConstants.PLUGIN_ID));
+						CORE_PLUGIN_ID));
 		}
 	}
 
