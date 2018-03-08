@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010, 2012 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Thomas Gatterweh	- Updated scaling / synchronization
@@ -18,11 +18,11 @@ package org.eclipse.linuxtools.tmf.core.event;
 /**
  * A generic timestamp implementation. The timestamp is represented by the
  * tuple { value, scale, precision }.
- * 
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfTimestamp implements ITmfTimestamp, Cloneable {
+public class TmfTimestamp implements ITmfTimestamp {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -53,17 +53,17 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
     /**
      * The timestamp raw value (mantissa)
      */
-    private long fValue;
+    private final long fValue;
 
     /**
      * The timestamp scale (magnitude)
      */
-    private int fScale;
+    private final int fScale;
 
     /**
      * The value precision (tolerance)
      */
-    private int fPrecision;
+    private final int fPrecision;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -87,7 +87,7 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
 
     /**
      * Simple constructor (precision = 0)
-     * 
+     *
      * @param value the timestamp value
      * @param scale the timestamp scale
      */
@@ -97,7 +97,7 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
 
     /**
      * Full constructor
-     * 
+     *
      * @param value the timestamp value
      * @param scale the timestamp scale
      * @param precision the timestamp precision
@@ -110,7 +110,7 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
 
     /**
      * Copy constructor
-     * 
+     *
      * @param timestamp the timestamp to copy
      */
     public TmfTimestamp(final ITmfTimestamp timestamp) {
@@ -120,16 +120,6 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
         fValue = timestamp.getValue();
         fScale = timestamp.getScale();
         fPrecision = timestamp.getPrecision();
-    }
-
-    // ------------------------------------------------------------------------
-    // Setters
-    // ------------------------------------------------------------------------
-
-    protected void setValue(long value, int scale, int precision) {
-        fValue = value;
-        fScale = scale;
-        fPrecision = precision;
     }
 
     // ------------------------------------------------------------------------
@@ -195,8 +185,8 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
         if (fScale == scale && offset == 0) {
             return new TmfTimestamp(this);
         }
-        
-        // In case of big bang and big crunch just return this (no need to normalize) 
+
+        // In case of big bang and big crunch just return this (no need to normalize)
         if (this.equals(BIG_BANG) || this.equals(BIG_CRUNCH)) {
             return this;
         }
@@ -285,26 +275,6 @@ public class TmfTimestamp implements ITmfTimestamp, Cloneable {
         final ITmfTimestamp nts = ts.normalize(0, fScale);
         final long value = fValue - nts.getValue();
         return new TmfTimestamp(value, fScale, fPrecision + nts.getPrecision());
-    }
-
-    // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public TmfTimestamp clone() {
-        TmfTimestamp clone = null;
-        try {
-            clone = (TmfTimestamp) super.clone();
-            clone.fValue = fValue;
-            clone.fScale = fScale;
-            clone.fPrecision = fPrecision;
-        } catch (final CloneNotSupportedException e) {
-        }
-        return clone;
     }
 
     // ------------------------------------------------------------------------
