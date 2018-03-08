@@ -65,9 +65,7 @@
             id="org.eclipse.linuxtools.profiling.time.launchConfigurationType"
             modes="profile"
             name="Profile as Time"
-            public="true"
-            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
-            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
+            public="true">
       </launchConfigurationType>
    </extension>
    <extension
