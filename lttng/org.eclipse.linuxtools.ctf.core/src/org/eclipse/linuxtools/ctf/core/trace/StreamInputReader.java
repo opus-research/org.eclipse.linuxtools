@@ -113,7 +113,7 @@ public class StreamInputReader {
     }
 
     /**
-     * gets the current packet context
+     * Gets the current packet context
      *
      * @return the current packet context (size, lost events and such)
      */
@@ -257,7 +257,6 @@ public class StreamInputReader {
                 if (this.streamInput.addPacketHeaderIndex()) {
                     packetIndex = getPacketSize() - 1;
                     this.packetReader.setCurrentPacket(getPacket());
-
                 } else {
                     this.packetReader.setCurrentPacket(null);
                 }
@@ -277,7 +276,7 @@ public class StreamInputReader {
 
     /**
      * Changes the location of the trace file reader so that the current event
-     * is the first event with a timestamp greater than the given timestamp.
+     * is the first event with a timestamp greater or equal the given timestamp.
      *
      * @param timestamp
      *            The timestamp to seek to.
@@ -307,9 +306,11 @@ public class StreamInputReader {
         }
 
         /*
-         * Advance until A. we reached the end of the trace file (which means
-         * the given timestamp is after the last event), or B. we found the
-         * first event with a timestamp greater than the given timestamp.
+         * Advance until either of these conditions are met
+         * <ul>
+         *   <li> reached the end of the trace file (the given timestamp is after the last event), </li>
+         *   <li> found the first event with a timestamp greater or equal the given timestamp. </li>
+         * </ul>
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);
