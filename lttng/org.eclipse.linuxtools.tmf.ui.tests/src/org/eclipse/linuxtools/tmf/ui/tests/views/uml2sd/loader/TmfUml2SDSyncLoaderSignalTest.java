@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode;
@@ -52,7 +53,8 @@ public class TmfUml2SDSyncLoaderSignalTest {
         rangeWindow = (TmfTimestamp) range.getEndTime().getDelta(range.getStartTime());
         currentTime = new Uml2SDTestTimestamp(9789773782043L);
 
-        fFacility.getTrace().broadcast(new TmfRangeSynchSignal(fFacility, range, currentTime));
+        fFacility.getTrace().broadcast(new TmfRangeSynchSignal(fFacility, range));
+        fFacility.getTrace().broadcast(new TmfTimeSynchSignal(fFacility, currentTime));
         fFacility.delay(IUml2SDTestConstants.BROADCAST_DELAY);
 
         fTmfComponent = new Uml2SDSignalValidator();

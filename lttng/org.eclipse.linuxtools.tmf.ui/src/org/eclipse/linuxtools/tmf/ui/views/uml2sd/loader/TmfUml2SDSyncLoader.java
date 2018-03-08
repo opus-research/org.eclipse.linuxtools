@@ -1076,7 +1076,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
         if (notifyAll) {
             TmfTimeRange timeRange = getSignalTimeRange(window.getStartTime());
-            broadcast(new TmfRangeSynchSignal(this, timeRange, timeRange.getStartTime()));
+            broadcast(new TmfRangeSynchSignal(this, timeRange));
+            broadcast(new TmfTimeSynchSignal(this, timeRange.getStartTime()));
         }
     }
 
