@@ -33,7 +33,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphColorListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
@@ -81,7 +80,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper, ITimeGraphColorListener {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
 
 
     /** Max scrollbar size */
@@ -230,7 +229,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
 
         if (timeGraphProvider instanceof ITimeGraphPresentationProvider2) {
             ((ITimeGraphPresentationProvider2) timeGraphProvider).setDrawingHelper(this);
-            ((ITimeGraphPresentationProvider2) timeGraphProvider).addColorListener(this);
         }
 
         if (fEventColorMap != null) {
@@ -239,7 +237,14 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             }
         }
         StateItem[] stateItems = fTimeGraphProvider.getStateTable();
-        updateColorMap(stateItems);
+        if (stateItems != null) {
+            fEventColorMap = new Color[stateItems.length];
+            for (int i = 0; i < stateItems.length; i++) {
+                fEventColorMap[i] = fResourceManager.createColor(stateItems[i].getStateColor());
+            }
+        } else {
+            fEventColorMap = new Color[] { };
+        }
     }
 
     /**
@@ -2411,22 +2416,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      */
     public void removeFilter(ViewerFilter filter) {
         fFilters.remove(filter);
-    }
-
-    private void updateColorMap(StateItem[] stateItems) {
-        if (stateItems != null) {
-            fEventColorMap = new Color[stateItems.length];
-            for (int i = 0; i < stateItems.length; i++) {
-                fEventColorMap[i] = fResourceManager.createColor(stateItems[i].getStateColor());
-            }
-        } else {
-            fEventColorMap = new Color[] { };
-        }
-    }
-
-    @Override
-    public void colorSettingsChanged(StateItem[] stateItems) {
-        updateColorMap(stateItems);
     }
 
     private class ItemData {
