@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
 /**
  * Utility class for RPMStubby to find the parent pom
  *
- * @since 1.2
+ * @since 1.2.0
  */
 public class RPMStubbyUtils {
 

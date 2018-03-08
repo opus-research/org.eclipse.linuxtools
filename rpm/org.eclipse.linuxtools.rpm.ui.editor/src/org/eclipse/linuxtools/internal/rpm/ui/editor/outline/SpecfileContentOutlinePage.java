@@ -51,7 +51,6 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 			if (control != null && !control.isDisposed())
 			{
 				control.getDisplay().asyncExec(new Runnable() {
-					@Override
 					public void run() {
 						if (!control.isDisposed()) {
 							control.setRedraw(false);

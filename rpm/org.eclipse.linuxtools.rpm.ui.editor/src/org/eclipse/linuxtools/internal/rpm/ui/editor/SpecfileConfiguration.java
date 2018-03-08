@@ -41,7 +41,6 @@ import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.URLHyperlinkWithMacroDetector;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfileChangelogScanner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePackagesScanner;
@@ -216,7 +215,6 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 
 	private IInformationControlCreator getInformationControlCreator() {
 		return new IInformationControlCreator() {
-			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				return new DefaultInformationControl(parent, false);
 			}
@@ -242,9 +240,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 					AbstractHyperlinkDetector ahld = hdd.createHyperlinkDetector();
 					// filter using target id and not instance of URLHyperlinkDetector
 					// so that an option to open url with unresolved macros won't show
-					// however, allow URLHyperlinkWithMacroDetector
-					if (hdd.getTargetId().equals(entry.getKey()) &&
-							(!(ahld instanceof URLHyperlinkDetector) || ahld instanceof URLHyperlinkWithMacroDetector)) {
+					if (hdd.getTargetId().equals(entry.getKey()) && !(ahld instanceof URLHyperlinkDetector)) {
 						ahld.setContext((IAdaptable)entry.getValue());
 						tempHDList.add(ahld);
 					}
