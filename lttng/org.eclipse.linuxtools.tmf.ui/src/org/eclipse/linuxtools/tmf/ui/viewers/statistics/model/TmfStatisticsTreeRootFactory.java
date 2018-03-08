@@ -76,7 +76,7 @@ public class TmfStatisticsTreeRootFactory {
      *            trace.
      * @param statsData
      *            The information about the trace
-     * @return The newly created root node of the trace statistics tree, or null if something went wrong
+     * @return the newly created root node of the trace statistics tree or null if something went wrong
      */
     public static TmfStatisticsTreeNode addStatsTreeRoot(String traceUniqueId, AbsTmfStatisticsTree statsData) {
         if (traceUniqueId == null || statsData == null) {
