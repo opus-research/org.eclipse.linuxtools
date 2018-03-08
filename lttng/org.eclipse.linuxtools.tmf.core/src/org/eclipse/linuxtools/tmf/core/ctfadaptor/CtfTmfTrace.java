@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.nio.BufferOverflowException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -155,10 +154,7 @@ public class CtfTmfTrace extends TmfTrace
             temp.dispose();
         } catch (final CTFReaderException e) {
             validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
-        } catch (final BufferOverflowException e){
-            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + Messages.CtfTmfTrace_BufferOverflowErrorMessage); //$NON-NLS-1$
         }
-
         return validTrace;
     }
 

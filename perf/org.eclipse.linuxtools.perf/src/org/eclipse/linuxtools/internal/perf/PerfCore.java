@@ -678,9 +678,8 @@ public class PerfCore {
 			@Override
 			public void run() {
 				try {
-					PerfProfileView view = (PerfProfileView) PlatformUI
-							.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage().showView(PerfPlugin.VIEW_ID);
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
+					PerfProfileView view = PerfPlugin.getDefault().getProfileView();
 					view.setContentDescription(title);
 					view.refreshModel();
 				} catch (PartInitException e) {
