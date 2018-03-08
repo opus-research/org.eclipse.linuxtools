@@ -80,7 +80,7 @@ public class ChannelInfoTest {
         assertEquals(0, result.getSwitchTimer());
         assertEquals(0, result.getMaxSizeTraceFiles());
         assertEquals(0, result.getMaxNumberTraceFiles());
-        assertEquals(BufferType.BUFFER_TYPE_UNKNOWN, result.getBufferType());
+        assertEquals(false, result.getBufferType());
     }
 
     /**
