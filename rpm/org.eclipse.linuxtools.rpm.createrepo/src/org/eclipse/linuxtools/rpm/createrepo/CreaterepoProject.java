@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.osgi.framework.FrameworkUtil;
 
 /**
  * This class will contain the current project and basic operations of the
@@ -74,7 +66,10 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when unable to create the folders.
 	 */
 	private void intitialize() throws CoreException {
-		createContentFolder();
+		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
+		if (!content.exists()) {
+			content.create(false, true, monitor);
+		}
 		if (repoFile == null) {
 			for (IResource child : getProject().members()) {
 				String extension = child.getFileExtension();
@@ -84,44 +79,6 @@ public class CreaterepoProject {
 				}
 				// if no repo file then keep it null
 			}
-		}
-	}
-
-	/**
-	 * Create the content folder if it doesn't exist.
-	 *
-	 * @throws CoreException
-	 */
-	private void createContentFolder() throws CoreException {
-		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
-		if (!content.exists()) {
-			content.create(false, true, monitor);
-		}
-	}
-
-	/**
-	 * Import an RPM file outside of the eclipse workspace.
-	 *
-	 * @param externalFile The external file to import.
-	 * @throws CoreException Thrown when failure to create a workspace file.
-	 */
-	public void importRPM(File externalFile) throws CoreException {
-		// must put imported RPMs into the content folder; create if missing
-		if (content == null) {
-			createContentFolder();
-		}
-		IFile file = getContentFolder().getFile(new Path(externalFile.getName()));
-		if (!file.exists()) {
-			try {
-				file.create(new FileInputStream(externalFile), false, monitor);
-			} catch (FileNotFoundException e) {
-				IStatus status = new Status(
-						IStatus.ERROR,
-						FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
-						Messages.CreaterepoProject_errorGettingFile, null);
-				throw new CoreException(status);
-			}
-			getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		}
 	}
 
