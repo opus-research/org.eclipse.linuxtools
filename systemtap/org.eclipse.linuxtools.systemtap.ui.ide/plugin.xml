@@ -148,11 +148,6 @@
 			description="%command.import.desc"
 			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.file"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"/>
-		<!--command
-			name="%command.runOptions.name"
-			description="%command.runOptions.desc"
-			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.run"
-			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScriptOptions"/-->
 		<command
 			name="%command.run.name"
 			description="%command.run.desc"
@@ -310,7 +305,7 @@
        point="org.eclipse.core.expressions.propertyTesters">
     <propertyTester
           class="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.propertyTester1"
+          id="org.eclipse.linuxtools.systemtap.ui.ide.property.systemtap"
           namespace="org.eclipse.linuxtools.systemtap.ui.ide.property"
           properties="systemtap"
           type="java.util.Arrays$ArrayList">
@@ -330,7 +325,7 @@
        point="org.eclipse.debug.ui.launchConfigurationTypeImages">
     <launchConfigurationTypeImage
           configTypeID="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"
-          icon="icons/smileytap.gif"
+          icon="icons/smileytap_small.gif"
           id="org.eclipse.linuxtools.systemtap.ui.ide.systemtapLaunchConfigurationTypeImage">
     </launchConfigurationTypeImage>
  </extension>

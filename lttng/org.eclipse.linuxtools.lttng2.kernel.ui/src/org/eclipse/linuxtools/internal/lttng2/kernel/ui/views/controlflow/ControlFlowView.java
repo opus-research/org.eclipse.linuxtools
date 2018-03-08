@@ -43,12 +43,12 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphSelectionListener;
@@ -69,7 +69,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorPart;
 
 /**
  * The Control Flow view main object
@@ -415,12 +414,9 @@ public class ControlFlowView extends TmfView {
         makeActions();
         contributeToActionBars();
 
-        IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor instanceof ITmfTraceEditor) {
-            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
-            if (trace != null) {
-                traceSelected(new TmfTraceSelectedSignal(this, trace));
-            }
+        ITmfTrace trace = getActiveTrace();
+        if (trace != null) {
+            traceSelected(new TmfTraceSelectedSignal(this, trace));
         }
 
         // make selection available to other views
@@ -668,7 +664,8 @@ public class ControlFlowView extends TmfView {
                             if (monitor.isCanceled()) {
                                 return;
                             }
-                            if (!execNameInterval.getStateValue().isNull() && execNameInterval.getStateValue().getType() == 1) {
+                            if (!execNameInterval.getStateValue().isNull() &&
+                                    execNameInterval.getStateValue().getType() == ITmfStateValue.Type.STRING) {
                                 String execName = execNameInterval.getStateValue().unboxStr();
                                 long startTime = execNameInterval.getStartTime();
                                 long endTime = execNameInterval.getEndTime() + 1;

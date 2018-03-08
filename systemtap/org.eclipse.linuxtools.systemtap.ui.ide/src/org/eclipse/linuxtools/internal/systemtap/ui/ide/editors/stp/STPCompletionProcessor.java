@@ -24,6 +24,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 
 public class STPCompletionProcessor implements IContentAssistProcessor {
 
@@ -41,6 +42,16 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 			{ FUNCTION_KEYWORD, Messages.STPCompletionProcessor_function } };
 
 	private STPMetadataSingleton stpMetadataSingleton;
+
+	private static class Token{
+		String tokenString;
+		int offset;
+
+		public Token(String string, int n) {
+			this.tokenString = string;
+			this.offset = n;
+		}
+	}
 
 	public STPCompletionProcessor(){
 		this.stpMetadataSingleton = STPMetadataSingleton.getInstance();
@@ -72,7 +83,16 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		// Get completion hint from document
 		try {
 			prefix = getPrefix(document, offset);
-			prePrefix = getPrecedingToken(document, prefix, offset);
+			Token previousToken = getPrecedingToken(document, offset - prefix.length() - 1);
+
+			while (previousToken.tokenString.equals("=") || //$NON-NLS-1$
+					previousToken.tokenString.equals(",") ){ //$NON-NLS-1$
+				previousToken = getPrecedingToken(document, previousToken.offset - 1);
+				previousToken = getPrecedingToken(document, previousToken.offset - 1);
+			}
+
+			prePrefix = previousToken.tokenString;
+
 		} catch (BadLocationException e) {
 			return NO_COMPLETIONS;
 		}
@@ -117,7 +137,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 							null,
 							completionData[i] + " - function", //$NON-NLS-1$
 							null,
-							null);
+							TapsetLibrary.getDocumentation("function::" + completionData[i])); //$NON-NLS-1$
 		}
 
 		return result;
@@ -174,7 +194,26 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	private ICompletionProposal[] getProbeCompletionList(String prefix, int offset){
 		prefix = canonicalizePrefix(prefix);
 		String[] completionData = stpMetadataSingleton.getCompletionResults(prefix);
-		return buildCompletionList(offset, prefix.length(), completionData);
+
+		String manPrefix = "probe::"; //$NON-NLS-1$
+		if (prefix.indexOf('.') == -1){
+			manPrefix = "tapset::"; //$NON-NLS-1$
+		}
+
+		// Build proposals and submit
+		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
+		for (int i = 0; i < completionData.length; i++)
+			result[i] = new CompletionProposal(
+							completionData[i].substring(prefix.length()),
+							offset,
+							0,
+							completionData[i].length() - prefix.length(),
+							null,
+							completionData[i],
+							null,
+							TapsetLibrary.getDocumentation(manPrefix + completionData[i]));
+		return result;
+
 	}
 
 	/**
@@ -220,22 +259,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		return prefix;
 	}
 
-	private ICompletionProposal[] buildCompletionList(int offset, int prefixLength,String[] completionData){
-		// Build proposals and submit
-		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
-		for (int i = 0; i < completionData.length; i++)
-			result[i] = new CompletionProposal(
-							completionData[i].substring(prefixLength),
-							offset,
-							0,
-							completionData[i].length() - prefixLength,
-							null,
-							completionData[i],
-							null,
-							null);
-		return result;
-	}
-
 	private ICompletionProposal[] getGlobalKeywordCompletion(String prefix, int offset) {
 
 		ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
@@ -265,13 +288,24 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	 * @return The preceding token.
 	 * @throws BadLocationException
 	 */
-	private String getPrecedingToken(IDocument doc, String prefix, int offset) throws BadLocationException{
+	private Token getPrecedingToken(IDocument doc, int offset) throws BadLocationException{
 		// Skip trailing space
-		int n = offset - prefix.length() - 1;
+		int n = offset;
 		while (n >= 0 && Character.isSpaceChar(doc.getChar(n))){
 			n--;
 		}
-		return getPrefix(doc, n + 1);
+
+		char c = doc.getChar(n);
+		if(isDelimiter(c)){
+			return new Token(Character.toString(c), n);
+		}
+
+		int end = n;
+		while (n >= 0 && !isDelimiter((doc.getChar(n)))){
+			n--;
+		}
+
+		return new Token(doc.get(n+1, end-n), n+1);
 	}
 
 	/**
