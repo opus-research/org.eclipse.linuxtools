@@ -96,13 +96,15 @@ public class ControlFlowView extends AbstractTimeGraphView {
 
     @Override
     protected void fillLocalToolBar(IToolBarManager manager) {
+        super.fillLocalToolBar(manager);
         IDialogSettings settings = Activator.getDefault().getDialogSettings();
         IDialogSettings section = settings.getSection(getClass().getName());
         if (section == null) {
             section = settings.addNewSection(getClass().getName());
         }
         manager.add(getTimeGraphCombo().getTimeGraphViewer().getHideArrowsAction(section));
-        super.fillLocalToolBar(manager);
+        manager.add(getTimeGraphCombo().getTimeGraphViewer().getFollowArrowBwdAction());
+        manager.add(getTimeGraphCombo().getTimeGraphViewer().getFollowArrowFwdAction());
     }
 
     @Override
@@ -274,7 +276,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 buildTree(entryList, rootList);
             }
             Collections.sort(rootList, getEntryComparator());
-            putEntryList(trace, (ArrayList<TimeGraphEntry>) rootList.clone());
+            putEntryList(trace, new ArrayList<TimeGraphEntry>(rootList));
 
             if (trace.equals(getTrace())) {
                 refresh();
