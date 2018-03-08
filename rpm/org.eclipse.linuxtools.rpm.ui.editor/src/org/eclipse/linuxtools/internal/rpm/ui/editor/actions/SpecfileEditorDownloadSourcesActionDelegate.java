@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2013 Alexander Kurtakov, Neil Guzman.
+ * Copyright (c) 2013 Alexander Kurtakov, Neil Guzman.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Alexander Kurtakov - initial API and implementation
- *    Neil Guzman        - RPM download sources implementation
+ *    Neil Guzman        - prepare/download sources implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.ui.editor.actions;
 
@@ -39,6 +39,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorDownloadSourcesActionDelegate extends AbstractHandler {
 
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final Shell shell =  HandlerUtil.getActiveShellChecked(event);
 		final SpecfileParser specparser = new SpecfileParser();
@@ -55,7 +56,7 @@ public class SpecfileEditorDownloadSourcesActionDelegate extends AbstractHandler
 		// currently stops immediately once an invalid source URL is encountered
 		for (final SpecfileSource sourceurls : sourceURLList) {
 			try {
-				String rawURL = sourceurls.getFileName().toString();
+				String rawURL = sourceurls.getFileName();
 				String resolvedURL = UiUtils.resolveDefines(specfile, rawURL);
 				URL url = null;
 				try {

@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    Red Hat - initial API and implementation
+ *    Neil Guzman - prepare/download sources implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.ui.editor.actions;
 
@@ -47,6 +48,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler {
 
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final Shell shell = HandlerUtil.getActiveShellChecked(event);
 		final SpecfileParser specparser = new SpecfileParser();
@@ -55,19 +57,19 @@ public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler 
 		final IFile workFile = (IFile) rpj.getSpecFile();
 		final Specfile specfile = specparser.parse(workFile);
 
-		if (!DownloadFile(shell, rpj, specfile))
+		if (!downloadFile(shell, rpj, specfile)) {
 			return null;
+		}
 
 		Job job = new Job("Preparing sources") { //$NON-NLS-1$
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				monitor.beginTask(
 						NLS.bind(Messages.PrepareSources_prepareSources, rpj.getSpecFile().getName()), IProgressMonitor.UNKNOWN);
-				int offset = rpj.getSpecFile().getName().toString()
-						.lastIndexOf("."); //$NON-NLS-1$
+				int offset = rpj.getSpecFile().getName().lastIndexOf("."); //$NON-NLS-1$
 				MessageConsoleStream out = getConsole(
-						rpj.getSpecFile().getName().toString()
-								.substring(0, offset)).newMessageStream();
+						rpj.getSpecFile().getName().substring(0, offset))
+						.newMessageStream();
 				IStatus is = null;
 				try {
 					is = rpj.buildPrep(out);
@@ -89,14 +91,13 @@ public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler 
 		return null;
 	}
 
-	public boolean DownloadFile(Shell shell, RPMProject rpj, Specfile specfile) {
+	public boolean downloadFile(Shell shell, RPMProject rpj, Specfile specfile) {
 		// retrieve source(s) from specfile
 		final List<SpecfileSource> sourceURLList = specfile != null ? (List<SpecfileSource>) specfile
 				.getSources() : null;
 		for (final SpecfileSource sourceurls : sourceURLList) {
 			try {
-				String resolvedURL = UiUtils.resolveDefines(specfile,
-						sourceurls.getFileName().toString());
+				String resolvedURL = UiUtils.resolveDefines(specfile, sourceurls.getFileName());
 				URL url = null;
 				try {
 					url = new URL(resolvedURL);
