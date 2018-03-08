@@ -35,24 +35,23 @@ public abstract class AbstractPercentageDrawerField extends AbstractSTDataViewer
     }
 
     @Override
-    public String getValue(Object obj) {
+	public String getValue(Object obj) {
         return getPercentage(obj) + "";
     }
 
     /**
-     * Gets the percentage value for the given object, as a float.
-     * Implementations must return values between 0 and 100.
+     * Gets the percentage value for the given object, as a float
      *
-     * @param obj The object to retrieve percentage value for.
-     * @return A float value, between 0 and 100.
+     * @param obj
+     * @return a float value, between 0 and 100, please !
      */
     public abstract float getPercentage(Object obj);
 
     /**
-     * Percentage drawer.
+     * Percentage drawer
      */
     @Override
-    public void handleEvent(Event event) {
+	public void handleEvent(Event event) {
         Item item = (Item) event.item;
         Display display = event.widget.getDisplay();
         int index = event.index;

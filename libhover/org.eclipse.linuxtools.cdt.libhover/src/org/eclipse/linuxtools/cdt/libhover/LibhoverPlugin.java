@@ -27,73 +27,69 @@ import org.osgi.framework.BundleContext;
  */
 public class LibhoverPlugin extends AbstractUIPlugin {
 
-    // The plug-in ID
-    public static final String PLUGIN_ID = "org.eclipse.linuxtools.cdt.libhover"; //$NON-NLS-1$
+	// The plug-in ID
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.cdt.libhover"; //$NON-NLS-1$
 
-    private static final String LOAD_JOB_TXT = "LibHover.LoadJob.txt"; //$NON-NLS-1$
+	private static final String LOAD_JOB_TXT = "LibHover.LoadJob.txt"; //$NON-NLS-1$
+	
+	// The shared instance
+	private static LibhoverPlugin plugin;
+	
+	static {
+		plugin = new LibhoverPlugin();
+	}
 
-    // The shared instance
-    private static LibhoverPlugin plugin;
+	/**
+	 * The constructor
+	 */
+	public LibhoverPlugin() {
+	}
 
-    static {
-        plugin = new LibhoverPlugin();
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+		ResourcesPlugin.getWorkspace().addSaveParticipant(PLUGIN_ID,
+				new ISaveParticipant() {
+					public void saving(ISaveContext saveContext) {
+						save(saveContext);
+					}				
+					public void rollback(ISaveContext saveContext) {}
+					public void prepareToSave(ISaveContext saveContext) {}
+					public void doneSaving(ISaveContext saveContext) {}
+				});
+		IPreferenceStore ps = getPreferenceStore();
+		if (ps == null || !ps.getBoolean(PreferenceConstants.LAZY_LOAD)) {
+			Job k = new LibHoverLoadJob(LibHoverMessages.getString(LOAD_JOB_TXT));
+			k.schedule();
+		}
+	}
 
-    /**
-     * The constructor
-     */
-    public LibhoverPlugin() {
-    }
+	private void save(ISaveContext context) {
+		LibHover.saveLibraries();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+	 */
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		plugin = null;
+		super.stop(context);
+	}
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-     */
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        plugin = this;
-        ResourcesPlugin.getWorkspace().addSaveParticipant(PLUGIN_ID,
-                new ISaveParticipant() {
-                    @Override
-                    public void saving(ISaveContext saveContext) {
-                        save();
-                    }
-                    @Override
-                    public void rollback(ISaveContext saveContext) {}
-                    @Override
-                    public void prepareToSave(ISaveContext saveContext) {}
-                    @Override
-                    public void doneSaving(ISaveContext saveContext) {}
-                });
-        IPreferenceStore ps = getPreferenceStore();
-        if (ps == null || !ps.getBoolean(PreferenceConstants.LAZY_LOAD)) {
-            Job k = new LibHoverLoadJob(LibHoverMessages.getString(LOAD_JOB_TXT));
-            k.schedule();
-        }
-    }
-
-    private void save() {
-        LibHover.saveLibraries();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-     */
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        plugin = null;
-        super.stop(context);
-    }
-
-    /**
-     * Returns the shared instance
-     *
-     * @return the shared instance
-     */
-    public static LibhoverPlugin getDefault() {
-        return plugin;
-    }
-
+	/**
+	 * Returns the shared instance
+	 *
+	 * @return the shared instance
+	 */
+	public static LibhoverPlugin getDefault() {
+		return plugin;
+	}
+	
 }

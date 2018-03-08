@@ -26,61 +26,85 @@ import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
  */
 public class FileHistogramContentProvider implements ITreeContentProvider {
 
-    public static final FileHistogramContentProvider sharedInstance = new FileHistogramContentProvider();
+	public static final FileHistogramContentProvider sharedInstance = new FileHistogramContentProvider();
 
-    /**
-     * Constructor
-     */
-    FileHistogramContentProvider() {
-    }
+	/**
+	 * Constructor
+	 */
+	FileHistogramContentProvider() {
+	}
 
-    @Override
-    public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof AbstractTreeElement) {
-            AbstractTreeElement elem = (AbstractTreeElement) parentElement;
-            LinkedList<? extends TreeElement> list = elem.getChildren();
-            return list.toArray();
-        }
-        return null;
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
+	 */
+	@Override
+	public Object[] getChildren(Object parentElement) {
+	    if (parentElement instanceof AbstractTreeElement) {
+	        AbstractTreeElement elem = (AbstractTreeElement) parentElement;
+	        LinkedList<? extends TreeElement> list = elem.getChildren();
+	        return list.toArray();
+	    }
+	    return null;
+	}
 
-    @Override
-    public Object getParent(Object element) {
-        if (element instanceof AbstractTreeElement) {
-            AbstractTreeElement elem = (AbstractTreeElement) element;
-            return elem.getParent();
-        }
-        return null;
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
+	 */
+	@Override
+	public Object getParent(Object element) {
+		if (element instanceof AbstractTreeElement) {
+			AbstractTreeElement elem = (AbstractTreeElement) element;
+			return elem.getParent();
+		}
+		return null;
+	}
 
-    @Override
-    public boolean hasChildren(Object element) {
-        if (element instanceof AbstractTreeElement) {
-            AbstractTreeElement elem = (AbstractTreeElement) element;
-            return elem.hasChildren() && !elem.getChildren().isEmpty();
-        }
-        return false;
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
+	 */
+	@Override
+	public boolean hasChildren(Object element) {
+	    if (element instanceof AbstractTreeElement) {
+	        AbstractTreeElement elem = (AbstractTreeElement) element;
+	        return elem.hasChildren() && !elem.getChildren().isEmpty();
+	    }
+	    return false;
+	}
 
-    @Override
-    public Object[] getElements(Object inputElement) {
-        if (inputElement instanceof GmonDecoder) {
-            GmonDecoder obj = (GmonDecoder) inputElement;
-            HistRoot root = obj.getRootNode();
-            return new Object[] {
-                    root
-            };
-        }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+	 */
+	@Override
+	public Object[] getElements(Object inputElement) {
+		if (inputElement instanceof GmonDecoder) {
+		    GmonDecoder obj = (GmonDecoder) inputElement;
+	        HistRoot root = obj.getRootNode();
+	        return new Object[] {
+	                root
+	        };
+		}
         return new Object[0];
 
-    }
+	}
 
-    @Override
-    public void dispose() {
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
+	 */
+	@Override
+	public void dispose() {
+	}
 
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+	}
 
 }

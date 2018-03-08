@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -35,7 +35,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class CTFTraceReaderTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private CTFTraceReader fixture;
 
@@ -46,8 +46,8 @@ public class CTFTraceReaderTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
-        fixture = new CTFTraceReader(testTrace.getTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new CTFTraceReader(CtfTestTraces.getTestTrace(TRACE_INDEX));
     }
 
     /**
@@ -58,7 +58,7 @@ public class CTFTraceReaderTest {
      */
     @Test
     public void testOpen_existing() throws CTFReaderException {
-        CTFTrace trace = testTrace.getTrace();
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
 
         CTFTraceReader result = new CTFTraceReader(trace);
         assertNotNull(result);
@@ -94,10 +94,9 @@ public class CTFTraceReaderTest {
 
     /**
      * Run the boolean advance() method test. Test advancing normally.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testAdvance_normal() throws CTFReaderException {
+    public void testAdvance_normal() {
         boolean result = fixture.advance();
         assertTrue(result);
     }
@@ -105,10 +104,9 @@ public class CTFTraceReaderTest {
     /**
      * Run the boolean advance() method test. Test advancing when we're at the
      * end, so we expect that there is no more events.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testAdvance_end() throws CTFReaderException {
+    public void testAdvance_end() {
         int i = 0;
         boolean result = fixture.advance();
         while (result) {
@@ -130,10 +128,9 @@ public class CTFTraceReaderTest {
 
     /**
      * Run the CTFTraceReader copy constructor test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testCopyFrom() throws CTFReaderException {
+    public void testCopyFrom() {
         CTFTraceReader result = fixture.copyFrom();
         assertNotNull(result);
     }
@@ -158,7 +155,7 @@ public class CTFTraceReaderTest {
      */
     @Test
     public void testEquals() throws CTFReaderException {
-        CTFTraceReader fixture2 = new CTFTraceReader(testTrace.getTrace());
+        CTFTraceReader fixture2 = new CTFTraceReader(CtfTestTraces.getTestTrace(TRACE_INDEX));
         assertEquals(fixture, fixture2);
     }
 
@@ -175,10 +172,9 @@ public class CTFTraceReaderTest {
     /**
      * Run the getCurrentEventDef() method test. Get the last event's
      * definition.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testGetCurrentEventDef_last() throws CTFReaderException {
+    public void testGetCurrentEventDef_last() {
         fixture.goToLastEvent();
         EventDefinition result = fixture.getCurrentEventDef();
         assertNotNull(result);
@@ -204,10 +200,9 @@ public class CTFTraceReaderTest {
 
     /**
      * Run the void goToLastEvent() method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testGoToLastEvent() throws CTFReaderException {
+    public void testGoToLastEvent() {
         fixture.goToLastEvent();
         long ts1 = getTimestamp();
         long ts2 = fixture.getEndTime();
@@ -227,60 +222,54 @@ public class CTFTraceReaderTest {
 
     /**
      * Run the void printStats() method test with no 'width' parameter.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testPrintStats_noparam() throws CTFReaderException {
+    public void testPrintStats_noparam() {
         fixture.advance();
         fixture.printStats();
     }
 
     /**
      * Run the void printStats(int) method test with width = 0.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testPrintStats_width0() throws CTFReaderException {
+    public void testPrintStats_width0() {
         fixture.advance();
         fixture.printStats(0);
     }
 
     /**
      * Run the void printStats(int) method test with width = 1.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testPrintStats_width1() throws CTFReaderException {
+    public void testPrintStats_width1() {
         fixture.advance();
         fixture.printStats(1);
     }
 
     /**
      * Run the void printStats(int) method test with width = 2.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testPrintStats_width2() throws CTFReaderException {
+    public void testPrintStats_width2() {
         fixture.advance();
         fixture.printStats(2);
     }
 
     /**
      * Run the void printStats(int) method test with width = 10.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testPrintStats_width10() throws CTFReaderException {
+    public void testPrintStats_width10() {
         fixture.advance();
         fixture.printStats(10);
     }
 
     /**
      * Run the void printStats(int) method test with width = 100.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testPrintStats_100() throws CTFReaderException {
+    public void testPrintStats_100() {
         for (int i = 0; i < 1000; i++) {
             fixture.advance();
         }
@@ -289,10 +278,9 @@ public class CTFTraceReaderTest {
 
     /**
      * Run the boolean seek(long) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testSeek() throws CTFReaderException {
+    public void testSeek() {
         long timestamp = 1L;
         boolean result = fixture.seek(timestamp);
         assertTrue(result);

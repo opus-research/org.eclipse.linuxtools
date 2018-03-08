@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.dataviewers.charts.provider;
 
 import java.util.List;
 
+import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField;
 import org.eclipse.linuxtools.dataviewers.piechart.PieChart;
 import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
@@ -30,11 +31,12 @@ import org.swtchart.ITitle;
 import org.swtchart.LineStyle;
 
 /**
- * A utility class that handles the charts creation (pie chart and bar chart)
+ * A utility class that handles the charts creation (pie chart & bar chart)
+ *
+ * @author Marzia Maugeri <marzia.maugeri@st.com>
+ *
  */
-public final class ChartFactory {
-
-    private ChartFactory() {}
+public class ChartFactory {
 
     /**
      * Produces a pie chart from the input objects.
@@ -47,7 +49,7 @@ public final class ChartFactory {
      *            the field providing the values for the pie parts.
      * @return a new pie chart
      */
-    public static Chart producePieChart(Object[] objects, ISTDataViewersField nameField,
+    public static final Chart producePieChart(Object[] objects, ISTDataViewersField nameField,
             List<IChartField> valFields, String title) {
 
         ChartView view;
@@ -72,6 +74,11 @@ public final class ChartFactory {
             for (int i = 0; i < objects.length; i++) {
                 valueLabels[i] = nameField.getValue(objects[i]);
             }
+
+            /*
+             * String [] pieChartNames = new String [valFields.size()]; for (int i = 0; i < valFields.size(); i++) {
+             * pieChartNames[i] = valFields.get(i).getColumnHeaderText(); }
+             */
 
             // pie chart data is grouped by columns
             // row size is the number of pie charts
@@ -111,7 +118,7 @@ public final class ChartFactory {
      * @return a new 2D bar chart
      */
 
-    public static Chart produceBarChart(Object[] objects, final ISTDataViewersField nameField,
+    public static final Chart produceBarChart(Object[] objects, final ISTDataViewersField nameField,
             List<IChartField> valFields, String title, boolean horizontal) {
         ChartView view;
         try {
@@ -186,5 +193,13 @@ public final class ChartFactory {
 
     private static int getRC() {
         return (int) (Math.random() * 255);
+    }
+
+    /**
+     * @param viewer
+     * @return the field used to provide the labels to the series
+     */
+    public ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
+        return viewer.getAllFields()[0];
     }
 }

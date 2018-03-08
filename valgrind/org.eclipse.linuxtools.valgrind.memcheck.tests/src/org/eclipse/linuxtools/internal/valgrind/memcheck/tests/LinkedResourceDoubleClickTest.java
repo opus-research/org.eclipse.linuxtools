@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.eclipse.core.resources.IFolder;
@@ -34,76 +32,75 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.junit.Test;
 
 public class LinkedResourceDoubleClickTest extends AbstractLinkedResourceMemcheckTest {
-    private ValgrindStackFrame frame;
-    @Test
-    public void testLinkedDoubleClickFile() throws Exception {
-        ILaunchConfiguration config = createConfiguration(proj.getProject());
-        doLaunch(config, "testLinkedDoubleClickFile"); //$NON-NLS-1$
+	private ValgrindStackFrame frame;
 
-        doDoubleClick();
+	public void testLinkedDoubleClickFile() throws Exception {
+		ILaunchConfiguration config = createConfiguration(proj.getProject());
+		doLaunch(config, "testLinkedDoubleClickFile"); //$NON-NLS-1$
 
-        IEditorPart editor = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        IEditorInput input = editor.getEditorInput();
-        assertTrue("editor input must be file input",
-                input instanceof IFileEditorInput);
-        IFileEditorInput fileInput = (IFileEditorInput) input;
-        IFolder srcFolder = proj.getProject().getFolder("src"); //$NON-NLS-1$
-        File expectedFile = new File(srcFolder.getLocation().toOSString(),
-                frame.getFile());
-        File actualFile = fileInput.getFile().getLocation().toFile();
+		doDoubleClick();
 
-        assertTrue(fileInput.getFile().isLinked(IResource.CHECK_ANCESTORS));
-        assertEquals(expectedFile.getCanonicalPath(),
-                actualFile.getCanonicalPath());
-    }
-    @Test
-    public void testLinkedDoubleClickLine() throws Exception {
-        ILaunchConfiguration config = createConfiguration(proj.getProject());
-        doLaunch(config, "testLinkedDoubleClickLine"); //$NON-NLS-1$
+		IEditorPart editor = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorInput input = editor.getEditorInput();
+		assertTrue("editor input must be file input",
+				input instanceof IFileEditorInput);
+		IFileEditorInput fileInput = (IFileEditorInput) input;
+		IFolder srcFolder = proj.getProject().getFolder("src"); //$NON-NLS-1$
+		File expectedFile = new File(srcFolder.getLocation().toOSString(),
+				frame.getFile());
+		File actualFile = fileInput.getFile().getLocation().toFile();
 
-        doDoubleClick();
+		assertTrue(fileInput.getFile().isLinked(IResource.CHECK_ANCESTORS));
+		assertEquals(expectedFile.getCanonicalPath(),
+				actualFile.getCanonicalPath());
+	}
 
-        IEditorPart editor = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        assertTrue("editor must be text editor", editor instanceof ITextEditor);
-        ITextEditor textEditor = (ITextEditor) editor;
+	public void testLinkedDoubleClickLine() throws Exception {
+		ILaunchConfiguration config = createConfiguration(proj.getProject());
+		doLaunch(config, "testLinkedDoubleClickLine"); //$NON-NLS-1$
 
-        ISelection selection = textEditor.getSelectionProvider().getSelection();
-        assertTrue("selection must be text one",
-                selection instanceof TextSelection);
-        TextSelection textSelection = (TextSelection) selection;
-        int line = textSelection.getStartLine() + 1; // zero-indexed
+		doDoubleClick();
 
-        assertEquals(frame.getLine(), line);
-    }
+		IEditorPart editor = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		assertTrue("editor must be text editor", editor instanceof ITextEditor);
+		ITextEditor textEditor = (ITextEditor) editor;
 
-    private void doDoubleClick() {
-        ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
-        CoreMessagesViewer viewer = view.getMessagesViewer();
+		ISelection selection = textEditor.getSelectionProvider().getSelection();
+		assertTrue("selection must be text one",
+				selection instanceof TextSelection);
+		TextSelection textSelection = (TextSelection) selection;
+		int line = textSelection.getStartLine() + 1; // zero-indexed
 
-        // get first leaf
-        IValgrindMessage[] elements = (IValgrindMessage[]) viewer.getTreeViewer().getInput();
-        IValgrindMessage element = elements[0];
-        TreePath path = new TreePath(new Object[] { element });
-        frame = null;
-        while (element.getChildren().length > 0) {
-            element = element.getChildren()[0];
-            path = path.createChildPath(element);
-            if (element instanceof ValgrindStackFrame) {
-                frame = (ValgrindStackFrame) element;
-            }
-        }
-        assertNotNull(frame);
+		assertEquals(frame.getLine(), line);
+	}
 
-        viewer.getTreeViewer().expandToLevel(frame, AbstractTreeViewer.ALL_LEVELS);
-        TreeSelection selection = new TreeSelection(path);
+	private void doDoubleClick() {
+		ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
+		CoreMessagesViewer viewer = view.getMessagesViewer();
 
-        // do double click
-        IDoubleClickListener listener = viewer.getDoubleClickListener();
-        listener.doubleClick(new DoubleClickEvent(viewer.getTreeViewer(), selection));
-    }
+		// get first leaf
+		IValgrindMessage[] elements = (IValgrindMessage[]) viewer.getTreeViewer().getInput();
+		IValgrindMessage element = elements[0];
+		TreePath path = new TreePath(new Object[] { element });
+		frame = null;
+		while (element.getChildren().length > 0) {
+			element = element.getChildren()[0];
+			path = path.createChildPath(element);
+			if (element instanceof ValgrindStackFrame) {
+				frame = (ValgrindStackFrame) element;
+			}
+		}
+		assertNotNull(frame);
+
+		viewer.getTreeViewer().expandToLevel(frame, AbstractTreeViewer.ALL_LEVELS);
+		TreeSelection selection = new TreeSelection(path);
+
+		// do double click
+		IDoubleClickListener listener = viewer.getDoubleClickListener();
+		listener.doubleClick(new DoubleClickEvent(viewer.getTreeViewer(), selection));
+	}
 }

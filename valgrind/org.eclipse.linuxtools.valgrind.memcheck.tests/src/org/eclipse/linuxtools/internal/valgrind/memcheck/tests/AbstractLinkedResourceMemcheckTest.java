@@ -10,61 +10,54 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URL;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.junit.After;
-import org.junit.Before;
 
-public abstract class AbstractLinkedResourceMemcheckTest extends
-        AbstractMemcheckTest {
+public abstract class AbstractLinkedResourceMemcheckTest extends AbstractMemcheckTest {
 
-    @Before
-    public void linkedResourceSetUp() throws Exception {
-        proj = createProject(getBundle(), "linkedTest"); //$NON-NLS-1$
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+	
+		proj = createProject(getBundle(), "linkedTest"); //$NON-NLS-1$
+		
+		// delete source folder and replace it with a link to its bundle location
+		final Exception[] ex = new Exception[1];
+		ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
 
-        // delete source folder and replace it with a link to its bundle
-        // location
-        final Exception[] ex = new Exception[1];
-        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+			public void run(IProgressMonitor monitor) {
+				try {					
+					URL location = FileLocator.find(getBundle(), new Path("resources/linkedTest/src"), null); //$NON-NLS-1$
+					IFolder srcFolder = proj.getProject().getFolder("src"); //$NON-NLS-1$
+					srcFolder.delete(true, null);
+					srcFolder.createLink(FileLocator.toFileURL(location).toURI(), IResource.REPLACE, null);
+				} catch (Exception e) {
+					ex[0] = e;
+				}
+			}
 
-            @Override
-            public void run(IProgressMonitor monitor) {
-                try {
-                    URL location = FileLocator.find(getBundle(), new Path(
-                            "resources/linkedTest/src"), null); //$NON-NLS-1$
-                    IFolder srcFolder = proj.getProject().getFolder("src"); //$NON-NLS-1$
-                    srcFolder.delete(true, null);
-                    srcFolder.createLink(FileLocator.toFileURL(location)
-                            .toURI(), IResource.REPLACE, null);
-                } catch (Exception e) {
-                    ex[0] = e;
-                }
-            }
+		}, null);
 
-        }, null);
+		if (ex[0] != null) {
+			throw ex[0];
+		}
 
-        if (ex[0] != null) {
-            throw ex[0];
-        }
+		assertEquals(0, proj.getBinaryContainer().getBinaries().length);
+		
+		buildProject(proj);
+	}
 
-        assertEquals(0, proj.getBinaryContainer().getBinaries().length);
-
-        buildProject(proj);
-    }
-
-    @After
-    public void cleanupLinkedResource() throws CoreException {
-        deleteProject(proj);
-    }
+	@Override
+	protected void tearDown() throws Exception {
+		deleteProject(proj);
+		super.tearDown();
+	}
 
 }

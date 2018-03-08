@@ -14,10 +14,6 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.trace;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
@@ -34,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
  * The last trace refers to the trace from which the last event was "consumed"
  * at the experiment level.
  */
-public final class TmfExperimentContext extends TmfContext {
+public class TmfExperimentContext extends TmfContext {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -49,8 +45,8 @@ public final class TmfExperimentContext extends TmfContext {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final List<ITmfContext> fContexts;
-    private final List<ITmfEvent> fEvents;
+    private ITmfContext[] fContexts;
+    private ITmfEvent[] fEvents;
     private int fLastTraceRead;
 
     // ------------------------------------------------------------------------
@@ -65,16 +61,9 @@ public final class TmfExperimentContext extends TmfContext {
      */
     public TmfExperimentContext(final int nbTraces) {
         super();
+        fContexts = new ITmfContext[nbTraces];
+        fEvents = new ITmfEvent[nbTraces];
         fLastTraceRead = NO_TRACE;
-        fContexts = new ArrayList<>(nbTraces);
-        fEvents = new ArrayList<>(nbTraces);
-
-
-        /* Initialize the arrays to the requested size */
-        for (int i = 0; i < nbTraces; i++) {
-            fContexts.add(null);
-            fEvents.add(null);
-        }
     }
 
     @Override
@@ -90,62 +79,21 @@ public final class TmfExperimentContext extends TmfContext {
     // ------------------------------------------------------------------------
 
     /**
-     * Return how many traces this experiment context tracks the contexts of
-     * (a.k.a., the number of traces in the experiment).
+     * Get the trace contexts composing this experiment context.
      *
-     * @return The number of traces in the experiment
+     * @return The array of trace contexts
      */
-    public int getNbTraces() {
-        return fContexts.size();
+    public ITmfContext[] getContexts() {
+        return fContexts;
     }
 
     /**
-     * Get the current context of a specific trace
+     * Get the trace events located at this experiment context's location.
      *
-     * @param traceIndex
-     *            The index of the trace in the experiment
-     * @return The matching context object for that trace
+     * @return The array of trace events
      */
-    @Nullable
-    public ITmfContext getContext(int traceIndex) {
-        return fContexts.get(traceIndex);
-    }
-
-    /**
-     * Set the context of a trace
-     *
-     * @param traceIndex
-     *            The index of the trace in the experiment
-     * @param ctx
-     *            The new context object for that trace
-     */
-    public void setContext(int traceIndex, ITmfContext ctx) {
-        fContexts.set(traceIndex, ctx);
-    }
-
-    /**
-     * Get the current event for a specific trace in the experiment.
-     *
-     * @param traceIndex
-     *            The index of the trace in the experiment
-     * @return The event matching the trace/context
-     *
-     */
-    @Nullable
-    public ITmfEvent getEvent(int traceIndex) {
-        return fEvents.get(traceIndex);
-    }
-
-    /**
-     * Set the context's event for a specific trace
-     *
-     * @param traceIndex
-     *            The index of the trace in the experiment
-     * @param event
-     *            The event at the context in the trace
-     */
-    public void setEvent(int traceIndex, ITmfEvent event) {
-        fEvents.set(traceIndex, event);
+    public ITmfEvent[] getEvents() {
+        return fEvents;
     }
 
     /**
@@ -175,8 +123,8 @@ public final class TmfExperimentContext extends TmfContext {
     @Override
     public int hashCode() {
         int result = 17;
-        for (int i = 0; i < fContexts.size(); i++) {
-            result = 37 * result + fContexts.get(i).hashCode();
+        for (int i = 0; i < fContexts.length; i++) {
+            result = 37 * result + fContexts[i].hashCode();
         }
         return result;
     }
@@ -195,8 +143,8 @@ public final class TmfExperimentContext extends TmfContext {
         final TmfExperimentContext o = (TmfExperimentContext) other;
         boolean isEqual = true;
         int i = 0;
-        while (isEqual && (i < fContexts.size())) {
-            isEqual &= fContexts.get(i).equals(o.fContexts.get(i));
+        while (isEqual && (i < fContexts.length)) {
+            isEqual &= fContexts[i].equals(o.fContexts[i]);
             i++;
         }
         return isEqual;
@@ -208,13 +156,13 @@ public final class TmfExperimentContext extends TmfContext {
         StringBuilder sb = new StringBuilder("TmfExperimentContext [\n");
         sb.append("\tfLocation=" + getLocation() + ", fRank=" + getRank() + "\n");
         sb.append("\tfContexts=[");
-        for (int i = 0; i < fContexts.size(); i++) {
-            sb.append("(" + fContexts.get(i).getLocation() + "," + fContexts.get(i).getRank() + ((i < fContexts.size() - 1) ? ")," : ")]\n"));
+        for (int i = 0; i < fContexts.length; i++) {
+            sb.append("(" + fContexts[i].getLocation() + "," + fContexts[i].getRank() + ((i < fContexts.length - 1) ? ")," : ")]\n"));
         }
         sb.append("\tfEvents=[");
-        for (int i = 0; i < fEvents.size(); i++) {
-            ITmfEvent event = fEvents.get(i);
-            sb.append(((event != null) ? fEvents.get(i).getTimestamp() : "(null)")  + ((i < fEvents.size() - 1) ? "," : "]\n"));
+        for (int i = 0; i < fEvents.length; i++) {
+            ITmfEvent event = fEvents[i];
+            sb.append(((event != null) ? fEvents[i].getTimestamp() : "(null)")  + ((i < fEvents.length - 1) ? "," : "]\n"));
         }
         sb.append("\tfLastTraceRead=" + fLastTraceRead + "\n");
         sb.append("]");

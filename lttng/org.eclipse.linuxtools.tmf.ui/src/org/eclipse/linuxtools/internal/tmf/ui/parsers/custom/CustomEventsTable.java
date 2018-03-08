@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2014 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,10 +15,9 @@ package org.eclipse.linuxtools.internal.tmf.ui.parsers.custom;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomEvent;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 import org.eclipse.linuxtools.tmf.ui.widgets.virtualtable.ColumnData;
 import org.eclipse.swt.SWT;
@@ -56,7 +55,7 @@ public class CustomEventsTable extends TmfEventsTable {
         if (fDefinition == null) {
             return;
         }
-        List<ColumnData> columnData = new LinkedList<>();
+        List<ColumnData> columnData = new LinkedList<ColumnData>();
         for (OutputColumn outputColumn : fDefinition.outputs) {
             ColumnData column = new ColumnData(outputColumn.name, 0, SWT.LEFT);
             columnData.add(column);
@@ -65,10 +64,15 @@ public class CustomEventsTable extends TmfEventsTable {
     }
 
     @Override
-    public String[] getItemStrings(ITmfEvent event) {
+    public TmfEventField[] extractItemFields(ITmfEvent event) {
         if (event instanceof CustomEvent) {
-            return ((CustomEvent) event).getEventStrings();
+            TmfEventField[] fields = ((CustomEvent) event).extractItemFields();
+//            String[] labels = new String[fields.length];
+//            for (int i = 0; i < fields.length; i++) {
+//                labels[i] = (String) fields[i].getValue();
+//            }
+            return fields;
         }
-        return EMPTY_STRING_ARRAY;
+        return new TmfEventField[0];
     }
 }

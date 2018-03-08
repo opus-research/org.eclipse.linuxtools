@@ -15,13 +15,11 @@ import org.eclipse.jface.text.rules.IWordDetector;
 
 public class PackageWordDetector implements IWordDetector {
 
-    @Override
-    public boolean isWordPart(char c) {
-        return Character.isLetterOrDigit(c) || (c == '-') || (c == '_') || (c == '+');
-    }
+	public boolean isWordPart(char c) {
+		return Character.isLetterOrDigit(c) || (c == '-') || (c == '_') || (c == '+');
+	}
 
-    @Override
-    public boolean isWordStart(char c) {
-        return (c == ' ') || (c == ',') || (c == '\t') || (c == ':');
-    }
+	public boolean isWordStart(char c) {
+		return (c == ' ') || (c == ',') || (c == '\t') || (c == ':');
+	}
 }

@@ -19,35 +19,32 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
  */
 public class TreeItemAppearsCondition implements ICondition {
 
-    private SWTBot bot;
-    private SWTBotTreeItem treeItem;
-    private String itemName;
-    private String parent;
+	private SWTBot bot;
+	private SWTBotTreeItem treeItem;
+	private String itemName;
+	private String parent;
+	
+	public TreeItemAppearsCondition(String parent, String treeItemName) {
+		this.itemName = treeItemName;
+		this.parent = parent;
+	}
+	
+	public boolean test() throws Exception {
+		for (SWTBotTreeItem i : treeItem.getItems()) {
+			if (i.getText().contains(itemName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    public TreeItemAppearsCondition(String parent, String treeItemName) {
-        this.itemName = treeItemName;
-        this.parent = parent;
-    }
+	public void init(SWTBot bot) {
+		this.bot = bot;
+		treeItem = this.bot.tree().expandNode(parent);
+	}
 
-    @Override
-    public boolean test() {
-        for (SWTBotTreeItem i : treeItem.getItems()) {
-            if (i.getText().contains(itemName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void init(SWTBot bot) {
-        this.bot = bot;
-        treeItem = this.bot.tree().expandNode(parent);
-    }
-
-    @Override
-    public String getFailureMessage() {
-        return null;
-    }
+	public String getFailureMessage() {
+		return null;
+	}
 
 }

@@ -17,13 +17,6 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.math.BigInteger;
 import java.nio.ByteOrder;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-
 /**
  * A CTF integer declaration.
  *
@@ -33,276 +26,120 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-@NonNullByDefault
-public class IntegerDeclaration extends Declaration {
-
-    // ------------------------------------------------------------------------
-    // Helpers
-    // ------------------------------------------------------------------------
-
-    /**
-     * unsigned int 32 bits big endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration UINT_32B_DECL = new IntegerDeclaration(32, false, ByteOrder.BIG_ENDIAN);
-    /**
-     * unsigned int 32 bits little endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration UINT_32L_DECL = new IntegerDeclaration(32, false, ByteOrder.LITTLE_ENDIAN);
-    /**
-     * signed int 32 bits big endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration INT_32B_DECL = new IntegerDeclaration(32, true, ByteOrder.BIG_ENDIAN);
-    /**
-     * signed int 32 bits little endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration INT_32L_DECL = new IntegerDeclaration(32, true, ByteOrder.LITTLE_ENDIAN);
-    /**
-     * unsigned int 32 bits big endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration UINT_64B_DECL = new IntegerDeclaration(64, false, ByteOrder.BIG_ENDIAN);
-    /**
-     * unsigned int 64 bits little endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration UINT_64L_DECL = new IntegerDeclaration(64, false, ByteOrder.LITTLE_ENDIAN);
-    /**
-     * signed int 64 bits big endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration INT_64B_DECL = new IntegerDeclaration(64, true, ByteOrder.BIG_ENDIAN);
-    /**
-     * signed int 64 bits little endian
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration INT_64L_DECL = new IntegerDeclaration(64, true, ByteOrder.LITTLE_ENDIAN);
-    /**
-     * unsigned 8 bit int endianness doesn't matter since it's 8 bits (byte)
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration UINT_8_DECL = new IntegerDeclaration(8, false, ByteOrder.BIG_ENDIAN);
-    /**
-     * signed 8 bit int endianness doesn't matter since it's 8 bits (char)
-     *
-     * @since 3.0
-     */
-    public static final IntegerDeclaration INT_8_DECL = new IntegerDeclaration(8, true, ByteOrder.BIG_ENDIAN);
+public class IntegerDeclaration implements IDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final int fLength;
-    private final boolean fSigned;
-    private final int fBase;
-    private final ByteOrder fByteOrder;
-    private final Encoding fEncoding;
-    private final long fAlignment;
-    private final String fClock;
+    private final int length;
+    private final boolean signed;
+    private final int base;
+    private final ByteOrder byteOrder;
+    private final Encoding encoding;
+    private final long alignment;
+    private final String clock;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Factory, some common types cached
-     *
-     * @param len
-     *            The length in bits
-     * @param signed
-     *            Is the integer signed? false == unsigned
-     * @param base
-     *            The base (10-16 are most common)
-     * @param byteOrder
-     *            Big-endian little-endian or other
-     * @param encoding
-     *            ascii, utf8 or none.
-     * @param clock
-     *            The clock path, can be null
-     * @param alignment
-     *            The minimum alignment. Should be >= 1
-     * @return the integer declaration
-     * @since 3.0
+     * Contructor
+     * @param len the length in bits
+     * @param signed is the integer signed? false == unsigned
+     * @param base the base (10-16 are most common)
+     * @param byteOrder Big endian little endian or other
+     * @param encoding ascii, utf8 or none.
+     * @param clock the clock path, can be null
+     * @param alignment the minimum alignment
      */
-    public static IntegerDeclaration createDeclaration(int len, boolean signed, int base,
-            @Nullable ByteOrder byteOrder, Encoding encoding, String clock, long alignment) {
-        if (encoding.equals(Encoding.NONE) && (alignment == 8) && (clock.equals("")) && base == 10) { //$NON-NLS-1$
-            if (len == 8) {
-                return signed ? INT_8_DECL : UINT_8_DECL;
-            }
-            if (len == 32) {
-                if (signed) {
-                    if (byteOrder != null && byteOrder.equals(ByteOrder.BIG_ENDIAN)) {
-                        return INT_32B_DECL;
-                    }
-                    return INT_32L_DECL;
-                }
-                if (byteOrder != null && byteOrder.equals(ByteOrder.BIG_ENDIAN)) {
-                    return UINT_32B_DECL;
-                }
-                return UINT_32L_DECL;
-            } else if (len == 64) {
-                if (signed) {
-                    if (byteOrder != null && byteOrder.equals(ByteOrder.BIG_ENDIAN)) {
-                        return INT_64B_DECL;
-                    }
-                    return INT_64L_DECL;
-                }
-                if (byteOrder != null && byteOrder.equals(ByteOrder.BIG_ENDIAN)) {
-                    return UINT_64B_DECL;
-                }
-                return UINT_64L_DECL;
-            }
-        }
-        return new IntegerDeclaration(len, signed, base, byteOrder, encoding, clock, alignment);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param len
-     *            The length in bits
-     * @param signed
-     *            Is the integer signed? false == unsigned
-     * @param base
-     *            The base (10-16 are most common)
-     * @param byteOrder
-     *            Big-endian little-endian or other
-     * @param encoding
-     *            ascii, utf8 or none.
-     * @param clock
-     *            The clock path, can be null
-     * @param alignment
-     *            The minimum alignment. Should be &ge; 1
-     */
-    private IntegerDeclaration(int len, boolean signed, int base,
-            @Nullable ByteOrder byteOrder, Encoding encoding, String clock, long alignment) {
+    public IntegerDeclaration(int len, boolean signed, int base,
+            ByteOrder byteOrder, Encoding encoding, String clock, long alignment) {
         if (len <= 0 || len == 1 && signed) {
             throw new IllegalArgumentException();
         }
-
-        fLength = len;
-        fSigned = signed;
-        fBase = base;
-
-        @SuppressWarnings("null")
-        @NonNull ByteOrder actualByteOrder = (byteOrder == null ? ByteOrder.nativeOrder() : byteOrder);
-        fByteOrder = actualByteOrder;
-
-        fEncoding = encoding;
-        fClock = clock;
-        fAlignment = Math.max(alignment, 1);
-    }
-
-    private IntegerDeclaration(int len, boolean signed, @Nullable ByteOrder byteOrder) {
-        this(len, signed, 10, byteOrder, Encoding.NONE, "", 8); //$NON-NLS-1$
+        this.length = len;
+        this.signed = signed;
+        this.base = base;
+        this.byteOrder = byteOrder;
+        this.encoding = encoding;
+        this.clock = clock;
+        this.alignment = alignment;
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
      * Is the integer signed?
-     *
      * @return the is the integer signed
      */
     public boolean isSigned() {
-        return fSigned;
+        return signed;
     }
 
     /**
-     * Get the integer base commonly decimal or hex
-     *
+     * get the integer base commonly decimal or hex
      * @return the integer base
      */
     public int getBase() {
-        return fBase;
+        return base;
     }
 
     /**
-     * Get the byte order
-     *
+     * gets the byte order
      * @return the byte order
      */
     public ByteOrder getByteOrder() {
-        return fByteOrder;
+        return byteOrder;
     }
 
     /**
-     * Get encoding, chars are 8 bit ints
-     *
+     * get encoding, chars are 8 bit ints
      * @return the encoding
      */
     public Encoding getEncoding() {
-        return fEncoding;
+        return encoding;
     }
 
     /**
-     * Is the integer a character (8 bits and encoded?)
-     *
+     * is the integer a character (8 bits and encoded?)
      * @return is the integer a char
      */
-    public boolean isCharacter() {
-        return (fLength == 8) && (fEncoding != Encoding.NONE);
+   public boolean isCharacter() {
+        return (length == 8) && (encoding != Encoding.NONE);
     }
 
-    /**
-     * Get the length in bits for this integer
-     *
-     * @return the length of the integer
-     */
+   /**
+    * How many bits is this int
+    * @return the length of the int
+    */
     public int getLength() {
-        return fLength;
+        return length;
     }
 
     @Override
-    public long getAlignment() {
-        return fAlignment;
+    public long getAlignment(){
+        return alignment;
     }
 
     /**
      * The integer's clock, since timestamps are stored in ints
-     *
      * @return the integer's clock, can be null. (most often it is)
      */
-    public String getClock() {
-        return fClock;
+    public String getClock(){
+        return clock;
     }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public int getMaximumSize() {
-        return fLength;
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 3.0
-     */
     @Override
-    public IntegerDefinition createDefinition(@Nullable IDefinitionScope definitionScope,
-            String fieldName, BitBuffer input) throws CTFReaderException {
-        long value = read(input);
-        return new IntegerDefinition(this, definitionScope, fieldName, value);
+    public IntegerDefinition createDefinition(IDefinitionScope definitionScope,
+            String fieldName) {
+        return new IntegerDefinition(this, definitionScope, fieldName);
     }
 
     @Override
@@ -312,86 +149,30 @@ public class IntegerDeclaration extends Declaration {
     }
 
     /**
-     * Get the maximum value for this integer declaration.
+     * Get the maximum value for this integer declaration
      *
      * @return The maximum value for this integer declaration
      * @since 2.0
      */
     public BigInteger getMaxValue() {
-        /*
-         * Compute the number of bits able to represent an unsigned number,
-         * ignoring sign bit.
-         */
-        int significantBits = fLength - (fSigned ? 1 : 0);
-        /*
-         * For a given N significant bits, compute the maximal value which is (1
-         * << N) - 1.
-         */
-
-        @SuppressWarnings("null")
-        @NonNull BigInteger ret = BigInteger.ONE.shiftLeft(significantBits).subtract(BigInteger.ONE);
-        return ret;
+        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
+        BigInteger max = signed ? capacity.divide(BigInteger.valueOf(2)) : capacity;
+        return max.subtract(BigInteger.ONE);
     }
 
     /**
-     * Get the minimum value for this integer declaration.
+     * Get the minimum value for this integer declaration
      *
      * @return The minimum value for this integer declaration
      * @since 2.0
      */
     public BigInteger getMinValue() {
-        if (!fSigned) {
-            @SuppressWarnings("null")
-            @NonNull BigInteger ret = BigInteger.ZERO;
-            return ret;
+        if (!signed) {
+            return BigInteger.ZERO;
         }
 
-        /*
-         * Compute the number of bits able to represent an unsigned number,
-         * without the sign bit.
-         */
-        int significantBits = fLength - 1;
-        /*
-         * For a given N significant bits, compute the minimal value which is -
-         * (1 << N).
-         */
-        @SuppressWarnings("null")
-        @NonNull BigInteger ret = BigInteger.ONE.shiftLeft(significantBits).negate();
-        return ret;
-    }
-
-    private long read(BitBuffer input) throws CTFReaderException {
-        /* Offset the buffer position wrt the current alignment */
-        alignRead(input);
-
-        boolean signed = isSigned();
-        int length = getLength();
-        long bits = 0;
-
-        /*
-         * Is the endianness of this field the same as the endianness of the
-         * input buffer? If not, then temporarily set the buffer's endianness to
-         * this field's just to read the data
-         */
-        ByteOrder previousByteOrder = input.getByteOrder();
-        if ((getByteOrder() != input.getByteOrder())) {
-            input.setByteOrder(getByteOrder());
-        }
-
-        if (length > 64) {
-            throw new CTFReaderException("Cannot read an integer with over 64 bits. Length given: " + length); //$NON-NLS-1$
-        }
-
-        bits = input.get(length, signed);
-
-        /*
-         * Put the input buffer's endianness back to original if it was changed
-         */
-        if (previousByteOrder != input.getByteOrder()) {
-            input.setByteOrder(previousByteOrder);
-        }
-
-        return bits;
+        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
+        return capacity.divide(BigInteger.valueOf(2)).negate();
     }
 
 }

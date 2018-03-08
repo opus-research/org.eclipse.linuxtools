@@ -20,11 +20,11 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
-import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
+import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class EventDeclarationTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private EventDeclaration fixture;
 
@@ -50,12 +50,12 @@ public class EventDeclarationTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTestTraces.tracesExist());
         fixture = new EventDeclaration();
         fixture.setContext(new StructDeclaration(1L));
         fixture.setId(1L);
         fixture.setFields(new StructDeclaration(1L));
-        fixture.setStream(new CTFStream(testTrace.getTrace()));
+        fixture.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
         fixture.setName("");
     }
 
@@ -99,7 +99,7 @@ public class EventDeclarationTest {
         obj.setContext(new StructDeclaration(1L));
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
-        obj.setStream(new CTFStream(testTrace.getTrace()));
+        obj.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
         obj.setName("");
 
         assertTrue(fixture.equals(fixture));
@@ -235,7 +235,7 @@ public class EventDeclarationTest {
      */
     @Test
     public void testGetStream() {
-        CTFStream result = fixture.getStream();
+        Stream result = fixture.getStream();
         assertNotNull(result);
     }
 
@@ -253,7 +253,7 @@ public class EventDeclarationTest {
      */
     @Test
     public void testHashCode_null() {
-        fixture.setStream((CTFStream) null);
+        fixture.setStream((Stream) null);
         fixture.setName((String) null);
 
         int result = fixture.hashCode();
@@ -303,7 +303,7 @@ public class EventDeclarationTest {
      */
     @Test
     public void testStreamIsSet_null() {
-        fixture.setStream((CTFStream) null);
+        fixture.setStream((Stream) null);
 
         boolean result = fixture.streamIsSet();
         assertEquals(false, result);
@@ -316,23 +316,25 @@ public class EventDeclarationTest {
      */
     @Test
     public void testEventDefinition() throws CTFReaderException {
-        CTFTrace trace = testTrace.getTrace();
-        EventDefinition ed = null;
-        try (CTFTraceReader tr = new CTFTraceReader(trace);) {
-            tr.advance();
-            ed = tr.getCurrentEventDef();
-        }
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
+        CTFTraceReader tr = new CTFTraceReader(trace);
+        tr.advance();
+        EventDefinition ed = new EventDefinition(null, null);
+        ed = tr.getCurrentEventDef();
         assertNotNull(ed);
-        assertNotNull(ed.getScopePath());
+        assertNotNull(ed.getPath());
         assertNotNull(ed.getDeclaration());
         assertNotNull(ed.getFields());
         assertNull(ed.getContext());
         assertNotNull(ed.getPacketContext());
         assertNotNull(ed.getCPU());
+        assertNotNull(ed.getPacketContext());
         assertNotNull(ed.getStreamInputReader());
         assertNull(ed.lookupDefinition("context"));
         assertNotNull(ed.lookupDefinition("fields"));
         assertNull(ed.lookupDefinition("other"));
+        assertNotNull(ed.toString());
+        ed.setContext( ed.getFields());
         assertNotNull(ed.toString());
     }
 

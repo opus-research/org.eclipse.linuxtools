@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -29,8 +28,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * The class <code>SequenceDefinitionTest</code> contains tests for the class
@@ -45,13 +42,8 @@ public class SequenceDefinitionTest {
     private SequenceDefinition fixture;
     private final static int seqLen = 15;
 
-    private static ImmutableList<String> wrap(String s) {
-        return ImmutableList.<String> builder().add(s).build();
-    }
-
     /**
      * Perform pre-test initialization.
-     *
      * @throws CTFReaderException
      */
     @Before
@@ -59,23 +51,22 @@ public class SequenceDefinitionTest {
         StructDeclaration structDec;
         StructDefinition structDef;
 
-        IntegerDeclaration id = IntegerDeclaration.createDeclaration(8, false, 8,
-                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, "", 8);
+        IntegerDeclaration id = new IntegerDeclaration(8, false, 8,
+                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, null, 8);
         String lengthName = "LengthName";
         structDec = new StructDeclaration(0);
         structDec.addField(lengthName, id);
-        structDef = new StructDefinition(structDec, null, "x",
-                wrap(lengthName),
-                new Definition[] { new IntegerDefinition(id, null, lengthName, seqLen) });
+        structDef = new StructDefinition(structDec, null, "x");
 
+        structDef.lookupInteger(lengthName).setValue(seqLen);
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
+        fixture = new SequenceDefinition(sd, structDef, "TestX");
         BitBuffer input = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(seqLen * 8));
         for (int i = 0; i < seqLen; i++) {
             input.putInt(i);
         }
-
-        fixture = sd.createDefinition(structDef, "TestX", input);
+        fixture.read(input);
         assert (fixture != null);
     }
 
@@ -84,22 +75,22 @@ public class SequenceDefinitionTest {
         StructDefinition structDef;
 
         int len = 32;
-        IntegerDeclaration id = IntegerDeclaration.createDeclaration(len, false, len,
-                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, "", 8);
+        IntegerDeclaration id = new IntegerDeclaration(len, false, len,
+                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, null,8);
         String lengthName = "LengthName";
         structDec = new StructDeclaration(0);
         structDec.addField(lengthName, id);
+        structDef = new StructDefinition(structDec, null, "x");
 
-        structDef = new StructDefinition(structDec, null, "x", wrap(lengthName), new Definition[] { new IntegerDefinition(id, null, lengthName, seqLen) });
-
+        structDef.lookupInteger(lengthName).setValue(seqLen);
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
+        SequenceDefinition ret = new SequenceDefinition(sd, structDef, "TestX");
         BitBuffer input = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(seqLen * len));
         for (int i = 0; i < seqLen; i++) {
             input.putInt(i);
         }
-
-        SequenceDefinition ret = sd.createDefinition(structDef, "TestX", input);
+        ret.read(input);
         assertNotNull(ret);
         return ret;
     }
@@ -147,8 +138,17 @@ public class SequenceDefinitionTest {
      */
     @Test
     public void testIsString() {
-        boolean result = fixture.getDeclaration().isString();
+        boolean result = fixture.isString();
         assertTrue(result);
+    }
+
+    /**
+     * Run the void read(BitBuffer) method test.
+     */
+    @Test
+    public void testRead() {
+        BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
+        fixture.read(input);
     }
 
     /**

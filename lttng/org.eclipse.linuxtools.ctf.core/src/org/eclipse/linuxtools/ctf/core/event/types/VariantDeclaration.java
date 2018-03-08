@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,14 +12,8 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTFC variant declaration.
@@ -32,27 +26,25 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class VariantDeclaration extends Declaration {
+public class VariantDeclaration implements IDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private String fTag = null;
-    private static final long ALIGNMENT = 1;
-    private final Map<String, IDeclaration> fFields = Collections.synchronizedMap(new HashMap<String, IDeclaration>());
-    private EnumDefinition fTagDef;
-    private IDeclaration fDeclarationToPopulate;
-    private IDefinitionScope fPrevDefinitionScope;
+    private String tag = null;
+    private static final long alignment = 1;
+    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * constructor
      */
     public VariantDeclaration() {
+
     }
 
     // ------------------------------------------------------------------------
@@ -63,87 +55,57 @@ public class VariantDeclaration extends Declaration {
      * @return Does the variant have a tag
      */
     public boolean isTagged() {
-        return fTag != null;
+        return tag != null;
     }
 
     /**
      * Lookup if a field exists in the variant
-     *
-     * @param fieldTag
-     *            the field tag name
+     * @param fieldTag the field tag name
      * @return true = field tag exists
      */
     public boolean hasField(String fieldTag) {
-        return fFields.containsKey(fieldTag);
+        return fields.containsKey(fieldTag);
     }
 
     /**
      * Sets the tag in a variant
-     *
-     * @param tag
-     *            the tag
+     * @param tag the tag
      */
     public void setTag(String tag) {
-        fTag = tag;
-        fTagDef = null;
+        this.tag = tag;
     }
 
     /**
-     * Gets current variant tag
-     *
+     * gets current variant tag
      * @return the variant tag.
      */
     public String getTag() {
-        return fTag;
+        return this.tag;
     }
 
     /**
      * Gets the fields of the variant
-     *
      * @return the fields of the variant
      * @since 2.0
      */
     public Map<String, IDeclaration> getFields() {
-        return this.fFields;
+        return this.fields;
     }
 
     @Override
     public long getAlignment() {
-        return ALIGNMENT;
+        return alignment;
     }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 3.0
-     */
     @Override
     public VariantDefinition createDefinition(IDefinitionScope definitionScope,
-            String fieldName, BitBuffer input) throws CTFReaderException {
-        alignRead(input);
-        if (fPrevDefinitionScope != definitionScope) {
-            fTagDef = null;
-            fPrevDefinitionScope = definitionScope;
-        }
-        EnumDefinition tagDef = fTagDef;
-        if (tagDef == null) {
-            Definition def = definitionScope.lookupDefinition(fTag);
-            tagDef = (EnumDefinition) ((def instanceof EnumDefinition) ? def : null);
-        }
-        if (tagDef == null) {
-            throw new CTFReaderException("Tag is not defined " + fTag); //$NON-NLS-1$
-        }
-        String varFieldName = tagDef.getStringValue();
-        fDeclarationToPopulate = fFields.get(varFieldName);
-        if (fDeclarationToPopulate == null) {
-            throw new CTFReaderException("Unknown enum selector for variant " + //$NON-NLS-1$
-                    definitionScope.getScopePath().toString());
-        }
-        Definition fieldValue = fDeclarationToPopulate.createDefinition(definitionScope, fieldName, input);
-        return new VariantDefinition(this, definitionScope, varFieldName, fieldName, fieldValue);
+            String fieldName) {
+        return new VariantDefinition(this, definitionScope, fieldName);
     }
+
 
     /**
      * Add a field to this CTF Variant
@@ -154,30 +116,7 @@ public class VariantDeclaration extends Declaration {
      *            The Declaration of this new field
      */
     public void addField(String fieldTag, IDeclaration declaration) {
-        fFields.put(fieldTag, declaration);
-    }
-
-    /**
-     * gets the tag definition
-     *
-     * @return the fTagDef
-     * @since 3.0
-     */
-    public EnumDefinition getTagDef() {
-        return fTagDef;
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public int getMaximumSize() {
-        Collection<IDeclaration> values = fFields.values();
-        int maxSize = 0;
-        for (IDeclaration field : values) {
-            maxSize = Math.max(maxSize, field.getMaximumSize());
-        }
-        return maxSize;
+        fields.put(fieldTag, declaration);
     }
 
     @Override

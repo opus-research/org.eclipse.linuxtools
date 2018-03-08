@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,8 +12,10 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF variant definition (similar to a C union).
@@ -26,15 +28,17 @@ import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class VariantDefinition extends Definition implements IDefinitionScope {
+public class VariantDefinition extends Definition implements IDefinitionScope {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final Definition fDefinition;
-    private final String fCurrentField;
-    private final String fFieldName;
+    private VariantDeclaration declaration;
+
+    private EnumDefinition tagDefinition;
+    private Map<String, Definition> definitions = new HashMap<String, Definition>();
+    private String currentField;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -42,27 +46,24 @@ public final class VariantDefinition extends Definition implements IDefinitionSc
 
     /**
      * Constructor
-     *
-     * @param declaration
-     *            the parent declaration
-     * @param definitionScope
-     *            the parent scope
-     * @param selectedField
-     *            the selected field
-     * @param fieldName
-     *            the field name
-     * @param fieldValue
-     *            the field value
-     * @since 3.0
+     * @param declaration the parent declaration
+     * @param definitionScope the parent scope
+     * @param fieldName the field name
      */
-    public VariantDefinition(@NonNull VariantDeclaration declaration,
-            IDefinitionScope definitionScope, String selectedField, @NonNull String fieldName, Definition fieldValue) {
-        super(declaration, definitionScope, fieldName);
+    public VariantDefinition(VariantDeclaration declaration,
+            IDefinitionScope definitionScope, String fieldName) {
+        super(definitionScope, fieldName);
 
-        fFieldName = fieldName;
-        fCurrentField = selectedField;
-        fDefinition = fieldValue;
+        this.declaration = declaration;
 
+        Definition tagDef = definitionScope.lookupDefinition(declaration.getTag());
+        this.tagDefinition = (EnumDefinition) tagDef;
+
+        for (Map.Entry<String, IDeclaration> field : declaration.getFields().entrySet()) {
+            Definition fieldDef = field.getValue().createDefinition(this,
+                    field.getKey());
+            definitions.put(field.getKey(), fieldDef);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -71,41 +72,94 @@ public final class VariantDefinition extends Definition implements IDefinitionSc
 
     @Override
     public VariantDeclaration getDeclaration() {
-        return (VariantDeclaration) super.getDeclaration();
+        return declaration;
+    }
+
+    /**
+     * Sets the variant declaration
+     * @param declaration the variant declaration
+     */
+    public void setDeclaration(VariantDeclaration declaration) {
+        this.declaration = declaration;
+    }
+
+    /**
+     * Gets the tag
+     * @return the tag definition
+     */
+    public EnumDefinition getTagDefinition() {
+        return tagDefinition;
+    }
+
+    /**
+     * Sets the tag
+     * @param tagDefinition the tag
+     */
+    public void setTagDefinition(EnumDefinition tagDefinition) {
+        this.tagDefinition = tagDefinition;
+    }
+
+    /**
+     * Get the definitions in the variant
+     * @return the definitions
+     * @since 2.0
+     */
+    public Map<String, Definition> getDefinitions() {
+        return definitions;
+    }
+
+    /**
+     * Set the definitions in a variant
+     * @param definitions the definitions
+     * @since 2.0
+     */
+    public void setDefinitions(Map<String, Definition> definitions) {
+        this.definitions = definitions;
+    }
+
+    /**
+     * Set the current field
+     * @param currentField the current field
+     */
+    public void setCurrentField(String currentField) {
+        this.currentField = currentField;
     }
 
     /**
      * Get the current field name
-     *
      * @return the current field name
      */
     public String getCurrentFieldName() {
-        return fCurrentField;
+        return currentField;
     }
 
     /**
      * Get the current field
-     *
      * @return the current field
      */
     public Definition getCurrentField() {
-        return fDefinition;
+        return definitions.get(currentField);
     }
+
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
     @Override
-    public Definition lookupDefinition(String lookupPath) {
-        if (lookupPath == null) {
-            return null;
-        }
-        if (lookupPath.equals(fFieldName)) {
-            return fDefinition;
-        }
-        return getDefinitionScope().lookupDefinition(lookupPath);
+    public void read(BitBuffer input) {
+        currentField = tagDefinition.getValue();
+
+        Definition field = definitions.get(currentField);
+
+        field.read(input);
     }
+
+    @Override
+    public Definition lookupDefinition(String lookupPath) {
+        return definitions.get(lookupPath);
+    }
+
 
     /**
      * Lookup an array in a struct. if the name returns a non-array (like an
@@ -162,8 +216,8 @@ public final class VariantDefinition extends Definition implements IDefinitionSc
     }
 
     /**
-     * Lookup a string in a struct. if the name returns a non-string (like an
-     * int) than the method returns null
+     * Lookup a string in a struct. if the name returns a non-string (like
+     * an int) than the method returns null
      *
      * @param name
      *            the name of the string
@@ -176,8 +230,8 @@ public final class VariantDefinition extends Definition implements IDefinitionSc
     }
 
     /**
-     * Lookup a struct in a struct. if the name returns a non-struct (like an
-     * int) than the method returns null
+     * Lookup a struct in a struct. if the name returns a non-struct (like
+     * an int) than the method returns null
      *
      * @param name
      *            the name of the struct
@@ -190,8 +244,8 @@ public final class VariantDefinition extends Definition implements IDefinitionSc
     }
 
     /**
-     * Lookup a variant in a struct. if the name returns a non-variant (like an
-     * int) than the method returns null
+     * Lookup a variant in a struct. if the name returns a non-variant (like
+     * an int) than the method returns null
      *
      * @param name
      *            the name of the variant

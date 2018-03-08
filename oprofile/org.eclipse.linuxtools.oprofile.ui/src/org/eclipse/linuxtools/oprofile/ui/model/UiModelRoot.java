@@ -6,129 +6,95 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
- *******************************************************************************/
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.oprofile.ui.model;
 
-import java.util.Arrays;
-
+import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelRoot;
-import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSession;
 import org.eclipse.swt.graphics.Image;
 
 /**
  * Convenience class for creating the UI model from the oprofile data model,
  *  via a single point of access.
- * @since 1.1
  */
 public class UiModelRoot implements IUiModelElement {
-    private static UiModelRoot uiModelRoot = new UiModelRoot();    //singleton
+	private static UiModelRoot uiModelRoot = new UiModelRoot();	//singleton
+	private UiModelEvent[] events;							//this node's children
+	private UiModelError rootError;
 
-    private UiModelError rootError;
-    private UiModelSession[] session;                        //this node's children
+	/** constructor, private for singleton use **/
+	protected UiModelRoot() {
+		events = null;
+		rootError = null;
+	}
+	
+	/**
+	 * Get the instance of this ui model root.
+	 * @return the ui model root object
+	 */
+	public static UiModelRoot getDefault() {
+		return uiModelRoot;
+	}
 
-    /** constructor, private for singleton use **/
-    protected UiModelRoot() {
-        session = null;
-        rootError = null;
-    }
+	/**
+	 * Kick off creating the UI model from the data model. Meant to 
+	 * 	be called from UI code. The refreshModel() method is called for 
+	 *  the child elements from their constructor.
+	 */
+	public void refreshModel() {
+		OpModelEvent dataModelEvents[] = getModelDataEvents();
+		
+		rootError = null;
+		events = null;
 
-    /**
-     * Get the instance of this ui model root.
-     * @return the ui model root object
-     */
-    public static UiModelRoot getDefault() {
-        return uiModelRoot;
-    }
+		if (dataModelEvents == null || dataModelEvents.length == 0) {
+			rootError = UiModelError.NO_SAMPLES_ERROR;
+		} else {
+			events = new UiModelEvent[dataModelEvents.length];
+			for (int i = 0; i < dataModelEvents.length; i++) {
+				events[i] = new UiModelEvent(dataModelEvents[i]);
+			}
+		}
+	}
+	
+	protected OpModelEvent[] getModelDataEvents() {
+		OpModelRoot modelRoot = OpModelRoot.getDefault();
+		return modelRoot.getEvents();
+	}
 
-    /**
-     * Kick off creating the UI model from the data model. Meant to
-     *     be called from UI code. The refreshModel() method is called for
-     *  the child elements from their constructor.
-     */
-    public void refreshModel() {
-        OpModelSession dataModelEvents[] = getModelDataEvents();
+	/** IUiModelElement functions **/
+	public String getLabelText() {
+		return null;
+	}
 
+	/**
+	 * Returns the children of this element.
+	 * @return An array of child elements or null
+	 */
+	public IUiModelElement[] getChildren() {
+		if (events != null)
+			return events;
+		else
+			return new IUiModelElement[] { rootError };
+	}
+	/**
+	 * Returns if the element has any children.
+	 * @return true if the element has children, false otherwise
+	 */
+	public boolean hasChildren() {
+		return true;
+	}
 
-        rootError = null;
-        session = null;
+	/**
+	 * Returns the element's parent.
+	 * @return The parent element or null
+	 */
+	public IUiModelElement getParent() {
+		return null;
+	}
 
-        if (dataModelEvents == null || dataModelEvents.length == 0) {
-            rootError = UiModelError.NO_SAMPLES_ERROR;
-        } else {
-            session = new UiModelSession[dataModelEvents.length];
-            for (int i = 0; i < dataModelEvents.length; i++) {
-                session[i] = new UiModelSession(dataModelEvents[i]);
-            }
-        }
-    }
-
-    protected OpModelSession[] getModelDataEvents() {
-        OpModelRoot modelRoot = OpModelRoot.getDefault();
-        return modelRoot.getSessions();
-    }
-
-    /** IUiModelElement functions **/
-    @Override
-    public String getLabelText() {
-        return null;
-    }
-
-    /**
-     * Returns the children of this element.
-     * @return An array of child elements or null
-     */
-    @Override
-    public IUiModelElement[] getChildren() {
-        if (session != null && session.length != 0) {
-            if (UiModelRoot.SortType.SESSION == UiModelRoot.getSortingType()) {
-                Arrays.sort(session, UiModelSorting.getInstance());
-                return session;
-            }
-
-            else {
-                return session;
-            }
-
-        } else
-            return new IUiModelElement[] { rootError };
-    }
-    /**
-     * Returns if the element has any children.
-     * @return true if the element has children, false otherwise
-     */
-    @Override
-    public boolean hasChildren() {
-        return true;
-    }
-
-    /**
-     * Returns the element's parent.
-     * @return The parent element or null
-     */
-    @Override
-    public IUiModelElement getParent() {
-        return null;
-    }
-
-    @Override
-    public Image getLabelImage() {
-        return null;
-    }
-
-    /**
-     *
-     * Adding sorting feature in tree.
-     * @since 3.0
-     *
-     */
-    public static enum SortType{DEFAULT,SESSION,EVENT,LIB,FUNCTION,LINE_NO}
-    private static SortType sortType;
-    public static void setSortingType(SortType sortType) {
-        UiModelRoot.sortType = sortType;
-    }
-
-    public static SortType getSortingType() {
-        return UiModelRoot.sortType;
-    }
+	public Image getLabelImage() {
+		return null;
+	}
 }

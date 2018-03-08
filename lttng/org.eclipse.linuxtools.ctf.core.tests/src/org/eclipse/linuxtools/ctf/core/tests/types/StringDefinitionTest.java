@@ -11,16 +11,12 @@
 
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.nio.ByteBuffer;
-
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,24 +30,15 @@ import org.junit.Test;
 public class StringDefinitionTest {
 
     private StringDefinition fixture;
-    private String testString;
 
     /**
      * Perform pre-test initialization.
-     *
-     * @throws CTFReaderException won't happen
      */
     @Before
-    public void setUp() throws CTFReaderException {
+    public void setUp() {
         String name = "testString";
         StringDeclaration stringDec = new StringDeclaration();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(100);
-        BitBuffer bb = new BitBuffer(byteBuffer);
-        byteBuffer.mark();
-        testString = new String("testString");
-        byteBuffer.put(testString.getBytes());
-        byteBuffer.reset();
-        fixture = stringDec.createDefinition(null, name, bb);
+        fixture = stringDec.createDefinition(null, name);
     }
 
     /**
@@ -65,7 +52,7 @@ public class StringDefinitionTest {
         String fieldName = "";
 
         StringDefinition result = new StringDefinition(declaration,
-                definitionScope, fieldName, "");
+                definitionScope, fieldName);
 
         assertNotNull(result);
     }
@@ -75,7 +62,18 @@ public class StringDefinitionTest {
      */
     @Test
     public void testGetDeclaration() {
+        fixture.setString(new StringBuilder());
         StringDeclaration result = fixture.getDeclaration();
+        assertNotNull(result);
+    }
+
+    /**
+     * Run the StringBuilder getString() method test.
+     */
+    @Test
+    public void testGetString() {
+        fixture.setString(new StringBuilder());
+        StringBuilder result = fixture.getString();
         assertNotNull(result);
     }
 
@@ -84,19 +82,39 @@ public class StringDefinitionTest {
      */
     @Test
     public void testGetValue() {
+        fixture.setString(new StringBuilder());
         String result = fixture.getValue();
         assertNotNull(result);
     }
 
     /**
-     * Run the String setValue() method test.
+     * Run the void read(BitBuffer) method test.
      */
     @Test
-    public void testSetValue() {
+    public void testRead() {
+        fixture.setString(new StringBuilder());
+        BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
+        fixture.read(input);
+    }
 
-        String result = fixture.getValue();
-        assertNotNull(result);
-        assertEquals("testString", result);
+    /**
+     * Run the void setDeclaration(StringDeclaration) method test.
+     */
+    @Test
+    public void testSetDeclaration() {
+        fixture.setString(new StringBuilder());
+        StringDeclaration declaration = new StringDeclaration();
+        fixture.setDeclaration(declaration);
+    }
+
+    /**
+     * Run the void setString(StringBuilder) method test.
+     */
+    @Test
+    public void testSetString() {
+        fixture.setString(new StringBuilder());
+        StringBuilder string = new StringBuilder();
+        fixture.setString(string);
     }
 
     /**
@@ -104,6 +122,7 @@ public class StringDefinitionTest {
      */
     @Test
     public void testToString() {
+        fixture.setString(new StringBuilder());
         String result = fixture.toString();
         assertNotNull(result);
     }

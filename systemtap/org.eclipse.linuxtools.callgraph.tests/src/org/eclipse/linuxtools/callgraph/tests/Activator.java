@@ -23,19 +23,19 @@ import org.osgi.framework.Bundle;
  */
 public class Activator {
 
-    // The plug-in ID
-    public static final String PLUGIN_ID = "org.eclipse.linuxtools.callgraph.tests";
+	// The plug-in ID
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.callgraph.tests";
+	
+	public static String getPluginLocation() {
+		Bundle bundle = Platform.getBundle(PLUGIN_ID);
 
-    public static String getPluginLocation() {
-        Bundle bundle = Platform.getBundle(PLUGIN_ID);
-
-        URL locationUrl = FileLocator.find(bundle,new Path("/"), null); //$NON-NLS-1$
-        URL fileUrl = null;
-        try {
-            fileUrl = FileLocator.toFileURL(locationUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return fileUrl.getFile();
-    }
+		URL locationUrl = FileLocator.find(bundle,new Path("/"), null); //$NON-NLS-1$
+		URL fileUrl = null;
+		try {
+			fileUrl = FileLocator.toFileURL(locationUrl);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fileUrl.getFile();
+	}
 }

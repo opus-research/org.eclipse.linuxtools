@@ -13,12 +13,9 @@ package org.eclipse.linuxtools.ctf.core.event;
 
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
-import org.eclipse.linuxtools.ctf.core.trace.CTFStreamInputReader;
+import org.eclipse.linuxtools.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
 
 /**
  * Representation of one type of event. A bit like "int" or "long" but for trace
@@ -34,17 +31,9 @@ public interface IEventDeclaration {
      *
      * @param streamInputReader
      *            The StreamInputReader for which this definition is created.
-     * @param input
-     *            the bitbuffer input source
-     * @param timestamp
-     *            The timestamp when the event was taken
      * @return A new EventDefinition.
-     * @throws CTFReaderException
-     *             As a bitbuffer is used to read, it could have wrapped
-     *             IOExceptions.
-     * @since 3.0
      */
-    EventDefinition createDefinition(CTFStreamInputReader streamInputReader, @NonNull BitBuffer input, long timestamp) throws CTFReaderException;
+    EventDefinition createDefinition(StreamInputReader streamInputReader);
 
     /**
      * Gets the name of an event declaration
@@ -75,12 +64,12 @@ public interface IEventDeclaration {
     Long getId();
 
     /**
-     * Gets the {@link CTFStream} of an event declaration
+     * Gets the {@link Stream} of an event declaration
      *
      * @return the stream
-     * @since 3.0
+     * @since 2.0
      */
-    CTFStream getStream();
+    Stream getStream();
 
     /**
      * What is the log level of this event?

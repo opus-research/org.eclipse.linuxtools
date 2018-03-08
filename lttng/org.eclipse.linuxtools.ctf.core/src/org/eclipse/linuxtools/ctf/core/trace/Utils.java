@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -14,9 +14,6 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.util.UUID;
 
-import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-
 /**
  * Various utilities.
  *
@@ -24,10 +21,9 @@ import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class Utils {
+public class Utils {
 
-    private Utils() {
-    }
+    private Utils() {}
 
     // ------------------------------------------------------------------------
     // Constants
@@ -63,60 +59,31 @@ public final class Utils {
     // ------------------------------------------------------------------------
 
     /**
-     * Performs an unsigned long comparison on two unsigned long numbers.
+     * Unsigned long comparison.
      *
-     * <strong> As Java does not support unsigned types and arithmetic, parameters
-     *       are received encoded as a signed long (two-complement) but the
-     *       operation is an unsigned comparator.</strong>
-     *
-     * @param left
-     *            Left operand of the comparator.
-     * @param right
-     *            Right operand of the comparator.
-     * @return -1 if left &lt; right, 1 if left &gt; right, 0 if left == right.
+     * @param a
+     *            First operand.
+     * @param b
+     *            Second operand.
+     * @return -1 if a < b, 1 if a > b, 0 if a == b.
      */
-    public static int unsignedCompare(long left, long right) {
-        /*
-         * This method assumes that the arithmetic overflow on signed integer
-         * wrap on a circular domain (modulo arithmetic in two-complement),
-         * which is the defined behavior in Java.
-         *
-         * This idea is to rotate the domain by the length of the negative
-         * space, and then use the signed operator.
-         */
-        final long a = left + Long.MIN_VALUE;
-        final long b = right + Long.MIN_VALUE;
-        if (a < b) {
-            return -1;
-        } else if (a > b) {
+    public static int unsignedCompare(long a, long b) {
+        boolean aLeftBit = (a & (1 << (Long.SIZE - 1))) != 0;
+        boolean bLeftBit = (b & (1 << (Long.SIZE - 1))) != 0;
+
+        if (aLeftBit && !bLeftBit) {
             return 1;
-        }
-        return 0;
-    }
-
-    /**
-     * Gets a UUID from an array defintion
-     *
-     * @param uuidDef
-     *            the array defintions, must contain integer bytes
-     * @return the UUID
-     * @throws CTFReaderException
-     *             if the definition contains less than 16 elements
-     * @since 3.0
-     */
-    public static UUID getUUIDfromDefinition(ArrayDefinition uuidDef) throws CTFReaderException {
-        byte[] uuidArray = new byte[16];
-
-        for (int i = 0; i < uuidArray.length; i++) {
-            IntegerDefinition uuidByteDef = (IntegerDefinition) uuidDef.getElem(i);
-            if (uuidByteDef == null) {
-                throw new CTFReaderException("UUID incomplete, only " + i + " bytes available"); //$NON-NLS-1$ //$NON-NLS-2$
+        } else if (!aLeftBit && bLeftBit) {
+            return -1;
+        } else {
+            if (a < b) {
+                return -1;
+            } else if (a > b) {
+                return 1;
+            } else {
+                return 0;
             }
-            uuidArray[i] = (byte) uuidByteDef.getValue();
         }
-
-        UUID uuid = Utils.makeUUID(uuidArray);
-        return uuid;
     }
 
     /**

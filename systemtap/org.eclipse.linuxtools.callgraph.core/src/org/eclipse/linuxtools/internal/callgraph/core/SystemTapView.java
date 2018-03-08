@@ -46,6 +46,7 @@ public abstract class SystemTapView extends ViewPart {
     private final String NEW_LINE = Messages.getString("SystemTapView.1"); //$NON-NLS-1$
 
     public Composite masterComposite;
+    private IMenuManager help;
     private Action kill;
 
     protected String viewID;
@@ -139,7 +140,7 @@ public abstract class SystemTapView extends ViewPart {
      * @return
      */
     public SystemTapParser getParser() {
-        return parser;
+    	return parser;
     }
 
     /**
@@ -151,11 +152,11 @@ public abstract class SystemTapView extends ViewPart {
      * @return
      */
     public boolean setParser(SystemTapParser parser) {
-        this.parser = parser;
-        if (this.parser == null) {
-            return false;
+    	this.parser = parser;
+    	if (this.parser == null) {
+    		return false;
         }
-        return true;
+    	return true;
     }
 
     /**
@@ -219,7 +220,7 @@ public abstract class SystemTapView extends ViewPart {
 
     public void addHelpMenu() {
         IMenuManager menu = getViewSite().getActionBars().getMenuManager();
-        IMenuManager help = new MenuManager(Messages.getString("SystemTapView.Help")); //$NON-NLS-1$
+        help = new MenuManager(Messages.getString("SystemTapView.Help")); //$NON-NLS-1$
         menu.add(help);
         createHelpActions();
 
@@ -227,12 +228,12 @@ public abstract class SystemTapView extends ViewPart {
     }
 
 
-    private void createHelpActions() {
+    public void createHelpActions() {
         helpVersion = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
             @Override
-            public void run() {
+			public void run() {
                 try {
-                    Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null); //$NON-NLS-1$
+                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null); //$NON-NLS-1$
                     BufferedReader buf = new BufferedReader(
                             new InputStreamReader(pr.getErrorStream()));
                     String line = ""; //$NON-NLS-1$
@@ -260,11 +261,11 @@ public abstract class SystemTapView extends ViewPart {
         };
     }
 
-    private void createSaveAction() {
+    protected void createSaveAction() {
         //Save callgraph.out
         saveFile = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
             @Override
-            public void run(){
+			public void run(){
                 Shell sh = new Shell();
                 FileDialog dialog = new FileDialog(sh, SWT.SAVE);
                 String filePath = dialog.open();
@@ -282,7 +283,7 @@ public abstract class SystemTapView extends ViewPart {
         kill = new Action(Messages.getString("SystemTapView.StopScript"), //$NON-NLS-1$
                 AbstractUIPlugin.imageDescriptorFromPlugin(CallgraphCorePlugin.PLUGIN_ID, "icons/progress_stop.gif")) { //$NON-NLS-1$
             @Override
-            public void run() {
+			public void run() {
                 getParser().cancelJob();
             }
         };
@@ -315,21 +316,34 @@ public abstract class SystemTapView extends ViewPart {
                 return;
             }
 
-            try  (FileInputStream fileIn = new FileInputStream(sFile); FileOutputStream fileOut = new FileOutputStream(file);
-                    FileChannel channelIn = fileIn.getChannel(); FileChannel channelOut = fileOut.getChannel()){
+             FileChannel in = null;
+             FileChannel out = null;
 
-                if (channelIn == null || channelOut == null) {
-                    return;
-                }
+             try {
+                  in = new FileInputStream(sFile).getChannel();
+                  out = new FileOutputStream(file).getChannel();
 
-                long size = channelIn.size();
-                MappedByteBuffer buf = channelIn.map(
-                        FileChannel.MapMode.READ_ONLY, 0, size);
+                  if (in == null || out == null) {
+                      return;
+                  }
 
-                channelOut.write(buf);
-            }
+                  long size = in.size();
+                  MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, size);
+
+                  out.write(buf);
+
+             } finally {
+                  if (in != null) {
+                      in.close();
+                  }
+                  if (out != null) {
+                      out.close();
+                  }
+             }
+
+
         } catch (IOException e) {
-            CallgraphCorePlugin.logException(e);
+            e.printStackTrace();
         }
     }
 

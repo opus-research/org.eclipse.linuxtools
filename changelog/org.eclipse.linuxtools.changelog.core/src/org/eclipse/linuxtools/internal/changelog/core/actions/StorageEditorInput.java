@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Wind River Systems - initial API and implementation
  *******************************************************************************/
@@ -22,89 +22,92 @@ import org.eclipse.ui.IStorageEditorInput;
  */
 public abstract class StorageEditorInput implements IStorageEditorInput {
 
-    /**
-     * Storage associated with this editor input
-     */
-    private IStorage fStorage;
+	/**
+	 * Storage associated with this editor input
+	 */
+	private IStorage fStorage;
 
-    /**
-     * Constructs an editor input on the given storage
-     */
-    public StorageEditorInput(IStorage storage) {
-        fStorage = storage;
-    }
+	/**
+	 * Constructs an editor input on the given storage
+	 */
+	public StorageEditorInput(IStorage storage) {
+		fStorage = storage;
+	}
 
-    /**
-     * @see IStorageEditorInput#getStorage()
-     */
-    @Override
-    public IStorage getStorage() {
-        return fStorage;
-    }
+	/**
+	 * @see IStorageEditorInput#getStorage()
+	 */
+	public IStorage getStorage() {
+		return fStorage;
+	}
 
-    /**
-     * @see IStorageEditorInput#getImageDescriptor()
-     */
-    @Override
-    public ImageDescriptor getImageDescriptor() {
-        return null;
-    }
+	/**
+	 * Set new storage. For subclasses only.
+	 * @param storage
+	 */
+	protected void setStorage(IStorage storage) {
+		assert storage != null;
+		fStorage = storage;
+	}
 
-    /**
-     * @see IStorageEditorInput#getName()
-     */
-    @Override
-    public String getName() {
-        return getStorage().getName();
-    }
+	/**
+	 * @see IStorageEditorInput#getImageDescriptor()
+	 */
+	public ImageDescriptor getImageDescriptor() {
+		return null;
+	}
 
-    /**
-     * @see IStorageEditorInput#getPersistable()
-     */
-    @Override
-    public IPersistableElement getPersistable() {
-        return null;
-    }
+	/**
+	 * @see IStorageEditorInput#getName()
+	 */
+	public String getName() {
+		return getStorage().getName();
+	}
 
-    /**
-     * @see IStorageEditorInput#getToolTipText()
-     */
-    @Override
-    public String getToolTipText() {
-        return getStorage().getFullPath().toOSString();
-    }
+	/**
+	 * @see IStorageEditorInput#getPersistable()
+	 */
+	public IPersistableElement getPersistable() {
+		return null;
+	}
 
-    /**
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object object) {
-        if (object == this) {
-            return true;
-        }
-        try {
-            return object instanceof IStorageEditorInput
-                && getStorage().equals(((IStorageEditorInput)object).getStorage());
-        } catch (CoreException e) {
-        }
-        return false;
-    }
+	/**
+	 * @see IStorageEditorInput#getToolTipText()
+	 */
+	public String getToolTipText() {
+		return getStorage().getFullPath().toOSString();
+	}
 
-    /**
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        return getStorage().hashCode();
-    }
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object) {
+		if (object == this) {
+			return true;
+		}
+		try {
+			return object instanceof IStorageEditorInput
+				&& getStorage().equals(((IStorageEditorInput)object).getStorage());
+		} catch (CoreException e) {
+		}
+		return false;
+	}
 
-    /* (non-Javadoc)
-     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
-     */
-    @Override
-    @SuppressWarnings({ "rawtypes" })
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return getStorage().hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+	 */
+	@SuppressWarnings({ "rawtypes" })
     public Object getAdapter(Class adapter) {
-        return null;
-    }
+		return null;
+	}
 
 }

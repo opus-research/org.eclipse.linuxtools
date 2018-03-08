@@ -21,44 +21,40 @@ import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 
 public class LocalFileProxy implements IRemoteFileProxy {
 
-    URI workingDirURI;
+	URI workingDirURI; 
 
-    public LocalFileProxy(URI uri) {
-        workingDirURI=uri;
-    }
+	public LocalFileProxy(URI uri) {
+		workingDirURI=uri;
+	}
 
-    @Override
-    public URI toURI(IPath path) {
-        return path.toFile().toURI();
-    }
+	public URI toURI(IPath path) {
+		return path.toFile().toURI();
+	}
 
-    @Override
-    public URI toURI(String path) {
-        try {
-            return new URI(path);
-        } catch (URISyntaxException e) {
-            return null;
-        }
-    }
+	public URI toURI(String path) {
+		try {
+			return new URI(path);
+		} catch (URISyntaxException e) {
+			return null;
+		}
+	}
 
-    @Override
-    public String toPath(URI uri) {
-        return uri.getPath();
-    }
+	public String toPath(URI uri) {
+		return uri.getPath();
+	}
 
-    @Override
-    public String getDirectorySeparator() {
-        return System.getProperty("file.separator"); //$NON-NLS-1$
-    }
+	public String getDirectorySeparator() {
+		// TODO Auto-generated method stub
+		return System.getProperty("file.separator"); //$NON-NLS-1$
+	}
 
-    @Override
-    public IFileStore getResource(String path) {
-        return EFS.getLocalFileSystem().getStore(new Path(path));
-    }
+	public IFileStore getResource(String path) {
+		// TODO Auto-generated method stub
+		return EFS.getLocalFileSystem().getStore(new Path(path));
+	}
 
-    @Override
-    public URI getWorkingDir() {
-        return workingDirURI;
-    }
+	public URI getWorkingDir() {
+		return workingDirURI;
+	}
 
 }

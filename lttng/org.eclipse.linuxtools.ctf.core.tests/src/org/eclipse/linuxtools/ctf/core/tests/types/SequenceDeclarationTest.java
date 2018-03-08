@@ -14,26 +14,18 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * The class <code>SequenceDeclarationTest</code> contains tests for the class
@@ -45,17 +37,13 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("javadoc")
 public class SequenceDeclarationTest {
 
-    @NonNull private static final String FIELD_NAME = "LengthName";
-
     private SequenceDeclaration fixture;
-    @NonNull private BitBuffer input = new BitBuffer();
+
+    static final String fieldName = "LengthName";
 
     @Before
     public void setUp() {
-        fixture = new SequenceDeclaration(FIELD_NAME, new StringDeclaration());
-        byte array[] = { 't', 'e', 's', 't', '\0', 't', 'h', 'i', 's', '\0' };
-        ByteBuffer byb = ByteBuffer.wrap(array);
-        input = new BitBuffer(byb);
+        fixture = new SequenceDeclaration(fieldName, new StringDeclaration());
     }
 
     /**
@@ -75,30 +63,18 @@ public class SequenceDeclarationTest {
     /**
      * Run the SequenceDefinition createDefinition(DefinitionScope,String)
      * method test.
-     *
-     * @throws CTFReaderException
-     *             an error in the bitbuffer
      */
     @Test
-    public void testCreateDefinition() throws CTFReaderException {
-        long seqLen = 2;
-        IntegerDeclaration id = IntegerDeclaration.createDeclaration(8, false, 8,
-                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, "", 32);
+    public void testCreateDefinition() {
+        IntegerDeclaration id = new IntegerDeclaration(8, false, 8,
+                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, null, 32);
+
         StructDeclaration structDec = new StructDeclaration(0);
-        structDec.addField(FIELD_NAME, id);
-        StructDefinition structDef = new StructDefinition(
-                structDec,
-                null,
-                "x",
-                ImmutableList.of(FIELD_NAME),
-                new Definition[] {
-                        new IntegerDefinition(
-                                id,
-                                null,
-                                FIELD_NAME,
-                                seqLen)
-                });
-        SequenceDefinition result = fixture.createDefinition(structDef, FIELD_NAME, input);
+        structDec.addField(fieldName, id);
+        StructDefinition structDef = new StructDefinition(structDec, null, "x");
+        long seqLen = 10;
+        structDef.lookupInteger(fieldName).setValue(seqLen);
+        SequenceDefinition result = this.fixture.createDefinition(structDef, fieldName);
         assertNotNull(result);
     }
 

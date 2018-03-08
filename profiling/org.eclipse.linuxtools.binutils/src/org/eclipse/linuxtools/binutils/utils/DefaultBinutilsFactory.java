@@ -17,20 +17,21 @@ import org.eclipse.cdt.utils.CPPFilt;
 import org.eclipse.cdt.utils.CommandLineUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.linuxtools.internal.Activator;
+import org.eclipse.linuxtools.binutils.Activator;
 import org.eclipse.linuxtools.internal.binutils.preferences.BinutilsPreferencePage;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 
 /**
- * Default binutils factory.
+ * Default binutils factory
+ * @author Xavier Raynaud <xavier.raynaud@st.com>
  */
 public class DefaultBinutilsFactory implements ISTBinutilsFactory {
 
     @Override
     public Addr2line getAddr2line(String path, IProject project) throws IOException {
-        IPreferenceStore prefsStore = Activator.getDefault().getPreferenceStore();
-        String addr2lineCmd = prefsStore.getString(BinutilsPreferencePage.PREFKEY_ADDR2LINE_CMD);
-        String addr2lineArgs = prefsStore.getString(BinutilsPreferencePage.PREFKEY_ADDR2LINE_ARGS);
+        IPreferenceStore prefs_store = Activator.getDefault().getPreferenceStore();
+        String addr2lineCmd = prefs_store.getString(BinutilsPreferencePage.PREFKEY_ADDR2LINE_CMD);
+        String addr2lineArgs = prefs_store.getString(BinutilsPreferencePage.PREFKEY_ADDR2LINE_ARGS);
         String[] args = CommandLineUtil.argumentsToArray(addr2lineArgs);
         String addr2line = RuntimeProcessFactory.getFactory().whichCommand(addr2lineCmd, project);
         return new Addr2line(addr2line, args, path);
@@ -38,9 +39,9 @@ public class DefaultBinutilsFactory implements ISTBinutilsFactory {
 
     @Override
     public CPPFilt getCPPFilt(IProject project) throws IOException {
-        IPreferenceStore prefsStore = Activator.getDefault().getPreferenceStore();
-        String cppfiltCmd = prefsStore.getString(BinutilsPreferencePage.PREFKEY_CPPFILT_CMD);
-        String cppfiltArgs = prefsStore.getString(BinutilsPreferencePage.PREFKEY_CPPFILT_ARGS);
+        IPreferenceStore prefs_store = Activator.getDefault().getPreferenceStore();
+        String cppfiltCmd = prefs_store.getString(BinutilsPreferencePage.PREFKEY_CPPFILT_CMD);
+        String cppfiltArgs = prefs_store.getString(BinutilsPreferencePage.PREFKEY_CPPFILT_ARGS);
         String[] args = CommandLineUtil.argumentsToArray(cppfiltArgs);
         String cppfilt = RuntimeProcessFactory.getFactory().whichCommand(cppfiltCmd, project);
         return new CPPFilt(cppfilt, args);
@@ -48,9 +49,9 @@ public class DefaultBinutilsFactory implements ISTBinutilsFactory {
 
     @Override
     public STNM getNM(String path, STNMSymbolsHandler handler, IProject project) throws IOException {
-        IPreferenceStore prefsStore = Activator.getDefault().getPreferenceStore();
-        String nmCmd = prefsStore.getString(BinutilsPreferencePage.PREFKEY_NM_CMD);
-        String nmArgs = prefsStore.getString(BinutilsPreferencePage.PREFKEY_NM_ARGS);
+        IPreferenceStore prefs_store = Activator.getDefault().getPreferenceStore();
+        String nmCmd = prefs_store.getString(BinutilsPreferencePage.PREFKEY_NM_CMD);
+        String nmArgs = prefs_store.getString(BinutilsPreferencePage.PREFKEY_NM_ARGS);
         String[] args = CommandLineUtil.argumentsToArray(nmArgs);
         String nm = RuntimeProcessFactory.getFactory().whichCommand(nmCmd, project);
         return new STNM(nm, args, path, handler, project);

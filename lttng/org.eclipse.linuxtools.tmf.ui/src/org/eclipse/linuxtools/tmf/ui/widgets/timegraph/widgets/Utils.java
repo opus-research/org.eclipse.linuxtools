@@ -6,11 +6,10 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Intel Corporation - Initial API and implementation
- *     Ruslan A. Scherbakov, Intel - Initial API and implementation
- *     Alvaro Sanchez-Leon - Udpated for TMF
- *     Patrick Tasse - Refactoring
- *     Marc-Andre Laperle - Add time zone preference
+ *   Intel Corporation - Initial API and implementation
+ *   Ruslan A. Scherbakov, Intel - Initial API and implementation
+ *   Alvaro Sanchez-Leon - Udpated for TMF
+ *   Patrick Tasse - Refactoring
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -19,9 +18,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.TimeZone;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.graphics.Color;
@@ -82,17 +79,6 @@ public class Utils {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
     private static final long SEC_IN_NS = 1000000000;
     private static final long MILLISEC_IN_NS = 1000000;
-
-    /**
-     * Update the time and date formats to use the current time zone
-     *
-     * @since 2.1
-     */
-    public static void updateTimeZone() {
-        TimeZone timeZone = TmfTimePreferences.getInstance().getTimeZone();
-        TIME_FORMAT.setTimeZone(timeZone);
-        DATE_FORMAT.setTimeZone(timeZone);
-    }
 
     static Rectangle clone(Rectangle source) {
         return new Rectangle(source.x, source.y, source.width, source.height);
@@ -408,7 +394,13 @@ public class Utils {
      */
     public static String formatNs(long srcTime, Resolution res) {
         StringBuffer str = new StringBuffer();
-        long ns = Math.abs(srcTime % SEC_IN_NS);
+        long time = srcTime;
+        if (time < 0) {
+            time = -time;
+        }
+
+        long ns = time;
+        ns %= SEC_IN_NS;
         String nanos = Long.toString(ns);
         str.append("000000000".substring(nanos.length())); //$NON-NLS-1$
         str.append(nanos);
@@ -463,22 +455,16 @@ public class Utils {
     }
 
     /**
-     * Gets the {@link ITimeEvent} at the given time from the given
-     * {@link ITimeGraphEntry}.
+     * N means: <list> <li>-1: Previous Event</li> <li>0: Current Event</li> <li>
+     * 1: Next Event</li> <li>2: Previous Event when located in a non Event Area
+     * </list>
      *
      * @param entry
-     *            a {@link ITimeGraphEntry}
      * @param time
-     *            a timestamp
      * @param n
-     *            this parameter means: <list> <li>-1: Previous Event</li> <li>
-     *            0: Current Event</li> <li>
-     *            1: Next Event</li> <li>2: Previous Event when located in a non
-     *            Event Area </list>
-     * @return a {@link ITimeEvent}, or <code>null</code>.
-     * @since 3.0
+     * @return
      */
-    public static ITimeEvent findEvent(ITimeGraphEntry entry, long time, int n) {
+    static ITimeEvent findEvent(ITimeGraphEntry entry, long time, int n) {
         if (null == entry || ! entry.hasTimeEvents()) {
             return null;
         }

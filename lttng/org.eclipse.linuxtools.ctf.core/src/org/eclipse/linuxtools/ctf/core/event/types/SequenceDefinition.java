@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,13 +12,8 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.List;
-
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF sequence definition (a fixed-size array).
@@ -30,15 +25,16 @@ import com.google.common.collect.ImmutableList;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class SequenceDefinition extends Definition {
-
-    // TODO: investigate merging with arraydefinition
+public class SequenceDefinition extends Definition {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final ImmutableList<Definition> fDefinitions;
+    private final SequenceDeclaration declaration;
+    private final IntegerDefinition lengthDefinition;
+    private Definition definitions[];
+    private int currentLength;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -53,13 +49,35 @@ public final class SequenceDefinition extends Definition {
      *            the parent scope
      * @param fieldName
      *            the field name
-     * @param definitions
-     *            Definitions
-     * @since 3.0
+     * @throws CTFReaderException
+     *             If the sequence field was malformatted
      */
-    public SequenceDefinition(@NonNull SequenceDeclaration declaration, IDefinitionScope definitionScope, @NonNull String fieldName, List<Definition> definitions) {
-        super(declaration, definitionScope, fieldName);
-        fDefinitions = ImmutableList.copyOf(definitions);
+    public SequenceDefinition(SequenceDeclaration declaration,
+            IDefinitionScope definitionScope, String fieldName)
+            throws CTFReaderException {
+        super(definitionScope, fieldName);
+        Definition lenDef = null;
+
+        this.declaration = declaration;
+
+        if (definitionScope != null) {
+            lenDef = definitionScope.lookupDefinition(declaration
+                    .getLengthName());
+        }
+
+        if (lenDef == null) {
+            throw new CTFReaderException("Sequence length field not found"); //$NON-NLS-1$
+        }
+
+        if (!(lenDef instanceof IntegerDefinition)) {
+            throw new CTFReaderException("Sequence length field not integer"); //$NON-NLS-1$
+        }
+
+        lengthDefinition = (IntegerDefinition) lenDef;
+
+        if (this.lengthDefinition.getDeclaration().isSigned()) {
+            throw new CTFReaderException("Sequence length must not be signed"); //$NON-NLS-1$
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -68,7 +86,7 @@ public final class SequenceDefinition extends Definition {
 
     @Override
     public SequenceDeclaration getDeclaration() {
-        return (SequenceDeclaration) super.getDeclaration();
+        return declaration;
     }
 
     /**
@@ -78,7 +96,7 @@ public final class SequenceDefinition extends Definition {
      * @return the length of the sequence
      */
     public int getLength() {
-        return fDefinitions.size();
+        return currentLength;
     }
 
     /**
@@ -86,14 +104,31 @@ public final class SequenceDefinition extends Definition {
      *
      * @param i
      *            the index (cannot be negative)
-     * @return The element at I, if I &gt; length, null, if I &lt; 0, the method
+     * @return The element at I, if I > length, null, if I < 0, the method
      *         throws an out of bounds exception
      */
     public Definition getElem(int i) {
-        if (i > fDefinitions.size()) {
+        if (i > definitions.length) {
             return null;
         }
-        return fDefinitions.get(i);
+
+        return definitions[i];
+    }
+
+    /**
+     * Is the sequence a null terminated string?
+     * @return true == is a string, false == is not a string
+     */
+    public boolean isString() {
+        IntegerDeclaration elemInt;
+
+        if (declaration.getElementType() instanceof IntegerDeclaration) {
+            elemInt = (IntegerDeclaration) declaration.getElementType();
+            if (elemInt.isCharacter()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------------
@@ -101,12 +136,39 @@ public final class SequenceDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
+    public void read(BitBuffer input) {
+        currentLength = (int) lengthDefinition.getValue();
+
+        if ((definitions == null) || (definitions.length < currentLength)) {
+            Definition newDefinitions[] = new Definition[currentLength];
+
+            int i = 0;
+
+            if (definitions != null) {
+                System.arraycopy(definitions, 0, newDefinitions, 0, definitions.length);
+            }
+
+            for (; i < currentLength; i++) {
+                newDefinitions[i] = declaration.getElementType()
+                        .createDefinition(getDefinitionScope(),
+                                getFieldName() + "[" + i + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+
+            definitions = newDefinitions;
+        }
+
+        for (int i = 0; i < currentLength; i++) {
+            definitions[i].read(input);
+        }
+    }
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
 
-        if (getDeclaration().isString()) {
-            for (Definition def : fDefinitions) {
-                IntegerDefinition character = (IntegerDefinition) def;
+        if (this.isString()) {
+            for (int i = 0; i < currentLength; i++) {
+                IntegerDefinition character = (IntegerDefinition) definitions[i];
 
                 if (character.getValue() == 0) {
                     break;
@@ -116,9 +178,17 @@ public final class SequenceDefinition extends Definition {
             }
         } else {
             b.append('[');
-            Joiner joiner = Joiner.on(", ").skipNulls(); //$NON-NLS-1$
-            b.append(joiner.join(fDefinitions));
-            b.append(']');
+            if (currentLength > 0) {
+                for (int i = 0; i < (currentLength - 1); i++) {
+                    b.append(' ');
+                    b.append(definitions[i].toString());
+                    b.append(',');
+                }
+                b.append(' ');
+                b.append(definitions[currentLength - 1].toString());
+            }
+            b.append(" ]"); //$NON-NLS-1$
+
         }
 
         return b.toString();

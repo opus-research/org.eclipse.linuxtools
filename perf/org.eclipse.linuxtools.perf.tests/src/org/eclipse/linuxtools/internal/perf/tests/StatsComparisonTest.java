@@ -10,197 +10,201 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.junit.Before;
 import org.junit.Test;
 
 public class StatsComparisonTest {
-    private PMStatEntry statEntry;
-    private PMStatEntry statEntry2;
-    private PMStatEntry statEntry3;
-    private PMStatEntry statEntry4;
-    private static final String STAT_RES = "resources/stat-data/";
+	PMStatEntry statEntry;
+	PMStatEntry statEntry2;
+	PMStatEntry statEntry3;
+	PMStatEntry statEntry4;
+	private static final String STAT_RES = "resources/stat-data/";
 
-    @Before
-    public void setUp() {
-        String event = "event";
-        String units = "unit";
-        float samples = 1;
-        float metrics = 2;
-        float deviation = 3;
-        float scaling = 4;
+	@Before
+	public void setUp() {
+		String event = "event";
+		String units = "unit";
+		float samples = 1;
+		float metrics = 2;
+		float deviation = 3;
+		float scaling = 4;
 
-        statEntry = new PMStatEntry(samples, event, metrics, units, deviation,
-                scaling);
-        statEntry2 = new PMStatEntry(samples, event, metrics, units, deviation,
-                scaling);
-        statEntry3 = new PMStatEntry(samples++, event, metrics++, units,
-                deviation++, scaling);
-        statEntry4 = new PMStatEntry(samples--, "event2", metrics--, units,
-                deviation--, scaling);
-    }
+		statEntry = new PMStatEntry(samples, event, metrics, units, deviation,
+				scaling);
+		statEntry2 = new PMStatEntry(samples, event, metrics, units, deviation,
+				scaling);
+		statEntry3 = new PMStatEntry(samples++, event, metrics++, units,
+				deviation++, scaling);
+		statEntry4 = new PMStatEntry(samples--, "event2", metrics--, units,
+				deviation--, scaling);
+	}
 
-    @Test
-    public void testPMStatEntryGetters() {
-        assertEquals("event", statEntry.getEvent());
-        assertEquals("unit", statEntry.getUnits());
-        assertEquals(1, statEntry.getSamples(), 0);
-        assertEquals(2, statEntry.getMetrics(), 0);
-        assertEquals(3, statEntry.getDeviation(), 0);
-        assertEquals(4, statEntry.getScaling(), 0);
-    }
+	@Test
+	public void testPMStatEntryGetters() {
+		assertEquals("event", statEntry.getEvent());
+		assertEquals("unit", statEntry.getUnits());
+		assertEquals(1, statEntry.getSamples(), 0);
+		assertEquals(2, statEntry.getMetrics(), 0);
+		assertEquals(3, statEntry.getDeviation(), 0);
+		assertEquals(4, statEntry.getScaling(), 0);
+	}
 
-    @Test
-    public void testPMStatEntryEquality() {
-        assertTrue(statEntry.equalEvents(statEntry3));
-        assertFalse(statEntry.equalEvents(statEntry4));
-        assertTrue(statEntry.equals(statEntry2));
-    }
+	@Test
+	public void testPMStatEntryEquality() {
+		assertTrue(statEntry.equalEvents(statEntry3));
+		assertFalse(statEntry.equalEvents(statEntry4));
+		assertTrue(statEntry.equals(statEntry2));
+	}
 
-    @Test
-    public void testPMStatEntryArray() {
-        String[] expectedList = new String[] {
-                String.valueOf(statEntry.getSamples()), statEntry.getEvent(),
-                String.valueOf(statEntry.getFormattedMetrics()), statEntry.getUnits(),
-                String.valueOf(statEntry.getFormattedDeviation()) };
+	@Test
+	public void testPMStatEntryArray() {
+		String[] expectedList = new String[] {
+				String.valueOf(statEntry.getSamples()), statEntry.getEvent(),
+				String.valueOf(statEntry.getFormattedMetrics()), statEntry.getUnits(),
+				String.valueOf(statEntry.getFormattedDeviation()) };
 
-        String[] actualList = statEntry.toStringArray();
+		String[] actualList = statEntry.toStringArray();
 
-        // test string array representation
-        assertArrayEquals(expectedList, actualList);
-    }
+		// test string array representation
+		assertTrue(Arrays.equals(expectedList, actualList));
+	}
 
-    @Test
-    public void testPMStatEntryComparison() {
-        String expectedEvent = "event";
-        String expectedUnits = "unit";
-        float expectedSamples = statEntry.getSamples() - statEntry2.getSamples();
-        float expectedMetrics = statEntry.getMetrics() - statEntry2.getMetrics();
-        float expectedDeviation = statEntry.getDeviation() + statEntry2.getDeviation();
-        float expectedScaling = statEntry.getScaling() + statEntry2.getScaling();
+	@Test
+	public void testPMStatEntryComparison() {
+		String expectedEvent = "event";
+		String expectedUnits = "unit";
+		float expectedSamples = statEntry.getSamples() - statEntry2.getSamples();
+		float expectedMetrics = statEntry.getMetrics() - statEntry2.getMetrics();
+		float expectedDeviation = statEntry.getDeviation() + statEntry2.getDeviation();
+		float expectedScaling = statEntry.getScaling() + statEntry2.getScaling();
 
-        PMStatEntry expectedDiff = new PMStatEntry(expectedSamples,
-                expectedEvent, expectedMetrics, expectedUnits,
-                expectedDeviation, expectedScaling);
+		PMStatEntry expectedDiff = new PMStatEntry(expectedSamples,
+				expectedEvent, expectedMetrics, expectedUnits,
+				expectedDeviation, expectedScaling);
 
-        PMStatEntry actualDiff = statEntry.compare(statEntry2);
+		PMStatEntry actualDiff = statEntry.compare(statEntry2);
 
-        // test stat entry comparison
-        assertEquals(expectedDiff,actualDiff);
+		// test stat entry comparison
+		assertTrue(expectedDiff.equals(actualDiff));
 
-    }
+	}
 
-    @Test
-    public void testStatDataComparisonFieldGetters() {
-        IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
-        IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
-        String dataTitle = "title";
-        StatComparisonData diffData = new StatComparisonData(dataTitle,
-                oldStatData, newStatData);
+	@Test
+	public void testStatDataCollection() {
+		File statData = new File(STAT_RES + "perf_simple.stat");
 
-        assertEquals(dataTitle, diffData.getTitle());
-        assertEquals("", diffData.getPerfData());
-        assertNotNull(diffData.getDataID());
-        assertEquals(oldStatData.toOSString(), diffData.getOldDataPath());
-        assertEquals(newStatData.toOSString(), diffData.getNewDataPath());
-        assertEquals(oldStatData.toOSString() + diffData.getDataID(),diffData.getOldDataID());
-        assertEquals(newStatData.toOSString() + diffData.getDataID(),diffData.getNewDataID());
-    }
+		//set up expected result
+		ArrayList<PMStatEntry> expectedStatList = new ArrayList<PMStatEntry>();
 
-    @Test
-    public void testStatDataComparison() {
-        IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
-        IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
-        StatComparisonData diffData = new StatComparisonData("title",
-                oldStatData, newStatData);
+		expectedStatList.add(new PMStatEntry((float) 4.78, "cpu-clock",
+				(float) 0.0, null, (float) 0.37, (float) 0.0));
+		expectedStatList.add(new PMStatEntry((float) 4.78, "task-clock",
+				(float) 0.08, "CPUs utilized", (float) 0.37, (float) 0.0));
+		expectedStatList.add(new PMStatEntry((float) 1164.0, "page-faults",
+				(float) 0.05, "M/sec", (float) 0.01, (float) 0.0));
+		expectedStatList.add(new PMStatEntry((float) 2164.0, "minor-faults",
+				(float) 0.06, "M/sec", (float) 0.01, (float) 0.0));
+		expectedStatList.add(new PMStatEntry((float) 9.6418E-4,
+				"seconds time elapsed", (float) 0.0, null, (float) 0.46,
+				(float) 0.0));
 
-        // expected comparison list
-        ArrayList<PMStatEntry> expectedDiff = new ArrayList<>();
+		ArrayList<PMStatEntry> actualStatList = StatComparisonData.collectStats(statData);
 
-        expectedDiff.add(new PMStatEntry((float) -4.0, "cpu-clock",
-                (float) 0.0, null, (float) 0.54, (float) 0.0));
-        expectedDiff.add(new PMStatEntry((float) -2000.0, "page-faults",
-                (float) -0.31, "M/sec", (float) 0.02, (float) 0.0));
-        expectedDiff.add(new PMStatEntry((float) 0.0, "context-switches",
-                (float) -0.13, "K/sec", (float) 36.34, (float) 0.0));
-        expectedDiff.add(new PMStatEntry((float) -1000.0, "minor-faults",
-                (float) -0.3, "M/sec", (float) 0.02, (float) 0.0));
-        expectedDiff.add(new PMStatEntry((float) 0.0, "major-faults",
-                (float) 0.0, "K/sec", (float) 0.0, (float) 0.0));
-        expectedDiff.add(new PMStatEntry((float) -0.008,
-                "seconds time elapsed", (float) 0.0, null, (float) 0.92,
-                (float) 0.0));
+		assertFalse(actualStatList.isEmpty());
 
-        ArrayList<PMStatEntry> actualDiff = diffData.getComparisonStats();
+		for(PMStatEntry expectedEntry : expectedStatList){
+			assertTrue(actualStatList.contains(expectedEntry));
+		}
+	}
 
-        assertFalse(actualDiff.isEmpty());
+	@Test
+	public void testStatDataComparison() {
+		File oldStatData = new File(STAT_RES + "perf_old.stat");
+		File newStatData = new File(STAT_RES + "perf_new.stat");
+		StatComparisonData diffData = new StatComparisonData("title",
+				oldStatData, newStatData);
 
-        for (PMStatEntry expectedEntry : expectedDiff) {
-            assertTrue(actualDiff.contains(expectedEntry));
-        }
-    }
+		// expected comparison list
+		ArrayList<PMStatEntry> expectedDiff = new ArrayList<PMStatEntry>();
 
-    @Test
-    public void testStatComparisonResult() throws IOException {
-        IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
-        IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
-        IPath diffStatData = Path.fromOSString(STAT_RES + "perf_diff.stat");
+		expectedDiff.add(new PMStatEntry((float) -4.0, "cpu-clock",
+				(float) 0.0, null, (float) 0.54, (float) 0.0));
+		expectedDiff.add(new PMStatEntry((float) -2000.0, "page-faults",
+				(float) -0.31, "M/sec", (float) 0.02, (float) 0.0));
+		expectedDiff.add(new PMStatEntry((float) 0.0, "context-switches",
+				(float) -0.13, "K/sec", (float) 36.34, (float) 0.0));
+		expectedDiff.add(new PMStatEntry((float) -1000.0, "minor-faults",
+				(float) -0.3, "M/sec", (float) 0.02, (float) 0.0));
+		expectedDiff.add(new PMStatEntry((float) 0.0, "major-faults",
+				(float) 0.0, "K/sec", (float) 0.0, (float) 0.0));
+		expectedDiff.add(new PMStatEntry((float) -0.008,
+				"seconds time elapsed", (float) 0.0, null, (float) 0.92,
+				(float) 0.0));
 
-        try (BufferedReader diffDataReader = new BufferedReader(new FileReader(
-                diffStatData.toFile()))) {
-            StatComparisonData diffData = new StatComparisonData("title",
-                    oldStatData, newStatData);
+		ArrayList<PMStatEntry> actualDiff = diffData.getComparisonStats();
 
-            diffData.runComparison();
-            String actualResult = diffData.getPerfData();
-            String[] actualResultLines = actualResult.split("\n");
+		assertFalse(actualDiff.isEmpty());
 
-            String curLine;
-            for (int i = 0; i < actualResultLines.length; i++) {
-                curLine = diffDataReader.readLine();
+		for (PMStatEntry expectedEntry : expectedDiff) {
+			assertTrue(actualDiff.contains(expectedEntry));
+		}
+	}
 
-                /**
-                 * Elapsed seconds are usually very close to zero, and thus
-                 * prone to some small formatting differences across systems.
-                 * Total time entry items are checked more thoroughly to avoid
-                 * test failures.
-                 */
-                if (curLine.contains(PMStatEntry.TIME)) {
-                    String expectedEntry = curLine.trim();
-                    String actualEntry = actualResultLines[i].trim();
+	@Test
+	public void testStatComparisonResult() throws IOException {
+		File oldStatData = new File(STAT_RES + "perf_old.stat");
+		File newStatData = new File(STAT_RES + "perf_new.stat");
+		File diffStatData = new File(STAT_RES + "perf_diff.stat");
 
-                    String expectedSamples = expectedEntry.substring(0,
-                            expectedEntry.indexOf(" "));
-                    String expectedRest = expectedEntry.substring(expectedEntry
-                            .indexOf(" ") + 1);
+		BufferedReader diffDataReader = new BufferedReader(new FileReader(
+				diffStatData));
+		StatComparisonData diffData = new StatComparisonData("title",
+				oldStatData, newStatData);
 
-                    String actualSamples = actualEntry.substring(0,
-                            actualEntry.indexOf(" "));
-                    String actualRest = actualEntry.substring(actualEntry
-                            .indexOf(" ") + 1);
+		diffData.runComparison();
+		String actualResult = diffData.getPerfData();
+		String[] actualResultLines = actualResult.split("\n");
 
-                    assertEquals(StatComparisonData.toFloat(actualSamples),
-                            StatComparisonData.toFloat(expectedSamples), 0);
-                    assertEquals(actualRest, expectedRest);
-                } else {
-                    assertEquals(actualResultLines[i], curLine);
-                }
-            }
-        }
+		String curLine;
+		for (int i = 0; i < actualResultLines.length; i++) {
+			curLine = diffDataReader.readLine();
 
-    }
+			/**
+			 * Elapsed seconds are usually very close to zero, and thus prone to
+			 * some small formatting differences across systems. Total time
+			 * entry items are checked more thoroughly to avoid test failures.
+			 */
+			if (curLine.contains(PMStatEntry.TIME)) {
+				String expectedEntry = curLine.trim();
+				String actualEntry = actualResultLines[i].trim();
+
+				String expectedSamples = expectedEntry.substring(0, expectedEntry.indexOf(" "));
+				String expectedRest = expectedEntry.substring(expectedEntry.indexOf(" ") + 1);
+
+				String actualSamples = actualEntry.substring(0, actualEntry.indexOf(" "));
+				String actualRest = actualEntry.substring(actualEntry.indexOf(" ") + 1);
+
+				assertEquals(StatComparisonData.toFloat(actualSamples),
+						StatComparisonData.toFloat(expectedSamples), 0);
+				assertEquals(actualRest, expectedRest);
+			} else {
+				assertEquals(actualResultLines[i], curLine);
+			}
+		}
+
+		diffDataReader.close();
+	}
 }

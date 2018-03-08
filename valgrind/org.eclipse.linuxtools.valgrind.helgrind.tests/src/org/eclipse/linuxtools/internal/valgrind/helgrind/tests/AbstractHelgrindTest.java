@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.helgrind.tests;
 
+
 import org.eclipse.linuxtools.internal.valgrind.helgrind.HelgrindPlugin;
 import org.eclipse.linuxtools.internal.valgrind.tests.AbstractValgrindTest;
 
 public abstract class AbstractHelgrindTest extends AbstractValgrindTest {
 
-    @Override
-    protected String getToolID() {
-        return HelgrindPlugin.TOOL_ID;
-    }
+	@Override
+	protected String getToolID() {
+		return HelgrindPlugin.TOOL_ID;
+	}
 }

@@ -18,24 +18,30 @@ import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersMessages;
 import org.eclipse.linuxtools.dataviewers.dialogs.STDataViewersHideShowColumnsDialog;
 
 /**
- * This action allows the user to hide/show some columns.
+ * This action allows the user to hide/show some columns
+ *
  */
 public class STHideShowColAction extends Action {
 
     private final AbstractSTViewer stViewer;
 
     /**
-     * Creates the action for the given viewer.
+     * Constructor
      *
-     * @param stViewer The AbstractSTViewer to create the action for.
+     * @param stViewer
      */
     public STHideShowColAction(AbstractSTViewer stViewer) {
-        super(STDataViewersMessages.hideshowAction_title, STDataViewersImages
-                .getImageDescriptor(STDataViewersImages.IMG_EDIT_PROPERTIES));
-        this.stViewer = stViewer;
-        setEnabled(true);
+		super(STDataViewersMessages.hideshowAction_title, STDataViewersImages
+				.getImageDescriptor(STDataViewersImages.IMG_EDIT_PROPERTIES));
+		this.stViewer = stViewer;
+		setEnabled(true);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     public void run() {
         STDataViewersHideShowColumnsDialog dialog = new STDataViewersHideShowColumnsDialog(stViewer);

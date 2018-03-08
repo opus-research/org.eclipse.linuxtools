@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.signal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -26,7 +25,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Patrick Tasse
  * @since 2.0
  */
-@NonNullByDefault
 public class TmfTraceClosedSignal extends TmfSignal {
 
     private final ITmfTrace fTrace;

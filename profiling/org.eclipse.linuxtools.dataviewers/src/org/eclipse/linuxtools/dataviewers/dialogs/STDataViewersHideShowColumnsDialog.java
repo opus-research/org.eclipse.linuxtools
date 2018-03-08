@@ -45,12 +45,16 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
 
     private CheckboxTableViewer checkButtonsTable;
 
+    private Button selectAllButton;
+
+    private Button deselectAllButton;
+
     private AbstractSTViewer stViewer;
 
     /**
-     * Creates the hide/show columns dialog for the given AbstractSTViewer.
+     * Constructor
      *
-     * @param stViewer The  AbstractSTViewer to control.
+     * @param stViewer
      */
     public STDataViewersHideShowColumnsDialog(AbstractSTViewer stViewer) {
         super(stViewer.getViewer().getControl().getShell());
@@ -59,14 +63,20 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
         this.manager = stViewer.getHideShowManager();
     }
 
+    /*
+     * (non-Javadoc) Method declared on Window.
+     */
     @Override
-    protected void configureShell(Shell newShell) {
+	protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(STDataViewersMessages.hideshowDialog_title);
     }
 
+    /*
+     * (non-Javadoc) Method declared on Dialog.
+     */
     @Override
-    protected Control createDialogArea(Composite parent) {
+	protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         composite.setLayoutData(layoutData);
@@ -80,34 +90,34 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
         checkButtonsTable.setInput(stViewer.getColumns());
         checkButtonsTable.addCheckStateListener(checkStateListener);
 
-        Button selectAllButton = new Button(composite, SWT.NONE);
+        selectAllButton = new Button(composite, SWT.NONE);
         selectAllButton.setText(STDataViewersMessages.selectAll_text);
         selectAllButton.addSelectionListener(new SelectionListener() {
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+			public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                dirty = true;
+			public void widgetSelected(SelectionEvent e) {
+                markDirty();
                 checkButtonsTable.setAllChecked(true);
             }
         });
         layoutData = new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1);
         selectAllButton.setLayoutData(layoutData);
 
-        Button deselectAllButton = new Button(composite, SWT.NONE);
+        deselectAllButton = new Button(composite, SWT.NONE);
         deselectAllButton.setText(STDataViewersMessages.deselectAll_text);
         deselectAllButton.addSelectionListener(new SelectionListener() {
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+			public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                dirty = true;
+			public void widgetSelected(SelectionEvent e) {
+                markDirty();
                 checkButtonsTable.setAllChecked(false);
             }
         });
@@ -132,15 +142,16 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
 
     private ICheckStateListener checkStateListener = new ICheckStateListener() {
         @Override
-        public void checkStateChanged(CheckStateChangedEvent event) {
-            dirty = true;
+		public void checkStateChanged(CheckStateChangedEvent event) {
+            markDirty();
         }
     };
 
     /**
-     * Creates a separator line above the OK/Cancel buttons bar.
+     * Creates a separator line above the OK/Cancel buttons bar
      *
-     * @param parent The parent composite.
+     * @param parent
+     *            the parent composite
      */
     protected void createSeparatorLine(Composite parent) {
         GridLayout parentLayout = (GridLayout) parent.getLayout();
@@ -158,7 +169,7 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
 
         tableViewer.setContentProvider(new IStructuredContentProvider() {
             @Override
-            public Object[] getElements(Object inputElement) {
+			public Object[] getElements(Object inputElement) {
                 if (inputElement instanceof Item[]) {
                     Item[] columns = (Item[]) inputElement;
                     int[] order = stViewer.getColumnOrder();
@@ -175,17 +186,17 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
             }
 
             @Override
-            public void dispose() {
+			public void dispose() {
             }
 
             @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             }
         });
 
         tableViewer.setLabelProvider(new LabelProvider() {
             @Override
-            public String getText(Object element) {
+			public String getText(Object element) {
                 if (element instanceof Item) {
                     Item column = (Item) element;
 
@@ -209,7 +220,7 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
 
     @Override
     protected void okPressed() {
-        if (dirty) {
+        if (isDirty()) {
             saveManagerSettings();
         }
         super.okPressed();
@@ -225,20 +236,24 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
     }
 
     /**
-     * @return The hideShowManager.
+     * @return the hideShowManager
      */
     public STDataViewersHideShowManager getManager() {
         return manager;
     }
 
     /**
-     * Returns whether the dialog contains changes.
-     *
-     * @return boolean True if the dialog has changed, false otherwise.
+     * @return boolean
      */
     public boolean isDirty() {
         return dirty;
     }
 
+    /**
+     * Sets the dirty flag to true.
+     */
+    public void markDirty() {
+        dirty = true;
+    }
 
 }

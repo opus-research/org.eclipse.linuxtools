@@ -7,11 +7,12 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.valgrind.launch;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -21,22 +22,20 @@ import org.eclipse.swt.widgets.Display;
 
 public class ClearMarkersHandler extends AbstractHandler {
 
-    @Override
-    public Object execute(ExecutionEvent event) {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        try {
-            root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
-        } catch (CoreException e) {
-            // do nothing for now
-        }
-        // Clear Valgrind view
-        Display.getDefault().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                ValgrindUIPlugin.getDefault().resetView();
-            }
-        });
-        return null;
-    }
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		try {
+			root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+			// do nothing for now
+		}
+		// Clear Valgrind view
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				ValgrindUIPlugin.getDefault().resetView();
+			}							
+		});
+		return null;
+	}	
 
 }

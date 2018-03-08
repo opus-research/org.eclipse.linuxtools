@@ -18,125 +18,121 @@ import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.Token;
 
 public class GNUFileEntryRule implements IPredicateRule {
-    /**
-     * The default token to be returned on success and if nothing else has been
-     * specified.
-     */
-    protected IToken fileToken;
+	/**
+	 * The default token to be returned on success and if nothing else has been
+	 * specified.
+	 */
+	protected IToken fileToken;
+	
+	protected IWordDetector fDetector = new IWordDetector() {
 
-    protected IWordDetector fDetector = new IWordDetector() {
+		public boolean isWordPart(char c) {
+			return Character.isJavaIdentifierPart(c) || c == '/' || c == '.' || c == '-';
+		}
 
-        @Override
-        public boolean isWordPart(char c) {
-            return Character.isJavaIdentifierPart(c) || c == '/' || c == '.' || c == '-';
-        }
+		public boolean isWordStart(char c) {
+			return Character.isJavaIdentifierPart(c) || c == '/' || c == '.';
+		}
+		
+	};
 
-        @Override
-        public boolean isWordStart(char c) {
-            return Character.isJavaIdentifierPart(c) || c == '/' || c == '.';
-        }
+	private boolean started = false;
+	
+	private IWhitespaceDetector fWsDetector = new IWhitespaceDetector() {
+		public boolean isWhitespace(char character) {
+			return Character.isWhitespace(character);
+		}
+	};
 
-    };
+	/** The column constraint */
+	protected int fColumn = UNDEFINED;
 
-    private boolean started = false;
+	/** Internal setting for the un-initialized column constraint */
+	protected static final int UNDEFINED = -1;
 
-    private IWhitespaceDetector fWsDetector = new IWhitespaceDetector() {
-        @Override
-        public boolean isWhitespace(char character) {
-            return Character.isWhitespace(character);
-        }
-    };
+	/** Buffer used for pattern detection */
+	private StringBuffer fBuffer = new StringBuffer();
 
-    /** Internal setting for the un-initialized column constraint */
-    protected static final int UNDEFINED = -1;
+	private String fStartingSequence = "* ";
 
-    /** Buffer used for pattern detection */
-    private StringBuffer fBuffer = new StringBuffer();
+	public GNUFileEntryRule(IToken fileToken) {
+		this.fileToken = fileToken;
+	}
 
-    private String fStartingSequence = "* ";
+	public IToken evaluate(ICharacterScanner scanner) {
+		return evaluate(scanner, false);
+	}
 
-    public GNUFileEntryRule(IToken fileToken) {
-        this.fileToken = fileToken;
-    }
+	public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+		int c = scanner.read();
+		fBuffer.setLength(0);
+		if (started == false) {
+			for (int i = 0; i < fStartingSequence.length(); i++) {
+				fBuffer.append((char) c);
+				if (fStartingSequence.charAt(i) != c) {
+					unreadBuffer(scanner);
+					return Token.UNDEFINED;
+				}
+				c = scanner.read();
+			}
+		} else if (c == ',') { // we are continuing after a comma (perhaps we have multiple entries
+			fBuffer.append((char) c);
+			c = scanner.read();
+			while (c != ICharacterScanner.EOF && fWsDetector.isWhitespace((char)c)) {
+				fBuffer.append((char) c);
+				c = scanner.read();
+			}
+			scanner.unread();
+			return ((GNUElementScanner)scanner).getDefaultToken();
+		}
 
-    @Override
-    public IToken evaluate(ICharacterScanner scanner) {
-        return evaluate(scanner, false);
-    }
+		boolean haveFilePart = false;
+		
+		while (c != ICharacterScanner.EOF) {
+			if (fDetector.isWordPart((char) c)) {
+				fBuffer.append((char) c);
+				haveFilePart = true;
+			}
+			else if (c == '\\') {
+				fBuffer.append((char) c);
+				c = scanner.read();
+				if (c == ICharacterScanner.EOF) {
+					unreadBuffer(scanner);
+					return Token.UNDEFINED;
+				}
+				fBuffer.append((char) c);
+			} else {
+				break;
+			}
+			c = scanner.read();
+		}
 
-    @Override
-    public IToken evaluate(ICharacterScanner scanner, boolean resume) {
-        int c = scanner.read();
-        fBuffer.setLength(0);
-        if (started == false) {
-            for (int i = 0; i < fStartingSequence.length(); i++) {
-                fBuffer.append((char) c);
-                if (fStartingSequence.charAt(i) != c) {
-                    unreadBuffer(scanner);
-                    return Token.UNDEFINED;
-                }
-                c = scanner.read();
-            }
-        } else if (c == ',') { // we are continuing after a comma (perhaps we have multiple entries
-            fBuffer.append((char) c);
-            c = scanner.read();
-            while (c != ICharacterScanner.EOF && fWsDetector.isWhitespace((char)c)) {
-                fBuffer.append((char) c);
-                c = scanner.read();
-            }
-            scanner.unread();
-            return ((GNUElementScanner)scanner).getDefaultToken();
-        }
+		if (!haveFilePart) {
+			unreadBuffer(scanner);
+			return Token.UNDEFINED;
+		}
 
-        boolean haveFilePart = false;
+		if (c == ',')
+			started = true;
 
-        while (c != ICharacterScanner.EOF) {
-            if (fDetector.isWordPart((char) c)) {
-                fBuffer.append((char) c);
-                haveFilePart = true;
-            }
-            else if (c == '\\') {
-                fBuffer.append((char) c);
-                c = scanner.read();
-                if (c == ICharacterScanner.EOF) {
-                    unreadBuffer(scanner);
-                    return Token.UNDEFINED;
-                }
-                fBuffer.append((char) c);
-            } else {
-                break;
-            }
-            c = scanner.read();
-        }
+		scanner.unread();
+		return fileToken;
+	}
 
-        if (!haveFilePart) {
-            unreadBuffer(scanner);
-            return Token.UNDEFINED;
-        }
+	/**
+	 * Returns the characters in the buffer to the scanner.
+	 * 
+	 * @param scanner
+	 *            the scanner to be used
+	 */
+	protected void unreadBuffer(ICharacterScanner scanner) {
+		for (int i = fBuffer.length() - 1; i >= 0; i--)
+			scanner.unread();
+		started = false;
+	}
 
-        if (c == ',')
-            started = true;
-
-        scanner.unread();
-        return fileToken;
-    }
-
-    /**
-     * Returns the characters in the buffer to the scanner.
-     *
-     * @param scanner
-     *            the scanner to be used
-     */
-    private void unreadBuffer(ICharacterScanner scanner) {
-        for (int i = fBuffer.length() - 1; i >= 0; i--) {
-            scanner.unread();
-        }
-        started = false;
-    }
-
-    @Override
-    public IToken getSuccessToken() {
-        return fileToken;
-    }
+	public IToken getSuccessToken() {
+		return fileToken;
+	}
 
 }

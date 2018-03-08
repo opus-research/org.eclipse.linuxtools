@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,35 +12,35 @@
 
 package org.eclipse.linuxtools.ctf.core.tests.headless;
 
-import java.io.FileNotFoundException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
+import org.eclipse.linuxtools.ctf.core.trace.Stream;
 
 @SuppressWarnings("javadoc")
 public class ReadTrace {
 
     /**
      * @param args
-     * @throws FileNotFoundException
      */
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         final String TRACE_PATH = "traces/kernel";
 
         // Change this to enable text output
         final boolean USE_TEXT = false;
 
-        final int LOOP_COUNT = 10;
+        final int LOOP_COUNT = 1;
 
         // Work variables
-        long nbEvent = 0L;
-        Vector<Double> benchs = new Vector<>();
+        Long nbEvent = 0L;
+        Vector<Double> benchs = new Vector<Double>();
         CTFTrace trace = null;
         long start, stop;
         for (int loops = 0; loops < LOOP_COUNT; loops++) {
@@ -48,13 +48,17 @@ public class ReadTrace {
                 nbEvent = 0L;
                 trace = new CTFTrace(TRACE_PATH);
             } catch (CTFReaderException e) {
-                throw new FileNotFoundException(TRACE_PATH);
+                // do nothing
             }
+            @SuppressWarnings("unused")
+            long prev = -1;
             start = System.nanoTime();
             if (USE_TEXT) {
                 System.out.println("Event, " + " Time, " + " type, " + " CPU ");
             }
-            try (CTFTraceReader traceReader = new CTFTraceReader(trace);) {
+            if (trace != null) {
+                CTFTraceReader traceReader = new CTFTraceReader(trace);
+
                 start = System.nanoTime();
 
                 while (traceReader.hasMoreEvents()) {
@@ -65,20 +69,22 @@ public class ReadTrace {
                                 + trace.getOffset());
                         System.out.println(nbEvent + ", "
                                 + output + ", " + ed.getDeclaration().getName()
-                                + ", " + ed.getCPU() + ed.getFields().toString());
+                                + ", " + ed.getCPU() + ed.getFields().toString()) ;
                     }
-
+                    @SuppressWarnings("unused")
+                    long endTime = traceReader.getEndTime();
+                    @SuppressWarnings("unused")
+                    long timestamp = traceReader.getCurrentEventDef().getTimestamp();
                     traceReader.advance();
                 }
-
-                stop = System.nanoTime();
-
-                System.out.print('.');
-                double time = (stop - start) / (double) nbEvent;
-                benchs.add(time);
-            } catch (CTFReaderException e) {
-                System.out.println("error");
+                @SuppressWarnings("unused")
+                Map<Long, Stream> streams = traceReader.getTrace().getStreams();
             }
+            stop = System.nanoTime();
+
+            System.out.print('.');
+            double time = (stop - start) / (double) nbEvent;
+            benchs.add(time);
         }
         System.out.println("");
         double avg = 0;

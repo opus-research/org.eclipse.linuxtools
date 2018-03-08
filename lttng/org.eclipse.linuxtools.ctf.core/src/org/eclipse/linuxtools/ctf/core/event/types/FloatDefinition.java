@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -11,8 +11,7 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF float definition.
@@ -24,15 +23,16 @@ import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class FloatDefinition extends Definition {
+public class FloatDefinition extends Definition {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final double fValue;
+    private final FloatDeclaration declaration;
+    private double value;
 
     // ------------------------------------------------------------------------
-    // Constructors
+    // Contructors
     // ------------------------------------------------------------------------
 
     /**
@@ -44,33 +44,40 @@ public final class FloatDefinition extends Definition {
      *            the parent scope
      * @param fieldName
      *            the field name
-     * @param value
-     *            field value
-     * @since 3.0
      */
-    public FloatDefinition(@NonNull FloatDeclaration declaration,
-            IDefinitionScope definitionScope, @NonNull String fieldName, double value) {
-        super(declaration, definitionScope, fieldName);
-        fValue = value;
+    public FloatDefinition(FloatDeclaration declaration,
+            IDefinitionScope definitionScope, String fieldName) {
+        super(definitionScope, fieldName);
+        this.declaration = declaration;
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
-     * The value of a float stored, fit into a double. This should be extended
+     * THe value of a float stored, fit into a double. This should be extended
      * for exotic floats if this is necessary.
      *
      * @return the value of the float field fit into a double.
      */
     public double getValue() {
-        return fValue;
+        return value;
+    }
+
+    /**
+     * Sets the value of the float
+     *
+     * @param val
+     *            the value of the float
+     */
+    public void setValue(double val) {
+        value = val;
     }
 
     @Override
     public FloatDeclaration getDeclaration() {
-        return (FloatDeclaration) super.getDeclaration();
+        return declaration;
     }
 
     // ------------------------------------------------------------------------
@@ -78,7 +85,57 @@ public final class FloatDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
+    public void read(BitBuffer input) {
+        int exp = declaration.getExponent();
+        int mant = declaration.getMantissa();
+        if ((exp + mant) == 32) {
+            value = readRawFloat32(input, mant, exp);
+        } else if ((exp + mant) == 64) {
+            value = readRawFloat64(input, mant, exp);
+        } else {
+            value = Double.NaN;
+        }
+    }
+
+    private static double readRawFloat64(BitBuffer input, final int manBits,
+            final int expBits) {
+        long low = input.getInt(32, false);
+        low = low & 0x00000000FFFFFFFFL;
+        long high = input.getInt(32, false);
+        high = high & 0x00000000FFFFFFFFL;
+        long temp = (high << 32) | low;
+        return createFloat(temp, manBits - 1, expBits);
+    }
+
+    /**
+     * @param rawValue
+     * @param manBits
+     * @param expBits
+     */
+    private static double createFloat(long rawValue, final int manBits,
+            final int expBits) {
+        long manShift = 1L << (manBits);
+        long manMask = manShift - 1;
+        long expMask = (1L << expBits) - 1;
+
+        int exp = (int) ((rawValue >> (manBits)) & expMask) + 1;
+        long man = (rawValue & manMask);
+        double expPow = Math.pow(2.0, exp - (1 << (expBits - 1)));
+        double ret = man * 1.0f;
+        ret /= manShift;
+        ret += 1.0;
+        ret *= expPow;
+        return ret;
+    }
+
+    private static double readRawFloat32(BitBuffer input, final int manBits,
+            final int expBits) {
+        long temp = input.getInt(32, false);
+        return createFloat(temp, manBits - 1, expBits);
+    }
+
+    @Override
     public String toString() {
-        return String.valueOf(fValue);
+        return String.valueOf(value);
     }
 }

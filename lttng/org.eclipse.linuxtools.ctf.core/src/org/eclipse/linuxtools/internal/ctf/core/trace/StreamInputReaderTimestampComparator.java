@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -15,9 +15,8 @@ package org.eclipse.linuxtools.internal.ctf.core.trace;
 import java.io.Serializable;
 import java.util.Comparator;
 
-import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFStreamInputReader;
-import org.eclipse.linuxtools.ctf.core.trace.Utils;
+import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
+
 
 /**
  * <b><u>StreamInputReaderTimestampComparator</u></b>
@@ -25,7 +24,7 @@ import org.eclipse.linuxtools.ctf.core.trace.Utils;
  * Compares two StreamInputReader by their timestamp (smaller comes before).
  */
 public class StreamInputReaderTimestampComparator implements
-        Comparator<CTFStreamInputReader>, Serializable {
+        Comparator<StreamInputReader>, Serializable {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -37,19 +36,25 @@ public class StreamInputReaderTimestampComparator implements
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @throws NullPointerException
-     *             If any {@link CTFStreamInputReader} parameter is null, of if any
-     *             of them does not contain a current event.
-     */
     @Override
-    public int compare(CTFStreamInputReader a, CTFStreamInputReader b) {
-        EventDefinition event_a = a.getCurrentEvent();
-        EventDefinition event_b = b.getCurrentEvent();
+    public int compare(StreamInputReader a, StreamInputReader b) {
+        // TODO: use unsigned comparison to avoid sign errors if needed
+        if (a.getCurrentEvent() == null) {
+            return 0;
+        }
+        if (b.getCurrentEvent() == null) {
+            return 0;
+        }
+        long ta = a.getCurrentEvent().getTimestamp();
+        long tb = b.getCurrentEvent().getTimestamp();
 
-        long ta = event_a.getTimestamp();
-        long tb = event_b.getTimestamp();
-        return Utils.unsignedCompare(ta, tb);
+        if (ta < tb) {
+            return -1;
+        } else if (ta > tb) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
 }

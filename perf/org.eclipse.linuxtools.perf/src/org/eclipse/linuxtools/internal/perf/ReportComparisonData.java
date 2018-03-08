@@ -10,8 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
+import java.io.File;
 
 /**
  * Class for handling launch of perf diff command and storing of
@@ -19,30 +18,30 @@ import org.eclipse.core.runtime.IPath;
  */
 public class ReportComparisonData extends AbstractDataManipulator {
 
-    private IPath oldFile;
-    private IPath newFile;
+	private File oldFile;
+	private File newFile;
 
-    public ReportComparisonData(String title, IPath oldFile, IPath newFile, IProject project) {
-        super(title, newFile.removeLastSegments(1), project);
-        this.oldFile = oldFile;
-        this.newFile = newFile;
-    }
+	public ReportComparisonData(String title, File oldFile, File newFile) {
+		super(title, null);
+		this.oldFile = oldFile;
+		this.newFile = newFile;
+	}
 
-    @Override
-    public void parse() {
-        performCommand(getCommand(), 1);
-    }
+	@Override
+	public void parse() {
+		performCommand(getCommand(), 1);
+	}
 
-    /**
-     * Get perf diff command to execute.
-     *
-     * @return String array representing command to execute.
-     */
-    protected String[] getCommand() {
-        return new String[] { PerfPlugin.PERF_COMMAND,
-                "diff", //$NON-NLS-1$
-                oldFile.toOSString(),
-                newFile.toOSString() };
-    }
+	/**
+	 * Get perf diff command to execute.
+	 *
+	 * @return String array representing command to execute.
+	 */
+	protected String[] getCommand() {
+		return new String[] { PerfPlugin.PERF_COMMAND,
+				"diff", //$NON-NLS-1$
+				oldFile.getAbsolutePath(),
+				newFile.getAbsolutePath() };
+	}
 
 }

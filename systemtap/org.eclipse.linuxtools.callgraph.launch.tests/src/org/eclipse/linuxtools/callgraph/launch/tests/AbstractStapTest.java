@@ -24,48 +24,48 @@ import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.launch.SystemTapOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
-import org.junit.After;
-import org.junit.Before;
 import org.osgi.framework.FrameworkUtil;
 
 public class AbstractStapTest extends AbstractTest {
 
-    @Override
-    protected ILaunchConfigurationType getLaunchConfigType() {
-        return getLaunchManager().getLaunchConfigurationType(PluginConstants.CONFIGURATION_TYPE_ID);
-    }
+	@Override
+	protected ILaunchConfigurationType getLaunchConfigType() {
+		return getLaunchManager().getLaunchConfigurationType(PluginConstants.CONFIGURATION_TYPE_ID);
+	}
 
-    @Override
-    protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
-            ILaunchConfigurationTab tab = new SystemTapOptionsTab();
-            tab.setDefaults(wc);
-    }
+	@Override
+	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
+			ILaunchConfigurationTab tab = new SystemTapOptionsTab();
+			tab.setDefaults(wc);
+	}
 
 
-    protected ICProject createProjectAndBuild(String projname) throws Exception {
-        return createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), projname);
-    }
+	protected ICProject createProjectAndBuild(String projname) throws Exception {
+		return createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), projname);
+	}
 
-    public void killStap() {
-        try {
-            RuntimeProcessFactory.getFactory().exec("kill stap", null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+	public void killStap() {
+		try {
+			RuntimeProcessFactory.getFactory().exec("kill stap", null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-    private List<ILaunch> launches;
+	private List<ILaunch> launches;
 
-    @Before
-    public void setUp()  {
-        launches = new ArrayList<>();
-    }
+	@Override
+	protected void setUp() throws Exception {
+		launches = new ArrayList<ILaunch>();
+		super.setUp();
+	}
 
-    @After
-    public void tearDown() {
-        if (!launches.isEmpty()) {
-            DebugPlugin.getDefault().getLaunchManager().removeLaunches(launches.toArray(new ILaunch[launches.size()]));
-            launches.clear();
-        }
-    }
+	@Override
+	protected void tearDown() throws Exception {
+		if (launches.size() > 0) {
+			DebugPlugin.getDefault().getLaunchManager().removeLaunches(launches.toArray(new ILaunch[launches.size()]));
+			launches.clear();
+		}
+		super.tearDown();
+	}
 }

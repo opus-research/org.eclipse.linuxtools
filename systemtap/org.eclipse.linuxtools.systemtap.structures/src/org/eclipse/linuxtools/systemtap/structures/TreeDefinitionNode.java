@@ -11,25 +11,26 @@
 
 package org.eclipse.linuxtools.systemtap.structures;
 
+
 public class TreeDefinitionNode extends TreeNode {
-    private String definition;
+	public TreeDefinitionNode(Object d, String disp, String def, boolean c) {
+		super(d, disp, c);
+		definition = def;
+	}
 
-    public TreeDefinitionNode(Object d, String disp, String def, boolean c) {
-        super(d, disp, c);
-        definition = def;
-    }
+	public String getDefinition() {
+		return definition;
+	}
 
-    public String getDefinition() {
-        return definition;
-    }
+	public void setDefinition(String d) {
+		definition = d;
+	}
 
-    public void setDefinition(String d) {
-        definition = d;
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		definition = null;
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        definition = null;
-    }
+	private String definition;
 }

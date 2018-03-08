@@ -1,4 +1,2 @@
-.DS_Store
-bin/
-target/
+/target
 */.settings/org.sonar.ide.eclipse.core.prefs

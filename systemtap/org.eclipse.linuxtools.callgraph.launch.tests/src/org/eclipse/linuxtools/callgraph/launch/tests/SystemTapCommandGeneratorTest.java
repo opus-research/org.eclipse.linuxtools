@@ -4,72 +4,65 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.callgraph.launch.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapCommandGenerator;
-import org.junit.Test;
 
-public class SystemTapCommandGeneratorTest extends AbstractStapTest {
+public class SystemTapCommandGeneratorTest extends AbstractStapTest{ 
+	
+	//HACK TO GET THE PATH TO THE TESTING PROJECT
+	File file = new File("");
+	private String location = file.getAbsolutePath() + "/";
+	SystemTapCommandGenerator stapgen = new SystemTapCommandGenerator();
+	
+	public void testExecutionWithScriptAndBinaryAndArgument(){
 
-    // HACK TO GET THE PATH TO THE TESTING PROJECT
-    File file = new File("");
-    private String location = file.getAbsolutePath() + "/";
-    SystemTapCommandGenerator stapgen = new SystemTapCommandGenerator();
+		String binaryFilePath = location + "factorial";
+		String scriptPath = location + "function_count.stp";
 
-    @Test
-    public void testExecutionWithScriptAndBinaryAndArgument() {
+		// RUN
+		String cmd = SystemTapCommandGenerator.generateCommand(scriptPath,
+				binaryFilePath, "", true, true, binaryFilePath, "",
+				PluginConstants.STAP_PATH);
 
-        String binaryFilePath = location + "factorial";
-        String scriptPath = location + "function_count.stp";
+		assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath + " "
+				+ binaryFilePath, cmd);
+		killStap();
+		// END
+	}
+	
+	public void testScriptExecution(){
 
-        // RUN
-        String cmd = SystemTapCommandGenerator.generateCommand(scriptPath,
-                binaryFilePath, "", true, true, binaryFilePath, "",
-                PluginConstants.STAP_PATH);
+		String scriptPath = location + "simple.stp";
 
-        assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath
-                + " --runtime=dyninst " + binaryFilePath, cmd);
-        killStap();
-        // END
-    }
+		// RUN
+		String cmd = SystemTapCommandGenerator.generateCommand(scriptPath, "",
+				"", false, false, "", "", PluginConstants.STAP_PATH);
 
-    @Test
-    public void testScriptExecution() {
+		assertEquals("stap " + scriptPath, cmd);
+		// END
+	}
 
-        String scriptPath = location + "simple.stp";
+	public void testExecutionWithScriptAndBinary() {
 
-        // RUN
-        String cmd = SystemTapCommandGenerator.generateCommand(scriptPath, "",
-                "", false, false, "", "", PluginConstants.STAP_PATH);
+		// RUN
+		String binaryFilePath = location + "factorial";
+		String scriptPath = location + "allsyscall.stp";
 
-        assertEquals("stap " + scriptPath, cmd);
-        // END
-    }
+		String cmd = SystemTapCommandGenerator.
+			generateCommand(scriptPath, binaryFilePath, "", true, false, "", "", PluginConstants.STAP_PATH);
 
-    @Test
-    public void testExecutionWithScriptAndBinary() {
-
-        // RUN
-        String binaryFilePath = location + "factorial";
-        String scriptPath = location + "allsyscall.stp";
-
-        String cmd = SystemTapCommandGenerator.generateCommand(scriptPath,
-                binaryFilePath, "", true, false, "", "",
-                PluginConstants.STAP_PATH);
-
-        assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath, cmd);
-        // END
-
-        killStap();
-    }
+		assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath, cmd);
+		// END
+		
+		killStap();
+	}
 
 }

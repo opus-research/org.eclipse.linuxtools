@@ -39,7 +39,6 @@ import org.junit.Test;
 
 /**
  * TmfBaseColumnDataProvider test cases.
- *
  */
 public class TmfBaseColumnDataProviderTest {
 
@@ -128,11 +127,11 @@ public class TmfBaseColumnDataProviderTest {
     public void testGetColumnData() {
         List<TmfBaseColumnData> columnsData = provider.getColumnData();
         assertNotNull("getColumnData", columnsData);
-        assertEquals("getColumnData", 4, columnsData.size());
+        assertEquals("getColumnData", 3, columnsData.size());
 
         TmfStatisticsTreeNode parentNode = fStatsData.getNode(fTestName);
-        TmfStatisticsTreeNode treeNode1 = fStatsData.getNode(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().getName());
-        TmfStatisticsTreeNode treeNode2 = fStatsData.getNode(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent3.getType().getName());
+        TmfStatisticsTreeNode treeNode1  = fStatsData.getNode(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().getName());
+        TmfStatisticsTreeNode treeNode2  = fStatsData.getNode(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent3.getType().getName());
         ViewerComparator vComp = null;
         for (TmfBaseColumnData columnData : columnsData) {
             assertNotNull("getColumnData", columnData);
@@ -144,8 +143,7 @@ public class TmfBaseColumnDataProviderTest {
             if (columnData.getHeader().compareTo(LEVEL_COLUMN) == 0) {
                 assertEquals("getColumnData", 0, labelProvider.getText(treeNode1).compareTo(treeNode1.getName()));
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                // might not work because of machine local number format
-                assertEquals("getColumnData", "1", labelProvider.getText(treeNode1));
+                assertEquals("getColumnData", 0, labelProvider.getText(treeNode1).compareTo(Long.toString(1)));
             }
 
             // Testing comparator

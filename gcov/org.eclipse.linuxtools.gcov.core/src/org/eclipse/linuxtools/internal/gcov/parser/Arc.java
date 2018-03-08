@@ -15,117 +15,117 @@ import java.util.List;
 
 public class Arc implements Serializable{
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 4104429137191407662L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4104429137191407662L;
 
-    private static final int VCOV_ARC_ON_TREE = (1 << 0);
-    private static final int VCOV_ARC_FAKE = (1 << 1);
-    private static final int VCOV_ARC_FALLTHROUGH = (1 << 2);
+	private static final int VCOV_ARC_ON_TREE = (1 << 0);
+	private static final int VCOV_ARC_FAKE = (1 << 1);
+	private static final int VCOV_ARC_FALLTHROUGH = (1 << 2);
+	
+	private final Block srcBlock;
+	private final Block dstnatnBlock;
+	private final long flag;
+	private final boolean fake;
+	private final boolean onTree;
+	private final boolean fallthrough;
+	
+	private long count = 0;
+	private boolean countValid = false;
+	private boolean isCallNonReturn = false; // Arc is for a function that abnormally returns
+	private boolean isNonLoclaReturn = false; // Arc is for catch/setjump
+	private boolean isUnconditionnal = false; // Is an unconditional branch.
 
-    private final Block srcBlock;
-    private final Block dstnatnBlock;
-    private final long flag;
-    private final boolean fake;
-    private final boolean onTree;
-    private final boolean fallthrough;
+	/**
+	 * Constructor
+	 */
+	public Arc(int srcBlockIndice, int dstnatnBlockIndice, long flag, List<Block> otherArcParams) {
+		this.flag = flag;
+		this.dstnatnBlock = otherArcParams.get(dstnatnBlockIndice);
+		this.srcBlock = otherArcParams.get(srcBlockIndice);
+		this.count = 0;
+		this.countValid = false;
+		if ((flag & VCOV_ARC_ON_TREE) != 0) {
+			onTree = true;
+			fake = false;
+			fallthrough = false;
+		} else if ((flag & VCOV_ARC_FAKE) != 0) {
+			onTree = false;
+			fake = true;
+			fallthrough = true;
+		} else if ((flag & VCOV_ARC_FALLTHROUGH) != 0) {
+			onTree = false;
+			fake = false;
+			fallthrough = true;
+		} else {
+			onTree = false;
+			fake = false;
+			fallthrough = false;
+		}
+	}
 
-    private long count = 0;
-    private boolean countValid = false;
-    private boolean isCallNonReturn = false; // Arc is for a function that abnormally returns
-    private boolean isNonLoclaReturn = false; // Arc is for catch/setjump
-    private boolean isUnconditionnal = false; // Is an unconditional branch.
+	public Block getDstnatnBlock() {
+		return dstnatnBlock;
+	}
 
-    /**
-     * Constructor
-     */
-    public Arc(int srcBlockIndice, int dstnatnBlockIndice, long flag, List<Block> otherArcParams) {
-        this.flag = flag;
-        this.dstnatnBlock = otherArcParams.get(dstnatnBlockIndice);
-        this.srcBlock = otherArcParams.get(srcBlockIndice);
-        this.count = 0;
-        this.countValid = false;
-        if ((flag & VCOV_ARC_ON_TREE) != 0) {
-            onTree = true;
-            fake = false;
-            fallthrough = false;
-        } else if ((flag & VCOV_ARC_FAKE) != 0) {
-            onTree = false;
-            fake = true;
-            fallthrough = true;
-        } else if ((flag & VCOV_ARC_FALLTHROUGH) != 0) {
-            onTree = false;
-            fake = false;
-            fallthrough = true;
-        } else {
-            onTree = false;
-            fake = false;
-            fallthrough = false;
-        }
-    }
+	public long getFlag() {
+		return flag;
+	}
 
-    public Block getDstnatnBlock() {
-        return dstnatnBlock;
-    }
+	public boolean isFake() {
+		return fake;
+	}
 
-    public long getFlag() {
-        return flag;
-    }
+	public boolean isOnTree() {
+		return onTree;
+	}
 
-    public boolean isFake() {
-        return fake;
-    }
+	public boolean isFallthrough() {
+		return fallthrough;
+	}
 
-    public boolean isOnTree() {
-        return onTree;
-    }
+	public boolean isUnconditionnal() {
+		return isUnconditionnal;
+	}
 
-    public boolean isFallthrough() {
-        return fallthrough;
-    }
+	public boolean isNonLoclaReturn() {
+		return isNonLoclaReturn;
+	}
 
-    public boolean isUnconditionnal() {
-        return isUnconditionnal;
-    }
+	public boolean isCallNonReturn() {
+		return isCallNonReturn;
+	}
 
-    public boolean isNonLoclaReturn() {
-        return isNonLoclaReturn;
-    }
+	public void setCallNonReturn(boolean isCallNonReturn) {
+		this.isCallNonReturn = isCallNonReturn;
+	}
 
-    public boolean isCallNonReturn() {
-        return isCallNonReturn;
-    }
+	public void setNonLoclaReturn(boolean isNonLoclaReturn) {
+		this.isNonLoclaReturn = isNonLoclaReturn;
+	}
 
-    public void setCallNonReturn(boolean isCallNonReturn) {
-        this.isCallNonReturn = isCallNonReturn;
-    }
+	public void setUnconditionnal(boolean isUnconditionnal) {
+		this.isUnconditionnal = isUnconditionnal;
+	}
 
-    public void setNonLoclaReturn(boolean isNonLoclaReturn) {
-        this.isNonLoclaReturn = isNonLoclaReturn;
-    }
+	public Block getSrcBlock() {
+		return srcBlock;
+	}
 
-    public void setUnconditionnal(boolean isUnconditionnal) {
-        this.isUnconditionnal = isUnconditionnal;
-    }
+	public void setCount(long count) {
+		this.count = count;
+	}
 
-    public Block getSrcBlock() {
-        return srcBlock;
-    }
+	public void setCountValid(boolean countValid) {
+		this.countValid = countValid;
+	}
 
-    public void setCount(long count) {
-        this.count = count;
-    }
+	public long getCount() {
+		return count;
+	}
 
-    public void setCountValid(boolean countValid) {
-        this.countValid = countValid;
-    }
-
-    public long getCount() {
-        return count;
-    }
-
-    public boolean isCountValid() {
-        return countValid;
-    }
+	public boolean isCountValid() {
+		return countValid;
+	}
 }

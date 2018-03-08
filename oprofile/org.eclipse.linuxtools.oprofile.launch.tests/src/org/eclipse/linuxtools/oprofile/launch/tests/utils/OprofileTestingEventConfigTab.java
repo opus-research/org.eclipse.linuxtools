@@ -21,81 +21,89 @@ import org.eclipse.swt.widgets.Button;
 
 // mock event configuration tab
 public class OprofileTestingEventConfigTab extends AbstractEventConfigTab {
-    private IProject project;
+	private IProject project;
 
-    @Override
-    protected boolean getOprofileTimerMode() {
-        return false;
-    }
+	@Override
+	protected boolean getOprofileTimerMode() {
+		return false;
+	}
 
-    @Override
-    protected int getNumberOfOprofileCounters() {
-        return 1;
-    }
+	@Override
+	protected int getNumberOfOprofileCounters() {
+		return 1;
+	}
 
-    @Override
-    protected boolean checkEventSetupValidity(int counter, String name,
-            int maskValue) {
-        return true;
-    }
+	@Override
+	protected boolean checkEventSetupValidity(int counter, String name,
+			int maskValue) {
+		return true;
+	}
 
-    @Override
-    protected IProject getOprofileProject() {
-        return project;
-    }
+	@Override
+	protected boolean hasPermissions(IProject project) {
+		return true;
+	}
 
-    @Override
-    public void setOprofileProject(IProject proj) {
-        project = proj;
-    }
+	@Override
+	protected IProject getOprofileProject() {
+		return project;
+	}
 
-    @Override
-    protected void updateOprofileInfo() {
-    }
+	@Override
+	public void setOprofileProject(IProject proj) {
+		project = proj;
+	}
 
-    public Button getDefaultCheck() {
-        return defaultEventCheck;
-    }
+	@Override
+	protected void updateOprofileInfo() {
+	}
 
-    @Override
-    protected OprofileCounter[] getOprofileCounters(ILaunchConfiguration config) {
-        // setup and return mock counters
-        OprofileCounter[] ctrs = new OprofileCounter[] { getOprofileCounter(1) };
-        return ctrs;
-    }
+	public Button getDefaultCheck() {
+		return defaultEventCheck;
+	}
 
-    @Override
-    public OprofileCounter getOprofileCounter(int i) {
-        // mock mask info
-        MaskInfo maskInfo = new MaskInfo();
-        maskInfo.description = "mock mask info"; //$NON-NLS-1$
-        maskInfo.value = 0;
+	@Override
+	protected OprofileCounter[] getOprofileCounters(ILaunchConfiguration config) {
+		// setup and return mock counters
+		OprofileCounter[] ctrs = new OprofileCounter[] { getOprofileCounter(1) };
+		if (config != null) {
+			ctrs[0].loadConfiguration(config);
+		}
+		return ctrs;
+	}
 
-        MaskInfo[] maskInfoDescriptions = { maskInfo };
+	@Override
+	public OprofileCounter getOprofileCounter(int i) {
+		// mock mask info
+		MaskInfo maskInfo = new MaskInfo();
+		maskInfo.description = "mock mask info"; //$NON-NLS-1$
+		maskInfo.value = 0;
 
-        // mock mask
-        OpUnitMask mask = new OpUnitMask();
-        mask.setDefault(0);
-        mask.setMaskDescriptions(maskInfoDescriptions);
-        mask.setType(0);
-        mask.setMaskFromIndex(0);
-        mask.setMaskValue(0);
+		MaskInfo[] maskInfoDescriptions = { maskInfo };
 
-        // mock events
-        OpEvent event = new OpEvent();
-        event.setMinCount(1);
-        event.setText("mock-event"); //$NON-NLS-1$
-        event.setTextDescription("Mock Event"); //$NON-NLS-1$
-        event.setUnitMask(mask);
+		// mock mask
+		OpUnitMask mask = new OpUnitMask();
+		mask.setDefault(0);
+		mask.setMaskDescriptions(maskInfoDescriptions);
+		mask.setType(0);
+		mask.setMaskFromIndex(0);
+		mask.setMaskValue(0);
 
-        OpEvent[] events = { event };
+		// mock events
+		OpEvent event = new OpEvent();
+		event.setMinCount(1);
+		event.setText("mock-event"); //$NON-NLS-1$
+		event.setTextDescription("Mock Event"); //$NON-NLS-1$
+		event.setUnitMask(mask);
 
-        // mock counter
-        OprofileCounter ctr = new OprofileCounter(i, events);
-        ctr.setCount(1);
-        ctr.setEvents(new OpEvent [] {event});
+		OpEvent[] events = { event };
 
-        return ctr;
-    }
+		// mock counter
+		OprofileCounter ctr = new OprofileCounter(i, events);
+		ctr.setCount(1);
+		ctr.setEvent(event);
+
+		return ctr;
+	}
 
 }

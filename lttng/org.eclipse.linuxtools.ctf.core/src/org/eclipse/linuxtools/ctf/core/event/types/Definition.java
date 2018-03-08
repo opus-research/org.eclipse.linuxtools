@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,15 +12,13 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
- * A CTF definition
+ * A CTF definiton
  *
- * A definition is like an object of a declaration class. It fills the
- * declaration with values. <br>
+ * A definition is like an object of a declaration class. It fills the declaration
+ * with values. <br>
  * An example: <br>
  * int i = 0; <br>
  * <b>int</b> is the declaration.<br>
@@ -37,15 +35,15 @@ public abstract class Definition {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final String fFieldName;
+    private final String fieldName;
 
     /** The complete path of this field */
-    private final LexicalScope fPath;
+    private final String path;
 
-    private final IDefinitionScope fDefinitionScope;
-
-    @NonNull
-    private final IDeclaration fDeclaration;
+    /**
+     *
+     */
+    private final IDefinitionScope definitionScope;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -54,21 +52,25 @@ public abstract class Definition {
     /**
      * Constructor
      *
-     * @param declaration
-     *            the event declaration
-     *
      * @param definitionScope
      *            the definition is in a scope, (normally a struct) what is it?
      * @param fieldName
      *            the name of the definition. (it is a field in the parent
      *            scope)
-     * @since 3.0
      */
-    public Definition(@NonNull IDeclaration declaration, IDefinitionScope definitionScope, @NonNull String fieldName) {
-        fDeclaration = declaration;
-        fDefinitionScope = definitionScope;
-        fFieldName = fieldName;
-        fPath = fDeclaration.getPath(definitionScope, fieldName);
+    public Definition(IDefinitionScope definitionScope, String fieldName) {
+        this.definitionScope = definitionScope;
+        this.fieldName = fieldName;
+        if (definitionScope != null) {
+            String parentPath = definitionScope.getPath();
+            if (parentPath.length() > 0) {
+                path = parentPath + "." + fieldName; //$NON-NLS-1$
+            } else {
+                path = fieldName;
+            }
+        } else {
+            path = fieldName;
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -82,17 +84,17 @@ public abstract class Definition {
      * @since 2.0
      */
     protected String getFieldName() {
-        return fFieldName;
+        return fieldName;
     }
 
     /**
      * Get the complete path of this field.
      *
      * @return The path
-     * @since 3.0
+     * @since 2.0
      */
-    public LexicalScope getScopePath() {
-        return fPath;
+    public String getPath() {
+        return path;
     }
 
     /**
@@ -102,10 +104,10 @@ public abstract class Definition {
      * scope DOT the name of the definition (name of the field in its container)
      *
      * @return The definition scope
-     * @since 3.0
+     * @since 2.0
      */
     protected IDefinitionScope getDefinitionScope() {
-        return fDefinitionScope;
+        return definitionScope;
     }
 
     // ------------------------------------------------------------------------
@@ -117,13 +119,19 @@ public abstract class Definition {
      * @return gets the declaration of a datatype
      *
      */
-    @NonNull
-    public IDeclaration getDeclaration() {
-        return fDeclaration;
-    }
+    public abstract IDeclaration getDeclaration();
+
+    /**
+     * Read the definition from a bitbuffer
+     *
+     * @param input
+     *            the bitbuffer containing the data to read.
+     * @since 2.0
+     */
+    public abstract void read(BitBuffer input);
 
     @Override
     public String toString() {
-        return fPath.toString() + '[' + Integer.toHexString(hashCode()) + ']';
+        return path + '[' + Integer.toHexString(hashCode()) + ']';
     }
 }

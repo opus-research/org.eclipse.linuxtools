@@ -15,163 +15,163 @@ import java.util.ArrayList;
 
 public class Block implements Serializable{
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -7665287885679756014L;
-    private final ArrayList<Arc> entryArcs = new ArrayList<>();
-    private final ArrayList<Arc> exitArcs = new ArrayList<>();
-    private final long flag;
-    private long numSuccs = 0;
-    private long  numPreds = 0;
-    private long  count = 0;
-    private boolean isCallSite = false;// Does the call
-    private boolean isCallReturn = false; // Is the return
-    private boolean isNonLocalReturn = false;
-    private boolean validChain = false;
-    private boolean invalidChain = false;
-    private boolean countValid = false;
-    private final BlkLine blkline = new BlkLine();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7665287885679756014L;
+	private final ArrayList<Arc> entryArcs = new ArrayList<Arc>();
+	private final ArrayList<Arc> exitArcs = new ArrayList<Arc>();
+	private final long flag;
+	private long numSuccs = 0;
+	private long  numPreds = 0;
+	private long  count = 0;
+	private boolean isCallSite = false;// Does the call
+	private boolean isCallReturn = false; // Is the return
+	private boolean isNonLocalReturn = false;
+	private boolean validChain = false;
+	private boolean invalidChain = false;
+	private boolean countValid = false;
+	private final BlkLine blkline = new BlkLine();
 
-    /**
-     * Constructor
-     */
-    public Block(long flag) {
-        this.flag = flag;
-    }
+	/**
+	 * Constructor
+	 */
+	public Block(long flag) {
+		this.flag = flag;
+	}
+	
+	
+	/* getters & setters */
+	public long getFlag() {
+		return flag;
+	}
 
+	public ArrayList<Arc> getEntryArcs() {
+		return entryArcs;
+	}
 
-    /* getters & setters */
-    public long getFlag() {
-        return flag;
-    }
+	public ArrayList<Arc> getExitArcs() {
+		return exitArcs;
+	}
 
-    public ArrayList<Arc> getEntryArcs() {
-        return entryArcs;
-    }
+	public boolean isCallSite() {
+		return isCallSite;
+	}
 
-    public ArrayList<Arc> getExitArcs() {
-        return exitArcs;
-    }
+	public boolean isCallReturn() {
+		return isCallReturn;
+	}
 
-    public boolean isCallSite() {
-        return isCallSite;
-    }
+	public boolean isNonLocalReturn() {
+		return isNonLocalReturn;
+	}
 
-    public boolean isCallReturn() {
-        return isCallReturn;
-    }
+	public void addEntryArcs(Arc arcEntry) {
+		this.entryArcs.add(arcEntry);
+	}
 
-    public boolean isNonLocalReturn() {
-        return isNonLocalReturn;
-    }
+	public void addExitArcs(Arc arcExit) {
+		this.exitArcs.add(arcExit);
+	}
 
-    public void addEntryArcs(Arc arcEntry) {
-        this.entryArcs.add(arcEntry);
-    }
+	public void setCallSite(boolean isCallSite) {
+		this.isCallSite = isCallSite;
+	}
 
-    public void addExitArcs(Arc arcExit) {
-        this.exitArcs.add(arcExit);
-    }
+	public void setCallReturn(boolean isCallReturn) {
+		this.isCallReturn = isCallReturn;
+	}
 
-    public void setCallSite(boolean isCallSite) {
-        this.isCallSite = isCallSite;
-    }
+	public void setNonLocalReturn(boolean isNonLocalReturn) {
+		this.isNonLocalReturn = isNonLocalReturn;
+	}
 
-    public void setCallReturn(boolean isCallReturn) {
-        this.isCallReturn = isCallReturn;
-    }
+	public void decNumSuccs() {
+		this.numSuccs--;
+	}
 
-    public void setNonLocalReturn(boolean isNonLocalReturn) {
-        this.isNonLocalReturn = isNonLocalReturn;
-    }
+	public void decNumPreds() {
+		this.numPreds--;
+	}
 
-    public void decNumSuccs() {
-        this.numSuccs--;
-    }
+	public void incNumPreds() {
+		this.numPreds++;
+	}
 
-    public void decNumPreds() {
-        this.numPreds--;
-    }
+	public void incNumSuccs() {
+		this.numSuccs++;
+	}
 
-    public void incNumPreds() {
-        this.numPreds++;
-    }
+	public boolean isValidChain() {
+		return validChain;
+	}
 
-    public void incNumSuccs() {
-        this.numSuccs++;
-    }
+	public void setValidChain(boolean validChain) {
+		this.validChain = validChain;
+	}
 
-    public boolean isValidChain() {
-        return validChain;
-    }
+	public boolean isInvalidChain() {
+		return invalidChain;
+	}
 
-    public void setValidChain(boolean validChain) {
-        this.validChain = validChain;
-    }
+	public void setInvalidChain(boolean invalidChain) {
+		this.invalidChain = invalidChain;
+	}
 
-    public boolean isInvalidChain() {
-        return invalidChain;
-    }
+	public long getCount() {
+		return count;
+	}
 
-    public void setInvalidChain(boolean invalidChain) {
-        this.invalidChain = invalidChain;
-    }
+	public void setCount(long count) {
+		this.count = count;
+	}
 
-    public long getCount() {
-        return count;
-    }
+	public void setCountValid(boolean countValid) {
+		this.countValid = countValid;
+	}
 
-    public void setCount(long count) {
-        this.count = count;
-    }
+	public boolean isCountValid() {
+		return countValid;
+	}
 
-    public void setCountValid(boolean countValid) {
-        this.countValid = countValid;
-    }
+	public long getNumSuccs() {
+		return numSuccs;
+	}
 
-    public boolean isCountValid() {
-        return countValid;
-    }
+	public long getNumPreds() {
+		return numPreds;
+	}
 
-    public long getNumSuccs() {
-        return numSuccs;
-    }
+	public void setNumSuccs(long numSuccs) {
+		this.numSuccs = numSuccs;
+	}
 
-    public long getNumPreds() {
-        return numPreds;
-    }
+	public void setNumPreds(long numPreds) {
+		this.numPreds = numPreds;
+	}
 
-    public void setNumSuccs(long numSuccs) {
-        this.numSuccs = numSuccs;
-    }
+	public long[] getEncoding() {
+		return blkline.encoding;
+	}
 
-    public void setNumPreds(long numPreds) {
-        this.numPreds = numPreds;
-    }
+	public void setEncoding(long[] lineNos) {
+		this.blkline.encoding = lineNos;
+	}
 
-    public long[] getEncoding() {
-        return blkline.encoding;
-    }
+	public int getLineNum() {
+		return blkline.num;
+	}
 
-    public void setEncoding(long[] lineNos) {
-        this.blkline.encoding = lineNos;
-    }
+	public void setNumLine(int numline) {
+		this.blkline.num = numline;
+	}
 
-    public int getLineNum() {
-        return blkline.num;
-    }
-
-    public void setNumLine(int numline) {
-        this.blkline.num = numline;
-    }
-
-    static class BlkLine implements Serializable{
-        /**
-         *
-         */
-        private static final long serialVersionUID = 2757557929188979686L;
-        public long[] encoding;
-        public int num;
-    }
+	static class BlkLine implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2757557929188979686L;
+		public long[] encoding;
+		public int num;
+	}
 }

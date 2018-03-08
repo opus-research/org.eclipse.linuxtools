@@ -14,15 +14,12 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.Collection;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
@@ -69,49 +66,71 @@ public class TmfEventFieldTest {
     public void testTerminalStructConstructor() {
         assertSame("getName", fFieldName1, fStructTerminalField1.getName());
         assertNull("getValue", fStructTerminalField1.getValue());
-        assertEquals("getFields", 0, fStructTerminalField1.getFields().size());
+        assertEquals("getFields", 0, fStructTerminalField1.getFields().length);
         assertNull("getField(name)", fStructTerminalField1.getField(fFieldName1));
-        assertEquals("getFieldNames", 0, fStructTerminalField1.getFieldNames().size());
+        assertNull("getField(index)", fStructTerminalField1.getField(0));
+        assertEquals("getFieldNames", 0, fStructTerminalField1.getFieldNames().length);
+        assertNull("getFieldName", fStructTerminalField1.getFieldName(-1));
+        assertNull("getFieldName", fStructTerminalField1.getFieldName(0));
     }
 
     @Test
     public void testNonTerminalStructConstructor() {
         assertSame("getName", fStructRootFieldName, fStructRootField.getName());
         assertNull("getValue", fStructRootField.getValue());
-        assertEquals("getFields", 2, fStructRootField.getFields().size());
+        assertEquals("getFields", 2, fStructRootField.getFields().length);
         assertSame("getField(name)", fStructTerminalField1, fStructRootField.getField(fFieldName1));
         assertSame("getField(name)", fStructTerminalField2, fStructRootField.getField(fFieldName2));
+        assertSame("getField(index)", fStructTerminalField1, fStructRootField.getField(0));
+        assertSame("getField(index)", fStructTerminalField2, fStructRootField.getField(1));
 
-        final Collection<String> names = fStructRootField.getFieldNames();
-        assertEquals("getFieldNames length", 2, names.size());
-        assertArrayEquals(fStructFieldNames, names.toArray(new String[names.size()]));
+        final String[] names = fStructRootField.getFieldNames();
+        assertEquals("getFieldNames length", 2, names.length);
+        for (int i = 0; i < names.length; i++) {
+            assertSame("getFieldNames", fStructFieldNames[i], names[i]);
+            assertSame("getFieldName", fFieldNames[i], fStructRootField.getFieldName(i));
+        }
+        assertNull("getFieldName", fStructRootField.getFieldName(-1));
+        assertNull("getFieldName", fStructRootField.getFieldName(names.length));
     }
 
     @Test
     public void testTerminalConstructor() {
         assertSame("getName", fFieldName1, fField1.getName());
         assertSame("getValue", fValue1, fField1.getValue());
-        assertEquals("getFields", 0, fField1.getFields().size());
+        assertEquals("getFields", 0, fField1.getFields().length);
         assertNull("getField(name)", fField1.getField(fFieldName1));
-        assertEquals("getFieldNames", 0, fField1.getFieldNames().size());
+        assertNull("getField(index)", fField1.getField(0));
+        assertEquals("getFieldNames", 0, fField1.getFieldNames().length);
+        assertNull("getFieldName", fField1.getFieldName(0));
 
         assertSame("getName", fFieldName2, fField2.getName());
         assertSame("getValue", fValue2, fField2.getValue());
-        assertEquals("getFields", 0, fField2.getFields().size());
+        assertEquals("getFields", 0, fField2.getFields().length);
         assertNull("getField(name)", fField2.getField(fFieldName2));
+        assertNull("getField(index)", fField2.getField(0));
+        assertEquals("getFieldNames", 0, fField2.getFieldNames().length);
+        assertNull("getFieldName", fField2.getFieldName(0));
     }
 
     @Test
     public void testNonTerminalConstructor() {
         assertSame("getName", fRootFieldName, fRootField.getName());
         assertNull("getValue", fRootField.getValue());
-        assertEquals("getFields", 2, fRootField.getFields().size());
+        assertEquals("getFields", 2, fRootField.getFields().length);
         assertSame("getField(name)", fField1, fRootField.getField(fFieldName1));
         assertSame("getField(name)", fField2, fRootField.getField(fFieldName2));
+        assertSame("getField(index)", fField1, fRootField.getField(0));
+        assertSame("getField(index)", fField2, fRootField.getField(1));
 
-        final Collection<String> names = fRootField.getFieldNames();
-        assertEquals("getFieldNames length", 2, names.size());
-        assertArrayEquals(fFieldNames, names.toArray(new String[names.size()]));
+        final String[] names = fRootField.getFieldNames();
+        assertEquals("getFieldNames length", 2, names.length);
+        for (int i = 0; i < names.length; i++) {
+            assertSame("getFieldNames", fFieldNames[i], names[i]);
+            assertSame("getFieldName", fFieldNames[i], fRootField.getFieldName(i));
+        }
+        assertNull("getFieldName", fRootField.getFieldName(-1));
+        assertNull("getFieldName", fRootField.getFieldName(names.length));
     }
 
     @Test
@@ -128,22 +147,30 @@ public class TmfEventFieldTest {
         final TmfEventField copy = new TmfEventField(fField1);
         assertSame("getName", fFieldName1, copy.getName());
         assertSame("getValue", fValue1, copy.getValue());
-        assertEquals("getFields", 0, copy.getFields().size());
+        assertEquals("getFields", 0, copy.getFields().length);
         assertNull("getField(name)", copy.getField(fFieldName1));
-        assertEquals("getFieldNames", 0, copy.getFieldNames().size());
+        assertNull("getField(index)", copy.getField(0));
+        assertEquals("getFieldNames", 0, copy.getFieldNames().length);
+        assertNull("getFieldName", copy.getFieldName(0));
     }
 
     @Test
     public void testNonTerminalCopyConstructor() {
         assertSame("getName", fRootFieldName, fRootField.getName());
         assertNull("getValue", fRootField.getValue());
-        assertEquals("getFields", 2, fRootField.getFields().size());
+        assertEquals("getFields", 2, fRootField.getFields().length);
         assertSame("getField(name)", fField1, fRootField.getField(fFieldName1));
         assertSame("getField(name)", fField2, fRootField.getField(fFieldName2));
+        assertSame("getField(index)", fField1, fRootField.getField(0));
+        assertSame("getField(index)", fField2, fRootField.getField(1));
 
-        final Collection<String> names = fRootField.getFieldNames();
-        assertEquals("getFieldNames length", 2, names.size());
-        assertArrayEquals(fFieldNames, names.toArray(new String[names.size()]));
+        final String[] names = fRootField.getFieldNames();
+        assertEquals("getFieldNames length", 2, names.length);
+        for (int i = 0; i < names.length; i++) {
+            assertSame("getFieldNames", fFieldNames[i], names[i]);
+            assertSame("getFieldName", fFieldNames[i], fRootField.getFieldName(i));
+        }
+        assertNull("getFieldName", fRootField.getFieldName(names.length));
     }
 
     @Test
@@ -152,25 +179,6 @@ public class TmfEventFieldTest {
             new TmfEventField(null);
             fail("TmfEventField: null arguemnt");
         } catch (final IllegalArgumentException e) {
-        }
-    }
-
-    /**
-     * Test that we correctly fail to create a field with subfields having the
-     * same name.
-     */
-    @Test
-    public void testDuplicateFieldNames() {
-        ITmfEventField[] fields = {
-                new TmfEventField("samename", null, null),
-                new TmfEventField("samename", null, null)
-        };
-
-        try {
-            new TmfEventField("field", null, fields);
-            fail("TmfEventField: Duplicate field names");
-        } catch (IllegalArgumentException e) {
-            /* Expected exception */
         }
     }
 
@@ -301,13 +309,26 @@ public class TmfEventFieldTest {
     @Test
     public void testMakeRoot() {
         ITmfEventField root = TmfEventField.makeRoot(fStructFieldNames);
-        Collection<String> names = root.getFieldNames();
-        assertEquals("getFieldNames length", 2, names.size());
-        assertArrayEquals(fStructFieldNames, names.toArray(new String[names.size()]));
+        String[] names = root.getFieldNames();
+        assertEquals("getFieldNames length", 2, names.length);
+        for (int i = 0; i < names.length; i++) {
+            assertSame("getFieldNames", fStructFieldNames[i], names[i]);
+            assertSame("getFieldName", fStructFieldNames[i], root.getFieldName(i));
+            assertNull("getValue", root.getField(i).getValue());
+        }
+        assertNull("getFieldName", root.getFieldName(-1));
+        assertNull("getFieldName", root.getFieldName(names.length));
 
         root = TmfEventField.makeRoot(fFieldNames);
         names = root.getFieldNames();
-        assertEquals("getFieldNames length", 2, names.size());
-        assertArrayEquals(fFieldNames, names.toArray(new String[names.size()]));
+        assertEquals("getFieldNames length", 2, names.length);
+        for (int i = 0; i < names.length; i++) {
+            assertSame("getFieldNames", fFieldNames[i], names[i]);
+            assertSame("getFieldName", fFieldNames[i], root.getFieldName(i));
+            assertNull("getValue", root.getField(i).getValue());
+        }
+        assertNull("getFieldName", root.getFieldName(-1));
+        assertNull("getFieldName", root.getFieldName(names.length));
     }
+
 }

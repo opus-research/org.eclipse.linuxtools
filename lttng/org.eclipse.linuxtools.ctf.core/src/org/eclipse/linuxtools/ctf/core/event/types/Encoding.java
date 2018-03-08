@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 /**
  * CTF encoding types
  *
@@ -21,7 +19,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-@NonNullByDefault
 public enum Encoding {
     /** UTF-8 encoding */
     UTF8,

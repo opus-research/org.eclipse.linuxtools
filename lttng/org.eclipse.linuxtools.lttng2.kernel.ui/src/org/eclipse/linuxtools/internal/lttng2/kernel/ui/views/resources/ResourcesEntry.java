@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,21 +8,25 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Geneviève Bastien - Move code to provide base classes for time graph view
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources;
 
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventIterator;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 
 /**
  * An entry, or row, in the resource view
  *
  * @author Patrick Tasse
  */
-public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGraphEntry> {
+public class ResourcesEntry implements ITimeGraphEntry {
 
     /** Type of resource */
     public static enum Type {
@@ -33,93 +37,112 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
         /** Entries for IRQs */
         IRQ,
         /** Entries for Soft IRQ */
-        SOFT_IRQ
-    }
+        SOFT_IRQ }
 
-    private final int fId;
-    private final ITmfTrace fTrace;
-    private final Type fType;
     private final int fQuark;
+    private final LttngKernelTrace fTrace;
+    private ITimeGraphEntry fParent = null;
+    private final List<ITimeGraphEntry> children = null;
+    private final String fName;
+    private final Type fType;
+    private final int fId;
+    private long fStartTime;
+    private long fEndTime;
+    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
+    private List<ITimeEvent> fZoomedEventList = null;
 
     /**
-     * Constructor
+     * Standard constructor
      *
      * @param quark
-     *            The attribute quark matching the entry
+     *            The quark of the state system attribute whose state is shown
+     *            on this row
      * @param trace
-     *            The trace on which we are working
-     * @param name
-     *            The exec_name of this entry
-     * @param startTime
-     *            The start time of this entry lifetime
-     * @param endTime
-     *            The end time of this entry
+     *            The trace that this view is talking about
      * @param type
-     *            The type of this entry
+     *            Type of entry, see the Type enum
      * @param id
-     *            The id of this entry
+     *            The integer id associated with this entry or row
      */
-    public ResourcesEntry(int quark, ITmfTrace trace, String name, long startTime, long endTime, Type type, int id) {
-        super(name, startTime, endTime);
-        fId = id;
+    public ResourcesEntry(int quark, LttngKernelTrace trace, Type type, int id) {
+        fQuark = quark;
         fTrace = trace;
         fType = type;
-        fQuark = quark;
+        fId = id;
+        fName = type.toString() + ' ' + Integer.toString(id);
+    }
+
+    @Override
+    public ITimeGraphEntry getParent() {
+        return fParent;
+    }
+
+    @Override
+    public boolean hasChildren() {
+        return children != null && children.size() > 0;
+    }
+
+    @Override
+    public List<ITimeGraphEntry> getChildren() {
+        return children;
+    }
+
+    @Override
+    public String getName() {
+        return fName;
+    }
+
+    @Override
+    public long getStartTime() {
+        return fStartTime;
+    }
+
+    @Override
+    public long getEndTime() {
+        return fEndTime;
+    }
+
+    @Override
+    public boolean hasTimeEvents() {
+        return true;
+    }
+
+    @Override
+    public Iterator<ITimeEvent> getTimeEventsIterator() {
+        return new EventIterator(fEventList, fZoomedEventList);
+    }
+
+    @Override
+    public Iterator<ITimeEvent> getTimeEventsIterator(long startTime, long stopTime, long visibleDuration) {
+        return new EventIterator(fEventList, fZoomedEventList, startTime, stopTime);
     }
 
     /**
-     * Constructor
+     * Assign a parent entry to this one, to organize them in a tree in the
+     * view.
      *
-     * @param trace
-     *            The trace on which we are working
-     * @param name
-     *            The exec_name of this entry
-     * @param startTime
-     *            The start time of this entry lifetime
-     * @param endTime
-     *            The end time of this entry
-     * @param id
-     *            The id of this entry
+     * @param parent
+     *            The parent entry
      */
-    public ResourcesEntry(ITmfTrace trace, String name, long startTime, long endTime, int id) {
-        this(-1, trace, name, startTime, endTime, Type.NULL, id);
+    public void setParent(ITimeGraphEntry parent) {
+        fParent = parent;
     }
 
     /**
-     * Constructor
+     * Retrieve the attribute quark that's represented by this entry.
      *
-     * @param quark
-     *            The attribute quark matching the entry
-     * @param trace
-     *            The trace on which we are working
-     * @param startTime
-     *            The start time of this entry lifetime
-     * @param endTime
-     *            The end time of this entry
-     * @param type
-     *            The type of this entry
-     * @param id
-     *            The id of this entry
+     * @return The integer quark
      */
-    public ResourcesEntry(int quark, ITmfTrace trace, long startTime, long endTime, Type type, int id) {
-        this(quark, trace, type.toString() + " " + id, startTime, endTime, type, id); //$NON-NLS-1$
+    public int getQuark() {
+        return fQuark;
     }
 
     /**
-     * Get the entry's id
+     * Retrieve the trace that is associated to this Resource view.
      *
-     * @return the entry's id
+     * @return The LTTng 2 kernel trace
      */
-    public int getId() {
-        return fId;
-    }
-
-    /**
-     * Get the entry's trace
-     *
-     * @return the entry's trace
-     */
-    public ITmfTrace getTrace() {
+    public LttngKernelTrace getTrace() {
         return fTrace;
     }
 
@@ -133,73 +156,36 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
     }
 
     /**
-     * Retrieve the attribute quark that's represented by this entry.
+     * Get the integer ID associated with this entry.
      *
-     * @return The integer quark The attribute quark matching the entry
+     * @return The ID
      */
-    public int getQuark() {
-        return fQuark;
-    }
-
-    @Override
-    public boolean hasTimeEvents() {
-        if (fType == Type.NULL) {
-            return false;
-        }
-        return true;
+    public int getId() {
+        return fId;
     }
 
     /**
-     * Add a child to this entry of type ResourcesEntry
+     * Assign the target event list to this view.
      *
-     * @param entry
-     *            The entry to add
+     * @param eventList
+     *            The list of time events
      */
-    @Override
-    public void addChild(TimeGraphEntry entry) {
-        // FIXME This check won't be necessary once all ITimeGraphEntry's are
-        // made Comparable.
-        if (!(entry instanceof ResourcesEntry)) {
-            throw new IllegalArgumentException();
+    public void setEventList(List<ITimeEvent> eventList) {
+        fEventList = eventList;
+        if (eventList != null && eventList.size() > 0) {
+            fStartTime = eventList.get(0).getTime();
+            ITimeEvent lastEvent = eventList.get(eventList.size() - 1);
+            fEndTime = lastEvent.getTime() + lastEvent.getDuration();
         }
-        ResourcesEntry rEntry = (ResourcesEntry) entry;
-
-        /*
-         * Insert in the array, keeping the elements sorted
-         * (CopyOnWriteArrayList doesn't support Collections#sort,
-         * unfortunately).
-         */
-        int index;
-        for (index = 0; index < getChildren().size(); index++) {
-            ResourcesEntry other = (ResourcesEntry) getChildren().get(index);
-            if (rEntry.compareTo(other) < 0) {
-                break;
-            }
-        }
-
-        rEntry.setParent(this);
-        getChildren().add(index, rEntry);
     }
 
-    @Override
-    public int compareTo(ITimeGraphEntry other) {
-        if (!(other instanceof ResourcesEntry)) {
-            /* Should not happen, but if it does, put those entries at the end */
-            return -1;
-        }
-        ResourcesEntry o = (ResourcesEntry) other;
-
-        /*
-         * Resources entry names should all be of type "ABC 123"
-         *
-         * We want to filter on the Type first (the "ABC" part), then on the ID
-         * ("123") in numerical order (so we get 1,2,10 and not 1,10,2).
-         */
-        int ret = this.getType().compareTo(o.getType());
-        if (ret != 0) {
-            return ret;
-        }
-        return Integer.compare(this.getId(), o.getId());
+    /**
+     * Assign the zoomed event list to this view.
+     *
+     * @param eventList
+     *            The list of "zoomed" time events
+     */
+    public void setZoomedEventList(List<ITimeEvent> eventList) {
+        fZoomedEventList = eventList;
     }
-
 }

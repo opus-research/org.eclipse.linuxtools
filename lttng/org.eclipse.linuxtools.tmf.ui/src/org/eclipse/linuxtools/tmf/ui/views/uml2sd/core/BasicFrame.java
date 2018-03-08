@@ -555,11 +555,11 @@ public class BasicFrame extends GraphNode {
      */
     protected List<SDTimeEvent> buildTimeArray() {
         if (!hasChildren()) {
-            return new ArrayList<>();
+            return new ArrayList<SDTimeEvent>();
         }
 
         Iterator<String> it = getForwardSortMap().keySet().iterator();
-        List<SDTimeEvent> timeArray = new ArrayList<>();
+        List<SDTimeEvent> timeArray = new ArrayList<SDTimeEvent>();
         while (it.hasNext()) {
             String nodeType = it.next();
             List<GraphNode> list = getNodeMap().get(nodeType);

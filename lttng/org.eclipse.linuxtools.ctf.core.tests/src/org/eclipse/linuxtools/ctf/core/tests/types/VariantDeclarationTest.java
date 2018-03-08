@@ -15,28 +15,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
-import java.nio.ByteBuffer;
-
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * The class <code>VariantDeclarationTest</code> contains tests for the class
@@ -47,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class VariantDeclarationTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private VariantDeclaration fixture;
 
@@ -57,52 +46,6 @@ public class VariantDeclarationTest {
     @Before
     public void setUp() {
         fixture = new VariantDeclaration();
-    }
-
-    private static IDefinitionScope createDefinitionScope() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
-        StructDeclaration declaration = new StructDeclaration(8);
-        VariantDeclaration variantDeclaration = new VariantDeclaration();
-        variantDeclaration.addField("a", IntegerDeclaration.INT_32B_DECL);
-        variantDeclaration.addField("b", IntegerDeclaration.INT_32L_DECL);
-        variantDeclaration.setTag("a");
-
-        EnumDeclaration enumDeclaration = new EnumDeclaration(IntegerDeclaration.UINT_8_DECL);
-        enumDeclaration.add(0, 1, "a");
-        enumDeclaration.add(2, 2, "b");
-        declaration.addField("tag", enumDeclaration);
-        declaration.addField("variant", variantDeclaration);
-        EnumDefinition tagDef = new EnumDefinition(
-                enumDeclaration,
-                null,
-                "tag",
-                new IntegerDefinition(
-                        IntegerDeclaration.UINT_8_DECL,
-                        null,
-                        "test",
-                        0)
-                );
-        VariantDefinition variantDefinition = new VariantDefinition(
-                variantDeclaration,
-                testTrace.getTrace(),
-                "tag",
-                "tag",
-                new StringDefinition(
-                        new StringDeclaration(),
-                        null,
-                        "f",
-                        "tag"
-                ));
-
-        IDefinitionScope definitionScope = new StructDefinition(
-                declaration,
-                variantDefinition,
-                "",
-                ImmutableList.of("tag", variantDefinition.getCurrentFieldName()),
-                new Definition[] { tagDef, variantDefinition }
-                );
-
-        return definitionScope;
     }
 
     /**
@@ -131,19 +74,33 @@ public class VariantDeclarationTest {
      * Run the VariantDefinition createDefinition(DefinitionScope,String) method
      * test.
      *
-     * @throws CTFReaderException
-     *             Should not happen
+     * @throws CTFReaderException Should not happen
      */
     @Test
     public void testCreateDefinition() throws CTFReaderException {
-        fixture.setTag("tag");
-        fixture.addField("a", IntegerDeclaration.UINT_64B_DECL);
+        fixture.setTag("");
         IDefinitionScope definitionScope = createDefinitionScope();
         String fieldName = "";
-        BitBuffer bb = new BitBuffer(ByteBuffer.allocate(100));
-        VariantDefinition result = fixture.createDefinition(definitionScope, fieldName, bb);
+        VariantDefinition result = fixture.createDefinition(definitionScope, fieldName);
 
         assertNotNull(result);
+    }
+
+    private static IDefinitionScope createDefinitionScope() throws CTFReaderException {
+        assumeTrue(CtfTestTraces.tracesExist());
+        VariantDeclaration declaration = new VariantDeclaration();
+        declaration.setTag("");
+        VariantDeclaration variantDeclaration = new VariantDeclaration();
+        variantDeclaration.setTag("");
+        VariantDefinition variantDefinition = new VariantDefinition(
+                variantDeclaration, CtfTestTraces.getTestTrace(TRACE_INDEX), "");
+        IDefinitionScope definitionScope = new StructDefinition(
+                new StructDeclaration(1L), variantDefinition, "");
+        String fieldName = "";
+
+        VariantDefinition result = new VariantDefinition(declaration,
+                definitionScope, fieldName);
+        return result;
     }
 
     /**

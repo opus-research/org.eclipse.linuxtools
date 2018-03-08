@@ -10,30 +10,46 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.swtbot.tests;
 
-import static org.junit.Assert.assertNotNull;
-
+import org.eclipse.linuxtools.internal.perf.PerfPlugin;
+import org.eclipse.linuxtools.internal.perf.ui.ReportComparisonView;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
+import org.junit.Test;
 
 /**
  * SWTBot test for ReportComparisonView.
  */
-public class ReportComparisonViewTest extends AbstractSWTBotTest {
+public class ReportComparisonViewTest extends AbstractStyledTextViewTest {
 
-    @Override
-    protected void setPerfOptions(SWTWorkbenchBot bot) {
-        SWTBotCheckBox chkBox = bot.checkBox("Show Source Disassembly View");
-        assertNotNull(chkBox);
-        chkBox.select();
-    }
+	@Override
+	@Test
+	public void runPerfViewTest() throws Exception {
+		/*
+		 * No need to create project or open launch dialog,
+		 * just need to open view and run test.
+		 */
+		openStubView();
+		testPerfView();
+	}
 
-    @Override
-    protected void openStubView() {
-    }
+	@Override
+	protected String getViewId() {
+		return "Perf Comparison";
+	}
 
-    @Override
-    protected void testPerfView() {
-        compareWithEachOther("perf_old.data", "perf_new.data");
-    }
+	@Override
+	protected String getExpectedText() {
+		return PerfPlugin.getDefault().getReportDiffData().getPerfData();
+	}
+
+	@Override
+	protected void setPerfOptions(SWTWorkbenchBot bot) {
+		// no perf options needed
+	}
+
+	@Override
+	protected void openStubView() {
+		PerfPlugin.getDefault().setReportDiffData(new StubPerfData());
+		ReportComparisonView.refreshView();
+	}
 
 }

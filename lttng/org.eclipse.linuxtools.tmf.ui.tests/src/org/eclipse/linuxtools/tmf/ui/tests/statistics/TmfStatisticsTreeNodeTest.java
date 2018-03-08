@@ -82,12 +82,15 @@ public class TmfStatisticsTreeNodeTest {
 
         assertTrue(rootNode.containsChild(fTestName));
         assertFalse(rootNode.containsChild(catNode.getName()));
+        assertFalse(rootNode.containsChild(null));
 
         assertTrue(traceNode.containsChild(catNode.getName()));
         assertFalse(traceNode.containsChild(fTypeId1));
+        assertFalse(traceNode.containsChild(null));
 
         assertTrue(catNode.containsChild(fTypeId1));
         assertTrue(catNode.containsChild(fTypeId2));
+        assertFalse(catNode.containsChild(null));
     }
 
     /**
@@ -107,7 +110,7 @@ public class TmfStatisticsTreeNodeTest {
         treeNode = childrenTreeNode.iterator().next();
         assertEquals(Messages.TmfStatisticsData_EventTypes, treeNode.getName());
 
-        Vector<String> keyExpected = new Vector<>();
+        Vector<String> keyExpected = new Vector<String>();
         keyExpected.add(fTypeId1);
         keyExpected.add(fTypeId2);
         keyExpected.add(fTypeId3);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,18 +12,12 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF structure definition (similar to a C structure).
@@ -36,15 +30,14 @@ import com.google.common.collect.ImmutableMap.Builder;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class StructDefinition extends Definition implements IDefinitionScope {
+public class StructDefinition extends Definition implements IDefinitionScope {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final ImmutableList<String> fFieldNames;
-    private final Definition[] fDefinitions;
-    private Map<String, Definition> fDefinitionsMap = null;
+    private final StructDeclaration declaration;
+    private final Map<String, Definition> definitions = new LinkedHashMap<String, Definition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -59,19 +52,19 @@ public final class StructDefinition extends Definition implements IDefinitionSco
      *            the parent scope
      * @param structFieldName
      *            the field name
-     * @param fieldNames
-     *            the list of fields
-     * @param definitions
-     *            the definitions
-     * @since 3.0
      */
-    public StructDefinition(@NonNull StructDeclaration declaration,
-            IDefinitionScope definitionScope, @NonNull String structFieldName, List<String> fieldNames, Definition[] definitions) {
-        super(declaration, definitionScope, structFieldName);
-        fFieldNames = ImmutableList.copyOf(fieldNames);
-        fDefinitions = definitions;
-        if (fFieldNames == null) {
-            fDefinitionsMap = Collections.EMPTY_MAP;
+    public StructDefinition(StructDeclaration declaration,
+            IDefinitionScope definitionScope, String structFieldName) {
+        super(definitionScope, structFieldName);
+
+        this.declaration = declaration;
+
+        for (String fName : declaration.getFieldsList()) {
+            IDeclaration fieldDecl = declaration.getFields().get(fName);
+            assert (fieldDecl != null);
+
+            Definition def = fieldDecl.createDefinition(this, fName);
+            definitions.put(fName, def);
         }
     }
 
@@ -80,48 +73,35 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     // ------------------------------------------------------------------------
 
     /**
-     * Gets the definition of the field
-     *
-     * @param fieldName
-     *            the fieldname
      * @return The definitions of all the fields
-     * @since 3.0
+     * @since 2.0
      */
-    public Definition getDefinition(String fieldName) {
-        if (fDefinitionsMap == null) {
-            buildFieldsMap();
-        }
-        return fDefinitionsMap.get(fieldName);
-    }
-
-    private void buildFieldsMap() {
-        Builder<String, Definition> mapBuilder = new ImmutableMap.Builder<>();
-        for (int i = 0; i < fFieldNames.size(); i++) {
-            if (fDefinitions[i] != null) {
-                mapBuilder.put(fFieldNames.get(i), fDefinitions[i]);
-            }
-        }
-        fDefinitionsMap = mapBuilder.build();
-    }
-
-    /**
-     * Gets an array of the field names
-     *
-     * @return the field names array
-     * @since 3.0
-     */
-    public List<String> getFieldNames() {
-        return fFieldNames;
+    public Map<String, Definition> getDefinitions() {
+        return definitions;
     }
 
     @Override
     public StructDeclaration getDeclaration() {
-        return (StructDeclaration) super.getDeclaration();
+        return declaration;
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+
+    @Override
+    public void read(BitBuffer input) {
+        final int align = (int) declaration.getAlignment();
+        int pos = input.position()
+                + ((align - (input.position() % align)) % align);
+        input.position(pos);
+        final List<String> fieldList = declaration.getFieldsList();
+        for (String fName : fieldList) {
+            Definition def = definitions.get(fName);
+            assert (def != null);
+            def.read(input);
+        }
+    }
 
     @Override
     public Definition lookupDefinition(String lookupPath) {
@@ -130,20 +110,15 @@ public final class StructDefinition extends Definition implements IDefinitionSco
          * sequence refers to a field that is after it, the field's definition
          * will not be there yet in the hashmap.
          */
-        int val = fFieldNames.indexOf(lookupPath);
-        if (val != -1) {
-            return fDefinitions[val];
+        Definition retVal = definitions.get(lookupPath);
+        if (retVal == null) {
+            retVal = definitions.get("_" + lookupPath); //$NON-NLS-1$
         }
-        String lookupUnderscored = "_" + lookupPath; //$NON-NLS-1$
-        val = fFieldNames.indexOf(lookupUnderscored);
-        if (val != -1) {
-            return fDefinitions[val];
-        }
-        return null;
+        return retVal;
     }
 
     /**
-     * Lookup an array in a struct. If the name returns a non-array (like an
+     * Lookup an array in a struct. if the name returns a non-array (like an
      * int) than the method returns null
      *
      * @param name
@@ -156,7 +131,7 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     }
 
     /**
-     * Lookup an enum in a struct. If the name returns a non-enum (like an int)
+     * Lookup an enum in a struct. if the name returns a non-enum (like an int)
      * than the method returns null
      *
      * @param name
@@ -169,7 +144,7 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     }
 
     /**
-     * Lookup an integer in a struct. If the name returns a non-integer (like an
+     * Lookup an integer in a struct. if the name returns a non-integer (like an
      * float) than the method returns null
      *
      * @param name
@@ -183,7 +158,7 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     }
 
     /**
-     * Lookup a sequence in a struct. If the name returns a non-sequence (like
+     * Lookup a sequence in a struct. if the name returns a non-sequence (like
      * an int) than the method returns null
      *
      * @param name
@@ -197,8 +172,8 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     }
 
     /**
-     * Lookup a string in a struct. If the name returns a non-string (like an
-     * int) than the method returns null
+     * Lookup a string in a struct. if the name returns a non-string (like
+     * an int) than the method returns null
      *
      * @param name
      *            the name of the string
@@ -211,8 +186,8 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     }
 
     /**
-     * Lookup a struct in a struct. If the name returns a non-struct (like an
-     * int) than the method returns null
+     * Lookup a struct in a struct. if the name returns a non-struct (like
+     * an int) than the method returns null
      *
      * @param name
      *            the name of the struct
@@ -225,8 +200,8 @@ public final class StructDefinition extends Definition implements IDefinitionSco
     }
 
     /**
-     * Lookup a variant in a struct. If the name returns a non-variant (like an
-     * int) than the method returns null
+     * Lookup a variant in a struct. if the name returns a non-variant (like
+     * an int) than the method returns null
      *
      * @param name
      *            the name of the variant
@@ -244,19 +219,23 @@ public final class StructDefinition extends Definition implements IDefinitionSco
 
         builder.append("{ "); //$NON-NLS-1$
 
-        if (fFieldNames != null) {
-            List<String> fields = new LinkedList<>();
-            for (String field : fFieldNames) {
-                String appendee = field + " = " + lookupDefinition(field).toString(); //$NON-NLS-1$
-                fields.add(appendee);
+        ListIterator<String> listIterator = this.declaration.getFieldsList()
+                .listIterator();
+
+        while (listIterator.hasNext()) {
+            String field = listIterator.next();
+
+            builder.append(field);
+            builder.append(" = "); //$NON-NLS-1$
+            builder.append(lookupDefinition(field).toString());
+
+            if (listIterator.hasNext()) {
+                builder.append(", "); //$NON-NLS-1$
             }
-            Joiner joiner = Joiner.on(", ").skipNulls(); //$NON-NLS-1$
-            builder.append(joiner.join(fields));
         }
 
         builder.append(" }"); //$NON-NLS-1$
 
         return builder.toString();
     }
-
 }

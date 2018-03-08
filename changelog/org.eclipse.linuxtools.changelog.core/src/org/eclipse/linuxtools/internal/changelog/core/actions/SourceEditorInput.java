@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Wind River Systems - initial API and implementation
  *******************************************************************************/
@@ -17,19 +17,18 @@ import org.eclipse.core.resources.IStorage;
  */
 public class SourceEditorInput extends StorageEditorInput {
 
-    /**
-     * @param storage that represents a source file
-     */
-    public SourceEditorInput(IStorage storage) {
-        super(storage);
-    }
+	/**
+	 * @param storage that represents a source file
+	 */
+	public SourceEditorInput(IStorage storage) {
+		super(storage);
+	}
 
-    /*
-     * @see org.eclipse.ui.IEditorInput#exists()
-     */
-    @Override
-    public boolean exists() {
-        return false;
-    }
+	/*
+	 * @see org.eclipse.ui.IEditorInput#exists()
+	 */
+	public boolean exists() {
+		return false;
+	}
 
 }

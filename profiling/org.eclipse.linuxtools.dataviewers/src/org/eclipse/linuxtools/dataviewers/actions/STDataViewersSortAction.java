@@ -28,32 +28,46 @@ public class STDataViewersSortAction extends Action {
     private final STDataViewersSortDialog dialog;
 
     /**
-     * Creates the action for the given viewer.
+     * Constructor
      *
-     * @param stViewer The AbstractSTViewer to create the action for.
+     * @param stViewer
      */
     public STDataViewersSortAction(AbstractSTViewer stViewer) {
-        super(STDataViewersMessages.sortAction_title, STDataViewersImages
-                .getImageDescriptor(STDataViewersImages.IMG_SORT));
-        super.setToolTipText(STDataViewersMessages.sortAction_tooltip);
-        this.stViewer = stViewer;
+		super(STDataViewersMessages.sortAction_title, STDataViewersImages
+				.getImageDescriptor(STDataViewersImages.IMG_SORT));
+		super.setToolTipText(STDataViewersMessages.sortAction_tooltip);
+		this.stViewer = stViewer;
 
-        // building a sort dialog
-        dialog = new STDataViewersSortDialog(stViewer.getViewer().getControl().getShell(), stViewer.getTableSorter());
+		// building a sort dialog
+		dialog = getSortDialog();
 
-        setEnabled(true);
+		setEnabled(true);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
-    public void run() {
+	public void run() {
         if (dialog.open() == Window.OK && dialog.isDirty()) {
             BusyIndicator.showWhile(null, new Runnable() {
                 @Override
-                public void run() {
+				public void run() {
                     stViewer.setComparator(dialog.getSorter());
                 }
             });
 
         }
+    }
+
+    /**
+     * Return a sort dialog for the receiver.
+     *
+     * @return TableSortDialog
+     */
+    protected STDataViewersSortDialog getSortDialog() {
+        return new STDataViewersSortDialog(stViewer.getViewer().getControl().getShell(), stViewer.getTableSorter());
     }
 }

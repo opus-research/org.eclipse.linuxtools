@@ -16,94 +16,94 @@ import org.eclipse.jface.text.rules.*;
 /**
  * Recognizes GNU format changelog. Can be configured to return different types
  * of tokens.
- *
+ * 
  * @author klee (Kyu Lee)
  */
 public class GNUElementScanner extends RuleBasedScanner {
 
-    public static final String FILE_NAME = "_file_name"; // $NON-NLS-1$
+	public static final String FILE_NAME = "_file_name"; // $NON-NLS-1$
     public static final String TEXT = "_text_content"; // $NON-NLS-1$
-    public static final String EMAIL = "_author_email"; // $NON-NLS-1$
-    public static final String DATE = "_entry_date"; // $NON-NLS-1$
-    public static final String AUTHOR = "_author_name"; // $NON-NLS-1$
-    public static final String FUNC_NAME = "_function_name"; // $NON-NLS-1$
-    public static final String OTHER = "_other"; // $NON-NLS-1$
-    /**
-     * Build a scanner for syntax highlighting.
-     *
-     * @param manager Color scheme to use.
-     */
-    public GNUElementScanner(ColorManager manager) {
-        IToken file = new Token(new TextAttribute(manager
-                .getColor(IChangeLogColorConstants.FILE_NAME)));
+	public static final String EMAIL = "_author_email"; // $NON-NLS-1$
+	public static final String DATE = "_entry_date"; // $NON-NLS-1$
+	public static final String AUTHOR = "_author_name"; // $NON-NLS-1$
+	public static final String FUNC_NAME = "_function_name"; // $NON-NLS-1$
+	public static final String OTHER = "_other"; // $NON-NLS-1$
+	/**
+	 * Build a scanner for syntax highlighting.
+	 * 
+	 * @param manager Color scheme to use.
+	 */
+	public GNUElementScanner(ColorManager manager) {
+		IToken file = new Token(new TextAttribute(manager
+				.getColor(IChangeLogColorConstants.FILE_NAME)));
 
-        IToken func = new Token(new TextAttribute(manager
-                .getColor(IChangeLogColorConstants.FUNC_NAME)));
+		IToken func = new Token(new TextAttribute(manager
+				.getColor(IChangeLogColorConstants.FUNC_NAME)));
 
-        IToken email = new Token(new TextAttribute(manager
-                .getColor(IChangeLogColorConstants.EMAIL)));
+		IToken email = new Token(new TextAttribute(manager
+				.getColor(IChangeLogColorConstants.EMAIL)));
 
-        IToken other = new Token(new TextAttribute(manager
-                .getColor(IChangeLogColorConstants.TEXT)));
+		IToken other = new Token(new TextAttribute(manager
+				.getColor(IChangeLogColorConstants.TEXT)));
 
-        IRule[] rules = new IRule[3];
+		IRule[] rules = new IRule[3];
 
-        // Add rule for file path
-        rules[0] = new GNUFileEntryRule(file);
+		// Add rule for file path
+		rules[0] = new GNUFileEntryRule(file);
 
-        // function
-        rules[1] = new SingleLineRule("(", ")", func); // $NON-NLS-1$ // $NON-NLS-2$
-        // email
-        rules[2] = new SingleLineRule("<", ">\n", email); // $NON-NLS-1$ // $NON-NLS-2$
+		// function
+		rules[1] = new SingleLineRule("(", ")", func); // $NON-NLS-1$ // $NON-NLS-2$
+		// email
+		rules[2] = new SingleLineRule("<", ">\n", email); // $NON-NLS-1$ // $NON-NLS-2$
+		
+		setDefaultReturnToken(other);
+		
+		setRules(rules);
+	}
 
-        setDefaultReturnToken(other);
+	/**
+	 * Build a scanner for hyperlink.
+	 * 
+	 */
+	public GNUElementScanner() {
+		IToken file = new Token(FILE_NAME);
 
-        setRules(rules);
-    }
+		IToken func = new Token(FUNC_NAME);
 
-    /**
-     * Build a scanner for hyperlink.
-     *
-     */
-    public GNUElementScanner() {
-        IToken file = new Token(FILE_NAME);
+		IToken email = new Token(EMAIL);
+		
+		IToken other = new Token(OTHER);
 
-        IToken func = new Token(FUNC_NAME);
+		IRule[] rules = new IRule[3];
 
-        IToken email = new Token(EMAIL);
+		// Add rule for file path
+		rules[0] = new GNUFileEntryRule(file);
 
-        IToken other = new Token(OTHER);
+		// function
+		rules[1] = new SingleLineRule("(", "):", func); // $NON-NLS-1$ // $NON-NLS-2$
+		// email 
+		rules[2]= new SingleLineRule("<", ">", email); // $NON-NLS-1$ // $NON-NLS-2$
 
-        IRule[] rules = new IRule[3];
+		setDefaultReturnToken(other);
+		
+		setRules(rules);
+	}
 
-        // Add rule for file path
-        rules[0] = new GNUFileEntryRule(file);
-
-        // function
-        rules[1] = new SingleLineRule("(", "):", func); // $NON-NLS-1$ // $NON-NLS-2$
-        // email
-        rules[2]= new SingleLineRule("<", ">", email); // $NON-NLS-1$ // $NON-NLS-2$
-
-        setDefaultReturnToken(other);
-
-        setRules(rules);
-    }
-
-    /**
-     * Get the file offset.
-     *
-     * @return the file offset.
-     */
-    public int getOffset() {
-        return fOffset;
-    }
-
-    /**
-     * Get the default token.
-     *
-     * @return the default token.
-     */
-    public IToken getDefaultToken() {
-        return fDefaultReturnToken;
-    }
+	/**
+	 * Get the file offset.
+	 * 
+	 * @return the file offset.
+	 */
+	public int getOffset() {
+		return fOffset;
+	}
+	
+	/**
+	 * Get the default token.
+	 * 
+	 * @return the default token.
+	 */
+	public IToken getDefaultToken() {
+		return fDefaultReturnToken;
+	}
 }

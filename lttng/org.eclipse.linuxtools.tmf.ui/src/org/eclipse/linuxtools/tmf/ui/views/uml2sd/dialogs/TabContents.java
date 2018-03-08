@@ -39,6 +39,14 @@ public class TabContents extends Composite {
     // Attributes
     // ------------------------------------------------------------------------
     /**
+     * A graph node type listener implementation.
+     */
+    private final GraphNodeTypeListener fGraphNodeTypeListener;
+    /**
+     * A expression listener implementation.
+     */
+    private final ExpressionListener fExpressionListener;
+    /**
      * The button for lifelines.
      */
     private Button fLifelineButton;
@@ -66,6 +74,10 @@ public class TabContents extends Composite {
      * The search text combo box.
      */
     private Combo fSearchText = null;
+    /**
+     * The group for selection kind.
+     */
+    private Group fKindSelection = null;
     /**
      * The button for case sensitive expressions.
      */
@@ -96,8 +108,8 @@ public class TabContents extends Composite {
         fParentOkButton = okButton;
         setLayout(new GridLayout());
 
-        GraphNodeTypeListener graphNodeTypeListener = new GraphNodeTypeListener();
-        ExpressionListener expressionListener = new ExpressionListener();
+        fGraphNodeTypeListener = new GraphNodeTypeListener();
+        fExpressionListener = new ExpressionListener();
 
         // Inform the user how to fill the string to search
         Label searchTitle = new Label(this, SWT.LEFT);
@@ -121,25 +133,25 @@ public class TabContents extends Composite {
                 fSearchText.add(expressionList[i]);
             }
         }
-        fSearchText.addModifyListener(expressionListener);
+        fSearchText.addModifyListener(fExpressionListener);
 
         // Create the case sensitive check button
         fCaseSensitive = new Button(searchPart, SWT.CHECK);
         fCaseSensitive.setText(Messages.SequenceDiagram_CaseSensitive);
 
         // Create the group for searched graph node kind selection
-        Group kindSelection = new Group(this, SWT.SHADOW_NONE);
-        kindSelection.setText(Messages.SequenceDiagram_SearchFor);
+        fKindSelection = new Group(this, SWT.SHADOW_NONE);
+        fKindSelection.setText(Messages.SequenceDiagram_SearchFor);
         // kindSelection.setLayoutData(tabLayoutData2);
         GridLayout kindSelectionLayout = new GridLayout();
         kindSelectionLayout.numColumns = 1;
-        kindSelection.setLayout(kindSelectionLayout);
+        fKindSelection.setLayout(kindSelectionLayout);
         GridData kindSelectionData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL);
-        kindSelection.setLayoutData(kindSelectionData);
+        fKindSelection.setLayoutData(kindSelectionData);
 
         // Create the lifeline check button
         if (provider != null && provider.isNodeSupported(ISDGraphNodeSupporter.LIFELINE)) {
-            fLifelineButton = new Button(kindSelection, SWT.CHECK);
+            fLifelineButton = new Button(fKindSelection, SWT.CHECK);
             String nodeName = provider.getNodeName(ISDGraphNodeSupporter.LIFELINE, null);
             if (nodeName != null) {
                 fLifelineButton.setText(nodeName);
@@ -147,12 +159,12 @@ public class TabContents extends Composite {
                 fLifelineButton.setText(Messages.SequenceDiagram_Lifeline);
             }
             fLifelineButton.setEnabled(true);
-            fLifelineButton.addSelectionListener(graphNodeTypeListener);
+            fLifelineButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         if (provider != null && provider.isNodeSupported(ISDGraphNodeSupporter.STOP)) {
             // Create the stop check button
-            fStopButton = new Button(kindSelection, SWT.CHECK);
+            fStopButton = new Button(fKindSelection, SWT.CHECK);
             String nodeName = provider.getNodeName(ISDGraphNodeSupporter.STOP, null);
             if (nodeName != null) {
                 fStopButton.setText(nodeName);
@@ -161,12 +173,12 @@ public class TabContents extends Composite {
             }
 
             fStopButton.setEnabled(true);
-            fStopButton.addSelectionListener(graphNodeTypeListener);
+            fStopButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         if (provider != null && provider.isNodeSupported(ISDGraphNodeSupporter.SYNCMESSAGE)) {
             // Create the synchronous message check button
-            fSynMessageButton = new Button(kindSelection, SWT.CHECK);
+            fSynMessageButton = new Button(fKindSelection, SWT.CHECK);
             String nodeName = provider.getNodeName(ISDGraphNodeSupporter.SYNCMESSAGE, null);
             if (nodeName != null) {
                 fSynMessageButton.setText(nodeName);
@@ -174,12 +186,12 @@ public class TabContents extends Composite {
                 fSynMessageButton.setText(Messages.SequenceDiagram_SynchronousMessage);
             }
             fSynMessageButton.setEnabled(true);
-            fSynMessageButton.addSelectionListener(graphNodeTypeListener);
+            fSynMessageButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         if (provider != null && provider.isNodeSupported(ISDGraphNodeSupporter.SYNCMESSAGERETURN)) {
             // Create the synchronous message return check button
-            fSynMessageReturnButton = new Button(kindSelection, SWT.CHECK);
+            fSynMessageReturnButton = new Button(fKindSelection, SWT.CHECK);
             String nodeName = provider.getNodeName(ISDGraphNodeSupporter.SYNCMESSAGERETURN, null);
             if (nodeName != null) {
                 fSynMessageReturnButton.setText(nodeName);
@@ -187,12 +199,12 @@ public class TabContents extends Composite {
                 fSynMessageReturnButton.setText(Messages.SequenceDiagram_SynchronousMessageReturn);
             }
             fSynMessageReturnButton.setEnabled(true);
-            fSynMessageReturnButton.addSelectionListener(graphNodeTypeListener);
+            fSynMessageReturnButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         if (provider != null && provider.isNodeSupported(ISDGraphNodeSupporter.ASYNCMESSAGE)) {
             // Create the asynchronous message check button
-            fAsynMessageButton = new Button(kindSelection, SWT.CHECK);
+            fAsynMessageButton = new Button(fKindSelection, SWT.CHECK);
             String nodeName = provider.getNodeName(ISDGraphNodeSupporter.ASYNCMESSAGE, null);
             if (nodeName != null) {
                 fAsynMessageButton.setText(nodeName);
@@ -200,12 +212,12 @@ public class TabContents extends Composite {
                 fAsynMessageButton.setText(Messages.SequenceDiagram_AsynchronousMessage);
             }
             fAsynMessageButton.setEnabled(true);
-            fAsynMessageButton.addSelectionListener(graphNodeTypeListener);
+            fAsynMessageButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         if (provider != null && provider.isNodeSupported(ISDGraphNodeSupporter.ASYNCMESSAGERETURN)) {
             // Create the asynchronous message return check button
-            fAsynMessageReturnButton = new Button(kindSelection, SWT.CHECK);
+            fAsynMessageReturnButton = new Button(fKindSelection, SWT.CHECK);
             String nodeName = provider.getNodeName(ISDGraphNodeSupporter.ASYNCMESSAGERETURN, null);
             if (nodeName != null) {
                 fAsynMessageReturnButton.setText(nodeName);
@@ -213,7 +225,7 @@ public class TabContents extends Composite {
                 fAsynMessageReturnButton.setText(Messages.SequenceDiagram_AsynchronousMessageReturn);
             }
             fAsynMessageReturnButton.setEnabled(true);
-            fAsynMessageReturnButton.addSelectionListener(graphNodeTypeListener);
+            fAsynMessageReturnButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         fResult = new Label(this, SWT.LEFT);
@@ -234,8 +246,8 @@ public class TabContents extends Composite {
     }
 
     /**
-     * Updates parent OK button based on input data.
-     */
+	 * Updates parent OK button based on input data.
+	 */
     public void updateOkButton() {
         if (fParentOkButton == null) {
             return;

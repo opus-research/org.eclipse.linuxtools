@@ -20,224 +20,221 @@ import org.eclipse.jface.text.formatter.IFormattingStrategy;
 
 public class ChangeLogFormattingStrategy implements IFormattingStrategy {
 
-    private static final String NEW_LINE_CHAR = "\n";
+	private static final String NEW_LINE_CHAR = "\n";
 
-    private static final String WHITE_SPACE_CHAR = " ";
+	private static final String WHITE_SPACE_CHAR = " ";
 
-    private static final String TAB_SPACE_CHAR = "\t";
+	private static final String TAB_SPACE_CHAR = "\t";
 
-    @Override
-    public String format(String content, boolean isLineStart,
-            String indentation, int[] positions) {
+	public String format(String content, boolean isLineStart,
+			String indentation, int[] positions) {
 
-        ArrayList<String> formattedWords = new ArrayList<>();
-        int currentLineLength = indentation.length();
-        boolean newLineBegin = true;
+		ArrayList<String> formattedWords = new ArrayList<String>();
+		int currentLineLength = indentation.length();
+		boolean newLineBegin = true;
 
-        String firstLine = "";
+		String firstLine = "";
 
-        // if first line is not from the start, ignore it
-        if (!isLineStart) {
-            int eol;
-            if ((eol = content.indexOf('\n')) == content.length() - 1) {
-                return content;
-            } else {
-                firstLine = content.substring(0, eol + 1);
-                content = content.substring(eol + 1);
-            }
-        }
+		// if first line is not from the start, ignore it
+		if (!isLineStart) {
+			int eol;
+			if ((eol = content.indexOf('\n')) == content.length() - 1) {
+				return content;
+			} else {
+				firstLine = content.substring(0, eol + 1);
+				content = content.substring(eol + 1);
+			}
+		}
 
-        StringTokenizer candidateWords = new StringTokenizer(content,
-                NEW_LINE_CHAR + WHITE_SPACE_CHAR + TAB_SPACE_CHAR, true);
+		StringTokenizer candidateWords = new StringTokenizer(content,
+				NEW_LINE_CHAR + WHITE_SPACE_CHAR + TAB_SPACE_CHAR, true);
 
-        boolean seenFirstWord = false;
+		boolean seenFirstWord = false;
 
-        boolean addedFirstNL = false;
-        while (candidateWords.hasMoreTokens()) {
+		boolean addedFirstNL = false;
+		while (candidateWords.hasMoreTokens()) {
 
-            String cword = candidateWords.nextToken();
+			String cword = candidateWords.nextToken();
 
-            if (!seenFirstWord) {
+			if (!seenFirstWord) {
 
-                if ((cword.indexOf(NEW_LINE_CHAR) < 0
-                        && cword.indexOf(WHITE_SPACE_CHAR) < 0 && cword
-                        .indexOf(TAB_SPACE_CHAR) < 0)) {
-                    seenFirstWord = true;
-                } else {
-                    if (!addedFirstNL && cword.indexOf(NEW_LINE_CHAR) >= 0) {
-                        firstLine += "\n";
-                        addedFirstNL = true;
-                    }
-                    continue;
-                }
+				if ((cword.indexOf(NEW_LINE_CHAR) < 0
+						&& cword.indexOf(WHITE_SPACE_CHAR) < 0 && cword
+						.indexOf(TAB_SPACE_CHAR) < 0)) {
+					seenFirstWord = true;
+				} else {
+					if (!addedFirstNL && cword.indexOf(NEW_LINE_CHAR) >= 0) {
+						firstLine += "\n";
+						addedFirstNL = true;
+					}
+					continue;
+				}
 
-            } else {
+			} else {
 
-                if (cword.indexOf(NEW_LINE_CHAR) >= 0
-                        || cword.indexOf(WHITE_SPACE_CHAR) >= 0
-                        || cword.indexOf(TAB_SPACE_CHAR) >= 0) {
-                    continue;
-                }
-            }
+				if (cword.indexOf(NEW_LINE_CHAR) >= 0
+						|| cword.indexOf(WHITE_SPACE_CHAR) >= 0
+						|| cword.indexOf(TAB_SPACE_CHAR) >= 0) {
+					continue;
+				}
+			}
 
-            // if the word is date, start new line and include
-            // names, email, then an empty line.
-            if (isDate(cword)) {
+			// if the word is date, start new line and include
+			// names, email, then an empty line.
+			if (isDate(cword)) {
 
-                // see if we are in middle of line and
-                // if so, start new line, else continue.
-                if (!newLineBegin)
-                    formattedWords.add(NEW_LINE_CHAR);
+				// see if we are in middle of line and
+				// if so, start new line, else continue.
+				if (!newLineBegin)
+					formattedWords.add(NEW_LINE_CHAR);
 
-                if (formattedWords.size() > 0)
-                    formattedWords.add(NEW_LINE_CHAR);
+				if (formattedWords.size() > 0)
+					formattedWords.add(NEW_LINE_CHAR);
 
-                // insert date
-                formattedWords.add(cword + WHITE_SPACE_CHAR);
+				// insert date
+				formattedWords.add(cword + WHITE_SPACE_CHAR);
 
-                // insert name
-                cword = candidateWords.nextToken();
-                while (!isEmail(cword)) {
+				// insert name
+				cword = candidateWords.nextToken();
+				while (!isEmail(cword)) {
+					
+					if (!cword.equals(WHITE_SPACE_CHAR) && !cword.equals(TAB_SPACE_CHAR) && !cword.equals(NEW_LINE_CHAR)) {
+						formattedWords.add(WHITE_SPACE_CHAR + cword);	
+					}
+					
+					
+					cword = candidateWords.nextToken();
+				}
 
-                    if (!cword.equals(WHITE_SPACE_CHAR) && !cword.equals(TAB_SPACE_CHAR) && !cword.equals(NEW_LINE_CHAR)) {
-                        formattedWords.add(WHITE_SPACE_CHAR + cword);
-                    }
+				// insert email
+				formattedWords.add(WHITE_SPACE_CHAR + WHITE_SPACE_CHAR + cword + NEW_LINE_CHAR);
 
+				// inserted header, so insert a empty line
+				formattedWords.add(NEW_LINE_CHAR);
+				newLineBegin = true;
+				currentLineLength = indentation.length();
+				continue;
+			}
 
-                    cword = candidateWords.nextToken();
-                }
+			// means beginning of file name, so whole filename should be
+			// in one line.
+			if (isStar(cword)) {
+				// see if we are in middle of line and
+				// if so, start new line, else continue.
+				if (!newLineBegin) {
+					formattedWords.add(NEW_LINE_CHAR);
+					currentLineLength = indentation.length();
+				}
 
-                // insert email
-                formattedWords.add(WHITE_SPACE_CHAR + WHITE_SPACE_CHAR + cword + NEW_LINE_CHAR);
+				formattedWords.add(TAB_SPACE_CHAR + cword);
+				currentLineLength += cword.length() + 1;
 
-                // inserted header, so insert a empty line
-                formattedWords.add(NEW_LINE_CHAR);
-                newLineBegin = true;
-                currentLineLength = indentation.length();
-                continue;
-            }
+				// this should be path name
+				cword = candidateWords.nextToken();
+				cword = candidateWords.nextToken();
 
-            // means beginning of file name, so whole filename should be
-            // in one line.
-            if (isStar(cword)) {
-                // see if we are in middle of line and
-                // if so, start new line, else continue.
-                if (!newLineBegin) {
-                    formattedWords.add(NEW_LINE_CHAR);
-                    currentLineLength = indentation.length();
-                }
+				formattedWords.add(WHITE_SPACE_CHAR + cword);
+				currentLineLength += cword.length() + 1;
+				newLineBegin = false;
+				continue;
+			}
 
-                formattedWords.add(TAB_SPACE_CHAR + cword);
-                currentLineLength += cword.length() + 1;
+			if (cword.startsWith("(")) {
 
-                // this should be path name
-                cword = candidateWords.nextToken();
-                cword = candidateWords.nextToken();
+				if (formattedWords.size() > 0)
+					formattedWords.add(NEW_LINE_CHAR + TAB_SPACE_CHAR);
+				else
+					formattedWords.add(TAB_SPACE_CHAR);
 
-                formattedWords.add(WHITE_SPACE_CHAR + cword);
-                currentLineLength += cword.length() + 1;
-                newLineBegin = false;
-                continue;
-            }
+				currentLineLength = 1;
+				// add until closing bracket
 
-            if (cword.startsWith("(")) {
+				boolean skipMultiWhiteSpace = false;
 
-                if (formattedWords.size() > 0)
-                    formattedWords.add(NEW_LINE_CHAR + TAB_SPACE_CHAR);
-                else
-                    formattedWords.add(TAB_SPACE_CHAR);
+				while (!cword.endsWith("):")) {
 
-                currentLineLength = 1;
-                // add until closing bracket
+					if (cword.equals(WHITE_SPACE_CHAR) && !skipMultiWhiteSpace) {
+						formattedWords.add(cword);
+						currentLineLength += cword.length();
+						skipMultiWhiteSpace = true;
+					}
 
-                boolean skipMultiWhiteSpace = false;
+					if (!cword.equals(WHITE_SPACE_CHAR)
+							&& !cword.equals(NEW_LINE_CHAR)
+							&& !cword.equals(TAB_SPACE_CHAR)) {
+						formattedWords.add(cword);
+						currentLineLength += cword.length();
+						skipMultiWhiteSpace = false;
+					}
 
-                while (!cword.endsWith("):")) {
+					cword = candidateWords.nextToken();
+				}
+				formattedWords.add(cword);
+				currentLineLength += cword.length();
+				newLineBegin = false;
 
-                    if (cword.equals(WHITE_SPACE_CHAR) && !skipMultiWhiteSpace) {
-                        formattedWords.add(cword);
-                        currentLineLength += cword.length();
-                        skipMultiWhiteSpace = true;
-                    }
+				continue;
+			}
 
-                    if (!cword.equals(WHITE_SPACE_CHAR)
-                            && !cword.equals(NEW_LINE_CHAR)
-                            && !cword.equals(TAB_SPACE_CHAR)) {
-                        formattedWords.add(cword);
-                        currentLineLength += cword.length();
-                        skipMultiWhiteSpace = false;
-                    }
+			if (currentLineLength + cword.length() > 80) {
+				formattedWords.add(NEW_LINE_CHAR + TAB_SPACE_CHAR + cword);
+				currentLineLength = indentation.length() + cword.length();
+				newLineBegin = false;
+			} else {
+				if (newLineBegin) {
+					formattedWords.add(TAB_SPACE_CHAR);
+					newLineBegin = false;
+				} else {
+					formattedWords.add(WHITE_SPACE_CHAR);
+				}
+				formattedWords.add(cword);
+				currentLineLength += cword.length() + 1;
 
-                    cword = candidateWords.nextToken();
-                }
-                formattedWords.add(cword);
-                currentLineLength += cword.length();
-                newLineBegin = false;
+			}
+		}
 
-                continue;
-            }
+		String finalContent = "";
 
-            if (currentLineLength + cword.length() > 80) {
-                formattedWords.add(NEW_LINE_CHAR + TAB_SPACE_CHAR + cword);
-                currentLineLength = indentation.length() + cword.length();
-                newLineBegin = false;
-            } else {
-                if (newLineBegin) {
-                    formattedWords.add(TAB_SPACE_CHAR);
-                    newLineBegin = false;
-                } else {
-                    formattedWords.add(WHITE_SPACE_CHAR);
-                }
-                formattedWords.add(cword);
-                currentLineLength += cword.length() + 1;
+		for (String formattedWord: formattedWords) {
+			finalContent +=formattedWord;
+		}
 
-            }
-        }
+		return firstLine + finalContent;
+	}
 
-        String finalContent = "";
+	private boolean isDate(String inputStr) {
 
-        for (String formattedWord: formattedWords) {
-            finalContent +=formattedWord;
-        }
+		// Set up patterns for looking for the next date in the changelog
+		SimpleDateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
 
-        return firstLine + finalContent;
-    }
+		// Try to find next Date bounded changelog entry by parsing date
+		// patterns
+		// First start with an ISO date
+		try {
+			Date ad = isoDate.parse(inputStr);
+			if (ad != null)
+				return true;
+		} catch (ParseException e) {
+			// We don't really care on exception; it just means it could not
+			// parse a date on that line
+		}
+		return false;
+	}
+	
+	private boolean isEmail(String inputStr) {
+		return inputStr.startsWith("<") && inputStr.endsWith(">");
+	}
 
-    private boolean isDate(String inputStr) {
+	private boolean isStar(String inputStr) {
+		return inputStr.equals("*");
+	}
 
-        // Set up patterns for looking for the next date in the changelog
-        SimpleDateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
+	public void formatterStarts(String initialIndentation) {
 
-        // Try to find next Date bounded changelog entry by parsing date
-        // patterns
-        // First start with an ISO date
-        try {
-            Date ad = isoDate.parse(inputStr);
-            if (ad != null)
-                return true;
-        } catch (ParseException e) {
-            // We don't really care on exception; it just means it could not
-            // parse a date on that line
-        }
-        return false;
-    }
+	}
 
-    private boolean isEmail(String inputStr) {
-        return inputStr.startsWith("<") && inputStr.endsWith(">");
-    }
+	public void formatterStops() {
 
-    private boolean isStar(String inputStr) {
-        return inputStr.equals("*");
-    }
-
-    @Override
-    public void formatterStarts(String initialIndentation) {
-
-    }
-
-    @Override
-    public void formatterStops() {
-
-    }
+	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,7 +18,9 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
@@ -51,28 +53,30 @@ public class TmfEditorLinkHelper implements ILinkHelper {
                     return StructuredSelection.EMPTY;
                 }
 
-                final TmfProjectElement project = TmfProjectRegistry.getProject(file.getProject(), true);
+                final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
+                ncp.getChildren(file.getProject()); // force the model to be populated
+                final TmfProjectElement project = TmfProjectRegistry.getProject(file.getProject());
 
                 // Check for experiments, traces which are folders or traces which are files
                 if (traceTypeId.equals(TmfExperiment.class.getCanonicalName())) {
                     // Case 1: Experiment
-                    for (final TmfExperimentElement experimentElement : project.getExperimentsFolder().getExperiments()) {
-                        if (experimentElement.getResource().equals(file.getParent())) {
-                            return new StructuredSelection(experimentElement);
+                    for (final ITmfProjectModelElement projectElement : project.getExperimentsFolder().getChildren()) {
+                        if (projectElement.getName().equals(file.getParent().getName())) {
+                            return new StructuredSelection(projectElement);
                         }
                     }
                 } else if (traceTypeId.equals(TmfTrace.class.getCanonicalName())) {
                     // Case 2: Trace that is a folder
-                    for (final TmfTraceElement traceElement : project.getTracesFolder().getTraces()) {
-                        if (traceElement.getResource().equals(file.getParent())) {
-                            return new StructuredSelection(traceElement);
+                    for (final ITmfProjectModelElement projectElement : project.getTracesFolder().getChildren()) {
+                        if (projectElement.getName().equals(file.getParent().getName())) {
+                            return new StructuredSelection(projectElement);
                         }
                     }
                 } else {
                     // Case 3: Trace that is a file
-                    for (final TmfTraceElement traceElement : project.getTracesFolder().getTraces()) {
-                        if (traceElement.getResource().equals(file)) {
-                            return new StructuredSelection(traceElement);
+                    for (final ITmfProjectModelElement projectElement : project.getTracesFolder().getChildren()) {
+                        if (projectElement.getResource().equals(file)) {
+                            return new StructuredSelection(projectElement);
                         }
                     }
                 }

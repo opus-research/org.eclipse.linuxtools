@@ -9,12 +9,10 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Francois Chouinard - Moved from LTTng to TMF
- *   Xavier Raynaud - Support multi-trace coloring
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.distribution.model.IBaseDistributionModel;
 
 /**
@@ -29,11 +27,8 @@ public interface IHistogramDataModel extends IBaseDistributionModel {
      *
      * @param eventCount the event to count
      * @param timestamp the timestamp of the event to count
-     * @param trace the trace corresponding to given events
-     * @since 3.0
      */
-    void countEvent(long eventCount, long timestamp, ITmfTrace trace);
-
+    void countEvent(long eventCount, long timestamp);
     /**
      * Scale the model data to the width, height and bar width requested.
      *

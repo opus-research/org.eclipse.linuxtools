@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2013 Alexander Kurtakov and others.
+ * Copyright (c) 2008 Alexander Kurtakov.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,18 +16,22 @@ package org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions;
  *
  */
 public class HardcodedPackagerTag extends ARemoveLineResolution {
-    /**
-     * Rpmlint warning id.
-     */
-    public static final String ID = "hardcoded-packager-tag"; //$NON-NLS-1$
+	/**
+	 * Rpmlint warning id.
+	 */
+	public static final String ID = "hardcoded-packager-tag"; //$NON-NLS-1$
 
-    @Override
-    public String getDescription() {
-        return Messages.HardcodedPackagerTag_0;
-    }
+	/**
+	 * @see org.eclipse.ui.IMarkerResolution2#getDescription()
+	 */
+	public String getDescription() {
+		return Messages.HardcodedPackagerTag_0;
+	}
 
-    @Override
-    public String getLabel() {
-        return ID;
-    }
+	/**
+	 * @see org.eclipse.ui.IMarkerResolution#getLabel()
+	 */
+	public String getLabel() {
+		return ID;
+	}
 }

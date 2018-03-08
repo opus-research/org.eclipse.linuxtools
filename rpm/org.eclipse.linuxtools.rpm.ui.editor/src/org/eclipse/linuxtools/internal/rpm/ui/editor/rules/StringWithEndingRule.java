@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2007, 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,86 +18,92 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.detectors.IStrictWordDetector;
 
 public class StringWithEndingRule implements IRule {
+	/**
+	 * The default token to be returned on success and if nothing else has been
+	 * specified.
+	 */
+	protected IToken fDefaultToken;
 
-    private IToken token;
+	protected IToken token;
 
-    private IStrictWordDetector fDetector;
+	protected IStrictWordDetector fDetector;
 
-    /** The column constraint */
-    private int fColumn = UNDEFINED;
+	/** The column constraint */
+	protected int fColumn = UNDEFINED;
 
-    /** Internal setting for the un-initialized column constraint */
-    private static final int UNDEFINED = -1;
+	/** Internal setting for the un-initialized column constraint */
+	protected static final int UNDEFINED = -1;
 
-    /** Buffer used for pattern detection */
-    private StringBuilder fBuffer = new StringBuilder();
+	/** Buffer used for pattern detection */
+	private StringBuilder fBuffer = new StringBuilder();
 
-    private String fStartingSequence;
+	private String fStartingSequence;
 
-    private boolean fMandatoryEndSequence;
+	private boolean fMandatoryEndSequence;
 
-    public StringWithEndingRule(String startingSequence,
-            IStrictWordDetector trailingCharDetector, IToken inToken,
-            boolean endSequenceRequired) {
-        super();
-        token = inToken;
-        fDetector = trailingCharDetector;
-        fStartingSequence = startingSequence;
-        fMandatoryEndSequence = endSequenceRequired;
-    }
+	public StringWithEndingRule(String startingSequence,
+			IStrictWordDetector trailingCharDetector, IToken inToken,
+			boolean endSequenceRequired) {
+		super();
+		token = inToken;
+		fDetector = trailingCharDetector;
+		fStartingSequence = startingSequence;
+		fMandatoryEndSequence = endSequenceRequired;
+		fDefaultToken = Token.UNDEFINED;
 
-    @Override
-    public IToken evaluate(ICharacterScanner scanner) {
-        int c = scanner.read();
-        fBuffer.setLength(0);
+	}
 
-        for (int i = 0; i < fStartingSequence.length(); i++) {
-            fBuffer.append((char) c);
-            if (fStartingSequence.charAt(i) != c) {
-                unreadBuffer(scanner);
-                return Token.UNDEFINED;
-            }
-            c = scanner.read();
-        }
+	public IToken evaluate(ICharacterScanner scanner) {
+		int c = scanner.read();
+		fBuffer.setLength(0);
 
-        if (fDetector.isWordStart((char) c)) {
-            if (fColumn == UNDEFINED || (fColumn == scanner.getColumn() - 1)) {
+		for (int i = 0; i < fStartingSequence.length(); i++) {
+			fBuffer.append((char) c);
+			if (fStartingSequence.charAt(i) != c) {
+				unreadBuffer(scanner);
+				return Token.UNDEFINED;
+			}
+			c = scanner.read();
+		}
 
-                do {
-                    fBuffer.append((char) c);
-                    c = scanner.read();
-                } while (c != ICharacterScanner.EOF
-                        && fDetector.isWordPart((char) c));
+		if (fDetector.isWordStart((char) c)) {
+			if (fColumn == UNDEFINED || (fColumn == scanner.getColumn() - 1)) {
 
-                if (c != ICharacterScanner.EOF && !fDetector.isEndingCharacter((char) c)) {
-                    unreadBuffer(scanner);
-                    return Token.UNDEFINED;
-                }
+				do {
+					fBuffer.append((char) c);
+					c = scanner.read();
+				} while (c != ICharacterScanner.EOF
+						&& fDetector.isWordPart((char) c));
 
-                return token;
-            }
+				if (c != ICharacterScanner.EOF && !fDetector.isEndingCharacter((char) c)) {
+					unreadBuffer(scanner);
+					return Token.UNDEFINED;
+				}
 
-        }
+				return token;
+			}
 
-        if (!fMandatoryEndSequence && fDetector.isEndingCharacter((char) c)) {
-            return token;
-        }
-        scanner.unread();
+		}
 
-        unreadBuffer(scanner);
-        return Token.UNDEFINED;
-    }
+		if (!fMandatoryEndSequence && fDetector.isEndingCharacter((char) c)) {
+			return token;
+		}
+		scanner.unread();
 
-    /**
-     * Returns the characters in the buffer to the scanner.
-     *
-     * @param scanner
-     *            the scanner to be used
-     */
-    protected void unreadBuffer(ICharacterScanner scanner) {
-        for (int i = fBuffer.length() - 1; i >= 0; i--) {
-            scanner.unread();
-        }
-    }
+		unreadBuffer(scanner);
+		return Token.UNDEFINED;
+	}
+
+	/**
+	 * Returns the characters in the buffer to the scanner.
+	 *
+	 * @param scanner
+	 *            the scanner to be used
+	 */
+	protected void unreadBuffer(ICharacterScanner scanner) {
+		for (int i = fBuffer.length() - 1; i >= 0; i--) {
+			scanner.unread();
+		}
+	}
 
 }

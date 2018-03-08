@@ -101,7 +101,7 @@ public class Aggregator {
                         break;
                     errorMessage += s + "\n"; //$NON-NLS-1$
                 } while (true);
-            } catch (IOException e) {
+            } catch (IOException _) {
                 // do nothing
             }
         }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,14 +8,9 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Removed arrays from the API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
-
-import java.util.Collection;
-
-import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * The generic event payload in TMF. Each field can be either a terminal or
@@ -36,7 +31,7 @@ public interface ITmfEventField {
     /**
      * The root field id (the main container)
      */
-    public static final @NonNull String ROOT_FIELD_ID = ":root:"; //$NON-NLS-1$
+    public static final String ROOT_FIELD_ID = ":root:"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Getters
@@ -59,22 +54,20 @@ public interface ITmfEventField {
     String getFormattedValue();
 
     /**
-     * Return the subfield names. The iteration order is the same as
-     * {@link #getFields()}. The returned Collection is immutable.
-     *
-     * @return The subfield names (empty Collection if none)
-     * @since 3.0
+     * @return the list of subfield names (empty array if none)
      */
-    Collection<String> getFieldNames();
+    String[] getFieldNames();
 
     /**
-     * Return the subfield. The iteration order is the same as
-     * {@link #getFieldNames()}. The returned Collection is immutable.
-     *
-     * @return The subfields (empty Collection if none)
-     * @since 3.0
+     * @param index The index of the field
+     * @return the nth field name (null if absent or inexistent)
      */
-    Collection<? extends ITmfEventField> getFields();
+    String getFieldName(int index);
+
+    /**
+     * @return the list of subfields (empty array if none)
+     */
+    ITmfEventField[] getFields();
 
     /**
      * @param name The name of the field
@@ -83,14 +76,9 @@ public interface ITmfEventField {
     ITmfEventField getField(String name);
 
     /**
-     * Gets the a sub-field of this field, which may be multiple levels down.
-     *
-     * @param path
-     *            Array of field names to recursively go through
-     * @return The field at the end, or null if a field in the path cannot be
-     *         found
-     * @since 3.0
+     * @param index The index of the field to return
+     * @return a specific subfield by index (null if absent or inexistent)
      */
-    ITmfEventField getSubField(String... path);
+    ITmfEventField getField(int index);
 
 }

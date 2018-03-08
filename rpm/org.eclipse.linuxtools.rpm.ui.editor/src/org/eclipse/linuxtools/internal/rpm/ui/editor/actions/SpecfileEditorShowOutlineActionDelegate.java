@@ -20,15 +20,14 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorShowOutlineActionDelegate extends AbstractHandler {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        SpecfileEditor editor = (SpecfileEditor) HandlerUtil
-                .getActiveEditor(event);
-        SpecfileQuickOutlineDialog quickOutlinePopupDialog = new SpecfileQuickOutlineDialog(
-                editor.getSite().getShell(), SWT.NONE, editor);
-        quickOutlinePopupDialog.setSize(400, 200);
-        quickOutlinePopupDialog.setVisible(true);
-        return null;
-    }
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		SpecfileEditor editor = (SpecfileEditor) HandlerUtil
+				.getActiveEditor(event);
+		SpecfileQuickOutlineDialog quickOutlinePopupDialog = new SpecfileQuickOutlineDialog(
+				editor.getSite().getShell(), SWT.NONE, editor);
+		quickOutlinePopupDialog.setSize(400, 200);
+		quickOutlinePopupDialog.setVisible(true);
+		return null;
+	}
 
 }

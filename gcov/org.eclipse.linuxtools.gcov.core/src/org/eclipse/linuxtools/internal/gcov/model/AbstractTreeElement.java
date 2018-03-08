@@ -14,78 +14,75 @@ import java.util.LinkedList;
 
 public abstract class AbstractTreeElement implements TreeElement{
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -4911602250295116203L;
-    private final TreeElement parent;
-    private final LinkedList<TreeElement> children = new LinkedList<>();
-    private final String name;
-    private final int totalLines;
-    private final int executedLines;
-    private final int instrumentedLines;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4911602250295116203L;
+	private final TreeElement parent;
+	private final LinkedList<TreeElement> children = new LinkedList<TreeElement>();
+	private final String name;
+	private final int totalLines;
+	private final int executedLines;
+	private final int instrumentedLines;
+	
+	public AbstractTreeElement(TreeElement parent, String name, int totalLines,
+			int executedLines, int instrumentedLines) {
+		this.parent = parent;
+		this.name = name;
+		this.totalLines = totalLines;
+		this.executedLines = executedLines;
+		this.instrumentedLines = instrumentedLines;
+	}
+	
+	@Override
+	public TreeElement getParent() {
+		return parent;
+	}
+	
+	@Override
+	public boolean hasChildren() {
+		return (children.size()>0);
+	}
 
-    public AbstractTreeElement(TreeElement parent, String name, int totalLines,
-            int executedLines, int instrumentedLines) {
-        this.parent = parent;
-        this.name = name;
-        this.totalLines = totalLines;
-        this.executedLines = executedLines;
-        this.instrumentedLines = instrumentedLines;
-    }
+	@Override
+	public LinkedList<? extends TreeElement> getChildren() {
+		return children;
+	}
 
-    @Override
-    public TreeElement getParent() {
-        return parent;
-    }
+	@Override
+	public String getName() {
+		return name;
+	}
+	
+	@Override
+	public TreeElement getRoot() {
+		if (parent == null) return this;
+		return parent.getRoot();
+	}
 
-    @Override
-    public boolean hasChildren() {
-        return (children.size()>0);
-    }
+	@Override
+	public int getExecutedLines() {
+		return executedLines;
+	}
+	
+	@Override
+	public int getInstrumentedLines() {
+		return instrumentedLines;
+	}
 
-    @Override
-    public LinkedList<? extends TreeElement> getChildren() {
-        return children;
-    }
+	@Override
+	public float getCoveragePercentage() {
+		 if (instrumentedLines !=0 )
+			return (100.f*executedLines)/(instrumentedLines);
+		else return 0;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public TreeElement getRoot() {
-        if (parent == null) {
-            return this;
-        }
-        return parent.getRoot();
-    }
-
-    @Override
-    public int getExecutedLines() {
-        return executedLines;
-    }
-
-    @Override
-    public int getInstrumentedLines() {
-        return instrumentedLines;
-    }
-
-    @Override
-    public float getCoveragePercentage() {
-         if (instrumentedLines !=0 ) {
-            return (100.f*executedLines)/(instrumentedLines);
-         }
-        else return 0;
-    }
-
-    public void addChild(TreeElement child){
-        children.add(child);
-    }
-
-    @Override
-    public int getTotalLines() {
-        return totalLines;
-    }
+	public void addChild(TreeElement child){
+		children.add(child);
+	}
+	
+	@Override
+	public int getTotalLines() {
+		return totalLines;
+	}
 }

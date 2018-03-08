@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,8 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *******************************************************************************/
+ *   Alexandre Montplaisir - Port to JUnit4
+ ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.statesystem;
 
@@ -16,11 +17,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for org.eclipse.linuxtools.tmf.core.tests.statesystem
+ * Test suite for org.eclipse.linuxtools.tmf.core.statesystem
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    StateSystemAnalysisModuleTest.class
+    StateSystemPushPopTest.class
 })
 public class AllTests {
 
