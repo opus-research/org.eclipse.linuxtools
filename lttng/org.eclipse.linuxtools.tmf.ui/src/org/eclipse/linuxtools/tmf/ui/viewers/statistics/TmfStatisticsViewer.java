@@ -204,6 +204,11 @@ public class TmfStatisticsViewer extends TmfViewer {
         initInput();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.core.component.TmfComponent#dispose()
+     */
     @Override
     public void dispose() {
         super.dispose();
