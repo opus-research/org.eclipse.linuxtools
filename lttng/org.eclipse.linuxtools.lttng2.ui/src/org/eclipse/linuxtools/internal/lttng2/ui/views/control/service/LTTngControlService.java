@@ -226,12 +226,30 @@ public class LTTngControlService implements ILttngControlService {
     @Override
     public List<IBaseEventInfo> getKernelProvider(IProgressMonitor monitor) throws ExecutionException {
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_KERNEL);
-        ICommandResult result = executeCommand(command.toString(), monitor);
+        ICommandResult result = executeCommand(command.toString(), monitor, false);
+
+        List<IBaseEventInfo> events = new ArrayList<IBaseEventInfo>();
+
+        if (result.getOutput() != null) {
+            // Ignore the following 2 cases:
+            // Spawning a session daemon
+            // Error: Unable to list kernel events
+            // or:
+            // Error: Unable to list kernel events
+
+            if ((result.getOutput().length == 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[0]).matches()) ||
+               ((result.getOutput().length > 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[1]).matches()))) {
+                return events;
+            }
+        }
+
+        if (isError(result)) {
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
+        }
 
         // Kernel events:
         // -------------
         // sched_kthread_stop (type: tracepoint)
-        List<IBaseEventInfo> events = new ArrayList<IBaseEventInfo>();
         getProviderEventInfo(result.getOutput(), 0, events);
         return events;
     }
@@ -811,7 +829,7 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * Formats the output string as single string.
      *
-     * @param output
+     * @param result
      *            - output array
      * @return - the formatted output
      */
@@ -879,26 +897,40 @@ public class LTTngControlService implements ILttngControlService {
 
                     } else if (LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE.matcher(subLine).matches()) {
                         String value = getAttributeValue(subLine);
-                        channelInfo.setOverwriteMode(!LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE_FALSE.equals(value));
+                        if (channelInfo != null) {
+                            channelInfo.setOverwriteMode(!LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE_FALSE.equals(value));
+                        }
                     } else if (LTTngControlServiceConstants.SUBBUFFER_SIZE_ATTRIBUTE.matcher(subLine).matches()) {
-                        channelInfo.setSubBufferSize(Long.valueOf(getAttributeValue(subLine)));
+                        if (channelInfo != null) {
+                            channelInfo.setSubBufferSize(Long.valueOf(getAttributeValue(subLine)));
+                        }
 
                     } else if (LTTngControlServiceConstants.NUM_SUBBUFFERS_ATTRIBUTE.matcher(subLine).matches()) {
-                        channelInfo.setNumberOfSubBuffers(Integer.valueOf(getAttributeValue(subLine)));
+                        if (channelInfo != null) {
+                            channelInfo.setNumberOfSubBuffers(Integer.valueOf(getAttributeValue(subLine)));
+                        }
 
                     } else if (LTTngControlServiceConstants.SWITCH_TIMER_ATTRIBUTE.matcher(subLine).matches()) {
-                        channelInfo.setSwitchTimer(Long.valueOf(getAttributeValue(subLine)));
+                        if (channelInfo != null) {
+                            channelInfo.setSwitchTimer(Long.valueOf(getAttributeValue(subLine)));
+                        }
 
                     } else if (LTTngControlServiceConstants.READ_TIMER_ATTRIBUTE.matcher(subLine).matches()) {
-                        channelInfo.setReadTimer(Long.valueOf(getAttributeValue(subLine)));
+                        if (channelInfo != null) {
+                            channelInfo.setReadTimer(Long.valueOf(getAttributeValue(subLine)));
+                        }
 
                     } else if (LTTngControlServiceConstants.OUTPUT_ATTRIBUTE.matcher(subLine).matches()) {
-                        channelInfo.setOutputType(getAttributeValue(subLine));
+                        if (channelInfo != null) {
+                            channelInfo.setOutputType(getAttributeValue(subLine));
+                        }
 
                     } else if (LTTngControlServiceConstants.EVENT_SECTION_PATTERN.matcher(subLine).matches()) {
                         List<IEventInfo> events = new ArrayList<IEventInfo>();
                         index = parseEvents(output, index, events);
-                        channelInfo.setEvents(events);
+                        if (channelInfo != null) {
+                            channelInfo.setEvents(events);
+                        }
                         // we want to stay at the current index to be able to
                         // exit the domain
                         continue;
@@ -1171,7 +1203,7 @@ public class LTTngControlService implements ILttngControlService {
             ControlCommandLogger.log(formatOutput(result));
         }
 
-        if (isError(result)) {
+        if (checkForError && isError(result)) {
             throw new ExecutionException(Messages.TraceControl_CommandError
                     + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
         }

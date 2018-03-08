@@ -128,8 +128,23 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
 	 * @return A <code>String []</code> of all IDs of the specific type.
 	 * @since 1.1
+	 * @deprecated
 	 */
+	@Deprecated
 	public static String[] getTabGroupIdsForType(String type) {
+		return getProviderIdsForType(type);
+	}
+
+	/**
+	 * Get all IDs of the specific type. This looks through extensions of
+	 * the extension point <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
+	 * that have a specific type.
+	 *
+	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
+	 * @return A <code>String []</code> of all IDs of the specific type.
+	 * @since 1.2
+	 */
+	public static String[] getProviderIdsForType(String type) {
 		ArrayList<String> ret = new ArrayList<String> ();
 		IExtensionPoint extPoint = Platform.getExtensionRegistry()
 				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,

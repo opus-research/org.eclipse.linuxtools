@@ -79,7 +79,7 @@ public class ResourcesView extends TmfView {
     /**
      * Redraw state enum
      */
-    private enum State { IDLE, BUSY, PENDING };
+    private enum State { IDLE, BUSY, PENDING }
 
     // ------------------------------------------------------------------------
     // Fields
@@ -423,7 +423,7 @@ public class ResourcesView extends TmfView {
     @TmfSignalHandler
     public void stateSystemBuildCompleted (final TmfStateSystemBuildCompleted signal) {
         final TmfExperiment<?> selectedExperiment = fSelectedExperiment;
-        if (selectedExperiment == null) {
+        if (selectedExperiment == null || selectedExperiment.getTraces() == null) {
             return;
         }
         for (ITmfTrace<?> trace : selectedExperiment.getTraces()) {

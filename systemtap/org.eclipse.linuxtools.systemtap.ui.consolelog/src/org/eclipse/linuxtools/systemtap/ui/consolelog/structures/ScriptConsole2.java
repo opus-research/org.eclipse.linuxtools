@@ -35,6 +35,7 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
  * running.
  * @author Ryan Morse
  */
+@Deprecated
 public class ScriptConsole2 extends IOConsole {
 	/**
 	 * This method is used to get a reference to a <code>ScriptConsole</code>.  If there
@@ -157,8 +158,8 @@ public class ScriptConsole2 extends IOConsole {
 		{
 		createConsoleDaemon();
 		createErrorDaemon(errorParser);
-		subscription.addErrorStreamListener(errorDaemon);
-		subscription.addInputStreamListener(consoleDaemon);
+		subscription.addErrorStreamListener(null);
+		subscription.addInputStreamListener(null);
 		
 		if (!subscription.isRunning())
 		{
@@ -179,8 +180,8 @@ public class ScriptConsole2 extends IOConsole {
 		if(subscription.init())
 		{
 		createConsoleDaemon();
-		subscription.addInputStreamListener(consoleDaemon);
-		subscription.addErrorStreamListener(consoleDaemon);
+		subscription.addInputStreamListener(null);
+		subscription.addErrorStreamListener(null);
 		
 		if (!subscription.isRunning())
 		{
@@ -254,17 +255,12 @@ public class ScriptConsole2 extends IOConsole {
 	/**
 	 * Disposes of all internal references in the class. No method should be called after this.
 	 */
+	@Override
 	public void dispose() {
 		if(!isDisposed()) {
 			if(null != subscription)
 				subscription.dispose();
 			subscription = null;
-			if(null != errorDaemon)
-				errorDaemon.dispose();
-			errorDaemon = null;
-			if(null != consoleDaemon)
-				consoleDaemon.dispose();
-			consoleDaemon = null;
 		}
 	}
 
@@ -272,6 +268,7 @@ public class ScriptConsole2 extends IOConsole {
 	 * Changes the name displayed on this console.
 	 * @param name The new name to display on the console.
 	 */
+	@Override
 	public void setName(String name) {
 		try {
 			super.setName(name);
@@ -282,7 +279,5 @@ public class ScriptConsole2 extends IOConsole {
 	
 	private LoggedCommand cmd;
 	
-	private ErrorStreamDaemon errorDaemon;
-	private ConsoleStreamDaemon consoleDaemon;
 	private Subscription subscription;
 }

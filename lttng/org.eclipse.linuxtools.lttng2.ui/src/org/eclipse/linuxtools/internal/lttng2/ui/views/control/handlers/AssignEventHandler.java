@@ -93,8 +93,8 @@ public class AssignEventHandler extends BaseControlViewHandler {
                         List<BaseEventComponent> events = param.getEvents();
                         // Create list of event names
                         for (Iterator<BaseEventComponent> iterator = events.iterator(); iterator.hasNext();) {
-                            BaseEventComponent event = iterator.next();
-                            eventNames.add(event.getName());
+                            BaseEventComponent baseEvent = iterator.next();
+                            eventNames.add(baseEvent.getName());
                         }
 
                         TraceChannelComponent channel = dialog.getChannel();
@@ -184,6 +184,12 @@ public class AssignEventHandler extends BaseControlViewHandler {
         }
 
         boolean isEnabled = ((!events.isEmpty()) && (sessions != null) && (sessions.length > 0));
+
+        // To avoid compiler warnings check for null even if isKernel is always not null when used below
+        if (isKernel == null) {
+            return false;
+        }
+
         fLock.lock();
         try {
             fParam = null;

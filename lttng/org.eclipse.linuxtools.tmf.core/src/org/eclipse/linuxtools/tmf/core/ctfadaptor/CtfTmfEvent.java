@@ -17,8 +17,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
@@ -28,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 /**
  * A wrapper class around CTF's Event Definition/Declaration that maps all
  * types of Declaration to native Java types.
- * 
+ *
  * @version 1.0
  * @author Alexandre Montplaisir
  */
@@ -41,6 +43,8 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
     private static final String NO_STREAM = "No stream"; //$NON-NLS-1$
     private static final String EMPTY_CTF_EVENT_NAME = "Empty CTF event"; //$NON-NLS-1$
 
+    /** Prefix for Context information stored as CtfTmfEventfield */
+    private static final String CONTEXT_FIELD_PREFIX = "context."; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -64,9 +68,11 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
      * the StreamInputReader).
      *
      * @param eventDef
-
-     * @param fileName String
-     * @param originTrace CtfTmfTrace
+     *            CTF EventDefinition object corresponding to this trace event
+     * @param fileName
+     *            The path to the trace file
+     * @param originTrace
+     *            The trace from which this event originates
      */
     public CtfTmfEvent(EventDefinition eventDef, String fileName,
             CtfTmfTrace originTrace) {
@@ -100,15 +106,15 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
      * mess, and put them into something ITmfEventField can cope with.
      *
      * @param eventDef
-
-     * @return CtfTmfEventField[]
+     *            CTF EventDefinition to read
+     * @return CtfTmfEventField[] The array of fields that were read
      */
-    public static CtfTmfEventField[] parseFields(EventDefinition eventDef) {
+    private CtfTmfEventField[] parseFields(EventDefinition eventDef) {
         List<CtfTmfEventField> fields = new ArrayList<CtfTmfEventField>();
 
         StructDefinition structFields = eventDef.getFields();
         HashMap<String, Definition> definitions = structFields.getDefinitions();
-        String curFieldName;
+        String curFieldName = null;
         Definition curFieldDef;
         CtfTmfEventField curField;
         Iterator<Entry<String, Definition>> it = definitions.entrySet().iterator();
@@ -120,6 +126,44 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
             fields.add(curField);
         }
 
+        /* Add context information as CtfTmfEventField */
+        long ip = -1;
+        StructDefinition structContext = eventDef.getContext();
+        if (structContext != null) {
+            definitions = structContext.getDefinitions();
+            String curContextName;
+            Definition curContextDef;
+            CtfTmfEventField curContext;
+            it = definitions.entrySet().iterator();
+            while(it.hasNext()) {
+                Entry<String, Definition> entry = it.next();
+                /* This is to get the instruction pointer if available */
+                if (entry.getKey().equals("_ip") && //$NON-NLS-1$
+                        (entry.getValue() instanceof IntegerDefinition)) {
+                    ip = ((IntegerDefinition) entry.getValue()).getValue();
+                }
+                /* Prefix field name to */
+                curContextName = CONTEXT_FIELD_PREFIX + entry.getKey();
+                curContextDef = entry.getValue();
+                curContext = CtfTmfEventField.parseField(curContextDef, curContextName);
+                fields.add(curContext);
+            }
+        }
+        /* Add callsite */
+        final String name = eventDef.getDeclaration().getName();
+        List<CTFCallsite> eventList = fTrace.getCTFTrace().getCallsiteCandidates(name);
+        if (eventList != null) {
+            final String callsite = "callsite"; //$NON-NLS-1$
+            if (eventList.size() == 1 || ip == -1) {
+                CTFCallsite cs = eventList.get(0);
+                fields.add(new CTFStringField(cs.toString(), callsite));
+            } else {
+                fields.add(new CTFStringField(
+                        fTrace.getCTFTrace().getCallsite(name, ip).toString(),
+                        callsite));
+            }
+        }
+
         return fields.toArray(new CtfTmfEventField[fields.size()]);
     }
 
@@ -127,6 +171,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
      * Copy constructor
      *
      * @param other
+     *            CtfTmfEvent to copy
      */
     public CtfTmfEvent(CtfTmfEvent other) {
         this.fTrace = other.getTrace();

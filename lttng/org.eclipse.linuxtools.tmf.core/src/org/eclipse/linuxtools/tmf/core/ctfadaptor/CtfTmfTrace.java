@@ -11,9 +11,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.util.ArrayList;
-import java.util.ListIterator;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -45,7 +42,6 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
      * Default cache size for CTF traces
      */
     protected static final int DEFAULT_CACHE_SIZE = 50000;
-    private static final int ITER_POOL_SIZE = 128;
 
     //-------------------------------------------
     //        Fields
@@ -57,25 +53,22 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     /* Reference to the CTF Trace */
     private CTFTrace fTrace;
 
-    /*
-     * The iterator pool. This is a necessary change since larger traces will
-     * need many contexts and each context must have to a file pointer. Since
-     * the OS supports only so many handles on a given file, but the UI must
-     * still be responsive, parallel seeks (up to ITER_POOL_SIZE requests)
-     * can be made with a fast response time.
-     * */
-    private ArrayList<CtfIterator> fIterators;
-    private ListIterator<CtfIterator> nextIter;
+
 
     //-------------------------------------------
     //        TmfTrace Overrides
     //-------------------------------------------
     /**
      * Method initTrace.
-     * @param resource IResource
-     * @param path String
-     * @param eventType Class<CtfTmfEvent>
+     *
+     * @param resource
+     *            The resource associated with this trace
+     * @param path
+     *            The path to the trace file
+     * @param eventType
+     *            The type of events that will be read from this trace
      * @throws TmfTraceException
+     *             If something when wrong while reading the trace
      */
     @Override
     public void initTrace(final IResource resource, final String path, final Class<CtfTmfEvent> eventType)
@@ -92,19 +85,18 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
 
         try {
             this.fTrace = new CTFTrace(path);
-            fIterators = new ArrayList<CtfIterator>(ITER_POOL_SIZE);
-            for(int i = 0 ; i < ITER_POOL_SIZE; i++){
-                fIterators.add(new CtfIterator(this, 0, 0));
-            }
-            nextIter = fIterators.listIterator(0);
+            CtfIteratorManager.addTrace(this);
+            CtfTmfLightweightContext ctx;
             /* Set the start and (current) end times for this trace */
-            final CtfIterator iterator = getIterator();
-            if(iterator.getLocation().equals(CtfIterator.NULL_LOCATION)) {
+            ctx = new CtfTmfLightweightContext(this);
+            ctx.setLocation(new CtfLocation(0L));
+            if((ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) || (ctx.getCurrentEvent() == null)) {
                 /* Handle the case where the trace is empty */
                 this.setStartTime(TmfTimestamp.BIG_BANG);
             } else {
-                this.setStartTime(iterator.getCurrentEvent().getTimestamp());
-                this.setEndTime(iterator.getCurrentEvent().getTimestamp());
+                final ITmfTimestamp curTime = ctx.getCurrentEvent().getTimestamp();
+                this.setStartTime(curTime);
+                this.setEndTime(curTime);
             }
 
         } catch (final CTFReaderException e) {
@@ -127,6 +119,15 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
                 throw new TmfTraceException(e.getMessage(), e);
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#dispose()
+     */
+    @Override
+    public synchronized void dispose() {
+        CtfIteratorManager.removeTrace(this);
+        super.dispose();
     }
 
     /**
@@ -162,25 +163,19 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     @Override
     public double getLocationRatio(ITmfLocation<?> location) {
         final CtfLocation curLocation = (CtfLocation) location;
-        CtfIterator iterator = getIterator();
-        CtfTmfLightweightContext ctx = new CtfTmfLightweightContext(fIterators, nextIter);
-        ctx.setLocation(curLocation);
-        ctx.seek(curLocation.getLocation());
-        long currentTime = ((Long)ctx.getLocation().getLocation());
-
-        return ((double) currentTime - iterator.getStartTime())
-                / (iterator.getEndTime() - iterator.getStartTime());
+        final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        context.setLocation(curLocation);
+        context.seek(curLocation.getLocation());
+        final long currentTime = ((Long)context.getLocation().getLocation());
+        final long startTime = getIterator(this, context).getStartTime();
+        final long endTime = getIterator(this, context).getEndTime();
+        return ((double) currentTime - startTime)
+                / (endTime - startTime);
     }
 
-    /**
-     * @return
-     */
-    private CtfIterator getIterator() {
-        if( !nextIter.hasNext()){
-            nextIter = fIterators.listIterator(0);
-        }
-        return nextIter.next();
-    }
+
+
+
 
     /* (non-Javadoc)
      * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#seekEvent(org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp)
@@ -188,7 +183,7 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     @Override
     public synchronized ITmfContext seekEvent(ITmfTimestamp timestamp) {
         if( timestamp instanceof CtfTmfTimestamp){
-            CtfTmfLightweightContext iter = new CtfTmfLightweightContext(fIterators, nextIter);
+            CtfTmfLightweightContext iter = new CtfTmfLightweightContext(this);
             iter.seek(timestamp.getValue());
             return iter;
         }
@@ -203,7 +198,7 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     @Override
     public ITmfContext seekEvent(final ITmfLocation<?> location) {
         CtfLocation currentLocation = (CtfLocation) location;
-        CtfTmfLightweightContext context = new CtfTmfLightweightContext(fIterators, nextIter);
+        CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         /*
          * The rank is set to 0 if the iterator seeks the beginning. If not, it
          * will be set to UNKNOWN_RANK, since CTF traces don't support seeking
@@ -227,8 +222,8 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
 
     @Override
     public ITmfContext seekEvent(double ratio) {
-        CtfTmfLightweightContext context = new CtfTmfLightweightContext(fIterators, nextIter);
-        context.seek((long) (this.getNbEvents() * ratio));
+        CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        context.seek(Math.round(this.getNbEvents() * ratio));
         context.setRank(ITmfContext.UNKNOWN_RANK);
         return context;
     }
@@ -262,8 +257,10 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     /**
      * Suppressing the warning, because the 'throws' will usually happen in
      * sub-classes.
+     *
      * @throws TmfTraceException
      */
+    @SuppressWarnings("unused")
     protected void buildStateSystem() throws TmfTraceException {
         /*
          * Nothing is done in the basic implementation, please specify
@@ -359,4 +356,11 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
         setCacheSize(DEFAULT_CACHE_SIZE);
     }
 
+    //-------------------------------------------
+    //          Helpers
+    //-------------------------------------------
+
+    private static CtfIterator getIterator(CtfTmfTrace trace,  CtfTmfLightweightContext context) {
+        return CtfIteratorManager.getIterator(trace, context);
+    }
 }

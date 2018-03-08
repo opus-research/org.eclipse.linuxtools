@@ -169,7 +169,6 @@ public class TraceSessionComponent extends TraceControlComponent {
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
-    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -191,6 +190,15 @@ public class TraceSessionComponent extends TraceControlComponent {
      */
     public TargetNodeComponent getTargetNode() {
         return ((TraceSessionGroup)getParent()).getTargetNode();
+    }
+
+    /**
+     * Returns whether the kernel provider is available or not
+     * @return <code>true</code> if kernel provide is available or <code>false</code>
+     */
+    public boolean hasKernelProvider() {
+        List<ITraceControlComponent> providerGroups = getTargetNode().getChildren(TraceProviderGroup.class);
+        return (!providerGroups.isEmpty() ? ((TraceProviderGroup) providerGroups.get(0)).hasKernelProvider() : false);
     }
 
     // ------------------------------------------------------------------------
