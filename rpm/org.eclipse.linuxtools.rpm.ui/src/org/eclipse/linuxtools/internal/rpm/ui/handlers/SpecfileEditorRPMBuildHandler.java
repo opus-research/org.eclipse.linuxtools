@@ -49,13 +49,11 @@ public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IResource resource = getResource(event);
 		final String eventBuildType = event.getParameter("buildType"); //$NON-NLS-1$
-		if (eventBuildType != null) {
-			final BuildType buildType = BuildType.valueOf(eventBuildType);
-			rpj = getRPMProject(resource);
-			Job job = new RPMExportOperation(rpj, buildType);
-			job.setUser(true);
-			job.schedule();
-		}
+		final BuildType buildType = BuildType.valueOf(eventBuildType); 
+		rpj = getRPMProject(resource);
+		Job job = new RPMExportOperation(rpj, buildType);
+		job.setUser(true);
+		job.schedule();
 		return null;
 	}
 
