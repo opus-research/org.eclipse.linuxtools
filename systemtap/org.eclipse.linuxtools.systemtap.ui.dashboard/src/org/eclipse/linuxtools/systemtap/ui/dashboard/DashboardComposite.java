@@ -73,6 +73,10 @@ public class DashboardComposite {
 	 */
 	public final Composite deadComposite;
 
+	public void layout() {	//TODO: Remove this.  It is a temporary solution to another bug
+		surface.layout(true, true);
+	}
+
 	/**
 	 * Default constructor for the DashboardComposite. Creates all of the internal composites, sets up
 	 * listeners.
