@@ -48,6 +48,11 @@ public interface ITmfEventField {
     public Object getValue();
 
     /**
+     * @return the value formatted as string
+     */
+    public String getFormattedValue();
+
+    /**
      * @return the list of subfield names (empty array if none)
      */
     public String[] getFieldNames();
