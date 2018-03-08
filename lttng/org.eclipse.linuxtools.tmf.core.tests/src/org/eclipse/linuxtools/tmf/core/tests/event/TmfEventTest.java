@@ -96,7 +96,7 @@ public class TmfEventTest {
         try {
             final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
             final File test = new File(FileLocator.toFileURL(location).toURI());
-            trace = new TmfTraceStub(test.toURI().getPath(), 500, false, null, null);
+            trace = new TmfTraceStub(test.toURI().getPath(), 500, false);
         } catch (final TmfTraceException e) {
             e.printStackTrace();
         } catch (final URISyntaxException e) {
