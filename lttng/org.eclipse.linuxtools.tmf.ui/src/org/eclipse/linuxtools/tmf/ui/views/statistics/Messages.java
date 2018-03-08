@@ -23,25 +23,13 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.views.statistics.messages"; //$NON-NLS-1$
     /**
-     * Level column name
-     */
-    public static String TmfStatisticsView_LevelColumn;
-    /**
-     * Level column tool tip.
-     */
-    public static String TmfStatisticsView_LevelColumnTip;
-    /**
-     * Number of events column name.
-     */
-    public static String TmfStatisticsView_NbEventsColumn;
-    /**
-     * Number of events column tool tip.
-     */
-    public static String TmfStatisticsView_NbEventsTip;
-    /**
      * String for unknown trace name.
      */
     public static String TmfStatisticsView_UnknownTraceName;
+    /**
+     * String for the global tab name
+     */
+    public static String TmfStatisticsView_GlobalTabName;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
