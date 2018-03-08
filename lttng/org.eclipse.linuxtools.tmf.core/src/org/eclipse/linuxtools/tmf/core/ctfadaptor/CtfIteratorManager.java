@@ -136,7 +136,7 @@ class CtfTraceManager {
                 /*
                  * if we're not full yet, just add an element.
                  */
-                retVal = fTrace.createIterator();
+                retVal = new CtfIterator(fTrace);
                 addElement(context, retVal);
 
             } else {
