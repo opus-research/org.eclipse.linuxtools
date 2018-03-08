@@ -46,9 +46,9 @@ class TransientState {
     private boolean isActive;
     private long latestTime;
 
-    private List<ITmfStateValue> ongoingStateInfo;
-    private List<Long> ongoingStateStartTimes;
-    private List<Byte> stateValueTypes;
+    private ArrayList<ITmfStateValue> ongoingStateInfo;
+    private final ArrayList<Long> ongoingStateStartTimes;
+    private final ArrayList<Byte> stateValueTypes;
 
     TransientState(IStateHistoryBackend backend) {
         this.backend = backend;
@@ -68,18 +68,16 @@ class TransientState {
         return latestTime;
     }
 
-    ITmfStateValue getOngoingStateValue(int index) throws AttributeNotFoundException {
+    ITmfStateValue getOngoingStateValue(int index)
+            throws AttributeNotFoundException {
+
         checkValidAttribute(index);
         return ongoingStateInfo.get(index);
     }
 
-    long getOngoingStartTime(int index) throws AttributeNotFoundException {
-        checkValidAttribute(index);
-        return ongoingStateStartTimes.get(index);
-    }
-
     void changeOngoingStateValue(int index, ITmfStateValue newValue)
             throws AttributeNotFoundException {
+
         checkValidAttribute(index);
         ongoingStateInfo.set(index, newValue);
     }
@@ -91,40 +89,36 @@ class TransientState {
      * @param quark
      * @throws AttributeNotFoundException
      */
-    ITmfStateInterval getOngoingInterval(int quark) throws AttributeNotFoundException {
+    ITmfStateInterval getOngoingInterval(int quark)
+            throws AttributeNotFoundException {
+
         checkValidAttribute(quark);
         return new TmfStateInterval(ongoingStateStartTimes.get(quark), -1, quark,
                 ongoingStateInfo.get(quark));
     }
 
-    private void checkValidAttribute(int quark) throws AttributeNotFoundException {
+    private void checkValidAttribute(int quark)
+            throws AttributeNotFoundException {
+
         if (quark > ongoingStateInfo.size() - 1 || quark < 0) {
             throw new AttributeNotFoundException();
         }
     }
 
     /**
-     * More advanced version of {@link #changeOngoingStateValue}. Replaces the
-     * complete {@link #ongoingStateInfo} in one go, and updates the
-     * {@link #ongoingStateStartTimes} and {@link #stateValuesTypes}
-     * accordingly. BE VERY CAREFUL WITH THIS!
+     * Batch method of changeOngoingStateValue(), updates the complete
+     * ongoingStateInfo in one go. BE VERY CAREFUL WITH THIS! Especially with
+     * the sizes of both arrays.
      *
-     * @param newStateIntervals
-     *            The List of intervals that will represent the new
-     *            "ongoing state". Their end times don't matter, we will only
-     *            check their value and start times.
+     * Note that the new ongoingStateInfo will be a shallow copy of
+     * newStateInfo, so that last one must be already instantiated and all.
+     *
+     * @param newStateInfo
+     *            The List of StateValues to replace the old ongoingStateInfo
+     *            one.
      */
-    synchronized void replaceOngoingState(List<ITmfStateInterval> newStateIntervals) {
-        int size = newStateIntervals.size();
-        ongoingStateInfo = new ArrayList<ITmfStateValue>(size);
-        ongoingStateStartTimes = new ArrayList<Long>(size);
-        stateValueTypes = new ArrayList<Byte>(size);
-
-        for (ITmfStateInterval interval : newStateIntervals) {
-            ongoingStateInfo.add(interval.getStateValue());
-            ongoingStateStartTimes.add(interval.getStartTime());
-            stateValueTypes.add(interval.getStateValue().getType());
-        }
+    void changeOngoingStateInfo(ArrayList<ITmfStateValue> newStateInfo) {
+        this.ongoingStateInfo = newStateInfo;
     }
 
     /**
