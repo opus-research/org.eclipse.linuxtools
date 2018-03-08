@@ -49,19 +49,19 @@ public class CommandShell implements ICommandShell {
     // ------------------------------------------------------------------------
 
     /** Sub-string to be echo'ed when running command in shell, used to indicate that the command has finished running */
-    public static final String DONE_MARKUP_STRING = "--RSE:donedonedone:--"; //$NON-NLS-1$
+    public final static String DONE_MARKUP_STRING = "--RSE:donedonedone:--"; //$NON-NLS-1$
 
     /** Sub-string to be echoed when running a command in shell. */
-    public static final String BEGIN_END_TAG = "BEGIN-END-TAG:"; //$NON-NLS-1$
+    public final static String BEGIN_END_TAG = "BEGIN-END-TAG:"; //$NON-NLS-1$
 
     /** Command delimiter for shell */
-    public static final String CMD_DELIMITER = "\n"; //$NON-NLS-1$
+    public final static String CMD_DELIMITER = "\n"; //$NON-NLS-1$
 
     /** Shell "echo" command */
-    public static final String SHELL_ECHO_CMD = " echo "; //$NON-NLS-1$
+    public final static String SHELL_ECHO_CMD = " echo "; //$NON-NLS-1$
 
     /** Default command separator */
-    public static final char CMD_SEPARATOR = ';';
+    public final static char CMD_SEPARATOR = ';';
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -292,8 +292,10 @@ public class CommandShell implements ICommandShell {
             return true;
         }
         int index = line.indexOf(expected);
-        if ((index > 0) && (line.indexOf(SHELL_ECHO_CMD) == -1)) {
-            return true;
+        if (index > 0) {
+            if (line.indexOf(SHELL_ECHO_CMD) == -1) {
+                return true;
+            }
         }
 
         return false;

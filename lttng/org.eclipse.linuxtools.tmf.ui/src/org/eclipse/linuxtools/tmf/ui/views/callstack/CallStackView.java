@@ -491,8 +491,7 @@ public class CallStackView extends TmfView {
                 long endTime = event.getEndTime();
                 TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
                 TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
-                broadcast(new TmfRangeSynchSignal(this, range));
-                broadcast(new TmfTimeSynchSignal(this, time));
+                broadcast(new TmfRangeSynchSignal(CallStackView.this, range, time));
                 startZoomThread(startTime, endTime);
             }
         });
@@ -529,7 +528,8 @@ public class CallStackView extends TmfView {
                         startTime -= spacingTime;
                         endTime += spacingTime;
                         TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
-                        broadcast(new TmfRangeSynchSignal(this, range));
+                        TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
+                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range, time));
                         fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
                         startZoomThread(startTime, endTime);
                     }
@@ -552,7 +552,8 @@ public class CallStackView extends TmfView {
                         startTime -= spacingTime;
                         endTime += spacingTime;
                         TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
-                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range));
+                        TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
+                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range, time));
                         fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
                         startZoomThread(startTime, endTime);
                     }
@@ -703,7 +704,7 @@ public class CallStackView extends TmfView {
 
         if (isPinned()) {
             fSavedRangeSyncSignal =
-                    new TmfRangeSynchSignal(signal.getSource(), new TmfTimeRange(signal.getCurrentRange().getStartTime(), signal.getCurrentRange().getEndTime()));
+                    new TmfRangeSynchSignal(signal.getSource(), new TmfTimeRange(signal.getCurrentRange().getStartTime(), signal.getCurrentRange().getEndTime()), signal.getCurrentTime());
 
             fSavedTimeSyncSignal = null;
         }
@@ -716,6 +717,7 @@ public class CallStackView extends TmfView {
         }
         final long startTime = signal.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         final long endTime = signal.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -723,6 +725,7 @@ public class CallStackView extends TmfView {
                     return;
                 }
                 fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, false);
                 startZoomThread(startTime, endTime);
             }
         });
