@@ -15,9 +15,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Date;
-import java.text.DateFormat;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.perf.IPerfData;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
@@ -58,12 +55,11 @@ public class PerfStatDataOpenHandler implements IEditorLauncher {
 						statFile.getName()));
 			}
 
-			final String timestamp = DateFormat.getInstance().format(new Date(statFile.lastModified()));
 			PerfPlugin.getDefault().setStatData(new IPerfData() {
 
 				@Override
 				public String getTitle() {
-					return title.toString() + " (" + timestamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+					return title.toString();
 				}
 
 				@Override

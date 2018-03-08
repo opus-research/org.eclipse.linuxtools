@@ -9,7 +9,6 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Added handling of streamed traces
- *   Marc-Andre Laperle - Use common method to get opened tmf projects
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -18,6 +17,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -30,8 +31,8 @@ import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy;
+import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.rse.core.subsystems.RemoteChildrenContentsType;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
@@ -180,6 +181,9 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         try {
             createRemoteComposite();
+        } catch (CoreException e) {
+            createErrorComposite(parent, e.fillInStackTrace());
+            return fDialogComposite;
         } catch (SystemMessageException e) {
             createErrorComposite(parent, e.fillInStackTrace());
             return fDialogComposite;
@@ -236,9 +240,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
                     traceName.append(trace.getName());
                     traceName.insert(0, '-');
 
-                    String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
-
-                    while (!parent.getAbsolutePath().equals(path)) {
+                    while (!parent.getAbsolutePath().equals(fSession.getSessionPath())) {
                         traceName.insert(0, parent.getName());
                         traceName.insert(0, '-');
                         parent = parent.getParentRemoteFile();
@@ -329,7 +331,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
         errorText.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
-    private void createRemoteComposite() throws SystemMessageException{
+    private void createRemoteComposite() throws CoreException, SystemMessageException{
         Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.TraceControl_ImportDialogTracesGroupName);
         GridLayout layout = new GridLayout(1, true);
@@ -340,10 +342,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
 
-        final String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
-        final IRemoteFile remoteFolder = fsss.getRemoteFileObject(path, new NullProgressMonitor());
-        // make sure that remote directory is read and not cached
-        remoteFolder.markStale(true, true);
+        final IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSession.getSessionPath(), new NullProgressMonitor());
 
         fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER);
         GridData data = new GridData(GridData.FILL_BOTH);
@@ -376,14 +375,10 @@ public class ImportDialog extends Dialog implements IImportDialog {
         });
         fFolderViewer.setInput(remoteFolder);
 
+        // Select all traces by default
         Object[] children = remoteFolder.getContents(RemoteChildrenContentsType.getInstance());
-        // children can be null if there the path doesn't exist. This happens when a trace
-        // session hadn't been started and no output was created.
-        if (children != null) {
-            // Select all traces by default
-            for (int i = 0; i < children.length; i++) {
-                fFolderViewer.setSubtreeChecked(children[i], true);
-            }
+        for (int i = 0; i < children.length; i++) {
+            fFolderViewer.setSubtreeChecked(children[i], true);
         }
 
         Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
@@ -395,9 +390,11 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fProjects = new ArrayList<IProject>();
         List<String> projectNames = new ArrayList<String>();
 
-        for (IProject project : TraceUtils.getOpenedTmfProjects()) {
-            fProjects.add(project);
-            projectNames.add(project.getName());
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            if (project.isOpen() && project.hasNature(TmfProjectNature.ID)) {
+                fProjects.add(project);
+                projectNames.add(project.getName());
+            }
         }
 
         fCombo = new CCombo(projectGroup, SWT.READ_ONLY);

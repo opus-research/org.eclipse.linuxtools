@@ -14,6 +14,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -169,9 +170,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 	 * @return File corresponding to given file or null if no working directory
 	 *         has been set.
 	 */
-	public IPath getPerfFile(String fileName) {
+	public File getPerfFile(String fileName) {
 		if (curWorkingDir != null) {
-			return curWorkingDir.append(fileName);
+			IPath curStatPath = curWorkingDir.append(fileName);
+			return curStatPath.toFile();
 		}
 		return null;
 	}

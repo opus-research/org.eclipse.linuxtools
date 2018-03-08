@@ -26,10 +26,8 @@ import java.util.List;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
@@ -51,6 +49,10 @@ public class TmfCheckpointIndexTest2 {
     // Variables
     // ------------------------------------------------------------------------
 
+    private static final String    DIRECTORY   = "testfiles";
+    // Trace has 3 events at t=101 at rank 99, 100, 101
+    // Trace has events with same timestamp (ts=102) for ranks 102..702 -> 2 checkpoints with same timestamp are created
+    private static final String    TEST_STREAM = "A-Test-10K-2";
     private static final int       BLOCK_SIZE  = 100;
     private static final int       NB_EVENTS   = 702;
     private static TestTrace       fTrace      = null;
@@ -62,9 +64,7 @@ public class TmfCheckpointIndexTest2 {
 
     @Before
     public void setUp() {
-        // Trace has 3 events at t=101 at rank 99, 100, 101
-        // Trace has events with same timestamp (ts=102) for ranks 102..702 -> 2 checkpoints with same timestamp are created
-        setupTrace(TmfTestTrace.A_TEST_10K2.getFullPath());
+        setupTrace(DIRECTORY + File.separator + TEST_STREAM);
     }
 
     @After
@@ -108,7 +108,6 @@ public class TmfCheckpointIndexTest2 {
         public EmptyTestTrace() {
             super();
             setIndexer(new TestIndexer(this));
-            init(getClass().getSimpleName(), TmfEvent.class);
         }
         @Override
         public TestIndexer getIndexer() {
