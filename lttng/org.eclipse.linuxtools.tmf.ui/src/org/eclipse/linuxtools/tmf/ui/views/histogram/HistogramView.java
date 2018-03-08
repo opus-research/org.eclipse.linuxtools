@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalThrottler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
@@ -95,6 +95,10 @@ public class HistogramView extends TmfView {
     private static TimeRangeHistogram fTimeRangeHistogram;
     private HistogramRequest fTimeRangeRequest;
 
+    // Throttlers for the time sync and time-range sync signals
+    private final TmfSignalThrottler fTimeSyncThrottle;
+    private final TmfSignalThrottler fTimeRangeSyncThrottle;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
@@ -104,6 +108,8 @@ public class HistogramView extends TmfView {
      */
     public HistogramView() {
         super(ID);
+        fTimeSyncThrottle = new TmfSignalThrottler(this, 200);
+        fTimeRangeSyncThrottle = new TmfSignalThrottler(this, 200);
     }
 
     @Override
@@ -295,8 +301,10 @@ public class HistogramView extends TmfView {
                 @Override
                 public void handleData(ITmfEvent event) {
                     if (event != null) {
-                        TmfTimeSynchSignal signal = new TmfTimeSynchSignal(this, event.getTimestamp());
-                        TmfSignalManager.dispatchSignal(signal);
+                        ITmfTimestamp ts = event.getTimestamp();
+                        updateDisplayedCurrentTime(ts.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
+                        TmfTimeSynchSignal signal = new TmfTimeSynchSignal(this, ts);
+                        fTimeSyncThrottle.queue(signal);
                     }
                 }
             };
@@ -318,9 +326,11 @@ public class HistogramView extends TmfView {
             ITmfTimestamp currentTime = new TmfTimestamp(fCurrentTimestamp, ITmfTimestamp.NANOSECOND_SCALE);
             fTimeSpanControl.setValue(endTime - startTime);
 
+            updateDisplayedTimeRange(startTime, endTime);
+
             // Send the FW signal
             TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange, currentTime);
-            TmfSignalManager.dispatchSignal(signal);
+            fTimeRangeSyncThrottle.queue(signal);
         }
     }
 
@@ -493,12 +503,7 @@ public class HistogramView extends TmfView {
 
         // Update the selected event time
         ITmfTimestamp currentTime = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
-        fCurrentTimestamp = currentTime.getValue();
-
-        // Notify the relevant widgets
-        fFullTraceHistogram.setCurrentEvent(fCurrentTimestamp);
-        fTimeRangeHistogram.setCurrentEvent(fCurrentTimestamp);
-        fCurrentEventTimeControl.setValue(fCurrentTimestamp);
+        updateDisplayedCurrentTime(currentTime.getValue());
     }
 
     /**
@@ -517,14 +522,12 @@ public class HistogramView extends TmfView {
                 return;
             }
 
-            // Update the time range
-            fWindowStartTime = range.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            fWindowEndTime = range.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            fWindowSpan = fWindowEndTime - fWindowStartTime;
+            updateDisplayedTimeRange(
+                    range.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue(),
+                    range.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
 
-            // Notify the relevant widgets
+            // Send the event request to populate the small histogram
             sendTimeRangeRequest(fWindowStartTime, fWindowEndTime);
-            fFullTraceHistogram.setTimeRange(fWindowStartTime, fWindowSpan);
 
             fTimeSpanControl.setValue(fWindowSpan);
         }
@@ -569,6 +572,21 @@ public class HistogramView extends TmfView {
             sendTimeRangeRequest(startTime, startTime + duration);
             sendFullRangeRequest(fullRange);
         }
+    }
+
+    private void updateDisplayedCurrentTime(long time) {
+        fCurrentTimestamp = time;
+
+        fFullTraceHistogram.setCurrentEvent(fCurrentTimestamp);
+        fTimeRangeHistogram.setCurrentEvent(fCurrentTimestamp);
+        fCurrentEventTimeControl.setValue(fCurrentTimestamp);
+    }
+
+    private void updateDisplayedTimeRange(long start, long end) {
+        fWindowStartTime = start;
+        fWindowEndTime = end;
+        fWindowSpan = fWindowEndTime - fWindowStartTime;
+        fFullTraceHistogram.setTimeRange(fWindowStartTime, fWindowSpan);
     }
 
     private TmfTimeRange updateTraceTimeRange() {
