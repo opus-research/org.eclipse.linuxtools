@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -226,7 +225,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 
 		if (filename.length() > 0) {
 			try {
-				proxy = RemoteProxyManager.getInstance().getFileProxy(getOprofileProject());
+				proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
@@ -253,7 +252,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 	// Displays a file dialog to allow the user to select the kernel image file
 	private void showFileDialog(Shell shell) {
 		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(getOprofileProject());
+			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -287,13 +286,5 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 				kernelImageFileText.setText(newKernel);
 			}
 		}
-	}
-
-	/**
-	 * Get project to profile
-	 * @return IProject project to profile
-	 */
-	protected IProject getOprofileProject(){
-		return Oprofile.OprofileProject.getProject();
 	}
 }
