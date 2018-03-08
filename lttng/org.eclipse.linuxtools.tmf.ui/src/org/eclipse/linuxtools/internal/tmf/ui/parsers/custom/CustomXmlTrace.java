@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +40,8 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 import org.w3c.dom.Document;
@@ -544,5 +547,25 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
             }
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CustomTrace_FileNotFound + ": " + path); //$NON-NLS-1$
+    }
+
+    @Override
+    public int getCheckpointSize() {
+        TmfCheckpoint c = new TmfCheckpoint(TmfTimestamp.ZERO, new TmfLongLocation(0L));
+        ByteBuffer b = ByteBuffer.allocate(1024);
+
+        c.serializeOut(b);
+
+        return b.position();
+    }
+
+    @Override
+    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
+        return TmfLongLocation.newAndserialize(bufferIn);
+    }
+
+    @Override
+    protected ITmfTraceIndexer createIndexer(int interval) {
+        return new TmfBTreeTraceIndexer(this, interval);
     }
 }

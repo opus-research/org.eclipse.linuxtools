@@ -15,6 +15,7 @@
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
 
@@ -22,8 +23,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
+import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -36,6 +37,9 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
@@ -446,5 +450,29 @@ public class CtfTmfTrace extends TmfTrace
     @Override
     public CtfTmfTimestamp createTimestamp(long ts) {
         return new CtfTmfTimestamp(getTimestampTransform().transform(ts));
+    }
+
+    /**
+     *
+     * @since 3.0
+     */
+    @Override
+    public int getCheckpointSize() {
+        TmfCheckpoint c = new TmfCheckpoint(new CtfTmfTimestamp(0), new CtfLocation(0, 0));
+        ByteBuffer b = ByteBuffer.allocate(1024);
+
+        c.serializeOut(b);
+
+        return b.position();
+    }
+
+    @Override
+    protected ITmfTraceIndexer createIndexer(int interval) {
+        return new TmfBTreeTraceIndexer(this, interval);
+    }
+
+    @Override
+    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
+        return CtfLocation.newAndSerialize(bufferIn);
     }
 }

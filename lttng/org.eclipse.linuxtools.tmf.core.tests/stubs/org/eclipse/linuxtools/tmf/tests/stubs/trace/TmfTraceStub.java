@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
@@ -27,11 +28,13 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
@@ -347,4 +350,17 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
     }
 
+    @Override
+    public int getCheckpointSize() {
+        TmfCheckpoint c = new TmfCheckpoint(new TmfTimestamp(0L), new TmfLongLocation(0L));
+        ByteBuffer b = ByteBuffer.allocate(1024);
+        c.serializeOut(b);
+
+        return b.position();
+    }
+
+    @Override
+    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
+        return TmfLongLocation.newAndserialize(bufferIn);
+    }
 }

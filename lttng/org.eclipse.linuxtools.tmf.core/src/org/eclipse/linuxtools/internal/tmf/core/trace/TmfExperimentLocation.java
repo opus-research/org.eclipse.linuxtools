@@ -14,6 +14,8 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.trace;
 
+import java.nio.ByteBuffer;
+
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 
@@ -106,4 +108,22 @@ public final class TmfExperimentLocation implements ITmfLocation {
         return fLocation;
     }
 
+    @Override
+    public void serializeOut(ByteBuffer bufferOut) {
+        ITmfLocation[] locations = fLocation.getLocations();
+        long[] ranks = fLocation.getRanks();
+        for (int i = 0; i < locations.length; ++i) {
+            locations[i].serializeOut(bufferOut);
+            bufferOut.putLong(ranks[i]);
+        }
+    }
+
+    /**
+     * Done in
+     * {@link org.eclipse.linuxtools.tmf.core.trace.TmfExperiment#restoreLocation}
+     * because each location in the array can be a different type depending on the trace type
+     */
+    @Override
+    public void serializeIn(ByteBuffer bufferIn) {
+    }
 }
