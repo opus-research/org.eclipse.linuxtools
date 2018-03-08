@@ -129,18 +129,9 @@ public class SelectTraceTypeHandler extends AbstractHandler {
                     String bundleName = event.getParameter(BUNDLE_PARAMETER);
                     String traceType = event.getParameter(TYPE_PARAMETER);
                     String iconUrl = event.getParameter(ICON_PARAMETER);
-                    String previousTraceType = trace.getTraceType();
                     IStatus status = propagateProperties(trace, bundleName, traceType, iconUrl);
                     ok &= status.isOK();
-
-                    if (status.isOK()) {
-                        if ((previousTraceType != null) && (!traceType.equals(previousTraceType))) {
-                            // Close the trace if open
-                            trace.closeEditors();
-                            // Delete all supplementary resources
-                            trace.deleteSupplementaryResources();
-                        }
-                    } else {
+                    if (!status.isOK()) {
                         statuses.add(status);
                     }
                 } catch (CoreException e) {

@@ -6,18 +6,16 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *     Alexandre Montplaisir - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.Activator;
@@ -44,12 +42,12 @@ public class CTFTraceReader {
     /**
      * Vector of all the trace file readers.
      */
-    private final List<StreamInputReader> streamInputReaders = new ArrayList<StreamInputReader>();
+    private final Vector<StreamInputReader> streamInputReaders = new Vector<StreamInputReader>();
 
     /**
      * Priority queue to order the trace file readers by timestamp.
      */
-    private PriorityQueue<StreamInputReader> prio;
+    protected PriorityQueue<StreamInputReader> prio;
 
     /**
      * Array to count the number of event per trace file.
@@ -94,7 +92,7 @@ public class CTFTraceReader {
          * Get the start Time of this trace bear in mind that the trace could be
          * empty.
          */
-        this.startTime = 0;
+        this.startTime = 0;// prio.peek().getPacketReader().getCurrentPacket().getTimestampBegin();
         if (hasMoreEvents()) {
             this.startTime = prio.peek().getCurrentEvent().getTimestamp();
             this.setEndTime(this.startTime);
@@ -147,18 +145,8 @@ public class CTFTraceReader {
      * @param endTime
      *            The end time to use
      */
-    protected final void setEndTime(long endTime) {
+    protected void setEndTime(long endTime) {
         this.endTime = endTime;
-    }
-
-    /**
-     * Get the priority queue of this trace reader.
-     *
-     * @return The priority queue of input readers
-     * @since 2.0
-     */
-    protected PriorityQueue<StreamInputReader> getPrio() {
-        return prio;
     }
 
 
@@ -206,11 +194,6 @@ public class CTFTraceReader {
      * lower next event timestamp.
      */
     private void populateStreamInputReaderHeap() {
-        if (this.streamInputReaders.isEmpty()) {
-            this.prio = new PriorityQueue<StreamInputReader>();
-            return;
-        }
-
         /*
          * Create the priority queue with a size twice as bigger as the number
          * of reader in order to avoid constant resizing.
@@ -341,6 +324,23 @@ public class CTFTraceReader {
         return hasMoreEvents();
     }
 
+//    /**
+//     * Go to the first entry of a trace
+//     *
+//     * @return 0, the first index.
+//     */
+//    private long goToZero() {
+//        long tempIndex;
+//        for (StreamInputReader streamInputReader : this.streamInputReaders) {
+//            /*
+//             * Seek the trace reader.
+//             */
+//            streamInputReader.seek(0);
+//        }
+//        tempIndex = 0;
+//        return tempIndex;
+//    }
+
     /**
      * gets the stream with the oldest event
      *
@@ -355,7 +355,7 @@ public class CTFTraceReader {
      *
      * @return true if yes.
      */
-    public final boolean hasMoreEvents() {
+    public boolean hasMoreEvents() {
         return this.prio.size() > 0;
     }
 
@@ -388,8 +388,7 @@ public class CTFTraceReader {
             long len = (width * this.eventCountPerTraceFile[se.getName()])
                     / numEvents;
 
-            StringBuilder sb = new StringBuilder(se.getFilename());
-            sb.append("\t["); //$NON-NLS-1$
+            StringBuilder sb = new StringBuilder(se.getFilename() + "\t["); //$NON-NLS-1$
 
             for (int i = 0; i < len; i++) {
                 sb.append('+');
@@ -400,7 +399,7 @@ public class CTFTraceReader {
             }
 
             sb.append("]\t" + this.eventCountPerTraceFile[se.getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
-            Activator.log(sb.toString());
+            Activator.getDefault().log(sb.toString());
         }
     }
 

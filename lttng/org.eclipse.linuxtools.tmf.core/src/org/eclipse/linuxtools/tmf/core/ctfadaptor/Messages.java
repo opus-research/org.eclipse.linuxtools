@@ -23,18 +23,11 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.core.ctfadaptor.messages"; //$NON-NLS-1$
 
-    /** Buffer overflow detected
-     * @since 2.1*/
-    public static String CtfTmfTrace_BufferOverflowErrorMessage;
-
     /** Major version number not set */
     public static String CtfTmfTrace_MajorNotSet;
 
     /** Reading error */
     public static String CtfTmfTrace_ReadingError;
-
-    /** No event */
-    public static String CtfTmfTrace_NoEvent;
 
     static {
         // initialize resource bundle

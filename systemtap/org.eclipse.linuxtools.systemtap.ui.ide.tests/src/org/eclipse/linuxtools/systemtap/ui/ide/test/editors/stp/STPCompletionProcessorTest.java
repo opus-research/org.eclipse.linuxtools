@@ -78,12 +78,10 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 
 	@Test
 	public void testGlobalCompletion() {
-		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
-		IDocument testDocument = provider.createDocument(null);
+		Document testDocument = new Document(TEST_STP_SCRIPT);
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		completionProcessor.waitForInitialization();
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
@@ -156,9 +154,9 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 				.computeCompletionProposals(testDocument,
 						offset);
 
-		assertTrue(proposalsContain(proposals, "addr"));
-		assertTrue(proposalsContain(proposals, "backtrace"));
-		assertTrue(proposalsContain(proposals, "cmdline_args"));
+		assertTrue(proposalsContain(proposals, "user_int16"));
+		assertTrue(proposalsContain(proposals, "user_int32"));
+		assertTrue(proposalsContain(proposals, "user_int64"));
 	}
 
 	@Test
@@ -203,8 +201,7 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 	}
 
 	private ICompletionProposal[] getCompletionsForPrefix(String prefix) throws BadLocationException{
-		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
-		IDocument testDocument = provider.createDocument(null);
+		Document testDocument = new Document(TEST_STP_SCRIPT);
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 		testDocument.replace(offset, 0, prefix);
 		offset += prefix.length();
@@ -227,7 +224,7 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 		MockSTPEditor editor = new MockSTPEditor(testDocument);
 
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
-		String prefix = "probe syscall.write{addr}";
+		String prefix = "probe syscall.write{user_}";
 		testDocument.replace(offset, 0, prefix);
 		offset += prefix.length() - 1;
 
@@ -238,17 +235,17 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 				.computeCompletionProposals(testDocument,
 						offset);
 
-		assertTrue(proposalsContain(proposals, "addr"));
-		assertTrue(proposalsContain(proposals, "addr_from_rqst"));
-		assertTrue(proposalsContain(proposals, "addr_from_rqst_str"));
+		assertTrue(proposalsContain(proposals, "user_int16"));
+		assertTrue(proposalsContain(proposals, "user_int32"));
+		assertTrue(proposalsContain(proposals, "user_int64"));
 	}
 
 	private boolean proposalsContain(ICompletionProposal[] proposals, String proposal){
 		for (ICompletionProposal p : proposals) {
-			if (p.getDisplayString().contains(proposal)) {
+			if (p.getDisplayString().contains(proposal))
 				return true;
-			}
 		}
 		return false;
 	}
+
 }

@@ -6,11 +6,10 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Intel Corporation - Initial API and implementation
- *     Ruslan A. Scherbakov, Intel - Initial API and implementation
- *     Alvaro Sanchez-Leon - Udpated for TMF
- *     Patrick Tasse - Refactoring
- *     Marc-Andre Laperle - Add time zone preference
+ *   Intel Corporation - Initial API and implementation
+ *   Ruslan A. Scherbakov, Intel - Initial API and implementation
+ *   Alvaro Sanchez-Leon - Udpated for TMF
+ *   Patrick Tasse - Refactoring
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -19,9 +18,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.TimeZone;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.graphics.Color;
@@ -39,9 +36,6 @@ import org.eclipse.swt.widgets.Display;
  * @author Patrick Tasse
  */
 public class Utils {
-
-    private Utils() {
-    }
 
     /** Time format for dates and timestamp */
     public enum TimeFormat {
@@ -78,21 +72,8 @@ public class Utils {
         NANOSEC
     }
 
-    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
-    private static final long SEC_IN_NS = 1000000000;
-    private static final long MILLISEC_IN_NS = 1000000;
-
-    /**
-     * Update the time and date formats to use the current time zone
-     *
-     * @since 2.1
-     */
-    public static void updateTimeZone() {
-        TimeZone timeZone = TmfTimePreferences.getInstance().getTimeZone();
-        TIME_FORMAT.setTimeZone(timeZone);
-        DATE_FORMAT.setTimeZone(timeZone);
-    }
+    static private final SimpleDateFormat stimeformat = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
+    static private final SimpleDateFormat sdateformat = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
 
     static Rectangle clone(Rectangle source) {
         return new Rectangle(source.x, source.y, source.width, source.height);
@@ -104,7 +85,7 @@ public class Utils {
      * @param rect
      *            The Rectangle to initialize
      */
-    public static void init(Rectangle rect) {
+    static public void init(Rectangle rect) {
         rect.x = 0;
         rect.y = 0;
         rect.width = 0;
@@ -125,7 +106,7 @@ public class Utils {
      * @param height
      *            The height of the rectangle
      */
-    public static void init(Rectangle rect, int x, int y, int width, int height) {
+    static public void init(Rectangle rect, int x, int y, int width, int height) {
         rect.x = x;
         rect.y = y;
         rect.width = width;
@@ -140,7 +121,7 @@ public class Utils {
      * @param source
      *            The reference Rectangle to copy
      */
-    public static void init(Rectangle rect, Rectangle source) {
+    static public void init(Rectangle rect, Rectangle source) {
         rect.x = source.x;
         rect.y = source.y;
         rect.width = source.width;
@@ -157,7 +138,7 @@ public class Utils {
      * @param y
      *            The reduction in height
      */
-    public static void deflate(Rectangle rect, int x, int y) {
+    static public void deflate(Rectangle rect, int x, int y) {
         rect.x += x;
         rect.y += y;
         rect.width -= x + x;
@@ -174,7 +155,7 @@ public class Utils {
      * @param y
      *            The augmentation in height
      */
-    public static void inflate(Rectangle rect, int x, int y) {
+    static public void inflate(Rectangle rect, int x, int y) {
         rect.x -= x;
         rect.y -= y;
         rect.width += x + x;
@@ -203,7 +184,7 @@ public class Utils {
      *            The gamma level for color 2
      * @return The resulting color
      */
-    public static Color mixColors(Device display, Color c1, Color c2, int w1,
+    static public Color mixColors(Device display, Color c1, Color c2, int w1,
             int w2) {
         return new Color(display, (w1 * c1.getRed() + w2 * c2.getRed())
                 / (w1 + w2), (w1 * c1.getGreen() + w2 * c2.getGreen())
@@ -218,7 +199,7 @@ public class Utils {
      *            The color ID
      * @return The resulting color
      */
-    public static Color getSysColor(int id) {
+    static public Color getSysColor(int id) {
         Color col = Display.getCurrent().getSystemColor(id);
         return new Color(col.getDevice(), col.getRGB());
     }
@@ -237,7 +218,7 @@ public class Utils {
      *            The gamma level for color 2
      * @return The resulting color
      */
-    public static Color mixColors(Color col1, Color col2, int w1, int w2) {
+    static public Color mixColors(Color col1, Color col2, int w1, int w2) {
         return mixColors(Display.getCurrent(), col1, col2, w1, w2);
     }
 
@@ -254,7 +235,7 @@ public class Utils {
      *            Should we transpose the color
      * @return The X coordinate where we have written
      */
-    public static int drawText(GC gc, String text, Rectangle rect, boolean transp) {
+    static public int drawText(GC gc, String text, Rectangle rect, boolean transp) {
         Point size = gc.stringExtent(text);
         gc.drawText(text, rect.x, rect.y, transp);
         return size.x;
@@ -275,7 +256,7 @@ public class Utils {
      *            Should we transpose the color
      * @return The X coordinate where we have written
      */
-    public static int drawText(GC gc, String text, int x, int y, boolean transp) {
+    static public int drawText(GC gc, String text, int x, int y, boolean transp) {
         Point size = gc.stringExtent(text);
         gc.drawText(text, x, y, transp);
         return size.x;
@@ -302,7 +283,7 @@ public class Utils {
      *
      * @since 2.0
      */
-    public static int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
+    static public int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
         int len = text.length();
         int textWidth = 0;
         boolean isReallyCentered = isCentered;
@@ -333,7 +314,7 @@ public class Utils {
      * @param resolution the resolution
      * @return the formatted time
      */
-    public static String formatTime(long time, TimeFormat format, Resolution resolution) {
+    static public String formatTime(long time, TimeFormat format, Resolution resolution) {
         // if format is absolute (Calendar)
         if (format == TimeFormat.CALENDAR) {
             return formatTimeAbs(time, resolution);
@@ -349,7 +330,16 @@ public class Utils {
             str.append('-');
         }
 
-        long sec = t / SEC_IN_NS;
+        long sec = (long) (t * 1E-9);
+        // TODO: Expand to make it possible to select the minute, second, nanosecond format
+        //printing minutes is suppressed just sec and ns
+        // if (sec / 60 < 10)
+        // str.append('0');
+        // str.append(sec / 60);
+        // str.append(':');
+        // sec %= 60;
+        // if (sec < 10)
+        // str.append('0');
         str.append(sec);
         String ns = formatNs(t, resolution);
         if (!ns.equals("")) { //$NON-NLS-1$
@@ -368,7 +358,7 @@ public class Utils {
      * @return the formatted date
      */
     public static String formatDate(long absTime) {
-        String sdate = DATE_FORMAT.format(new Date(absTime / MILLISEC_IN_NS));
+        String sdate = sdateformat.format(new Date((long) (absTime * 1E-6)));
         return sdate;
     }
 
@@ -381,11 +371,11 @@ public class Utils {
      *            The resolution to use
      * @return the formatted time
      */
-    public static String formatTimeAbs(long time, Resolution res) {
+    static public String formatTimeAbs(long time, Resolution res) {
         StringBuffer str = new StringBuffer();
 
         // format time from nanoseconds to calendar time HH:MM:SS
-        String stime = TIME_FORMAT.format(new Date(time / MILLISEC_IN_NS));
+        String stime = stimeformat.format(new Date((long) (time * 1E-6)));
         str.append(stime);
         str.append('.');
         // append the Milliseconds, MicroSeconds and NanoSeconds as specified in
@@ -408,10 +398,37 @@ public class Utils {
      */
     public static String formatNs(long srcTime, Resolution res) {
         StringBuffer str = new StringBuffer();
-        long ns = Math.abs(srcTime % SEC_IN_NS);
-        String nanos = Long.toString(ns);
-        str.append("000000000".substring(nanos.length())); //$NON-NLS-1$
-        str.append(nanos);
+        long time = srcTime;
+        boolean neg = time < 0;
+        if (neg) {
+            time = -time;
+        }
+
+        // The following approach could be used although performance
+        // decreases in half.
+        // String strVal = String.format("%09d", time);
+        // String tmp = strVal.substring(strVal.length() - 9);
+
+        long ns = time;
+        ns %= 1000000000;
+        if (ns < 10) {
+            str.append("00000000"); //$NON-NLS-1$
+        } else if (ns < 100) {
+            str.append("0000000"); //$NON-NLS-1$
+        } else if (ns < 1000) {
+            str.append("000000"); //$NON-NLS-1$
+        } else if (ns < 10000) {
+            str.append("00000"); //$NON-NLS-1$
+        } else if (ns < 100000) {
+            str.append("0000"); //$NON-NLS-1$
+        } else if (ns < 1000000) {
+            str.append("000"); //$NON-NLS-1$
+        } else if (ns < 10000000) {
+            str.append("00"); //$NON-NLS-1$
+        } else if (ns < 100000000) {
+            str.append("0"); //$NON-NLS-1$
+        }
+        str.append(ns);
 
         if (res == Resolution.MILLISEC) {
             return str.substring(0, 3);
@@ -436,7 +453,15 @@ public class Utils {
      *            The maximal accepted value
      * @return The value that was read
      */
-    public static int loadIntOption(String opt, int def, int min, int max) {
+    static public int loadIntOption(String opt, int def, int min, int max) {
+        // int val =
+        // TraceUIPlugin.getDefault().getPreferenceStore().getInt(opt);
+        // if (0 == val)
+        // val = def;
+        // if (val < min)
+        // val = min;
+        // if (val > max)
+        // val = max;
         return def;
     }
 
@@ -448,7 +473,8 @@ public class Utils {
      * @param val
      *            The option value
      */
-    public static void saveIntOption(String opt, int val) {
+    static public void saveIntOption(String opt, int val) {
+        // TraceUIPlugin.getDefault().getPreferenceStore().setValue(opt, val);
     }
 
     static ITimeEvent getFirstEvent(ITimeGraphEntry entry) {
@@ -528,7 +554,7 @@ public class Utils {
      *            The original signature
      * @return The pretty signature
      */
-    public static String fixMethodSignature(String origSig) {
+    static public String fixMethodSignature(String origSig) {
         String sig = origSig;
         int pos = sig.indexOf('(');
         if (pos >= 0) {
@@ -546,7 +572,7 @@ public class Utils {
      *            The pretty-printed signature
      * @return The original method signature
      */
-    public static String restoreMethodSignature(String ppSig) {
+    static public String restoreMethodSignature(String ppSig) {
         String ret = ""; //$NON-NLS-1$
         String sig = ppSig;
 
@@ -634,7 +660,7 @@ public class Utils {
      *         same number obtained in two different ways to actually look
      *         different.
      */
-    public static int compare(double d1, double d2) {
+    static public int compare(double d1, double d2) {
         if (d1 > d2) {
             return 1;
         }
@@ -657,7 +683,7 @@ public class Utils {
      *         is smaller, equal, or bigger (alphabetically) than the second
      *         one.
      */
-    public static int compare(String s1, String s2) {
+    static public int compare(String s1, String s2) {
         if (s1 != null && s2 != null) {
             return s1.compareToIgnoreCase(s2);
         }

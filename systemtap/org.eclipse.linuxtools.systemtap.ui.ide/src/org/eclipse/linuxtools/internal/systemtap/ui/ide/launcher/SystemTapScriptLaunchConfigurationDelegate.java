@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
-import java.util.LinkedList;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -21,13 +19,12 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptHandler;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler;
 
 public class SystemTapScriptLaunchConfigurationDelegate implements
 		ILaunchConfigurationDelegate {
@@ -46,8 +43,7 @@ public class SystemTapScriptLaunchConfigurationDelegate implements
 		if (runWithChart){
 			IDataSet dataSet = SystemTapScriptGraphOptionsTab.createDataset(configuration);
 			IDataSetParser parser = SystemTapScriptGraphOptionsTab.createDatasetParser(configuration);
-			LinkedList<GraphData> graphs = SystemTapScriptGraphOptionsTab.createGraphsFromConfiguration(configuration);
-			action = new RunScriptChartHandler(parser, dataSet, graphs);
+			action = new RunScriptChartHandler(parser, dataSet);
 		}else{
 			action = new RunScriptHandler();
 		}

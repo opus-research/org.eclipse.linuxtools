@@ -41,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-public abstract class BaseEnableEventHandler extends BaseControlViewHandler {
+abstract public class BaseEnableEventHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -71,7 +71,7 @@ public abstract class BaseEnableEventHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If the command fails for some reason
      */
-    public abstract void enableEvents(CommandParameter param, List<String> eventNames, boolean isKernel, String filterExpression, IProgressMonitor monitor) throws ExecutionException;
+    abstract public void enableEvents(CommandParameter param, List<String> eventNames, boolean isKernel, String filterExpression, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * Enables all syscall events.
@@ -83,7 +83,7 @@ public abstract class BaseEnableEventHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If the command fails for some reason
      */
-    public abstract void enableSyscalls(CommandParameter param, IProgressMonitor monitor) throws ExecutionException;
+    abstract public void enableSyscalls(CommandParameter param, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * Enables a dynamic probe.
@@ -101,7 +101,7 @@ public abstract class BaseEnableEventHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If the command fails for some reason
      */
-    public abstract void enableProbe(CommandParameter param, String eventName, boolean isFunction, String probe, IProgressMonitor monitor) throws ExecutionException;
+    abstract public void enableProbe(CommandParameter param, String eventName, boolean isFunction, String probe, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * Enables events using log level
@@ -121,14 +121,14 @@ public abstract class BaseEnableEventHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If the command fails for some reason
      */
-    public abstract void enableLogLevel(CommandParameter param, String eventName, LogLevelType logLevelType, TraceLogLevel level, String filterExpression, IProgressMonitor monitor) throws ExecutionException;
+    abstract public void enableLogLevel(CommandParameter param, String eventName, LogLevelType logLevelType, TraceLogLevel level, String filterExpression, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * @param param
      *            - a parameter instance with data for the command execution
      * @return returns the relevant domain (null if domain is not known)
      */
-    public abstract TraceDomainComponent getDomain(CommandParameter param);
+    abstract TraceDomainComponent getDomain(CommandParameter param);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

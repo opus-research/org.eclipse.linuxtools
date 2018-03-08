@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -26,7 +25,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl.ColorImpl;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl.FontImpl;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
@@ -64,7 +63,7 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     /**
      * A 2nd array of preference names
      */
-    private static final String[] FONT_LIST2 = { Messages.SequenceDiagram_Lifeline, Messages.SequenceDiagram_ExecutionOccurrence, Messages.SequenceDiagram_SyncMessage, Messages.SequenceDiagram_SyncMessageReturn, Messages.SequenceDiagram_AsyncMessage, Messages.SequenceDiagram_AsyncMessageReturn, Messages.SequenceDiagram_Frame, Messages.SequenceDiagram_LifelineHeader, Messages.SequenceDiagram_FrameTitle };
+    private static final String[] FONT_LIST2 = { SDMessages._88, SDMessages._89, SDMessages._90, SDMessages._91, SDMessages._92, SDMessages._93, SDMessages._94, SDMessages._95, SDMessages._96 };
     /**
      * Array of background color preference names
      */
@@ -79,9 +78,8 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     private static final String[] PREF_TEXT_COLOR_LIST = { PREF_LIFELINE, PREF_SYNC_MESS, PREF_SYNC_MESS_RET, PREF_ASYNC_MESS, PREF_ASYNC_MESS_RET, PREF_LIFELINE_HEADER, PREF_FRAME_NAME };
     /**
      * Temporary tag
-     * @since 2.0
      */
-    public static final String TEMP_TAG = "_TEMP";//$NON-NLS-1$
+    protected static final String TEMP_TAG = "_TEMP";//$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -94,32 +92,31 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     /**
      * Hashtable for font preferences
      */
-    private Map<String, IFont> fFontPref;
-
+    protected Map<String, IFont> fFontPref;
     /**
      * Hashtable for foreground color preferences
      */
-    private Map<String, IColor> fForeColorPref;
+    protected Map<String, IColor> fForeColorPref;
     /**
      * Hashtable for background color preferences
      */
-    private Map<String, IColor> fBackColorPref;
+    protected Map<String, IColor> fBackColorPref;
     /**
      * Hashtable for text color preferences
      */
-    private Map<String, IColor> fTextColorPref;
+    protected Map<String, IColor> fTextColorPref;
     /**
      * The reference to the preference store.
      */
-    private IPreferenceStore fPrefStore = null;
+    protected IPreferenceStore fPrefStore = null;
     /**
      * Color for the time compression selection
      */
-    private IColor fTimeCompressionSelectionColor = null;
+    protected IColor fTimeCompressionSelectionColor = null;
     /**
      * Flag whether no focus selection or not.
      */
-    private boolean fNoFocusSelection = false;
+    protected boolean fNoFocusSelection = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -418,66 +415,6 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
      */
     public void setNoFocusSelection(boolean v) {
         fNoFocusSelection = v;
-    }
-
-    /**
-     * Returns a unmodifiable map with font preferences.
-     *
-     * @return map with font preferences
-     * @since 2.0
-     */
-    protected Map<String, IFont> getFontPref() {
-        return Collections.unmodifiableMap(fFontPref);
-    }
-
-    /**
-     * Returns a unmodifiable map with foreground color preferences
-     *
-     * @return map with foreground color preferences
-     * @since 2.0
-     */
-    public Map<String, IColor> getForeColorPref() {
-        return Collections.unmodifiableMap(fForeColorPref);
-    }
-
-    /**
-     * Returns a unmodifiable map with background color preferences
-     *
-     * @return map with background color preferences
-     * @since 2.0
-     */
-    public Map<String, IColor> getBackColorPref() {
-        return Collections.unmodifiableMap(fBackColorPref);
-    }
-
-    /**
-     * Returns a unmodifiable map with text color preferences
-     *
-     * @return map with text color preferences
-     * @since 2.0
-     */
-    public Map<String, IColor> getTextColorPref() {
-        return Collections.unmodifiableMap(fTextColorPref);
-    }
-
-    /**
-     * Returns the preference store.
-     *
-     * @return the preference store
-     * @since 2.0
-     */
-    public IPreferenceStore getPrefStore() {
-        return fPrefStore;
-    }
-
-    /**
-     * Returns flag about focus selection
-     *
-     * @return flag about focus selection
-     * @since 2.0
-     */
-    public boolean isNoFocusSelection() {
-        return fNoFocusSelection;
     }
 
     /**

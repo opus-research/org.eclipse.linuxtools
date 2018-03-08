@@ -9,7 +9,6 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Geneviève Bastien - Copied code to add/remove traces in this class
- *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -32,12 +31,11 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
+import org.eclipse.linuxtools.tmf.core.util.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -181,7 +179,18 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     public void removeTrace(TmfTraceElement trace) throws CoreException {
 
         // Close the experiment if open
-        closeEditors();
+        IFile file = getBookmarksFile();
+        FileEditorInput input = new FileEditorInput(file);
+        IWorkbench wb = PlatformUI.getWorkbench();
+        for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+            for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                    if (editorReference.getEditorInput().equals(input)) {
+                        wbPage.closeEditor(editorReference.getEditor(false), false);
+                    }
+                }
+            }
+        }
 
         /* Finally, remove the trace from experiment*/
         removeChild(trace);
@@ -290,26 +299,4 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
         return sfFolderSuffix;
     }
 
-    /**
-     * Close open editors associated with this experiment.
-     * @since 2.0
-     */
-    public void closeEditors() {
-        IFile file = getBookmarksFile();
-        FileEditorInput input = new FileEditorInput(file);
-        IWorkbench wb = PlatformUI.getWorkbench();
-        for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
-            for (IWorkbenchPage wbPage : wbWindow.getPages()) {
-                for (IEditorReference editorReference : wbPage.getEditorReferences()) {
-                    try {
-                        if (editorReference.getEditorInput().equals(input)) {
-                            wbPage.closeEditor(editorReference.getEditor(false), false);
-                        }
-                    } catch (PartInitException e) {
-                        Activator.getDefault().logError("Error closing editor for experiment " + getName(), e); //$NON-NLS-1$
-                    }
-                }
-            }
-        }
-    }
 }

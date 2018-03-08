@@ -21,10 +21,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.forms.widgets.ColumnLayout;
 
-/**
- * @deprecated See {@link SelectGraphAndSeriesWizardPage}
- */
-@Deprecated
 public class SelectGraphWizardPage extends WizardPage implements Listener {
 	public SelectGraphWizardPage() {
 		super("selectGraph"); //$NON-NLS-1$
@@ -49,9 +45,6 @@ public class SelectGraphWizardPage extends WizardPage implements Listener {
 			btnGraphs[i].setData(graphIDs[i]);
 			btnGraphs[i].setToolTipText(GraphFactory.getGraphName(btnGraphs[i].getData().toString()) + "\n\n" + //$NON-NLS-1$
 					GraphFactory.getGraphDescription(btnGraphs[i].getData().toString()));
-			if (wizard.isEditing() && graphIDs[i].equals(wizard.model.getGraphID())) {
-				btnGraphs[i].setSelection(true);
-			}
 		}
 		setControl(cmpGraphOpts);
 	}

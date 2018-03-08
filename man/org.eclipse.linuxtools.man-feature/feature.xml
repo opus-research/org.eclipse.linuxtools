@@ -3,9 +3,7 @@
       id="org.eclipse.linuxtools.man"
       label="%featureName"
       version="1.0.0.qualifier"
-      provider-name="%provider"
-      license-feature="org.eclipse.linuxtools.license.feature"
-      license-feature-version="1.0.0.qualifier">
+      provider-name="%provider">
 
    <description url="http://www.eclipse.org/linuxtools/projectPages/manpage/">
       %description

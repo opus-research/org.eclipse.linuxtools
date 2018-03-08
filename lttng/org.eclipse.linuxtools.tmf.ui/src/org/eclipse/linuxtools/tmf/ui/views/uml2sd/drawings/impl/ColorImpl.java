@@ -31,11 +31,11 @@ public class ColorImpl implements IColor {
     /**
      * The color object.
      */
-    private final Color fColor;
+    protected Color fColor = null;
     /**
      * Flag to indicate that this object is managing the resource.
      */
-    private boolean fManageColor = true;
+    protected boolean fManageColor = true;
 
     // ------------------------------------------------------------------------
     // Constructors

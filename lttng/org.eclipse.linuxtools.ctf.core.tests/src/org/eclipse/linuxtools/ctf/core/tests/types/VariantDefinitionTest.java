@@ -17,7 +17,6 @@ import static org.junit.Assert.assertNull;
 
 import java.nio.ByteOrder;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -173,7 +172,7 @@ public class VariantDefinitionTest {
      */
     @Test
     public void testGetDefinitions() {
-        Map<String, Definition> result = fixture.getDefinitions();
+        HashMap<String, Definition> result = fixture.getDefinitions();
         assertNotNull(result);
     }
 
@@ -309,7 +308,7 @@ public class VariantDefinitionTest {
         vDef = new VariantDefinition(vDecl, structDefinition, fName);
         structDef = new StructDefinition(new StructDeclaration(1L), vDef, fName);
         tagDefinition = new EnumDefinition(new EnumDeclaration(
-                new IntegerDeclaration(1, false, 1, ByteOrder.BIG_ENDIAN,
+                new IntegerDeclaration(1, true, 1, ByteOrder.BIG_ENDIAN,
                         Encoding.ASCII, fName, 8)), structDef, fName);
 
         fixture.setTagDefinition(tagDefinition);

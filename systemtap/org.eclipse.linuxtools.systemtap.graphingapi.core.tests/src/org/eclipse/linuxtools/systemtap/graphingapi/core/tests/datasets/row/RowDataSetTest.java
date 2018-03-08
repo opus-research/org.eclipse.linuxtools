@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2009 IBM Corporation.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    IBM Corporation - initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.systemtap.graphingapi.core.tests.datasets.row;
 
 import static org.junit.Assert.assertEquals;
@@ -45,7 +34,7 @@ public class RowDataSetTest  {
 		data.setData(entry);
 		assertEquals(3, data.getEntryCount());
 	}
-
+	
 	@Test
 	public void testAppend() {
 		assertEquals(2, data.getEntryCount());
@@ -54,7 +43,7 @@ public class RowDataSetTest  {
 		data.append(entry);
 		assertEquals(3, data.getEntryCount());
 	}
-
+	
 	@Test
 	public void testGetTitles() {
 		String[] titles = data.getTitles();
@@ -71,17 +60,17 @@ public class RowDataSetTest  {
 		assertNull(data.getColumn(1, 3, 1));
 		assertNull(data.getColumn(1, -2, 1));
 		assertNull(data.getColumn(1, 0, 20));
-
+		
 		Object[] col = data.getColumn(0);
 		assertEquals(2, col.length);
 		assertSame("1", col[0]);
 		assertSame("4", col[1]);
-
+		
 		col = data.getColumn(IDataSet.COL_ROW_NUM);
 		assertEquals(2, col.length);
 		assertEquals("1", col[0].toString());
 		assertEquals("2", col[1].toString());
-
+		
 		col = data.getColumn(1, 0, 1);
 		assertEquals(1, col.length);
 		assertSame("2", col[0]);
@@ -102,7 +91,7 @@ public class RowDataSetTest  {
 	@Test
 	public void testGetColCount() {
 		assertEquals(3, data.getColCount());
-
+		
 		assertEquals(-1, new RowDataSet(null).getColCount());
 	}
 	@Test
@@ -114,7 +103,7 @@ public class RowDataSetTest  {
 		assertEquals(RowDataSet.ID, data.getID());
 	}
 	//End IDataSet Methods
-
+	
 	//IHistoricalDataSet Methods
 	@Test
 	public void testGetHistoricalData() {
@@ -126,17 +115,17 @@ public class RowDataSetTest  {
 		assertNull(data.getHistoricalData(null, 1, 3, 1));
 		assertNull(data.getHistoricalData(null, 1, -2, 1));
 		assertNull(data.getHistoricalData(null, 1, 0, 20));
-
+		
 		Object[] col = data.getHistoricalData(null, 0);
 		assertEquals(2, col.length);
 		assertSame("1", col[0]);
 		assertSame("4", col[1]);
-
+		
 		col = data.getHistoricalData(null, IDataSet.COL_ROW_NUM);
 		assertEquals(2, col.length);
 		assertEquals("1", col[0].toString());
 		assertEquals("2", col[1].toString());
-
+		
 		col = data.getHistoricalData(null, 1, 0, 1);
 		assertEquals(1, col.length);
 		assertSame("2", col[0]);
@@ -165,7 +154,7 @@ public class RowDataSetTest  {
 		assertNull(data.getEntry(20));
 		assertEquals(entry0, data.getEntry(0));
 	}
-
-	private RowDataSet data;
-	private RowEntry entry0;
+	
+	RowDataSet data;
+	RowEntry entry0;
 }

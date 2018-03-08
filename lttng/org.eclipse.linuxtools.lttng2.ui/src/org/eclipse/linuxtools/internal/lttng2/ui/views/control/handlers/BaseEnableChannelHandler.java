@@ -65,7 +65,7 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If something goes wrong when enabling the channel
      */
-    public abstract void enableChannel(CommandParameter param,
+    abstract public void enableChannel(CommandParameter param,
             List<String> channelNames, IChannelInfo info, boolean isKernel,
             IProgressMonitor monitor) throws ExecutionException;
 
@@ -73,7 +73,7 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
      * @param param - a parameter instance with data for the command execution
      * @return returns the relevant domain (null if domain is not known)
      */
-    public abstract TraceDomainComponent getDomain(CommandParameter param);
+    abstract public TraceDomainComponent getDomain(CommandParameter param);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -82,7 +82,6 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
             final CommandParameter param = fParam.clone();
 
             final IEnableChannelDialog dialog =  TraceControlDialogFactory.getInstance().getEnableChannelDialog();
-            dialog.setTargetNodeComponent(param.getSession().getTargetNode());
             dialog.setDomainComponent(getDomain(param));
             dialog.setHasKernel(param.getSession().hasKernelProvider());
 

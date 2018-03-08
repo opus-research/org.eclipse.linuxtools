@@ -22,7 +22,6 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -247,7 +246,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			this.localHostCheckButton.setSelection(configuration.getAttribute(LOCAL_HOST_ATTR, true));
 			this.hostNameText.setText(configuration.getAttribute(HOST_NAME_ATTR, "")); //$NON-NLS-1$
 		} catch (CoreException e) {
-			ExceptionErrorDialog.openError(Messages.SystemTapScriptLaunchConfigurationTab_errorInitializingTab, e);
+			e.printStackTrace();
 		}
 	}
 
@@ -302,7 +301,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			}
 		}
 
-		if (pathString.endsWith(".stp")) { //$NON-NLS-1$
+		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX)) {
 			return pathString;
 		}
 
