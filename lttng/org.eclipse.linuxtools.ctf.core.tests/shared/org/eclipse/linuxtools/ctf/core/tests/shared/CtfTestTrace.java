@@ -32,7 +32,9 @@ public enum CtfTestTrace {
     /** Kernel trace with event contexts */
     KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"),
     /** UST trace with lots of lost events */
-    HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost");
+    HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost"),
+    /** Trace with non-standard field sizes */
+    FUNKY_TRACE("../org.eclipse.linuxtools.ctf.core.tests/traces/funky_trace");
 
 
     private final String fPath;
