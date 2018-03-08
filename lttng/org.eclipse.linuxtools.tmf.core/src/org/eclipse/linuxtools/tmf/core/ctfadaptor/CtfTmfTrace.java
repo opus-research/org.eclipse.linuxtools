@@ -60,10 +60,15 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     //-------------------------------------------
     /**
      * Method initTrace.
-     * @param resource IResource
-     * @param path String
-     * @param eventType Class<CtfTmfEvent>
+     *
+     * @param resource
+     *            The resource associated with this trace
+     * @param path
+     *            The path to the trace file
+     * @param eventType
+     *            The type of events that will be read from this trace
      * @throws TmfTraceException
+     *             If something when wrong while reading the trace
      */
     @Override
     public void initTrace(final IResource resource, final String path, final Class<CtfTmfEvent> eventType)
@@ -89,9 +94,8 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
                 /* Handle the case where the trace is empty */
                 this.setStartTime(TmfTimestamp.BIG_BANG);
             } else {
-                final ITmfTimestamp curTime = ctx.getCurrentEvent().getTimestamp();
-                this.setStartTime(curTime);
-                this.setEndTime(curTime);
+                this.setStartTime(ctx.getCurrentEvent().getTimestamp());
+                this.setEndTime(ctx.getCurrentEvent().getTimestamp());
             }
 
         } catch (final CTFReaderException e) {
@@ -252,8 +256,10 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     /**
      * Suppressing the warning, because the 'throws' will usually happen in
      * sub-classes.
+     *
      * @throws TmfTraceException
      */
+    @SuppressWarnings("unused")
     protected void buildStateSystem() throws TmfTraceException {
         /*
          * Nothing is done in the basic implementation, please specify

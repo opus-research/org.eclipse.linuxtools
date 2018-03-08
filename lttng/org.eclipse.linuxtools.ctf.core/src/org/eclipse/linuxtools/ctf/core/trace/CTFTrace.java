@@ -699,10 +699,9 @@ public class CTFTrace implements IDefinitionScope {
         if (clocks.size() == 1) {
             if (singleClock == null) {
                 singleClock = clocks.get(clocks.keySet().toArray()[0]);
-                if( singleClock.getProperty(OFFSET) != null ){
+                if (singleClock.getProperty(OFFSET) != null) {
                     singleOffset = (Long) getClock().getProperty(OFFSET);
-                }
-                else{
+                } else {
                     singleClock.addAttribute(OFFSET, 0);
                 }
             }

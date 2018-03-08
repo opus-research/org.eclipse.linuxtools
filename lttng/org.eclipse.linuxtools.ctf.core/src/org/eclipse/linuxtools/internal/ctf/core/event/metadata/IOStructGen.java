@@ -48,14 +48,9 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
  * tree node to make sure that the node is indeed of the type the function is
  * expecting.
  */
-/*
- * Suppress unchecked warnings for things like List<CommonTree> children =
- * root.getChildren(), because ANTLR doesn't know what generics are.
- */
 /**
- * <b><u>IOStructGen</u></b>
+ * IOStructGen
  */
-@SuppressWarnings("unchecked")
 public class IOStructGen {
 
     // ------------------------------------------------------------------------
@@ -229,10 +224,8 @@ public class IOStructGen {
             for (CommonTree event : events) {
                 parseEvent(event);
                 if (DEBUG_) {
-                    CommonTree name = (CommonTree) event.getChild(0)
-                            .getChild(1).getChild(0).getChild(0);
-                    CommonTree id = (CommonTree) event.getChild(1).getChild(1)
-                            .getChild(0).getChild(0);
+                    CommonTree name = (CommonTree) event.getChild(0).getChild(1).getChild(0).getChild(0);
+                    CommonTree id = (CommonTree) event.getChild(1).getChild(1).getChild(0).getChild(0);
                     out.write("Name = " + name + " Id = " + id + '\n'); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             }
@@ -264,8 +257,7 @@ public class IOStructGen {
         for (CommonTree child : children) {
             final String key = child.getChild(0).getChild(0).getChild(0)
                     .getText();
-            final CommonTree value = (CommonTree) child.getChild(1).getChild(0)
-                    .getChild(0);
+            final CommonTree value = (CommonTree) child.getChild(1).getChild(0).getChild(0);
             final int type = value.getType();
             switch (type) {
             case CTFParser.INTEGER:
@@ -732,9 +724,7 @@ public class IOStructGen {
             final StructDeclaration fields = (StructDeclaration) fieldsDecl;
             event.setFields(fields);
         } else if (left.equals(CTFStrings.LOGLEVEL2)) {
-
-            long logLevel = parseUnaryInteger((CommonTree) rightNode
-                    .getChild(0));
+            long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0));
             event.setLogLevel(logLevel);
         } else {
             throw new ParseException("Unknown event attribute : " + left); //$NON-NLS-1$
@@ -1147,9 +1137,6 @@ public class IOStructGen {
 
         switch (firstChild.getType()) {
         case CTFParser.FLOATING_POINT:
-            // Activator
-            // .getDefault()
-            //                    .log("parseTypeSpecifierList: floating_point not implemented yet"); //$NON-NLS-1$
             declaration = parseFloat(firstChild);
             break;
         case CTFParser.INTEGER:
@@ -1186,13 +1173,11 @@ public class IOStructGen {
             childTypeError(firstChild);
         }
 
-        assert (declaration != null);
         return declaration;
     }
 
     private IDeclaration parseFloat(CommonTree floatingPoint)
             throws ParseException {
-        assert (floatingPoint.getType() == CTFParser.INTEGER);
 
         List<CommonTree> children = floatingPoint.getChildren();
 
@@ -1218,15 +1203,11 @@ public class IOStructGen {
                 /*
                  * An assignment expression must have 2 children, left and right
                  */
-                assert (child.getChildCount() == 2);
 
                 CommonTree leftNode = (CommonTree) child.getChild(0);
-                assert (leftNode.getType() == CTFParser.CTF_LEFT);
                 CommonTree rightNode = (CommonTree) child.getChild(1);
-                assert (rightNode.getType() == CTFParser.CTF_RIGHT);
 
                 List<CommonTree> leftStrings = leftNode.getChildren();
-                assert (leftStrings != null);
 
                 if (!isUnaryString(leftStrings.get(0))) {
                     throw new ParseException(
@@ -1235,13 +1216,11 @@ public class IOStructGen {
                 String left = concatenateUnaryStrings(leftStrings);
 
                 if (left.equals(CTFStrings.EXP_DIG)) {
-                    exponent = (int) parseUnaryInteger((CommonTree) rightNode
-                            .getChild(0));
+                    exponent = (int) parseUnaryInteger((CommonTree) rightNode.getChild(0));
                 } else if (left.equals(CTFStrings.BYTE_ORDER)) {
                     byteOrder = getByteOrder(rightNode);
                 } else if (left.equals(CTFStrings.MANT_DIG)) {
-                    mantissa = (int) parseUnaryInteger((CommonTree) rightNode
-                            .getChild(0));
+                    mantissa = (int) parseUnaryInteger((CommonTree) rightNode.getChild(0));
                 } else if (left.equals(CTFStrings.ALIGN)) {
                     alignment = getAlignment(rightNode);
                 } else {
@@ -1267,8 +1246,7 @@ public class IOStructGen {
             }
         }
 
-        floatDeclaration = new FloatDeclaration(exponent, mantissa, byteOrder,
-                alignment);
+        floatDeclaration = new FloatDeclaration(exponent, mantissa, byteOrder, alignment);
 
         assert (floatDeclaration != null);
         return floatDeclaration;
