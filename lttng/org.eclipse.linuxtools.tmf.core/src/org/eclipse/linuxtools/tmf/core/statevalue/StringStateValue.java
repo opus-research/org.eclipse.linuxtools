@@ -23,6 +23,10 @@ final class StringStateValue extends TmfStateValue {
     private final String valueStr;
 
     public StringStateValue(String valueAsString) {
+        if (valueAsString == null) {
+            /* Should not happen, see factory methods in TmfStateValue */
+            throw new IllegalArgumentException();
+        }
         this.valueStr = valueAsString;
     }
 
