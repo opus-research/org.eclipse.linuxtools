@@ -13,11 +13,8 @@
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -35,16 +32,8 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
  */
 class ImportTraceContentProvider implements ITreeContentProvider {
 
-    final Map<String, String> fTraceTypes = new HashMap<String, String>();
+    final Map<String,String> fTraceTypes = new HashMap<String,String>();
     final Map<String, Set<FileAndName>> fTraceFiles = new HashMap<String, Set<FileAndName>>();
-    final List<String> fTraceTypesToScan;
-    final Set<String> fParentFilesToScan;
-
-    public ImportTraceContentProvider(List<String> traceTypesToScan, Set<String> parentFilesToScan) {
-        fTraceTypesToScan = traceTypesToScan;
-        fParentFilesToScan = parentFilesToScan;
-    }
-
     /**
      * Add a trace candidate to display
      *
@@ -59,7 +48,7 @@ class ImportTraceContentProvider implements ITreeContentProvider {
             fTraceFiles.put(category, new TreeSet<FileAndName>());
         }
         final FileAndName traceFile = new FileAndName(traceToOpen, traceToOpen.getName());
-        traceFile.setTraceTypeId(category);
+        traceFile.setTraceTypeId( category );
         final Set<FileAndName> categorySet = fTraceFiles.get(category);
         categorySet.add(traceFile);
     }
@@ -91,18 +80,7 @@ class ImportTraceContentProvider implements ITreeContentProvider {
 
     @Override
     public synchronized Object[] getElements(Object inputElement) {
-        List<String> candidates = new ArrayList<String>();
-
-        for( String candidate : fTraceTypesToScan){
-            for( Entry<String, String >entry : fTraceTypes.entrySet()){
-                if( entry.getValue().equals(candidate)){
-                    candidates.add(entry.getKey());
-                    break;
-                }
-            }
-
-        }
-        return candidates.toArray(new String[candidates.size()]);
+        return fTraceTypes.keySet().toArray(new String[fTraceTypes.size()]);
     }
 
     @Override
@@ -110,15 +88,7 @@ class ImportTraceContentProvider implements ITreeContentProvider {
         if (parentElement instanceof String) {
             final Set<FileAndName> children = fTraceFiles.get(fTraceTypes.get(parentElement));
             if (children != null) {
-                Set<FileAndName> candidates = new TreeSet<FileAndName>();
-                for (FileAndName child : children) {
-                    for (String parent : fParentFilesToScan) {
-                        if (child.getFile().getAbsolutePath().startsWith(parent)) {
-                            candidates.add(child);
-                        }
-                    }
-                }
-                return candidates.toArray(new FileAndName[0]);
+                return children.toArray(new FileAndName[0]);
             }
         }
         return null;
@@ -162,12 +132,11 @@ class ImportTraceContentProvider implements ITreeContentProvider {
 
     /**
      * Gets the number of traces to import
-     *
      * @return the number of traces to import
      */
     public synchronized int getSize() {
-        int tot = 0;
-        for (String s : fTraceFiles.keySet()) {
+        int tot = 0 ;
+        for( String s : fTraceFiles.keySet() ){
             tot += fTraceFiles.get(s).size();
         }
         return tot;
