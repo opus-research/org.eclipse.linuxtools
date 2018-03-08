@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2011 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
@@ -26,23 +26,23 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
-public class TmfUml2SDTestTrace implements ITmfEventParser {
-
-    ITmfTrace fEventStream;
+public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
+    
+    ITmfTrace<TmfEvent> fEventStream;
 
     public TmfUml2SDTestTrace() {
     }
 
-    public TmfUml2SDTestTrace(ITmfTrace eventStream) {
+    public TmfUml2SDTestTrace(ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
     }
 
-    public void setTrace(ITmfTrace eventStream) {
+    public void setTrace(ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "nls" })
+    @SuppressWarnings({ "unchecked", "nls" })    
     public TmfEvent parseEvent(ITmfContext context) {
         if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
@@ -55,9 +55,8 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
 //        name = name.substring(name.lastIndexOf('/') + 1);
 
         long location = 0;
-        if (context != null) {
+        if (context != null)
             location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
-        }
 
         try {
             stream.seek(location);
@@ -85,7 +84,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
             fields[0] = new TmfEventField("sender", sender);
             fields[1] = new TmfEventField("receiver", receiver);
             fields[2] = new TmfEventField("signal", signal);
-
+            
             ITmfEventField tmfContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content, fields);
             TmfEvent tmfEvent = new TmfEvent(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
 
