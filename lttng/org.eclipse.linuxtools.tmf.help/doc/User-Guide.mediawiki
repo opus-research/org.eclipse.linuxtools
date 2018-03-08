@@ -993,7 +993,7 @@ The reason for maintaining an index is to speed up seeks. In the case that a use
 The trace can be read easily now but the data is still awkward to extract. 
 
 === CtfLocation ===
-A location in a given trace, it is currently the timestamp of a trace. 
+A location in a given trace, it is currently the timestamp of a trace and the index of the event. The index shows for a given timestamp if it is the first second or nth element.
 
 === CtfTmfTrace ===
 The CtfTmfTrace is a wrapper for the standard CTF trace that allows it to perform the following actions: 
@@ -1007,8 +1007,11 @@ The CtfTmfTrace is a wrapper for the standard CTF trace that allows it to perfor
 === CtfIterator ===
 The CtfIterator is a wrapper to the CTF file reader. It behaves like an iterator on a trace. However, it contains a file pointer and thus cannot be duplicated too often or the system will run out of file handles. To alleviate the situation, a pool of iterators is created at the very beginning and stored in the CtfTmfTrace. They can be retried by calling the GetIterator() method.
 
-=== CtfLightWeightContext ===
-The CtfLightWeightContext wraps the tmfContext type. It has a CtfLocation and points to an iterator in the CtfTmfTrace iterator pool as well as the parent trace. it is made to be cloned easily and not affect system resources much.  Contexts behave much like C File Pointers (FILE*) but they can be copied until one runs out of ram. 
+=== CtfIteratorManager ===
+Since each CtfIterator will have a file reader, the os will run out of handles if too many iterators are spawned. The solution is to use the iterator manager. This will allow the user to get an iterator. If there is one at the requested position, it will return that one, if not, one will be selected at random and set to the correct location. Using random replacement minimizes contention as it will settle quickly at a new balance point. 
+
+=== CtfTmfContext ===
+The CtfTmfContext wraps the tmfContext type. It has a CtfLocation and points to an iterator in the CtfTmfTrace iterator pool as well as the parent trace. it is made to be cloned easily and not affect system resources much.  Contexts behave much like C File Pointers (FILE*) but they can be copied until one runs out of ram. 
 
 === CtfTmfTimestamp ===
 The CtfTmfTimestamp take a CTF time (normally a long int) and outputs the time formats it as a TmfTimestamp, allowing it to be compared to other timestamps. The time is stored with the UTC offset already applied. It also features a simple toString() function that allows it to output the time in more Human readable ways: "yyyy/mm/dd/hh:mm:ss.nnnnnnnnn ns" for example. An additional feature is the getDelta() function that allows two timestamps to be substracted, showing the time difference between A and B.
