@@ -112,7 +112,7 @@
             delegate="org.eclipse.linuxtools.internal.perf.remote.launch.PerfLaunchConfigDelegate"
             id="org.eclipse.linuxtools.perf.remote.launch.profile"
             modes="linuxtools"
-            name="Profile with Perf (Remote)"
+            name="Profile with Remote Perf"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator"
             sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
@@ -197,12 +197,6 @@
                label="Compare Statistics"
                style="push">
          </command>
-         <command
-               commandId="org.eclipse.linuxtools.perf.QuickStatDiff"
-               id="org.eclipse.linuxtools.perf.QuickStatDiff"
-               label="Compare Latest"
-               style="push">
-         </command>
       </menuContribution>
    </extension>
    <extension
@@ -221,11 +215,6 @@
             defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfStatsComparisonHandler"
             id="org.eclipse.linuxtools.perf.StatDiff"
             name="Compare Statistics">
-      </command>
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfStatsQuickDiffHandler"
-            id="org.eclipse.linuxtools.perf.QuickStatDiff"
-            name="Compare Latest">
       </command>
    </extension>   
 </plugin>

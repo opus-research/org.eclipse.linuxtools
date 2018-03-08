@@ -52,6 +52,9 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
         TmfSignalManager.register(this);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#dispose()
+     */
     @Override
     public void dispose() {
         TmfSignalManager.deregister(this);
@@ -61,6 +64,10 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#updateValue()
+     */
     @Override
     protected void updateValue() {
         if (getValue() == Long.MIN_VALUE) {

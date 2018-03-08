@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,7 +16,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation to move the focus to the next page of the whole sequence diagram.
@@ -54,8 +54,8 @@ public class NextPage extends Action {
     public NextPage(SDView view) {
         super();
         fView = view;
-        setText(Messages.SequenceDiagram_NextPage);
-        setToolTipText(Messages.SequenceDiagram_GoToNextPage);
+        setText(SDMessages._36);
+        setToolTipText(SDMessages._38);
         setId(ID);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_NEXT_PAGE));
     }
@@ -63,7 +63,10 @@ public class NextPage extends Action {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
      @Override
     public void run() {
         if ((fView == null) || (fView.getSDWidget()) == null) {

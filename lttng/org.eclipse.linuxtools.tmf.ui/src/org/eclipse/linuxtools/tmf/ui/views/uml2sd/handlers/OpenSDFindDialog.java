@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.SearchFilterDialog;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 
 /**
@@ -65,18 +65,21 @@ public class OpenSDFindDialog extends Action {
      * @param view The view reference
      */
     public OpenSDFindDialog(SDView view) {
-        super(Messages.SequenceDiagram_Find + "..."); //$NON-NLS-1$
+        super(SDMessages._41);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_SEARCH_SEQ));
         setId(ID);
         setActionDefinitionId(ACTION_DEFINITION_ID);
-        setToolTipText(Messages.SequenceDiagram_Find + "..."); //$NON-NLS-1$
+        setToolTipText(SDMessages._41);
         fView = view;
     }
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     public void run() {
         if (fView == null) {
