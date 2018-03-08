@@ -674,7 +674,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @see org.eclipse.linuxtools.tmf.core.component.TmfDataProvider#armRequest(org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest)
      */
     @Override
-    public synchronized ITmfContext armRequest(final ITmfDataRequest request) {
+    protected synchronized ITmfContext armRequest(final ITmfDataRequest request) {
         if (executorIsShutdown()) {
             return null;
         }
