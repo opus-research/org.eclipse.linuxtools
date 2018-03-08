@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 /**
  * A state value containing a double primitive.
  *
@@ -21,10 +19,10 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 final class DoubleStateValue extends TmfStateValue {
 
-    private final Double valueDouble;
+    private final double valueDouble;
 
     public DoubleStateValue(double value) {
-        valueDouble = new Double(value);
+        valueDouble = value;
     }
 
     @Override
@@ -43,7 +41,7 @@ final class DoubleStateValue extends TmfStateValue {
     }
 
     @Override
-    public @Nullable String toString() {
+    public String toString() {
         return String.format("%3f", valueDouble); //$NON-NLS-1$
     }
 

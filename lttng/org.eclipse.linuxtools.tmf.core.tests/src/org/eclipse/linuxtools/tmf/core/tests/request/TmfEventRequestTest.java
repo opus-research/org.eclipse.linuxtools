@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.core.tests.request;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -107,9 +106,6 @@ public class TmfEventRequestTest {
 
         assertEquals("StartTime", TmfTimestamp.BIG_BANG, request.getRange().getStartTime());
         assertEquals("EndTime", TmfTimestamp.BIG_CRUNCH, request.getRange().getEndTime());
-
-        assertEquals("getRange", TmfTimeRange.ETERNITY, request.getRange());
-        assertSame("getRange", TmfTimeRange.ETERNITY, request.getRange());
 
         assertEquals("getIndex", 0, request.getIndex());
         assertEquals("getNbRequestedEvents", TmfEventRequest.ALL_DATA, request.getNbRequested());

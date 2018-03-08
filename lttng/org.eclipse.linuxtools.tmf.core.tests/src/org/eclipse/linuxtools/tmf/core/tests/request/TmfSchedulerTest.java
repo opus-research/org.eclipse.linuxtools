@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class TmfSchedulerTest {
     private long fEndTime;
     private TmfTimeRange fForegroundTimeRange;
 
-    private final List<String> fOrderList = new ArrayList<String>();
+    private final List<String> fOrderList = Collections.synchronizedList(new ArrayList<String>());
     private int fForegroundId = 0;
     private int fBackgroundId = 0;
 
@@ -392,10 +393,8 @@ public class TmfSchedulerTest {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            synchronized (fOrderList) {
-                if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(backgroundName)) {
-                    fOrderList.add(backgroundName);
-                }
+            if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(backgroundName)) {
+                fOrderList.add(backgroundName);
             }
             ++nbEvents;
         }
@@ -421,10 +420,8 @@ public class TmfSchedulerTest {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            synchronized (fOrderList) {
-                if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(foregroundName)) {
-                    fOrderList.add(foregroundName);
-                }
+            if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(foregroundName)) {
+                fOrderList.add(foregroundName);
             }
             ++nbEvents;
         }

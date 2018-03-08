@@ -20,43 +20,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
- * TmfEventRequest's are used to obtain series of events from an event provider.
- * Open ranges can be used, especially for continuous streaming.
- * <p>
- * The request is processed asynchronously by a TmfEventProvider and, as events
- * become available, handleData() is invoked synchronously for each one.
- * <p>
- * The TmfEventProvider indicates that the request is completed by calling
- * done(). The request can be cancelled at any time with cancel().
- * <p>
- * Typical usage:
- *
- * <pre><code>
- * TmfEventRequest request = new TmfEventRequest(DataType.class, range, startIndex, nbEvents, priority) {
- *
- *     public void handleData(ITmfEvent event) {
- *         // do something with the event
- *     }
- *
- *     public void handleSuccess() {
- *         // callback for when the request completes successfully
- *     }
- *
- *     public void handleFailure() {
- *         // callback for when the request fails due to an error
- *     }
- *
- *     public void handleCancel() {
- *         // callback for when the request is cancelled via .cancel()
- *     }
- *
- * };
- *
- * eventProvider.sendRequest(request);
- * </code></pre>
- *
- *
- * TODO: Implement request failures (codes, etc...)
+ * An extension of TmfDataRequest for timestamped events.
  *
  * @author Francois Chouinard
  * @since 3.0
@@ -103,35 +67,12 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
     private boolean fRequestCanceled;
 
     // ------------------------------------------------------------------------
-    // Constructors
+    // Constructor
     // ------------------------------------------------------------------------
 
     /**
-     * Request 'n' events of a given type, for the *whole* trace, at the given
-     * priority.
-     *
-     * @param dataType
-     *            The requested data type.
-     * @param index
-     *            The index of the first event to retrieve. You can use '0' to
-     *            start at the beginning of the trace.
-     * @param nbRequested
-     *            The number of events requested. You can use
-     *            {@link TmfEventRequest#ALL_DATA} to indicate you want all
-     *            events in the trace.
-     * @param priority
-     *            The requested execution priority.
-     */
-    public TmfEventRequest(Class<? extends ITmfEvent> dataType,
-            long index,
-            int nbRequested,
-            ExecutionType priority) {
-        this(dataType, TmfTimeRange.ETERNITY, index, nbRequested, priority);
-    }
-
-    /**
-     * Request 'n' events of a given type, for the given time range, at the
-     * given priority.
+     * Request 'n' events of a given type for the given time range (given
+     * priority). Events are returned in blocks of the given size.
      *
      * @param dataType
      *            The requested data type.
@@ -193,56 +134,89 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
     // Accessors
     // ------------------------------------------------------------------------
 
+    /**
+     * @return the request ID
+     */
     @Override
     public int getRequestId() {
         return fRequestId;
     }
 
+    /**
+     * @return the index of the first event requested
+     */
     @Override
     public long getIndex() {
         return fIndex;
     }
 
+    /**
+     * @return the execution type (priority)
+     */
     @Override
     public ExecutionType getExecType() {
         return fExecType;
     }
 
+    /**
+     * @return the number of requested events (ALL_DATA = all)
+     */
     @Override
     public int getNbRequested() {
         return fNbRequested;
     }
 
+    /**
+     * @return the number of events read so far
+     */
     @Override
     public synchronized int getNbRead() {
         return fNbRead;
     }
 
+    /**
+     * @return indicates if the request is currently running
+     */
     @Override
     public synchronized boolean isRunning() {
         return fRequestRunning;
     }
 
+    /**
+     * @return indicates if the request is completed
+     */
     @Override
     public synchronized boolean isCompleted() {
         return fRequestCompleted;
     }
 
+    /**
+     * @return indicates if the request has failed
+     */
     @Override
     public synchronized boolean isFailed() {
         return fRequestFailed;
     }
 
+    /**
+     * @return indicates if the request is canceled
+     */
     @Override
     public synchronized boolean isCancelled() {
         return fRequestCanceled;
     }
 
+    /**
+     * @return the requested data type
+     */
     @Override
     public Class<? extends ITmfEvent> getDataType() {
         return fDataType;
     }
 
+    /**
+     * @return the requested time range
+     */
     @Override
     public TmfTimeRange getRange() {
         return fRange;
@@ -263,6 +237,13 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         fIndex = index;
     }
 
+    /**
+     * This method is called by the event provider to set the index
+     * corresponding to the time range start time once it is known
+     *
+     * @param index
+     *            The start index
+     */
     @Override
     public void setStartIndex(int index) {
         setIndex(index);
@@ -272,9 +253,24 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
     // Operators
     // ------------------------------------------------------------------------
 
+    /**
+     * Handle incoming data, one event at a time i.e. this method is invoked
+     * for every data item obtained by the request.
+     *
+     * - Data items are received in the order they appear in the stream
+     * - Called by the request processor, in its execution thread, every time
+     *   a block of data becomes available.
+     * - Request processor performs a synchronous call to handleData() i.e.
+     *   its execution threads holds until handleData() returns.
+     * - Original data items are disposed of on return i.e. keep a reference
+     *   (or a copy) if some persistence is needed between invocations.
+     * - When there is no more data, done() is called.
+     *
+     * @param data a piece of data
+     */
     @Override
-    public void handleData(ITmfEvent event) {
-        if (event != null) {
+    public void handleData(ITmfEvent data) {
+        if (data != null) {
             fNbRead++;
         }
     }
@@ -286,6 +282,16 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         }
     }
 
+    /**
+     * Handle the completion of the request. It is called when there is no
+     * more data available either because:
+     * - the request completed normally
+     * - the request failed
+     * - the request was canceled
+     *
+     * As a convenience, handleXXXX methods are provided. They are meant to be
+     * overridden by the application if it needs to handle these conditions.
+     */
     @Override
     public void handleCompleted() {
         boolean requestFailed = false;
@@ -340,6 +346,13 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         }
     }
 
+    /**
+     * To suspend the client thread until the request completes (or is
+     * canceled).
+     *
+     * @throws InterruptedException
+     *             If the thread was interrupted while waiting
+     */
     @Override
     public void waitForCompletion() throws InterruptedException {
         while (!fRequestCompleted) {
@@ -347,6 +360,9 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         }
     }
 
+    /**
+     * Called by the request processor upon starting to service the request.
+     */
     @Override
     public void start() {
         synchronized (this) {
@@ -356,6 +372,9 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         startedLatch.countDown();
     }
 
+    /**
+     * Called by the request processor upon completion.
+     */
     @Override
     public void done() {
         synchronized (this) {
@@ -373,6 +392,9 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         }
     }
 
+    /**
+     * Called by the request processor upon failure.
+     */
     @Override
     public void fail() {
         synchronized (this) {
@@ -381,6 +403,9 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         done();
     }
 
+    /**
+     * Called by the request processor upon cancellation.
+     */
     @Override
     public void cancel() {
         synchronized (this) {

@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -32,11 +31,11 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
-import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -83,7 +82,7 @@ public class TmfExperimentTest {
             try {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 final File test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace = new TmfTraceStub(test.getPath(), 0, true, null);
+                final TmfTraceStub trace = new TmfTraceStub(test.getPath(), 0, true, null, null);
                 fTestTraces[0] = trace;
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
@@ -170,7 +169,7 @@ public class TmfExperimentTest {
     }
 
     // ------------------------------------------------------------------------
-    // State system, statistics and modules methods
+    // State system and statistics methods
     // ------------------------------------------------------------------------
 
     @Test
@@ -181,10 +180,10 @@ public class TmfExperimentTest {
     }
 
     @Test
-    public void testGetAnalysisModules() {
-        /* There should not be any modules at this point */
-        Map<String, IAnalysisModule> modules = fExperiment.getAnalysisModules();
-        assertTrue(modules.isEmpty());
+    public void testGetStateSystem() {
+        /* There should not be any experiment-specific state system */
+        ITmfStateSystem ss = fExperiment.getStateSystems().get("something");
+        assertNull(ss);
     }
 
     // ------------------------------------------------------------------------

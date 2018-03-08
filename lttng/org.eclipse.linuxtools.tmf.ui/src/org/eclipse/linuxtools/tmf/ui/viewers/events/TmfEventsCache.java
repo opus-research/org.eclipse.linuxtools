@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -271,7 +271,7 @@ public class TmfEventsCache {
         }
 
         request = new DataRequest(ITmfEvent.class, filter, startRank, TmfEventRequest.ALL_DATA);
-        ((ITmfEventProvider) fTrace).sendRequest(request);
+        ((ITmfDataProvider) fTrace).sendRequest(request);
         try {
             request.waitForCompletion();
             return ((DataRequest) request).getFilteredIndex();
@@ -372,7 +372,7 @@ public class TmfEventsCache {
                     }
                 };
 
-                ((ITmfEventProvider) fTrace).sendRequest(request);
+                ((ITmfDataProvider) fTrace).sendRequest(request);
                 try {
                     request.waitForCompletion();
                 } catch (InterruptedException e) {

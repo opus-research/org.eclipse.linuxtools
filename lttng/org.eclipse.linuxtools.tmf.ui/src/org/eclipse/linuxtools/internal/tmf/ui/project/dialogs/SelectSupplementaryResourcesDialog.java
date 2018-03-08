@@ -20,10 +20,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -68,7 +66,7 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
     public SelectSupplementaryResourcesDialog(Shell shell, IResource[] resources) {
         super(shell);
         fAvailableResources = Arrays.copyOf(resources, resources.length);
-        setShellStyle(SWT.RESIZE | getShellStyle());
+        setShellStyle(SWT.RESIZE);
     }
 
     // ------------------------------------------------------------------------
@@ -160,14 +158,6 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
       });
         fTreeViewer.setInput(fAvailableResources);
 
-        fTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                updateOKButtonEnablement();
-            }
-        });
-
         Composite btComp = new Composite(contextGroup, SWT.NONE);
         FillLayout layout = new FillLayout(SWT.VERTICAL);
         layout.spacing = 4;
@@ -186,8 +176,6 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
                 for (Object treeItem : items) {
                     fTreeViewer.setChecked(treeItem, true);
                 }
-
-                updateOKButtonEnablement();
             }
         });
 
@@ -200,26 +188,12 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
                 for (Object treeItem : items) {
                     fTreeViewer.setChecked(treeItem, false);
                 }
-
-                updateOKButtonEnablement();
             }
         });
 
         getShell().setMinimumSize(new Point(300, 150));
 
         return composite;
-    }
-
-    private void updateOKButtonEnablement() {
-        Object[] checked = fTreeViewer.getCheckedElements();
-        getButton(IDialogConstants.OK_ID).setEnabled(checked.length > 0);
-    }
-
-    @Override
-    protected Control createButtonBar(Composite parent) {
-        Control control = super.createButtonBar(parent);
-        updateOKButtonEnablement();
-        return control;
     }
 
     @Override

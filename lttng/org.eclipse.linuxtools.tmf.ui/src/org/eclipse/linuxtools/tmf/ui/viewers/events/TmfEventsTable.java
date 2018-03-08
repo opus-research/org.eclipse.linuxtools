@@ -27,13 +27,6 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.NotEnabledException;
-import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.commands.ParameterizedCommand;
-import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -73,9 +66,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler;
 import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
@@ -141,9 +133,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.dialogs.ListDialog;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.themes.ColorUtil;
@@ -173,11 +163,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private static final String SEARCH_HINT = Messages.TmfEventsTable_SearchHint;
     private static final String FILTER_HINT = Messages.TmfEventsTable_FilterHint;
     private static final int MAX_CACHE_SIZE = 1000;
-    /**
-     * Empty ITmfEventField array, used by {@link #extractItemFields(ITmfEvent)}
-     * @since 2.2
-     */
-    public static final ITmfEventField[] EMPTY_FIELD_ARRAY = new TmfEventField[0];
 
     /**
      * The events table search/filter keys
@@ -198,7 +183,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         /** Filter object */
         String FILTER_OBJ = "$fltr_obj"; //$NON-NLS-1$
 
-        /** Timestamp */
+        /** Timestamp*/
         String TIMESTAMP = "$time"; //$NON-NLS-1$
 
         /** Rank */
@@ -387,7 +372,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                                 }
                             } else {
                                 broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts, fSelectedBeginTimestamp));
-                                updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
+                                if (fStatusLineManager != null) {
+                                    updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
+                                }
                             }
                         }
                     } else {
@@ -611,7 +598,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 fRawViewer.setVisible(true);
                 fSashForm.layout();
                 final int index = fTable.getSelectionIndex();
-                if (index >= 1) {
+                if (index >= +1) {
                     fRawViewer.selectAndReveal(index - 1);
                 }
             }
@@ -744,41 +731,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             }
         };
 
-        final IAction exportToTextAction = new Action(Messages.TmfEventsTable_Export_to_text) {
-            @Override
-            public void run() {
-                IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                IHandlerService handlerService = (IHandlerService) activePage.getActiveEditor().getSite().getService(IHandlerService.class);
-                ICommandService cmdService = (ICommandService) activePage.getActiveEditor().getSite().getService(ICommandService.class);
-                try {
-                    HashMap<String, Object> parameters = new HashMap<String, Object>();
-                    StringBuilder header = new StringBuilder();
-                    boolean needTab = false;
-                    for (TableColumn tc: fTable.getColumns()) {
-                        if (needTab) {
-                            header.append('\t');
-                        }
-                        header.append(tc.getText());
-                        needTab = true;
-                    }
-                    Command command = cmdService.getCommand(ExportToTextCommandHandler.COMMAND_ID);
-                    ParameterizedCommand cmd = ParameterizedCommand.generateCommand(command,parameters);
-                    IEvaluationContext context = handlerService.getCurrentState();
-                    context.addVariable(ExportToTextCommandHandler.TMF_EVENT_TABLE_HEADER_ID, header.toString());
-                    context.addVariable(ExportToTextCommandHandler.TMF_EVENT_TABLE_PARAMETER_ID, TmfEventsTable.this);
-                    handlerService.executeCommandInContext(cmd, null, context);
-                } catch (ExecutionException e) {
-                    displayException(e);
-                } catch (NotDefinedException e) {
-                    displayException(e);
-                } catch (NotEnabledException e) {
-                    displayException(e);
-                } catch (NotHandledException e) {
-                    displayException(e);
-                }
-            }
-        };
-
         final IAction showSearchBarAction = new Action(Messages.TmfEventsTable_ShowSearchBarActionText) {
             @Override
             public void run() {
@@ -860,7 +812,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 } else if (!fRawViewer.isVisible()) {
                     tablePopupMenu.add(showRawAction);
                 }
-                tablePopupMenu.add(exportToTextAction);
                 tablePopupMenu.add(new Separator());
 
                 if (item != null) {
@@ -1492,7 +1443,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     fFilterCheckCount++;
                 }
             };
-            ((ITmfEventProvider) fTrace).sendRequest(request);
+            ((ITmfDataProvider) fTrace).sendRequest(request);
             try {
                 request.waitForCompletion();
             } catch (final InterruptedException e) {
@@ -1729,7 +1680,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         currentRank++;
                     }
                 };
-                ((ITmfEventProvider) fTrace).sendRequest(request);
+                ((ITmfDataProvider) fTrace).sendRequest(request);
                 try {
                     request.waitForCompletion();
                     if (request.isCancelled()) {
@@ -1851,23 +1802,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      * @param event
      *            The event to extract from
      * @return The array of fields
-     * @since 2.2
-     */
-    public final ITmfEventField[] getItemFields(final ITmfEvent event) {
-        return extractItemFields(event);
-    }
-
-    /**
-     * Extract the fields of an event (item in the table).
-     *
-     * @param event
-     *            The event to extract from
-     * @return The array of fields
      *
      *         FIXME: Add support for column selection
      */
     protected ITmfEventField[] extractItemFields(final ITmfEvent event) {
-        ITmfEventField[] fields = EMPTY_FIELD_ARRAY;
+        ITmfEventField[] fields = new TmfEventField[0];
         if (event != null) {
             final String timestamp = event.getTimestamp().toString();
             final String source = event.getSource();
@@ -2321,7 +2260,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 }
             };
 
-            ((ITmfEventProvider) fTrace).sendRequest(subRequest);
+            ((ITmfDataProvider) fTrace).sendRequest(subRequest);
         }
     }
 
