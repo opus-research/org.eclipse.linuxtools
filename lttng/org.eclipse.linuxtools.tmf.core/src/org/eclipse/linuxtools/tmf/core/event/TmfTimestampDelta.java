@@ -9,7 +9,7 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.tmf.core.timestamp;
+package org.eclipse.linuxtools.tmf.core.event;
 
 import java.util.TimeZone;
 
