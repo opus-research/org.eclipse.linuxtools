@@ -10,18 +10,16 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * The CTF trace reader iterator.
  *
- * It doesn't reserve a file handle, so many iterators can be used without
- * worries of I/O errors or resource exhaustion.
+ * It doesn't reserve a file handle, so many iterators can be used without worries
+ * of I/O errors or resource exhaustion.
  *
  * @version 1.0
  * @author Matthew Khouzam
@@ -34,7 +32,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     /**
      * An invalid location
      */
-    public static final CtfLocation NULL_LOCATION = new CtfLocation(CtfLocation.INVALID_LOCATION);
+    final public static CtfLocation NULL_LOCATION = new CtfLocation(CtfLocation.INVALID_LOCATION);
 
     private CtfLocation curLocation;
     private long curRank;
@@ -45,10 +43,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      *
      * @param trace
      *            the trace to iterate over
-     * @throws CTFReaderException
-     *             error
      */
-    public CtfIterator(final CtfTmfTrace trace) throws CTFReaderException {
+    public CtfIterator(final CtfTmfTrace trace) {
         super(trace.getCTFTrace());
         this.ctfTmfTrace = trace;
         if (this.hasMoreEvents()) {
@@ -73,12 +69,10 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      *            long the timestamp in ns of the trace for positioning
      * @param rank
      *            long the index of the trace for positioning
-     * @throws CTFReaderException
-     *             error
      * @since 2.0
      */
     public CtfIterator(final CtfTmfTrace trace,
-            final CtfLocationInfo ctfLocationData, final long rank) throws CTFReaderException {
+            final CtfLocationInfo ctfLocationData, final long rank) {
         super(trace.getCTFTrace());
 
         this.ctfTmfTrace = trace;
@@ -91,11 +85,11 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             setUnknownLocation();
         }
+
     }
 
     /**
      * Method getCtfTmfTrace. gets a CtfTmfTrace
-     *
      * @return CtfTmfTrace
      */
     public CtfTmfTrace getCtfTmfTrace() {
@@ -104,7 +98,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method getCurrentEvent. gets the current event
-     *
      * @return CtfTmfEvent
      */
     public CtfTmfEvent getCurrentEvent() {
@@ -126,8 +119,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      *
      * @param ctfLocationData
      *            The LocationData representing the position to seek to
-     * @return boolean True if the seek was successful, false if there was an
-     *         error seeking.
+     * @return boolean
      * @since 2.0
      */
     public synchronized boolean seek(final CtfLocationInfo ctfLocationData) {
@@ -141,16 +133,12 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         /* Adjust the timestamp depending on the trace's offset */
         long currTimestamp = ctfLocationData.getTimestamp();
         final long offsetTimestamp = this.getCtfTmfTrace().getCTFTrace().timestampNanoToCycles(currTimestamp);
-        try {
-            if (offsetTimestamp < 0) {
-                ret = super.seek(0L);
-            } else {
-                ret = super.seek(offsetTimestamp);
-            }
-        } catch (CTFReaderException e) {
-            Activator.logError(e.getMessage(), e);
-            return false;
+        if (offsetTimestamp < 0) {
+            ret = super.seek(0L);
+        } else {
+            ret = super.seek(offsetTimestamp);
         }
+
         /*
          * Check if there is already one or more events for that timestamp, and
          * assign the location index correctly
@@ -169,7 +157,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
                 this.advance();
             }
         } else {
-            ret = false;
+            ret= false;
         }
         /* Seek the current location accordingly */
         if (ret) {
@@ -177,13 +165,11 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             curLocation = NULL_LOCATION;
         }
-
         return ret;
     }
 
     /**
      * Method getRank.
-     *
      * @return long
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getRank()
      */
@@ -194,9 +180,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method setRank.
-     *
-     * @param rank
-     *            long
+     * @param rank long
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#setRank(long)
      */
     @Override
@@ -207,17 +191,12 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     @Override
     public CtfIterator clone() {
         CtfIterator clone = null;
-        try {
-            clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocationInfo(), curRank);
-        } catch (CTFReaderException e) {
-            Activator.logError(e.getMessage(), e);
-        }
+        clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocationInfo(), curRank);
         return clone;
     }
 
     /**
      * Method dispose.
-     *
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#dispose()
      */
     @Override
@@ -227,9 +206,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method setLocation.
-     *
-     * @param location
-     *            ITmfLocation<?>
+     * @param location ITmfLocation<?>
      * @since 3.0
      */
     @Override
@@ -241,7 +218,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method getLocation.
-     *
      * @return CtfLocation
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getLocation()
      */
@@ -252,20 +228,18 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method increaseRank.
-     *
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#increaseRank()
      */
     @Override
     public void increaseRank() {
         /* Only increase the rank if it's valid */
-        if (hasValidRank()) {
+        if(hasValidRank()) {
             curRank++;
         }
     }
 
     /**
      * Method hasValidRank, if the iterator is valid
-     *
      * @return boolean
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#hasValidRank()
      */
@@ -276,19 +250,13 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method advance go to the next event
-     *
      * @return boolean successful or not
      */
     @Override
     public synchronized boolean advance() {
         long index = curLocation.getLocationInfo().getIndex();
         long timestamp = curLocation.getLocationInfo().getTimestamp();
-        boolean ret = false;
-        try {
-            ret = super.advance();
-        } catch (CTFReaderException e) {
-            Activator.logError(e.getMessage(), e);
-        }
+        boolean ret = super.advance();
 
         if (ret) {
             final long timestampValue = getCurrentEvent().getTimestamp().getValue();
@@ -305,9 +273,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
     /**
      * Method compareTo.
-     *
-     * @param o
-     *            CtfIterator
+     * @param o CtfIterator
      * @return int -1, 0, 1
      */
     @Override

@@ -6,19 +6,17 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *  Matthew Khouzam - Initial Design and implementation + overhaul
- *  Francis Giraldeau - Initial API and implementation
- *  Philippe Proulx - Some refinement and optimization
- *  Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
+ * Contributors: Matthew Khouzam - Initial Design and implementation
+ * Contributors: Francis Giraldeau - Initial API and implementation
+ * Contributors: Philippe Proulx - Some refinement and optimization
+ * Contributors: Etienne Bergeron - Helped with getLong()
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * <b><u>BitBuffer</u></b>
@@ -57,14 +55,14 @@ public final class BitBuffer {
     // Constructors
     // ------------------------------------------------------------------------
     /**
-     * Default constructor, makes a big-endian buffer
+     * Default constructor, makes a bigendian buffer
      */
     public BitBuffer() {
         this(null, ByteOrder.BIG_ENDIAN);
     }
 
     /**
-     * Constructor, makes a big-endian buffer
+     * Constructor, makes a bigendian buffer
      *
      * @param buf
      *            the bytebuffer to read
@@ -74,12 +72,12 @@ public final class BitBuffer {
     }
 
     /**
-     * Constructor that is fully parameterizable
+     * Constructor that is fully parametrisable
      *
      * @param buf
      *            the buffer to read
      * @param order
-     *            the byte order (big-endian, little-endian, network?)
+     *            the byte order (big endian, little endian, network?)
      */
     public BitBuffer(ByteBuffer buf, ByteOrder order) {
         setByteBuffer(buf);
@@ -97,12 +95,9 @@ public final class BitBuffer {
      * Reads next four bytes from the current bit position according to current
      * byte order.
      *
-     * @return The int value (signed) read from the buffer
-     * @throws CTFReaderException
-     *             An error occurred reading the long. This exception can be
-     *             raised if the buffer tries to read out of bounds
+     * @return The int value read from the buffer
      */
-    public int getInt() throws CTFReaderException {
+    public int getInt() {
         return getInt(BIT_INT, true);
     }
 
@@ -112,55 +107,12 @@ public final class BitBuffer {
      * Reads next eight bytes from the current bit position according to current
      * byte order.
      *
-     * @return The long value (signed) read from the buffer
-     * @throws CTFReaderException
-     *             An error occurred reading the long. This exception can be
-     *             raised if the buffer tries to read out of bounds
-     */
-    public long getLong() throws CTFReaderException {
-        return get(BIT_LONG, true);
-    }
-
-    /**
-     * Relative <i>get</i> method for reading long of <i>length</i> bits.
-     *
-     * Reads <i>length</i> bits starting at the current position. The result is
-     * signed extended if <i>signed</i> is true. The current position is
-     * increased of <i>length</i> bits.
-     *
-     * @param length
-     *            The length in bits of this integer
-     * @param signed
-     *            The sign extended flag
      * @return The long value read from the buffer
-     * @throws CTFReaderException
-     *             An error occurred reading the data. If more than 64 bits at a
-     *             time are read, or the buffer is read beyond its end, this
-     *             exception will be raised.
      */
-    public long get(int length, boolean signed) throws CTFReaderException {
-        if (length > BIT_LONG) {
-            throw new CTFReaderException("Cannot read a long longer than 64 bits. Rquested: " + length); //$NON-NLS-1$
-        }
-        if (length > BIT_INT) {
-            final int highShift = length - BIT_INT;
-            long a = getInt();
-            long b = getInt(highShift, false);
-            long retVal;
-            /* Cast the signed-extended int into a unsigned int. */
-            a &= 0xFFFFFFFFL;
-            b &= (1L << highShift) - 1L;
-
-            retVal = (this.byteOrder == ByteOrder.BIG_ENDIAN) ? ((a << highShift) | b) : ((b << BIT_INT) | a);
-            /* sign extend */
-            if (signed) {
-                int signExtendBits = BIT_LONG - length;
-                retVal = (retVal << signExtendBits) >> signExtendBits;
-            }
-            return retVal;
-        }
-        long retVal = getInt(length, signed);
-        return (signed ? retVal : (retVal & 0xFFFFFFFFL));
+    public long getLong() {
+        long retVal = buf.getLong((int) (pos / 8L));
+        pos += 64L; // 64 bits to a long
+        return retVal;
     }
 
     /**
@@ -175,52 +127,44 @@ public final class BitBuffer {
      * @param signed
      *            The sign extended flag
      * @return The int value read from the buffer
-     * @throws CTFReaderException
-     *             An error occurred reading the data. When the buffer is read
-     *             beyond its end, this exception will be raised.
      */
-    private int getInt(int length, boolean signed) throws CTFReaderException {
-
-        /* Nothing to read. */
+    public int getInt(int length, boolean signed) {
+        int val = 0;
+        if (!canRead(length)) {
+            throw new BufferOverflowException();
+        }
+        if(length > BIT_INT){
+            throw new IllegalArgumentException("Maximum size of value is 32 requested size" + length); //$NON-NLS-1$
+        }
+        if( length < 0){
+            throw new IllegalArgumentException("Cannot handle negative reads"); //$NON-NLS-1$
+        }
         if (length == 0) {
             return 0;
         }
-
-        /* Validate that the buffer has enough bits. */
-        if (!canRead(length)) {
-            throw new CTFReaderException("Cannot read the integer, " + //$NON-NLS-1$
-                    "the buffer does not have enough remaining space. " + //$NON-NLS-1$
-                    "Requested:" + length); //$NON-NLS-1$
-        }
-
-        /* Get the value from the byte buffer. */
-        int val = 0;
         boolean gotIt = false;
 
-        /*
-         * Try a fast read when the position is byte-aligned by using
-         * java.nio.ByteBuffer's native methods
-         */
-        /*
-         * A faster alignment detection as the compiler cannot guaranty that pos
-         * is always positive.
-         */
-        if ((this.pos & (BitBuffer.BIT_CHAR - 1)) == 0) {
+        // Fall back to fast ByteBuffer reader if we want to read byte-aligned
+        // bytes
+        if (this.pos % BitBuffer.BIT_CHAR == 0) {
             switch (length) {
             case BitBuffer.BIT_CHAR:
                 // Byte
-                val = this.buf.get((int) (this.pos / 8));
-                if (!signed) {
-                    val = val & 0xff;
+                if (signed) {
+                    val = this.buf.get((int) (this.pos / 8));
+                } else {
+                    val = (this.buf.get((int) (this.pos / 8))) & 0xff;
                 }
                 gotIt = true;
                 break;
 
             case BitBuffer.BIT_SHORT:
                 // Word
-                val = this.buf.getShort((int) (this.pos / 8));
-                if (!signed) {
-                    val = val & 0xffff;
+                if (signed) {
+                    val = this.buf.getShort((int) (this.pos / 8));
+                } else {
+                    short a = this.buf.getShort((int) (this.pos / 8));
+                    val = a & 0xffff;
                 }
                 gotIt = true;
                 break;
@@ -235,8 +179,6 @@ public final class BitBuffer {
                 break;
             }
         }
-
-        /* When not byte-aligned, fall-back to a general decoder. */
         if (!gotIt) {
             // Nothing read yet: use longer methods
             if (this.byteOrder == ByteOrder.LITTLE_ENDIAN) {
@@ -368,11 +310,8 @@ public final class BitBuffer {
      *
      * @param value
      *            The int value to write
-     * @throws CTFReaderException
-     *             An error occurred writing the data. If the buffer is written
-     *             beyond its end, this exception will be raised.
      */
-    public void putInt(int value) throws CTFReaderException {
+    public void putInt(int value) {
         putInt(BIT_INT, value);
     }
 
@@ -389,16 +328,12 @@ public final class BitBuffer {
      *            The number of bits to write
      * @param value
      *            The value to write
-     * @throws CTFReaderException
-     *             An error occurred writing the data. If the buffer is written
-     *             beyond its end, this exception will be raised.
      */
-    public void putInt(int length, int value) throws CTFReaderException {
+    public void putInt(int length, int value) {
         final long curPos = this.pos;
 
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot write to bitbuffer, " //$NON-NLS-1$
-                    + "insufficient space. Requested: " + length); //$NON-NLS-1$
+            throw new BufferOverflowException();
         }
         if (length == 0) {
             return;
@@ -437,8 +372,8 @@ public final class BitBuffer {
             }
             cmask = correctedValue << lshift;
             /*
-             * low bits are cleared because of left-shift and high bits are
-             * already cleared
+             * low bits are cleared because of lshift and high bits are already
+             * cleared
              */
             cmask &= ~mask;
             int b = this.buf.get(startByte) & 0xFF;
@@ -502,8 +437,8 @@ public final class BitBuffer {
             }
             cmask = correctedValue << lshift;
             /*
-             * low bits are cleared because of left-shift and high bits are
-             * already cleared
+             * low bits are cleared because of lshift and high bits are already
+             * cleared
              */
             cmask &= ~mask;
             int b = this.buf.get(startByte) & 0xFF;
@@ -628,7 +563,7 @@ public final class BitBuffer {
     }
 
     /**
-     * Resets the bitbuffer.
+     * resets the bitbuffer.
      */
     public void clear() {
         position(0);

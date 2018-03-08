@@ -61,7 +61,7 @@ public class StreamInputReader {
     private CTFTraceReader parent;
 
     /** Map of all the event types */
-    private final Map<Long, EventDefinition> eventDefs = new HashMap<Long, EventDefinition>();
+    private final Map<Long, EventDefinition> eventDefs = new HashMap<Long,EventDefinition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -72,11 +72,9 @@ public class StreamInputReader {
      *
      * @param streamInput
      *            The StreamInput to read.
-     * @throws CTFReaderException
-     *             if an error occurs
      * @since 2.0
      */
-    public StreamInputReader(StreamInput streamInput) throws CTFReaderException {
+    public StreamInputReader(StreamInput streamInput) {
         this.streamInput = streamInput;
         this.packetReader = new StreamInputPacketReader(this);
         /*
@@ -91,7 +89,6 @@ public class StreamInputReader {
 
     /**
      * Dispose the StreamInputReader
-     *
      * @since 2.0
      */
     public void dispose() {
@@ -113,7 +110,7 @@ public class StreamInputReader {
     }
 
     /**
-     * Gets the current packet context
+     * gets the current packet context
      *
      * @return the current packet context (size, lost events and such)
      */
@@ -161,7 +158,6 @@ public class StreamInputReader {
 
     /**
      * Gets the filename of the stream being read
-     *
      * @return The filename of the stream being read
      */
     public String getFilename() {
@@ -206,10 +202,8 @@ public class StreamInputReader {
      * Reads the next event in the current event variable.
      *
      * @return If an event has been successfully read.
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    public boolean readNextEvent() throws CTFReaderException {
+    public boolean readNextEvent() {
 
         /*
          * Change packet if needed
@@ -244,11 +238,8 @@ public class StreamInputReader {
 
     /**
      * Change the current packet of the packet reader to the next one.
-     *
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    private void goToNextPacket() throws CTFReaderException {
+    private void goToNextPacket() {
         packetIndex++;
         if (getPacketSize() >= (packetIndex + 1)) {
             this.packetReader.setCurrentPacket(getPacket());
@@ -257,6 +248,7 @@ public class StreamInputReader {
                 if (this.streamInput.addPacketHeaderIndex()) {
                     packetIndex = getPacketSize() - 1;
                     this.packetReader.setCurrentPacket(getPacket());
+
                 } else {
                     this.packetReader.setCurrentPacket(null);
                 }
@@ -276,15 +268,13 @@ public class StreamInputReader {
 
     /**
      * Changes the location of the trace file reader so that the current event
-     * is the first event with a timestamp greater or equal the given timestamp.
+     * is the first event with a timestamp greater than the given timestamp.
      *
      * @param timestamp
      *            The timestamp to seek to.
      * @return The offset compared to the current position
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    public long seek(long timestamp) throws CTFReaderException {
+    public long seek(long timestamp) {
         long offset = 0;
 
         gotoPacket(timestamp);
@@ -306,11 +296,9 @@ public class StreamInputReader {
         }
 
         /*
-         * Advance until either of these conditions are met
-         * <ul>
-         *   <li> reached the end of the trace file (the given timestamp is after the last event), </li>
-         *   <li> found the first event with a timestamp greater or equal the given timestamp. </li>
-         * </ul>
+         * Advance until A. we reached the end of the trace file (which means
+         * the given timestamp is after the last event), or B. we found the
+         * first event with a timestamp greater than the given timestamp.
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);
@@ -324,10 +312,8 @@ public class StreamInputReader {
 
     /**
      * @param timestamp
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    private void gotoPacket(long timestamp) throws CTFReaderException {
+    private void gotoPacket(long timestamp) {
         this.packetIndex = this.streamInput.getIndex().search(timestamp)
                 .previousIndex();
         /*
@@ -338,11 +324,8 @@ public class StreamInputReader {
 
     /**
      * Seeks the last event of a stream and returns it.
-     *
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    public void goToLastEvent() throws CTFReaderException {
+    public void goToLastEvent() {
         /*
          * Search in the index for the packet to search in.
          */
@@ -403,9 +386,7 @@ public class StreamInputReader {
 
     /**
      * Sets the current event in a stream input reader
-     *
-     * @param currentEvent
-     *            the event to set
+     * @param currentEvent the event to set
      */
     public void setCurrentEvent(EventDefinition currentEvent) {
         this.currentEvent = currentEvent;
