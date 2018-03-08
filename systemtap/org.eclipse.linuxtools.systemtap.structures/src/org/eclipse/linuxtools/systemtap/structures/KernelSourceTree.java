@@ -58,18 +58,17 @@ public class KernelSourceTree {
 	 * @param excluded The string array to store as excluded.
 	 * @param proxy The proxy to be used to get the remote files
 	 * @param monitor a progress monitor for this operation. Can be null.
-	 * @throws CoreException
 	 *
 	 * @since 1.1
 	 */
-	public void buildKernelTree(URI locationURI, String[] excluded, IRemoteFileProxy proxy, IProgressMonitor monitor) throws CoreException {
+	public void buildKernelTree(URI locationURI, String[] excluded, IRemoteFileProxy proxy, IProgressMonitor monitor) {
 		if (excluded != null){
 			this.excluded = Arrays.copyOf(excluded, excluded.length);
 		}
 		IFileStore fs = proxy.getResource(locationURI.getPath());
-		if (fs == null) {
+		if (fs == null)
 			kernelTree = null;
-		} else {
+		else {
 			kernelTree = new TreeNode(fs, fs.getName(), false);
 			addLevel(kernelTree, monitor);
 		}
@@ -79,46 +78,46 @@ public class KernelSourceTree {
 	 * Adds a level to the kernel source tree.
 	 *
 	 * @param top The top of the tree to add a level to.
-	 * @throws CoreException
 	 */
-	private void addLevel(TreeNode top, IProgressMonitor monitor) throws CoreException {
+	private void addLevel(TreeNode top, IProgressMonitor monitor) {
 		boolean add;
 		TreeNode current;
 		IFileStore fs = (IFileStore)top.getData();
 		IFileStore[] fsList = null;
-		fsList = fs.childStores(EFS.NONE, new NullProgressMonitor());
-		if (monitor != null) {
-			monitor.beginTask(Localization.getString("ReadingKernelSourceTree"), 100); //$NON-NLS-1$
-		}
-		CCodeFileFilter filter = new CCodeFileFilter();
-		for (IFileStore fsChildren : fsList) {
-			add = true;
-			boolean isDir = fsChildren.fetchInfo().isDirectory();
-			if (!filter.accept(fsChildren.getName(), isDir)) {
-				continue;
-			}
+		try {
+			fsList = fs.childStores(EFS.NONE, new NullProgressMonitor());
+			if (monitor != null)
+				monitor.beginTask(Localization.getString("ReadingKernelSourceTree"), 100); //$NON-NLS-1$
+			CCodeFileFilter filter = new CCodeFileFilter();
+			for (IFileStore fsChildren : fsList) {
+				add = true;
+				boolean isDir = fsChildren.fetchInfo().isDirectory();
+				if (!filter.accept(fsChildren.getName(), isDir))
+					continue;
 
-			for(int j=0; j<excluded.length; j++) {
-				if(fsChildren.getName().equals(excluded[j].substring(0, excluded[j].length()-1)) && isDir) {
-					add = false;
-					break;
-				}
-			}
-			if(add) {
-				current = new TreeNode(fsChildren, fsChildren.getName(), !isDir);
-				top.add(current);
-				if(isDir) {
-					addLevel(top.getChildAt(top.getChildCount()-1), null);
-					if(0 == current.getChildCount()) {
-						top.remove(top.getChildCount()-1);
+				for(int j=0; j<excluded.length; j++) {
+					if(fsChildren.getName().equals(excluded[j].substring(0, excluded[j].length()-1)) && isDir) {
+						add = false;
+						break;
 					}
 				}
+				if(add) {
+					current = new TreeNode(fsChildren, fsChildren.getName(), !isDir);
+					top.add(current);
+					if(isDir) {
+						addLevel(top.getChildAt(top.getChildCount()-1), null);
+						if(0 == current.getChildCount())
+							top.remove(top.getChildCount()-1);
+					}
+				}
+				if (monitor != null)
+					monitor.worked(1);
 			}
-			if (monitor != null) {
-				monitor.worked(1);
-			}
+			top.sortLevel();
+		} catch (CoreException e) {
+			//Nothing to do
+			e.printStackTrace();
 		}
-		top.sortLevel();
 	}
 
 	public void dispose() {

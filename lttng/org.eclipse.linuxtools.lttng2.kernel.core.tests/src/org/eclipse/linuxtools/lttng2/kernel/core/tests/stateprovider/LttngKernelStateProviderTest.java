@@ -15,22 +15,22 @@ package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 
-import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests for the LTTng 2.0 kernel state provider
+ * Tests for the {@link LttngKernelStateProvider}
  *
  * @author Alexandre Montplaisir
  */
-public class CtfKernelStateInputTest {
+public class LttngKernelStateProviderTest {
 
     private final static int TRACE_INDEX = 1;
 
-    private static IStateChangeInput input;
+    private static ITmfStateProvider input;
 
     /**
      * Set-up.
@@ -38,7 +38,7 @@ public class CtfKernelStateInputTest {
     @BeforeClass
     public static void initialize() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
-        input = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+        input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
 
     }
 
