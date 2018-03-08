@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,6 +28,7 @@ import org.eclipse.ptp.remote.core.IRemoteConnection;
 import org.eclipse.ptp.remote.core.IRemoteFileManager;
 import org.eclipse.ptp.remote.core.IRemoteProcess;
 import org.eclipse.ptp.remote.core.IRemoteProcessBuilder;
+import org.eclipse.ptp.remote.core.IRemoteResource;
 import org.eclipse.ptp.remote.core.IRemoteServices;
 import org.eclipse.ptp.remote.core.PTPRemoteCorePlugin;
 import org.eclipse.ptp.remote.core.RemoteProcessAdapter;
@@ -39,6 +41,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 	public final static int COMMAND_CANCELED = IRemoteCommandLauncher.COMMAND_CANCELED;
 	public final static int ILLEGAL_COMMAND = IRemoteCommandLauncher.ILLEGAL_COMMAND;
 	public final static int OK = IRemoteCommandLauncher.OK;
+	private final static String SYNC_NATURE = "org.eclipse.ptp.rdt.sync.core.remoteSyncNature"; //$NON-NLS-1$
 
 	
 	protected IRemoteProcess fProcess;
@@ -63,8 +66,19 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 	public RDTCommandLauncher(IProject project) {
 		fProcess = null;
 		fShowCommand = false;
-		uri = project.getLocationURI();
-		lineSeparator = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		try {
+			if (project.hasNature(SYNC_NATURE)) {
+				IRemoteResource remoteRes = (IRemoteResource)project.getAdapter(IRemoteResource.class);
+				uri = remoteRes.getActiveLocationURI();
+			} else{
+				uri = project.getLocationURI();
+			}
+			lineSeparator = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	/**
