@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,6 +29,8 @@ public class Messages extends NLS {
     public static String ControlFlowView_nextProcessActionToolTipText;
     public static String ControlFlowView_previousProcessActionNameText;
     public static String ControlFlowView_previousProcessActionToolTipText;
+    public static String ControlFlowView_followCPUBwdText;
+    public static String ControlFlowView_followCPUFwdText;
 
     public static String ControlFlowView_attributeSyscallName;
     public static String ControlFlowView_attributeCpuName;

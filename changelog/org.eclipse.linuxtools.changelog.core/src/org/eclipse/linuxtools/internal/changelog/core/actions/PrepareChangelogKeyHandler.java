@@ -35,101 +35,102 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class PrepareChangelogKeyHandler extends AbstractHandler {
-	
-	public Object execute(ExecutionEvent event) {
 
-		IStructuredSelection tempResult = null;
-		
-		// try getting currently selected project
-			IWorkbenchPage ref = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
-			IWorkbenchPart part = HandlerUtil.getActivePart(event);
-			if (part instanceof IEditorPart) {
-				// If we are in an editor, check if the file being edited is an IResource
-				// that belongs to a project in the workspace
-				IEditorPart editorPart = (IEditorPart)part;
-				IEditorInput input = editorPart.getEditorInput();
-				IResource r = (IResource)input.getAdapter(IResource.class);
-				if (r != null) {
-					// We have an IResource to work with, so create a selection we can use
-					// in PrepareChangeLogAction
-					tempResult = new StructuredSelection(r);
-				}
-			} else {
-				// Otherwise, our view is not an editor, see if we have an IResource or something
-				// that will lead us to an IResource
-				ISelection selected = ref.getSelection();
-				if (selected instanceof IStructuredSelection) {
-					IResource r = null;
-					IStructuredSelection iss = (IStructuredSelection)selected;
-					Object o = ((IStructuredSelection)selected).getFirstElement();
-					if (o instanceof ISynchronizeModelElement) {
-						r = ((ISynchronizeModelElement)o).getResource();
-					} else if (o instanceof IAdaptable) {
-						r = (IResource)((IAdaptable)o).getAdapter(IResource.class);
-					}
-					if (r != null)
-						tempResult = iss;
-				}
-			}
-			if (tempResult == null) {
-			    // We don't have an obvious project match in the current active view.  
-				// Let's search all open views for the Synchronize View which is our first
-				// choice to fall back on.
-				for (IViewReference view: ref.getViewReferences()) {
-					if (view.getId().equals("org.eclipse.team.sync.views.SynchronizeView")) { // $NON-NLS-1$
-						IViewPart v = view.getView(false);
-						ISelection s = null;
-						ISelectionProvider sp = v.getViewSite().getSelectionProvider();
-						if (sp != null) {
-							s = sp.getSelection();
-						}
-						if (s instanceof IStructuredSelection) {
-							IStructuredSelection ss = (IStructuredSelection)s;
-							Object element = ss.getFirstElement();
-							IResource r = null;
-							if (element instanceof ISynchronizeModelElement) {
-								r = ((ISynchronizeModelElement)element).getResource();
-							} else if (element instanceof IAdaptable) {
-								r = (IResource)((IAdaptable)element).getAdapter(IResource.class);
-							}
+    @Override
+    public Object execute(ExecutionEvent event) {
 
-							if (r != null) {
-								tempResult = ss;
-							}
-						}
-					}
-				}
-			}
+        IStructuredSelection tempResult = null;
 
-		// If we can't find the project directly, let the user know.
-		if (tempResult == null) {
-			MessageDialog.openInformation(getActiveWorkbenchShell(), Messages.getString("ChangeLog.PrepareChangeLog"), // $NON-NLS-1$, 
-					Messages.getString("PrepareChangeLog.InfoNoProjectFound")); // $NON-NLS-1$
-			return null;
-		} 
+        // try getting currently selected project
+            IWorkbenchPage ref = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+            IWorkbenchPart part = HandlerUtil.getActivePart(event);
+            if (part instanceof IEditorPart) {
+                // If we are in an editor, check if the file being edited is an IResource
+                // that belongs to a project in the workspace
+                IEditorPart editorPart = (IEditorPart)part;
+                IEditorInput input = editorPart.getEditorInput();
+                IResource r = (IResource)input.getAdapter(IResource.class);
+                if (r != null) {
+                    // We have an IResource to work with, so create a selection we can use
+                    // in PrepareChangeLogAction
+                    tempResult = new StructuredSelection(r);
+                }
+            } else {
+                // Otherwise, our view is not an editor, see if we have an IResource or something
+                // that will lead us to an IResource
+                ISelection selected = ref.getSelection();
+                if (selected instanceof IStructuredSelection) {
+                    IResource r = null;
+                    IStructuredSelection iss = (IStructuredSelection)selected;
+                    Object o = ((IStructuredSelection)selected).getFirstElement();
+                    if (o instanceof ISynchronizeModelElement) {
+                        r = ((ISynchronizeModelElement)o).getResource();
+                    } else if (o instanceof IAdaptable) {
+                        r = (IResource)((IAdaptable)o).getAdapter(IResource.class);
+                    }
+                    if (r != null)
+                        tempResult = iss;
+                }
+            }
+            if (tempResult == null) {
+                // We don't have an obvious project match in the current active view.
+                // Let's search all open views for the Synchronize View which is our first
+                // choice to fall back on.
+                for (IViewReference view: ref.getViewReferences()) {
+                    if (view.getId().equals("org.eclipse.team.sync.views.SynchronizeView")) { // $NON-NLS-1$
+                        IViewPart v = view.getView(false);
+                        ISelection s = null;
+                        ISelectionProvider sp = v.getViewSite().getSelectionProvider();
+                        if (sp != null) {
+                            s = sp.getSelection();
+                        }
+                        if (s instanceof IStructuredSelection) {
+                            IStructuredSelection ss = (IStructuredSelection)s;
+                            Object element = ss.getFirstElement();
+                            IResource r = null;
+                            if (element instanceof ISynchronizeModelElement) {
+                                r = ((ISynchronizeModelElement)element).getResource();
+                            } else if (element instanceof IAdaptable) {
+                                r = (IResource)((IAdaptable)element).getAdapter(IResource.class);
+                            }
 
-		final IStructuredSelection result = tempResult;
-		IAction exampleAction = new PrepareChangeLogAction() {
-			@Override
-			public void run() {
-				setSelection(result);
-				doRun();
-			}
-		};
+                            if (r != null) {
+                                tempResult = ss;
+                            }
+                        }
+                    }
+                }
+            }
 
-		exampleAction.run();
+        // If we can't find the project directly, let the user know.
+        if (tempResult == null) {
+            MessageDialog.openInformation(getActiveWorkbenchShell(), Messages.getString("ChangeLog.PrepareChangeLog"), // $NON-NLS-1$,
+                    Messages.getString("PrepareChangeLog.InfoNoProjectFound")); // $NON-NLS-1$
+            return null;
+        }
 
-		return null;
-	}
+        final IStructuredSelection result = tempResult;
+        IAction exampleAction = new PrepareChangeLogAction() {
+            @Override
+            public void run() {
+                setSelection(result);
+                doRun();
+            }
+        };
 
-	/**
-	 * Returns active shell.
-	 */
-	protected Shell getActiveWorkbenchShell() {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		if (window != null) {
-			return window.getShell();
-		}
-		return null;
-	}
+        exampleAction.run();
+
+        return null;
+    }
+
+    /**
+     * Returns active shell.
+     */
+    private Shell getActiveWorkbenchShell() {
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (window != null) {
+            return window.getShell();
+        }
+        return null;
+    }
 }

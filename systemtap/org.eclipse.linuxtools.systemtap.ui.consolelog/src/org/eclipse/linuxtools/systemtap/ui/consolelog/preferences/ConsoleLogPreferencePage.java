@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.preferences;
 
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -21,38 +20,31 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-	public ConsoleLogPreferencePage() {
-		super(GRID);
-		setPreferenceStore(ConsoleLogPlugin.getDefault().getPreferenceStore());
-		setDescription(Messages.ConsoleLogPreferencePage_PreferencesTitle);
-	}
+    public ConsoleLogPreferencePage() {
+        super(GRID);
+        setPreferenceStore(ConsoleLogPlugin.getDefault().getPreferenceStore());
+        setDescription(Messages.ConsoleLogPreferencePage_PreferencesTitle);
+    }
 
-	@Override
-	public void createFieldEditors() {
+    @Override
+    public void createFieldEditors() {
 
-		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.HOST_NAME,
-				Messages.ConsoleLogPreferencePage_Host, getFieldEditorParent()));
+        addField(new StringFieldEditor(ConsoleLogPreferenceConstants.HOST_NAME,
+                Messages.ConsoleLogPreferencePage_Host, getFieldEditorParent()));
 
-		addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.PORT_NUMBER,
-				Messages.ConsoleLogPreferencePage_Port, getFieldEditorParent()));
+        addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.PORT_NUMBER,
+                Messages.ConsoleLogPreferencePage_Port, getFieldEditorParent()));
 
-		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.SCP_USER,
-				Messages.ConsoleLogPreferencePage_User, getFieldEditorParent()));
+        addField(new StringFieldEditor(ConsoleLogPreferenceConstants.SCP_USER,
+                Messages.ConsoleLogPreferencePage_User, getFieldEditorParent()));
 
-		StringFieldEditor passwordField = new StringFieldEditor(
-				ConsoleLogPreferenceConstants.SCP_PASSWORD, Messages.ConsoleLogPreferencePage_Password,
+        StringFieldEditor passwordField = new StringFieldEditor(
+                ConsoleLogPreferenceConstants.SCP_PASSWORD, Messages.ConsoleLogPreferencePage_Password,
                 getFieldEditorParent());
         passwordField.getTextControl(getFieldEditorParent()).setEchoChar('*');
         addField(passwordField);
+    }
 
-		addField(new BooleanFieldEditor(ConsoleLogPreferenceConstants.REMEMBER_SERVER,
-				Messages.ConsoleLogPreferencePage_AlwaysConnectToHost, getFieldEditorParent()));
-
-		addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.SAVE_LENGTH,
-				Messages.ConsoleLogPreferencePage_SecondsToSaveData, getFieldEditorParent()));
-
-	}
-
-	@Override
-	public void init(IWorkbench workbench) {}
+    @Override
+    public void init(IWorkbench workbench) {}
 }

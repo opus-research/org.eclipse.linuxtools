@@ -39,7 +39,7 @@ public class CreateTestFiles {
     // ========================================================================
 
     private static final String DIRECTORY = "testfiles";
-    //	private static final String FILE_NAMES[] = { "Test-10", "Test-1K", "Test-10K", "Test-100K" };
+    //    private static final String FILE_NAMES[] = { "Test-10", "Test-1K", "Test-10K", "Test-100K" };
     //    private static final int    FILE_SIZES[] = {       10 ,     1000 ,     10000 ,     100000  };
     private static final String FILE_NAMES[] = { "Test-10K" };
     private static final int    FILE_SIZES[] = {     10000  };
@@ -86,27 +86,28 @@ public class CreateTestFiles {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private static void createTestFile(final String file, final int size, final boolean monotonic, final boolean odd) throws FileNotFoundException, IOException {
-        DataOutputStream out;
+    private static void createTestFile(final String file, final int size,
+            final boolean monotonic, final boolean odd)
+            throws IOException {
         System.out.println("Creating " + file);
-        out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));) {
 
-        final Random generator = new Random(19580427 + size);
-        long ts = (monotonic && odd) ? -1 : 0;
-        for (int i = 0; i < size; i++) {
-            ts += monotonic ? 2 : generator.nextInt(10);
-            final int sourceIndex = i % NB_SOURCES;
-            final int typeIndex   = i % NB_TYPES;
-            out.writeLong(ts);                      // Timestamp
-            out.writeUTF("Source-" + sourceIndex);  // Source
-            out.writeUTF("Type-"   + typeIndex);    // Type
-            out.writeInt(i + 1);                    // Reference (event #)
-            for (int j = 0; j < typeIndex; j++) {
-                out.writeUTF("Field-" + sourceIndex + "-" + j);
+            final Random generator = new Random(19580427 + size);
+            long ts = (monotonic && odd) ? -1 : 0;
+            for (int i = 0; i < size; i++) {
+                ts += monotonic ? 2 : generator.nextInt(10);
+                final int sourceIndex = i % NB_SOURCES;
+                final int typeIndex = i % NB_TYPES;
+                out.writeLong(ts); // Timestamp
+                out.writeUTF("Source-" + sourceIndex); // Source
+                out.writeUTF("Type-" + typeIndex); // Type
+                out.writeInt(i + 1); // Reference (event #)
+                for (int j = 0; j < typeIndex; j++) {
+                    out.writeUTF("Field-" + sourceIndex + "-" + j);
+                }
             }
+            out.flush();
         }
-        out.flush();
-        out.close();
     }
 
 }

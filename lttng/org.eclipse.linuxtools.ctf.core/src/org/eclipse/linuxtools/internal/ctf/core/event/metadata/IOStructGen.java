@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -21,12 +21,15 @@ import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
@@ -39,7 +42,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
 import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
@@ -59,20 +62,26 @@ public class IOStructGen {
     /**
      * The trace
      */
-    private final CTFTrace trace;
-    private final CommonTree tree;
+    private final CTFTrace fTrace;
+    private CommonTree fTree;
 
     /**
      * The current declaration scope.
      */
-    private DeclarationScope scope = null;
+    private DeclarationScope fScope = null;
+
+    /**
+     * Data helpers needed for streaming
+     */
+
+    private boolean fHasBeenParsed = false;
 
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
 
     /**
-     * Constuctor
+     * Constructor
      *
      * @param tree
      *            the tree (ANTLR generated) with the parsed TSDL data.
@@ -80,8 +89,9 @@ public class IOStructGen {
      *            the trace containing the places to put all the read metadata
      */
     public IOStructGen(CommonTree tree, CTFTrace trace) {
-        this.trace = trace;
-        this.tree = tree;
+        fTrace = trace;
+        fTree = tree;
+
     }
 
     /**
@@ -91,12 +101,34 @@ public class IOStructGen {
      *             If there was a problem parsing the metadata
      */
     public void generate() throws ParseException {
-        parseRoot(tree);
+        parseRoot(fTree);
+    }
+
+    /**
+     * Parse a partial tree and populate the trace defined in the constructor.
+     * Does not check for a "trace" block as there is only one in the trace and
+     * thus
+     *
+     * @throws ParseException
+     *             If there was a problem parsing the metadata
+     */
+    public void generateFragment() throws ParseException {
+        parseIncompleteRoot(fTree);
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+
+    /**
+     * Sets a new tree to parse
+     *
+     * @param newTree
+     *            the new tree to parse
+     */
+    public void setTree(CommonTree newTree) {
+        fTree = newTree;
+    }
 
     /**
      * Parse the root node.
@@ -124,12 +156,13 @@ public class IOStructGen {
         }
 
         CommonTree traceNode = null;
-        List<CommonTree> streams = new ArrayList<CommonTree>();
-        List<CommonTree> events = new ArrayList<CommonTree>();
-        List<CommonTree> declarations = new ArrayList<CommonTree>();
-        List<CommonTree> environments = new ArrayList<CommonTree>();
-        List<CommonTree> clocks = new ArrayList<CommonTree>();
-        List<CommonTree> callsites = new ArrayList<CommonTree>();
+        List<CommonTree> streams = new ArrayList<>();
+        List<CommonTree> events = new ArrayList<>();
+        List<CommonTree> declarations = new ArrayList<>();
+        List<CommonTree> environments = new ArrayList<>();
+        List<CommonTree> clocks = new ArrayList<>();
+        List<CommonTree> callsites = new ArrayList<>();
+
         /* Create a new declaration scope with no parent. */
         pushScope();
 
@@ -146,8 +179,7 @@ public class IOStructGen {
                     break;
                 case CTFParser.TRACE:
                     if (traceNode != null) {
-                        throw new ParseException(
-                                "Only one trace block is allowed"); //$NON-NLS-1$
+                        throw new ParseException("Only one trace block is allowed"); //$NON-NLS-1$
                     }
                     traceNode = child;
                     break;
@@ -220,7 +252,7 @@ public class IOStructGen {
                 }
             } else {
                 /* Add an empty stream that will have a null id */
-                trace.addStream(new Stream(trace));
+                fTrace.addStream(new CTFStream(fTrace));
             }
 
             if (DEBUG) {
@@ -243,6 +275,73 @@ public class IOStructGen {
             e.printStackTrace();
         }
         popScope();
+        fHasBeenParsed = true;
+    }
+
+    private void parseIncompleteRoot(CommonTree root) throws ParseException {
+        List<CommonTree> children = root.getChildren();
+
+        if (fHasBeenParsed == false) {
+            throw new ParseException("You need to run generate first"); //$NON-NLS-1$
+        }
+        List<CommonTree> streams = new ArrayList<>();
+        List<CommonTree> events = new ArrayList<>();
+        List<CommonTree> declarations = new ArrayList<>();
+        List<CommonTree> environments = new ArrayList<>();
+        List<CommonTree> clocks = new ArrayList<>();
+        List<CommonTree> callsites = new ArrayList<>();
+        /* Create a new declaration scope with no parent. */
+        pushScope();
+
+        for (CommonTree child : children) {
+            final int type = child.getType();
+            switch (type) {
+            case CTFParser.DECLARATION:
+                declarations.add(child);
+                break;
+            case CTFParser.TRACE:
+                throw new ParseException("Trace block defined here, please use generate and not generateFragment to parse this fragment"); //$NON-NLS-1$
+            case CTFParser.STREAM:
+                streams.add(child);
+                break;
+            case CTFParser.EVENT:
+                events.add(child);
+                break;
+            case CTFParser.CLOCK:
+                clocks.add(child);
+                break;
+            case CTFParser.ENV:
+                environments.add(child);
+                break;
+            case CTFParser.CALLSITE:
+                callsites.add(child);
+                break;
+            default:
+                childTypeError(child);
+            }
+        }
+        for (CommonTree decl : declarations) {
+            parseRootDeclaration(decl);
+        }
+
+        for (CommonTree environment : environments) {
+            parseEnvironment(environment);
+        }
+        for (CommonTree clock : clocks) {
+            parseClock(clock);
+        }
+        for (CommonTree callsite : callsites) {
+            parseCallsite(callsite);
+        }
+
+        for (CommonTree stream : streams) {
+            parseStream(stream);
+        }
+
+        for (CommonTree event : events) {
+            parseEvent(event);
+        }
+        popScope();
     }
 
     private void parseCallsite(CommonTree callsite) {
@@ -256,9 +355,12 @@ public class IOStructGen {
 
         for (CommonTree child : children) {
             String left;
-            /* this is a regex to find the leading and trailing quotes*/
+            /* this is a regex to find the leading and trailing quotes */
             final String regex = "^\"|\"$"; //$NON-NLS-1$
-            /* this is to replace the previous quotes with nothing... effectively deleting them */
+            /*
+             * this is to replace the previous quotes with nothing...
+             * effectively deleting them
+             */
             final String nullString = ""; //$NON-NLS-1$
             left = child.getChild(0).getChild(0).getChild(0).getText();
             if (left.equals("name")) { //$NON-NLS-1$
@@ -266,14 +368,14 @@ public class IOStructGen {
             } else if (left.equals("func")) { //$NON-NLS-1$
                 funcName = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
             } else if (left.equals("ip")) { //$NON-NLS-1$
-                ip = Long.parseLong(child.getChild(1).getChild(0).getChild(0).getText().substring(2), 16); // trim the 0x
+                ip = Long.decode(child.getChild(1).getChild(0).getChild(0).getText());
             } else if (left.equals("file")) { //$NON-NLS-1$
                 fileName = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
             } else if (left.equals("line")) { //$NON-NLS-1$
                 lineNumber = Long.parseLong(child.getChild(1).getChild(0).getChild(0).getText());
             }
         }
-        trace.addCallsite(name, funcName, ip,fileName, lineNumber);
+        fTrace.addCallsite(name, funcName, ip, fileName, lineNumber);
     }
 
     private void parseEnvironment(CommonTree environment) {
@@ -283,7 +385,7 @@ public class IOStructGen {
             String right;
             left = child.getChild(0).getChild(0).getChild(0).getText();
             right = child.getChild(1).getChild(0).getChild(0).getText();
-            trace.addEnvironmentVar(left, right);
+            fTrace.addEnvironmentVar(left, right);
         }
     }
 
@@ -321,7 +423,7 @@ public class IOStructGen {
 
         }
         String nameValue = ctfClock.getName();
-        trace.addClock(nameValue, ctfClock);
+        fTrace.addClock(nameValue, ctfClock);
     }
 
     private void parseTrace(CommonTree traceNode) throws ParseException {
@@ -355,7 +457,7 @@ public class IOStructGen {
          * If trace byte order was not specified and not using packet based
          * metadata
          */
-        if (trace.getByteOrder() == null) {
+        if (fTrace.getByteOrder() == null) {
             throw new ParseException("Trace byte order not set"); //$NON-NLS-1$
         }
 
@@ -373,60 +475,58 @@ public class IOStructGen {
         List<CommonTree> leftStrings = leftNode.getChildren();
 
         if (!isAnyUnaryString(leftStrings.get(0))) {
-            throw new ParseException(
-                    "Left side of CTF assignment must be a string"); //$NON-NLS-1$
+            throw new ParseException("Left side of CTF assignment must be a string"); //$NON-NLS-1$
         }
 
         String left = concatenateUnaryStrings(leftStrings);
 
-        if (left.equals(CTFStrings.MAJOR)) {
-            if (trace.majortIsSet()) {
+        if (left.equals(MetadataStrings.MAJOR)) {
+            if (fTrace.majorIsSet()) {
                 throw new ParseException("major is already set"); //$NON-NLS-1$
             }
 
-            trace.setMajor(getMajorOrMinor(rightNode));
-        } else if (left.equals(CTFStrings.MINOR)) {
-            if (trace.minorIsSet()) {
+            fTrace.setMajor(getMajorOrMinor(rightNode));
+        } else if (left.equals(MetadataStrings.MINOR)) {
+            if (fTrace.minorIsSet()) {
                 throw new ParseException("minor is already set"); //$NON-NLS-1$
             }
 
-            trace.setMinor(getMajorOrMinor(rightNode));
-        } else if (left.equals(CTFStrings.UUID_STRING)) {
+            fTrace.setMinor(getMajorOrMinor(rightNode));
+        } else if (left.equals(MetadataStrings.UUID_STRING)) {
             UUID uuid = getUUID(rightNode);
 
             /*
              * If uuid was already set by a metadata packet, compare it to see
              * if it matches
              */
-            if (trace.uuidIsSet()) {
-                if (trace.getUUID().compareTo(uuid) != 0) {
+            if (fTrace.uuidIsSet()) {
+                if (fTrace.getUUID().compareTo(uuid) != 0) {
                     throw new ParseException("UUID mismatch. Packet says " //$NON-NLS-1$
-                            + trace.getUUID() + " but metadata says " + uuid); //$NON-NLS-1$
+                            + fTrace.getUUID() + " but metadata says " + uuid); //$NON-NLS-1$
                 }
             } else {
-                trace.setUUID(uuid);
+                fTrace.setUUID(uuid);
             }
 
-        } else if (left.equals(CTFStrings.BYTE_ORDER)) {
+        } else if (left.equals(MetadataStrings.BYTE_ORDER)) {
             ByteOrder byteOrder = getByteOrder(rightNode);
 
             /*
              * If byte order was already set by a metadata packet, compare it to
              * see if it matches
              */
-            if (trace.getByteOrder() != null) {
-                if (trace.getByteOrder() != byteOrder) {
+            if (fTrace.getByteOrder() != null) {
+                if (fTrace.getByteOrder() != byteOrder) {
                     throw new ParseException(
                             "Endianness mismatch. Magic number says " //$NON-NLS-1$
-                                    + trace.getByteOrder()
+                                    + fTrace.getByteOrder()
                                     + " but metadata says " + byteOrder); //$NON-NLS-1$
                 }
             } else {
-                trace.setByteOrder(byteOrder);
-                final DeclarationScope parentScope = scope.getParentScope();
-                String types[] = parentScope.getTypeNames();
+                fTrace.setByteOrder(byteOrder);
+                final DeclarationScope parentScope = fScope.getParentScope();
 
-                for (String type : types) {
+                for (String type : parentScope.getTypeNames()) {
                     IDeclaration d = parentScope.lookupType(type);
                     if (d instanceof IntegerDeclaration) {
                         addByteOrder(byteOrder, parentScope, type, (IntegerDeclaration) d);
@@ -435,16 +535,15 @@ public class IOStructGen {
                     }
                 }
             }
-        } else if (left.equals(CTFStrings.PACKET_HEADER)) {
-            if (trace.packetHeaderIsSet()) {
+        } else if (left.equals(MetadataStrings.PACKET_HEADER)) {
+            if (fTrace.packetHeaderIsSet()) {
                 throw new ParseException("packet.header already defined"); //$NON-NLS-1$
             }
 
             CommonTree typeSpecifier = (CommonTree) rightNode.getChild(0);
 
             if (typeSpecifier.getType() != CTFParser.TYPE_SPECIFIER_LIST) {
-                throw new ParseException(
-                        "packet.header expects a type specifier"); //$NON-NLS-1$
+                throw new ParseException("packet.header expects a type specifier"); //$NON-NLS-1$
             }
 
             IDeclaration packetHeaderDecl = parseTypeSpecifierList(
@@ -454,7 +553,7 @@ public class IOStructGen {
                 throw new ParseException("packet.header expects a struct"); //$NON-NLS-1$
             }
 
-            trace.setPacketHeader((StructDeclaration) packetHeaderDecl);
+            fTrace.setPacketHeader((StructDeclaration) packetHeaderDecl);
         } else {
             Activator.log(IStatus.WARNING, Messages.IOStructGen_UnknownTraceAttributeWarning + " " + left); //$NON-NLS-1$
         }
@@ -464,9 +563,9 @@ public class IOStructGen {
             final DeclarationScope parentScope, String name,
             IntegerDeclaration decl) throws ParseException {
 
-        if (decl.getByteOrder() == null) {
+        if (decl.getByteOrder() != byteOrder) {
             IntegerDeclaration newI;
-            newI = new IntegerDeclaration(decl.getLength(), decl.isSigned(),
+            newI = IntegerDeclaration.createDeclaration(decl.getLength(), decl.isSigned(),
                     decl.getBase(), byteOrder, decl.getEncoding(),
                     decl.getClock(), decl.getAlignment());
             parentScope.replaceType(name, newI);
@@ -487,9 +586,9 @@ public class IOStructGen {
 
             } else if (d instanceof IntegerDeclaration) {
                 IntegerDeclaration decl = (IntegerDeclaration) d;
-                if (decl.getByteOrder() == null) {
+                if (decl.getByteOrder() != byteOrder) {
                     IntegerDeclaration newI;
-                    newI = new IntegerDeclaration(decl.getLength(),
+                    newI = IntegerDeclaration.createDeclaration(decl.getLength(),
                             decl.isSigned(), decl.getBase(), byteOrder,
                             decl.getEncoding(), decl.getClock(),
                             decl.getAlignment());
@@ -511,7 +610,7 @@ public class IOStructGen {
             } else if (d instanceof IntegerDeclaration) {
                 IntegerDeclaration decl = (IntegerDeclaration) d;
                 IntegerDeclaration newI;
-                newI = new IntegerDeclaration(decl.getLength(),
+                newI = IntegerDeclaration.createDeclaration(decl.getLength(),
                         decl.isSigned(), decl.getBase(), byteOrder,
                         decl.getEncoding(), decl.getClock(),
                         decl.getAlignment());
@@ -522,7 +621,7 @@ public class IOStructGen {
 
     private void parseStream(CommonTree streamNode) throws ParseException {
 
-        Stream stream = new Stream(trace);
+        CTFStream stream = new CTFStream(fTrace);
 
         List<CommonTree> children = streamNode.getChildren();
         if (children == null) {
@@ -550,19 +649,18 @@ public class IOStructGen {
         }
 
         if (stream.isIdSet()) {
-            if (!trace.packetHeaderIsSet()
-                    || !trace.getPacketHeader().hasField(CTFStrings.STREAM_ID)) {
-                throw new ParseException(
-                        "Stream has an ID, but there is no stream_id field in packet header."); //$NON-NLS-1$
+            if (!fTrace.packetHeaderIsSet()
+                    || !fTrace.getPacketHeader().hasField(MetadataStrings.STREAM_ID)) {
+                throw new ParseException("Stream has an ID, but there is no stream_id field in packet header."); //$NON-NLS-1$
             }
         }
 
-        trace.addStream(stream);
+        fTrace.addStream(stream);
 
         popScope();
     }
 
-    private void parseStreamDeclaration(CommonTree streamDecl, Stream stream)
+    private void parseStreamDeclaration(CommonTree streamDecl, CTFStream stream)
             throws ParseException {
 
         /* There should be a left and right */
@@ -573,13 +671,12 @@ public class IOStructGen {
         List<CommonTree> leftStrings = leftNode.getChildren();
 
         if (!isAnyUnaryString(leftStrings.get(0))) {
-            throw new ParseException(
-                    "Left side of CTF assignment must be a string"); //$NON-NLS-1$
+            throw new ParseException("Left side of CTF assignment must be a string"); //$NON-NLS-1$
         }
 
         String left = concatenateUnaryStrings(leftStrings);
 
-        if (left.equals(CTFStrings.ID)) {
+        if (left.equals(MetadataStrings.ID)) {
             if (stream.isIdSet()) {
                 throw new ParseException("stream id already defined"); //$NON-NLS-1$
             }
@@ -587,7 +684,7 @@ public class IOStructGen {
             long streamID = getStreamID(rightNode);
 
             stream.setId(streamID);
-        } else if (left.equals(CTFStrings.EVENT_HEADER)) {
+        } else if (left.equals(MetadataStrings.EVENT_HEADER)) {
             if (stream.isEventHeaderSet()) {
                 throw new ParseException("event.header already defined"); //$NON-NLS-1$
             }
@@ -595,8 +692,7 @@ public class IOStructGen {
             CommonTree typeSpecifier = (CommonTree) rightNode.getChild(0);
 
             if (typeSpecifier.getType() != CTFParser.TYPE_SPECIFIER_LIST) {
-                throw new ParseException(
-                        "event.header expects a type specifier"); //$NON-NLS-1$
+                throw new ParseException("event.header expects a type specifier"); //$NON-NLS-1$
             }
 
             IDeclaration eventHeaderDecl = parseTypeSpecifierList(
@@ -607,7 +703,7 @@ public class IOStructGen {
             }
 
             stream.setEventHeader((StructDeclaration) eventHeaderDecl);
-        } else if (left.equals(CTFStrings.EVENT_CONTEXT)) {
+        } else if (left.equals(MetadataStrings.EVENT_CONTEXT)) {
             if (stream.isEventContextSet()) {
                 throw new ParseException("event.context already defined"); //$NON-NLS-1$
             }
@@ -615,8 +711,7 @@ public class IOStructGen {
             CommonTree typeSpecifier = (CommonTree) rightNode.getChild(0);
 
             if (typeSpecifier.getType() != CTFParser.TYPE_SPECIFIER_LIST) {
-                throw new ParseException(
-                        "event.context expects a type specifier"); //$NON-NLS-1$
+                throw new ParseException("event.context expects a type specifier"); //$NON-NLS-1$
             }
 
             IDeclaration eventContextDecl = parseTypeSpecifierList(
@@ -627,7 +722,7 @@ public class IOStructGen {
             }
 
             stream.setEventContext((StructDeclaration) eventContextDecl);
-        } else if (left.equals(CTFStrings.PACKET_CONTEXT)) {
+        } else if (left.equals(MetadataStrings.PACKET_CONTEXT)) {
             if (stream.isPacketContextSet()) {
                 throw new ParseException("packet.context already defined"); //$NON-NLS-1$
             }
@@ -635,8 +730,7 @@ public class IOStructGen {
             CommonTree typeSpecifier = (CommonTree) rightNode.getChild(0);
 
             if (typeSpecifier.getType() != CTFParser.TYPE_SPECIFIER_LIST) {
-                throw new ParseException(
-                        "packet.context expects a type specifier"); //$NON-NLS-1$
+                throw new ParseException("packet.context expects a type specifier"); //$NON-NLS-1$
             }
 
             IDeclaration packetContextDecl = parseTypeSpecifierList(
@@ -690,9 +784,8 @@ public class IOStructGen {
          * stream
          */
         if (!event.streamIsSet()) {
-            if (trace.nbStreams() > 1) {
-                throw new ParseException(
-                        "Event without stream_id with more than one stream"); //$NON-NLS-1$
+            if (fTrace.nbStreams() > 1) {
+                throw new ParseException("Event without stream_id with more than one stream"); //$NON-NLS-1$
             }
 
             /*
@@ -701,13 +794,12 @@ public class IOStructGen {
              * could be possible to just get the only existing stream, whatever
              * is its id.
              */
-            Stream stream = trace.getStream(null);
+            CTFStream stream = fTrace.getStream(null);
 
             if (stream != null) {
                 event.setStream(stream);
             } else {
-                throw new ParseException(
-                        "Event without stream_id, but there is no stream without id"); //$NON-NLS-1$
+                throw new ParseException("Event without stream_id, but there is no stream without id"); //$NON-NLS-1$
             }
         }
 
@@ -730,13 +822,12 @@ public class IOStructGen {
         List<CommonTree> leftStrings = leftNode.getChildren();
 
         if (!isAnyUnaryString(leftStrings.get(0))) {
-            throw new ParseException(
-                    "Left side of CTF assignment must be a string"); //$NON-NLS-1$
+            throw new ParseException("Left side of CTF assignment must be a string"); //$NON-NLS-1$
         }
 
         String left = concatenateUnaryStrings(leftStrings);
 
-        if (left.equals(CTFStrings.NAME2)) {
+        if (left.equals(MetadataStrings.NAME2)) {
             if (event.nameIsSet()) {
                 throw new ParseException("name already defined"); //$NON-NLS-1$
             }
@@ -744,7 +835,7 @@ public class IOStructGen {
             String name = getEventName(rightNode);
 
             event.setName(name);
-        } else if (left.equals(CTFStrings.ID)) {
+        } else if (left.equals(MetadataStrings.ID)) {
             if (event.idIsSet()) {
                 throw new ParseException("id already defined"); //$NON-NLS-1$
             }
@@ -752,21 +843,21 @@ public class IOStructGen {
             long id = getEventID(rightNode);
 
             event.setId(id);
-        } else if (left.equals(CTFStrings.STREAM_ID)) {
+        } else if (left.equals(MetadataStrings.STREAM_ID)) {
             if (event.streamIsSet()) {
                 throw new ParseException("stream id already defined"); //$NON-NLS-1$
             }
 
             long streamId = getStreamID(rightNode);
 
-            Stream stream = trace.getStream(streamId);
+            CTFStream stream = fTrace.getStream(streamId);
 
             if (stream == null) {
                 throw new ParseException("Stream " + streamId + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             event.setStream(stream);
-        } else if (left.equals(CTFStrings.CONTEXT)) {
+        } else if (left.equals(MetadataStrings.CONTEXT)) {
             if (event.contextIsSet()) {
                 throw new ParseException("context already defined"); //$NON-NLS-1$
             }
@@ -785,7 +876,7 @@ public class IOStructGen {
             }
 
             event.setContext((StructDeclaration) contextDecl);
-        } else if (left.equals(CTFStrings.FIELDS_STRING)) {
+        } else if (left.equals(MetadataStrings.FIELDS_STRING)) {
             if (event.fieldsIsSet()) {
                 throw new ParseException("fields already defined"); //$NON-NLS-1$
             }
@@ -808,7 +899,7 @@ public class IOStructGen {
              */
             final StructDeclaration fields = (StructDeclaration) fieldsDecl;
             event.setFields(fields);
-        } else if (left.equals(CTFStrings.LOGLEVEL2)) {
+        } else if (left.equals(MetadataStrings.LOGLEVEL2)) {
             long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0));
             event.setLogLevel(logLevel);
         } else {
@@ -876,7 +967,6 @@ public class IOStructGen {
             }
         }
 
-
         IDeclaration targetDeclaration = parseTypealiasTarget(target);
 
         if ((targetDeclaration instanceof VariantDeclaration)
@@ -922,7 +1012,6 @@ public class IOStructGen {
             }
         }
 
-
         if (typeDeclaratorList != null) {
             /*
              * Only allow one declarator
@@ -932,8 +1021,7 @@ public class IOStructGen {
              * types.
              */
             if (typeDeclaratorList.getChildCount() != 1) {
-                throw new ParseException(
-                        "Only one type declarator is allowed in the typealias target"); //$NON-NLS-1$
+                throw new ParseException("Only one type declarator is allowed in the typealias target"); //$NON-NLS-1$
             }
 
             typeDeclarator = (CommonTree) typeDeclaratorList.getChild(0);
@@ -975,7 +1063,7 @@ public class IOStructGen {
         CommonTree typeSpecifierList = null;
         CommonTree typeDeclaratorList = null;
         CommonTree typeDeclarator = null;
-        List<CommonTree> pointers = new LinkedList<CommonTree>();
+        List<CommonTree> pointers = new LinkedList<>();
 
         for (CommonTree child : children) {
             switch (child.getType()) {
@@ -999,8 +1087,7 @@ public class IOStructGen {
              * eg: "typealias uint8_t := puint8_t *, **;" is not permitted.
              */
             if (typeDeclaratorList.getChildCount() != 1) {
-                throw new ParseException(
-                        "Only one type declarator is allowed in the typealias alias"); //$NON-NLS-1$
+                throw new ParseException("Only one type declarator is allowed in the typealias alias"); //$NON-NLS-1$
             }
 
             typeDeclarator = (CommonTree) typeDeclaratorList.getChild(0);
@@ -1049,9 +1136,8 @@ public class IOStructGen {
                     typeDeclaratorNode, typeSpecifierListNode, identifierSB);
 
             if ((typeDeclaration instanceof VariantDeclaration)
-                && ((VariantDeclaration) typeDeclaration).isTagged()) {
-                throw new ParseException(
-                        "Typealias of untagged variant is not permitted"); //$NON-NLS-1$
+                    && ((VariantDeclaration) typeDeclaration).isTagged()) {
+                throw new ParseException("Typealias of untagged variant is not permitted"); //$NON-NLS-1$
             }
 
             getCurrentScope().registerType(identifierSB.toString(),
@@ -1081,8 +1167,8 @@ public class IOStructGen {
 
         IDeclaration declaration = null;
         List<CommonTree> children = null;
-        List<CommonTree> pointers = new LinkedList<CommonTree>();
-        List<CommonTree> lengths = new LinkedList<CommonTree>();
+        List<CommonTree> pointers = new LinkedList<>();
+        List<CommonTree> lengths = new LinkedList<>();
         CommonTree identifier = null;
 
         /* Separate the tokens by type */
@@ -1145,6 +1231,10 @@ public class IOStructGen {
                     /* Sequence */
                     String lengthName = concatenateUnaryStrings(lengthChildren);
 
+                    /* check that lengthName was declared */
+                    if (isSignedIntegerField(lengthName)) {
+                        throw new ParseException("Sequence declared with length that is not an unsigned integer"); //$NON-NLS-1$
+                    }
                     /* Create the sequence declaration. */
                     declaration = new SequenceDeclaration(lengthName,
                             declaration);
@@ -1159,6 +1249,15 @@ public class IOStructGen {
         }
 
         return declaration;
+    }
+
+    private boolean isSignedIntegerField(String lengthName) throws ParseException {
+        IDeclaration decl = getCurrentScope().lookupIdentifierRecursive(lengthName);
+        if (decl instanceof IntegerDeclaration) {
+            return ((IntegerDeclaration) decl).isSigned();
+        }
+        throw new ParseException("Is not an integer: " + lengthName); //$NON-NLS-1$
+
     }
 
     /**
@@ -1239,7 +1338,7 @@ public class IOStructGen {
 
         /* The return value */
         FloatDeclaration floatDeclaration = null;
-        ByteOrder byteOrder = trace.getByteOrder();
+        ByteOrder byteOrder = fTrace.getByteOrder();
         long alignment = 0;
         int exponent = 8;
         int mantissa = 24;
@@ -1258,18 +1357,17 @@ public class IOStructGen {
                 List<CommonTree> leftStrings = leftNode.getChildren();
 
                 if (!isAnyUnaryString(leftStrings.get(0))) {
-                    throw new ParseException(
-                            "Left side of ctf expression must be a string"); //$NON-NLS-1$
+                    throw new ParseException("Left side of ctf expression must be a string"); //$NON-NLS-1$
                 }
                 String left = concatenateUnaryStrings(leftStrings);
 
-                if (left.equals(CTFStrings.EXP_DIG)) {
+                if (left.equals(MetadataStrings.EXP_DIG)) {
                     exponent = (int) parseUnaryInteger((CommonTree) rightNode.getChild(0));
-                } else if (left.equals(CTFStrings.BYTE_ORDER)) {
+                } else if (left.equals(MetadataStrings.BYTE_ORDER)) {
                     byteOrder = getByteOrder(rightNode);
-                } else if (left.equals(CTFStrings.MANT_DIG)) {
+                } else if (left.equals(MetadataStrings.MANT_DIG)) {
                     mantissa = (int) parseUnaryInteger((CommonTree) rightNode.getChild(0));
-                } else if (left.equals(CTFStrings.ALIGN)) {
+                } else if (left.equals(MetadataStrings.ALIGN)) {
                     alignment = getAlignment(rightNode);
                 } else {
                     throw new ParseException("Float: unknown attribute " + left); //$NON-NLS-1$
@@ -1319,7 +1417,7 @@ public class IOStructGen {
                 typeSpecifierList, pointerList);
 
         /* Use the string representation to search the type in the current scope */
-        IDeclaration decl = getCurrentScope().rlookupType(
+        IDeclaration decl = getCurrentScope().lookupTypeRecursive(
                 typeStringRepresentation);
 
         if (decl == null) {
@@ -1354,11 +1452,12 @@ public class IOStructGen {
         /* The return value */
         IntegerDeclaration integerDeclaration = null;
         boolean signed = false;
-        ByteOrder byteOrder = trace.getByteOrder();
+        ByteOrder byteOrder = fTrace.getByteOrder();
         long size = 0;
         long alignment = 0;
         int base = 10;
-        String clock = null;
+        @NonNull
+        String clock = ""; //$NON-NLS-1$
 
         Encoding encoding = Encoding.NONE;
 
@@ -1376,18 +1475,17 @@ public class IOStructGen {
                 List<CommonTree> leftStrings = leftNode.getChildren();
 
                 if (!isAnyUnaryString(leftStrings.get(0))) {
-                    throw new ParseException(
-                            "Left side of ctf expression must be a string"); //$NON-NLS-1$
+                    throw new ParseException("Left side of ctf expression must be a string"); //$NON-NLS-1$
                 }
                 String left = concatenateUnaryStrings(leftStrings);
 
                 if (left.equals("signed")) { //$NON-NLS-1$
                     signed = getSigned(rightNode);
-                } else if (left.equals(CTFStrings.BYTE_ORDER)) {
+                } else if (left.equals(MetadataStrings.BYTE_ORDER)) {
                     byteOrder = getByteOrder(rightNode);
                 } else if (left.equals("size")) { //$NON-NLS-1$
                     size = getSize(rightNode);
-                } else if (left.equals(CTFStrings.ALIGN)) {
+                } else if (left.equals(MetadataStrings.ALIGN)) {
                     alignment = getAlignment(rightNode);
                 } else if (left.equals("base")) { //$NON-NLS-1$
                     base = getBase(rightNode);
@@ -1418,14 +1516,16 @@ public class IOStructGen {
             }
         }
 
-        integerDeclaration = new IntegerDeclaration((int) size, signed, base,
+        integerDeclaration = IntegerDeclaration.createDeclaration((int) size, signed, base,
                 byteOrder, encoding, clock, alignment);
 
         return integerDeclaration;
     }
 
+    @NonNull
     private static String getClock(CommonTree rightNode) {
-        return rightNode.getChild(1).getChild(0).getChild(0).getText();
+        String clock = rightNode.getChild(1).getChild(0).getChild(0).getText();
+        return clock == null ? "" : clock; //$NON-NLS-1$
     }
 
     private static StringDeclaration parseString(CommonTree string)
@@ -1452,8 +1552,7 @@ public class IOStructGen {
                     List<CommonTree> leftStrings = leftNode.getChildren();
 
                     if (!isAnyUnaryString(leftStrings.get(0))) {
-                        throw new ParseException(
-                                "Left side of ctf expression must be a string"); //$NON-NLS-1$
+                        throw new ParseException("Left side of ctf expression must be a string"); //$NON-NLS-1$
                     }
                     String left = concatenateUnaryStrings(leftStrings);
 
@@ -1579,7 +1678,7 @@ public class IOStructGen {
                 /* Name and !body */
 
                 /* Lookup the name in the current scope. */
-                structDeclaration = getCurrentScope().rlookupStruct(structName);
+                structDeclaration = getCurrentScope().lookupStructRecursive(structName);
 
                 /*
                  * If not found, it means that a struct with such name has not
@@ -1654,7 +1753,6 @@ public class IOStructGen {
     private void parseStructDeclaration(CommonTree declaration,
             StructDeclaration struct) throws ParseException {
 
-
         /* Get the type specifier list node */
         CommonTree typeSpecifierListNode = (CommonTree) declaration.getFirstChildWithType(CTFParser.TYPE_SPECIFIER_LIST);
 
@@ -1675,6 +1773,7 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
             String fieldName = identifierSB.toString();
+            getCurrentScope().registerIdentifier(fieldName, decl);
 
             if (struct.hasField(fieldName)) {
                 throw new ParseException("struct: duplicate field " //$NON-NLS-1$
@@ -1742,20 +1841,18 @@ public class IOStructGen {
              * it could be because the enum was already declared.
              */
             if (enumName != null) {
-                enumDecl = getCurrentScope().rlookupEnum(enumName);
+                enumDecl = getCurrentScope().lookupEnumRecursive(enumName);
                 if (enumDecl != null) {
                     return (EnumDeclaration) enumDecl;
                 }
             }
 
-            IDeclaration decl = getCurrentScope().rlookupType("int"); //$NON-NLS-1$
+            IDeclaration decl = getCurrentScope().lookupTypeRecursive("int"); //$NON-NLS-1$
 
             if (decl == null) {
-                throw new ParseException(
-                        "enum container type implicit and type int not defined"); //$NON-NLS-1$
+                throw new ParseException("enum container type implicit and type int not defined"); //$NON-NLS-1$
             } else if (!(decl instanceof IntegerDeclaration)) {
-                throw new ParseException(
-                        "enum container type implicit and type int not an integer"); //$NON-NLS-1$
+                throw new ParseException("enum container type implicit and type int not an integer"); //$NON-NLS-1$
             }
 
             containerTypeDeclaration = (IntegerDeclaration) decl;
@@ -1791,7 +1888,7 @@ public class IOStructGen {
                 /* Name and !body */
 
                 /* Lookup the name in the current scope. */
-                enumDeclaration = getCurrentScope().rlookupEnum(enumName);
+                enumDeclaration = getCurrentScope().lookupEnumRecursive(enumName);
 
                 /*
                  * If not found, it means that an enum with such name has not
@@ -2014,7 +2111,7 @@ public class IOStructGen {
                 /* Name and !body */
 
                 /* Lookup the name in the current scope. */
-                variantDeclaration = getCurrentScope().rlookupVariant(
+                variantDeclaration = getCurrentScope().lookupVariantRecursive(
                         variantName);
 
                 /*
@@ -2035,6 +2132,20 @@ public class IOStructGen {
 
         if (hasTag) {
             variantDeclaration.setTag(variantTag);
+
+            IDeclaration decl = getCurrentScope().lookupIdentifierRecursive(variantTag);
+            if (decl == null) {
+                throw new ParseException("Variant tag not found: " + variantTag); //$NON-NLS-1$
+            }
+            if (!(decl instanceof EnumDeclaration)) {
+                throw new ParseException("Variant tag must be an enum: " + variantTag); //$NON-NLS-1$
+            }
+            EnumDeclaration tagDecl = (EnumDeclaration) decl;
+            Set<String> intersection = new HashSet<>(tagDecl.getLabels());
+            intersection.retainAll(variantDeclaration.getFields().keySet());
+            if (intersection.isEmpty()) {
+                throw new ParseException("Variant contains no values of the tag, impossible to use: " + variantName); //$NON-NLS-1$
+            }
         }
 
         return variantDeclaration;
@@ -2070,7 +2181,6 @@ public class IOStructGen {
     private void parseVariantDeclaration(CommonTree declaration,
             VariantDeclaration variant) throws ParseException {
 
-
         /* Get the type specifier list node */
         CommonTree typeSpecifierListNode = (CommonTree) declaration.getFirstChildWithType(CTFParser.TYPE_SPECIFIER_LIST);
 
@@ -2091,12 +2201,16 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
 
-            if (variant.hasField(identifierSB.toString())) {
+            String name = identifierSB.toString();
+
+            if (variant.hasField(name)) {
                 throw new ParseException("variant: duplicate field " //$NON-NLS-1$
-                        + identifierSB.toString());
+                        + name);
             }
 
-            variant.addField(identifierSB.toString(), decl);
+            getCurrentScope().registerIdentifier(name, decl);
+
+            variant.addField(name, decl);
         }
     }
 
@@ -2183,8 +2297,7 @@ public class IOStructGen {
         case CTFParser.STRUCT: {
             CommonTree structName = (CommonTree) typeSpecifier.getFirstChildWithType(CTFParser.STRUCT_NAME);
             if (structName == null) {
-                throw new ParseException(
-                        "nameless struct found in createTypeSpecifierString"); //$NON-NLS-1$
+                throw new ParseException("nameless struct found in createTypeSpecifierString"); //$NON-NLS-1$
             }
 
             CommonTree structNameIdentifier = (CommonTree) structName.getChild(0);
@@ -2195,8 +2308,7 @@ public class IOStructGen {
         case CTFParser.VARIANT: {
             CommonTree variantName = (CommonTree) typeSpecifier.getFirstChildWithType(CTFParser.VARIANT_NAME);
             if (variantName == null) {
-                throw new ParseException(
-                        "nameless variant found in createTypeSpecifierString"); //$NON-NLS-1$
+                throw new ParseException("nameless variant found in createTypeSpecifierString"); //$NON-NLS-1$
             }
 
             CommonTree variantNameIdentifier = (CommonTree) variantName.getChild(0);
@@ -2207,8 +2319,7 @@ public class IOStructGen {
         case CTFParser.ENUM: {
             CommonTree enumName = (CommonTree) typeSpecifier.getFirstChildWithType(CTFParser.ENUM_NAME);
             if (enumName == null) {
-                throw new ParseException(
-                        "nameless enum found in createTypeSpecifierString"); //$NON-NLS-1$
+                throw new ParseException("nameless enum found in createTypeSpecifierString"); //$NON-NLS-1$
             }
 
             CommonTree enumNameIdentifier = (CommonTree) enumName.getChild(0);
@@ -2219,8 +2330,7 @@ public class IOStructGen {
         case CTFParser.FLOATING_POINT:
         case CTFParser.INTEGER:
         case CTFParser.STRING:
-            throw new ParseException(
-                    "CTF type found in createTypeSpecifierString"); //$NON-NLS-1$
+            throw new ParseException("CTF type found in createTypeSpecifierString"); //$NON-NLS-1$
         default:
             childTypeError(typeSpecifier);
             break;
@@ -2264,11 +2374,11 @@ public class IOStructGen {
     /**
      * @param node
      *            The node to check.
-     * @return True if the given node is any type of unary string (no quotes, quotes, etc).
+     * @return True if the given node is any type of unary string (no quotes,
+     *         quotes, etc).
      */
     private static boolean isAnyUnaryString(CommonTree node) {
-        return ((node.getType() == CTFParser.UNARY_EXPRESSION_STRING) ||
-                (node.getType() == CTFParser.UNARY_EXPRESSION_STRING_QUOTES));
+        return ((node.getType() == CTFParser.UNARY_EXPRESSION_STRING) || (node.getType() == CTFParser.UNARY_EXPRESSION_STRING_QUOTES));
     }
 
     /**
@@ -2278,8 +2388,7 @@ public class IOStructGen {
      */
     private static boolean isUnaryInteger(CommonTree node) {
         return ((node.getType() == CTFParser.UNARY_EXPRESSION_DEC) ||
-                (node.getType() == CTFParser.UNARY_EXPRESSION_HEX) ||
-                (node.getType() == CTFParser.UNARY_EXPRESSION_OCT));
+                (node.getType() == CTFParser.UNARY_EXPRESSION_HEX) || (node.getType() == CTFParser.UNARY_EXPRESSION_OCT));
     }
 
     /**
@@ -2313,7 +2422,8 @@ public class IOStructGen {
      * @param unaryInteger
      *            An unary integer node.
      * @return The integer value.
-     * @throws CTFReaderException
+     * @throws ParseException
+     *             on an invalid integer format ("bob" for example)
      */
     private static long parseUnaryInteger(CommonTree unaryInteger) throws ParseException {
 
@@ -2323,13 +2433,7 @@ public class IOStructGen {
 
         long intval;
         try {
-            if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_DEC) {
-                intval = Long.parseLong(strval, 10);
-            } else if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_HEX) {
-                intval = Long.parseLong(strval, 0x10);
-            } else { /* unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_OCT */
-                intval = Long.parseLong(strval, 010); // 010 == 0x08 == 8
-            }
+            intval = Long.decode(strval);
         } catch (NumberFormatException e) {
             throw new ParseException("Invalid integer format: " + strval); //$NON-NLS-1$
         }
@@ -2399,11 +2503,11 @@ public class IOStructGen {
         if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
-            if (strval.equals(CTFStrings.TRUE)
-                    || strval.equals(CTFStrings.TRUE2)) {
+            if (strval.equals(MetadataStrings.TRUE)
+                    || strval.equals(MetadataStrings.TRUE2)) {
                 ret = true;
-            } else if (strval.equals(CTFStrings.FALSE)
-                    || strval.equals(CTFStrings.FALSE2)) {
+            } else if (strval.equals(MetadataStrings.FALSE)
+                    || strval.equals(MetadataStrings.FALSE2)) {
                 ret = false;
             } else {
                 throw new ParseException("Invalid boolean value " //$NON-NLS-1$
@@ -2447,13 +2551,13 @@ public class IOStructGen {
         if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
-            if (strval.equals(CTFStrings.LE)) {
+            if (strval.equals(MetadataStrings.LE)) {
                 return ByteOrder.LITTLE_ENDIAN;
-            } else if (strval.equals(CTFStrings.BE)
-                    || strval.equals(CTFStrings.NETWORK)) {
+            } else if (strval.equals(MetadataStrings.BE)
+                    || strval.equals(MetadataStrings.NETWORK)) {
                 return ByteOrder.BIG_ENDIAN;
-            } else if (strval.equals(CTFStrings.NATIVE)) {
-                return trace.getByteOrder();
+            } else if (strval.equals(MetadataStrings.NATIVE)) {
+                return fTrace.getByteOrder();
             } else {
                 throw new ParseException("Invalid value for byte order"); //$NON-NLS-1$
             }
@@ -2559,24 +2663,24 @@ public class IOStructGen {
         } else if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
-            if (strval.equals(CTFStrings.DECIMAL)
-                    || strval.equals(CTFStrings.DEC)
-                    || strval.equals(CTFStrings.DEC_CTE)
-                    || strval.equals(CTFStrings.INT_MOD)
-                    || strval.equals(CTFStrings.UNSIGNED_CTE)) {
+            if (strval.equals(MetadataStrings.DECIMAL)
+                    || strval.equals(MetadataStrings.DEC)
+                    || strval.equals(MetadataStrings.DEC_CTE)
+                    || strval.equals(MetadataStrings.INT_MOD)
+                    || strval.equals(MetadataStrings.UNSIGNED_CTE)) {
                 return 10;
-            } else if (strval.equals(CTFStrings.HEXADECIMAL)
-                    || strval.equals(CTFStrings.HEX)
-                    || strval.equals(CTFStrings.X)
-                    || strval.equals(CTFStrings.X2)
-                    || strval.equals(CTFStrings.POINTER)) {
+            } else if (strval.equals(MetadataStrings.HEXADECIMAL)
+                    || strval.equals(MetadataStrings.HEX)
+                    || strval.equals(MetadataStrings.X)
+                    || strval.equals(MetadataStrings.X2)
+                    || strval.equals(MetadataStrings.POINTER)) {
                 return 16;
-            } else if (strval.equals(CTFStrings.OCTAL)
-                    || strval.equals(CTFStrings.OCT)
-                    || strval.equals(CTFStrings.OCTAL_CTE)) {
+            } else if (strval.equals(MetadataStrings.OCTAL)
+                    || strval.equals(MetadataStrings.OCT)
+                    || strval.equals(MetadataStrings.OCTAL_CTE)) {
                 return 8;
-            } else if (strval.equals(CTFStrings.BINARY)
-                    || strval.equals(CTFStrings.BIN)) {
+            } else if (strval.equals(MetadataStrings.BINARY)
+                    || strval.equals(MetadataStrings.BIN)) {
                 return 2;
             } else {
                 throw new ParseException("Invalid value for base"); //$NON-NLS-1$
@@ -2594,6 +2698,7 @@ public class IOStructGen {
      * @return The "encoding" value.
      * @throws ParseException
      */
+    @NonNull
     private static Encoding getEncoding(CommonTree rightNode)
             throws ParseException {
 
@@ -2602,11 +2707,11 @@ public class IOStructGen {
         if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
-            if (strval.equals(CTFStrings.UTF8)) {
+            if (strval.equals(MetadataStrings.UTF8)) {
                 return Encoding.UTF8;
-            } else if (strval.equals(CTFStrings.ASCII)) {
+            } else if (strval.equals(MetadataStrings.ASCII)) {
                 return Encoding.ASCII;
-            } else if (strval.equals(CTFStrings.NONE)) {
+            } else if (strval.equals(MetadataStrings.NONE)) {
                 return Encoding.NONE;
             } else {
                 throw new ParseException("Invalid value for encoding"); //$NON-NLS-1$
@@ -2683,7 +2788,6 @@ public class IOStructGen {
                 continue;
             }
 
-
             CommonTree id = (CommonTree) ref.getChild(0);
 
             if (ref.getType() == CTFParser.ARROW) {
@@ -2724,14 +2828,14 @@ public class IOStructGen {
      * Adds a new declaration scope on the top of the scope stack.
      */
     private void pushScope() {
-        scope = new DeclarationScope(scope);
+        fScope = new DeclarationScope(fScope);
     }
 
     /**
      * Removes the top declaration scope from the scope stack.
      */
     private void popScope() {
-        scope = scope.getParentScope();
+        fScope = fScope.getParentScope();
     }
 
     /**
@@ -2740,7 +2844,7 @@ public class IOStructGen {
      * @return The current declaration scope.
      */
     private DeclarationScope getCurrentScope() {
-        return scope;
+        return fScope;
     }
 
 }

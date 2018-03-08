@@ -11,10 +11,9 @@
  *    Kent Sebastian <ksebasti@redhat.com>
  *    Thavidu Ranatunga (IBM) - Derived and modified code from
  *        org.eclipse.linuxtools.oprofile.core.OprofileCorePlugin
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -25,10 +24,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
-import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -37,274 +33,235 @@ import org.osgi.framework.BundleContext;
  */
 public class PerfPlugin extends AbstractUIPlugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.perf";
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.eclipse.linuxtools.perf"; //$NON-NLS-1$
 
-	// View ID
-	public static final String VIEW_ID = "org.eclipse.linuxtools.perf.ui.ProfileView";
-	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
-	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
-	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
-	public static final String REPORT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.ReportViewDiff";
+    // View ID
+    public static final String VIEW_ID = "org.eclipse.linuxtools.perf.ui.ProfileView"; //$NON-NLS-1$
+    public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"; //$NON-NLS-1$
+    public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView"; //$NON-NLS-1$
+    public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff"; //$NON-NLS-1$
+    public static final String REPORT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.ReportViewDiff"; //$NON-NLS-1$
 
-	// Launch Config ID
-	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
-	
-	//Perf Options tab attribs.
-	public static final String ATTR_Kernel_Location = "org.eclipse.linuxtools.internal.perf.attr.Kernel.Location";
-	public static final String ATTR_Kernel_Location_default = "";
-	public static final String ATTR_Record_Realtime = "org.eclipse.linuxtools.internal.perf.attr.Record.Realtime";
-	public static final boolean ATTR_Record_Realtime_default = false;
-	public static final String ATTR_Record_Verbose = "org.eclipse.linuxtools.internal.perf.attr.Record.Verbose";
-	public static final boolean ATTR_Record_Verbose_default = false;
-	public static final String ATTR_SourceLineNumbers = "org.eclipse.linuxtools.internal.perf.attr.SourceLineNumbers";
-	public static final boolean ATTR_SourceLineNumbers_default = true;
-	public static final String ATTR_Kernel_SourceLineNumbers = "org.eclipse.linuxtools.internal.perf.attr.Kernel.SourceLineNumbers";
-	public static final boolean ATTR_Kernel_SourceLineNumbers_default = false;
-	public static final String ATTR_Multiplex = "org.eclipse.linuxtools.internal.perf.attr.Multiplex";
-	public static final boolean ATTR_Multiplex_default = false;
-	public static final String ATTR_ModuleSymbols = "org.eclipse.linuxtools.internal.perf.attr.ModuleSymbols";
-	public static final boolean ATTR_ModuleSymbols_default = false;
-	public static final String ATTR_HideUnresolvedSymbols = "org.eclipse.linuxtools.internal.perf.attr.HideUnresolvedSymbols";
-	public static final boolean ATTR_HideUnresolvedSymbols_default = true;
-	public static final String ATTR_ShowSourceDisassembly = "org.eclipse.linuxtools.internal.perf.attr.ShowSourceDisassembly";
-	public static final boolean ATTR_ShowSourceDisassembly_default = false;
-	public static final String ATTR_ShowStat = "org.eclipse.linuxtools.internal.perf.attr.ShowStat";
-	public static final boolean ATTR_ShowStat_default = false;
-	public static final String ATTR_StatRunCount = "org.eclipse.linuxtools.internal.perf.attr.StatRunCount";
-	public static final int ATTR_StatRunCount_default = 1;
-	
-	//Perf Events tab attribs.
-	public static final String ATTR_DefaultEvent = "org.eclipse.linuxtools.internal.perf.attr.DefaultEvent";
-	public static final boolean ATTR_DefaultEvent_default = true;
-	public static final String ATTR_MultipleEvents = "org.eclipse.linuxtools.internal.perf.attr.MultipleEvents";
-	public static final boolean ATTR_MultipleEvents_default = false;
-	public static final String ATTR_SelectedEvents = "org.eclipse.linuxtools.internal.perf.attr.SelectedEvents";
-	public static final List<String> ATTR_SelectedEvents_default = null;
-	public static final String ATTR_RawHwEvents = "org.eclipse.linuxtools.internal.perf.attr.RawHwEvents";
-	public static final List<String> ATTR_RawHwEvents_default = null;
-	public static final String ATTR_HwBreakpointEvents = "org.eclipse.linuxtools.internal.perf.attr.HwBreakpointEvents";
-	public static final List<String> ATTR_HwBreakpointEvents_default = null;
-	
-	//Strings
-	public static final String STRINGS_Kernel_Location = "Location of kernel image file (optional): ";
-	public static final String STRINGS_Record_Realtime = "Record with realtime priority (RT SCHED_FIFO)";
-	public static final String STRINGS_Record_Verbose = "Record with verbose output";
-	public static final String STRINGS_ModuleSymbols = "Load Module Symbols";
-	public static final String STRINGS_HideUnresolvedSymbols = "Hide Unresolved Symbols";
-	public static final String STRINGS_SourceLineNumbers = "Obtain source line numbers from profile data";
-	public static final String STRINGS_Kernel_SourceLineNumbers = "Obtain kernel source line numbers from profile data (Warning: May be very slow)";
-	public static final String STRINGS_Multiplex = "Multiplex counter output in a single channel";
-	public static final String STRINGS_RAWHWEvents = "Raw hardware event descriptor";
-	public static final String STRINGS_HWBREAKPOINTS = "Hardware breakpoint";
-	public static final String STRINGS_UnfiledSymbols = "Unfiled Symbols";
-	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
-	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
-	public static final String STRINGS_ShowStat = "Show Stat View";
-	public static final String STRINGS_SearchSourceDisassembly = "Search Source Disassembly";
-	
-	public static final String PERF_COMMAND = "perf";
-	public static final String PERF_DEFAULT_DATA = "perf.data";
-	public static final String PERF_DEFAULT_STAT= "perf.stat";
-	public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat";
-	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
+    // Launch Config ID
+    public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile"; //$NON-NLS-1$
 
-	
-	// The shared instance
-	private static PerfPlugin plugin;
-	
-	// Model Root
-	private TreeParent _modelRoot;
+    //Perf Options tab attribs.
+    public static final String ATTR_Kernel_Location = "org.eclipse.linuxtools.internal.perf.attr.Kernel.Location"; //$NON-NLS-1$
+    public static final String ATTR_Kernel_Location_default = ""; //$NON-NLS-1$
+    public static final String ATTR_Record_Realtime = "org.eclipse.linuxtools.internal.perf.attr.Record.Realtime"; //$NON-NLS-1$
+    public static final boolean ATTR_Record_Realtime_default = false;
+    public static final String ATTR_Record_Realtime_Priority = "org.eclipse.linuxtools.internal.perf.attr.Record.Realtime.Priority"; //$NON-NLS-1$
+    public static final int ATTR_Record_Realtime_Priority_default = 1;
+    public static final String ATTR_Record_Verbose = "org.eclipse.linuxtools.internal.perf.attr.Record.Verbose"; //$NON-NLS-1$
+    public static final boolean ATTR_Record_Verbose_default = false;
+    public static final String ATTR_SourceLineNumbers = "org.eclipse.linuxtools.internal.perf.attr.SourceLineNumbers"; //$NON-NLS-1$
+    public static final boolean ATTR_SourceLineNumbers_default = true;
+    public static final String ATTR_Kernel_SourceLineNumbers = "org.eclipse.linuxtools.internal.perf.attr.Kernel.SourceLineNumbers"; //$NON-NLS-1$
+    public static final boolean ATTR_Kernel_SourceLineNumbers_default = false;
+    public static final String ATTR_Multiplex = "org.eclipse.linuxtools.internal.perf.attr.Multiplex"; //$NON-NLS-1$
+    public static final boolean ATTR_Multiplex_default = false;
+    public static final String ATTR_ModuleSymbols = "org.eclipse.linuxtools.internal.perf.attr.ModuleSymbols"; //$NON-NLS-1$
+    public static final boolean ATTR_ModuleSymbols_default = false;
+    public static final String ATTR_HideUnresolvedSymbols = "org.eclipse.linuxtools.internal.perf.attr.HideUnresolvedSymbols"; //$NON-NLS-1$
+    public static final boolean ATTR_HideUnresolvedSymbols_default = true;
+    public static final String ATTR_ShowSourceDisassembly = "org.eclipse.linuxtools.internal.perf.attr.ShowSourceDisassembly"; //$NON-NLS-1$
+    public static final boolean ATTR_ShowSourceDisassembly_default = false;
+    public static final String ATTR_ShowStat = "org.eclipse.linuxtools.internal.perf.attr.ShowStat"; //$NON-NLS-1$
+    public static final boolean ATTR_ShowStat_default = false;
+    public static final String ATTR_StatRunCount = "org.eclipse.linuxtools.internal.perf.attr.StatRunCount"; //$NON-NLS-1$
+    public static final int ATTR_StatRunCount_default = 1;
 
-	// Source Disassembly Data
-	private IPerfData sourceDisassemblyData;
+    //Perf Events tab attribs.
+    public static final String ATTR_DefaultEvent = "org.eclipse.linuxtools.internal.perf.attr.DefaultEvent"; //$NON-NLS-1$
+    public static final boolean ATTR_DefaultEvent_default = true;
+    public static final String ATTR_MultipleEvents = "org.eclipse.linuxtools.internal.perf.attr.MultipleEvents"; //$NON-NLS-1$
+    public static final boolean ATTR_MultipleEvents_default = false;
+    public static final String ATTR_SelectedEvents = "org.eclipse.linuxtools.internal.perf.attr.SelectedEvents"; //$NON-NLS-1$
+    public static final List<String> ATTR_SelectedEvents_default = null;
+    public static final String ATTR_RawHwEvents = "org.eclipse.linuxtools.internal.perf.attr.RawHwEvents"; //$NON-NLS-1$
+    public static final List<String> ATTR_RawHwEvents_default = null;
+    public static final String ATTR_HwBreakpointEvents = "org.eclipse.linuxtools.internal.perf.attr.HwBreakpointEvents"; //$NON-NLS-1$
+    public static final List<String> ATTR_HwBreakpointEvents_default = null;
 
-	// Stat Data
-	private IPerfData statData;
+    //Strings
+    public static final String STRINGS_Kernel_Location = "Location of kernel image file (optional): "; //$NON-NLS-1$
+    public static final String STRINGS_Record_Realtime = "Record with realtime priority (RT SCHED_FIFO)"; //$NON-NLS-1$
+    public static final String STRINGS_Record_Verbose = "Record with verbose output"; //$NON-NLS-1$
+    public static final String STRINGS_ModuleSymbols = "Load Module Symbols"; //$NON-NLS-1$
+    public static final String STRINGS_HideUnresolvedSymbols = "Hide Unresolved Symbols"; //$NON-NLS-1$
+    public static final String STRINGS_SourceLineNumbers = "Obtain source line numbers from profile data"; //$NON-NLS-1$
+    public static final String STRINGS_Kernel_SourceLineNumbers = "Obtain kernel source line numbers from profile data (Warning: May be very slow)"; //$NON-NLS-1$
+    public static final String STRINGS_Multiplex = "Multiplex counter output in a single channel"; //$NON-NLS-1$
+    public static final String STRINGS_RAWHWEvents = "Raw hardware event descriptor"; //$NON-NLS-1$
+    public static final String STRINGS_HWBREAKPOINTS = "Hardware breakpoint"; //$NON-NLS-1$
+    public static final String STRINGS_UnfiledSymbols = "Unfiled Symbols"; //$NON-NLS-1$
+    public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files"; //$NON-NLS-1$
+    public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View"; //$NON-NLS-1$
+    public static final String STRINGS_ShowStat = "Show Stat View"; //$NON-NLS-1$
+    public static final String STRINGS_SearchSourceDisassembly = "Search Source Disassembly"; //$NON-NLS-1$
 
-	// Profile view
-	private PerfProfileView _ProfileView = null;
+    public static final String PERF_COMMAND = "perf"; //$NON-NLS-1$
+    public static final String PERF_DEFAULT_DATA = "perf.data"; //$NON-NLS-1$
+    public static final String PERF_DEFAULT_STAT= "perf.stat"; //$NON-NLS-1$
+    public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat"; //$NON-NLS-1$
+    public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
-	// Current profile data
-	private IPath curProfileData;
 
-	// Current working directory
-	private IPath curWorkingDir;
+    // The shared instance
+    private static PerfPlugin plugin;
 
-	// Current stat comparison data
-	private IPerfData statDiffData;
+    // Model Root
+    private TreeParent _modelRoot;
 
-	// Current report comparison data
-	private IPerfData reportDiffData;
+    // Source Disassembly Data
+    private IPerfData sourceDisassemblyData;
 
-	public TreeParent getModelRoot() {
-		return _modelRoot;
-	}
+    // Stat Data
+    private IPerfData statData;
 
-	public IPerfData getSourceDisassemblyData () {
-		return sourceDisassemblyData;
-	}
+    // Current profile data
+    private IPath curProfileData;
 
-	public IPerfData getStatData () {
-		return statData;
-	}
+    // Current working directory
+    private IPath curWorkingDir;
 
-	public IPath getPerfProfileData() {
-		return curProfileData;
-	}
+    public TreeParent getModelRoot() {
+        return _modelRoot;
+    }
 
-	public IPerfData getStatDiffData() {
-		return statDiffData;
-	}
+    public IPerfData getSourceDisassemblyData () {
+        return sourceDisassemblyData;
+    }
 
-	public IPerfData getReportDiffData(){
-		return reportDiffData;
-	}
+    public IPerfData getStatData () {
+        return statData;
+    }
 
-	public IPath getWorkingDir(){
-		return curWorkingDir;
-	}
+    public IPath getPerfProfileData() {
+        return curProfileData;
+    }
 
-	/**
-	 * Get perf file with specified name under the current profiled project.
-	 *
-	 * @param fileName file name.
-	 * @return File corresponding to given file or null if no working directory
-	 *         has been set.
-	 */
-	public File getPerfFile(String fileName) {
-		if (curWorkingDir != null) {
-			IPath curStatPath = curWorkingDir.append(fileName);
-			return curStatPath.toFile();
-		}
-		return null;
-	}
+    public IPath getWorkingDir(){
+        return curWorkingDir;
+    }
 
-	/**
-	 * Return cleared model root.
-	 * @return TreeParent cleared model root.
-	 */
-	public TreeParent clearModelRoot(){
-		if (_modelRoot == null) {
-			_modelRoot = new TreeParent("");
-		} else {
-			_modelRoot.clear();
-		}
-		return _modelRoot;
-	}
+    /**
+     * Get perf file with specified name under the current profiled project.
+     *
+     * @param fileName file name.
+     * @return File corresponding to given file or null if no working directory
+     *         has been set.
+     */
+    public IPath getPerfFile(String fileName) {
+        if (curWorkingDir != null) {
+            return curWorkingDir.append(fileName);
+        }
+        return null;
+    }
 
-	public void setModelRoot(TreeParent rootnode) {
-		this._modelRoot = rootnode;
-	}
+    /**
+     * Return cleared model root.
+     * @return TreeParent cleared model root.
+     */
+    public TreeParent clearModelRoot(){
+        if (_modelRoot == null) {
+            _modelRoot = new TreeParent(""); //$NON-NLS-1$
+        } else {
+            _modelRoot.clear();
+        }
+        return _modelRoot;
+    }
 
-	public void setSourceDisassemblyData (IPerfData sourceDisassemblyData) {
-		this.sourceDisassemblyData = sourceDisassemblyData;
-	}
+    public void setModelRoot(TreeParent rootnode) {
+        this._modelRoot = rootnode;
+    }
 
-	public void setStatData (IPerfData statData) {
-		this.statData = statData;
-	}
+    public void setSourceDisassemblyData (IPerfData sourceDisassemblyData) {
+        this.sourceDisassemblyData = sourceDisassemblyData;
+    }
 
-	public void setPerfProfileData(IPath perfProfileData) {
-		this.curProfileData = perfProfileData;
-	}
+    public void setStatData (IPerfData statData) {
+        this.statData = statData;
+    }
 
-	public void setStatDiffData(IPerfData diffData){
-		this.statDiffData = diffData;
-	}
+    public void setPerfProfileData(IPath perfProfileData) {
+        this.curProfileData = perfProfileData;
+    }
 
-	public void setReportDiffData(IPerfData diffData){
-		this.reportDiffData = diffData;
-	}
+    public void setWorkingDir(IPath workingDir){
+        curWorkingDir = workingDir;
+    }
 
-	public void setWorkingDir(IPath workingDir){
-		curWorkingDir = workingDir;
-	}
+    /**
+     * The constructor
+     */
+    public PerfPlugin() {
+    }
 
-	public PerfProfileView getProfileView() {
-		if (_ProfileView == null) {
-			try {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
-			} catch (PartInitException e2) {
-				e2.printStackTrace();
-			}
-		}
-		return _ProfileView;
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+    }
 
-	public void setProfileView(PerfProfileView profileView) {
-		this._ProfileView = profileView;
-	}
-	
-	/**
-	 * The constructor
-	 */
-	public PerfPlugin() {
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
-	@Override
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+    /**
+     * Returns the shared instance
+     *
+     * @return the shared instance
+     */
+    public static PerfPlugin getDefault() {
+        return plugin;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+    /**
+     * Returns an image descriptor for the image file at the given
+     * plug-in relative path
+     *
+     * @param path the path
+     * @return the image descriptor
+     */
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
 
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static PerfPlugin getDefault() {
-		return plugin;
-	}
+    /**
+     * Log the given exception and display the message/reason in an error
+     * message box. (From org.eclipse.linuxtools.packagekit.ui.Activator)
+     *
+     * @param ex the given exception to display
+     * @since 2.0
+     */
+    public void openError(Exception ex, final String title) {
+        StringWriter writer = new StringWriter();
+        ex.printStackTrace(new PrintWriter(writer));
 
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
+        final String message = ex.getMessage();
+        final String formattedMessage = PLUGIN_ID + " : " + message; //$NON-NLS-1$
+        final Status status = new Status(IStatus.ERROR, PLUGIN_ID, formattedMessage, new Throwable(writer.toString()));
 
-	/**
-	 * Log the given exception and display the message/reason in an error
-	 * message box. (From org.eclipse.linuxtools.packagekit.ui.Activator)
-	 *
-	 * @param ex the given exception to display
-	 * @since 2.0
-	 */
-	public void openError(Exception ex, final String title) {
-		StringWriter writer = new StringWriter();
-		ex.printStackTrace(new PrintWriter(writer));
-
-		final String message = ex.getMessage();
-		final String formattedMessage = PLUGIN_ID + " : " + message; //$NON-NLS-1$
-		final Status status = new Status(IStatus.ERROR, PLUGIN_ID, formattedMessage, new Throwable(writer.toString()));
-
-		getLog().log(status);
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				ErrorDialog.openError(Display.getDefault().getActiveShell(),
-						title, message, status);
-			}
-		});
-	}
+        getLog().log(status);
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                ErrorDialog.openError(Display.getDefault().getActiveShell(),
+                        title, message, status);
+            }
+        });
+    }
 
 }

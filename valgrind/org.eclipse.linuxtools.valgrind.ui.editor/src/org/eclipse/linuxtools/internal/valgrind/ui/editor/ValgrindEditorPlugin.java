@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.internal.valgrind.ui.editor;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ValgrindEditorPlugin {
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.ui.editor"; //$NON-NLS-1$
+public interface ValgrindEditorPlugin {
+    // The plug-in ID
+    String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.ui.editor"; //$NON-NLS-1$
 }

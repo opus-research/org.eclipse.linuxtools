@@ -23,7 +23,7 @@ import org.swtchart.Chart;
 
 /**
  * An action that open a chart dialog from an <code>AbstractSTViewer</code>.
- * 
+ *
  * @see AbstractSTViewer
  */
 public class ChartAction extends Action {
@@ -33,7 +33,7 @@ public class ChartAction extends Action {
 
     /**
      * The constructor.
-     * 
+     *
      * @param shell
      *            the shell used by the dialog
      * @param viewer
@@ -51,11 +51,6 @@ public class ChartAction extends Action {
         });
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.jface.action.Action#run()
-     */
     @Override
     public void run() {
         dialog.open();

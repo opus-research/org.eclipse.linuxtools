@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -26,13 +26,13 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  */
 public interface ITmfEventParser {
 
-	/**
-	 * Parses the trace event referenced by the context.
-	 * The context should *not* be altered.
-	 *
-	 * @param context the trace context
-	 * @return a parsed event (null if none)
-	 */
-	ITmfEvent parseEvent(ITmfContext context);
+    /**
+     * Parses the trace event referenced by the context.
+     * The context should *not* be altered.
+     *
+     * @param context the trace context
+     * @return a parsed event (null if none)
+     */
+    ITmfEvent parseEvent(ITmfContext context);
 
 }

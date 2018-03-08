@@ -18,58 +18,68 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 
 public class ValgrindStubProcess implements IProcess {
-	protected Map<String, String> attributes;
-	protected ILaunch launch;
-	protected String label;
-	protected IStreamsProxy streamsProxy;
-	
-	public ValgrindStubProcess(ILaunch launch, String label) {
-		attributes = new HashMap<String, String>();
-		streamsProxy = new ValgrindStubStreamsProxy();
-		this.launch = launch;
-		this.label = label;
-		
-		launch.addProcess(this);
-	}
+    protected Map<String, String> attributes;
+    protected ILaunch launch;
+    protected String label;
+    protected IStreamsProxy streamsProxy;
 
-	public String getAttribute(String key) {
-		return attributes.get(key);
-	}
+    public ValgrindStubProcess(ILaunch launch, String label) {
+        attributes = new HashMap<>();
+        streamsProxy = new ValgrindStubStreamsProxy();
+        this.launch = launch;
+        this.label = label;
 
-	public int getExitValue() {
-		return 0;
-	}
+        launch.addProcess(this);
+    }
 
-	public String getLabel() {
-		return label;
-	}
+    @Override
+    public String getAttribute(String key) {
+        return attributes.get(key);
+    }
 
-	public ILaunch getLaunch() {
-		return launch;
-	}
+    @Override
+    public int getExitValue() {
+        return 0;
+    }
 
-	public IStreamsProxy getStreamsProxy() {
-		return streamsProxy;
-	}
+    @Override
+    public String getLabel() {
+        return label;
+    }
 
-	public void setAttribute(String key, String value) {
-		attributes.put(key, value);
-	}
+    @Override
+    public ILaunch getLaunch() {
+        return launch;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public Object getAdapter(Class adapter) {
-		return null;
-	}
+    @Override
+    public IStreamsProxy getStreamsProxy() {
+        return streamsProxy;
+    }
 
-	public boolean canTerminate() {
-		return true;
-	}
+    @Override
+    public void setAttribute(String key, String value) {
+        attributes.put(key, value);
+    }
 
-	public boolean isTerminated() {
-		return true;
-	}
+    @Override
+    @SuppressWarnings("rawtypes")
+    public Object getAdapter(Class adapter) {
+        return null;
+    }
 
-	public void terminate() {
-	}
+    @Override
+    public boolean canTerminate() {
+        return true;
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return true;
+    }
+
+    @Override
+    public void terminate() {
+    }
 
 }

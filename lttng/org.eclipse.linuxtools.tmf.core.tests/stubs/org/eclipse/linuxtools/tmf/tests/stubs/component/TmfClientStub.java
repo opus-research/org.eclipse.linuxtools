@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.tmf.tests.stubs.component;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
-import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
 
 /**
@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
 @SuppressWarnings("javadoc")
 public class TmfClientStub extends TmfComponent {
 
-    private TmfDataProvider[] fProviders;
+    private TmfEventProvider[] fProviders;
 
     public TmfClientStub() {
         super("TmfClientStub");
@@ -33,12 +33,12 @@ public class TmfClientStub extends TmfComponent {
 
     public void findProvider() {
         fProviders = TmfProviderManager.getProviders(TmfSyntheticEventStub.class, TmfSyntheticEventProviderStub.class);
-        //		TmfEventRequest<TmfEventStub> request;
+        //        TmfEventRequest<TmfEventStub> request;
         System.out.println(fProviders.length);
     }
 
     public void triggeRequest() {
-        //		TmfEventRequest<TmfEventStub> request;
+        //        TmfEventRequest<TmfEventStub> request;
     }
 
 }

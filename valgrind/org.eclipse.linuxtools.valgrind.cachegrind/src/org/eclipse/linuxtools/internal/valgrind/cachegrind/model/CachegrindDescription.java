@@ -11,41 +11,23 @@
 package org.eclipse.linuxtools.internal.valgrind.cachegrind.model;
 
 public class CachegrindDescription {
-	protected String name;
-	protected String size;
-	protected String lineSize;
-	protected String assoc;
-	
-	public CachegrindDescription(String name, String size, String lineSize, String assoc) {
-		this.name = name;
-		this.size = size;
-		this.lineSize = lineSize;
-		this.assoc = assoc;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof CachegrindDescription && name.equals(((CachegrindDescription) obj).getName());
-	}
-	
-	@Override
-	public int hashCode() {
-		return name.hashCode();
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public String getSize() {
-		return size;
-	}
-	
-	public String getLineSize() {
-		return lineSize;
-	}
-	
-	public String getAssoc() {
-		return assoc;
-	}
+    private String name;
+
+    public CachegrindDescription(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof CachegrindDescription && name.equals(((CachegrindDescription) obj).getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    public String getName() {
+        return name;
+    }
 }

@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.massif;
 
 import org.eclipse.jface.action.Action;
@@ -21,88 +21,98 @@ import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.linuxtools.valgrind.ui.CollapseAction;
+import org.eclipse.linuxtools.valgrind.ui.ExpandAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
 public class MassifTreeViewer {
 
-	protected IDoubleClickListener doubleClickListener;
-	protected ITreeContentProvider contentProvider;
-	protected Action expandAction;
-	protected Action collapseAction;
+    private IDoubleClickListener doubleClickListener;
+    private ITreeContentProvider contentProvider;
+    private Action expandAction;
+    private Action collapseAction;
 
-	private TreeViewer viewer;
-	
-	public MassifTreeViewer(Composite parent) {
-		viewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-		
-		contentProvider = new ITreeContentProvider() {
-			public Object[] getChildren(Object parentElement) {
-				return ((MassifHeapTreeNode) parentElement).getChildren();
-			}
+    private TreeViewer viewer;
 
-			public Object getParent(Object element) {
-				return ((MassifHeapTreeNode) element).getParent();
-			}
+    public MassifTreeViewer(Composite parent) {
+        viewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
 
-			public boolean hasChildren(Object element) {
-				MassifHeapTreeNode[] children = ((MassifHeapTreeNode) element).getChildren();
-				return children != null && children.length > 0;
-			}
+        contentProvider = new ITreeContentProvider() {
+            @Override
+            public Object[] getChildren(Object parentElement) {
+                return ((MassifHeapTreeNode) parentElement).getChildren();
+            }
 
-			public Object[] getElements(Object inputElement) {
-				return (Object[]) inputElement;
-			}
+            @Override
+            public Object getParent(Object element) {
+                return ((MassifHeapTreeNode) element).getParent();
+            }
 
-			public void dispose() {}
+            @Override
+            public boolean hasChildren(Object element) {
+                MassifHeapTreeNode[] children = ((MassifHeapTreeNode) element).getChildren();
+                return children != null && children.length > 0;
+            }
 
-			public void inputChanged(Viewer viewer, Object oldInput,
-					Object newInput) {}
+            @Override
+            public Object[] getElements(Object inputElement) {
+                return (Object[]) inputElement;
+            }
 
-		};
-		viewer.setContentProvider(contentProvider);
+            @Override
+            public void dispose() {}
 
-		viewer.setLabelProvider(new MassifTreeLabelProvider());
+            @Override
+            public void inputChanged(Viewer viewer, Object oldInput,
+                    Object newInput) {}
 
-		doubleClickListener = new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				MassifHeapTreeNode element = (MassifHeapTreeNode) ((TreeSelection) event.getSelection()).getFirstElement();
-				if (element.hasSourceFile()) {
-					MassifPlugin.getDefault().openEditorForNode(element);
-				} 
-				if (contentProvider.hasChildren(element)) {
-					viewer.expandToLevel(element, 1);
-				}
-			}			
-		};
-		viewer.addDoubleClickListener(doubleClickListener);
-		
-		expandAction = new ExpandAction(viewer);
-		collapseAction = new CollapseAction(viewer);
-		
-		MenuManager manager = new MenuManager();
-		manager.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager manager) {
-				ITreeSelection selection = (ITreeSelection) viewer.getSelection();
-				MassifHeapTreeNode element = (MassifHeapTreeNode) selection.getFirstElement();
-				if (contentProvider.hasChildren(element)) {
-					manager.add(expandAction);
-					manager.add(collapseAction);
-				}
-			}			
-		});
-		
-		manager.setRemoveAllWhenShown(true);	
-		Menu contextMenu = manager.createContextMenu(viewer.getTree());
-		viewer.getControl().setMenu(contextMenu);
-	}
+        };
+        viewer.setContentProvider(contentProvider);
 
-	public IDoubleClickListener getDoubleClickListener() {
-		return doubleClickListener;
-	}
+        viewer.setLabelProvider(new MassifTreeLabelProvider());
 
-	public TreeViewer getViewer() {
-		return viewer;
-	}
+        doubleClickListener = new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                MassifHeapTreeNode element = (MassifHeapTreeNode) ((TreeSelection) event.getSelection()).getFirstElement();
+                if (element.hasSourceFile()) {
+                    MassifPlugin.getDefault().openEditorForNode(element);
+                }
+                if (contentProvider.hasChildren(element)) {
+                    viewer.expandToLevel(element, 1);
+                }
+            }
+        };
+        viewer.addDoubleClickListener(doubleClickListener);
+
+        expandAction = new ExpandAction(viewer);
+        collapseAction = new CollapseAction(viewer);
+
+        MenuManager manager = new MenuManager();
+        manager.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                ITreeSelection selection = (ITreeSelection) viewer.getSelection();
+                MassifHeapTreeNode element = (MassifHeapTreeNode) selection.getFirstElement();
+                if (contentProvider.hasChildren(element)) {
+                    manager.add(expandAction);
+                    manager.add(collapseAction);
+                }
+            }
+        });
+
+        manager.setRemoveAllWhenShown(true);
+        Menu contextMenu = manager.createContextMenu(viewer.getTree());
+        viewer.getControl().setMenu(contextMenu);
+    }
+
+    public IDoubleClickListener getDoubleClickListener() {
+        return doubleClickListener;
+    }
+
+    public TreeViewer getViewer() {
+        return viewer;
+    }
 }

@@ -26,71 +26,67 @@ import org.eclipse.linuxtools.internal.perf.launch.PerfEventsTab;
 import org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate;
 import org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 public class LaunchTest extends AbstractTest {
 
-	protected ILaunchConfiguration config;
-	protected PerfLaunchConfigDelegate delegate;
-	protected ILaunch launch;
-	protected ILaunchConfigurationWorkingCopy wc;
+    protected ILaunchConfiguration config;
+    protected PerfLaunchConfigDelegate delegate;
+    protected ILaunch launch;
+    protected ILaunchConfigurationWorkingCopy wc;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
-		config = createConfiguration(proj.getProject());
+    @Before
+    public void setUp() throws Exception {
+        proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
+        config = createConfiguration(proj.getProject());
 
-		delegate = new PerfLaunchConfigDelegate();
-		launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
-		wc = config.getWorkingCopy();
-		setProfileAttributes(wc);
-	}
+        delegate = new PerfLaunchConfigDelegate();
+        launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
+        wc = config.getWorkingCopy();
+        setProfileAttributes(wc);
+    }
 
-	@Override
-	protected void tearDown() throws Exception {
-		deleteProject(proj);
-		wc.delete();
-		super.tearDown();
-	}
+    @After
+    public void tearDown() throws CoreException {
+        deleteProject(proj);
+        wc.delete();
+    }
 
-	@Override
-	protected ILaunchConfigurationType getLaunchConfigType() {
-		return getLaunchManager().getLaunchConfigurationType(PerfPlugin.LAUNCHCONF_ID);
-	}
+    @Override
+    protected ILaunchConfigurationType getLaunchConfigType() {
+        return getLaunchManager().getLaunchConfigurationType(PerfPlugin.LAUNCHCONF_ID);
+    }
 
-	@Override
-	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
-		PerfEventsTab eventsTab = new PerfEventsTab();
-		PerfOptionsTab optionsTab = new PerfOptionsTab();
-		wc.setAttribute(PerfPlugin.ATTR_SourceLineNumbers, false);
-		wc.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, true);
-		eventsTab.setDefaults(wc);
-		optionsTab.setDefaults(wc);
-	}
+    @Override
+    protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
+        PerfEventsTab eventsTab = new PerfEventsTab();
+        PerfOptionsTab optionsTab = new PerfOptionsTab();
+        wc.setAttribute(PerfPlugin.ATTR_SourceLineNumbers, false);
+        wc.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, true);
+        eventsTab.setDefaults(wc);
+        optionsTab.setDefaults(wc);
+    }
 
-	public void testDefaultRun () {
-		if (PerfCore.checkPerfInPath()) {
-			try {
-				delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
-			} catch (CoreException e) {
-				fail();
-			}
-		}
-	}
+    @Test
+    public void testDefaultRun() throws CoreException {
+        if (PerfCore.checkPerfInPath(null)) {
+            delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
+        }
+    }
 
-	public void testClockEventRun () {
-		if (PerfCore.checkPerfInPath()) {
-			try {
-				ArrayList<String> list = new ArrayList<String>();
-				list.addAll(Arrays.asList(new String [] {"cpu-clock", "task-clock", "cycles"}));
-				wc.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
-				wc.setAttribute(PerfPlugin.ATTR_SelectedEvents, list);
-				delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
-			} catch (CoreException e) {
-				fail();
-			}
-		}
-	}
+    @Test
+    public void testClockEventRun() throws CoreException {
+        if (PerfCore.checkPerfInPath(null)) {
+            ArrayList<String> list = new ArrayList<>();
+            list.addAll(Arrays.asList(new String[] { "cpu-clock", "task-clock",
+                    "cycles" }));
+            wc.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
+            wc.setAttribute(PerfPlugin.ATTR_SelectedEvents, list);
+            delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
+        }
+    }
 
 }

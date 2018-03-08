@@ -30,88 +30,88 @@ import org.eclipse.ui.editors.text.TextEditor;
 
 /**
  * ChangeLog editor that supports GNU format.
- * 
+ *
  * @author klee (Kyu Lee)
  */
 public class ChangeLogEditor extends TextEditor {
 
-	protected boolean forceNewLogEntry;
-	
-	public ChangeLogEditor() {
-		super();
+    private boolean forceNewLogEntry;
 
-		SourceViewerConfiguration config = getConfig();
+    public ChangeLogEditor() {
+        super();
 
-		if (config != null) {
+        SourceViewerConfiguration config = getConfig();
 
-			setSourceViewerConfiguration(config);
-		} else
-			ChangelogPlugin.getDefault().getLog().log(
-					new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID, IStatus.ERROR,
-							Messages.getString("ChangeLogEditor.ErrConfiguration"), // $NON-NLS-1$
-							new Exception(Messages.getString("ChangeLogEditor.ErrConfiguration")))); // $NON-NLS-1$
+        if (config != null) {
+            setSourceViewerConfiguration(config);
+        } else {
+            ChangelogPlugin.getDefault().getLog().log(
+                    new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID, IStatus.ERROR,
+                            Messages.getString("ChangeLogEditor.ErrConfiguration"), // $NON-NLS-1$
+                            new Exception(Messages.getString("ChangeLogEditor.ErrConfiguration")))); // $NON-NLS-1$
+        }
 
-		setDocumentProvider(new ChangeLogDocumentProvider());
+        setDocumentProvider(new ChangeLogDocumentProvider());
 
-	}
+    }
 
-	/**
-	 * Gets appropriate style editor from user pref.
-	 * 
-	 * @return configuration for the Changelog editor
-	 */
-	
-	public SourceViewerConfiguration getConfig() {
+    /**
+     * Gets appropriate style editor from user pref.
+     *
+     * @return configuration for the Changelog editor
+     */
 
-		IExtensionPoint editorExtensions = null;
-		IEditorChangeLogContrib editorContrib = null;
+    private SourceViewerConfiguration getConfig() {
 
-		// get editor which is stored in preference.
-		IPreferenceStore store = ChangelogPlugin.getDefault()
-				.getPreferenceStore();
-		String pref_Editor = store
-				.getString("IChangeLogConstants.DEFAULT_EDITOR"); // $NON-NLS-1$
+        IExtensionPoint editorExtensions = null;
+        IEditorChangeLogContrib editorContrib = null;
 
-		editorExtensions = Platform.getExtensionRegistry().getExtensionPoint(
-				"org.eclipse.linuxtools.changelog.core", "editorContribution"); //$NON-NLS-1$ //$NON-NLS-2$
+        // get editor which is stored in preference.
+        IPreferenceStore store = ChangelogPlugin.getDefault()
+                .getPreferenceStore();
+        String pref_Editor = store
+                .getString("IChangeLogConstants.DEFAULT_EDITOR"); // $NON-NLS-1$
 
-		if (editorExtensions != null) {
-			IConfigurationElement[] elements = editorExtensions
-					.getConfigurationElements();
-			for (int i = 0; i < elements.length; i++) {
-				if (elements[i].getName().equals("editor") // $NON-NLS-1$ 
-						&& (elements[i].getAttribute("name").equals(pref_Editor))) { //$NON-NLS-1$
+        editorExtensions = Platform.getExtensionRegistry().getExtensionPoint(
+                "org.eclipse.linuxtools.changelog.core", "editorContribution"); //$NON-NLS-1$ //$NON-NLS-2$
 
-					try {
-						IConfigurationElement bob = elements[i];
-						editorContrib = (IEditorChangeLogContrib) bob
-								.createExecutableExtension("class"); // $NON-NLS-1$
+        if (editorExtensions != null) {
+            IConfigurationElement[] elements = editorExtensions
+                    .getConfigurationElements();
+            for (int i = 0; i < elements.length; i++) {
+                if (elements[i].getName().equals("editor") // $NON-NLS-1$
+                        && (elements[i].getAttribute("name").equals(pref_Editor))) { //$NON-NLS-1$
 
-						editorContrib.setTextEditor(this);
-						return (SourceViewerConfiguration) editorContrib;
-					} catch (CoreException e) {
-						ChangelogPlugin.getDefault().getLog().log(
-								new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID,
-										IStatus.ERROR, e.getMessage(), e));
-					}
+                    try {
+                        IConfigurationElement bob = elements[i];
+                        editorContrib = (IEditorChangeLogContrib) bob
+                                .createExecutableExtension("class"); // $NON-NLS-1$
 
-				}
-			}
-		}
+                        editorContrib.setTextEditor(this);
+                        return (SourceViewerConfiguration) editorContrib;
+                    } catch (CoreException e) {
+                        ChangelogPlugin.getDefault().getLog().log(
+                                new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID,
+                                        IStatus.ERROR, e.getMessage(), e));
+                    }
 
-		return null;
-	}
+                }
+            }
+        }
 
-	public ISourceViewer getMySourceViewer() {
-		return this.getSourceViewer();
-	}
-	
-	public boolean isForceNewLogEntry() {
-		return forceNewLogEntry;
-	}
+        return null;
+    }
 
-	public void setForceNewLogEntry(boolean forceNewLogEntry) {
-		this.forceNewLogEntry = forceNewLogEntry;
-	}
+    public ISourceViewer getMySourceViewer() {
+        return this.getSourceViewer();
+    }
+
+    public boolean isForceNewLogEntry() {
+        return forceNewLogEntry;
+    }
+
+    public void setForceNewLogEntry(boolean forceNewLogEntry) {
+        this.forceNewLogEntry = forceNewLogEntry;
+    }
 
 }

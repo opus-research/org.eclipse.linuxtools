@@ -15,15 +15,17 @@ import org.eclipse.debug.core.model.IStreamsProxy;
 
 public class ValgrindStubStreamsProxy implements IStreamsProxy {
 
-	public IStreamMonitor getErrorStreamMonitor() {
-		return null;
-	}
+    @Override
+    public IStreamMonitor getErrorStreamMonitor() {
+        return null;
+    }
 
-	public IStreamMonitor getOutputStreamMonitor() {
-		return null;
-	}
+    @Override
+    public IStreamMonitor getOutputStreamMonitor() {
+        return null;
+    }
 
-	public void write(String input) {
-	}
-
+    @Override
+    public void write(String input) {
+    }
 }

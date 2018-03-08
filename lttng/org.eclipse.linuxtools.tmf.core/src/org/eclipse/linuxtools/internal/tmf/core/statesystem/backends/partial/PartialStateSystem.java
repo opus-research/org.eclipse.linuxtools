@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
@@ -16,12 +16,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.AttributeTree;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.internal.statesystem.core.AttributeTree;
+import org.eclipse.linuxtools.internal.statesystem.core.StateSystem;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
+import org.eclipse.linuxtools.statesystem.core.backend.NullBackend;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 
 /**
  * State system interface-like extension to use with partial state histories.
@@ -32,6 +32,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
  *
  * @author Alexandre Montplaisir
  */
+@SuppressWarnings("restriction") /* We're using AttributeTree directly */
 public class PartialStateSystem extends StateSystem {
 
     private static final String ERR_MSG = "Partial state system should not modify the attribute tree!"; //$NON-NLS-1$
@@ -53,7 +54,7 @@ public class PartialStateSystem extends StateSystem {
          * We use a Null back end here : we only use this state system for its
          * "ongoing" values, so no need to save the changes that are inserted.
          */
-        super(new NullBackend());
+        super("partial", new NullBackend()); //$NON-NLS-1$
     }
 
     /**
@@ -118,7 +119,7 @@ public class PartialStateSystem extends StateSystem {
      */
 
     @Override
-    protected void addEmptyAttribute() {
+    public void addEmptyAttribute() {
         throw new RuntimeException(ERR_MSG);
     }
 

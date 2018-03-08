@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Xavier Raynaud - add cut/copy/paste/dnd support
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.filter;
@@ -24,6 +25,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -31,11 +33,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlEvent;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
@@ -50,9 +47,18 @@ import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterOrNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterRootNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterTreeNode;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -80,7 +86,9 @@ class FilterViewer extends Composite {
     private static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
 
     private TreeViewer fViewer;
+
     private Composite fComposite;
+    private MenuManager fMenuManager;
 
     public FilterViewer(Composite parent, int style) {
         super(parent, style);
@@ -132,6 +140,14 @@ class FilterViewer extends Composite {
                 }
             }
         });
+
+        int operations = DND.DROP_MOVE | DND.DROP_COPY;
+        DragSource dragSource = new org.eclipse.swt.dnd.DragSource(fViewer.getTree(), operations);
+        dragSource.setTransfer(new Transfer[] { LocalSelectionTransfer.getTransfer() });
+        dragSource.addDragListener(new FilterDragSourceAdapter(this));
+        DropTarget dropTarget = new DropTarget(fViewer.getTree(), operations);
+        dropTarget.setTransfer(new Transfer[] { LocalSelectionTransfer.getTransfer() });
+        dropTarget.addDropListener(new FilterDropTargetAdapter(this));
     }
 
     /**
@@ -139,9 +155,9 @@ class FilterViewer extends Composite {
      */
     private void createContextMenu() {
         // Adds root context menu
-        MenuManager menuManager = new MenuManager();
-        menuManager.setRemoveAllWhenShown(true);
-        menuManager.addMenuListener(new IMenuListener() {
+        fMenuManager = new MenuManager();
+        fMenuManager.setRemoveAllWhenShown(true);
+        fMenuManager.addMenuListener(new IMenuListener() {
             @Override
             public void menuAboutToShow(IMenuManager manager) {
                 fillContextMenu(manager);
@@ -149,10 +165,14 @@ class FilterViewer extends Composite {
         });
 
         // Context
-        Menu contextMenu = menuManager.createContextMenu(fViewer.getTree());
+        Menu contextMenu = fMenuManager.createContextMenu(fViewer.getTree());
 
         // Publish it
         fViewer.getTree().setMenu(contextMenu);
+    }
+
+    public MenuManager getMenuManager() {
+        return fMenuManager;
     }
 
     /**
@@ -171,32 +191,15 @@ class FilterViewer extends Composite {
             }
         }
 
-        final ITmfFilterTreeNode selectedNode = filterTreeNode;
-
-        if (selectedNode != null) {
-
-            fillContextMenuForNode(selectedNode, manager);
-
-            if (selectedNode.getValidChildren().size() > 0) {
-                manager.add(new Separator());
-            }
-
-            Action deleteAction = new Action() {
-                @Override
-                public void run() {
-                    selectedNode.remove();
-                    fViewer.refresh();
-                }
-            };
-            deleteAction.setText(Messages.FilterViewer_DeleteActionText);
-            manager.add(deleteAction);
-
-            manager.add(new Separator());
+        if (filterTreeNode != null) {
+            fillContextMenuForNode(filterTreeNode, manager);
         }
+        manager.add(new Separator("delete")); //$NON-NLS-1$
+        manager.add(new Separator("edit")); //$NON-NLS-1$
 
-        if (fViewer.getInput() instanceof TmfFilterRootNode || selectedNode == null) {
-            final ITmfFilterTreeNode root = (ITmfFilterTreeNode) fViewer.getInput();
-
+        if (fViewer.getInput() instanceof TmfFilterRootNode || filterTreeNode == null) {
+            manager.add(new Separator());
+            ITmfFilterTreeNode root = (ITmfFilterTreeNode) fViewer.getInput();
             fillContextMenuForNode(root, manager);
         }
     }
@@ -343,6 +346,14 @@ class FilterViewer extends Composite {
         fViewer.removeSelectionChangedListener(listener);
     }
 
+    /**
+     * Gets the TreeViewer displaying filters
+     * @return a {@link TreeViewer}
+     */
+    TreeViewer getTreeViewer() {
+        return fViewer;
+    }
+
     private class FilterBaseNodeComposite extends Composite {
 
         FilterBaseNodeComposite(Composite parent) {
@@ -353,7 +364,7 @@ class FilterViewer extends Composite {
         }
 
         protected String[] getFieldsList(ITmfFilterTreeNode node) {
-            ArrayList<String> fieldsList = new ArrayList<String>();
+            ArrayList<String> fieldsList = new ArrayList<>();
             ITmfFilterTreeNode curNode = node;
             while (curNode != null) {
                 if (curNode instanceof TmfFilterEventTypeNode) {
@@ -416,7 +427,7 @@ class FilterViewer extends Composite {
                 try {
                     ITmfEvent event = (ITmfEvent) ce.createExecutableExtension(TmfTraceType.EVENT_TYPE_ATTR);
                     ITmfEventType eventType = event.getType();
-                    if (eventType != null && eventType.getFieldNames().length > 0) {
+                    if (eventType != null && eventType.getFieldNames().size() > 0) {
                         fieldsList.add("[" + TmfTraceType.getCategoryName(ce.getAttribute(TmfTraceType.CATEGORY_ATTR)) + //$NON-NLS-1$
                                 " : " + ce.getAttribute(TmfTraceType.NAME_ATTR) + "]"); //$NON-NLS-1$ //$NON-NLS-2$
                         for (String field : eventType.getFieldNames()) {
@@ -479,6 +490,7 @@ class FilterViewer extends Composite {
                         fNameText.setText(Messages.FilterViewer_FilterNameHint);
                     }
                 }
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (fNameText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
@@ -490,7 +502,7 @@ class FilterViewer extends Composite {
             fNameText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    if (! fNameText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
+                    if (!fNameText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
                         fNode.setFilterName(fNameText.getText());
                         fViewer.refresh(fNode);
                     }
@@ -517,7 +529,7 @@ class FilterViewer extends Composite {
             fTypeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             fTypeCombo.setItems(fEventsTypeMap.keySet().toArray(new String[0]));
             if (fNode.getEventType() != null) {
-                for (Entry <String, Object> eventTypeEntry : fEventsTypeMap.entrySet()) {
+                for (Entry<String, Object> eventTypeEntry : fEventsTypeMap.entrySet()) {
                     Object value = eventTypeEntry.getValue();
                     if (value instanceof IConfigurationElement) {
                         IConfigurationElement ce = (IConfigurationElement) value;
@@ -542,7 +554,7 @@ class FilterViewer extends Composite {
             fTypeCombo.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    for (Entry <String, Object> eventTypeEntry : fEventsTypeMap.entrySet()) {
+                    for (Entry<String, Object> eventTypeEntry : fEventsTypeMap.entrySet()) {
                         if (eventTypeEntry.getKey().equals(fTypeCombo.getText())) {
                             Object value = eventTypeEntry.getValue();
                             if (value instanceof IConfigurationElement) {
@@ -567,7 +579,7 @@ class FilterViewer extends Composite {
         }
 
         protected Map<String, Object> getEventsTypeMap() {
-            Map<String, Object> eventsTypeMap = new LinkedHashMap<String, Object>();
+            Map<String, Object> eventsTypeMap = new LinkedHashMap<>();
             for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
                 String categoryName = TmfTraceType.getCategoryName(ce.getAttribute(TmfTraceType.CATEGORY_ATTR));
                 String text = categoryName + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR); //$NON-NLS-1$
@@ -699,6 +711,7 @@ class FilterViewer extends Composite {
                         fValueText.setText(Messages.FilterViewer_ValueHint);
                     }
                 }
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
@@ -710,7 +723,7 @@ class FilterViewer extends Composite {
             fValueText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    if (! fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
+                    if (!fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
                         fNode.setValue(fValueText.getText());
                         fViewer.refresh(fNode);
                     }
@@ -798,6 +811,7 @@ class FilterViewer extends Composite {
                         fValueText.setText(Messages.FilterViewer_ValueHint);
                     }
                 }
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
@@ -809,7 +823,7 @@ class FilterViewer extends Composite {
             fValueText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    if (! fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
+                    if (!fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
                         fNode.setValue(fValueText.getText());
                         fViewer.refresh(fNode);
                     }
@@ -896,6 +910,7 @@ class FilterViewer extends Composite {
                         fRegexText.setText(Messages.FilterViewer_RegexHint);
                     }
                 }
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (fRegexText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
@@ -907,7 +922,7 @@ class FilterViewer extends Composite {
             fRegexText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    if (! fRegexText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
+                    if (!fRegexText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
                         fNode.setRegex(fRegexText.getText());
                         fViewer.refresh(fNode);
                     }
@@ -1091,6 +1106,7 @@ class FilterViewer extends Composite {
                         fValueText.setText(Messages.FilterViewer_ValueHint);
                     }
                 }
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
@@ -1102,7 +1118,7 @@ class FilterViewer extends Composite {
             fValueText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    if (! fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
+                    if (!fValueText.getForeground().equals(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY))) {
                         fNode.setValue(fValueText.getText());
                         fViewer.refresh(fNode);
                     }

@@ -156,7 +156,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         super(parent, s | SWT.NO_BACKGROUND, false);
         setVScrollBarMode(ScrollView.ALWAYS_OFF);
         setHScrollBarMode(ScrollView.ALWAYS_OFF);
-        fListenerList = new ArrayList<ITimeCompressionListener>();
+        fListenerList = new ArrayList<>();
         fColors = new ColorImpl[NUMBER_STEPS];
         int greenBlue = BASE_GREEN_BLUE_VALUE;
         final int step = COLOR_STEP;
@@ -276,7 +276,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         if (fFrame == null) {
             return;
         }
-        fNodeList = new ArrayList<SDTimeEvent>();
+        fNodeList = new ArrayList<>();
         int messageArraysStep = 1;
 
         if ((Metrics.getMessageFontHeigth() + Metrics.MESSAGES_NAME_SPACING * 2) * fZoomValue < Metrics.MESSAGE_SIGNIFICANT_VSPACING + 1) {
@@ -356,14 +356,9 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         Arrays.sort(temp, new TimeEventComparator());
         fNodeList = Arrays.asList(temp);
 
-        Image dbuffer = null;
-        GC gcim = null;
-        try {
-            dbuffer = new Image(getDisplay(), getClientArea().width, getClientArea().height);
-        } catch (Exception e) {
-            Activator.getDefault().logError("Error creating image", e); //$NON-NLS-1$
-        }
-        gcim = new GC(dbuffer);
+        Image dbuffer = new Image(getDisplay(), getClientArea().width, getClientArea().height);
+        GC gcim = new GC(dbuffer);
+
         for (int i = 0; i < fNodeList.size() - 1; i++) {
             SDTimeEvent m1 = fNodeList.get(i);
             SDTimeEvent m2 = fNodeList.get(i + 1);
@@ -448,9 +443,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             Activator.getDefault().logError("Error drawing image", e); //$NON-NLS-1$
         }
         gcim.dispose();
-        if (dbuffer != null) {
-            dbuffer.dispose();
-        }
+        dbuffer.dispose();
         gc.dispose();
     }
 

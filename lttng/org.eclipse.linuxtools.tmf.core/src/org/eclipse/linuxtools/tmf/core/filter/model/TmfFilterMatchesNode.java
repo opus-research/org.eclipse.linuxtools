@@ -89,10 +89,12 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
      */
     public void setRegex(String regex) {
         this.fRegex = regex;
-        try {
-            this.fPattern = Pattern.compile(regex, Pattern.DOTALL);
-        } catch (PatternSyntaxException e) {
-            this.fPattern = null;
+        if (regex != null) {
+            try {
+                this.fPattern = Pattern.compile(regex, Pattern.DOTALL);
+            } catch (PatternSyntaxException e) {
+                this.fPattern = null;
+            }
         }
     }
 
@@ -118,7 +120,7 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
 
     @Override
     public List<String> getValidChildren() {
-        return new ArrayList<String>(0);
+        return new ArrayList<>(0);
     }
 
     @Override

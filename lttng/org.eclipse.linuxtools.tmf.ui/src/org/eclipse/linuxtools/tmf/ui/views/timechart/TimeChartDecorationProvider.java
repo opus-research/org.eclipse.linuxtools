@@ -31,8 +31,8 @@ import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
  */
 public class TimeChartDecorationProvider {
 
-	private final IFile fBookmarksFile;
-    private final Set<Long> fBookmarksSet = new HashSet<Long>();
+    private final IFile fBookmarksFile;
+    private final Set<Long> fBookmarksSet = new HashSet<>();
     private ITmfFilter fFilterFilter;
     private ITmfFilter fSearchFilter;
 

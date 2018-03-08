@@ -12,49 +12,66 @@
 
 package org.eclipse.linuxtools.ctf.core.event;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
+import org.eclipse.linuxtools.ctf.core.trace.CTFStreamInputReader;
+import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 /**
  * Representation of a particular instance of an event.
  */
-public class EventDefinition implements IDefinitionScope {
+public final class EventDefinition implements IDefinitionScope {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
     /**
+     * A null event, can be used for testing or poison pilling
+     *
+     * @since 3.0
+     */
+    @NonNull
+    public static final EventDefinition NULL_EVENT = new EventDefinition(new EventDeclaration(), null, -1L, null, null, null, null);
+
+    /**
      * The corresponding event declaration.
      */
-    private final IEventDeclaration declaration;
+    private final IEventDeclaration fDeclaration;
 
     /**
      * The timestamp of the current event.
      */
-    private long timestamp;
+    private final long fTimestamp;
 
     /**
      * The event context structure definition.
      */
-    private StructDefinition context;
+    private final StructDefinition fEventContext;
+
+    private final StructDefinition fStreamContext;
+
+    private final StructDefinition fPacketContext;
 
     /**
      * The event fields structure definition.
      */
-    private StructDefinition fields;
+    private final StructDefinition fFields;
 
     /**
      * The StreamInputReader that reads this event definition.
      */
-    private final StreamInputReader streamInputReader;
+    private final CTFStreamInputReader fStreamInputReader;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -67,21 +84,52 @@ public class EventDefinition implements IDefinitionScope {
      *            The corresponding event declaration
      * @param streamInputReader
      *            The SIR from where this EventDef was read
-     * @since 2.0
+     * @param timestamp
+     *            event timestamp
+     * @param eventContext
+     *            The event context
+     * @param packetContext
+     *            the packet context
+     * @param streamContext
+     *            the stream context
+     * @param fields
+     *            The event fields
+     * @since 3.0
      */
     public EventDefinition(IEventDeclaration declaration,
-            StreamInputReader streamInputReader) {
-        this.declaration = declaration;
-        this.streamInputReader = streamInputReader;
+            CTFStreamInputReader streamInputReader,
+            long timestamp,
+            StructDefinition streamContext,
+            StructDefinition eventContext,
+            StructDefinition packetContext,
+            StructDefinition fields) {
+        fDeclaration = declaration;
+        fStreamInputReader = streamInputReader;
+        fTimestamp = timestamp;
+        fFields = fields;
+        fEventContext = eventContext;
+        fPacketContext = packetContext;
+        fStreamContext = streamContext;
     }
 
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
+    /**
+     * @since 3.0
+     */
     @Override
-    public String getPath() {
-        return "event"; //$NON-NLS-1$
+    public LexicalScope getScopePath() {
+        String eventName = fDeclaration.getName();
+        if (eventName == null) {
+            return null;
+        }
+        LexicalScope myScope = LexicalScope.EVENT.getChild(eventName);
+        if (myScope == null) {
+            myScope = new LexicalScope(LexicalScope.EVENT, eventName);
+        }
+        return myScope;
     }
 
     /**
@@ -91,7 +139,7 @@ public class EventDefinition implements IDefinitionScope {
      * @since 2.0
      */
     public IEventDeclaration getDeclaration() {
-        return declaration;
+        return fDeclaration;
     }
 
     /**
@@ -100,7 +148,7 @@ public class EventDefinition implements IDefinitionScope {
      * @return the fields of a definition in struct form. Can be null.
      */
     public StructDefinition getFields() {
-        return fields;
+        return fFields;
     }
 
     /**
@@ -110,7 +158,7 @@ public class EventDefinition implements IDefinitionScope {
      * @since 1.2
      */
     public StructDefinition getEventContext() {
-        return context;
+        return fEventContext;
     }
 
     /**
@@ -119,48 +167,52 @@ public class EventDefinition implements IDefinitionScope {
      * @return the context in struct form
      */
     public StructDefinition getContext() {
-        final StructDefinition streamContext =
-                streamInputReader.getPacketReader().getStreamEventContextDef();
 
         /* Most common case so far */
-        if (streamContext == null) {
-            return context;
+        if (fStreamContext == null) {
+            return fEventContext;
         }
 
         /* streamContext is not null, but the context of the event is null */
-        if (context == null) {
-            return streamContext;
+        if (fEventContext == null) {
+            return fStreamContext;
         }
+
+        // TODO: cache if this is a performance issue
 
         /* The stream context and event context are assigned. */
         StructDeclaration mergedDeclaration = new StructDeclaration(1);
 
+        Builder<String> builder = ImmutableList.<String> builder();
+        List<Definition> fieldValues = new ArrayList<>();
+
         /* Add fields from the stream */
-        Map<String, Definition> defs = streamContext.getDefinitions();
-        for (Entry<String, Definition> entry : defs.entrySet()) {
-            mergedDeclaration.addField(entry.getKey(), entry.getValue().getDeclaration());
+        for (String fieldName : fStreamContext.getFieldNames()) {
+            Definition definition = fStreamContext.getDefinition(fieldName);
+            mergedDeclaration.addField(fieldName, definition.getDeclaration());
+            builder.add(fieldName);
+            fieldValues.add(definition);
         }
 
-        /* Add fields from the event context, overwrite the stream ones if needed. */
-        for (Entry<String, Definition> entry : context.getDefinitions().entrySet()) {
-            mergedDeclaration.addField(entry.getKey(), entry.getValue().getDeclaration());
-        }
-
-        StructDefinition mergedContext = mergedDeclaration.createDefinition(null, "context"); //$NON-NLS-1$
-        for (String key : mergedContext.getDefinitions().keySet()) {
-            final Definition lookupDefinition = context.lookupDefinition(key);
-            /*
-             * If the key is in the event context, add it from there, if it is
-             * not, then it's in the stream. There is a priority with scoping so
-             * if there is a field like "context" in both stream and context,
-             * you display the context.
-             */
-            if (lookupDefinition != null) {
-                mergedContext.getDefinitions().put(key, lookupDefinition);
+        ImmutableList<String> fieldNames = builder.build();
+        /*
+         * Add fields from the event context, overwrite the stream ones if
+         * needed.
+         */
+        for (String fieldName : fEventContext.getFieldNames()) {
+            Definition definition = fEventContext.getDefinition(fieldName);
+            mergedDeclaration.addField(fieldName, definition.getDeclaration());
+            if (fieldNames.contains(fieldName)) {
+                fieldValues.set((fieldNames.indexOf(fieldName)), definition);
             } else {
-                mergedContext.getDefinitions().put(key, streamContext.lookupDefinition(key));
+                builder.add(fieldName);
+                fieldValues.add(definition);
             }
         }
+        fieldNames = builder.build();
+        StructDefinition mergedContext = new StructDefinition(mergedDeclaration, this, "context", //$NON-NLS-1$
+                fieldNames,
+                fieldValues.toArray(new Definition[fieldValues.size()]));
         return mergedContext;
     }
 
@@ -168,9 +220,10 @@ public class EventDefinition implements IDefinitionScope {
      * Gets the stream input reader that this event was made by
      *
      * @return the parent
+     * @since 3.0
      */
-    public StreamInputReader getStreamInputReader() {
-        return streamInputReader;
+    public CTFStreamInputReader getStreamInputReader() {
+        return fStreamInputReader;
     }
 
     /**
@@ -179,7 +232,7 @@ public class EventDefinition implements IDefinitionScope {
      * @return the packet context
      */
     public StructDefinition getPacketContext() {
-        return streamInputReader.getCurrentPacketContext();
+        return fPacketContext;
     }
 
     /**
@@ -188,38 +241,14 @@ public class EventDefinition implements IDefinitionScope {
      * @return The CPU the event was generated by
      */
     public int getCPU() {
-        return streamInputReader.getCPU();
+        return fStreamInputReader.getCPU();
     }
 
     /**
      * @return the timestamp
      */
     public long getTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * @param timestamp
-     *            the timestamp to set
-     */
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    /**
-     * @param context
-     *            the context to set
-     */
-    public void setContext(StructDefinition context) {
-        this.context = context;
-    }
-
-    /**
-     * @param fields
-     *            the fields to set
-     */
-    public void setFields(StructDefinition fields) {
-        this.fields = fields;
+        return fTimestamp;
     }
 
     // ------------------------------------------------------------------------
@@ -229,9 +258,9 @@ public class EventDefinition implements IDefinitionScope {
     @Override
     public Definition lookupDefinition(String lookupPath) {
         if (lookupPath.equals("context")) { //$NON-NLS-1$
-            return context;
+            return fEventContext;
         } else if (lookupPath.equals("fields")) { //$NON-NLS-1$
-            return fields;
+            return fFields;
         } else {
             return null;
         }
@@ -239,31 +268,28 @@ public class EventDefinition implements IDefinitionScope {
 
     @Override
     public String toString() {
-        Map<String, Definition> definitions;
-        List<String> list;
+        Iterable<String> list;
         StringBuilder retString = new StringBuilder();
         final String cr = System.getProperty("line.separator");//$NON-NLS-1$
 
-        retString.append("Event type: " + declaration.getName() + cr); //$NON-NLS-1$
-        retString.append("Timestamp: " + Long.toString(timestamp) + cr); //$NON-NLS-1$
+        retString.append("Event type: " + fDeclaration.getName() + cr); //$NON-NLS-1$
+        retString.append("Timestamp: " + Long.toString(fTimestamp) + cr); //$NON-NLS-1$
 
-        if (context != null) {
-            definitions = context.getDefinitions();
-            list = context.getDeclaration().getFieldsList();
+        if (fEventContext != null) {
+            list = fEventContext.getDeclaration().getFieldsList();
 
             for (String field : list) {
                 retString.append(field
-                        + " : " + definitions.get(field).toString() + cr); //$NON-NLS-1$
+                        + " : " + fEventContext.getDefinition(field).toString() + cr); //$NON-NLS-1$
             }
         }
 
-        if (fields != null) {
-            definitions = fields.getDefinitions();
-            list = fields.getDeclaration().getFieldsList();
+        if (fFields != null) {
+            list = fFields.getDeclaration().getFieldsList();
 
             for (String field : list) {
                 retString.append(field
-                        + " : " + definitions.get(field).toString() + cr); //$NON-NLS-1$
+                        + " : " + fFields.getDefinition(field).toString() + cr); //$NON-NLS-1$
             }
         }
 

@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.callgraph.core;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -40,7 +39,6 @@ public class SystemTapErrorHandler {
         errorMessage.append(Messages
              .getString("SystemTapErrorHandler.ErrorMessage") + //$NON-NLS-1$
              Messages.getString("SystemTapErrorHandler.ErrorMessage1")); //$NON-NLS-1$
-
         logContents = new StringBuilder();
     }
 
@@ -55,54 +53,47 @@ public class SystemTapErrorHandler {
 
         // READ FROM THE PROP FILE AND DETERMINE TYPE OF ERROR
         File file = new File(PluginConstants.getPluginLocation() + FILE_PROP);
-        BufferedReader buff = null;
-        try {
-			buff = new BufferedReader(new FileReader(file));
+        try (BufferedReader buff1 = new BufferedReader(new FileReader(file))) {
             String line;
-
             for (String message : errorsList) {
-                buff = new BufferedReader(new FileReader(file));
-                while ((line = buff.readLine()) != null) {
-                    if (m != null && m.isCanceled()) {
-                        return;
-                    }
-                    int index = line.indexOf('=');
-                    Pattern pat = Pattern.compile(line.substring(0, index),Pattern.DOTALL);
-                    Matcher matcher = pat.matcher(message);
-
-                    if (matcher.matches()) {
-                        if (!isErrorRecognized()) {
-                        	//First error
-                            errorMessage.append(Messages.getString("SystemTapErrorHandler.ErrorMessage2")); //$NON-NLS-1$
-                            setErrorRecognized(true);
+                try (BufferedReader innerBuff = new BufferedReader(
+                        new FileReader(file))) {
+                    while ((line = innerBuff.readLine()) != null) {
+                        if (m != null && m.isCanceled()) {
+                            return;
                         }
-                        String errorFound = line.substring(index+1);
+                        int index = line.indexOf('=');
+                        Pattern pat = Pattern.compile(line.substring(0, index),
+                                Pattern.DOTALL);
+                        Matcher matcher = pat.matcher(message);
 
-                        if (!errorMessage.toString().contains(errorFound)) {
-                            errorMessage.append(errorFound + PluginConstants.NEW_LINE);
+                        if (matcher.matches()) {
+                            if (!isErrorRecognized()) {
+                                // First error
+                                errorMessage
+                                        .append(Messages
+                                                .getString("SystemTapErrorHandler.ErrorMessage2")); //$NON-NLS-1$
+                                errorRecognized = true;
+                            }
+                            String errorFound = line.substring(index + 1);
+
+                            if (!errorMessage.toString().contains(errorFound)) {
+                                errorMessage.append(errorFound
+                                        + PluginConstants.NEW_LINE);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
-                buff.close();
             }
 
             logContents.append(errors);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-        	if (buff != null) {
-        		try {
-					buff.close();
-				} catch (IOException e) {
-				}
-        	}
         }
 
     }
-   
+
     /**
      * Append to the log contents
      */
@@ -140,10 +131,10 @@ public class SystemTapErrorHandler {
 
     /**
      * Run this method when there are no more error messages to handle. Creates
-     * the error pop-up message and writes to log.Currently relaunch only works 
+     * the error pop-up message and writes to log.Currently relaunch only works
      * for the callgraph script.
      */
-    public void finishHandling(IProgressMonitor m, String scriptPath) {
+    public void finishHandling() {
         if (!isErrorRecognized()) {
             errorMessage.append(Messages.getString("SystemTapErrorHandler.NoErrRecognized") + //$NON-NLS-1$
                     Messages.getString("SystemTapErrorHandler.NoErrRecognizedMsg")); //$NON-NLS-1$
@@ -151,31 +142,18 @@ public class SystemTapErrorHandler {
 
         writeToLog();
     }
-   
+
     /**
      * Writes the contents of logContents to the error log, along with date and
      * time.
      */
-    public void writeToLog() {
-    	IStatus status = new Status(IStatus.ERROR,CallgraphCorePlugin.PLUGIN_ID,logContents.toString());
-    	CallgraphCorePlugin.getDefault().getLog().log(status);
-    	
+    private void writeToLog() {
+        IStatus status = new Status(IStatus.ERROR,CallgraphCorePlugin.PLUGIN_ID,logContents.toString());
+        CallgraphCorePlugin.getDefault().getLog().log(status);
+
         logContents = new StringBuilder();
     }
-   
-    /**
-     * Delete the log at File and replace it with a new (empty) file
-     * @param log The File object for the log file to delete and refresh
-     */
-    public static void deleteLog(File log) {
-        log.delete();
-        try {
-            log.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-   
+
     /**
      * @return Returns true if an error matches one of the regex's in error.prop
      * and false otherwise.
@@ -185,26 +163,9 @@ public class SystemTapErrorHandler {
     }
 
     /**
-     * Convenience method to change the error recognition value.
-     * @param errorsRecognized True if the handler recognizes some error
-     * and false otherwise.
-     */
-    private void setErrorRecognized(boolean errorsRecognized) {
-        errorRecognized = errorsRecognized;
-    }
-    
-    /**
      * @return The error message string
      */
     public String getErrorMessage(){
-    	return errorMessage.toString();
+        return errorMessage.toString();
     }
-    
-    /**
-     * @return The string contents of what will be printed to the log
-     */
-    public String getLogContents(){
-    	return logContents.toString();
-    }
-   
 }

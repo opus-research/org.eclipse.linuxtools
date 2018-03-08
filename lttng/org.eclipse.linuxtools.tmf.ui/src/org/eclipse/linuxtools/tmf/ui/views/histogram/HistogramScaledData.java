@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,6 +10,9 @@
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Added setter and getter and bar width support
  *   Francois Chouinard - Moved from LTTng to TMF
+ *   Patrick Tasse - Support selection range
+ *   Jean-Christian Kouamé - Support to manage lost events
+ *   Xavier Raynaud - Support multi-trace coloring
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -51,7 +54,13 @@ public class HistogramScaledData {
     /**
      * Array of scaled values
      */
-    public int[] fData;
+    public HistogramBucket[] fData;
+    /**
+     * Array of scaled values combined including the lost events.
+     * This array contains the number of lost events for each bar in the histogram
+     * @since 2.2
+     */
+    public final int[] fLostEventsData;
     /**
      * The bucket duration of a scaled data bucket.
      */
@@ -61,9 +70,20 @@ public class HistogramScaledData {
      */
     public long fMaxValue;
     /**
-     * The index of the current bucket.
+     * the maximum of events of all buckets including the lost events
+     * @since 2.2
      */
-    public int fCurrentBucket;
+    public long fMaxCombinedValue;
+    /**
+     * The index of the selection begin bucket.
+     * @since 2.1
+     */
+    public int fSelectionBeginBucket;
+    /**
+     * The index of the selection end bucket.
+     * @since 2.1
+     */
+    public int fSelectionEndBucket;
     /**
      * The index of the last bucket.
      */
@@ -73,6 +93,14 @@ public class HistogramScaledData {
      */
     public double fScalingFactor;
     /**
+     * The scaling factor used to fill the scaled data including the lost events.
+     * @since 2.2
+     */
+    public double fScalingFactorCombined;
+    /**
+     * The scaling factor used to fill the combining scaled data including lost events
+     */
+    /**
      * Time of first bucket.
      */
     public long fFirstBucketTime;
@@ -80,6 +108,11 @@ public class HistogramScaledData {
      * The time of the first event.
      */
     public long fFirstEventTime;
+    /**
+     * show the lost events or not
+     * @since 2.2
+     */
+    public static volatile boolean hideLostEvents = false;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -95,13 +128,16 @@ public class HistogramScaledData {
         fWidth = width;
         fHeight = height;
         fBarWidth = barWidth;
-        fData = new int[width/fBarWidth];
-        Arrays.fill(fData, 0);
+        fData = new HistogramBucket[width / fBarWidth];
+        fLostEventsData = new int[width / fBarWidth];
         fBucketDuration = 1;
         fMaxValue = 0;
-        fCurrentBucket = 0;
+        fMaxCombinedValue = 0;
+        fSelectionBeginBucket = 0;
+        fSelectionEndBucket = 0;
         fLastBucket = 0;
         fScalingFactor = 1;
+        fScalingFactorCombined = 1;
         fFirstBucketTime = 0;
     }
 
@@ -113,12 +149,16 @@ public class HistogramScaledData {
         fWidth = other.fWidth;
         fHeight = other.fHeight;
         fBarWidth = other.fBarWidth;
-        fData = Arrays.copyOf(other.fData, fWidth);
+        fData = Arrays.copyOf(other.fData, other.fData.length);
+        fLostEventsData  = Arrays.copyOf(other.fLostEventsData, other.fLostEventsData.length);
         fBucketDuration = other.fBucketDuration;
         fMaxValue = other.fMaxValue;
-        fCurrentBucket = other.fCurrentBucket;
+        fMaxCombinedValue = other.fMaxCombinedValue;
+        fSelectionBeginBucket = other.fSelectionBeginBucket;
+        fSelectionEndBucket = other.fSelectionEndBucket;
         fLastBucket = other.fLastBucket;
         fScalingFactor = other.fScalingFactor;
+        fScalingFactorCombined = other.fScalingFactorCombined;
         fFirstBucketTime = other.fFirstBucketTime;
     }
 

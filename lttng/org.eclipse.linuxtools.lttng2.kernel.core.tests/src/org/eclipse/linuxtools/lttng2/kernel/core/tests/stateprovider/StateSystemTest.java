@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -19,14 +19,14 @@ import static org.junit.Assert.fail;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.junit.Test;
 
 /**
@@ -38,8 +38,8 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public abstract class StateSystemTest {
 
-    /** Index of the test trace used for these tests */
-    protected static final int TRACE_INDEX = 1;
+    /** Test trace used for these tests */
+    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.TRACE2;
 
     /** Expected start time of the test trace/state history */
     protected static final long startTime = 1331668247314038062L;
@@ -50,7 +50,6 @@ public abstract class StateSystemTest {
     /** Number of nanoseconds in one second */
     private static final long NANOSECS_PER_SEC = 1000000000L;
 
-    protected static ITmfStateProvider input;
     protected static ITmfStateSystem ssq;
 
     /* Offset in the trace + start time of the trace */
@@ -145,8 +144,8 @@ public abstract class StateSystemTest {
     }
 
     /**
-     * Range query, but with a t2 far off the end of the trace.
-     * The result should still be valid.
+     * Range query, but with a t2 far off the end of the trace. The result
+     * should still be valid.
      */
     @Test
     public void testRangeQuery2() {
@@ -405,4 +404,43 @@ public abstract class StateSystemTest {
             fail();
         }
     }
+
+    @Test
+    public void testFirstIntervalIsConsidered() {
+        try {
+            List<ITmfStateInterval> list = ssq.queryFullState(1331668248014135800L);
+            ITmfStateInterval interval = list.get(233);
+            assertEquals(1331668247516664825L, interval.getStartTime());
+
+            int valueInt = interval.getStateValue().unboxInt();
+            assertEquals(1, valueInt);
+        } catch (TimeRangeException e) {
+            fail();
+        } catch (StateSystemDisposedException e) {
+            fail();
+        } catch (StateValueTypeException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testParentAttribute() {
+        String[] path = { "CPUs/0/Current_thread",
+                          "CPUs/0",
+                          "CPUs" };
+        try {
+            int q = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
+            for (int i = 0; i < path.length; i++) {
+                String name = ssq.getFullAttributePath(q);
+                assertEquals(path[i], name);
+                q = ssq.getParentAttributeQuark(q);
+            }
+            assertEquals(-1, q);
+            q = ssq.getParentAttributeQuark(q);
+            assertEquals(-1, q);
+        } catch (AttributeNotFoundException e) {
+            fail();
+        }
+    }
+
 }

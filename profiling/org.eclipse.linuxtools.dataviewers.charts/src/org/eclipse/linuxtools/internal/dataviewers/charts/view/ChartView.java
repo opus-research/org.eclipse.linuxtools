@@ -13,8 +13,8 @@ package org.eclipse.linuxtools.internal.dataviewers.charts.view;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.linuxtools.dataviewers.charts.actions.SaveChartAction;
 import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
-import org.eclipse.linuxtools.internal.dataviewers.charts.actions.SaveChartAction;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPage;
@@ -75,21 +75,16 @@ public class ChartView extends ViewPart {
 
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
-        createActions(parent);
+        createActions();
         IActionBars actionBars = getViewSite().getActionBars();
         initToolBar(actionBars.getToolBarManager());
     }
 
-    protected void createActions(Composite parent) {
-        saveChartAction = new SaveChartAction(getViewSite().getShell(), this);
+    private void createActions() {
+        saveChartAction = new SaveChartAction();
     }
 
     protected void initToolBar(IToolBarManager manager) {
@@ -97,11 +92,6 @@ public class ChartView extends ViewPart {
         manager.update(true);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         if (parent != null && !parent.isDisposed()) {
@@ -114,7 +104,7 @@ public class ChartView extends ViewPart {
      *
      * @param chart
      */
-    public void setChart(Chart chart) {
+    private void setChart(Chart chart) {
         saveChartAction.setChart(chart);
     }
 

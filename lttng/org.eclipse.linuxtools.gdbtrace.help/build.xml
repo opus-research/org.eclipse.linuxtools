@@ -21,11 +21,7 @@
         <!-- Search in the local Eclipse installation directory for the Wikitext plugin -->
         <fileset dir="${eclipse.home}/plugins" erroronmissingdir="false">
             <include name="org.eclipse.mylyn.wikitext.*core*.jar" />
-        </fileset>
-
-        <!-- Search in the system-wide installation directory (Debian) -->
-        <fileset dir="/usr/share/eclipse/dropins/mylyn-wikitext/eclipse/plugins" erroronmissingdir="false">
-            <include name="org.eclipse.mylyn.wikitext.*core*.jar" />
+            <include name="com.google.guava_*.jar" />
         </fileset>
 
         <!-- For Maven builds: use the compile_classpath -->
@@ -34,6 +30,8 @@
 
     <taskdef classpathref="wikitext.tasks.classpath" resource="org/eclipse/mylyn/internal/wikitext/mediawiki/core/tasks/tasks.properties" />
     <taskdef classpathref="wikitext.tasks.classpath" resource="org/eclipse/mylyn/wikitext/core/util/anttask/tasks.properties" />
+    <!-- Different location in more recent versions of Mylyn (Luna ?) -->
+    <taskdef classpathref="wikitext.tasks.classpath" resource="org/eclipse/mylyn/wikitext/core/ant/tasks.properties" />
 
     <target name="build" description="Generate Eclipse help content for the Linux Tools GDB Tracepoint Analysis User Guide">
         <wikitext-to-eclipse-help markupLanguage="MediaWiki"

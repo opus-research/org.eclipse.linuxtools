@@ -44,27 +44,22 @@ public class STExportToCSVAction extends Action {
      *            the stViewer to export
      */
     public STExportToCSVAction(AbstractSTViewer stViewer) {
-		super(STDataViewersMessages.exportToCSVAction_title,
-				STDataViewersImages
-						.getImageDescriptor(STDataViewersImages.IMG_EXPORT));
+        super(STDataViewersMessages.exportToCSVAction_title,
+                STDataViewersImages
+                        .getImageDescriptor(STDataViewersImages.IMG_EXPORT));
 
-		this.stViewer = stViewer;
-		this.exporter = new STDataViewersCSVExporter(stViewer);
+        this.stViewer = stViewer;
+        this.exporter = new STDataViewersCSVExporter(stViewer);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.action.Action#run()
-     */
     @Override
-	public void run() {
+    public void run() {
         STDataViewersExportToCSVDialog dialog = new STDataViewersExportToCSVDialog(stViewer.getViewer().getControl()
                 .getShell(), exporter);
         if (dialog.open() == Window.OK) {
             Job exportToCSVJob = new Job("Export to CSV") {
                 @Override
-				public IStatus run(IProgressMonitor monitor) {
+                public IStatus run(IProgressMonitor monitor) {
                     exporter.export(monitor);
                     return Status.OK_STATUS;
                 }

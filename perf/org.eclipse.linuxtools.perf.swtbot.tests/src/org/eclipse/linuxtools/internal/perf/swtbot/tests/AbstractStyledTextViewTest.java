@@ -10,9 +10,15 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.swtbot.tests;
 
+import static org.eclipse.swtbot.eclipse.finder.matchers.WidgetMatcherFactory.withPartName;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotStyledText;
+import org.eclipse.ui.IViewReference;
+import org.hamcrest.Matcher;
 
 /**
  * Specialized abstract SWTBot test for views containing
@@ -20,27 +26,29 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotStyledText;
  */
 public abstract class AbstractStyledTextViewTest extends AbstractSWTBotTest {
 
-	@Override
-	protected void testPerfView() {
-		SWTWorkbenchBot bot = new SWTWorkbenchBot();
-		SWTBotView view = bot.viewByTitle(getViewId());
-		assertNotNull(view);
+    @Override
+    protected void testPerfView() {
+        SWTWorkbenchBot bot = new SWTWorkbenchBot();
 
-		view.setFocus();
-		SWTBotStyledText text = bot.styledText();
-		assertNotNull(text);
-		assertEquals(getExpectedText(), text.getText());
-	}
+        Matcher<IViewReference> withPartName = withPartName(getViewId());
+        SWTBotView view = bot.view(withPartName);
+        assertNotNull(view);
 
-	/**
-	 * Get unique test view identifier.
-	 * @return String unique identifier of view part to test.
-	 */
-	protected abstract String getViewId();
+        view.setFocus();
+        SWTBotStyledText text = bot.styledText();
+        assertNotNull(text);
+        assertEquals(getExpectedText(), text.getText());
+    }
 
-	/**
-	 * Get exptected text of <code>StyledText</code> widget contained in this view.
-	 * @return String expected text of view.
-	 */
-	protected abstract String getExpectedText();
+    /**
+     * Get unique test view identifier.
+     * @return String unique identifier of view part to test.
+     */
+    protected abstract String getViewId();
+
+    /**
+     * Get exptected text of <code>StyledText</code> widget contained in this view.
+     * @return String expected text of view.
+     */
+    protected abstract String getExpectedText();
 }

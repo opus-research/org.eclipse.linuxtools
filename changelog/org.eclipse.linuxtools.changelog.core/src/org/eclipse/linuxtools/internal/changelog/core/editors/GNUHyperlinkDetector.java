@@ -34,176 +34,177 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
- * 
+ *
  * @author klee (Kyu Lee)
  */
 public class GNUHyperlinkDetector extends AbstractHyperlinkDetector {
 
-	private IPath documentLocation;
+    private IPath documentLocation;
 
-	public GNUHyperlinkDetector() {
-	}
-	
-	/**
-	 * Creates a new URL hyperlink detector for GNU Format changelogs.
-	 * 
-	 * NOTE: It assumes that the path this ChangeLog is in, is root
-	 * directory of path names in this ChangeLog.
-	 * 
-	 * ex) ChangeLog is in /some/project and in ChangeLog, path names are like
-	 * abc/file.java ghi/file2.java
-	 * 
-	 * then absolute path of file.java and file2.java are
-	 * /some/project/abc/file.java and /some/project/ghi/file2.java
-	 * 
-	 * @param textViewer The text viewer in which to detect the hyperlink.
-	 */
-	public GNUHyperlinkDetector(ITextViewer textViewer, TextEditor editor) {
-		Assert.isNotNull(textViewer);
+    public GNUHyperlinkDetector() {
+    }
 
-		documentLocation = getDocumentLocation(editor);
+    /**
+     * Creates a new URL hyperlink detector for GNU Format changelogs.
+     *
+     * NOTE: It assumes that the path this ChangeLog is in, is root
+     * directory of path names in this ChangeLog.
+     *
+     * ex) ChangeLog is in /some/project and in ChangeLog, path names are like
+     * abc/file.java ghi/file2.java
+     *
+     * then absolute path of file.java and file2.java are
+     * /some/project/abc/file.java and /some/project/ghi/file2.java
+     *
+     * @param textViewer The text viewer in which to detect the hyperlink.
+     */
+    public GNUHyperlinkDetector(ITextViewer textViewer, TextEditor editor) {
+        Assert.isNotNull(textViewer);
 
-	}
+        documentLocation = getDocumentLocation(editor);
 
-	/**
-	 * Detector using RuleBasedScanner.
-	 */
-	public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
-			IRegion region, boolean canShowMultipleHyperlinks) {
-		if (documentLocation == null) {
-			ITextEditor ed = (ITextEditor) this.getAdapter(ITextEditor.class);
-			documentLocation = getDocumentLocation(ed);
-		}
+    }
 
-		IDocument thisDoc = textViewer.getDocument();
+    /**
+     * Detector using RuleBasedScanner.
+     */
+    @Override
+    public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
+            IRegion region, boolean canShowMultipleHyperlinks) {
+        if (documentLocation == null) {
+            ITextEditor ed = (ITextEditor) this.getAdapter(ITextEditor.class);
+            documentLocation = getDocumentLocation(ed);
+        }
 
-		GNUElementScanner scanner = new GNUElementScanner();
+        IDocument thisDoc = textViewer.getDocument();
 
-		scanner.setDefaultReturnToken(new Token("default"));
+        GNUElementScanner scanner = new GNUElementScanner();
 
-		ITypedRegion partitionInfo = null;
+        scanner.setDefaultReturnToken(new Token("default"));
 
-		try {
-			partitionInfo = thisDoc.getPartition(region.getOffset());
-		} catch (org.eclipse.jface.text.BadLocationException e1) {
-			e1.printStackTrace();
-			return null;
-		}
+        ITypedRegion partitionInfo = null;
 
-		scanner.setRange(thisDoc, partitionInfo.getOffset(), partitionInfo.getLength());
+        try {
+            partitionInfo = thisDoc.getPartition(region.getOffset());
+        } catch (org.eclipse.jface.text.BadLocationException e1) {
+            e1.printStackTrace();
+            return null;
+        }
 
-		Token tmpToken = (Token) scanner.nextToken();
+        scanner.setRange(thisDoc, partitionInfo.getOffset(), partitionInfo.getLength());
 
-		String tokenStr = (String) tmpToken.getData();
+        Token tmpToken = (Token) scanner.nextToken();
 
-		if (tokenStr == null) {
-			return null;
-		}
+        String tokenStr = (String) tmpToken.getData();
 
-		// try to find non-default token containing region..if none, return null.
-		while (region.getOffset() < scanner.getTokenOffset() ||
-				region.getOffset() > scanner.getOffset() ||
-				tokenStr.equals("default")) {
-			tmpToken = (Token) scanner.nextToken();
-			tokenStr = (String) tmpToken.getData();
-			if (tokenStr == null)
-				return null;
-		}
+        if (tokenStr == null) {
+            return null;
+        }
 
-		Region tokenRegion = new Region(scanner.getTokenOffset(), scanner
-				.getTokenLength());
+        // try to find non-default token containing region..if none, return null.
+        while (region.getOffset() < scanner.getTokenOffset() ||
+                region.getOffset() > scanner.getOffset() ||
+                tokenStr.equals("default")) {
+            tmpToken = (Token) scanner.nextToken();
+            tokenStr = (String) tmpToken.getData();
+            if (tokenStr == null)
+                return null;
+        }
 
-		String line = "";
-		try {
-			line = thisDoc
-					.get(tokenRegion.getOffset(), tokenRegion.getLength());
-		} catch (org.eclipse.jface.text.BadLocationException e1) {
-			e1.printStackTrace();
-			return null;
-		}
+        Region tokenRegion = new Region(scanner.getTokenOffset(), scanner
+                .getTokenLength());
 
-		// process file link
-		if (tokenStr.equals(GNUElementScanner.FILE_NAME)) {
+        String line = "";
+        try {
+            line = thisDoc
+                    .get(tokenRegion.getOffset(), tokenRegion.getLength());
+        } catch (org.eclipse.jface.text.BadLocationException e1) {
+            e1.printStackTrace();
+            return null;
+        }
 
-			Region pathRegion = null;
+        // process file link
+        if (tokenStr.equals(GNUElementScanner.FILE_NAME)) {
 
-			int lineOffset = 0;
-			
-			// cut "* " if necessary
-			if (line.startsWith("* ")) {
-				lineOffset = 2;
-				line = line.substring(2);
-			}
-//			int trailingWhiteSpace;
-//			if (((trailingWhiteSpace = line.indexOf(":")) > 0)
-//					|| ((trailingWhiteSpace = line.indexOf(" ")) > 0)) {
+            Region pathRegion = null;
+
+            int lineOffset = 0;
+
+            // cut "* " if necessary
+            if (line.startsWith("* ")) {
+                lineOffset = 2;
+                line = line.substring(2);
+            }
+//            int trailingWhiteSpace;
+//            if (((trailingWhiteSpace = line.indexOf(":")) > 0)
+//                    || ((trailingWhiteSpace = line.indexOf(" ")) > 0)) {
 //
-//				line = line.substring(0, trailingWhiteSpace);
-//				pathRegion = new Region(tokenRegion.getOffset() + lineOffset,
-//						trailingWhiteSpace);
-//			} else {
-				pathRegion = new Region(tokenRegion.getOffset() + lineOffset, line
-						.length());
-//			}
-			
-			
-			if (documentLocation == null)
-				return null;
+//                line = line.substring(0, trailingWhiteSpace);
+//                pathRegion = new Region(tokenRegion.getOffset() + lineOffset,
+//                        trailingWhiteSpace);
+//            } else {
+                pathRegion = new Region(tokenRegion.getOffset() + lineOffset, line
+                        .length());
+//            }
 
-			// Replace any escape characters added to name
-			line = line.replaceAll("\\\\(.)", "$1");
 
-			IPath filePath = documentLocation.append(line);
+            if (documentLocation == null)
+                return null;
 
-			return new IHyperlink[] { new FileHyperlink(pathRegion,
-					ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
-							filePath)) };
+            // Replace any escape characters added to name
+            line = line.replaceAll("\\\\(.)", "$1");
 
-		}
+            IPath filePath = documentLocation.append(line);
 
-		return null;
-	}
+            return new IHyperlink[] { new FileHyperlink(pathRegion,
+                    ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
+                            filePath)) };
 
-	private IWorkspaceRoot getWorkspaceRoot() {
-		return ResourcesPlugin.getWorkspace().getRoot();
-	}
+        }
 
-	/**
-	 * Get current directory that ChangeLog is in.
-	 * 
-	 * @param currentEditor
-	 * @return path that this ChangeLog is in
-	 */
-	private IPath getDocumentLocation(IEditorPart currentEditor) {
-		IWorkspaceRoot myWorkspaceRoot = getWorkspaceRoot();
-		String WorkspaceRoot = myWorkspaceRoot.getLocation().toOSString();
-		IEditorInput cc = currentEditor.getEditorInput();
+        return null;
+    }
 
-		if (cc instanceof IFileEditorInput) {
-			IFileEditorInput test = (IFileEditorInput) cc;
-			IFile loc = test.getFile();
+    private IWorkspaceRoot getWorkspaceRoot() {
+        return ResourcesPlugin.getWorkspace().getRoot();
+    }
 
-			IPath docLoc = loc.getLocation();
-			docLoc = docLoc.removeLastSegments(1);
-			return docLoc;
+    /**
+     * Get current directory that ChangeLog is in.
+     *
+     * @param currentEditor
+     * @return path that this ChangeLog is in
+     */
+    private IPath getDocumentLocation(IEditorPart currentEditor) {
+        IWorkspaceRoot myWorkspaceRoot = getWorkspaceRoot();
+        String WorkspaceRoot = myWorkspaceRoot.getLocation().toOSString();
+        IEditorInput cc = currentEditor.getEditorInput();
 
-		}
+        if (cc instanceof IFileEditorInput) {
+            IFileEditorInput test = (IFileEditorInput) cc;
+            IFile loc = test.getFile();
 
-		if ((cc instanceof SyncInfoCompareInput)
-				|| (cc instanceof CompareEditorInput)) {
+            IPath docLoc = loc.getLocation();
+            docLoc = docLoc.removeLastSegments(1);
+            return docLoc;
 
-			CompareEditorInput test = (CompareEditorInput) cc;
-			if (test.getCompareResult() == null)
-				return null;
+        }
 
-			IPath docLoc = new Path(WorkspaceRoot
-					+ test.getCompareResult().toString());
-			docLoc = docLoc.removeLastSegments(1);
-			return docLoc;
+        if ((cc instanceof SyncInfoCompareInput)
+                || (cc instanceof CompareEditorInput)) {
 
-		}
+            CompareEditorInput test = (CompareEditorInput) cc;
+            if (test.getCompareResult() == null)
+                return null;
 
-		return null;
-	}
+            IPath docLoc = new Path(WorkspaceRoot
+                    + test.getCompareResult().toString());
+            docLoc = docLoc.removeLastSegments(1);
+            return docLoc;
+
+        }
+
+        return null;
+    }
 
 }

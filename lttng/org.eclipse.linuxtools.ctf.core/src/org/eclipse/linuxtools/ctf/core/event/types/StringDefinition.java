@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,8 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 
 /**
  * A CTF string definition (similar to a C null-terminated byte array).
@@ -25,15 +26,13 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class StringDefinition extends Definition {
+public final class StringDefinition extends Definition {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private StringDeclaration declaration;
-
-    private StringBuilder string;
+    private final String fString;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -41,17 +40,21 @@ public class StringDefinition extends Definition {
 
     /**
      * Constructor
-     * @param declaration the parent declaration
-     * @param definitionScope the parent scope
-     * @param fieldName the field name
+     *
+     * @param declaration
+     *            the parent declaration
+     * @param definitionScope
+     *            the parent scope
+     * @param fieldName
+     *            the field name
+     * @param value
+     *            The String value
+     * @since 3.0
      */
-    public StringDefinition(StringDeclaration declaration,
-            IDefinitionScope definitionScope, String fieldName) {
-        super(definitionScope, fieldName);
-
-        this.declaration = declaration;
-
-        string = new StringBuilder();
+    public StringDefinition(@NonNull StringDeclaration declaration,
+            IDefinitionScope definitionScope, @NonNull String fieldName, String value) {
+        super(declaration, definitionScope, fieldName);
+        fString = value;
     }
 
     // ------------------------------------------------------------------------
@@ -60,55 +63,21 @@ public class StringDefinition extends Definition {
 
     @Override
     public StringDeclaration getDeclaration() {
-        return declaration;
-    }
-
-    /**
-     * Sets the string declaration
-     * @param declaration the declaration
-     */
-    public void setDeclaration(StringDeclaration declaration) {
-        this.declaration = declaration;
-    }
-
-    /**
-     * Gets the string
-     * @return the stringbuilder
-     */
-    public StringBuilder getString() {
-        return string;
-    }
-
-    /**
-     * Sets a stringbuilder for the definition
-     * @param string the stringbuilder
-     */
-    public void setString(StringBuilder string) {
-        this.string = string;
+        return (StringDeclaration) super.getDeclaration();
     }
 
     /**
      * Gets the string (value)
+     *
      * @return the string
      */
     public String getValue() {
-        return string.toString();
+        return fString;
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
-    @Override
-    public void read(BitBuffer input) {
-        string.setLength(0);
-
-        char c = (char) input.getInt(8, false);
-        while (c != 0) {
-            string.append(c);
-            c = (char) input.getInt(8, false);
-        }
-    }
 
     @Override
     public String toString() {

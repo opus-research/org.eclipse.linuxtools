@@ -3,7 +3,9 @@
       id="org.eclipse.linuxtools.profiling"
       label="%featureName"
       version="2.0.0.qualifier"
-      provider-name="%featureProvider">
+      provider-name="%featureProvider"
+      license-feature="org.eclipse.license"
+      license-feature-version="0.0.0">
 
    <description>
       %description
@@ -36,7 +38,6 @@
       <import plugin="org.eclipse.cdt.launch"/>
       <import plugin="org.eclipse.cdt.ui"/>
       <import plugin="org.eclipse.ui.console"/>
-      <import feature="org.eclipse.cdt" version="7.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -62,6 +63,18 @@
 
    <plugin
          id="org.eclipse.linuxtools.profiling.docs"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.linuxtools.tools.launch.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+    <plugin
+         id="org.eclipse.linuxtools.tools.launch.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

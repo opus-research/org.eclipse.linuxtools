@@ -258,7 +258,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
     public SDWidget(Composite c, int s) {
         super(c, s | SWT.NO_BACKGROUND, true);
         setOverviewEnabled(true);
-        fSelectedNodeList = new ArrayList<GraphNode>();
+        fSelectedNodeList = new ArrayList<>();
         fSelProvider = new SDWidgetSelectionProvider();
         SDViewPref.getInstance().addPropertyChangeListener(this);
         fToolTip = new DiagramToolTip(getViewControl());
@@ -363,7 +363,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
         fCollapaseCaretImg = Activator.getDefault().getImageFromPath(ITmfImageConstants.IMG_UI_ARROW_COLLAPSE_OBJ);
         fArrowUpCaretImg = Activator.getDefault().getImageFromPath(ITmfImageConstants.IMG_UI_ARROW_UP_OBJ);
 
-        fReorderList = new ArrayList<Lifeline[]>();
+        fReorderList = new ArrayList<>();
         getViewControl().addTraverseListener(new LocalTraverseListener());
 
         addTraverseListener(new LocalTraverseListener());
@@ -1327,17 +1327,8 @@ public class SDWidget extends ScrollView implements SelectionListener,
 
         update();
         Rectangle area = getClientArea();
-        Image dbuffer = null;
-        GC gcim = null;
-
-        try {
-            dbuffer = new Image(getDisplay(), area.width, area.height);
-        } catch (Exception e) {
-            Activator.getDefault().logError("Error creating image", e); //$NON-NLS-1$
-        }
-
-        gcim = new GC(dbuffer);
-
+        Image dbuffer = new Image(getDisplay(), area.width, area.height);
+        GC gcim = new GC(dbuffer);
         NGC context = new NGC(this, gcim);
 
         // Set the metrics to use for lifeline text and message text
@@ -1414,7 +1405,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
         if (event.keyCode == SWT.SHIFT) {
             fShiftSelection = true;
-            fPrevList = new ArrayList<GraphNode>();
+            fPrevList = new ArrayList<>();
             fPrevList.addAll(getSelection());
         }
 
@@ -1850,7 +1841,11 @@ public class SDWidget extends ScrollView implements SelectionListener,
 
         @Override
         public void run() {
-            Display.getDefault().asyncExec(new Runnable() {
+            Display display = Display.getDefault();
+            if ((display == null) || (display.isDisposed())) {
+                return;
+            }
+            display.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     if (fSdWidget.isDisposed()) {

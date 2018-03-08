@@ -5,15 +5,17 @@
     are made available under the terms of the Eclipse Public License v1.0
     which accompanies this distribution, and is available at
     http://www.eclipse.org/legal/epl-v10.html
-   
+
     Contributors:
         Red Hat - initial API and implementation
  -->
 <feature
       id="org.eclipse.linuxtools.rpm"
       label="%featureName"
-      version="1.0.0.qualifier"
-      provider-name="%provider">
+      version="2.0.0.qualifier"
+      provider-name="%provider"
+      license-feature="org.eclipse.license"
+      license-feature-version="0.0.0">
 
    <description url="http://www.eclipse.org/linuxtools/projectPages/specfile/">
       %description
@@ -31,17 +33,6 @@
       <update label="Linux Tools Update Site" url="http://download.eclipse.org/linuxtools/update"/>
    </url>
 
-   <requires>
-      <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="org.eclipse.jface.text"/>
-      <import plugin="org.eclipse.swt"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.text"/>
-   </requires>
-
    <plugin
          id="org.eclipse.linuxtools.rpm.core"
          download-size="0"
@@ -49,12 +40,13 @@
          version="0.0.0"
          unpack="false"/>
 
-     <plugin
+   <plugin
          id="org.eclipse.linuxtools.rpm.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
    <plugin
          id="org.eclipse.linuxtools.rpm.rpmlint"
          download-size="0"
@@ -71,6 +63,12 @@
 
    <plugin
          id="org.eclipse.linuxtools.rpm.ui.editor.doc"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+    <plugin
+         id="org.eclipse.linuxtools.rpmstubby"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

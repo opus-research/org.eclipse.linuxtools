@@ -11,15 +11,19 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import java.util.List;
+
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.ProbeAliasAction;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ProbeParser;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.ProbeNodeData;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.ProbevarNodeData;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 
 
 /**
@@ -30,61 +34,71 @@ import org.eclipse.ui.IWorkbenchActionConstants;
  * @author Ryan Morse
  */
 public class ProbeAliasBrowserView extends BrowserView {
-	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView"; //$NON-NLS-1$
-	private ProbeAliasAction doubleClickAction;
-	private Menu menu;
+    public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView"; //$NON-NLS-1$
 
-	/**
-	 * Creates the UI on the given <code>Composite</code>
-	 */
-	@Override
-	public void createPartControl(Composite parent) {
-		super.createPartControl(parent);
-		TapsetLibrary.init();
-		TapsetLibrary.addProbeListener(new ViewUpdater());
-		refresh();
-		makeActions();
-	}
+    /**
+     * Creates the UI on the given <code>Composite</code>
+     */
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
+        ProbeParser.getInstance().addListener(viewUpdater);
+        refresh();
+        makeActions();
+    }
 
-	/**
-	 * Refreshes the list of probe aliases in the viewer.
-	 */
-	@Override
-	public void refresh() {
-		TreeNode probes = TapsetLibrary.getProbes();
-		if (probes != null){
-			super.viewer.setInput(TapsetLibrary.getProbes());
-		}
-	}
+    @Override
+    protected Image getEntryImage(TreeNode treeObj) {
+        //Probe variables
+        if (treeObj.getData() instanceof ProbevarNodeData) {
+            List<String> varTypes = ((ProbevarNodeData) treeObj.getData()).getTypes();
+            if (varTypes.get(varTypes.size()-1).endsWith("*")) { //Pointers //$NON-NLS-1$
+                return IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
+            }
+            if (varTypes.contains("struct")) {//$NON-NLS-1$
+                return IDEPlugin.getImageDescriptor("icons/vars/var_struct.gif").createImage(); //$NON-NLS-1$
+            }
+            if (varTypes.contains("string")) {//$NON-NLS-1$
+                return IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
+            }
+            if (varTypes.contains("unknown")) {//$NON-NLS-1$
+                return IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
+            }
+            // All other types are displayed as long
+            return IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
+        }
 
-	/**
-	 * Wires up all of the actions for this browser, such as double and right click handlers.
-	 */
-	private void makeActions() {
-		doubleClickAction = new ProbeAliasAction(getSite().getWorkbenchWindow(), this);
-		viewer.addDoubleClickListener(doubleClickAction);
-		Control control = this.viewer.getControl();
-		MenuManager manager = new MenuManager("probePopup"); //$NON-NLS-1$
+        //Non-variable icons
+        if (treeObj.getData() instanceof ProbeNodeData) {
+            return IDEPlugin.getImageDescriptor("icons/misc/probe_obj.gif").createImage(); //$NON-NLS-1$
+        }
+        return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+    }
 
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-		Menu menu = manager.createContextMenu(control);
-		viewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(manager, viewer);
-	}
+    /**
+     * Refreshes the list of probe aliases in the viewer.
+     */
+    @Override
+    public void refresh() {
+        tree = TapsetLibrary.getProbes();
+        if (tree != null) {
+            viewer.setInput(tree);
+        }
+    }
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		if(null != viewer) {
-			viewer.removeDoubleClickListener(doubleClickAction);
-		}
-		if(null != doubleClickAction) {
-			doubleClickAction.dispose();
-		}
-		doubleClickAction = null;
-		if(null != menu) {
-			menu.dispose();
-		}
-		menu = null;
-	}
+    /**
+     * Wires up all of the actions for this browser, such as double and right click handlers.
+     */
+    private void makeActions() {
+        doubleClickAction = new ProbeAliasAction(getSite().getWorkbenchWindow(), this);
+        viewer.addDoubleClickListener(doubleClickAction);
+        registerContextMenu("probePopup"); //$NON-NLS-1$
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        ProbeParser.getInstance().removeListener(viewUpdater);
+    }
+
 }

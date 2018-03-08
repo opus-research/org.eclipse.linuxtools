@@ -11,14 +11,20 @@
 
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,13 +66,19 @@ public class ArrayDeclarationTest {
     /**
      * Run the ArrayDefinition createDefinition(DefinitionScope,String) method
      * test.
+     *
+     * @throws CTFReaderException
+     *             error in the bitbuffer
      */
     @Test
-    public void testCreateDefinition() {
+    public void testCreateDefinition() throws CTFReaderException {
         String fieldName = "";
         IDefinitionScope definitionScope = null;
         ArrayDefinition result;
-        result = fixture.createDefinition(definitionScope, fieldName);
+        byte[] array = { 't', 'e', 's', 't', '\0', 't', 'h', 'i', 's', '\0' };
+        ByteBuffer byb = ByteBuffer.wrap(array);
+        BitBuffer bb = new BitBuffer(byb);
+        result = fixture.createDefinition(definitionScope, fieldName, bb);
 
         assertNotNull(result);
     }
@@ -87,6 +99,29 @@ public class ArrayDeclarationTest {
     public void testGetLength() {
         int result = fixture.getLength();
         assertEquals(1, result);
+    }
+
+    /**
+     * Run the boolean isString() method test.
+     */
+    @Test
+    public void testIsString_ownDefs() {
+        // it's an array of strings, not a string
+        assertFalse(fixture.isString());
+    }
+
+    /**
+     * Run the boolean isString() method test.
+     */
+    @Test
+    public void testIsString_complex() {
+        final IntegerDeclaration id = IntegerDeclaration.createDeclaration(8, false, 16,
+                ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, "", 8);
+        ArrayDeclaration ad = new ArrayDeclaration(0, id);
+
+        boolean result = ad.isString();
+
+        assertTrue(result);
     }
 
     /**

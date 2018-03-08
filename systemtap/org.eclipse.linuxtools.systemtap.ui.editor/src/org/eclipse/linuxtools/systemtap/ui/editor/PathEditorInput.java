@@ -11,108 +11,72 @@
 
 package org.eclipse.linuxtools.systemtap.ui.editor;
 
-import java.io.File;
-import java.io.IOException;
-
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.ILocationProvider;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 
 
 
-public class PathEditorInput implements IPathEditorInput, ILocationProvider {
-	private IPath fPath;
-	private IWorkbenchWindow fMainWindow;
-	public boolean temp = false;
+public class PathEditorInput extends FileStoreEditorInput implements IPathEditorInput, ILocationProvider {
+    private IPath fPath;
 
-	public PathEditorInput(IPath path) {
-		if (path == null) {
-			throw new IllegalArgumentException();
-		}
-		this.fPath = path;
-	}
-	public PathEditorInput(IPath path, IWorkbenchWindow window) {
-		this(path);
-		this.fMainWindow = window;
-	}
+    public PathEditorInput(IPath path) {
+        super(EFS.getLocalFileSystem().getStore(path));
+        if (path == null) {
+            throw new IllegalArgumentException();
+        }
+        this.fPath = path;
+    }
 
-	public PathEditorInput() throws IOException	{
-		temp = true;
-		File file = File.createTempFile(Localization.getString("PathEditorInput.Untitled") , ".stp"); //$NON-NLS-1$ //$NON-NLS-2$
-		fPath = new Path(file.getAbsolutePath());
-	}
+    @Override
+    public int hashCode() {
+        return fPath.hashCode();
+    }
 
-	@Override
-	public int hashCode() {
-		return fPath.hashCode();
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof PathEditorInput) {
+            PathEditorInput other = (PathEditorInput) obj;
+            return fPath.equals(other.fPath);
+        } else if (obj instanceof FileStoreEditorInput) {
+            return super.equals(obj);
+        }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!(obj instanceof PathEditorInput))
-			return false;
-		PathEditorInput other = (PathEditorInput) obj;
+        return false;
+    }
 
-		return fPath.equals(other.fPath);
-	}
+    @Override
+    public String getName() {
+        String[] substr = fPath.segments();
+        return substr[substr.length -1];
+    }
 
-	@Override
-	public boolean exists() {
-		return fPath.toFile().exists();
-	}
+    @Override
+    public IPath getPath() {
+        return fPath;
+    }
 
-	@Override
-	public ImageDescriptor getImageDescriptor() {
-		return PlatformUI.getWorkbench().getEditorRegistry().getImageDescriptor(fPath.toString());
-	}
+    @Override
+    public IPath getPath(Object element) {
+        if(element instanceof PathEditorInput) {
+            return ((PathEditorInput)element).getPath();
+        }
+        return null;
+    }
 
-	@Override
-	public String getName() {
-		String[] substr = fPath.segments();
-		return substr[substr.length -1];
-	}
-
-	@Override
-	public String getToolTipText() {
-		return fPath.makeRelative().toOSString();
-	}
-
-	@Override
-	public IPath getPath() {
-		return fPath;
-	}
-
-	@Override
-	public Object getAdapter(Class adapter) {
-		return null;
-	}
-
-	@Override
-	public IPersistableElement getPersistable() {
-		return null;
-	}
-
-	public IWorkbenchWindow getMainWindow() {
-		return fMainWindow;
-	}
-
-	@Override
-	public IPath getPath(Object element) {
-		if(element instanceof PathEditorInput) {
-			return ((PathEditorInput)element).getPath();
-		}
-		return null;
-	}
-
-	public void setPath(IPath newPath) {
-		fPath = newPath;
-	}
+    @Override
+    public Object getAdapter(Class adapter) {
+        if (PathEditorInput.class.equals(adapter)
+                || IPathEditorInput.class.equals(adapter)
+                || ILocationProvider.class.equals(adapter)) {
+            return this;
+        }
+        return Platform.getAdapterManager().getAdapter(this, adapter);
+    }
 }

@@ -10,48 +10,35 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.swtbot.tests;
 
-import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.ui.StatComparisonView;
+import static org.junit.Assert.assertNotNull;
+
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.junit.Test;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotSpinner;
 
 /**
  * SWTBot test for StatComparisonView.
  */
-public class StatComparisonViewTest extends AbstractStyledTextViewTest{
+public class StatComparisonViewTest extends AbstractSWTBotTest {
 
-	@Override
-	protected void setPerfOptions(SWTWorkbenchBot bot) {
-		// no perf options needed
-	}
+    @Override
+    protected void setPerfOptions(SWTWorkbenchBot bot) {
+        SWTBotCheckBox chkBox = bot.checkBox("Show Stat View");
+        assertNotNull(chkBox);
+        chkBox.select();
 
-	@Override
-	@Test
-	public void runPerfViewTest() {
-		/*
-		 * No need to create project or open launch dialog,
-		 * just need to open view.
-		 */
-		openStubView();
-		testPerfView();
-	}
+        SWTBotSpinner spinner = bot.spinner();
+        assertNotNull(spinner);
+        spinner.setSelection(3);
+    }
 
-	@Override
-	protected void openStubView() {
-		PerfPlugin.getDefault().setStatDiffData(new StubPerfData());
-		StatComparisonView.refreshView();
-	}
+    @Override
+    protected void testPerfView() {
+        compareWithEachOther("perf_old.stat", "perf_new.stat");
+    }
 
-	@Override
-	protected String getViewId() {
-		// supply secondary id
-		return "Perf Statistics Comparison";
-	}
-
-	@Override
-	protected String getExpectedText() {
-		return PerfPlugin.getDefault().getStatDiffData().getPerfData();
-	}
-
+    @Override
+    protected void openStubView() {
+    }
 
 }

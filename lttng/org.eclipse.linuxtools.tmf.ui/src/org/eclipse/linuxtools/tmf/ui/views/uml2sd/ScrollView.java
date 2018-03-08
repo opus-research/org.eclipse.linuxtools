@@ -454,7 +454,11 @@ public class ScrollView extends Composite {
 
     @Override
     public Rectangle getClientArea() {
-        return fViewControl.getClientArea();
+        Rectangle area = fViewControl.getClientArea();
+        /* Clamp the size of the returned area to 1x1 minimum */
+        area.width = Math.max(area.width, 1);
+        area.height = Math.max(area.height, 1);
+        return area;
     }
 
     @Override
@@ -868,10 +872,16 @@ public class ScrollView extends Composite {
 
         @Override
         public void run() {
-            Display.getDefault().asyncExec(new Runnable() {
+            final Display display = Display.getDefault();
+            if ((display == null) || display.isDisposed()) {
+                return;
+            }
+            display.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    scrollView.scrollBy(deltaX, deltaY);
+                    if (!scrollView.isDisposed()) {
+                        scrollView.scrollBy(deltaX, deltaY);
+                    }
                 }
             });
         }

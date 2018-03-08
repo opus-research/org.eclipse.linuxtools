@@ -25,7 +25,7 @@ public class CGCategory extends AbstractTreeElement {
     public final static String CHILDREN = "children"; //$NON-NLS-1$
 
     public final String category;
-    private final LinkedList<TreeElement> children = new LinkedList<TreeElement>();
+    private final LinkedList<TreeElement> children = new LinkedList<>();
 
     /**
      * Constructor
@@ -45,21 +45,11 @@ public class CGCategory extends AbstractTreeElement {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getChildren()
-     */
     @Override
     public LinkedList<? extends TreeElement> getChildren() {
         return children;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getName()
-     */
     @Override
     public String getName() {
         return category;

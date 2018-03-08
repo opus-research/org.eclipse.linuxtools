@@ -54,7 +54,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
 
     public SDView v;
     public int page;
-    private List<GraphNode> findResults = new ArrayList<GraphNode>();
+    private List<GraphNode> findResults = new ArrayList<>();
     private Criteria findCriteria;
     private int currentFindIndex = 0;
 
@@ -64,7 +64,11 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         this("");
     }
 
-    @SuppressWarnings("unused")
+    /**
+     * Constructor
+     *
+     * @param name
+     */
     public TestLoaders(String name) {
         page = 1;
     }
@@ -229,7 +233,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             return false;
         }
         if (findResults == null || findCriteria == null || !findCriteria.compareTo(toSearch)) {
-            findResults = new ArrayList<GraphNode>();
+            findResults = new ArrayList<>();
             findCriteria = toSearch;
             if (findCriteria.isLifeLineSelected()) {
                 for (int i = 0; i < frame.lifeLinesCount(); i++) {
@@ -239,7 +243,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
                 }
 
             }
-            ArrayList<GraphNode> msgs = new ArrayList<GraphNode>();
+            ArrayList<GraphNode> msgs = new ArrayList<>();
             if (findCriteria.isSyncMessageSelected()) {
                 for (int i = 0; i < frame.syncMessageCount(); i++) {
                     if (findCriteria.matches(frame.getSyncMessage(i).getName())) {
@@ -260,7 +264,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             // findResults.addAll(Arrays.asList(temp));
             // }
 
-            msgs = new ArrayList<GraphNode>();
+            msgs = new ArrayList<>();
             if (findCriteria.isAsyncMessageSelected()) {
                 for (int i = 0; i < frame.asyncMessageCount(); i++) {
                     if (findCriteria.matches(frame.getAsyncMessage(i).getName())) {
@@ -281,8 +285,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             // findResults.addAll(Arrays.asList(temp));
             // }
 
-            @SuppressWarnings("rawtypes")
-            List selection = v.getSDWidget().getSelection();
+            List<GraphNode> selection = v.getSDWidget().getSelection();
             if (selection != null && selection.size() == 1) {
                 currentFindIndex = findResults.indexOf(selection.get(0)) + 1;
             } else {
@@ -336,7 +339,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     }
 
     @Override
-    public boolean filter(List<?> filters) {
+    public boolean filter(List<FilterCriteria> filters) {
 
         if (savedFrame != null) {
             savedFrame = v.getFrame();
@@ -352,7 +355,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             return false;
         }
 
-        FilterCriteria filterCriteria = (FilterCriteria) filters.get(0);
+        FilterCriteria filterCriteria = filters.get(0);
 
         // One way is to set visiblity of the item, but this only works for messages and not
         // for lifelines! It's better to create a new frame without the filtered messages.

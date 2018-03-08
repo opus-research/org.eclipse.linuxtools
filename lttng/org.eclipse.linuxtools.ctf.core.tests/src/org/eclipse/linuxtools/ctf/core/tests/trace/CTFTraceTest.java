@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
  * Contributors:
  *     Matthew Khouzam - Initial API and implementation
  *     Marc-Andre Laperle - Test in traces directory recursively
+ *     Simon Delisle - Add test for getCallsite(eventName, ip)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.trace;
@@ -22,16 +23,15 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.nio.ByteOrder;
-import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,14 +44,7 @@ import org.junit.Test;
  */
 public class CTFTraceTest {
 
-    private static final String TRACES_DIRECTORY = "../org.eclipse.linuxtools.ctf.core.tests/traces";
-
-    private static final String METADATA_FILENAME = "metadata";
-
-    private static final int TRACE_INDEX = 0;
-
-    private static final String CTF_VERSION_NUMBER = "1.8";
-    private static final String CTF_SUITE_TEST_DIRECTORY = "ctf-testsuite/tests/" + CTF_VERSION_NUMBER;
+    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
 
     private CTFTrace fixture;
 
@@ -60,8 +53,13 @@ public class CTFTraceTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(CtfTestTraces.tracesExist());
-        fixture = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        assumeTrue(testTrace.exists());
+        try {
+            fixture = testTrace.getTraceFromFile();
+        } catch (CTFReaderException e) {
+            /* If the assumeTrue() call passed, this should not happen. */
+            fail();
+        }
         fixture.setMinor(1L);
         fixture.setUUID(UUID.randomUUID());
         fixture.setPacketHeader(new StructDeclaration(1L));
@@ -74,8 +72,12 @@ public class CTFTraceTest {
      */
     @Test
     public void testOpen_existing() {
-        CTFTrace result = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
-        assertNotNull(result.getUUID());
+        try {
+            CTFTrace result = testTrace.getTraceFromFile();
+            assertNotNull(result.getUUID());
+        } catch (CTFReaderException e) {
+            fail();
+        }
     }
 
     /**
@@ -111,7 +113,7 @@ public class CTFTraceTest {
 
         // Add a stream
         try {
-            Stream stream = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
+            CTFStream stream = new CTFStream(testTrace.getTrace());
             stream.setId(1234);
             fixture.addStream(stream);
         } catch (CTFReaderException e) {
@@ -185,16 +187,7 @@ public class CTFTraceTest {
     @Test
     public void testGetStream() {
         Long id = new Long(0L);
-        Stream result = fixture.getStream(id);
-        assertNotNull(result);
-    }
-
-    /**
-     * Run the Map<Long, Stream> getStreams() method test.
-     */
-    @Test
-    public void testGetStreams() {
-        Map<Long, Stream> result = fixture.getStreams();
+        CTFStream result = fixture.getStream(id);
         assertNotNull(result);
     }
 
@@ -227,11 +220,11 @@ public class CTFTraceTest {
     }
 
     /**
-     * Run the boolean majortIsSet() method test.
+     * Run the boolean majorIsSet() method test.
      */
     @Test
-    public void testMajortIsSet() {
-        boolean result = fixture.majortIsSet();
+    public void testMajorIsSet() {
+        boolean result = fixture.majorIsSet();
         assertTrue(result);
     }
 
@@ -259,15 +252,19 @@ public class CTFTraceTest {
      */
     @Test
     public void testPacketHeaderIsSet_invalid() {
-        CTFTrace fixture2 = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
-        fixture2.setMinor(1L);
-        fixture2.setUUID(UUID.randomUUID());
-        fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
-        fixture2.setMajor(1L);
-        fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
+        try {
+            CTFTrace fixture2 = testTrace.getTraceFromFile();
+            fixture2.setMinor(1L);
+            fixture2.setUUID(UUID.randomUUID());
+            fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
+            fixture2.setMajor(1L);
+            fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
 
-        boolean result = fixture2.packetHeaderIsSet();
-        assertFalse(result);
+            boolean result = fixture2.packetHeaderIsSet();
+            assertFalse(result);
+        } catch (CTFReaderException e) {
+            fail();
+        }
     }
 
     /**
@@ -350,7 +347,7 @@ public class CTFTraceTest {
     @Test
     public void testLookupEnvironment_1() {
         String key = "";
-        String result = fixture.lookupEnvironment(key);
+        String result = fixture.getEnvironment().get(key);
         assertNull(result);
     }
 
@@ -360,7 +357,7 @@ public class CTFTraceTest {
     @Test
     public void testLookupEnvironment_2() {
         String key = "otherTest";
-        String result = fixture.lookupEnvironment(key);
+        String result = fixture.getEnvironment().get(key);
         assertNull(result);
     }
 
@@ -371,7 +368,7 @@ public class CTFTraceTest {
     public void testLookupEnvironment_3() {
         String key = "test";
         fixture.addEnvironmentVar(key, key);
-        String result = fixture.lookupEnvironment(key);
+        String result = fixture.getEnvironment().get(key);
         assertTrue(result.equals(key));
     }
 
@@ -383,72 +380,31 @@ public class CTFTraceTest {
         String key = "test";
         fixture.addEnvironmentVar(key, "bozo");
         fixture.addEnvironmentVar(key, "the clown");
-        String result = fixture.lookupEnvironment(key);
+        String result = fixture.getEnvironment().get(key);
         assertNotNull(result);
     }
 
     /**
-     * Open traces in specified directories and expect them to fail
-     *
+     * Test for getCallsite(eventName, ip)
      * @throws CTFReaderException not expected
      */
     @Test
-    public void testFailedParse() throws CTFReaderException {
-        parseTracesInDirectory(getTestTracesSubDirectory(CTF_SUITE_TEST_DIRECTORY + "/fail"), true);
-    }
+    public void callsitePosition() throws CTFReaderException{
+        long ip1 = 2;
+        long ip2 = 5;
+        long ip3 = 7;
+        CTFTrace callsiteTest = testTrace.getTraceFromFile();
+        callsiteTest.addCallsite("testEvent", null, ip1, null, 23);
+        callsiteTest.addCallsite("testEvent", null, ip2, null, 50);
+        callsiteTest.addCallsite("testEvent", null, ip3, null, 15);
 
-    /**
-     * Open traces in specified directories and expect them to succeed
-     *
-     * @throws CTFReaderException not expected
-     */
-    @Test
-    public void testSuccessfulParse() throws CTFReaderException {
-        parseTracesInDirectory(getTestTracesSubDirectory("kernel"), false);
-        parseTracesInDirectory(getTestTracesSubDirectory("trace2"), false);
-        parseTracesInDirectory(getTestTracesSubDirectory(CTF_SUITE_TEST_DIRECTORY + "/pass"), false);
-    }
-
-    /**
-     * Get the File object for the subDir in the traces directory. If the sub directory doesn't exist, the test is skipped.
-     */
-    private static File getTestTracesSubDirectory(String subDir) {
-        File file = new File(TRACES_DIRECTORY + "/" + subDir);
-        assumeTrue(file.isDirectory());
-        return file;
-    }
-
-    /**
-     * Parse the traces in given directory recursively
-     *
-     * @param directory The directory to search in
-     * @param expectException Whether or not traces in this directory are expected to throw an exception when parsed
-     * @throws CTFReaderException
-     */
-    void parseTracesInDirectory(File directory, boolean expectException) throws CTFReaderException {
-        for (File file : directory.listFiles()) {
-            if (file.getName().equals(METADATA_FILENAME)) {
-                try {
-                    new CTFTrace(directory);
-                    if (expectException) {
-                        fail("Trace was expected to fail parsing: " + directory);
-                    }
-                } catch (RuntimeException e) {
-                    if (!expectException) {
-                        throw new CTFReaderException("Failed parsing " + directory, e);
-                    }
-                } catch (CTFReaderException e) {
-                    if (!expectException) {
-                        throw new CTFReaderException("Failed parsing " + directory, e);
-                    }
-                }
-                return;
-            }
-
-            if (file.isDirectory()) {
-                parseTracesInDirectory(file, expectException);
-            }
-        }
+        assertEquals(2, (callsiteTest.getCallsite("testEvent", 1)).getIp());
+        assertEquals(2, (callsiteTest.getCallsite("testEvent", 2)).getIp());
+        assertEquals(5, (callsiteTest.getCallsite("testEvent", 3)).getIp());
+        assertEquals(5, (callsiteTest.getCallsite("testEvent", 5)).getIp());
+        assertEquals(7, (callsiteTest.getCallsite("testEvent", 6)).getIp());
+        assertEquals(7, (callsiteTest.getCallsite("testEvent", 7)).getIp());
+        assertEquals(7, (callsiteTest.getCallsite("testEvent", 8)).getIp());
     }
 
 }

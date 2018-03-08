@@ -22,82 +22,56 @@ import org.eclipse.linuxtools.internal.gprof.symbolManager.Bucket;
  */
 public class HistLine extends AbstractTreeElement {
 
+    public final int line;
+    private final LinkedList<HistBucket> children = new LinkedList<>();
 
-	public final int line;
-	private final LinkedList<HistBucket> children = new LinkedList<HistBucket>();
+    /**
+     * Constructor
+     * @param parent
+     * @param lineNumber
+     */
+    public HistLine(HistFunction parent, int lineNumber) {
+        super(parent);
+        this.line = lineNumber;
+    }
 
-	/**
-	 * Constructor 
-	 * @param parent
-	 * @param lineNumber
-	 */
-	public HistLine(HistFunction parent, int lineNumber) {
-		super(parent);
-		this.line = lineNumber;
-	}
+    void addBucket(Bucket b) {
+        this.children.add(new HistBucket(this,b));
+    }
 
-	void addBucket(Bucket b) {
-		this.children.add(new HistBucket(this,b));
-	}
+    @Override
+    public LinkedList<? extends TreeElement> getChildren() {
+        return this.children;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getChildren()
-	 */
-	@Override
-	public LinkedList<? extends TreeElement> getChildren() {
-		return this.children;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getCalls()
-	 */
-	@Override
-	public int getCalls() {
-		return -1;
-	}
+    @Override
+    public int getCalls() {
+        return -1;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getName()
-	 */
-	@Override
-	public String getName() {
-		String functionName = getParent().getName();
-		return functionName + " (" + getParent().getParent().getName() + ":" + this.line + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	}
+    @Override
+    public String getName() {
+        String functionName = getParent().getName();
+        return functionName + " (" + getParent().getParent().getName() + ":" + this.line + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getSamples()
-	 */
-	@Override
-	public int getSamples() {
-		int ret = 0;
-		for (HistBucket b : children) {
-			ret += b.getSamples();
-		}
-		return ret;
-	}
-	
+    @Override
+    public int getSamples() {
+        int ret = 0;
+        for (HistBucket b : children) {
+            ret += b.getSamples();
+        }
+        return ret;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getSourceLine()
-	 */
-	@Override
-	public int getSourceLine() {
-		return this.line;
-	}
+    @Override
+    public int getSourceLine() {
+        return this.line;
+    }
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getSourcePath()
-	 */
-	@Override
-	public String getSourcePath() {
-		return getParent().getParent().getSourcePath();
-	}
+    @Override
+    public String getSourcePath() {
+        return getParent().getParent().getSourcePath();
+    }
 
 }

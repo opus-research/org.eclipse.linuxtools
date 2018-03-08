@@ -17,40 +17,45 @@ import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 
 public class AbstractValgrindMessage implements IValgrindMessage {
 
-	protected IValgrindMessage parent;
-	protected ILaunch launch;
-	protected ArrayList<IValgrindMessage> children;
-	protected String text;
+    private IValgrindMessage parent;
+    private ILaunch launch;
+    private ArrayList<IValgrindMessage> children;
+    private String text;
 
-	public AbstractValgrindMessage(IValgrindMessage parent, String text, ILaunch launch) {
-		children = new ArrayList<IValgrindMessage>();
-		this.parent = parent;
-		this.text = text;
-		this.launch = launch;
-		
-		if (parent != null) {
-			parent.addChild(this);
-		}
-	}
+    public AbstractValgrindMessage(IValgrindMessage parent, String text, ILaunch launch) {
+        children = new ArrayList<>();
+        this.parent = parent;
+        this.text = text;
+        this.launch = launch;
 
-	public void addChild(IValgrindMessage message) {
-		children.add(message);
-	}
+        if (parent != null) {
+            parent.addChild(this);
+        }
+    }
 
-	public ILaunch getLaunch() {
-		return launch;
-	}
-	
-	public IValgrindMessage getParent() {
-		return parent;
-	}
+    @Override
+    public void addChild(IValgrindMessage message) {
+        children.add(message);
+    }
 
-	public IValgrindMessage[] getChildren() {
-		return children.toArray(new IValgrindMessage[children.size()]);
-	}
+    @Override
+    public ILaunch getLaunch() {
+        return launch;
+    }
 
-	public String getText() {
-		return text;
-	}
+    @Override
+    public IValgrindMessage getParent() {
+        return parent;
+    }
+
+    @Override
+    public IValgrindMessage[] getChildren() {
+        return children.toArray(new IValgrindMessage[children.size()]);
+    }
+
+    @Override
+    public String getText() {
+        return text;
+    }
 
 }

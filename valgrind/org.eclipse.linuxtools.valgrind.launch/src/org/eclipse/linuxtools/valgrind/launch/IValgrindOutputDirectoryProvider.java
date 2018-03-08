@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.valgrind.launch;
 
 import java.io.IOException;
@@ -20,10 +20,10 @@ import org.eclipse.core.runtime.IPath;
  */
 public interface IValgrindOutputDirectoryProvider {
 
-	/**
-	 * Obtains a directory to store Valgrind output files.
-	 * @return the absolute path to this directory
-	 */
-	public abstract IPath getOutputPath() throws IOException;
+    /**
+     * Obtains a directory to store Valgrind output files.
+     * @return the absolute path to this directory
+     */
+    IPath getOutputPath() throws IOException;
 
 }

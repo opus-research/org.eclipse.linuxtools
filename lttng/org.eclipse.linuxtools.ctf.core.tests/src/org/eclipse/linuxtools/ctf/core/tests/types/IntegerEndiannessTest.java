@@ -9,6 +9,7 @@
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
  *   Alexandre Montplaisir - Split out in separate class
+ *   Matthew Khouzam - update api (exceptions)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.types;
@@ -18,10 +19,12 @@ import static org.junit.Assert.assertEquals;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,11 +35,11 @@ import org.junit.Test;
  */
 public class IntegerEndiannessTest {
 
-    private static String name = "testInt";
-    private static String clockName = "clock";
+    @NonNull private static final String name = "testInt";
+    @NonNull private static final String clockName = "clock";
 
     private ByteBuffer bb;
-    private BitBuffer input;
+    @NonNull private BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocate(0));
 
     /**
      * Set up the bit-buffer to be used
@@ -55,39 +58,55 @@ public class IntegerEndiannessTest {
         input = new BitBuffer(bb);
     }
 
-    /** Read 32-bits BE */
+    /**
+     * Read 32-bits BE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
-    public void test32BE() {
-        IntegerDeclaration be = new IntegerDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_be = be.createDefinition(null, name);
-        fixture_be.read(input);
+    public void test32BE() throws CTFReaderException {
+        IntegerDeclaration be = IntegerDeclaration.createDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_be = be.createDefinition(null, name, input);
         assertEquals(0xabcdef12, fixture_be.getValue());
     }
 
-    /** Read 64-bits BE */
+    /**
+     * Read 64-bits BE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
-    public void test64BE() {
-        IntegerDeclaration be = new IntegerDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_be = be.createDefinition(null, name);
-        fixture_be.read(input);
+    public void test64BE() throws CTFReaderException {
+        IntegerDeclaration be = IntegerDeclaration.createDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_be = be.createDefinition(null, name, input);
         assertEquals(0xabcdef123456789aL, fixture_be.getValue());
     }
 
-    /** Read 32-bits LE */
+    /**
+     * Read 32-bits LE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
-    public void test32LE() {
-        IntegerDeclaration le = new IntegerDeclaration(32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_le = le.createDefinition(null, name);
-        fixture_le.read(input);
+    public void test32LE() throws CTFReaderException {
+        IntegerDeclaration le = IntegerDeclaration.createDeclaration(32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_le = le.createDefinition(null, name, input);
         assertEquals(0x12efcdab, fixture_le.getValue());
     }
 
-    /** Read 64-bits LE */
+    /**
+     * Read 64-bits LE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
-    public void test64LE() {
-        IntegerDeclaration le = new IntegerDeclaration(64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_le = le.createDefinition(null, name);
-        fixture_le.read(input);
+    public void test64LE() throws CTFReaderException {
+        IntegerDeclaration le = IntegerDeclaration.createDeclaration(64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_le = le.createDefinition(null, name, input);
         assertEquals(0x9a78563412efcdabL, fixture_le.getValue());
     }
 }

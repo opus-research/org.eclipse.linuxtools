@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 STMicroelectronics.
+ * Copyright (c) 2009, 2013 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *   Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
+ *   Red Hat Inc. - fix for bug 418264
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.view;
 
@@ -23,6 +24,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.binutils.utils.STSymbolManager;
 import org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView;
@@ -63,7 +66,7 @@ public class GmonView extends AbstractSTDataView {
     public static final String ID = "org.eclipse.linuxtools.gprof.view"; //$NON-NLS-1$
 
     /** WHITE color */
-    public static final Color WHITE = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE);
+    public static final Color DEFAULT_BG = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     /** GREEN1 color : for children category */
     public static final Color GREEN1 = new Color(PlatformUI.getWorkbench().getDisplay(), 207, 255, 207);
     /** GREEN2 color : for children */
@@ -100,7 +103,11 @@ public class GmonView extends AbstractSTDataView {
 
     @Override
     protected void createTitle(Composite parent) {
+        ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+        Color background = colorRegistry.get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_START"); //$NON-NLS-1$
         label = new Label(parent, SWT.WRAP);
+        if (background != null)
+            label.setBackground(background);
         GridData data = new GridData(SWT.FILL, SWT.BEGINNING, true, false, 1, 1);
         label.setLayoutData(data);
         fFilterText = new Text(parent, SWT.BORDER | SWT.SINGLE | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
@@ -116,13 +123,6 @@ public class GmonView extends AbstractSTDataView {
         });
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#contributeToToolbar(org.eclipse.jface.action
-     * .IToolBarManager)
-     */
     @Override
     protected void contributeToToolbar(IToolBarManager manager) {
         manager.add(new Separator());
@@ -137,11 +137,6 @@ public class GmonView extends AbstractSTDataView {
         manager.add(new ChartAction(getViewSite().getShell(), getSTViewer()));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createActions()
-     */
     @Override
     protected void createActions() {
         super.createActions();
@@ -160,27 +155,37 @@ public class GmonView extends AbstractSTDataView {
      * I do not know where to put this static method. It is used by all ProfFields
      */
     public static Color getBackground(Object element) {
+        ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+
+        // FIXME: Not sure if color1-color4 are ever used...picked colors found in JFacesResources ColorRegistry
+        // not tied to any particular language (e.g. didn't choose CDT or Java colors)
+        // Color5 seems to work ok as bg in the one dark theme I tried (Nissl-Adwaita-dark-4) and as well
+        // in default light adwaita, but it is much simpler to just return null and let the table color default
+        // appropriately.
+        Color color1 = colorRegistry.get("org.eclipse.ui.editors.currentLineColor"); //$NON-NLS-1$
+        Color color2 = colorRegistry.get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_START"); //$NON-NLS-1$
+        Color color3 = colorRegistry.get("org.eclipse.ui.workbench.ACTIVE_NOFOCUS_TAB_BG_END"); //$NON-NLS-1$
+        Color color4 = colorRegistry.get("org.eclipse.ui.workbench.ACTIVE_TAB_BG_END"); //$NON-NLS-1$
+        //        Color color5 = colorRegistry.get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_START"); //$NON-NLS-1$
+
         if (element instanceof CGCategory) {
             CGCategory cat = (CGCategory) element;
             if (CGCategory.CHILDREN.equals(cat.category)) {
-                return GmonView.BLUE1;
+                return color1 == null ? BLUE1 : color1;
             } else {
-                return GmonView.GREEN1;
+                return color2 == null ? GREEN1 : color2;
             }
         } else if (element instanceof CGArc) {
             CGArc arc = (CGArc) element;
             CGCategory cat = (CGCategory) arc.getParent();
             if (CGCategory.CHILDREN.equals(cat.category)) {
-                return GmonView.BLUE2;
+                return color3 == null ? BLUE2 : color3;
             } else {
-                return GmonView.GREEN2;
+                return color4 == null ? GREEN2 : color4;
             }
         }
-        return GmonView.WHITE;
-    }
-
-    public Label getLabel() {
-        return label;
+        return null; // default background
+        //        return color5 == null ? DEFAULT_BG : color5;
     }
 
     @Override
@@ -196,13 +201,14 @@ public class GmonView extends AbstractSTDataView {
      * @param titleLabel
      *            the title label
      */
-    public static void setHistTitle(GmonDecoder decoder, Label titleLabel) {
+    private static void setHistTitle(GmonDecoder decoder, Label titleLabel) {
         String title = " gmon file: " //$NON-NLS-1$
                 + decoder.getGmonFile() + "\n program file: " //$NON-NLS-1$
-                + decoder.getProgram().getPath();
+                + decoder.getProgram().getPath() + "\n" //$NON-NLS-1$
+                + " timestamp: " + decoder.getGmonFileTimeStamp(); //$NON-NLS-1$
         HistogramDecoder histo = decoder.getHistogramDecoder();
         if (histo.hasValues()) {
-            double prof_rate = histo.getProf_rate();
+            double prof_rate = histo.getProfRate();
             String period = ""; //$NON-NLS-1$
             if (prof_rate != 0) {
                 char tUnit = histo.getTimeDimension();
@@ -256,20 +262,20 @@ public class GmonView extends AbstractSTDataView {
      * Display gmon results in the GProf View. NOTE: this method has to be called from within the UI thread.
      *
      * @param decoder
-     * @param secondary_id_usually_path_to_gmon_file
+     * @param id Secondary id, usually path to gmon file.
      */
-    public static GmonView displayGprofView(GmonDecoder decoder, String secondary_id_usually_path_to_gmon_file) {
+    public static GmonView displayGprofView(GmonDecoder decoder, String id) {
         GmonView gmonview = null;
         try {
             IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             IWorkbenchPage page = window.getActivePage();
-            if (secondary_id_usually_path_to_gmon_file != null) {
-                secondary_id_usually_path_to_gmon_file = secondary_id_usually_path_to_gmon_file.replace('.', '_');
-                secondary_id_usually_path_to_gmon_file = secondary_id_usually_path_to_gmon_file.replace(':', '_');
+            if (id != null) {
+                id = id.replace('.', '_');
+                id = id.replace(':', '_');
             }
-            gmonview = (GmonView) page.showView(ID, secondary_id_usually_path_to_gmon_file,
+            gmonview = (GmonView) page.showView(ID, id,
                     IWorkbenchPage.VIEW_ACTIVATE);
-            if (decoder.getHistogramDecoder().getProf_rate() == 0) {
+            if (decoder.getHistogramDecoder().getProfRate() == 0) {
                 gmonview.switchSampleTime.setToolTipText("Unable to display time, because profiling rate is null"); //$NON-NLS-1$
                 gmonview.switchSampleTime.setEnabled(false);
             }
@@ -287,11 +293,6 @@ public class GmonView extends AbstractSTDataView {
         return gmonview;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createExportToCSVAction()
-     */
     @Override
     protected IAction createExportToCSVAction() {
         IAction action = new STExportToCSVAction(this.getSTViewer()) {

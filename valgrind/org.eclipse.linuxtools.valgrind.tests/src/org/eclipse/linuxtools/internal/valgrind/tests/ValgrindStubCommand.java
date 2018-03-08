@@ -16,23 +16,19 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCommand;
 
 public class ValgrindStubCommand extends ValgrindCommand {
-	protected static final String VERSION_FILE = ".version"; //$NON-NLS-1$
-	
-	protected int exitcode;
 
-	@Override
-	public String whichVersion(IProject project) {
-		return "valgrind-3.4.0"; //$NON-NLS-1$
-	}
-	
-	@Override
-	public void execute(String[] commandArray, Object env, File wd, String exeFile,
-			boolean usePty, IProject project) {
-		args = commandArray;
-	}
-	
-	@Override
-	public Process getProcess() {
-		return null;
-	}
+    @Override
+    public String whichVersion(IProject project) {
+        return "valgrind-3.4.0"; //$NON-NLS-1$
+    }
+
+    @Override
+    public void execute(String[] commandArray, Object env, File wd, boolean usePty, IProject project) {
+        args = commandArray;
+    }
+
+    @Override
+    public Process getProcess() {
+        return null;
+    }
 }

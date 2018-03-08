@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,11 +19,11 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards.CustomTxtParserWizard;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards.CustomXmlParserWizard;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;

@@ -22,8 +22,8 @@ import org.eclipse.cdt.core.IBinaryParser.ISymbol;
 public class CallGraphNode {
 
     private final ISymbol symbol;
-    private final LinkedList<CallGraphArc> parents = new LinkedList<CallGraphArc>();
-    private final LinkedList<CallGraphArc> children = new LinkedList<CallGraphArc>();
+    private final LinkedList<CallGraphArc> parents = new LinkedList<>();
+    private final LinkedList<CallGraphArc> children = new LinkedList<>();
 
     /**
      * Constructor
@@ -40,8 +40,9 @@ public class CallGraphNode {
      */
     public CallGraphArc getInputArc(CallGraphNode parent) {
         for (CallGraphArc inputArc : parents) {
-            if (inputArc.parent == parent)
+            if (inputArc.parent == parent) {
                 return inputArc;
+            }
         }
         return null;
     }
@@ -53,8 +54,9 @@ public class CallGraphNode {
      */
     public CallGraphArc getOutputArc(CallGraphNode child) {
         for (CallGraphArc outputArc : children) {
-            if (outputArc.child == child)
+            if (outputArc.child == child) {
                 return outputArc;
+            }
         }
         return null;
     }

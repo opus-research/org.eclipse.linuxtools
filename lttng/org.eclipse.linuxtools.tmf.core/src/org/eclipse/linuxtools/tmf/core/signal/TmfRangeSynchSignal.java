@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,15 +8,18 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Patrick Tasse - Deprecate current time
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.signal;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
- * A new active time range has been selected
+ * A new time range has been selected.
+ *
+ * This is the visible (zoom) time range. To synchronize on the selection range,
+ * use {@link TmfTimeSynchSignal}.
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -24,7 +27,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 public class TmfRangeSynchSignal extends TmfSignal {
 
     private final TmfTimeRange fCurrentRange;
-    private final ITmfTimestamp fCurrentTime;
 
     /**
      * Constructor
@@ -32,16 +34,12 @@ public class TmfRangeSynchSignal extends TmfSignal {
      * @param source
      *            Object sending this signal
      * @param range
-     *            The time range to which we synchronized
-     * @param ts
-     *            The current selected timestamp, independent from the time
-     *            range
-     * @since 2.0
+     *            The new time range
+     * @since 2.1
      */
-    public TmfRangeSynchSignal(Object source, TmfTimeRange range, ITmfTimestamp ts) {
+    public TmfRangeSynchSignal(Object source, TmfTimeRange range) {
         super(source);
         fCurrentRange = range;
-        fCurrentTime = ts;
     }
 
     /**
@@ -50,14 +48,6 @@ public class TmfRangeSynchSignal extends TmfSignal {
      */
     public TmfTimeRange getCurrentRange() {
         return fCurrentRange;
-    }
-
-    /**
-     * @return This signal's current selected timestamp
-     * @since 2.0
-     */
-    public ITmfTimestamp getCurrentTime() {
-        return fCurrentTime;
     }
 
 }

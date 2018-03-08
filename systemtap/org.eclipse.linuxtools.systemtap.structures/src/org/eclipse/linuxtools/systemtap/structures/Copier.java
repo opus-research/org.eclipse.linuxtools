@@ -12,37 +12,40 @@
 package org.eclipse.linuxtools.systemtap.structures;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public final class Copier {
-	
-	/**
-	 * Returns a copy of the passed in ArrayList array object.
-	 * 
-	 * @param list The ArrayList array object to copy.
-	 * 
-	 * @return The copy of the ArrayList array.
-	 */
-	public static <T> ArrayList<T>[] copy(ArrayList<T>[] list) {
-		@SuppressWarnings("unchecked")
-		ArrayList<T>[] list2 = new ArrayList[list.length];
-		
-		for(int i=0; i<list2.length; i++)
-			list2[i] = copy(list[i]);
-		
-		return list2;
-	}
-	
-	/**
-	 * Returns a copy of the passed in ArrayList object.
-	 * 
-	 * @param list The ArrayList object to copy.
-	 * 
-	 * @return The copy of the ArrayList.
-	 */
-	public static<T> ArrayList<T> copy(ArrayList<T> list) {
 
-		ArrayList<T> list2 = new ArrayList<T>();
-		list2.addAll(list);
-		return list2;
-	}
+    /**
+     * Returns a copy of the passed in ArrayList array object.
+     *
+     * @param list The ArrayList array object to copy.
+     *
+     * @return The copy of the ArrayList array.
+     * @since 3.0
+     */
+    public static <T> List<T>[] copy(List<T>[] list) {
+        @SuppressWarnings("unchecked")
+        List<T>[] list2 = new ArrayList[list.length];
+
+        for(int i=0; i<list2.length; i++)
+            list2[i] = copy(list[i]);
+
+        return list2;
+    }
+
+    /**
+     * Returns a copy of the passed in ArrayList object.
+     *
+     * @param list The ArrayList object to copy.
+     *
+     * @return The copy of the ArrayList.
+     * @since 3.0
+     */
+    public static<T> List<T> copy(List<T> list) {
+
+        ArrayList<T> list2 = new ArrayList<>();
+        list2.addAll(list);
+        return list2;
+    }
 }

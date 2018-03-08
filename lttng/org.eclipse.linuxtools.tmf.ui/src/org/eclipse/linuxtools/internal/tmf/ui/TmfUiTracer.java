@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,13 +23,13 @@ public class TmfUiTracer {
 
     private static String pluginID = Activator.PLUGIN_ID;
 
-    static Boolean ERROR   = Boolean.FALSE;
-    static Boolean WARNING = Boolean.FALSE;
-    static Boolean INFO    = Boolean.FALSE;
+    static boolean ERROR   = false;
+    static boolean WARNING = false;
+    static boolean INFO    = false;
 
-    static Boolean INDEX   = Boolean.FALSE;
-    static Boolean DISPLAY = Boolean.FALSE;
-    static Boolean SORTING = Boolean.FALSE;
+    static boolean INDEX   = false;
+    static boolean DISPLAY = false;
+    static boolean SORTING = false;
 
     private static String LOGNAME = "traceUI.log";
     private static BufferedWriter fTraceLog = null;
@@ -154,6 +154,11 @@ public class TmfUiTracer {
      *            The event's message
      */
     public static void trace(String msg) {
+        // Leave when there is no place to write the message.
+        if (fTraceLog == null) {
+            return;
+        }
+
         long currentTime = System.currentTimeMillis();
         StringBuilder message = new StringBuilder("[");
         message.append(currentTime / 1000);
@@ -162,14 +167,12 @@ public class TmfUiTracer {
         message.append("] ");
         message.append(msg);
 
-        if (fTraceLog != null) {
-            try {
-                fTraceLog.write(message.toString());
-                fTraceLog.newLine();
-                fTraceLog.flush();
-            } catch (IOException e) {
-                Activator.getDefault().logError("Error writing to log file " + LOGNAME, e); //$NON-NLS-1$
-            }
+        try {
+            fTraceLog.write(message.toString());
+            fTraceLog.newLine();
+            fTraceLog.flush();
+        } catch (IOException e) {
+            Activator.getDefault().logError("Error writing to log file " + LOGNAME, e); //$NON-NLS-1$
         }
     }
 
