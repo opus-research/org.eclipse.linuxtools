@@ -7,23 +7,20 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Patrick Tasse - Updates to mipmap feature
- *******************************************************************************/
+ *   Alexandre Montplaisir - Initial API and implementation
+ ******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.mipmap;
+package org.eclipse.linuxtools.tmf.core.tests.statesystem.backends;
 
-import org.eclipse.linuxtools.tmf.core.tests.mipmap.TmfMipmapStateProviderTest;
-import org.eclipse.linuxtools.tmf.core.tests.mipmap.TmfMipmapStateProviderWeightedTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for org.eclipse.linuxtools.tmf.core.tests.mipmap
+ * Test suite for org.eclipse.linuxtools.tmf.core.statesystem
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TmfMipmapStateProviderTest.class,
-    TmfMipmapStateProviderWeightedTest.class,
+    InMemoryBackendTest.class
 })
 public class AllTests {
 

@@ -8,7 +8,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Matthew Khouzam - Modified to use a treeset
+ *   Matthew Khouzam - Modified to use a TreeSet
  ******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends;
@@ -43,13 +43,12 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 public class InMemoryBackend implements IStateHistoryBackend {
 
     /**
-     * We need to compare the end time and the attribute. The reason we need to
-     * compare the two is so that we can have 2 attributes with the same end
-     * time.
+     * We need to compare the end time and the attribute, because we can have 2
+     * intervals with the same end time (for different attributes). And TreeSet
+     * needs a unique "key" per element.
      */
     private static final Comparator<ITmfStateInterval> END_COMPARATOR =
             new Comparator<ITmfStateInterval>() {
-
                 @Override
                 public int compare(ITmfStateInterval o1, ITmfStateInterval o2) {
                     final long e1 = o1.getEndTime();
@@ -151,9 +150,10 @@ public class InMemoryBackend implements IStateHistoryBackend {
          * The intervals are sorted by end time, so we can binary search to get
          * the first possible interval, then only compare their start times.
          */
-        for (Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t); iter.hasNext();) {
+        Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+        while (iter.hasNext()) {
             ITmfStateInterval entry = iter.next();
-            final boolean attributeMatches = entry.getAttribute() == attributeQuark;
+            final boolean attributeMatches = (entry.getAttribute() == attributeQuark);
             final long entryStartTime = entry.getStartTime();
             if (attributeMatches) {
                 if (entryStartTime <= t) {
