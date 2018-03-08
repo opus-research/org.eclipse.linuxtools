@@ -12,14 +12,10 @@ package org.eclipse.linuxtools.internal.profiling.provider.launch;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage;
 import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public abstract class ProviderLaunchConfigurationDelegate extends
 		ProfileLaunchConfigurationDelegate {
@@ -33,22 +29,12 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 				// get provider id from configuration.
 				String providerId = config.getAttribute(
 						ProviderOptionsTab.PROVIDER_CONFIG_ATT, "");
-
-				// the provider attribute is only set when launching from the
-				// dialog menu, if it's not set then we are launching from a
-				// shortcut.
 				if (providerId.equals("")) {
-					// acquire a provider id to run. 
-					providerId = getProviderIdToRun();
-					// get configuration shortcut associated with provider id.
-					ProfileLaunchShortcut shortcut= ProfileLaunchShortcut.getLaunchShortcutProviderFromId(providerId);
-					// set attributes related to the specific profiling shortcut configuration.
-					shortcut.setDefaultProfileLaunchShortcutAttributes(config);
+					// No provider available in the configuration.
+					return;
 				}
-				// get delegate associated with provider id.
+				// get configuration delegate associated with provider id.
 				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
-
-				// launch delegate
 				if (delegate != null) {
 					delegate.launch(config, mode, launch, monitor);
 				}
@@ -59,28 +45,8 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 		return;
 	}
 
-	private String getProviderIdToRun() {
-		// Get self assigned default
-		String providerId = ConfigurationScope.INSTANCE.getNode(
-				getProfilingType()).get(
-				AbstractProviderPreferencesPage.PREFS_KEY, "");
-		if (providerId.equals("")) {
-			providerId = ProfileLaunchConfigurationTabGroup
-					.getHighestProviderId(getProfilingType());
-			if (providerId == null) {
-				// Get highest priority provider
-				providerId = ProfileLaunchShortcut
-						.getDefaultLaunchShortcutProviderId(getProfilingType());
-			}
-		}
-		return providerId;
-	}
-
 	@Override
 	public String generateCommand(ILaunchConfiguration config) {
 		return null;
 	}
-
-	public abstract String getProfilingType();
-
 }

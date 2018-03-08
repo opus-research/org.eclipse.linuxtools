@@ -103,7 +103,6 @@ public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 
 			tab.createControl(tabgroup);
 			item.setControl(tab.getControl());
-			tabgroup.setSelection(0);
 		}
 	}
 
