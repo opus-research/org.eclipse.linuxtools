@@ -173,7 +173,7 @@ public class STSymbolManager {
      */
     private synchronized String demangleImpl(String symbolName, String cpu, IProject project) {
         CPPFilt cppfilt = getCppFilt(cpu, project);
-        if (cppfilt != null && (symbolName.startsWith("_Z") || symbolName.startsWith("_G"))) {
+        if (cppfilt != null && (symbolName.startsWith("_Z") || symbolName.startsWith("_G"))) { //$NON-NLS-1$ //$NON-NLS-2$
             try {
                 symbolName = cppfilt.getFunction(symbolName);
             } catch (IOException _) {
@@ -201,14 +201,14 @@ public class STSymbolManager {
     public synchronized String getLine(IBinaryObject program, IAddress address, IProject project) {
         Addr2line addr2line = getAddr2line(program, project);
         if (addr2line == null)
-            return "??:0";
+            return "??:0"; //$NON-NLS-1$
         try {
             return addr2line.getLine(address);
         } catch (IOException _) {
             // TODO: log the error ?;
             // Perhaps log the error only once, because
             // this method is called many many times...
-            return "??:0";
+            return "??:0"; //$NON-NLS-1$
         }
     }
 
@@ -493,28 +493,7 @@ public class STSymbolManager {
         if (defaultparser != null) {
             parsers.add(defaultparser);
         }
-        IBinaryObject ret = buildBinaryObject(path, parsers);
-        if (ret == null) { // trying all BinaryParsers...
-            parsers.clear();
-            IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(CCorePlugin.PLUGIN_ID, CCorePlugin.BINARY_PARSER_SIMPLE_ID);
-            for (IExtension extension: extensionPoint.getExtensions()) {
-                if (extension != null) {
-                    IConfigurationElement element[] = extension.getConfigurationElements();
-                    for (IConfigurationElement element2 : element) {
-                        if (element2.getName().equalsIgnoreCase("cextension")) { //$NON-NLS-1$
-                            IBinaryParser parser;
-                            try {
-                                parser = (IBinaryParser) element2.createExecutableExtension("run"); //$NON-NLS-1$
-                                parsers.add(parser);
-                            } catch (CoreException e) {
-                            }
-                        }
-                    }
-                }
-            }
-            ret = buildBinaryObject(path, parsers);
-        }
-        return ret;
+        return buildBinaryObject(path, parsers);
     }
 
     /**
