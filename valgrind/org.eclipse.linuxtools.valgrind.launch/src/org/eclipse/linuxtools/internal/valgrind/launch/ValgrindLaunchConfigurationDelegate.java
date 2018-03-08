@@ -8,7 +8,7 @@
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
  * Martin Oberhuber (Wind River) - [360085] Fix valgrind problem marker lifecycle
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.valgrind.launch;
 
 import java.io.File;
@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -67,15 +68,11 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 	protected static final String YES = "yes"; //$NON-NLS-1$
 	protected static final String EQUALS = "="; //$NON-NLS-1$
 
-	// 3.8.0 specific
-	public static final String OPT_CUSTOM_MALLOC = "--soname-synonyms=somalloc"; //$NON-NLS-1$
-
 	protected static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
 	protected static final FileFilter LOG_FILTER = new FileFilter() {
-		@Override
 		public boolean accept(File pathname) {
 			return pathname.getName().startsWith(CommandLineConstants.LOG_PREFIX);
-		}
+		}		
 	};
 
 	protected String toolID;
@@ -149,7 +146,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			String[] commandArray = cmdLine.toArray(new String[cmdLine.size()]);
 			boolean usePty = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL, ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
 			monitor.worked(1);
-
+			
 			// check for cancellation
 			if (monitor.isCanceled()) {
 				return;
@@ -164,7 +161,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			while (!process.isTerminated()) {
 				Thread.sleep(100);
 			}
-
+			
 			// store these for use by other classes
 			getPlugin().setCurrentLaunchConfiguration(config);
 			getPlugin().setCurrentLaunch(launch);
@@ -184,7 +181,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 
 			// pass off control to extender
 			dynamicDelegate.handleLaunch(config, launch, outputPath, monitor.newChild(2));
-
+			
 			// initialize tool-specific part of view
 			dynamicDelegate.initializeView(view.getDynamicView(), launchStr, monitor.newChild(1));
 
@@ -198,7 +195,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			ResourcesPlugin.getWorkspace().addResourceChangeListener(
 					new ProjectBuildListener(project), IResourceChangeEvent.POST_BUILD);
 
-			monitor.worked(1);
+			monitor.worked(1);				
 		} catch (IOException e) {
 			abort(Messages.getString("ValgrindLaunchConfigurationDelegate.Error_starting_process"), e, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR); //$NON-NLS-1$
 			e.printStackTrace();
@@ -211,11 +208,11 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 
 	protected IValgrindMessage[] parseLogs(IPath outputPath) throws IOException, CoreException {
 		List<IValgrindMessage> messages = new ArrayList<IValgrindMessage>();
-
+		
 		for (File log : outputPath.toFile().listFiles(LOG_FILTER)) {
 			ValgrindCoreParser parser = new ValgrindCoreParser(log, launch);
 			IValgrindMessage[] results = parser.getMessages();
-
+			
 			if (results.length == 0){
 				results = new IValgrindMessage[1];
 				results[0] = new ValgrindInfo(null, Messages.getString("ValgrindOutputView.No_output"), launch);
@@ -223,10 +220,10 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			messages.addAll(Arrays.asList(results));
 			createMarkers(results);
 		}
-
+		
 		return messages.toArray(new IValgrindMessage[messages.size()]);
 	}
-
+	
 	protected void createMarkers(IValgrindMessage[] messages) throws CoreException {
 		// find the topmost stack frame within the workspace to annotate with marker
 		// traverse nested errors as well
@@ -241,10 +238,10 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 				if (children[i] instanceof ValgrindStackFrame && marker == null) {
 					ValgrindStackFrame frame = (ValgrindStackFrame) children[i];
 					if (frame.getLine() > 0) {
-						ISourceLocator locator = frame.getLaunch().getSourceLocator();
+						ISourceLocator locator = frame.getLaunch().getSourceLocator();					
 						ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
 						Object sourceElement = result.getSourceElement();
-
+						
 						if (sourceElement != null) {
 							// Resolve IResource in case we get a LocalFileStorage object
 							if (sourceElement instanceof LocalFileStorage) {
@@ -297,7 +294,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 		IPath result = null;
 		String strPath = config.getAttribute(LaunchConfigurationConstants.ATTR_INTERNAL_OUTPUT_DIR, (String) null);
 		if (strPath != null) {
-			result = Path.fromPortableString(strPath);
+			result = Path.fromPortableString(strPath);			
 		}
 		if (result == null) {
 			abort(Messages.getString("ValgrindLaunchConfigurationDelegate.Retrieving_location_failed"), null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR); //$NON-NLS-1$
@@ -354,34 +351,21 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 				opts.add(CommandLineConstants.OPT_MAINSTACK + EQUALS + config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAINSTACK, LaunchConfigurationConstants.DEFAULT_GENERAL_MAINSTACK));
 			}
 		}
-
+		
 		// 3.6.0 specific
 		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
 			if (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) != LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL)
 				opts.add(CommandLineConstants.OPT_DSYMUTIL + EQUALS + (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) ? YES : NO));
 		}
-
-		// 3.8.0 specific
-		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
-			boolean useCustomMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL);
-			if (useCustomMalloc) {
-				boolean dynamicMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL);
-				if(dynamicMalloc){
-					opts.add(OPT_CUSTOM_MALLOC + EQUALS + config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC));
-				} else {
-					opts.add(OPT_CUSTOM_MALLOC + EQUALS + CommandLineConstants.OPT_CUSTOM_MALLOC_STATIC);
-				}
-			}
-		}
-
-		List<?> suppFiles = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, LaunchConfigurationConstants.DEFAULT_GENERAL_SUPPFILES);
+		
+		List<?> suppFiles = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, LaunchConfigurationConstants.DEFAULT_GENERAL_SUPPFILES); 
 		for (Object strpath : suppFiles) {
 			IPath suppfile = getPlugin().parseWSPath((String) strpath);
 			if (suppfile != null) {
 				opts.add(CommandLineConstants.OPT_SUPPFILE + EQUALS + suppfile.toOSString());
 			}
 		}
-		opts.addAll(Arrays.asList(dynamicDelegate.getCommandArray(config, valgrindVersion, outputPath)));
+		opts.addAll(Arrays.asList(dynamicDelegate.getCommandArray(config, valgrindVersion, outputPath)));		
 
 		String[] ret = new String[opts.size()];
 		return opts.toArray(ret);
@@ -401,7 +385,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			String mode, IProgressMonitor monitor) throws CoreException {
 		//Delete our own problem markers
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
+		root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 		return super.finalLaunchCheck(configuration, mode, monitor);
 	}
 }

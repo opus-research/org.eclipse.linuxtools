@@ -41,7 +41,7 @@ import org.osgi.framework.Version;
 public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.launch"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.launch";
 	public static final String LAUNCH_ID = PLUGIN_ID + ".valgrindLaunch"; //$NON-NLS-1$
 	public static final String MARKER_TYPE = PLUGIN_ID + ".marker"; //$NON-NLS-1$
 	public static final String OUTPUT_DIR_EXT_ID = "outputDirectoryProviders"; //$NON-NLS-1$
@@ -61,7 +61,6 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 	public static final Version VER_3_3_0 = new Version(3, 3, 0);
 	public static final Version VER_3_4_0 = new Version(3, 4, 0);
 	public static final Version VER_3_6_0 = new Version(3, 6, 0);
-	public static final Version VER_3_8_0 = new Version(3, 8, 0);
 
 	private static final Version MIN_VER = VER_3_3_0;
 	private static final String VERSION_PREFIX = "valgrind-"; //$NON-NLS-1$

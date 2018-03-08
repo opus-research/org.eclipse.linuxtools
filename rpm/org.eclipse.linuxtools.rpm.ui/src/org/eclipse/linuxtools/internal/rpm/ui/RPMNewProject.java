@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Red Hat, Inc.
+ * Copyright (c) 2009, 2011 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@ package org.eclipse.linuxtools.internal.rpm.ui;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -22,8 +21,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.rpm.core.RPMProjectCreator;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkingSet;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 /**
@@ -50,6 +47,7 @@ public class RPMNewProject extends Wizard implements INewWizard {
 			return false;
 		}
 		return true;
+
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -61,16 +59,11 @@ public class RPMNewProject extends Wizard implements INewWizard {
 		namePage.setImageDescriptor(ImageDescriptor.createFromFile(getClass(),
 				"/icons/rpm.gif")); //$NON-NLS-1$
 		addPage(namePage);
-		namePage.init(selection);
 	}
 
 	protected void createProject(IProgressMonitor monitor) throws CoreException {
 		RPMProjectCreator rpmProjectCreator = new RPMProjectCreator(namePage.getSelectedLayout());
-		IProject project = rpmProjectCreator.create(namePage.getProjectName(), namePage.getLocationPath(), monitor);
-		// Add new project to working sets, if requested
-		IWorkingSet[] workingSets = namePage.getWorkingSets();
-		if (workingSets.length > 0) {
-			PlatformUI.getWorkbench().getWorkingSetManager().addToWorkingSets(project, workingSets);
-		}
+		rpmProjectCreator.create(namePage.getProjectName(), namePage.getLocationPath(), monitor);
 	}
+
 }
