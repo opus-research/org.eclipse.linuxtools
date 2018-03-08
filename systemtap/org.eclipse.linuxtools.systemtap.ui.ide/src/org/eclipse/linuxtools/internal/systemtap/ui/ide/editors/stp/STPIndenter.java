@@ -24,8 +24,11 @@ import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPartitioningException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 
 /**
@@ -1041,10 +1044,25 @@ public final class STPIndenter {
 			return NOT_FOUND;
 
 		case STPSymbols.TokenEQUAL:
-			// indent assignments
+			// indent assignments, but don't do so if there is a String
+			// after the assignment because SystemTap doesn't require
+			// semi-colons to end lines and so this should be treated as
+			// a complete assignment.
+			pos = fPosition;
+			while (pos < offset) {
+				try {
+					ITypedRegion partition = ((IDocumentExtension3)fDocument).getPartition(STPPartitionScanner.STP_PARTITIONING, pos, danglingElse);
+					if (STPPartitionScanner.STP_STRING.equals(partition.getType()))
+						return skipToStatementStart(danglingElse, false);
+					pos = partition.getOffset() + partition.getLength();
+				} catch (BadLocationException e) {
+					break;
+				} catch (BadPartitioningException e) {
+					break;
+				}
+			}
 			fIndent= fPrefs.prefAssignmentIndent;
 			return fPosition;
-
 		case STPSymbols.TokenCOLON:
 			pos= fPosition;
 			if (looksLikeCaseStatement()) {
@@ -1105,7 +1123,8 @@ public final class STPIndenter {
 			if (skipScope(STPSymbols.TokenLPAREN, STPSymbols.TokenRPAREN)) {
 				int scope= fPosition;
 				nextToken();
-				if (fToken == STPSymbols.TokenIF || fToken == STPSymbols.TokenWHILE || fToken == STPSymbols.TokenFOR) {
+				if (fToken == STPSymbols.TokenIF || fToken == STPSymbols.TokenWHILE || fToken == STPSymbols.TokenFOR
+						|| fToken == STPSymbols.TokenFOREACH) {
 					fIndent= fPrefs.prefSimpleIndent;
 					return fPosition;
 				}
@@ -1137,6 +1156,16 @@ public final class STPIndenter {
 			// indent by list-indent.
 			return skipToPreviousListItemOrListStart();
 
+		case STPSymbols.TokenPLUS:
+		case STPSymbols.TokenMINUS:
+		case STPSymbols.TokenLESSTHAN:
+		case STPSymbols.TokenAGGREGATE:
+		case STPSymbols.TokenSHIFTRIGHT:
+		case STPSymbols.TokenSHIFTLEFT:
+		case STPSymbols.TokenOTHER:
+			// Math symbol, use skipToPreviousListItemOrListStart.
+			return skipToPreviousListItemOrListStart();
+			// Otherwise, fall-through
 		default:
 			// Inside whatever we don't know about: 
 			// C would treat this as a list, but in SystemTap we might just have a line that doesn't
@@ -1360,6 +1389,7 @@ public final class STPIndenter {
 				case STPSymbols.TokenDO:
 				case STPSymbols.TokenWHILE:
 				case STPSymbols.TokenFOR:
+				case STPSymbols.TokenFOREACH:
 				case STPSymbols.TokenTRY:
 					fIndent += fPrefs.prefIndentBracesForBlocks ? 1 : 0;
 					return fPosition;
@@ -1676,7 +1706,7 @@ public final class STPIndenter {
 				try {
 					int lineOffset= fDocument.getLineOffset(startLine);
 					int bound= Math.min(fDocument.getLength(), startPosition + 1);
-					if ((fToken == STPSymbols.TokenSEMICOLON || fToken == STPSymbols.TokenRBRACE ||
+					if ((fToken == STPSymbols.TokenSEMICOLON || fToken == STPSymbols.TokenRBRACE || fToken == STPSymbols.TokenIDENT ||
 							fToken == STPSymbols.TokenLBRACE && !looksLikeArrayInitializerIntro() && !looksLikeEnumDeclaration()) &&
 							continuationLineCandidate) {
 						fIndent = fPrefs.prefContinuationIndent;
