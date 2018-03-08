@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -386,7 +385,7 @@ public class TmfSchedulerTest {
             super(fixture.getEventType(),
                     timeRange,
                     0,
-                    ITmfEventRequest.ALL_DATA,
+                    TmfEventRequest.ALL_DATA,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -413,7 +412,7 @@ public class TmfSchedulerTest {
             super(fixture.getEventType(),
                     timeRange,
                     0,
-                    ITmfEventRequest.ALL_DATA,
+                    TmfEventRequest.ALL_DATA,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }

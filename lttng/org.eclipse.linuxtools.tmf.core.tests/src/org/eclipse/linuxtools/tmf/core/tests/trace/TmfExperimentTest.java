@@ -33,7 +33,6 @@ import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -83,7 +82,7 @@ public class TmfExperimentTest {
             try {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 final File test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace = new TmfTraceStub(test.getPath(), 0, true, null, null);
+                final TmfTraceStub trace = new TmfTraceStub(test.getPath(), 0, true, null);
                 fTestTraces[0] = trace;
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
@@ -852,7 +851,7 @@ public class TmfExperimentTest {
 
     @Test
     public void testProcessRequestForAllEvents() throws InterruptedException {
-        final int nbEvents  = ITmfEventRequest.ALL_DATA;
+        final int nbEvents  = TmfEventRequest.ALL_DATA;
         final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
         final long nbExpectedEvents = NB_EVENTS;
 
