@@ -43,7 +43,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfCheckpointIndexTest class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfExperimentCheckpointIndexTest {
 
     // ------------------------------------------------------------------------
@@ -109,6 +109,7 @@ public class TmfExperimentCheckpointIndexTest {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testTmfTraceIndexing() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fExperiment.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fExperiment.getNbEvents());
@@ -138,6 +139,7 @@ public class TmfExperimentCheckpointIndexTest {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testGrowingIndex() {
         ITmfTrace[] testTraces = new TmfTraceStub[2];
         try {

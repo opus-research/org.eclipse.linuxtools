@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -28,8 +28,8 @@ final class StringStateValue extends TmfStateValue {
     }
 
     @Override
-    public Type getType() {
-        return Type.STRING;
+    public byte getType() {
+        return ITmfStateValue.TYPE_STRING;
     }
 
     @Override
@@ -40,6 +40,11 @@ final class StringStateValue extends TmfStateValue {
     @Override
     public String getValue() {
         return valueStr;
+    }
+
+    @Override
+    public byte[] toByteArray() {
+        return valueStr.getBytes();
     }
 
     @Override

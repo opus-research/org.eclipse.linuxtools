@@ -31,7 +31,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfTimestamp class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class TmfTimestampTest {
 
     // ------------------------------------------------------------------------

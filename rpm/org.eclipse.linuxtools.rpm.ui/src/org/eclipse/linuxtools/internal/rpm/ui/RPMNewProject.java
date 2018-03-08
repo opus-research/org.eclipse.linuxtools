@@ -28,7 +28,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
  *
  */
 public class RPMNewProject extends Wizard implements INewWizard {
-	private NewProjectCreationPage namePage;
+	NewProjectCreationPage namePage;
 
 	@Override
 	public boolean performFinish() {

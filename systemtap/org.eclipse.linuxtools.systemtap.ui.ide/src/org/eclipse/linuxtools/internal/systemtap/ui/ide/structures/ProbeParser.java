@@ -25,9 +25,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
-import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
 /**
  * Runs stap -vp1 & stap -up2 in order to get all of the probes/functions
@@ -47,9 +46,8 @@ public class ProbeParser extends TapsetParser {
 
 	static ProbeParser parser = null;
 	public static ProbeParser getInstance(){
-		if (parser != null) {
+		if (parser != null)
 			return parser;
-		}
 
 		String[] tapsets = IDEPlugin.getDefault().getPreferenceStore()
 				.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
@@ -94,7 +92,7 @@ public class ProbeParser extends TapsetParser {
 		String[] options;
 		if(null == script) {
 			script = "**"; //$NON-NLS-1$
-			options = new String[] {"-L"};   //$NON-NLS-1$
+			options = new String[] {"-L"};   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 		} else {
 			options = null;
 		}
@@ -203,9 +201,9 @@ public class ProbeParser extends TapsetParser {
 			}
 			input.close();
 		} catch (FileNotFoundException e) {
-			ExceptionErrorDialog.openError(Messages.ProbeParser_errorInitializingStaticProbes, e);
+			e.printStackTrace();
 		} catch (IOException e) {
-			ExceptionErrorDialog.openError(Messages.ProbeParser_errorInitializingStaticProbes, e);
+			e.printStackTrace();
 		}
 
 		return probes.toString();

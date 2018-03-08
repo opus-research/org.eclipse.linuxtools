@@ -21,15 +21,12 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -42,7 +39,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class SystemTapScriptLaunchConfigurationTab extends
 		AbstractLaunchConfigurationTab {
@@ -53,6 +49,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	static final String USER_PASS_ATTR = "userPassword"; //$NON-NLS-1$
 	static final String LOCAL_HOST_ATTR = "executeOnLocalHost"; //$NON-NLS-1$
 	static final String HOST_NAME_ATTR = "hostName"; //$NON-NLS-1$
+	static final String RUN_WITH_CHART = "runWithChart"; //$NON-NLS-1$
 
 	private Text scriptPathText;
 	private Button currentUserCheckButton;
@@ -63,6 +60,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	private Label userNameLabel;
 	private Label userPasswordLabel;
 	private Label hostNamelabel;
+	private Button runWithChartCheckButton;
 	private FileDialog fileDialog;
 
 	@Override
@@ -213,6 +211,33 @@ public class SystemTapScriptLaunchConfigurationTab extends
 				updateLaunchConfigurationDialog();
 			}
 		});
+
+		// Preferences
+		Group preferencesGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
+		preferencesGroup.setLayoutData( new GridData(SWT.FILL, SWT.FILL, true, false));
+		preferencesGroup.setText(Messages.SystemTapScriptLaunchConfigurationTab_options);
+		layout = new GridLayout();
+		preferencesGroup.setLayout(layout);
+		layout.numColumns = 2;
+
+		this.runWithChartCheckButton = new Button(preferencesGroup, SWT.CHECK);
+		runWithChartCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_runWithChart);
+		runWithChartCheckButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				update();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				update();
+			}
+
+			private void update(){
+				updateLaunchConfigurationDialog();
+			}
+		});
+
 	}
 
 	private void setUserGroupEnablement(boolean enable){
@@ -235,6 +260,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		configuration.setAttribute(USER_PASS_ATTR, ""); //$NON-NLS-1$
 		configuration.setAttribute(LOCAL_HOST_ATTR, true);
 		configuration.setAttribute(HOST_NAME_ATTR, ""); //$NON-NLS-1$
+		configuration.setAttribute(RUN_WITH_CHART, false);
 	}
 
 	@Override
@@ -246,8 +272,9 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			this.userPasswordText.setText(configuration.getAttribute(USER_PASS_ATTR, "")); //$NON-NLS-1$
 			this.localHostCheckButton.setSelection(configuration.getAttribute(LOCAL_HOST_ATTR, true));
 			this.hostNameText.setText(configuration.getAttribute(HOST_NAME_ATTR, "")); //$NON-NLS-1$
+			this.runWithChartCheckButton.setSelection(configuration.getAttribute(RUN_WITH_CHART, false));
 		} catch (CoreException e) {
-			ExceptionErrorDialog.openError(Messages.SystemTapScriptLaunchConfigurationTab_errorInitializingTab, e);
+			e.printStackTrace();
 		}
 	}
 
@@ -259,6 +286,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		configuration.setAttribute(USER_PASS_ATTR, this.userPasswordText.getText());
 		configuration.setAttribute(LOCAL_HOST_ATTR, this.localHostCheckButton.getSelection());
 		configuration.setAttribute(HOST_NAME_ATTR, this.hostNameText.getText());
+		configuration.setAttribute(RUN_WITH_CHART, this.runWithChartCheckButton.getSelection());
 
 		boolean enable = !currentUserCheckButton.getSelection();
 		setUserGroupEnablement(enable);
@@ -294,24 +322,17 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			// If it is a text selection use the path from the active editor.
 			if (selection instanceof TextSelection){
 				IEditorPart ed = window.getActivePage().getActiveEditor();
-				if(ed.getEditorInput() instanceof PathEditorInput) {
-					pathString = ((PathEditorInput)ed.getEditorInput()).getPath().toString();
-				} else {
-					pathString = ResourceUtil.getFile(ed.getEditorInput()).getLocation().toString();
-				}
+				if(ed.getEditorInput() instanceof PathEditorInput)
+				 pathString = ((PathEditorInput)ed.getEditorInput()).getPath().toString();
+				else
+			    pathString = ResourceUtil.getFile(ed.getEditorInput()).getLocation().toString();
 			}
 		}
 
-		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX)) {
+		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX))
 			return pathString;
-		}
 
 		return ""; //$NON-NLS-1$
 	}
 
-	@Override
-	public Image getImage() {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(IDEPlugin.PLUGIN_ID,
-				"icons/main_tab.gif").createImage(); //$NON-NLS-1$
-	}
 }

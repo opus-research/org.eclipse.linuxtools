@@ -14,9 +14,9 @@ package org.eclipse.linuxtools.internal.gdbtrace.ui.views.events;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
-import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEventContent;
-import org.eclipse.linuxtools.internal.gdbtrace.core.trace.GdbTrace;
+import org.eclipse.linuxtools.internal.gdbtrace.event.GdbTraceEvent;
+import org.eclipse.linuxtools.internal.gdbtrace.event.GdbTraceEventContent;
+import org.eclipse.linuxtools.internal.gdbtrace.trace.GdbTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
@@ -115,10 +115,10 @@ public class GdbEventsTable extends TmfEventsTable {
         if (event != null) {
             GdbTraceEventContent content = (GdbTraceEventContent) event.getContent();
             fields = new TmfEventField[] {
-                    new TmfEventField(TRACE_FRAME_COLUMN, content.getFrameNumber(), null),
-                    new TmfEventField(TRACEPOINT_COLUMN, content.getTracepointNumber(), null),
-                    new TmfEventField(FILE_COLUMN, event.getReference(), null),
-                    new TmfEventField(CONTENT_COLUMN, content.toString(), null)
+                    new TmfEventField(TRACE_FRAME_COLUMN, content.getFrameNumber()),
+                    new TmfEventField(TRACEPOINT_COLUMN, content.getTracepointNumber()),
+                    new TmfEventField(FILE_COLUMN, event.getReference()),
+                    new TmfEventField(CONTENT_COLUMN, content.toString())
             };
         }
         return fields;

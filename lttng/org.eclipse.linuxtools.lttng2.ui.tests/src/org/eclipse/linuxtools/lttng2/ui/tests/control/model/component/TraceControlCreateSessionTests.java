@@ -43,7 +43,7 @@ import org.osgi.framework.FrameworkUtil;
  * handling test cases.
  */
 
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class TraceControlCreateSessionTests {
 
     // ------------------------------------------------------------------------

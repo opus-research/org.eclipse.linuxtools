@@ -33,7 +33,6 @@ import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -147,6 +146,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public int getNbAttributes() {
         return getAttributeTree().getNbAttributes();
+    }
+
+    @Override
+    public boolean isLastAttribute(int quark) {
+        return (quark == getNbAttributes() - 1) ? true : false;
     }
 
     @Override
@@ -354,7 +358,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * If the StateValue was null, this means this is the first time we
              * use this attribute. Leave stackDepth at 0.
              */
-        } else if (previousSV.getType() == Type.INTEGER) {
+        } else if (previousSV.getType() == 0) {
             /* Previous value was an integer, all is good, use it */
             stackDepth = previousSV.unboxInt();
         } else {
@@ -362,9 +366,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        if (stackDepth >= 100000) {
+        if (stackDepth >= 10) {
             /*
-             * Limit stackDepth to 100000, to avoid having Attribute Trees grow out
+             * Limit stackDepth to 10, to avoid having Attribute Trees grow out
              * of control due to buggy insertions
              */
             String message = "Stack limit reached, not pushing"; //$NON-NLS-1$
@@ -394,10 +398,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
              */
             return null;
         }
-        if (previousSV.getType() != Type.INTEGER) {
+        if (previousSV.getType() != ITmfStateValue.TYPE_INTEGER) {
             /*
-             * The existing value was not an integer (which is expected for
-             * stack tops), this doesn't look like a valid stack attribute.
+             * The existing value was a string, this doesn't look like a valid
+             * stack attribute.
              */
             throw new StateValueTypeException();
         }

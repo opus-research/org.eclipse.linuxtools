@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfEventType class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class TmfEventTypeTest {
 
     // ------------------------------------------------------------------------
@@ -141,6 +141,33 @@ public class TmfEventTypeTest {
             fail("TmfEventType: null argument");
         } catch (final IllegalArgumentException e) {
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // clone
+    // ------------------------------------------------------------------------
+
+    @Test
+    public void testClone() {
+        final ITmfEventType clone = fType1.clone();
+
+        assertTrue("clone", fType1.clone().equals(fType1));
+        assertTrue("clone", clone.clone().equals(clone));
+
+        assertEquals("clone", clone, fType1);
+        assertEquals("clone", fType1, clone);
+    }
+
+    @Test
+    public void testClone2() {
+        final ITmfEventType type = new TmfEventType();
+        final ITmfEventType clone = type.clone();
+
+        assertTrue("clone", type.clone().equals(type));
+        assertTrue("clone", clone.clone().equals(clone));
+
+        assertEquals("clone", clone, type);
+        assertEquals("clone", type, clone);
     }
 
     // ------------------------------------------------------------------------

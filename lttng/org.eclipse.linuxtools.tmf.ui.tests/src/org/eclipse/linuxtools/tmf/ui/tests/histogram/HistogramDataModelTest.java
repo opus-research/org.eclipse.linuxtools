@@ -257,7 +257,7 @@ public class HistogramDataModelTest {
                 }
             }
         }
-        fail("Uncaught assertion error");
+        fail("Uncaught assertion error"); //$NON-NLS-1$
     }
 
     /**

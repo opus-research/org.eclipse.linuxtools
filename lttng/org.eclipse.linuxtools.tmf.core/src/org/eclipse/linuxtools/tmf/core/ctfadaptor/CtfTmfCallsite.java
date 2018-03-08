@@ -8,109 +8,70 @@
  *
  * Contributors:
  *     Patrick Tasse - Initial API and implementation
- *     Bernd Hufmann - Updated for new parent class
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
-import org.eclipse.linuxtools.tmf.core.event.lookup.TmfCallsite;
 
 /**
- * CTF TMF call site information for source code lookup.
- *
- * @author Patrick Tasse
+ * Callsite information
  * @since 2.0
  */
-public class CtfTmfCallsite extends TmfCallsite {
+public class CtfTmfCallsite {
 
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
+    private String eventName;
+    private String fileName;
+    private String functionName;
+    private long lineNumber;
+    private long ip;
 
-    /** The event name. */
-    final private String fEventName;
-
-    /** The instruction pointer. */
-    final private long fInstructionPointer;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
-    /**
-     * Standard Constructor.
-     *
-     * @param callsite
-     *              - a CTF call site
-     */
     CtfTmfCallsite(CTFCallsite callsite) {
-        super(callsite.getFileName(), callsite.getFunctionName(), callsite.getLineNumber());
-        fEventName = callsite.getEventName();
-        fInstructionPointer = callsite.getIp();
+        eventName = callsite.getEventName();
+        fileName = callsite.getFileName();
+        functionName = callsite.getFunctionName();
+        lineNumber = callsite.getLineNumber();
+        ip = callsite.getIp();
     }
 
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
-
     /**
-     * Returns the event name of the call site.
      * @return the event name
      */
     public String getEventName() {
-        return fEventName;
+        return eventName;
     }
 
     /**
-     * Returns the instruction pointer of the call site.
-     * @return the instruction pointer
+     * @return the file name
      */
-    public long getIntructionPointer() {
-        return fInstructionPointer;
+    public String getFileName() {
+        return fileName;
     }
 
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((fEventName == null) ? 0 : fEventName.hashCode());
-        result = prime * result + (int) (fInstructionPointer ^ (fInstructionPointer >>> 32));
-        return result;
+    /**
+     * @return the function name
+     */
+    public String getFunctionName() {
+        return functionName;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        CtfTmfCallsite other = (CtfTmfCallsite) obj;
-        if (fEventName == null) {
-            if (other.fEventName != null) {
-                return false;
-            }
-        } else if (!fEventName.equals(other.fEventName)) {
-            return false;
-        }
-        if (fInstructionPointer != other.fInstructionPointer) {
-            return false;
-        }
-        return true;
+    /**
+     * @return the line number
+     */
+    public long getLineNumber() {
+        return lineNumber;
+    }
+
+    /**
+     * @return the ip
+     */
+    public long getIp() {
+        return ip;
     }
 
     @Override
     public String toString() {
-        return getEventName() + "@0x" + Long.toHexString(fInstructionPointer) + ": " + //$NON-NLS-1$ //$NON-NLS-2$
-                getFileName() + ':' + Long.toString(getLineNumber()) + ' ' + getFileName() + "()"; //$NON-NLS-1$
+        return eventName + "@0x" + Long.toHexString(ip) + ": " + //$NON-NLS-1$ //$NON-NLS-2$
+                fileName + ':' + Long.toString(lineNumber) + ' ' + functionName + "()"; //$NON-NLS-1$
     }
 }

@@ -31,6 +31,7 @@ import org.junit.Test;
 /**
  * TmfSyncSequenceDiagramEventTest
  */
+@SuppressWarnings("nls")
 public class TmfSyncSequenceDiagramEventTest {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;
@@ -51,7 +52,7 @@ public class TmfSyncSequenceDiagramEventTest {
      * Constructor for the test case
      */
     public TmfSyncSequenceDiagramEventTest() {
-        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content", null);
+        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType, fContent1, fReference);
     }
 

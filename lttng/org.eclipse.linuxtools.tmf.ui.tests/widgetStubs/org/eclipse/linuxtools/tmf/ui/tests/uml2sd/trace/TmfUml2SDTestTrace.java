@@ -56,6 +56,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
     }
 
     @Override
+    @SuppressWarnings({ "nls" })
     public ITmfEvent parseEvent(ITmfContext context) {
         if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
@@ -95,9 +96,9 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
 
             // Pre-parse the content
             TmfEventField[] fields = new TmfEventField[3];
-            fields[0] = new TmfEventField("sender", sender, null);
-            fields[1] = new TmfEventField("receiver", receiver, null);
-            fields[2] = new TmfEventField("signal", signal, null);
+            fields[0] = new TmfEventField("sender", sender);
+            fields[1] = new TmfEventField("receiver", receiver);
+            fields[2] = new TmfEventField("signal", signal);
 
             ITmfEventField tmfContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content, fields);
             ITmfEvent tmfEvent = new TmfEvent(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);

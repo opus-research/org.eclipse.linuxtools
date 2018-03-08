@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfEventParserStub implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
@@ -106,7 +106,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 }
                 content.append("]");
 
-                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
+                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString());
                 final ITmfEvent event = new TmfEvent(fEventStream,
                         new TmfTimestamp(ts, -3, 0),     // millisecs
                         source, fTypes[typeIndex], root, reference.toString());

@@ -23,14 +23,14 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataEntry;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataEntry;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
+import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IViewPart;
@@ -66,11 +66,8 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 	public void run(IAction act) {
 		File f = queryFile();
 
-		if (f == null){
-			return;
-		}
-
-		if(!f.exists()) {
+		if(null == f) {
+		} else if(!f.exists()) {
 			displayError(Localization.getString("OpenScriptOutputAction.SelectedFileDNE")); //$NON-NLS-1$
 		} else if(!f.canRead()) {
 			displayError(Localization.getString("OpenScriptOutputAction.SelectedFileCanNotRead")); //$NON-NLS-1$
@@ -81,11 +78,10 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 				IDataEntry output;
 				while(true) {
 					output = parser.parse(sb);
-					if(null != output) {
+					if(null != output)
 						dataSet.setData(output);
-					} else {
+					else
 						break;
-					}
 				}
 
 				try {
@@ -142,8 +138,10 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 			}
 			br.close();
 		} catch(FileNotFoundException fnfe) {
+			fnfe.printStackTrace();
 			ExceptionErrorDialog.openError(Localization.getString("OpenScriptOutputAction.ErrorReadingFile"), fnfe); //$NON-NLS-1$
 		} catch(IOException ioe) {
+			ioe.printStackTrace();
 			ExceptionErrorDialog.openError(Localization.getString("OpenScriptOutputAction.ErrorReadingFile"), ioe); //$NON-NLS-1$
 		}
 		return sb;

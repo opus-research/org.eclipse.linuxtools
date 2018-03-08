@@ -23,6 +23,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,18 +39,36 @@ public class EnumDefinitionTest {
     private EnumDefinition fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(EnumDefinitionTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         EnumDeclaration declaration = new EnumDeclaration(
-                new IntegerDeclaration(1, false, 1, ByteOrder.BIG_ENDIAN,
+                new IntegerDeclaration(1, true, 1, ByteOrder.BIG_ENDIAN,
                         Encoding.ASCII, null, 8));
-        declaration.add(0, 10, "a");
-        declaration.add(11, 20, "b");
-        String fieldName = "";
+        declaration.add(0, 10, "a"); //$NON-NLS-1$
+        declaration.add(11, 20, "b"); //$NON-NLS-1$
+        String fieldName = ""; //$NON-NLS-1$
 
         fixture = new EnumDefinition(declaration, null, fieldName);
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -112,6 +131,6 @@ public class EnumDefinitionTest {
         fixture.setIntegerValue(16);
         String result = fixture.toString();
 
-        assertEquals("{ value = b, container = 16 }", result);
+        assertEquals("{ value = b, container = 16 }", result); //$NON-NLS-1$
     }
 }

@@ -478,34 +478,58 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider {
         fSdView.setFrame(testFrame);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#hasNextPage()
+     */
     @Override
     public boolean hasNextPage() {
         return page == 0;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#hasPrevPage()
+     */
     @Override
     public boolean hasPrevPage() {
         return page == 1;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#nextPage()
+     */
     @Override
     public void nextPage() {
         page = 1;
         createSecondFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#prevPage()
+     */
     @Override
     public void prevPage() {
         page = 0;
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#firstPage()
+     */
     @Override
     public void firstPage() {
         page = 0;
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#lastPage()
+     */
     @Override
     public void lastPage() {
         page = 1;
@@ -552,7 +576,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         fSdView.setSDFindProvider(this);
         createFrame();
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter#isNodeSupported(int)
+     */
     @Override
     public boolean isNodeSupported(int nodeType) {
         switch (nodeType) {
@@ -566,6 +593,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter#getNodeName(int, java.lang.String)
+     */
     @Override
     public String getNodeName(int nodeType, String loaderClassName) {
         switch (nodeType) {
@@ -577,6 +608,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         return "";
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider#find(org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.widgets.Criteria)
+     */
     @Override
     public boolean find(Criteria criteria) {
         Frame frame = fSdView.getFrame();
@@ -599,6 +634,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider#cancel()
+     */
     @Override
     public void cancel() {
         // reset find parameters
@@ -643,6 +682,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider#filter(java.util.List)
+     */
     @Override
     public boolean filter(List<?> list) {
         return false;
@@ -690,6 +733,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDExtendedActionBarProvider#supplementCoolbarContent(org.eclipse.ui.IActionBars)
+     */
     @Override
     public void supplementCoolbarContent(IActionBars iactionbars) {
         Action action = new Action("Refresh") {
@@ -759,6 +806,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.ISelectionListener#selectionChanged(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection)
+     */
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();

@@ -20,11 +20,11 @@ import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,11 +47,11 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     public static void initialize() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            stateFile = File.createTempFile("test", ".ht");
-            stateFileBenchmark = File.createTempFile("test", ".ht.benchmark");
+            stateFile = File.createTempFile("test", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
+            stateFileBenchmark = File.createTempFile("test", ".ht.benchmark"); //$NON-NLS-1$ //$NON-NLS-2$
 
-            input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
-            ssq = TmfStateSystemFactory.newFullHistory(stateFile, input, true);
+            input = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+            ssq = StateSystemManager.loadStateHistory(stateFile, input, true);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (TmfTraceException e) {
@@ -73,8 +73,8 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     @Test
     public void testBuild() {
         try {
-            ITmfStateProvider input2 = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
-            ITmfStateSystem ssb2 = TmfStateSystemFactory.newFullHistory(stateFileBenchmark, input2, true);
+            IStateChangeInput input2 = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+            ITmfStateSystem ssb2 = StateSystemManager.loadStateHistory(stateFileBenchmark, input2, true);
 
             assertEquals(startTime, ssb2.getStartTime());
             assertEquals(endTime, ssb2.getCurrentEndTime());
@@ -91,7 +91,7 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     public void testOpenExistingStateFile() {
         try {
             /* 'newStateFile' should have already been created */
-            ITmfStateSystem ssb2 = TmfStateSystemFactory.newFullHistory(stateFile, null, true);
+            ITmfStateSystem ssb2 = StateSystemManager.loadStateHistory(stateFile, null, true);
 
             assertNotNull(ssb2);
             assertEquals(startTime, ssb2.getStartTime());
