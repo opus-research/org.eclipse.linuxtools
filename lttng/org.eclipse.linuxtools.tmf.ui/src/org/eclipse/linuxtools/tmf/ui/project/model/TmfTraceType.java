@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -298,7 +298,9 @@ public final class TmfTraceType {
         // remove the customTraceTypes
         final String[] keySet = fTraceTypes.keySet().toArray(new String[0]);
         for (String key : keySet) {
-            if (fTraceTypes.get(key).getCategoryName().equals(CUSTOM_TXT_CATEGORY) || fTraceTypes.get(key).getCategoryName().equals(CUSTOM_XML_CATEGORY)) {
+            TraceTypeHelper helper = fTraceTypes.get(key);
+            if (helper.getCategoryName().equals(CUSTOM_TXT_CATEGORY) || helper.getCategoryName().equals(CUSTOM_XML_CATEGORY)) {
+                helper.getTrace().dispose();
                 fTraceTypes.remove(key);
             }
         }
@@ -609,15 +611,16 @@ public final class TmfTraceType {
     }
 
     /**
-     * Select a trace file for
+     * This member figures out the trace type of a given file. It will prompt
+     * the user if it needs more information to properly pick the trace type.
      *
      * @param path
      *            The path of file to import
      * @param shell
      *            a shell to display the message to. If it is null, it is
      *            assumed to be cancelled.
-     * @return null if the request is cancelled or a string in the form
-     *         "category:type" if it passes.
+     * @param traceTypeHint the ID of a trace (like "o.e.l.specifictrace" )
+     * @return null if the request is cancelled or a TraceTypeHelper if it passes.
      * @throws TmfTraceImportException
      *             if the traces don't match or there are errors in the trace
      *             file
@@ -696,7 +699,7 @@ public final class TmfTraceType {
     private TraceTypeHelper getTraceTypeToSet(List<TraceTypeHelper> candidates, Shell shell) {
         final Map<String, String> names = new HashMap<String, String>();
         Shell shellToShow = new Shell(shell);
-        shellToShow.setText(Messages.TmfTraceTypeSelectTraceType);
+        shellToShow.setText(Messages.TmfTraceType_SelectTraceType);
         final String candidatesToSet[] = new String[1];
         for (TraceTypeHelper candidate : candidates) {
             Button b = new Button(shellToShow, SWT.RADIO);

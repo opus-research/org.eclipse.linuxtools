@@ -99,6 +99,8 @@ public class TmfOpenTraceHelper {
      * @throws CoreException
      *             core exceptions if something is not well set up in the back
      *             end
+     *
+     * @since 2.2
      */
     public IStatus openTraceFromPath(String projectRoot, String path, Shell shell, String tracetypeHint) throws CoreException {
         TmfTraceType tt = TmfTraceType.getInstance();
