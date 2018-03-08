@@ -28,7 +28,7 @@ import org.eclipse.ptp.remote.core.IRemoteConnection;
 import org.eclipse.ptp.remote.core.IRemoteFileManager;
 import org.eclipse.ptp.remote.core.IRemoteResource;
 import org.eclipse.ptp.remote.core.IRemoteServices;
-import org.eclipse.ptp.remote.core.RemoteServices;
+import org.eclipse.ptp.remote.core.PTPRemoteCorePlugin;
 
 public class RDTFileProxy implements IRemoteFileProxy {
 
@@ -37,7 +37,8 @@ public class RDTFileProxy implements IRemoteFileProxy {
 	private IRemoteResource remoteRes;
 
 	private void initialize(URI uri) throws CoreException {
-	        IRemoteServices services = RemoteServices.getRemoteServices(uri);
+		IRemoteServices services = PTPRemoteCorePlugin.getDefault().getRemoteServices(uri);
+		services.initialize();
 		IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
 		if (connection != null)
 			manager = services.getFileManager(connection);
