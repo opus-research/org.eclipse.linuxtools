@@ -42,4 +42,9 @@ final class NullStateValue extends TmfStateValue {
     public String toString() {
         return "nullValue"; //$NON-NLS-1$
     }
+
+    @Override
+    public int compareTo(ITmfStateValue value) {
+        return 0;
+    }
 }

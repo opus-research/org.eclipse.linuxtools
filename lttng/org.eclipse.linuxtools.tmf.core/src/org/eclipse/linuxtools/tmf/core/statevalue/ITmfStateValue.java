@@ -8,12 +8,12 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API
+ *   Jean-Christian Kouamé - make state values comparable
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 
 /**
  * This is the interface for using state values and reading their contents.
@@ -21,10 +21,11 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * @version 1.0
  * @author Alexandre Montplaisir
  */
-public interface ITmfStateValue {
+public interface ITmfStateValue extends Comparable<ITmfStateValue> {
 
     /**
      * The supported types of state values
+     *
      * @since 2.0
      */
     public enum Type {
@@ -83,4 +84,10 @@ public interface ITmfStateValue {
      * @since 2.0
      */
     long unboxLong() throws StateValueTypeException;
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public int compareTo(ITmfStateValue value);
 }
