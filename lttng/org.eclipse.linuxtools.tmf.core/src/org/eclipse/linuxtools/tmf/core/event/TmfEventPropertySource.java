@@ -37,7 +37,6 @@ public class TmfEventPropertySource implements IPropertySource {
     private static final String ID_CONTENT = "event_content"; //$NON-NLS-1$
     private static final String ID_SOURCE_LOOKUP = "event_lookup"; //$NON-NLS-1$
     private static final String ID_MODEL_URI = "model_uri"; //$NON-NLS-1$
-    private static final String ID_CUSTOM_ATTRIBUTE = "custom_attribute"; //$NON-NLS-1$
 
     private static final String NAME_TIMESTAMP = "Timestamp"; //$NON-NLS-1$
     private static final String NAME_SOURCE = "Source"; //$NON-NLS-1$
@@ -46,7 +45,6 @@ public class TmfEventPropertySource implements IPropertySource {
     private static final String NAME_CONTENT = "Content"; //$NON-NLS-1$
     private static final String NAME_SOURCE_LOOKUP = "Call Site"; //$NON-NLS-1$
     private static final String NAME_MODEL_URI = "Model URI"; //$NON-NLS-1$
-    private static final String NAME_CUSTOM_ATTRIBUTES = "Custom Attributes"; //$NON-NLS-1$
 
 
     private ITmfEvent fEvent;
@@ -216,46 +214,6 @@ public class TmfEventPropertySource implements IPropertySource {
         }
     }
 
-    private class CustomAttributePropertySource implements IPropertySource {
-
-        public CustomAttributePropertySource() {
-        }
-
-        @Override
-        public Object getEditableValue() {
-            return null;
-        }
-
-        @Override
-        public IPropertyDescriptor[] getPropertyDescriptors() {
-            List<IPropertyDescriptor> descriptors = new ArrayList<IPropertyDescriptor>();
-
-            for (String customAttribute : ((ITmfCustomAttributes) fEvent).listCustomAttributes()) {
-                descriptors.add(new ReadOnlyTextPropertyDescriptor(customAttribute, customAttribute));
-            }
-
-            return descriptors.toArray(new IPropertyDescriptor[0]);
-        }
-
-        @Override
-        public Object getPropertyValue(Object id) {
-            return ((ITmfCustomAttributes) fEvent).getCustomAttribute((String) id);
-        }
-
-        @Override
-        public boolean isPropertySet(Object id) {
-            return false;
-        }
-
-        @Override
-        public void resetPropertyValue(Object id) {
-
-        }
-
-        @Override
-        public void setPropertyValue(Object id, Object value) {
-        }
-    }
 
     /**
      * Default constructor
@@ -286,11 +244,6 @@ public class TmfEventPropertySource implements IPropertySource {
             descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_MODEL_URI, NAME_MODEL_URI));
         }
         descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_CONTENT, NAME_CONTENT));
-
-        if ((fEvent instanceof ITmfCustomAttributes) && !((ITmfCustomAttributes) fEvent).listCustomAttributes().isEmpty()) {
-            descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_CUSTOM_ATTRIBUTE, NAME_CUSTOM_ATTRIBUTES));
-        }
-
         return descriptors.toArray(new IPropertyDescriptor[0]);
     }
 
@@ -310,8 +263,6 @@ public class TmfEventPropertySource implements IPropertySource {
             return new SourceLookupPropertySource(((ITmfSourceLookup)fEvent));
         } else if (id.equals(ID_CONTENT) && fEvent.getContent() != null) {
             return new ContentPropertySource(fEvent.getContent());
-        } else if (id.equals(ID_CUSTOM_ATTRIBUTE)) {
-            return new CustomAttributePropertySource();
         }
         return null;
     }
