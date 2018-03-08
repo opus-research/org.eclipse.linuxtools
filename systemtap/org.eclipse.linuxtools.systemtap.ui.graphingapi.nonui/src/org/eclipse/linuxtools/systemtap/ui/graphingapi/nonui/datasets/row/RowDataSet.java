@@ -37,7 +37,7 @@ public class RowDataSet implements IHistoricalDataSet {
 		append(entry);
 	}
 	
-	public void append(IDataEntry entry) {
+	public void append(IDataEntry entry) throws ArrayIndexOutOfBoundsException {
 		RowEntry dataBlock = (RowEntry)entry;
 		if(dataBlock.getRow(null).length != this.getColCount())
 			throw new ArrayIndexOutOfBoundsException(Localization.getString("RowDataSet.ArraySizeMismatch") + dataBlock.getRow(null).length + " != " + this.getColCount());

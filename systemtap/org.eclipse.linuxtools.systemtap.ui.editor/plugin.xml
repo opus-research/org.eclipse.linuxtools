@@ -3,6 +3,10 @@
 <plugin>
 
 	<extension
+		point="org.eclipse.ui.startup">
+	</extension>
+
+	<extension
 		point="org.eclipse.ui.commands">
 		<command
 			name="%action.open.name"

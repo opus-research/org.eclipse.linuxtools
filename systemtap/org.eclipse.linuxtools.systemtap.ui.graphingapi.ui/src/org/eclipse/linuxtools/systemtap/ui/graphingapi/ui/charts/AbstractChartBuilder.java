@@ -1,12 +1,13 @@
 /****************************************************************
- * Copyright (c) 2006-2013 IBM Corp.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors:
- *     IBM - initial API and implementation
+ * Licensed Material - Property of IBM
+ *
+ * ****-***
+ *
+ * (c) Copyright IBM Corp. 2006.  All rights reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication or
+ * disclosure restricted by GSA ADP Schedule Contract with
+ * IBM Corp.
  *
  ****************************************************************
  */
@@ -72,8 +73,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 */
 	protected String title = null;
 
-	public abstract void updateDataSet();
-
 	/**
 	 * Constructs one chart builder and associate it to one data set.
 	 *
@@ -124,22 +123,30 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	/**
 	 * Builds X axis.
 	 */
-	protected void buildXAxis() {}
+	protected void buildXAxis() {
+
+	}
 
 	/**
 	 * Builds Y axis.
 	 */
-	protected void buildYAxis() {}
+	protected void buildYAxis() {
+
+	}
 
 	/**
 	 * Builds X series.
 	 */
-	protected void buildXSeries() {}
+	protected void buildXSeries() {
+
+	}
 
 	/**
 	 * Builds Y series.
 	 */
-	protected void buildYSeries() {}
+	protected void buildYSeries() {
+
+	}
 
 	/**
 	 * Builds legend.
@@ -165,6 +172,10 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 */
 	public Chart getChart() {
 		return chart;
+	}
+
+	public void updateDataSet() {
+
 	}
 
 	public void setScale(double scale) {
