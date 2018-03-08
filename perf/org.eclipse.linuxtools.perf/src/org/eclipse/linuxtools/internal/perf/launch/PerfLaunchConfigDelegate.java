@@ -62,7 +62,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 	public void launch(ILaunchConfiguration config, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		// check if Perf exists in $PATH
-		if (! PerfCore.checkPerfInPath()) {
+		if (! PerfCore.checkPerfInPath(null)) {
 			IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID,
 					Messages.PerfLaunchConfigDelegate_perf_not_found);
 			throw new CoreException(status);
