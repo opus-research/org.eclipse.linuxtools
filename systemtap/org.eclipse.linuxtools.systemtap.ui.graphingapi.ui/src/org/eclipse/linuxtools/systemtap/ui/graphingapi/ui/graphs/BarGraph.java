@@ -44,6 +44,7 @@ public class BarGraph extends AGraph implements IBlockGraph, IScrollGraph {
 	/**
 	 * Paints all of the data elements to the screen
 	 */
+	@Override
 	public void paintElementList(GC gc) {
 		DataPoint[] points = new DataPoint[0];
 
@@ -63,21 +64,20 @@ public class BarGraph extends AGraph implements IBlockGraph, IScrollGraph {
 		double pw=0, ph;
 		
 		for(int j=0; j<elementList.length; j++) {
-			points = (DataPoint[])elementList[j].toArray(points);
+			points = elementList[j].toArray(points);
 
 			c = new Color(getDisplay(), IGraphColorConstants.COLORS[j]);
 			c1 = new Color(getDisplay(), c.getRed()>>1, c.getGreen()>>1, c.getBlue()>>1);
 			gc.setForeground(c);
 			gc.setBackground(c1);
 			double width = WIDTH_PERCENT;
-			for(int i=0; i<points.length; i++) {
-				px = super.getLocation().x + (((points[i].x * (elementList.length))-super.getLocalXMin()) * xSize) + super.getXPadding();
+			for(DataPoint point :points) {
+				px = super.getLocation().x + (((point.x * (elementList.length))-super.getLocalXMin()) * xSize) + super.getXPadding();
 				px = px + ((j - elementList.length/2) * (xSize * width));
 				pw = (xSize * width);
 	
 				py = super.getSize().y - super.getYPadding();
-				ph = ((super.getLocalYMax() - points[i].y) * ySize) + super.getYPadding()-py;
-				//System.out.println("rectangle area:" + j + " " + px + " " + pw + " " + py + " " + ph + " " + points[i].x + " " + points[i].y );
+				ph = ((super.getLocalYMax() - point.y) * ySize) + super.getYPadding()-py;
 				gc.fillGradientRectangle((int)(px), (int)py, (int)pw, (int)ph, true);
 			}
 		}
@@ -86,6 +86,7 @@ public class BarGraph extends AGraph implements IBlockGraph, IScrollGraph {
 		gc.setBackground(temp1);
 	}
 	
+	@Override
 	public boolean isMultiGraph() {
 		return adapter.getSeriesCount() > 0;
 	}
@@ -94,6 +95,7 @@ public class BarGraph extends AGraph implements IBlockGraph, IScrollGraph {
 	 * Handles an update notification for new data in the Data Set. Causes the graph to add
 	 * all new samples to the graph, and then repaint itself.
 	 */
+	@Override
 	public void handleUpdateEvent() {
 		if(null == adapter) return;
 

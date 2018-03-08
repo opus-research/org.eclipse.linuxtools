@@ -23,15 +23,13 @@ public class GraphingAPIPreferencePage extends FieldEditorPreferencePage impleme
 	public GraphingAPIPreferencePage() {
 		super(GRID);
 		setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("GraphingAPIPreferencePage.GraphDisplayPreferences"));
+		setDescription(Localization.getString("GraphingAPIPreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
 	}
 	
+	@Override
 	public void createFieldEditors() {
 	}
 
 	public void init(IWorkbench workbench) {}
 	
-	public void dispose() {
-		super.dispose();
-	}
 }

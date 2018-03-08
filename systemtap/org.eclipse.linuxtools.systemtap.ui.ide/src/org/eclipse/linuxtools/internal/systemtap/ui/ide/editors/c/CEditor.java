@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.source.AnnotationRulerColumn;
 import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -26,19 +27,20 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.editor.*;
+import org.eclipse.linuxtools.systemtap.ui.editor.ColorManager;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 
 
@@ -54,7 +56,7 @@ public class CEditor extends AbstractDecoratedTextEditor {
 	 * The handler for doubleclick events on the ruler for this text editor.
 	 */
 	private RulerDoubleClickHandler handler = new RulerDoubleClickHandler();
-	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.c.CEditor";
+	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.c.CEditor"; //$NON-NLS-1$
 	
 	/**
 	 * The <code>RulerDoubleClickHandler</code> handles double click events on the
@@ -86,12 +88,13 @@ public class CEditor extends AbstractDecoratedTextEditor {
 	 * @see org.eclipse.linuxtools.systemtap.ui.structures.runnable.Command
 	 * @see org.eclipse.swt.events.MouseListener
 	 */
-	private class RulerDoubleClickHandler implements MouseListener
+	private class RulerDoubleClickHandler extends MouseAdapter
 	{
 		/**
 		 * The doubleclick event handler method.
 		 * @param	e	The <code>MouseEvent</code> that represents this doubleclick event.
 		 */
+		@Override
 		public void mouseDoubleClick(MouseEvent e) 
 		{
 			LogManager.logDebug("Start mouseDoubleClick: e-" + e, this); //$NON-NLS-1$
@@ -99,16 +102,16 @@ public class CEditor extends AbstractDecoratedTextEditor {
 			int lineno = getVerticalRuler().getLineOfLastMouseButtonActivity();
 
 			String s = getSourceViewer().getDocument().get();
-			String[] lines = s.split("\n");
+			String[] lines = s.split("\n"); //$NON-NLS-1$
 			String line = lines[lineno].trim();
 			boolean die = false;
-			if("".equals(line))		//eat blank lines
+			if("".equals(line))		//eat blank lines //$NON-NLS-1$
 			   die = true;
-			if(line.startsWith("#"))	//eat preprocessor directives
+			if(line.startsWith("#"))	//eat preprocessor directives //$NON-NLS-1$
 				die = true;
-			if(line.startsWith("//"))	//eat C99 comments
+			if(line.startsWith("//"))	//eat C99 comments //$NON-NLS-1$
 				die = true;
-			if(line.startsWith("/*") && !line.contains("*/") && !line.endsWith("*/"))	//try to eat single-line C comments
+			if(line.startsWith("/*") && !line.contains("*/") && !line.endsWith("*/"))	//try to eat single-line C comments //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				die = true;
 			
 			//gogo find comment segments
@@ -122,12 +125,12 @@ public class CEditor extends AbstractDecoratedTextEditor {
 				{
 					if(chars[needle-1] == '/' && chars[needle] == '*')
 					{
-						commentChunks.add(new Integer(needle));
+						commentChunks.add(needle);
 						while(needle < chars.length)
 						{
 							if(chars[needle-1] == '*' && chars[needle] == '/')
 							{
-								commentChunks.add(new Integer(needle));
+								commentChunks.add(needle);
 								needle++;
 								break;
 							}
@@ -138,16 +141,16 @@ public class CEditor extends AbstractDecoratedTextEditor {
 				}
 				for(int i=0, pair, start, end; i < commentChunks.size(); i++)
 				{
-					if(!(((Integer)(commentChunks.get(i))).intValue() < offset))
+					if(!(commentChunks.get(i).intValue() < offset))
 					{
 						pair = i - i%2;
-						start = ((Integer)(commentChunks.get(pair))).intValue();
-						end = ((Integer)(commentChunks.get(pair+1))).intValue();
+						start = commentChunks.get(pair).intValue();
+						end = commentChunks.get(pair+1).intValue();
 						if(offset >= start && offset <= end)
 							die=true;
 					}
 				}
-			} catch (Exception excp) {
+			} catch (BadLocationException excp) {
 				LogManager.logCritical("Exception mouseDoubleClick: " + excp.getMessage(), this); //$NON-NLS-1$
 			}
 			if(die) {
@@ -157,17 +160,17 @@ public class CEditor extends AbstractDecoratedTextEditor {
 				LogManager.logInfo("Disposing", MessageDialog.class); //$NON-NLS-1$
 			} else {
 				IEditorInput in = getEditorInput();
-				if(in instanceof PathEditorInput) {
-					PathEditorInput input = (PathEditorInput)in;
+				if(in instanceof FileStoreEditorInput) {
+					FileStoreEditorInput input = (FileStoreEditorInput)in;
 	
 					IPreferenceStore p = IDEPlugin.getDefault().getPreferenceStore();
 					String kernroot = p.getString(IDEPreferenceConstants.P_KERNEL_SOURCE);
 	
-					String filepath = input.getPath().toOSString();
+					String filepath = input.getURI().getPath();
 					String kernrelative = filepath.substring(kernroot.length()+1, filepath.length());
 					StringBuffer sb = new StringBuffer();
 					
-					sb.append("probe kernel.statement(\"*@"+ kernrelative + ":" + (lineno+1) + "\")");
+					sb.append("probe kernel.statement(\"*@"+ kernrelative + ":" + (lineno+1) + "\")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 				/*	if(!checkProbe(sb.toString() + "{ }")) {
 						LogManager.logInfo("Initializing", MessageDialog.class);
@@ -175,31 +178,27 @@ public class CEditor extends AbstractDecoratedTextEditor {
 								Localization.getString("CEditor.ProbeInsertFailed"),Localization.getString("CEditor.CanNotProbeLine"));
 						LogManager.logInfo("Disposing", MessageDialog.class);
 					} else { */
-						sb.append("\n{\n\t\n}\n");
-						if(null == IDESessionSettings.activeSTPEditor) {
+						sb.append("\n{\n\t\n}\n"); //$NON-NLS-1$
+						STPEditor activeSTPEditor = IDESessionSettings.getActiveSTPEditor(); 
+						if(null == activeSTPEditor) {
 							NewFileAction action = new NewFileAction();
 							//action.init(input.getMainWindow());
 							action.run();
 							IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 							if(ed instanceof STPEditor)
-								IDESessionSettings.activeSTPEditor = (STPEditor)ed;
+								IDESessionSettings.setActiveSTPEditor((STPEditor)ed);
 						}
-						STPEditor editor = IDESessionSettings.activeSTPEditor;
-						if(null != editor)
-							editor.insertText(sb.toString());
+
+						if(null != activeSTPEditor)
+							activeSTPEditor.insertText(sb.toString());
 					//}
 				}
 			}
 			getSite().getShell().setCursor(null);	//Return the cursor to normal
 			LogManager.logDebug("End mouseDoubleClick:", this); //$NON-NLS-1$
 		}
-
-		public void mouseDown(MouseEvent e) {
-		}
-		public void mouseUp(MouseEvent e) {
-		}
 	}
-	
+
 	/**
 	 * Default Constructor for the <code>CEditor</code> class. Creates an instance of the editor which
 	 * is not associated with any given input. 
@@ -231,6 +230,7 @@ public class CEditor extends AbstractDecoratedTextEditor {
 		LogManager.logDebug("End internal_init", this); //$NON-NLS-1$
 	}
 	
+	@Override
 	public void dispose() {
 		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
@@ -240,6 +240,7 @@ public class CEditor extends AbstractDecoratedTextEditor {
 		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
 	}
 	
+	@Override
 	protected CompositeRuler createCompositeRuler() {
 		LogManager.logDebug("Start createCompositeRuler:", this); //$NON-NLS-1$
 		CompositeRuler ruler = new CompositeRuler();
@@ -255,16 +256,13 @@ public class CEditor extends AbstractDecoratedTextEditor {
 		return ruler;
 	}
 
+	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 		super.createPartControl(parent);
 		IVerticalRuler ruler = this.getVerticalRuler();
 		Control control = ruler.getControl();
-		try {
-			control.addMouseListener(handler);
-		} catch(Exception e) {
-			LogManager.logCritical("Exception createPartControl: " + e.getMessage(), this); //$NON-NLS-1$
-		}
+		control.addMouseListener(handler);
 		LogManager.logDebug("End createPartControl:", this); //$NON-NLS-1$
 	}
 	

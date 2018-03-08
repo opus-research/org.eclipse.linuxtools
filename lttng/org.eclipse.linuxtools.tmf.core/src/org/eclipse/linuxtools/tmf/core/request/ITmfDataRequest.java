@@ -1,13 +1,14 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Francois Chouinard - Rebased on ITmfRequest, removed duplicates, deprecated
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.request;
@@ -16,17 +17,30 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 
 /**
  * The TMF data request
- * 
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
-public interface ITmfDataRequest<T extends ITmfEvent> {
+@Deprecated
+public interface ITmfDataRequest extends ITmfRequest {
 
 	// ------------------------------------------------------------------------
 	// Constants
 	// ------------------------------------------------------------------------
 
-    public enum ExecutionType { BACKGROUND, FOREGROUND }
+    /**
+     * The request execution type/priority
+     */
+    public enum ExecutionType {
+        /**
+         * Backgroung, long-running, lower priority request
+         */
+        BACKGROUND,
+        /**
+         * Foreground, short-running, high priority request
+         */
+        FOREGROUND
+    }
 
 	// ------------------------------------------------------------------------
 	// Accessors
@@ -35,12 +49,7 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     /**
      * @return request data type (T)
      */
-    public Class<T> getDataType();
-
-    /**
-     * @return request ID
-     */
-    public int getRequestId();
+    public Class<? extends ITmfEvent> getDataType();
 
     /**
      * @return request ID
@@ -53,11 +62,6 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     public long getIndex();
 
     /**
-     * @return the number of requested events
-     */
-    public int getNbRequested();
-
-    /**
      * @return the block size (for BG requests)
      */
     public int getBlockSize();
@@ -68,42 +72,14 @@ public interface ITmfDataRequest<T extends ITmfEvent> {
     public int getNbRead();
 
 	// ------------------------------------------------------------------------
-	// Request state
-	// ------------------------------------------------------------------------
-
-    public boolean isRunning();
-    public boolean isCompleted();
-    public boolean isFailed();
-    public boolean isCancelled();
-
-	// ------------------------------------------------------------------------
 	// Data handling
 	// ------------------------------------------------------------------------
 
-    public void handleData(T data);
-
-	// ------------------------------------------------------------------------
-	// Request handling
-	// ------------------------------------------------------------------------
-
-    public void handleStarted();
-    public void handleCompleted();
-    public void handleSuccess();
-    public void handleFailure();
-    public void handleCancel();
-
     /**
-     * To suspend the client thread until the request completes
-     * (or is canceled).
+     * Process the piece of data
+     *
+     * @param data the data to process
      */
-    public void waitForCompletion() throws InterruptedException;
+    public void handleData(ITmfEvent data);
 
-	// ------------------------------------------------------------------------
-	// Request state modifiers
-	// ------------------------------------------------------------------------
-
-    public void start();
-    public void done();
-    public void fail();
-    public void cancel();
 }

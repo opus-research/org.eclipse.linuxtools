@@ -11,10 +11,12 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileEventConfigTab;
@@ -54,7 +56,7 @@ public class TestSetup extends AbstractTest {
 	}
 	
 	@Override
-	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) throws CoreException {
+	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
 		OprofileEventConfigTab configTab = new OprofileEventConfigTab();
 		OprofileSetupTab setupTab = new OprofileSetupTab();
 		configTab.setDefaults(wc);
@@ -62,7 +64,7 @@ public class TestSetup extends AbstractTest {
 	}
 
 	//getter functions for otherwise unaccessible member variables 
-	private class OprofileTestingSetupTab extends OprofileSetupTab {
+	private static class OprofileTestingSetupTab extends OprofileSetupTab {
 		protected Button getKernelCheck() { return checkSeparateKernel; }
 		protected Button getLibraryCheck() { return checkSeparateLibrary; }
 		protected Text getTextKernelImage() { return kernelImageFileText; }
@@ -73,36 +75,38 @@ public class TestSetup extends AbstractTest {
 		tab.createControl(new Shell());
 		assertNotNull(tab.getImage());
 		assertNotNull(tab.getName());
-		
+
+		ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
+
 		//default config
-		tab.setDefaults(config.getWorkingCopy());
+		tab.setDefaults(wc);
 		tab.initializeFrom(config);
 		
 		Button libraryCheck = tab.getLibraryCheck();
 		libraryCheck.setSelection(true);
 		libraryCheck.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		assertEquals(OprofileDaemonOptions.SEPARATE_LIBRARY, config.getAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, -1));
 		libraryCheck.setSelection(false);
 		libraryCheck.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, config.getAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, -1));
 		
 		Button kernelCheck = tab.getKernelCheck();
 		kernelCheck.setSelection(true);
 		kernelCheck.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		assertEquals(OprofileDaemonOptions.SEPARATE_KERNEL, config.getAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, -1));
 		kernelCheck.setSelection(false);
 		kernelCheck.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, config.getAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, -1));
 		
 		libraryCheck.setSelection(true);
 		libraryCheck.notifyListeners(SWT.Selection, null);
 		kernelCheck.setSelection(true);
 		kernelCheck.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		tab.initializeFrom(config);
 		assertTrue(libraryCheck.getSelection());
 		assertTrue(kernelCheck.getSelection());
@@ -110,22 +114,24 @@ public class TestSetup extends AbstractTest {
 		Text kernelLocationText = tab.getTextKernelImage();
 		kernelLocationText.setText("doesntexist"); //$NON-NLS-1$
 		kernelLocationText.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		assertFalse(tab.isValid(config));
 
 		kernelLocationText.setText(""); //$NON-NLS-1$
 		kernelLocationText.notifyListeners(SWT.Selection, null);
-		tab.performApply(config.getWorkingCopy());
+		testPerformApply(tab, wc);
 		assertTrue(tab.isValid(config));
 	}
 	
-	private class OprofileTestingEventConfigTab extends OprofileEventConfigTab {
+	private static class OprofileTestingEventConfigTab extends OprofileEventConfigTab {
 		@Override
 		protected boolean getTimerMode() { return false; }
 		@Override
 		protected int getNumberOfCounters() { return 1; }
 		@Override
 		protected boolean checkEventSetupValidity(int counter, String name, int maskValue) { return true; }
+		@Override
+		protected boolean hasPermissions(IProject project) { return true; }
 		public Button getDefaultCheck() { return defaultEventCheck; }
 	}
 	
@@ -146,7 +152,12 @@ public class TestSetup extends AbstractTest {
 
 		ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false);
-		tab.performApply(wc);
+		testPerformApply(tab, wc);
 		assertFalse(tab.isValid(config));
+	}
+
+	public void testPerformApply (ILaunchConfigurationTab tab , ILaunchConfigurationWorkingCopy wc) throws CoreException {
+		tab.performApply(wc);
+		wc.doSave();
 	}
 }

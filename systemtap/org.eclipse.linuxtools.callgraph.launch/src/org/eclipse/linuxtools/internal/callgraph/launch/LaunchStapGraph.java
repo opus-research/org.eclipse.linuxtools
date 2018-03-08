@@ -45,6 +45,7 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 	
 
 	
+	@Override
 	public void launch(IEditorPart ed, String mode) {
 		resourceToSearchFor = ed.getTitle();
 		searchForResource = true;
@@ -54,6 +55,7 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 		super.launch(ed, mode);
 	}
 	
+	@Override
 	public void launch(IBinary bin, String mode) {
 		launch(bin, mode, null);
 	}
@@ -126,9 +128,8 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 	 * 
 	 * @param bw
 	 * @return
-	 * @throws IOException
 	 */
-	public String writeFunctionListToScript(String resourceToSearchFor) throws IOException {
+	public String writeFunctionListToScript(String resourceToSearchFor) {
 		String toWrite = getFunctionsFromBinary(bin, resourceToSearchFor);
 		
 		if (toWrite == null || toWrite.length() < 1) {
@@ -138,10 +139,10 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 		StringBuffer output = new StringBuffer();
 		
 		for (String func : toWrite.split(" ")) { //$NON-NLS-1$
-			if (func.length() > 0) {
-				if (exclusions == null || exclusions.size() < 1 || exclusions.contains(func) ) {					
-					output.append(generateProbe(func));
-				}		
+			if (func.length() > 0
+					&& (exclusions == null || exclusions.size() < 1 || exclusions
+							.contains(func))) {
+				output.append(generateProbe(func));
 			}
 		}
 

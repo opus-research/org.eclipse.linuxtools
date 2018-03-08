@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012-2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,6 +16,9 @@ package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.util.Set;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfIterator;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
@@ -176,7 +179,7 @@ public class CtfTmfEventTest {
         assertEquals("No stream", nullEvent.getChannelName()); //$NON-NLS-1$
         assertArrayEquals(new ITmfEventField[0], nullEvent.getContent().getFields());
         assertEquals(-1L, nullEvent.getID());
-        assertEquals(-1L, nullEvent.getTimestampValue());
+        assertEquals(-1L, nullEvent.getTimestamp().getValue());
     }
 
     /**
@@ -186,7 +189,7 @@ public class CtfTmfEventTest {
     @Test
     public void testGetTimestamp() {
         CtfTmfEvent nullEvent = CtfTmfEvent.getNullEvent();
-        long result = nullEvent.getTimestampValue();
+        long result = nullEvent.getTimestamp().getValue();
 
         assertEquals(-1L, result);
     }
@@ -211,11 +214,24 @@ public class CtfTmfEventTest {
     }
 
     /**
+     * Test the custom CTF attributes methods. The test trace doesn't have any,
+     * so the list of attributes should be empty.
+     */
+    @Test
+    public void testCustomAttributes() {
+        Set<String> attributes = fixture.listCustomAttributes();
+        assertEquals(0, attributes.size());
+
+        String attrib = fixture.getCustomAttribute("bozo"); //$NON-NLS-1$
+        assertNull(attrib);
+    }
+
+    /**
      * Test the toString() method
      */
     @Test
     public void testToString() {
         String s = fixture.getContent().toString();
-        assertEquals("pid=1922, inode=917738, flags=134217845, end=3074342912, start=3074334720, pgoff=0", s); //$NON-NLS-1$
+        assertEquals("pid=1922, inode=917738, flags=0x8000075, end=0xb73ec000, start=0xb73ea000, pgoff=0", s); //$NON-NLS-1$
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2011, 2012 Ericsson
+ * Copyright (c) 2009, 2010, 2011, 2012 Ericsson and others.
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Got rid of dependency on internal platform class
  *   Francois Chouinard - Complete re-design
+ *   Anna Dushistova(Montavista) - [383047] NPE while importing a CFT trace
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -52,6 +54,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefin
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
@@ -586,7 +589,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         fTraceTypes.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                validateSourceGroup();
+                updateWidgetEnablements();
             }
 
             @Override
@@ -737,10 +740,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
             List<File> traces = isolateTraces();
             for (File trace : traces) {
-                ITmfTrace<?> tmfTrace = null;
+                ITmfTrace tmfTrace = null;
                 try {
                     IConfigurationElement ce = fTraceAttributes.get(traceTypeName);
-                    tmfTrace = (ITmfTrace<?>) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    tmfTrace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
                     if (tmfTrace != null && !tmfTrace.validate(fProject, trace.getAbsolutePath())) {
                         setMessage(null);
                         setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
@@ -808,9 +811,8 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             return false;
         }
 
-        String sourceDirPath;
         try {
-            sourceDirPath = sourceDir.getCanonicalPath();
+            sourceDir.getCanonicalPath();
         } catch (IOException e) {
             MessageDialog.openInformation(getContainer().getShell(), Messages.ImportTraceWizard_Information,
                     Messages.ImportTraceWizard_InvalidTraceDirectory);
@@ -832,7 +834,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         }
 
         if (fileSystemObjects.size() > 0) {
-            boolean ok = importResources(sourceDirPath, fileSystemObjects);
+            boolean ok = importResources(fileSystemObjects);
             String traceBundle = null;
             String traceTypeId = null;
             String traceIcon = null;
@@ -870,12 +872,19 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             if (ok && traceTypeOK && !traceType.equals("")) { //$NON-NLS-1$
                 // Tag the selected traces with their type
                 List<String> files = new ArrayList<String>(fileSystemObjects.keySet());
-                Collections.sort(files);
+                Collections.sort(files, new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        String v1 = o1 + File.separatorChar;
+                        String v2 = o2 + File.separatorChar;
+                        return v1.compareTo(v2);
+                    }
+                });
                 // After sorting, traces correspond to the unique prefixes
                 String prefix = null;
                 for (int i = 0; i < files.size(); i++) {
                     File file = fileSystemObjects.get(files.get(i));
-                    String name = file.getAbsolutePath();
+                    String name = file.getAbsolutePath() + File.separatorChar;
                     if (fTargetFolder != null && (prefix == null || !name.startsWith(prefix))) {
                         prefix = name; // new prefix
                         IResource resource = fTargetFolder.findMember(file.getName());
@@ -885,10 +894,13 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
                                 resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE, traceBundle);
                                 resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceTypeId);
                                 resource.setPersistentProperty(TmfCommonConstants.TRACEICON, traceIcon);
-                                for (TmfTraceElement traceElement : TmfProjectRegistry.getProject(resource.getProject()).getTracesFolder().getTraces()) {
-                                    if (traceElement.getName().equals(resource.getName())) {
-                                        traceElement.refreshTraceType();
-                                        break;
+                                TmfProjectElement tmfProject = TmfProjectRegistry.getProject(resource.getProject());
+                                if (tmfProject != null) {
+                                    for (TmfTraceElement traceElement : tmfProject.getTracesFolder().getTraces()) {
+                                        if (traceElement.getName().equals(resource.getName())) {
+                                            traceElement.refreshTraceType();
+                                            break;
+                                        }
                                     }
                                 }
                             } catch (CoreException e) {
@@ -906,15 +918,21 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         return false;
     }
 
-    private boolean importResources(String rootDirectory, Map<String, File> fileSystemObjects) {
+    private boolean importResources(Map<String, File> fileSystemObjects) {
 
         // Determine the sorted canonical list of items to import
         List<File> fileList = new ArrayList<File>();
         for (Entry<String, File> entry : fileSystemObjects.entrySet()) {
             fileList.add(entry.getValue());
         }
-        Collections.sort(fileList);
-
+        Collections.sort(fileList, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                String v1 = o1.getAbsolutePath() + File.separatorChar;
+                String v2 = o2.getAbsolutePath() + File.separatorChar;
+                return v1.compareTo(v2);
+            }
+        });
 
         // Perform a distinct import operation for everything that has the same prefix
         // (distinct prefixes correspond to traces - we don't want to re-create parent structures)
@@ -927,9 +945,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             List<File> subList = new ArrayList<File>();
             subList.add(resource);
             if (resource.isDirectory()) {
-                String prefix = resource.getAbsolutePath();
+                String prefix = resource.getAbsolutePath() + File.separatorChar;
                 boolean hasSamePrefix = true;
-                for (int j = i; j < fileList.size() && hasSamePrefix; j++) {
+                for (int j = i + 1; j < fileList.size() && hasSamePrefix; j++) {
                     File res = fileList.get(j);
                     hasSamePrefix = res.getAbsolutePath().startsWith(prefix);
                     if (hasSamePrefix) {

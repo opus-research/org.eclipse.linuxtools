@@ -29,6 +29,7 @@ import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupDirector;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.ui.sourcelookup.CommonSourceNotFoundEditor;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.binutils.Activator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,202 +42,213 @@ import org.eclipse.ui.IEditorInput;
 import org.osgi.service.prefs.BackingStoreException;
 
 /**
- * Editor that lets you select a replacement for the missing source file
- * and modifies the source locator accordingly.
- *
+ * Editor that lets you select a replacement for the missing source file and modifies the source locator accordingly.
+ * 
  */
 public class STCSourceNotFoundEditor extends CommonSourceNotFoundEditor {
 
-	private final static String foundMappingsContainerName = "Found Mappings"; //$NON-NLS-1$
-	
+    private final static String foundMappingsContainerName = "Found Mappings"; //$NON-NLS-1$
 
-	private Button locateFileButton;
-	private Button editLookupButton;
+    /**
+     * @since 4.1
+     */
+    public final static String ID = "org.eclipse.linuxtools.binutils.link2source.STCSourceNotFoundEditor"; //$NON-NLS-1$
 
-	/** Constructor */
-	public STCSourceNotFoundEditor() {
-	}
+    private Button locateFileButton;
+    private Button editLookupButton;
 
-	public void createPartControl(Composite parent) {
-		super.createPartControl(parent);
-	}
+    /** Constructor */
+    public STCSourceNotFoundEditor() {
+    }
 
-	private IPath getMissingFile() {
-		IEditorInput i = this.getEditorInput();
-		if (i instanceof STCSourceNotFoundEditorInput) {
-			STCSourceNotFoundEditorInput input = (STCSourceNotFoundEditorInput) i;
-			return input.getSourcePath();
-		}
-		return null;
-	}
-	
-	private int getLineNumber() {
-		IEditorInput i = this.getEditorInput();
-		if (i instanceof STCSourceNotFoundEditorInput) {
-			STCSourceNotFoundEditorInput input = (STCSourceNotFoundEditorInput) i;
-			return input.getLineNumber();
-		}
-		return -1;
-	}
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
+    }
 
-	private IProject getProject() {
-		IEditorInput i = this.getEditorInput();
-		if (i instanceof STCSourceNotFoundEditorInput) {
-			STCSourceNotFoundEditorInput input = (STCSourceNotFoundEditorInput) i;
-			return input.getProject();
-		}
-		return null;
-	}
+    private IPath getMissingFile() {
+        IEditorInput i = this.getEditorInput();
+        if (i instanceof STCSourceNotFoundEditorInput) {
+            STCSourceNotFoundEditorInput input = (STCSourceNotFoundEditorInput) i;
+            return input.getSourcePath();
+        }
+        return null;
+    }
 
-	public void setInput(IEditorInput input) {
-		super.setInput(input);
-		syncButtons();
-	}
-	
-	private boolean isValidMissingFile() {
-		IPath p = getMissingFile();
-		boolean v = (p != null && p.toString().length() > 0);
-		return v;
-	}
-	
+    private int getLineNumber() {
+        IEditorInput i = this.getEditorInput();
+        if (i instanceof STCSourceNotFoundEditorInput) {
+            STCSourceNotFoundEditorInput input = (STCSourceNotFoundEditorInput) i;
+            return input.getLineNumber();
+        }
+        return -1;
+    }
 
-	private void syncButtons() {
-		boolean v = isValidMissingFile();
-		if (locateFileButton != null)
-			locateFileButton.setVisible(v);
-		if (editLookupButton != null)
-			editLookupButton.setVisible(v);
-	}
+    private IProject getProject() {
+        IEditorInput i = this.getEditorInput();
+        if (i instanceof STCSourceNotFoundEditorInput) {
+            STCSourceNotFoundEditorInput input = (STCSourceNotFoundEditorInput) i;
+            return input.getProject();
+        }
+        return null;
+    }
 
-	protected String getText() {
-		boolean v = isValidMissingFile();
-		if (v) {
-			return "Can't find a source file at \""
-			+ getMissingFile()
-			+ "\" \n";
-		} else {
-			return "No source available for \"\"";
-		}
-	}
+    @Override
+    public void setInput(IEditorInput input) {
+        super.setInput(input);
+        syncButtons();
+    }
 
-	protected void createButtons(Composite parent) {
-		{
-			GridData data;
-			locateFileButton = new Button(parent, SWT.PUSH);
-			data = new GridData();
-			data.grabExcessHorizontalSpace = false;
-			data.grabExcessVerticalSpace = false;
-			locateFileButton.setLayoutData(data);
-			locateFileButton.setText("Locate File..."); //$NON-NLS-1$
-			locateFileButton.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent evt) {
-					locateFile();
-				}
-			});
-		}
+    private boolean isValidMissingFile() {
+        IPath p = getMissingFile();
+        boolean v = (p != null && p.toString().length() > 0);
+        return v;
+    }
 
-		{
-			GridData data;
-			editLookupButton = new Button(parent, SWT.PUSH);
-			data = new GridData();
-			data.grabExcessHorizontalSpace = false;
-			data.grabExcessVerticalSpace = false;
-			editLookupButton.setLayoutData(data);
-			editLookupButton.setText("Edit Source Lookup Path..."); 
-			editLookupButton.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent evt) {
-					editSourceLookupPath();
-				}
-			});
-		}
-		syncButtons();
-	}
+    private void syncButtons() {
+        boolean v = isValidMissingFile();
+        if (locateFileButton != null)
+            locateFileButton.setVisible(v);
+        if (editLookupButton != null)
+            editLookupButton.setVisible(v);
+    }
 
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.sourcelookup.CommonSourceNotFoundEditor#editSourceLookupPath()
-	 */
-	@Override
-	protected void editSourceLookupPath() {
-		PreferenceDialog d = org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn(null, "org.eclipse.cdt.debug.ui.SourcePreferencePage", null, null);
-		if (d.open() == PreferenceDialog.OK) {
-			closeEditor();
-			openSourceFileAtLocation(getProject(), getMissingFile(), getLineNumber());
-		}
-	}
+    @Override
+    protected String getText() {
+        boolean v = isValidMissingFile();
+        if (v) {
+            return Messages.STCSourceNotFoundEditor_cant_find_source_file + "\"" + getMissingFile() + "\" \n"; //$NON-NLS-1$ //$NON-NLS-2$
+        } else {
+            return Messages.STCSourceNotFoundEditor_no_source_available;
+        }
+    }
 
-	private void addSourceMappingToDirector(IPath missingPath, IPath newSourcePath, AbstractSourceLookupDirector director) throws CoreException {
+    @Override
+    protected void createButtons(Composite parent) {
+        {
+            GridData data;
+            locateFileButton = new Button(parent, SWT.PUSH);
+            data = new GridData();
+            data.grabExcessHorizontalSpace = false;
+            data.grabExcessVerticalSpace = false;
+            locateFileButton.setLayoutData(data);
+            locateFileButton.setText(Messages.STCSourceNotFoundEditor_locate_file);
+            locateFileButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent evt) {
+                    locateFile();
+                }
+            });
+        }
 
-		ArrayList<ISourceContainer> containerList = new ArrayList<ISourceContainer>(Arrays.asList(
-				director.getSourceContainers()
-		));
-		boolean hasFoundMappings = false;
-		MappingSourceContainer foundMappings = null;
-		for (Iterator<ISourceContainer> iter = containerList.iterator(); iter.hasNext() && !hasFoundMappings;) {
-			ISourceContainer container = iter.next();
-			if (container instanceof MappingSourceContainer)
-			{
-				hasFoundMappings = container.getName().equals(foundMappingsContainerName);
-				if (hasFoundMappings)
-					foundMappings = (MappingSourceContainer) container;
-			}
-		}
+        {
+            GridData data;
+            editLookupButton = new Button(parent, SWT.PUSH);
+            data = new GridData();
+            data.grabExcessHorizontalSpace = false;
+            data.grabExcessVerticalSpace = false;
+            editLookupButton.setLayoutData(data);
+            editLookupButton.setText(Messages.STCSourceNotFoundEditor_edit_source_lookup_path);
+            editLookupButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent evt) {
+                    editSourceLookupPath();
+                }
+            });
+        }
+        syncButtons();
+    }
 
-		if (!hasFoundMappings) {
-			foundMappings = new MappingSourceContainer(foundMappingsContainerName);
-			foundMappings.init(director);
-			containerList.add(foundMappings);
-		}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.debug.ui.sourcelookup.CommonSourceNotFoundEditor# editSourceLookupPath()
+     */
+    @Override
+    protected void editSourceLookupPath() {
+        PreferenceDialog d = org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn(null,
+                "org.eclipse.cdt.debug.ui.SourcePreferencePage", null, null); //$NON-NLS-1$
+        if (d.open() == Window.OK) {
+            closeEditor();
+            openSourceFileAtLocation(getProject(), getMissingFile(), getLineNumber());
+        }
+    }
 
-		foundMappings.addMapEntry(new MapEntrySourceContainer(missingPath, newSourcePath));
-		director.setSourceContainers(containerList.toArray(new ISourceContainer[containerList.size()]));
-	}
+    private void addSourceMappingToDirector(IPath missingPath, IPath newSourcePath,
+            AbstractSourceLookupDirector director) {
 
-	private void addSourceMappingToCommon(IPath missingPath, IPath newSourcePath) throws CoreException {
-		AbstractSourceLookupDirector director = CDebugCorePlugin.getDefault().getCommonSourceLookupDirector();
-		addSourceMappingToDirector(missingPath, newSourcePath, director);
-		try {
-			InstanceScope.INSTANCE.getNode(CDebugCorePlugin.PLUGIN_ID).flush();
-		} catch (BackingStoreException e) {
-			IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "Failed saving settings for content type " + CDebugCorePlugin.PLUGIN_ID, e);
-			throw new CoreException(status);
-		}
-	}
-	
-	protected void locateFile() {
-		FileDialog dialog = new FileDialog(getEditorSite().getShell(), SWT.NONE);
-		IPath missingPath = getMissingFile();
-		dialog.setFilterNames(new String[] {"Missing Source File"});
-		dialog.setFilterExtensions(new String[] {"*." + missingPath.getFileExtension()}); //$NON-NLS-1$
-		String res = dialog.open();
-		if (res != null) {
-			Path newPath = new Path(res);
-			
-			if (newPath.lastSegment().equalsIgnoreCase(missingPath.lastSegment())) {
-				
-				if (missingPath.segmentCount() > 1) {
-					int missingPathSegCount = missingPath.segmentCount() - 2;
-					int newPathSegCount = newPath.segmentCount() - 2;
-					while (missingPathSegCount >= 0 && newPathSegCount >= 0) {
-						if (!newPath.segment(newPathSegCount).equalsIgnoreCase(missingPath.segment(missingPathSegCount)))
-							break;
-						newPathSegCount--;
-						missingPathSegCount--;
-					}
-					IPath compPath = missingPath.removeLastSegments(missingPath.segmentCount() - missingPathSegCount - 1);
-					IPath newSourcePath = newPath.removeLastSegments(newPath.segmentCount() - newPathSegCount - 1);
-					try {
-						addSourceMappingToCommon(compPath, newSourcePath);							
-					} catch (CoreException e) {}					
-					
-				}
-				openSourceFileAtLocation(getProject(), newPath, getLineNumber());
-				closeEditor();
-			}
-		}
-	}
-	
-	protected void openSourceFileAtLocation(IProject project, IPath sourceLoc, int lineNumber){
-		STLink2SourceSupport.sharedInstance.openSourceFileAtLocation(project, sourceLoc, lineNumber);
-	}
+        ArrayList<ISourceContainer> containerList = new ArrayList<ISourceContainer>(Arrays.asList(director
+                .getSourceContainers()));
+        boolean hasFoundMappings = false;
+        MappingSourceContainer foundMappings = null;
+        for (Iterator<ISourceContainer> iter = containerList.iterator(); iter.hasNext() && !hasFoundMappings;) {
+            ISourceContainer container = iter.next();
+            if (container instanceof MappingSourceContainer) {
+                hasFoundMappings = container.getName().equals(foundMappingsContainerName);
+                if (hasFoundMappings)
+                    foundMappings = (MappingSourceContainer) container;
+            }
+        }
+
+        if (!hasFoundMappings) {
+            foundMappings = new MappingSourceContainer(foundMappingsContainerName);
+            foundMappings.init(director);
+            containerList.add(foundMappings);
+        }
+
+        foundMappings.addMapEntry(new MapEntrySourceContainer(missingPath, newSourcePath));
+        director.setSourceContainers(containerList.toArray(new ISourceContainer[containerList.size()]));
+    }
+
+    private void addSourceMappingToCommon(IPath missingPath, IPath newSourcePath) throws CoreException {
+        AbstractSourceLookupDirector director = CDebugCorePlugin.getDefault().getCommonSourceLookupDirector();
+        addSourceMappingToDirector(missingPath, newSourcePath, director);
+        try {
+            InstanceScope.INSTANCE.getNode(CDebugCorePlugin.PLUGIN_ID).flush();
+        } catch (BackingStoreException e) {
+            IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0,
+                    Messages.STCSourceNotFoundEditor_failed_saving_settings_for_content_type + CDebugCorePlugin.PLUGIN_ID, e);
+            throw new CoreException(status);
+        }
+    }
+
+    protected void locateFile() {
+        FileDialog dialog = new FileDialog(getEditorSite().getShell(), SWT.NONE);
+        IPath missingPath = getMissingFile();
+        dialog.setFilterNames(new String[] { Messages.STCSourceNotFoundEditor_missing_source_file });
+        dialog.setFilterExtensions(new String[] { "*." + missingPath.getFileExtension() }); //$NON-NLS-1$
+        String res = dialog.open();
+        if (res != null) {
+            Path newPath = new Path(res);
+
+            if (newPath.lastSegment().equalsIgnoreCase(missingPath.lastSegment())) {
+
+                if (missingPath.segmentCount() > 1) {
+                    int missingPathSegCount = missingPath.segmentCount() - 2;
+                    int newPathSegCount = newPath.segmentCount() - 2;
+                    while (missingPathSegCount >= 0 && newPathSegCount >= 0) {
+                        if (!newPath.segment(newPathSegCount)
+                                .equalsIgnoreCase(missingPath.segment(missingPathSegCount)))
+                            break;
+                        newPathSegCount--;
+                        missingPathSegCount--;
+                    }
+                    IPath compPath = missingPath.removeLastSegments(missingPath.segmentCount() - missingPathSegCount
+                            - 1);
+                    IPath newSourcePath = newPath.removeLastSegments(newPath.segmentCount() - newPathSegCount - 1);
+                    try {
+                        addSourceMappingToCommon(compPath, newSourcePath);
+                    } catch (CoreException e) {
+                    }
+
+                }
+                openSourceFileAtLocation(getProject(), newPath, getLineNumber());
+                closeEditor();
+            }
+        }
+    }
+
+    protected void openSourceFileAtLocation(IProject project, IPath sourceLoc, int lineNumber) {
+        STLink2SourceSupport.sharedInstance.openSourceFileAtLocation(project, sourceLoc, lineNumber);
+    }
 }

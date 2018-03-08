@@ -12,7 +12,9 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
+import java.nio.ByteOrder;
+
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF integer definition.
@@ -27,7 +29,7 @@ import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class IntegerDefinition extends Definition {
+public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -77,9 +79,27 @@ public class IntegerDefinition extends Definition {
         return declaration;
     }
 
+
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition#getLongValue()
+     */
+    @Override
+    public Long getIntegerValue() {
+        return getValue();
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition#getStringValue()
+     */
+    @Override
+    public String getStringValue() {
+        return this.toString();
+    }
 
     @Override
     public void read(BitBuffer input) {
@@ -98,8 +118,11 @@ public class IntegerDefinition extends Definition {
             low = low & 0x00000000FFFFFFFFL;
             long high = input.getInt(32, false);
             high = high & 0x00000000FFFFFFFFL;
-
-            bits = (high << 32) | low;
+            if (this.declaration.getByteOrder() != ByteOrder.BIG_ENDIAN) {
+                bits = (high << 32) | low;
+            } else {
+                bits = (low << 32) | high;
+            }
         } else {
             bits = input.getInt(length, signed);
             bits = bits & 0x00000000FFFFFFFFL;

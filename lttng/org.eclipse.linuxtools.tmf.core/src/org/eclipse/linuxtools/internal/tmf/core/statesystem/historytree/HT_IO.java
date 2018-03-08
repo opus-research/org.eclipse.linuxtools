@@ -2,12 +2,12 @@
  * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree;
@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 
 /**
@@ -23,9 +24,9 @@ import java.nio.channels.FileChannel;
  * contains all the methods and descriptors to handle reading/writing to the
  * tree-file on disk and all the caching mechanisms. Every HistoryTree should
  * contain 1 and only 1 HT_IO element.
- * 
+ *
  * @author alexmont
- * 
+ *
  */
 class HT_IO {
 
@@ -34,14 +35,14 @@ class HT_IO {
 
     /* Fields related to the file I/O */
     private final File historyTreeFile;
-    private FileInputStream fis;
-    private FileOutputStream fos;
-    private FileChannel fcIn;
-    private FileChannel fcOut;
+    private final FileInputStream fis;
+    private final FileOutputStream fos;
+    private final FileChannel fcIn;
+    private final FileChannel fcOut;
 
     /**
      * Standard constructor
-     * 
+     *
      * @param tree
      * @param newFile
      *            Are we creating a new file from scratch?
@@ -80,12 +81,14 @@ class HT_IO {
     /**
      * Generic "read node" method, which checks if the node is in memory first,
      * and if it's not it goes to disk to retrieve it.
-     * 
+     *
      * @param seqNumber
      *            Sequence number of the node we want
      * @return The wanted node in object form
+     * @throws ClosedChannelException
+     *             If the channel was closed before we could read
      */
-    HTNode readNode(int seqNumber) {
+    HTNode readNode(int seqNumber) throws ClosedChannelException {
         HTNode node = readNodeFromMemory(seqNumber);
         if (node == null) {
             return readNodeFromDisk(seqNumber);
@@ -106,14 +109,22 @@ class HT_IO {
      * This method here isn't private, if we know for sure the node cannot be in
      * memory it's a bit faster to use this directly (when opening a file from
      * disk for example)
+     *
+     * @throws ClosedChannelException
+     *             Usually happens because the file was closed while we were
+     *             reading. Instead of using a big reader-writer lock, we'll
+     *             just catch this exception.
      */
-    synchronized HTNode readNodeFromDisk(int seqNumber) {
+    synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
         HTNode readNode;
         try {
             seekFCToNodePos(fcIn, seqNumber);
             readNode = HTNode.readNode(tree, fcIn);
             return readNode;
+        } catch (ClosedChannelException e) {
+            throw e;
         } catch (IOException e) {
+            /* Other types of IOExceptions shouldn't happen at this point though */
             e.printStackTrace();
             return null;
         }
@@ -156,7 +167,18 @@ class HT_IO {
                 + ((long) tree.getNodeCount() * tree.config.blockSize);
     }
 
+    synchronized void closeFile() {
+        try {
+            fis.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     synchronized void deleteFile() {
+        closeFile();
+
         if(!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             //TODO log it?
@@ -166,7 +188,7 @@ class HT_IO {
     /**
      * Seek the given FileChannel to the position corresponding to the node that
      * has seqNumber
-     * 
+     *
      * @param seqNumber
      * @throws IOException
      */

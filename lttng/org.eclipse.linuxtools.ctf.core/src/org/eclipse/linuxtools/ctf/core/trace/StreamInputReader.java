@@ -16,12 +16,11 @@ import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
  * A CTF trace event reader. Reads the events of a trace file.
- * 
+ *
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
@@ -57,8 +56,6 @@ public class StreamInputReader {
 
     private CTFTraceReader parent;
 
-    @SuppressWarnings("unused")
-    private final long prevIndex;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -69,6 +66,7 @@ public class StreamInputReader {
      *
      * @param streamInput
      *            The StreamInput to read.
+     * @since 2.0
      */
     public StreamInputReader(StreamInput streamInput) {
         this.streamInput = streamInput;
@@ -77,12 +75,18 @@ public class StreamInputReader {
          * Get the iterator on the packet index.
          */
         this.packetIndex = 0;
-
-        this.prevIndex = 0;
         /*
          * Make first packet the current one.
          */
         goToNextPacket();
+    }
+
+    /**
+     * Dispose the StreamInputReader
+     * @since 2.0
+     */
+    public void dispose() {
+        packetReader.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -179,12 +183,10 @@ public class StreamInputReader {
                     .getCurrentPacket();
             if (prevPacket != null) {
                 goToNextPacket();
-                @SuppressWarnings("unused")
-                final StreamInputPacketIndexEntry currentPacket = this.packetReader.getCurrentPacket();
             }
         }
 
-        /*autogenerate javadoc getter setter
+        /*
          * If an event is available, read it.
          */
         if (this.packetReader.hasMoreEvents()) {

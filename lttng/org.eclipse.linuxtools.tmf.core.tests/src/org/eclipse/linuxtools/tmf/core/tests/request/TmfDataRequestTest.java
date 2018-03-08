@@ -23,19 +23,19 @@ import org.eclipse.linuxtools.tmf.tests.stubs.request.TmfDataRequestStub;
  * <p>
  * Test suite for the TmfDataRequest class.
  */
-@SuppressWarnings("nls")
+@SuppressWarnings({"nls","javadoc", "deprecation"})
 public class TmfDataRequestTest extends TestCase {
 
 	// ------------------------------------------------------------------------
 	// Variables
 	// ------------------------------------------------------------------------
 
-	private static TmfDataRequest<TmfEvent> fRequest1;
-	private static TmfDataRequest<TmfEvent> fRequest1b;
-	private static TmfDataRequest<TmfEvent> fRequest1c;
-	private static TmfDataRequest<TmfEvent> fRequest2;
-	private static TmfDataRequest<TmfEvent> fRequest3;
-	private static TmfDataRequest<TmfEvent> fRequest4;
+	private static TmfDataRequest fRequest1;
+	private static TmfDataRequest fRequest1b;
+	private static TmfDataRequest fRequest1c;
+	private static TmfDataRequest fRequest2;
+	private static TmfDataRequest fRequest3;
+	private static TmfDataRequest fRequest4;
 
 	private static int fRequestCount;
 
@@ -43,6 +43,9 @@ public class TmfDataRequestTest extends TestCase {
 	// Housekeeping
 	// ------------------------------------------------------------------------
 
+    /**
+     * @param name the test name
+     */
 	public TmfDataRequestTest(String name) {
 		super(name);
 	}
@@ -50,13 +53,12 @@ public class TmfDataRequestTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		TmfDataRequest.reset();
-		fRequest1  = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10, 100, 200);
-		fRequest2  = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 20, 100, 200);
-		fRequest3  = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 20, 200, 200);
-		fRequest4  = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 20, 200, 300);
-    	fRequest1b = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10, 100, 200);
-		fRequest1c = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10, 100, 200);
+		fRequest1  = new TmfDataRequestStub(TmfEvent.class, 10, 100, 200);
+		fRequest2  = new TmfDataRequestStub(TmfEvent.class, 20, 100, 200);
+		fRequest3  = new TmfDataRequestStub(TmfEvent.class, 20, 200, 200);
+		fRequest4  = new TmfDataRequestStub(TmfEvent.class, 20, 200, 300);
+    	fRequest1b = new TmfDataRequestStub(TmfEvent.class, 10, 100, 200);
+		fRequest1c = new TmfDataRequestStub(TmfEvent.class, 10, 100, 200);
 		fRequestCount = fRequest1c.getRequestId() + 1;
 	}
 
@@ -65,11 +67,11 @@ public class TmfDataRequestTest extends TestCase {
 		super.tearDown();
 	}
 
-	private static TmfDataRequest<TmfEvent> setupTestRequest(final boolean[] flags) {
+	private static TmfDataRequest setupTestRequest(final boolean[] flags) {
 
-		TmfDataRequest<TmfEvent> request = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10, 100, 200) {
+		TmfDataRequest request = new TmfDataRequestStub(TmfEvent.class, 10, 100, 200) {
 		    @Override
-			public void handleCompleted() {
+			public synchronized void handleCompleted() {
 		    	super.handleCompleted();
 		    	flags[0] = true;
 		    }
@@ -97,7 +99,7 @@ public class TmfDataRequestTest extends TestCase {
 	// ------------------------------------------------------------------------
 
 	public void testTmfDataRequest() {
-        TmfDataRequest<TmfEvent> request = new TmfDataRequestStub<TmfEvent>(TmfEvent.class);
+        TmfDataRequest request = new TmfDataRequestStub(TmfEvent.class);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -113,7 +115,7 @@ public class TmfDataRequestTest extends TestCase {
 	}
 
 	public void testTmfDataRequestIndex() {
-        TmfDataRequest<TmfEvent> request = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10);
+        TmfDataRequest request = new TmfDataRequestStub(TmfEvent.class, 10);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -129,7 +131,7 @@ public class TmfDataRequestTest extends TestCase {
 	}
 
 	public void testTmfDataRequestIndexNbRequested() {
-        TmfDataRequest<TmfEvent> request = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10, 100);
+        TmfDataRequest request = new TmfDataRequestStub(TmfEvent.class, 10, 100);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -145,7 +147,7 @@ public class TmfDataRequestTest extends TestCase {
 	}
 
 	public void testTmfDataRequestIndexNbEventsBlocksize() {
-        TmfDataRequest<TmfEvent> request = new TmfDataRequestStub<TmfEvent>(TmfEvent.class, 10, 100, 200);
+        TmfDataRequest request = new TmfDataRequestStub(TmfEvent.class, 10, 100, 200);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -164,7 +166,7 @@ public class TmfDataRequestTest extends TestCase {
 	// equals
 	// ------------------------------------------------------------------------
 
-	public void testEqualsReflexivity() throws Exception {
+	public void testEqualsReflexivity() {
         assertTrue("equals", fRequest1.equals(fRequest1));
         assertTrue("equals", fRequest2.equals(fRequest2));
 
@@ -172,7 +174,7 @@ public class TmfDataRequestTest extends TestCase {
         assertFalse("equals", fRequest2.equals(fRequest1));
 	}
 
-	public void testEqualsSymmetry() throws Exception {
+	public void testEqualsSymmetry() {
         assertTrue("equals", fRequest1.equals(fRequest1b));
         assertTrue("equals", fRequest1b.equals(fRequest1));
 
@@ -182,13 +184,13 @@ public class TmfDataRequestTest extends TestCase {
         assertFalse("equals", fRequest3.equals(fRequest2));
 	}
 
-	public void testEqualsTransivity() throws Exception {
+	public void testEqualsTransivity() {
         assertTrue("equals", fRequest1.equals(fRequest1b));
         assertTrue("equals", fRequest1b.equals(fRequest1c));
         assertTrue("equals", fRequest1.equals(fRequest1c));
 	}
 
-	public void testEqualsNull() throws Exception {
+	public void testEqualsNull() {
         assertFalse("equals", fRequest1.equals(null));
         assertFalse("equals", fRequest2.equals(null));
 	}
@@ -197,7 +199,7 @@ public class TmfDataRequestTest extends TestCase {
 	// hashCode
 	// ------------------------------------------------------------------------
 
-	public void testHashCode() throws Exception {
+	public void testHashCode() {
         assertTrue("hashCode", fRequest1.hashCode() == fRequest1.hashCode());
         assertTrue("hashCode", fRequest2.hashCode() == fRequest2.hashCode());
 		assertTrue("hashCode", fRequest1.hashCode() != fRequest2.hashCode());
@@ -208,10 +210,10 @@ public class TmfDataRequestTest extends TestCase {
 	// ------------------------------------------------------------------------
 
 	public void testToString() {
-        String expected1 = "[TmfDataRequest(0,TmfEvent,10,100,200)]";
-        String expected2 = "[TmfDataRequest(1,TmfEvent,20,100,200)]";
-        String expected3 = "[TmfDataRequest(2,TmfEvent,20,200,200)]";
-        String expected4 = "[TmfDataRequest(3,TmfEvent,20,200,300)]";
+        String expected1 = "[TmfDataRequest(" + fRequest1.getRequestId() + ",TmfEvent,10,100,200)]";
+        String expected2 = "[TmfDataRequest(" + fRequest2.getRequestId() + ",TmfEvent,20,100,200)]";
+        String expected3 = "[TmfDataRequest(" + fRequest3.getRequestId() + ",TmfEvent,20,200,200)]";
+        String expected4 = "[TmfDataRequest(" + fRequest4.getRequestId() + ",TmfEvent,20,200,300)]";
 
         assertEquals("toString", expected1, fRequest1.toString());
         assertEquals("toString", expected2, fRequest2.toString());
@@ -226,7 +228,7 @@ public class TmfDataRequestTest extends TestCase {
 	public void testDone() {
 
 		final boolean[] flags = new boolean[4];
-		TmfDataRequest<TmfEvent> request = setupTestRequest(flags);
+		TmfDataRequest request = setupTestRequest(flags);
 		request.done();
 
 		assertTrue ("isCompleted", request.isCompleted());
@@ -246,7 +248,7 @@ public class TmfDataRequestTest extends TestCase {
 	public void testFail() {
 
 		final boolean[] flags = new boolean[4];
-		TmfDataRequest<TmfEvent> request = setupTestRequest(flags);
+		TmfDataRequest request = setupTestRequest(flags);
 		request.fail();
 
 		assertTrue ("isCompleted", request.isCompleted());
@@ -266,7 +268,7 @@ public class TmfDataRequestTest extends TestCase {
 	public void testCancel() {
 
 		final boolean[] flags = new boolean[4];
-		TmfDataRequest<TmfEvent> request = setupTestRequest(flags);
+		TmfDataRequest request = setupTestRequest(flags);
 		request.cancel();
 
 		assertTrue ("isCompleted", request.isCompleted());

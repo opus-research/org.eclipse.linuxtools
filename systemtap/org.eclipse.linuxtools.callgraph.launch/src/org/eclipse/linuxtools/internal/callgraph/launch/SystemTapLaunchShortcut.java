@@ -111,7 +111,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 	protected String name;
 	protected String binaryPath;
-	protected String scriptPath; //$NON-NLS-1$
+	protected String scriptPath;
 	protected String arguments;
 	protected String outputPath;
 	protected String binName;
@@ -166,7 +166,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 	@Override
 	protected void setDefaultProfileAttributes(
-			ILaunchConfigurationWorkingCopy wc) throws CoreException {
+			ILaunchConfigurationWorkingCopy wc) {
 		SystemTapOptionsTab tab = new SystemTapOptionsTab();
 		tab.setDefaults(wc);
 	}
@@ -178,11 +178,10 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 					.getLaunchManager().getLaunchConfigurations(configType);
 
 			for (int i = 0; i < configs.length; i++) {
-				if (configs[i] != null && configs[i].exists()) {
-					if (checkIfAttributesAreEqual(wc, configs[i])){
-						config = configs[i];
-						return true;
-					}
+				if (configs[i] != null && configs[i].exists()
+						&& checkIfAttributesAreEqual(wc, configs[i])) {
+					config = configs[i];
+					return true;
 				}
 			}
 
@@ -443,7 +442,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				wc = getLaunchConfigType().newInstance(
 						null,
 						getLaunchManager()
-								.generateLaunchConfigurationName(name)); //$NON-NLS-1$
+								.generateLaunchConfigurationName(name));
 				setDefaultProfileAttributes(wc);
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -468,7 +467,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	}
 
 	public void errorHandler() {
-	};
+	}
 
 	/*
 	 * The following are convenience methods for test programs, etc. to check
@@ -573,7 +572,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 				Object[] unitList = chooseUnit(list, numberOfFiles);
 				if (unitList == null || unitList.length == 0) {
-					return null; //$NON-NLS-1$
+					return null;
 				} else if (unitList.length == 1
 						&& unitList[0].toString().equals(USER_SELECTED_ALL)) {
 					funcs = "*"; //$NON-NLS-1$
@@ -642,7 +641,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 					if (obj instanceof ICContainer) {
 						ICElement[] array = ((ICContainer) obj).getChildren();
 						for (ICElement c : array) {
-							if (!(validElement(c))) //$NON-NLS-1$
+							if (!(validElement(c)))
 								continue;
 							if (c.getElementName().contains("main") && !output.contains(c)) //$NON-NLS-1$
 								output.add(c);
@@ -674,17 +673,15 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				if (obj instanceof ICContainer) {
 					ICElement[] array = ((ICContainer) obj).getChildren();
 					for (ICElement c : array) {
-						if (!(validElement(c))) //$NON-NLS-1$
+						if (!(validElement(c)))
 							continue;
 						if (!output.contains(c))
 							output.add(c);
 					}
-				} else if (obj instanceof ICElement) {
-					if (validElement((ICElement) obj)) { //$NON-NLS-1$
-						if (!output.contains(obj)) {
-							output.add(obj);
-						}
-					}
+				} else if ((obj instanceof ICElement)
+						&& validElement((ICElement) obj)
+						&& !output.contains(obj)) {
+					output.add(obj);
 				}
 			}
 
@@ -709,14 +706,13 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 						output += numberOfValidFiles(((ICContainer) ele)
 								.getChildren());
 					}
-					if (ele instanceof ICElement) {
-						if (validElement(ele))
-							output++;
+					if ((ele instanceof ICElement) && validElement(ele)) {
+						output++;
 					}
 				}
-			} else if (parent instanceof ICElement) {
-				if (validElement((ICElement) parent))
-					output++;
+			} else if ((parent instanceof ICElement)
+					&& validElement((ICElement) parent)) {
+				output++;
 			}
 		}
 		return output;
@@ -926,6 +922,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 * <br>
 	 * The name of the created launch will be 'DefaultSystemTapLaunch' 
 	 */
+	@Override
 	public void launch(IBinary bin, String mode) {
 		initialize();
 		this.bin = bin;

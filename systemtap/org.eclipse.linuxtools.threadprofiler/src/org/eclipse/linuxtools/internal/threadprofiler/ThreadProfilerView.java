@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.threadprofiler;
 
 import java.util.ArrayList;
@@ -15,7 +25,7 @@ import org.eclipse.linuxtools.internal.threadprofiler.graphs.MultiGraph;
 import org.eclipse.linuxtools.internal.threadprofiler.graphs.ThreadGraph;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
@@ -30,7 +40,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 
-@SuppressWarnings("restriction")
 public class ThreadProfilerView extends SystemTapView {
 	private static final int CPU_BUFFER = 0;
 	private static final int MEM_BUFFER = 1;
@@ -63,6 +72,7 @@ public class ThreadProfilerView extends SystemTapView {
 	private ImageDescriptor playImage= ThreadProfilerPlugin.getImageDescriptor("icons/perform.png"); //$NON-NLS-1$
 	private ImageDescriptor pauseImage= ThreadProfilerPlugin.getImageDescriptor("icons/pause.gif"); //$NON-NLS-1$
 	private Action playPause = new Action("Pause", pauseImage) {
+		@Override
 		public void run() {
 			pause = !pause;
 			//Toggle image
@@ -139,6 +149,7 @@ public class ThreadProfilerView extends SystemTapView {
 				final int count = counter;
 				counter++;
 				dropMenu.add(new Action(g.getTitle()) {
+					@Override
 					public void run(){
 						selector = count;
 						if (graphCanvas != null)
@@ -148,6 +159,7 @@ public class ThreadProfilerView extends SystemTapView {
 			}
 			final int count = counter;
 			dropMenu.add(new Action("Threads") {
+				@Override
 				public void run() {
 					selector = count;
 					if (graphCanvas != null)
@@ -212,26 +224,16 @@ public class ThreadProfilerView extends SystemTapView {
 //    	graphCanvas.setLayoutData(gd);
     	graphGC = new GC(graphCanvas);
 
-		graphCanvas.addMouseListener(new MouseListener() {
-
+		graphCanvas.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
 				updateMethod();
 			}
-
-			@Override
-			public void mouseDown(MouseEvent e) {
-				System.out.println("LOCATION: " + e.x + "," + e.y);
-			}
-
-			@Override
-			public void mouseUp(MouseEvent e) {
-			}
-		
 		});
 		
 	    graphCanvas.addPaintListener(new PaintListener() {
-	        public void paintControl(PaintEvent e) {
+	        @Override
+			public void paintControl(PaintEvent e) {
 	        	long diff = System.currentTimeMillis() - lastRefresh;
 	        	if (pause || (diff < MAX_REFRESH_RATE && diff > 0))
 					try {
@@ -333,6 +335,7 @@ public class ThreadProfilerView extends SystemTapView {
 				}
 			}
 			
+			@Override
 			public void run() {
 				if (this.getText().equals(HIDE)) {
 					this.setText(SHOW);

@@ -15,20 +15,18 @@ import java.io.File;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.Localization;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.preferences.DashboardPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.Localization;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.preferences.DashboardPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
 
 /**
  * This action allows users to add new directories of DashboardModules.  This provides support for downloading
@@ -43,7 +41,7 @@ public class ImportModuleLocationAction extends Action implements IWorkbenchWind
 	}
 
 	public void dispose() {
-		LogManager.logInfo("Disposing", this); //$NON-NLS-1$ //$NON-NLS-1$
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		fWindow= null;
 	}
 
@@ -65,6 +63,7 @@ public class ImportModuleLocationAction extends Action implements IWorkbenchWind
 	 * make sure all modules are included in the view, including those in the folder
 	 * just added.
 	 */
+	@Override
 	public void run() {
 		LogManager.logDebug("Start run:", this); //$NON-NLS-1$
 		File file= queryFolder();
@@ -76,9 +75,6 @@ public class ImportModuleLocationAction extends Action implements IWorkbenchWind
 			
 			IViewPart ivp = fWindow.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(DashboardModuleBrowserView.ID);
 			((DashboardModuleBrowserView)ivp).refresh();
-		} else {
-			String msg = Localization.getString("ImportModuleLocationAction.FileIsNull");
-			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("ImportModuleLocationAction.Problem"), msg);
 		}
 		LogManager.logDebug("End run:", this); //$NON-NLS-1$
 	}
@@ -90,7 +86,7 @@ public class ImportModuleLocationAction extends Action implements IWorkbenchWind
 	 */
 	private File queryFolder() {
 		DirectoryDialog dialog= new DirectoryDialog(fWindow.getShell(), SWT.OPEN);
-		dialog.setText(Localization.getString("ImportModuleLocationAction.ImportDashboardModules"));
+		dialog.setText(Localization.getString("ImportModuleLocationAction.ImportDashboardModules")); //$NON-NLS-1$
 		String path= dialog.open();
 		if (path != null && path.length() > 0) {
 			LogManager.logDebug("queryFile: returnVal-" + path, this); //$NON-NLS-1$

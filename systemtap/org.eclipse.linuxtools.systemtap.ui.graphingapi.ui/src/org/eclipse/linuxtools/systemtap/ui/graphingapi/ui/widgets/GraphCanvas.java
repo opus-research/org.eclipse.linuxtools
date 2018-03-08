@@ -119,14 +119,8 @@ public class GraphCanvas extends Canvas {
 	 */
 	public synchronized void repaint() {
 		getDisplay().syncExec(new Runnable() {
-			boolean stop = false;
 			public void run() {
-				if(stop) return;
-				try {
-					redraw();
-				} catch (Exception e) {
-					stop = true;
-				}
+				redraw();
 			}
 		});
 	}
@@ -134,6 +128,7 @@ public class GraphCanvas extends Canvas {
 	/**
 	 * Returns the size of the graphing area of the canvas.
 	 */
+	@Override
 	public Point getSize() {
 		Point p = new Point(super.getSize().x, super.getSize().y);
 		p.x -= vBar.getSize().x+5;

@@ -44,6 +44,7 @@ ValgrindLaunchConfigurationDelegate {
 	private IPath remoteBinFile;
 	private RemoteConnection rc;
 
+	@Override
 	public void launch(final ILaunchConfiguration config, String mode,
 			final ILaunch launch, IProgressMonitor m) throws CoreException {
 		if (m == null) {
@@ -106,25 +107,26 @@ ValgrindLaunchConfigurationDelegate {
 			dynamicDelegate = getDynamicDelegate(toolID);
 			String[] opts = getValgrindArgumentsArray(config);
 			@SuppressWarnings({ "unused", "unchecked" })
-			Map<String, String> env = (Map<String, String>) config.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, (Map<String, String>) null);
+			Map<String, String> env = config.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, (Map<String, String>) null);
 			@SuppressWarnings("unused")
 			boolean usePty = config.getAttribute(
 					ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL,
 					ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
 
-			String command = valgrindLocation.toString();
+			StringBuilder command = new StringBuilder();
+			command.append(valgrindLocation.toString());
 			// Add valgrind options
 			for (String opt : opts) {
-				command += " " + opt; //$NON-NLS-1$
+				command.append(" ").append(opt); //$NON-NLS-1$
 			}
 			// Add executable to run
-			command += " " + remoteBinFile.toString();
+			command.append(" ").append(remoteBinFile.toString()); //$NON-NLS-1$
 			// Add arguments to pass to executable
 			for (String argument : arguments) {
-				command += " " + argument; //$NON-NLS-1$
+				command.append(" ").append(argument); //$NON-NLS-1$
 			}
 			ArrayList<String> commandOutput = new ArrayList<String>();
-			int returnValue = rc.runCommand(command, remoteDir, commandOutput, new SubProgressMonitor(monitor, 1));
+			int returnValue = rc.runCommand(command.toString(), remoteDir, commandOutput, new SubProgressMonitor(monitor, 1));
 
 			// delete remote binary
 			rc.delete(remoteBinFile, new SubProgressMonitor(monitor, 1));
@@ -189,6 +191,7 @@ ValgrindLaunchConfigurationDelegate {
 	}
 
 
+	@Override
 	protected String createLaunchStr() {
 		return config.getName()
 		+ " [" + getPlugin().getToolName(toolID) + " on " + rc.getId() + "] "; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

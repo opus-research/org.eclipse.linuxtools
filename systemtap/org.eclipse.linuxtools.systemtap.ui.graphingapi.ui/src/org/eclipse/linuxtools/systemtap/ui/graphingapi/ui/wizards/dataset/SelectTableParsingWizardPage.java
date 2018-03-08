@@ -36,6 +36,7 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 		setTitle(Localization.getString("SelectTableParsingWizardPage.SelectTableDataSetParsing"));
 	}
 	
+	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 
@@ -53,6 +54,7 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 		setControl(comp);
 	}
 
+	@Override
 	protected boolean readParsingExpression() {
 		if(null == wizard.metaFile && !wizard.openFile())
 			return false;
@@ -105,22 +107,24 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 		return true;
 	}
 	
+	@Override
 	protected void copyExisting(IMemento oldMeta, IMemento newMeta) {
 		IMemento[] children = oldMeta.getChildren(IDataSetParser.XMLColumn);
 		IMemento child;
-		for(int j=0; j<children.length; j++) {
+		for(IMemento memento:children) {
 			child = newMeta.createChild(IDataSetParser.XMLColumn);
-			child.putString(IDataSetParser.XMLname, children[j].getString(IDataSetParser.XMLname));
+			child.putString(IDataSetParser.XMLname, memento.getString(IDataSetParser.XMLname));
 		}
 		children = oldMeta.getChildren(IDataSetParser.XMLSeries);
-		for(int j=0; j<children.length; j++) {
+		for(IMemento memento:children) {
 			child = newMeta.createChild(IDataSetParser.XMLSeries);
-			child.putString(IDataSetParser.XMLparsingExpression, children[j].getString(IDataSetParser.XMLparsingExpression));
-			child.putString(IDataSetParser.XMLparsingSpacer, children[j].getString(IDataSetParser.XMLparsingSpacer));
+			child.putString(IDataSetParser.XMLparsingExpression, memento.getString(IDataSetParser.XMLparsingExpression));
+			child.putString(IDataSetParser.XMLparsingSpacer, memento.getString(IDataSetParser.XMLparsingSpacer));
 		}
 		newMeta.createChild(IDataSetParser.XMLDelimiter).putString(IDataSetParser.XMLparsingExpression, oldMeta.getChild(IDataSetParser.XMLDelimiter).getString(IDataSetParser.XMLparsingExpression));
 	}
 	
+	@Override
 	public boolean checkComplete() {
 		if(super.checkComplete() && txtDelim.getText().length() > 0) {
 			try {
@@ -134,6 +138,7 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 		return false;
 	}
 	
+	@Override
 	public void dispose() {
 		super.dispose();
 		if(null != txtDelim) {

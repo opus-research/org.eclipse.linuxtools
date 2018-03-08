@@ -45,7 +45,7 @@ public class PerfProfileView extends ViewPart {
 	private DrillDownAdapter drillDownAdapter;
 	private Action doubleClickAction;
 	
-	class NameSorter extends ViewerSorter {
+	static class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			return (((TreeParent) e1).getPercent() <= ((TreeParent) e2)
@@ -78,15 +78,9 @@ public class PerfProfileView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
-		createActionMenu();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-
-	public void createActionMenu() {
-		IMenuManager manager = getViewSite().getActionBars().getMenuManager();
-		manager.add(new PerfDataCollectionAction());
-	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
@@ -136,6 +130,10 @@ public class PerfProfileView extends ViewPart {
 				doubleClickAction.run();
 			}
 		});
+	}
+
+	public TreeViewer getTreeViewer () {
+		return viewer;
 	}
 	
 	@SuppressWarnings("unused")

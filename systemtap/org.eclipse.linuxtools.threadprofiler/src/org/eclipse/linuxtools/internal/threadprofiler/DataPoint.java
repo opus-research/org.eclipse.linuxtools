@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.threadprofiler;
 
 public class DataPoint {
@@ -34,7 +44,7 @@ public class DataPoint {
 	 * @return
 	 */
 	public int getX() {
-		return (int) values[0];
+		return values[0];
 	}
 
 	public void setX(int x) {
@@ -46,7 +56,7 @@ public class DataPoint {
 	 * @return
 	 */
 	public int getY() {
-		return (int) values[1];
+		return values[1];
 	}
 
 	public void setY(int y) {

@@ -137,36 +137,35 @@ public class HistogramZoom implements MouseWheelListener {
      * @param duration the duration
      */
     public synchronized void setNewRange(long startTime, long duration) {
-        if (startTime < fAbsoluteStartTime) {
-            startTime = fAbsoluteStartTime;
+        long realStart = startTime;
+
+        if (realStart < fAbsoluteStartTime) {
+            realStart = fAbsoluteStartTime;
         }
 
-        long endTime = startTime + duration;
+        long endTime = realStart + duration;
         if (endTime > fAbsoluteEndTime) {
             endTime = fAbsoluteEndTime;
             if (endTime - duration > fAbsoluteStartTime) {
-                startTime = endTime - duration;
+                realStart = endTime - duration;
             } else {
-                startTime = fAbsoluteStartTime;
+                realStart = fAbsoluteStartTime;
             }
         }
 
-        fRangeStartTime = startTime;
-        fRangeDuration = endTime - startTime;
+        fRangeStartTime = realStart;
+        fRangeDuration = endTime - realStart;
     }
 
     // ------------------------------------------------------------------------
     // MouseWheelListener
     // ------------------------------------------------------------------------
 
-    private long fMouseTimestamp = 0;
-
     @Override
     public synchronized void mouseScrolled(MouseEvent event) {
         if (fScrollCounter == null) {
             fScrollCounter = new MouseScrollCounter(this);
             fScrollCounter.start();
-            fMouseTimestamp = fHistogram.getTimestamp(event.x);
         }
         fScrollCounter.incrementMouseScroll(event.count);
     }
@@ -178,9 +177,8 @@ public class HistogramZoom implements MouseWheelListener {
         // Compute the new time range
         long requestedRange = (nbClicks > 0) ? Math.round(ZOOM_FACTOR * fRangeDuration) : (long) Math.ceil(fRangeDuration * (1.0 / ZOOM_FACTOR));
 
-        // Perform a proportional zoom wrt the mouse position
-        double ratio = ((double) (fMouseTimestamp - fRangeStartTime)) / fRangeDuration;
-        long requestedStart = validateStart(fRangeStartTime + (long) ((fRangeDuration - requestedRange) * ratio));
+        // Distribute delta and adjust for boundaries
+        long requestedStart = validateStart(fRangeStartTime + (fRangeDuration - requestedRange) / 2);
         long requestedEnd = validateEnd(requestedStart, requestedStart + requestedRange);
         requestedStart = validateStart(requestedEnd - requestedRange);
 
@@ -188,23 +186,27 @@ public class HistogramZoom implements MouseWheelListener {
     }
 
     private long validateStart(long start) {
-        if (start < fAbsoluteStartTime) {
-            start = fAbsoluteStartTime;
+        long realStart = start;
+
+        if (realStart < fAbsoluteStartTime) {
+            realStart = fAbsoluteStartTime;
         }
-        if (start > fAbsoluteEndTime) {
-            start = fAbsoluteEndTime - fMinWindowSize;
+        if (realStart > fAbsoluteEndTime) {
+            realStart = fAbsoluteEndTime - fMinWindowSize;
         }
-        return start;
+        return realStart;
     }
 
     private long validateEnd(long start, long end) {
-        if (end > fAbsoluteEndTime) {
-            end = fAbsoluteEndTime;
+        long realEnd = end;
+
+        if (realEnd > fAbsoluteEndTime) {
+            realEnd = fAbsoluteEndTime;
         }
-        if (end < start + fMinWindowSize) {
-            end = start + fMinWindowSize;
+        if (realEnd < start + fMinWindowSize) {
+            realEnd = start + fMinWindowSize;
         }
-        return end;
+        return realEnd;
     }
 
     // ------------------------------------------------------------------------

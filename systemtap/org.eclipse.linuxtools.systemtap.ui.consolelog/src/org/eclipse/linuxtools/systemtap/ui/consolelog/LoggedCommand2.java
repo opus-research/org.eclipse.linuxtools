@@ -76,11 +76,11 @@ public class LoggedCommand2 extends ScpExec {
 	/**
 	 * Stops the process from running and unregisters the StreamListener
 	 */
+	@Override
 	public synchronized void stop() {
 		if(isRunning()) {
-	    	removeInputStreamListener(logger);
-	    	super.stop();
-	    	
+			super.stop();
+			removeInputStreamListener(logger);
 		}
 	}
 	
@@ -88,6 +88,7 @@ public class LoggedCommand2 extends ScpExec {
 	 * Dispoes of all internal references in this class.  Nothing should be called
 	 * after dispose.
 	 */
+	@Override
 	public void dispose() {
 		if(!isDisposed()) {
 			super.dispose();	//Do this first to ensure logger reads everything possible

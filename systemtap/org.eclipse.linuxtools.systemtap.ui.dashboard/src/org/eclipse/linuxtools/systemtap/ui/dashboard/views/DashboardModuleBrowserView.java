@@ -14,16 +14,11 @@ package org.eclipse.linuxtools.systemtap.ui.dashboard.views;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleLocator;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
-
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleLocator;
 
 /**
  * This is a basic browser view for the dashboard perspective.  It contains a list
@@ -33,7 +28,6 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleL
 public class DashboardModuleBrowserView extends ModuleView {
 	public DashboardModuleBrowserView() {
 		super();
-		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 	
 	/**
@@ -41,13 +35,15 @@ public class DashboardModuleBrowserView extends ModuleView {
 	 * avialable on the system.  Once then are found, it will
 	 * set the viewer's content to the tree of modules that were found.
 	 */
+	@Override
 	protected void generateModuleTree() {
 		TreeNode modules = DashboardModuleLocator.getModules();
 		
-		if(null != modules)
+		if(null != modules) {
 			viewer.setInput(modules);
-		else
-			viewer.setInput(new TreeNode("", false));
+		} else {
+			viewer.setInput(new TreeNode("", false)); //$NON-NLS-1$
+		}
 	
 	}
 	
@@ -57,22 +53,13 @@ public class DashboardModuleBrowserView extends ModuleView {
 	 * are actual modules.  It also sets up the layout for popup menu when users
 	 * right click on a module element.
 	 */
+	@Override
 	protected void makeActions() {
-		dblClickListener = new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent e) {
-				//Disabled for now, until find way to disable this like menu
-				//RunModuleAction act = new RunModuleAction();
-				//act.run();
-			}
-		};
-		
-		viewer.addDoubleClickListener(dblClickListener);
-		
 		//Gets items from plugin.xml
-		MenuManager manager = new MenuManager("modulePopup");
+		MenuManager manager = new MenuManager("modulePopup"); //$NON-NLS-1$
 		Control control = this.viewer.getControl();
-		manager.add(new Separator("file.ext"));
-		manager.add(new Separator("build.ext"));
+		manager.add(new Separator("file.ext")); //$NON-NLS-1$
+		manager.add(new Separator("build.ext")); //$NON-NLS-1$
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 		Menu menu = manager.createContextMenu(control);
 		control.setMenu(menu);
@@ -80,19 +67,7 @@ public class DashboardModuleBrowserView extends ModuleView {
 		super.makeActions();
 	}
 	
-	/**
-	 * This method removes all internal references. Nothing should be called/referenced after
-	 * this method is run.
-	 */
-	public void dispose() {
-		LogManager.logInfo("disposing", this); //$NON-NLS-1$
-		viewer.removeDoubleClickListener(dblClickListener);
-		super.dispose();
-	}
-
-
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView";
-	private IDoubleClickListener dblClickListener;
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView"; //$NON-NLS-1$
 	
 }
 

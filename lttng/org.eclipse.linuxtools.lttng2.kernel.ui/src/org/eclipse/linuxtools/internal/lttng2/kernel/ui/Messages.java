@@ -19,6 +19,7 @@ public class Messages extends NLS {
     public static String ControlFlowView_previousProcessActionToolTipText;
 
     public static String ControlFlowView_attributeSyscallName;
+    public static String ControlFlowView_attributeCpuName;
 
     public static String ResourcesView_stateTypeName;
     public static String ResourcesView_nextResourceActionNameText;
@@ -28,6 +29,10 @@ public class Messages extends NLS {
     public static String ResourcesView_attributeCpuName;
     public static String ResourcesView_attributeIrqName;
     public static String ResourcesView_attributeSoftIrqName;
+    public static String ResourcesView_attributeHoverTime;
+    public static String ResourcesView_attributeTidName;
+    public static String ResourcesView_attributeProcessName;
+    public static String ResourcesView_attributeSyscallName;
 
     static {
         // initialize resource bundle

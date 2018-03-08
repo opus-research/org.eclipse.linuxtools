@@ -12,21 +12,29 @@
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 
 /**
  * Presentation provider for the control flow view
@@ -98,12 +106,40 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
 
     @Override
     public Map<String, String> getEventHoverToolTipInfo(ITimeEvent event) {
-        Map<String, String> retMap = new HashMap<String, String>();
+        Map<String, String> retMap = new LinkedHashMap<String, String>();
         if (event instanceof ControlFlowEvent) {
+            ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
+            ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+            int tid = entry.getThreadId();
+
+            try {
+                //Find every CPU first, then get the current thread
+                int cpusQuark = ssq.getQuarkAbsolute(Attributes.CPUS);
+                List<Integer> cpuQuarks = ssq.getSubAttributes(cpusQuark, false);
+                for (Integer cpuQuark : cpuQuarks) {
+                    int currentThreadQuark = ssq.getQuarkRelative(cpuQuark, Attributes.CURRENT_THREAD);
+                    ITmfStateInterval interval = ssq.querySingleState(event.getTime(), currentThreadQuark);
+                    if (!interval.getStateValue().isNull()) {
+                        ITmfStateValue state = interval.getStateValue();
+                        int currentThreadId = state.unboxInt();
+                        if (tid == currentThreadId) {
+                            retMap.put(Messages.ControlFlowView_attributeCpuName, ssq.getAttributeName(cpuQuark));
+                            break;
+                        }
+                    }
+                }
+
+            } catch (AttributeNotFoundException e) {
+                e.printStackTrace();
+            } catch (TimeRangeException e) {
+                e.printStackTrace();
+            } catch (StateValueTypeException e) {
+                e.printStackTrace();
+            } catch (StateSystemDisposedException e) {
+                /* Ignored */
+            }
             int status = ((ControlFlowEvent) event).getStatus();
             if (status == StateValues.PROCESS_STATUS_RUN_SYSCALL) {
-                ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-                IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
                 try {
                     int syscallQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.SYSTEM_CALL);
                     ITmfStateInterval value = ssq.querySingleState(event.getTime(), syscallQuark);
@@ -116,11 +152,44 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                     e.printStackTrace();
                 } catch (TimeRangeException e) {
                     e.printStackTrace();
+                } catch (StateSystemDisposedException e) {
+                    /* Ignored */
                 }
             }
         }
 
         return retMap;
+    }
+
+    @Override
+    public void postDrawEvent(ITimeEvent event, Rectangle bounds, GC gc) {
+        if (bounds.width <= gc.getFontMetrics().getAverageCharWidth()) {
+            return;
+        }
+        if (!(event instanceof ControlFlowEvent)) {
+            return;
+        }
+        ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
+        ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+        int status = ((ControlFlowEvent) event).getStatus();
+        if (status != StateValues.PROCESS_STATUS_RUN_SYSCALL) {
+            return;
+        }
+        try {
+            int syscallQuark = ss.getQuarkRelative(entry.getThreadQuark(), Attributes.SYSTEM_CALL);
+            ITmfStateInterval value = ss.querySingleState(event.getTime(), syscallQuark);
+            if (!value.getStateValue().isNull()) {
+                ITmfStateValue state = value.getStateValue();
+                gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
+                Utils.drawText(gc, state.toString().substring(4), bounds.x, bounds.y - 2, bounds.width, true, true);
+            }
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (TimeRangeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            /* Ignored */
+        }
     }
 
 }
