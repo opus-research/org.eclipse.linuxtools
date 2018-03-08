@@ -47,6 +47,11 @@ public class TestCreateSystemtapScript {
 		SWTBotMenu projectMenu = newMenu.menu("Project...");
 		projectMenu.click();
 
+		for (int i = 0; i < bot.shells().length; i++) {
+			System.out
+					.println("TestCreateSystemtapScript.beforeClass() "
+							+ bot.shells()[i]);
+		}
 		SWTBotShell shell = bot.shell("New Project");
 		shell.activate();
 
@@ -57,6 +62,9 @@ public class TestCreateSystemtapScript {
 		bot.textWithLabel("Project name:").setText(SYSTEMTAP_PROJECT_NAME);
 		bot.button("Finish").click();
 		while (shell.isOpen()){
+			System.out
+					.println("TestCreateSystemtapScript.beforeClass() shell "
+							+ shell);
 			bot.sleep(1000);
 		}
 	}
