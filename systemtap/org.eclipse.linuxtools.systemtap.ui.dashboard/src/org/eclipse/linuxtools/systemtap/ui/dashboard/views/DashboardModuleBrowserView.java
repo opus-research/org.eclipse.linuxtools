@@ -14,8 +14,8 @@ package org.eclipse.linuxtools.systemtap.ui.dashboard.views;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.linuxtools.internal.systemtap.ui.dashboard.structures.DashboardModuleLocator;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleLocator;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -26,9 +26,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
  * @author Ryan Morse
  */
 public class DashboardModuleBrowserView extends ModuleView {
-	public DashboardModuleBrowserView() {
-		super();
-	}
 
 	/**
 	 * This method sends requests to get all of the modules that are
