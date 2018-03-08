@@ -46,7 +46,7 @@ public class ConfigUtils {
 	/**
 	 * Get if the executable shall be copied to remote target before launch.
 	 *
-	 * @return To copy executable or not.
+	 * @return
 	 * @throws CoreException
 	 */
 	public boolean getCopyExecutable()
@@ -86,6 +86,7 @@ public class ConfigUtils {
 	 * @param path
 	 * @oaram monitor
 	 * @return IPath of resource at the specified path
+	 * @throws CoreException
 	 * @since 5.0
 	 */
 	protected IPath verifyResource(String path,
@@ -129,7 +130,7 @@ public class ConfigUtils {
 	/**
 	 * Get the working directory path for the application launch
 	 *
-	 * @return The working directory.
+	 * @return
 	 * @throws CoreException
 	 * @since 5.0
 	 */
@@ -152,7 +153,7 @@ public class ConfigUtils {
 	/**
 	 * Verify that the project exists prior to the launch.
 	 *
-	 * @return The existing project.
+	 * @return
 	 * @throws CoreException
 	 */
 	protected IProject verifyProject(ILaunchConfiguration configuration) throws CoreException {
@@ -190,7 +191,7 @@ public class ConfigUtils {
 	/**
 	 * Get the name of the project
 	 *
-	 * @return The name of the project.
+	 * @return
 	 * @throws CoreException
 	 */
 	public String getProjectName()
