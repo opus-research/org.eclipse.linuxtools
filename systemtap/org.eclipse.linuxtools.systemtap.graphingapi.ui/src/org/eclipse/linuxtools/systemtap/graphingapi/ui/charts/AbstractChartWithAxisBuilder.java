@@ -103,6 +103,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 		Double[] all_valx = new Double[len];
 		Double[][] all_valy = new Double[leny][len];
 
+		// If using a BarChart, use zeros instead of null values.
 		ISeries allSeries[] = chart.getSeriesSet().getSeries();
 		for (int i = 0; i < len; i++) {
 			for (int j = 0; j < leny + 1; j++) {
@@ -110,11 +111,18 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 				if (j == 0) {
 					if (val != null) {
 						all_valx[i] = val;
+					} else if (this instanceof BarChartBuilder) {
+						all_valx[i] = 0.0;
+						while (++j < leny + 1) {
+							all_valy[j-1][i] = 0.0;
+						}
 					} else {
 						break;
 					}
 				} else if (val != null) {
 					all_valy[j-1][i] = val;
+				} else if (this instanceof BarChartBuilder) {
+					all_valy[j-1][i] = 0.0;
 				}
 			}
 		}
