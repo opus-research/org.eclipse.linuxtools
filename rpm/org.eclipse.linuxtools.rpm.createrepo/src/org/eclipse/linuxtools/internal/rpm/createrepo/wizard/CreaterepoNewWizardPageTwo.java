@@ -27,11 +27,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * This page allows the user to initialize the .repo file
- * for the repository with the mandatory options: id, name, and
- * base url.
- */
 public class CreaterepoNewWizardPageTwo extends WizardPage {
 
 	private Text repositoryIDTxt;
