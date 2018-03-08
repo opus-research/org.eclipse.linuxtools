@@ -44,12 +44,10 @@ public class AuthorEmailRule implements IPredicateRule {
 		this.token = token;
 	}
 
-	@Override
 	public IToken getSuccessToken() {
 		return token;
 	}
 
-	@Override
 	public IToken evaluate(ICharacterScanner scanner, boolean resume) {
 		/*
 		 * whether we think we're reading the ending sequence, i.e. the next
@@ -118,7 +116,6 @@ public class AuthorEmailRule implements IPredicateRule {
 		return token;
 	}
 
-	@Override
 	public IToken evaluate(ICharacterScanner scanner) {
 		return evaluate(scanner, false);
 	}
