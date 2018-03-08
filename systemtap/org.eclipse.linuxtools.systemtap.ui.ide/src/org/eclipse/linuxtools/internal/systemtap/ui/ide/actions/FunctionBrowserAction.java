@@ -9,7 +9,7 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -20,8 +20,8 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
@@ -43,7 +43,7 @@ import org.eclipse.ui.PartInitException;
  * @author Ryan Morse
  * @see org.eclipse.linuxtools.systemtap.ui.structures.TreeNode#isClickable()
  * @see org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor#insertTextAtCurrent(String)
- * @see org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.TreeExpandCollapseAction
+ * @see org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.TreeExpandCollapseAction
  */
 public class FunctionBrowserAction extends Action implements ISelectionListener, IDoubleClickListener {
 	private final IWorkbenchWindow window;
