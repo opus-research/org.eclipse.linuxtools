@@ -916,16 +916,9 @@ public class CTFTrace implements IDefinitionScope {
     public CTFCallsite getCallsite(String eventName, long ip) {
         final LinkedList<CTFCallsite> candidates = callsitesByName.get(eventName);
         final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
-        final int pos = Collections.binarySearch(candidates, dummyCs) + 1;
-        if (pos >= candidates.size()) {
+        final int pos = Collections.binarySearch(candidates, dummyCs)+1;
+        if( pos >= candidates.size()) {
             return null;
-        }
-        if (pos == -1) {
-            // we are either too far up or down
-            if (ip > candidates.getLast().getIp()) {
-                return candidates.getLast();
-            }
-            return candidates.getFirst();
         }
         return candidates.get(pos);
     }
