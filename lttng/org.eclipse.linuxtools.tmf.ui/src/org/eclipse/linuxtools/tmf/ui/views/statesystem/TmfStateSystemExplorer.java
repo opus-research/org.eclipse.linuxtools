@@ -47,10 +47,12 @@ import org.eclipse.swt.widgets.TreeItem;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public class TmfStateSystemVisualizer extends TmfView {
+public class TmfStateSystemExplorer extends TmfView {
 
     /** The Environment View's ID */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.ssview"; //$NON-NLS-1$
+
+    private static final String emptyString = ""; //$NON-NLS-1$
 
     /* Order of columns */
     private static final int ATTRIBUTE_NAME_COL = 0;
@@ -62,11 +64,12 @@ public class TmfStateSystemVisualizer extends TmfView {
 
     private ITmfTrace fTrace;
     private Tree fTree;
+    private volatile long fCurrentTimestamp = -1L;
 
     /**
      * Default constructor
      */
-    public TmfStateSystemVisualizer() {
+    public TmfStateSystemExplorer() {
         super(ID);
     }
 
@@ -102,8 +105,7 @@ public class TmfStateSystemVisualizer extends TmfView {
             public void handleEvent(Event e) {
                 TreeItem item = (TreeItem) e.item;
                 item.setExpanded(true);
-                // FIXME this re-requests at start time, not at current selected time
-                updateTable(-1L);
+                updateTable();
             }
         });
 
@@ -141,8 +143,9 @@ public class TmfStateSystemVisualizer extends TmfView {
             final Map<String, ITmfStateSystem> sss = currentTrace.getStateSystems();
             final Map<String, List<ITmfStateInterval>> fullStates =
                     new LinkedHashMap<String, List<ITmfStateInterval>>();
-            for (String ssName : sss.keySet()) {
-                ITmfStateSystem ss = sss.get(ssName);
+            for (Map.Entry<String, ITmfStateSystem> entry : sss.entrySet()) {
+                String ssName = entry.getKey();
+                ITmfStateSystem ss = entry.getValue();
                 ss.waitUntilBuilt();
                 long startTime = ss.getStartTime();
                 try {
@@ -162,8 +165,9 @@ public class TmfStateSystemVisualizer extends TmfView {
                     TreeItem traceRoot = new TreeItem(fTree, SWT.NONE);
                     traceRoot.setText(ATTRIBUTE_NAME_COL, currentTrace.getName());
 
-                    for (String ssName : sss.keySet()) {
-                        ITmfStateSystem ss = sss.get(ssName);
+                    for (Map.Entry<String, ITmfStateSystem> entry : sss.entrySet()) {
+                        String ssName = entry.getKey();
+                        ITmfStateSystem ss = entry.getValue();
                         List<ITmfStateInterval> fullState = fullStates.get(ssName);
 
                         /* Root item of the current state system */
@@ -220,12 +224,10 @@ public class TmfStateSystemVisualizer extends TmfView {
     /**
      * Update the tree, which means keep the tree of attributes in the first
      * column as-is, but update the values to the ones at a new timestamp.
-     *
-     * Pass "-1" to make it use the state system's start time (when initializing
-     * for example).
      */
-    private synchronized void updateTable(long timestamp) {
+    private synchronized void updateTable() {
         ITmfTrace[] traces = fTrace.getTraces();
+        long ts = fCurrentTimestamp;
 
         /* For each trace... */
         for (int traceNb = 0; traceNb < traces.length; traceNb++) {
@@ -233,26 +235,43 @@ public class TmfStateSystemVisualizer extends TmfView {
 
             /* For each state system associated with this trace... */
             int ssNb = 0;
-            for (String ssName : sss.keySet()) {
-                final ITmfStateSystem ss = sss.get(ssName);
-                long ts = (timestamp == -1 ? ss.getStartTime() : timestamp);
+            for (Map.Entry<String, ITmfStateSystem> entry : sss.entrySet()) {
+                /*
+                 * Even though we only use the value, it just feels safer to
+                 * iterate the same way as before to keep the order the same.
+                 */
+                final ITmfStateSystem ss = entry.getValue();
+                final int traceNb1 = traceNb;
+                final int ssNb1 = ssNb;
+                ts = (ts == -1 ? ss.getStartTime() : ts);
                 try {
                     final List<ITmfStateInterval> fullState = ss.queryFullState(ts);
-                    final int traceNb1 = traceNb;
-                    final int ssNb1 = ssNb;
                     fTree.getDisplay().asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             /* Get the tree item of the relevant state system */
                             TreeItem traceItem = fTree.getItem(traceNb1);
                             TreeItem item = traceItem.getItem(ssNb1);
-                            /* Update it, then its children recursively */
+                            /* Update it, then its children, recursively */
+                            item.setText(VALUE_COL, emptyString);
                             updateChildren(ss, fullState, -1, item);
                         }
                     });
 
                 } catch (TimeRangeException e) {
-                    e.printStackTrace();
+                    /*
+                     * This can happen in an experiment, if the user selects a
+                     * range valid in the experiment, but this specific does not
+                     * exist. Print "out-of-range" into all the values.
+                     */
+                    fTree.getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            TreeItem traceItem = fTree.getItem(traceNb1);
+                            TreeItem item = traceItem.getItem(ssNb1);
+                            markOutOfRange(item);
+                        }
+                    });
                 } catch (StateSystemDisposedException e) {
                     e.printStackTrace();
                 }
@@ -304,7 +323,7 @@ public class TmfStateSystemVisualizer extends TmfView {
                 break;
             case NULL:
             default:
-                /* Display nothing */
+                item.setText(VALUE_COL, emptyString);
                 break;
             }
 
@@ -316,6 +335,24 @@ public class TmfStateSystemVisualizer extends TmfView {
 
         } catch (StateValueTypeException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Same concept as {@link updateChildren}, but instead of printing actual
+     * values coming from the state system, we print "Out of range" into all
+     * values. This is to indicate that this specific state system is not
+     * currently defined at the selected timestamp.
+     *
+     * Guess by which thread this should be called? Hint: starts with a U, ends
+     * with an I.
+     */
+    private void markOutOfRange(TreeItem root) {
+        root.setText(VALUE_COL, Messages.OutOfRangeMsg);
+        root.setText(START_TIME_COL, emptyString);
+        root.setText(END_TIME_COL, emptyString);
+        for (TreeItem item : root.getItems()) {
+            markOutOfRange(item);
         }
     }
 
@@ -389,8 +426,8 @@ public class TmfStateSystemVisualizer extends TmfView {
             @Override
             public void run() {
                 ITmfTimestamp currentTime = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
-                long ts = currentTime.getValue();
-                updateTable(ts);
+                fCurrentTimestamp = currentTime.getValue();
+                updateTable();
             }
         };
         thread.start();

@@ -54,4 +54,9 @@ public class Messages extends NLS {
     /** Label for the "attribute path" column */
     public static String AttributePathColumnLabel;
 
+    /**
+     * Printing "out of range" in the value column when the current timestamp is
+     * outside of the SS's range.
+     */
+    public static String OutOfRangeMsg;
 }
