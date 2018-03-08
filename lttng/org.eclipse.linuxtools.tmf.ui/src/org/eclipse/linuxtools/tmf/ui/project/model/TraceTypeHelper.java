@@ -96,6 +96,15 @@ public class TraceTypeHelper {
         return valid;
     }
 
+    /**
+     * Get an object of the trace type
+     * @return an object of the trace type
+     * @since 2.1
+     */
+    public ITmfTrace getTrace(){
+        return fTrace;
+    }
+
     private boolean standardValidate(String path) {
         final boolean valid = fTrace.validate(null, path).equals(Status.OK_STATUS);
         return valid;
@@ -104,16 +113,6 @@ public class TraceTypeHelper {
     private static boolean customValidate(String path) {
         File f = new File(path);
         return f.exists() && f.isFile();
-    }
-
-    /**
-     * Get the class associated with this trace type
-     *
-     * @return The trace class
-     * @since 3.0
-     */
-    public Class<? extends ITmfTrace> getTraceClass() {
-        return fTrace.getClass();
     }
 
     @Override
