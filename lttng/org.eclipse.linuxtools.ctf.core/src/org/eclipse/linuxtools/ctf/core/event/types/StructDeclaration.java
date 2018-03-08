@@ -133,25 +133,4 @@ public class StructDeclaration implements IDeclaration {
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof StructDeclaration)) {
-            return false;
-        }
-        StructDeclaration other = (StructDeclaration) obj;
-        if (!fieldsList.equals(other.fieldsList)) {
-            return false;
-        }
-        if (maxAlign != other.maxAlign) {
-            return false;
-        }
-        return true;
-    }
-
 }
