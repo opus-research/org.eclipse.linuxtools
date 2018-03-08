@@ -163,6 +163,12 @@ public final class TapsetLibrary {
 	}
 
 	/**
+	 * @since 2.0
+	 */
+	public static boolean isFinishSuccessful(){
+		return functionParser.isFinishSuccessful() && probeParser.isFinishSuccessful();
+	}
+	/**
 	 * This method will get all of the tree information from
 	 * the TreeSettings xml file.
 	 */
@@ -342,7 +348,7 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static void waitForInitialization() {
-		while (functionParser.getResult() == null){
+		while (!functionParser.isFinishSuccessful()){
 			try {
 				synchronized (functionParser) {
 					functionParser.wait(5000);
@@ -351,7 +357,7 @@ public final class TapsetLibrary {
 				break;
 			}
 		}
-		while (probeParser.getResult() == null){
+		while (!probeParser.isFinishSuccessful()){
 			try {
 				synchronized (probeParser) {
 					probeParser.wait(5000);
