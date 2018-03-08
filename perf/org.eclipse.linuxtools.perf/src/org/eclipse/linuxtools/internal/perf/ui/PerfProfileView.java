@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDataCollectionAction;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -76,19 +74,12 @@ public class PerfProfileView extends ViewPart {
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer");
-		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
-		createActionMenu();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-
-	public void createActionMenu() {
-		IMenuManager manager = getViewSite().getActionBars().getMenuManager();
-		manager.add(new PerfDataCollectionAction());
-	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
@@ -127,11 +118,8 @@ public class PerfProfileView extends ViewPart {
 		drillDownAdapter.addNavigationActions(manager);
 	}
 
-	private void makeActions() {
-		doubleClickAction = new PerfDoubleClickAction(viewer);
-	}
-
 	private void hookDoubleClickAction() {
+		doubleClickAction = new PerfDoubleClickAction(viewer);
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {

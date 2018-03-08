@@ -19,24 +19,6 @@
             name="Remote Perf Profile View"
             restorable="true">
       </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.PerfDataCollectionView"
-            icon="icons/file.gif"
-            id="org.eclipse.linuxtools.perf.ui.PerfSessionCompareView"
-            name="Perf Data Collection"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.PerfDiffView"
-            icon="icons/symbol.gif"
-            id="org.eclipse.linuxtools.perf.ui.PerfSessionDiffView"
-            name="Perf Comparison View"
-            restorable="false">
-      </view>
    </extension>
    <extension
          point="org.eclipse.help.contexts">
