@@ -8,7 +8,7 @@
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
  *******************************************************************************/ 
-package org.eclipse.linuxtools.oprofile.ui.model;
+package org.eclipse.linuxtools.internal.oprofile.ui.model;
 
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSample;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiMessages;
@@ -70,8 +70,8 @@ public class UiModelSample implements IUiModelElement {
 	}
 
 	/**
-	 * Returns the children of this element.
-	 * @return An array of child elements or null
+	 * Returns this element children
+	 * @return An array of IUiModelElements
 	 */
 	public IUiModelElement[] getChildren() {
 		return null;

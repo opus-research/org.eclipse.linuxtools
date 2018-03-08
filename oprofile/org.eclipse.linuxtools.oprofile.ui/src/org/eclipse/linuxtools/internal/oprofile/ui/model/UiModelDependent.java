@@ -8,7 +8,7 @@
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
  *******************************************************************************/ 
-package org.eclipse.linuxtools.oprofile.ui.model;
+package org.eclipse.linuxtools.internal.oprofile.ui.model;
 
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelImage;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiMessages;
@@ -21,14 +21,7 @@ public class UiModelDependent implements IUiModelElement {
 	private UiModelImage dependents[];
 	private int totalCount;
 	private int depCount;
-
-	/**
-	 * Constructor to this UiModelDependent class
-	 * @param parent The parent element
-	 * @param dependents The dependent images
-	 * @param totalCount The total count of samples for the parent session
-	 * @param depCount The count for all dependent images
-	 */
+	
 	public UiModelDependent(IUiModelElement parent, OpModelImage dependents[], int totalCount, int depCount) {
 		this.parent = parent;
 		this.dataModelDependents = dependents;
@@ -59,34 +52,18 @@ public class UiModelDependent implements IUiModelElement {
 		return toString();
 	}
 
-	/**
-	 * Returns the children of this element.
-	 * @return An array of child elements or null
-	 */
 	public IUiModelElement[] getChildren() {
 		return dependents;
 	}
 
-	/**
-	 * Returns if the element has any children.
-	 * @return true if the element has children, false otherwise
-	 */
 	public boolean hasChildren() {
 		return true;	//must have children, or this object wouldn't be created
 	}
 
-	/**
-	 * Returns the parent element.
-	 * @return the parent element or null
-	 */
 	public IUiModelElement getParent() {
 		return parent;
 	}
 
-	/**
-	 * Returns the Image to display next to the text in the tree viewer.
-	 * @return an Image object of the icon
-	 */
 	public Image getLabelImage() {
 		return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.DEPENDENT_ICON).createImage();
 	}

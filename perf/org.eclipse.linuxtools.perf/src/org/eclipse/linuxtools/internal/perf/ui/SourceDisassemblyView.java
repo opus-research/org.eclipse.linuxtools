@@ -20,8 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.linuxtools.internal.perf.IPerfData;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
+import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -34,7 +34,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 
@@ -61,7 +60,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		text = new StyledText(parent, SWT.WRAP | SWT.V_SCROLL);
 		text.setEditable(false);
 
-		IPerfData data = PerfPlugin.getDefault().getSourceDisassemblyData();
+		SourceDisassemblyData data = PerfPlugin.getDefault().getSourceDisassemblyData();
 		if (data != null) {
 			setStyledText(data.getPerfData());
 			setContentDescription(data.getTitle());
@@ -139,7 +138,6 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		findAction.setToolTipText(PerfPlugin.STRINGS_SearchSourceDisassembly);
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getToolBarManager().add(findAction);
-		bars.setGlobalActionHandler(ActionFactory.FIND.getId(), findAction);
 	}
 
 	@Override

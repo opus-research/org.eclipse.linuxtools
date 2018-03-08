@@ -44,6 +44,7 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.preferences.ControlPreferences;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandResult;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandShell;
+import org.osgi.framework.Version;
 
 /**
  * <p>
@@ -65,7 +66,7 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * The version string.
      */
-    protected LttngVersion fVersion = null;
+    protected Version fVersion = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -98,12 +99,12 @@ public class LTTngControlService implements ILttngControlService {
      * @param version - a version to set
      */
     public void setVersion(String version) {
-        fVersion = new LttngVersion(version);
+        fVersion = new Version(version);
     }
 
     @Override
     public boolean isVersionSupported(String version) {
-        LttngVersion tmp = new LttngVersion(version);
+        Version tmp = new Version(version);
         return (fVersion != null && fVersion.compareTo(tmp) >= 0) ? true : false;
     }
 
