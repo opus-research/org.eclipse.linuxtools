@@ -25,19 +25,18 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -48,7 +47,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestAnalysis;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
 import org.junit.Before;
@@ -67,7 +65,7 @@ public class TmfTraceTest {
     private static final TmfTestTrace TEST_TRACE = TmfTestTrace.A_TEST_10K;
     private static final long   DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
     private static final int    NB_EVENTS   = 10000;
-    private TmfTraceStub fTrace      = null;
+    private static TmfTraceStub fTrace      = null;
 
     private static int SCALE = -3;
 
@@ -90,7 +88,7 @@ public class TmfTraceTest {
     // Helper functions
     // ------------------------------------------------------------------------
 
-    private TmfTraceStub setupTrace(final String path) {
+    private static TmfTraceStub setupTrace(final String path) {
         if (fTrace == null) {
             try {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
@@ -439,7 +437,7 @@ public class TmfTraceTest {
     }
 
     // ------------------------------------------------------------------------
-    // State system, statistics and modules methods
+    // State system and statistics methods
     // ------------------------------------------------------------------------
 
     @Test
@@ -450,26 +448,19 @@ public class TmfTraceTest {
     }
 
     @Test
-    public void testGetModulesByClass() {
-        /* There should not be any modules at this point */
-        fTrace.setIgnoreTimeSignals(true);
-        Map<String, IAnalysisModule> modules = fTrace.getAnalysisModules();
-        assertTrue(modules.isEmpty());
+    public void testGetStateSystem() {
+        /* There should be no state system registered so far */
+        ITmfStateSystem ss = fTrace.getStateSystems().get("something");
+        assertNull(ss);
+    }
 
-        /* Open the trace, the modules should be populated */
-        fTrace.openTrace();
-        modules = fTrace.getAnalysisModules();
-        Map<String, TestAnalysis> testModules = fTrace.getAnalysisModules(TestAnalysis.class);
-        assertFalse(modules.isEmpty());
-        assertFalse(testModules.isEmpty());
-
-        /* Make sure all modules of type TestAnalysis are returned in the second call */
-        for (Entry<String, IAnalysisModule> module : modules.entrySet()) {
-            if (module.getValue() instanceof TestAnalysis) {
-                assertTrue(testModules.containsKey(module.getKey()));
-            }
-        }
-
+    /**
+     * Make sure the returned map is unmodifiable.
+     */
+    @Test(expected=UnsupportedOperationException.class)
+    public void testGetStateSystem_readOnly() {
+        Map<String, ITmfStateSystem> sss = fTrace.getStateSystems();
+        sss.put("something", null);
     }
 
     // ------------------------------------------------------------------------

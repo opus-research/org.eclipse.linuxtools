@@ -26,12 +26,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -66,8 +63,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     private final ReentrantLock fLock = new ReentrantLock();
 
     private ITmfTimestamp fInitialRangeOffset = null;
-
-    private boolean fIgnoreTimeSignals = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -390,32 +385,5 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
      */
     public void selectTrace() {
         TmfSignalManager.dispatchSignal(new TmfTraceSelectedSignal(this, this));
-    }
-
-    /**
-     * Use to ignore signals like TraceUpdated and TraceRangeUpdated, if set to
-     * true, nothing will happen when those signals are intercepted
-     *
-     * @param ignore
-     *            Whether to ignore time signals
-     */
-    public void setIgnoreTimeSignals(boolean ignore) {
-        fIgnoreTimeSignals = ignore;
-    }
-
-    @Override
-    @TmfSignalHandler
-    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        if (!fIgnoreTimeSignals) {
-            super.traceRangeUpdated(signal);
-        }
-    }
-
-    @Override
-    @TmfSignalHandler
-    public void traceUpdated(final TmfTraceUpdatedSignal signal) {
-        if (!fIgnoreTimeSignals) {
-            super.traceUpdated(signal);
-        }
     }
 }
