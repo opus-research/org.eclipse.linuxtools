@@ -132,14 +132,11 @@ public class CtfTestSuiteTests {
                 assertNotNull(reader.getCurrentEventDef());
             }
 
-            if (!fExpectSuccess) {
-                fail("Trace was expected to fail parsing: " + fTracePath);
-            }
+            failAtSuccess();
         } catch (CTFReaderException e) {
-            if (fExpectSuccess) {
-                fail("Trace was expected to succeed, but failed parsing: " +
-                        fTracePath + " (" + e.getMessage() + ")");
-            }
+            failAtfailure(e);
+        } catch (OutOfMemoryError e) {
+            failAtfailure(e);
         } finally {
             if (reader != null) {
                 reader.dispose();
@@ -148,6 +145,19 @@ public class CtfTestSuiteTests {
                 trace.dispose();
             }
 
+        }
+    }
+
+    private void failAtSuccess() {
+        if (!fExpectSuccess) {
+            fail("Trace was expected to fail parsing: " + fTracePath);
+        }
+    }
+
+    private void failAtfailure(Throwable e) {
+        if (fExpectSuccess) {
+            fail("Trace was expected to succeed, but failed parsing: " +
+                    fTracePath + " (" + e.getMessage() + ")");
         }
     }
 }
