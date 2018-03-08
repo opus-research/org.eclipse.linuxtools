@@ -22,9 +22,6 @@
    <feature url="features/org.eclipse.linuxtools.changelog.c_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.c" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
-   <feature url="features/org.eclipse.linuxtools.changelog.java_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.java" version="0.0.0">
-      <category name="Linux Tools"/>
-   </feature>
    <feature url="features/org.eclipse.linuxtools.dataviewers.feature_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.dataviewers.feature" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
@@ -56,9 +53,6 @@
       <category name="Linux Tools"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.valgrind_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.valgrind" version="0.0.0">
-      <category name="Linux Tools"/>
-   </feature>
-   <feature url="features/org.eclipse.linuxtools.lttng_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng" version="0.0.0" os="linux">
       <category name="Linux Tools"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.gcov_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gcov" version="0.0.0">
@@ -101,12 +95,6 @@
    <feature url="features/org.eclipse.linuxtools.changelog.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
-   <feature url="features/org.eclipse.linuxtools.changelog.c.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.c.source" version="0.0.0">
-      <category name="Linux Tools Sources"/>
-   </feature>
-   <feature url="features/org.eclipse.linuxtools.changelog.java.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.java.source" version="0.0.0">
-      <category name="Linux Tools Sources"/>
-   </feature>
    <feature url="features/org.eclipse.linuxtools.ctf.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.ctf.source" version="0.0.0" os="linux">
       <category name="Linux Tools Sources"/>
    </feature>
@@ -141,9 +129,6 @@
       <category name="Linux Tools Sources"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.valgrind.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.valgrind.source" version="0.0.0">
-      <category name="Linux Tools Sources"/>
-   </feature>
-   <feature url="features/org.eclipse.linuxtools.lttng.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng.source" version="0.0.0" os="linux">
       <category name="Linux Tools Sources"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.lttng2.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2.source" version="0.0.0" os="linux">
