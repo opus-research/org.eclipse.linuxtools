@@ -67,6 +67,17 @@ public class CtfLocationTest {
     }
 
     /**
+     * Run the CtfLocation clone() method test.
+     */
+    @Test
+    public void testClone() {
+        CtfLocation result = fixture.clone();
+
+        assertNotNull(result);
+        assertEquals(Long.valueOf(1), (Long)result.getLocationInfo().getTimestamp());
+    }
+
+    /**
      * Run the Long getLocation() method test.
      */
     @Test

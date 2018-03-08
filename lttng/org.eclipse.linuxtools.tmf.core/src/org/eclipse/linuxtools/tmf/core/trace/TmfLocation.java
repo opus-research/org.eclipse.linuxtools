@@ -34,10 +34,17 @@ public abstract class TmfLocation implements ITmfLocation {
     // ------------------------------------------------------------------------
 
     /**
+     * Default constructor (for the 'null' location)
+     */
+    @SuppressWarnings("unused")
+    private TmfLocation() {
+        fLocationInfo = null;
+    }
+
+    /**
      * Standard constructor.
      *
-     * @param locationInfo
-     *            The concrete trace location
+     * @param locationInfo the concrete trace location
      */
     public TmfLocation(final Comparable<?> locationInfo) {
         fLocationInfo = locationInfo;
@@ -46,8 +53,7 @@ public abstract class TmfLocation implements ITmfLocation {
     /**
      * Copy constructor
      *
-     * @param location
-     *            The original trace location
+     * @param location the original trace location
      */
     public TmfLocation(final TmfLocation location) {
         fLocationInfo = location.fLocationInfo;
@@ -57,6 +63,9 @@ public abstract class TmfLocation implements ITmfLocation {
     // Getters
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationInfo()
+     */
     /**
      * @since 2.0
      */
@@ -69,6 +78,9 @@ public abstract class TmfLocation implements ITmfLocation {
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -77,6 +89,9 @@ public abstract class TmfLocation implements ITmfLocation {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -102,7 +117,7 @@ public abstract class TmfLocation implements ITmfLocation {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        return getClass().getSimpleName() + " [fLocation=" + fLocationInfo.toString() + "]";
+        return "TmfLocation [fLocation=" + fLocationInfo + "]";
     }
 
 }
