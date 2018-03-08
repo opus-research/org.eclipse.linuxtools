@@ -23,6 +23,7 @@ import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.utils.BEDataInputStream;
 import org.eclipse.linuxtools.internal.gcov.utils.LEDataInputStream;
 import org.eclipse.linuxtools.internal.gcov.utils.MasksGenerator;
+import org.eclipse.osgi.util.NLS;
 
 
 
@@ -67,7 +68,7 @@ public class GcdaRecordsParser {
 			if (magic == GCOV_DATA_MAGIC){
 				stream = new LEDataInputStream((DataInputStream) stream);
 			}else{
-				String message = magic + " :desn't correspond to a correct data file header\n";
+				String message = NLS.bind(Messages.GcdaRecordsParser_magic_num_error, magic);
 				Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 				throw new CoreException(status);
 			}
@@ -96,8 +97,8 @@ public class GcdaRecordsParser {
 								currentFnctn = f;
 								long fnctnChksm = stream.readInt()&  MasksGenerator.UNSIGNED_INT_MASK;
 								if (f.getCheksum() != fnctnChksm){
-									String message = "Checksums don't correspond for " +
-									currentFnctn.getName() + " (Id: " + fnctnId + ")\n";
+									String message = NLS.bind(Messages.GcdaRecordsParser_checksum_error,
+											new Object[]{currentFnctn.getName(), fnctnId});
 									Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 									throw new CoreException(status);
 								}
@@ -132,8 +133,7 @@ public class GcdaRecordsParser {
 
 						if (fnctnFound == false){
 							currentFnctn = null;
-							String message = "Function with Id: " + fnctnId +
-							" not found in function list\n";
+							String message = NLS.bind(Messages.GcdaRecordsParser_func_not_found, fnctnId);
 							Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 							throw new CoreException(status);
 						}
@@ -144,20 +144,20 @@ public class GcdaRecordsParser {
 
 				case GCOV_COUNTER_ARCS: {
 					if (currentFnctn == null){
-						String message = "Missing function or duplicate counter tag\n";
+						String message = Messages.GcdaRecordsParser_func_counter_error;
 						Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 						throw new CoreException(status);
 					}
 
 					if (length != 2 * (currentFnctn.getNumCounts())){
-						String message = "GCDA content is inconsistent\n";
+						String message = Messages.GcdaRecordsParser_content_inconsistent;
 						Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 						throw new CoreException(status);
 					}
 
 					ArrayList<Block> fnctnBlcks = currentFnctn.getFunctionBlocks();
 					if (fnctnBlcks.isEmpty()){
-						String message = "Function block list is empty\n";
+						String message = Messages.GcdaRecordsParser_func_block_empty;
 						Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 						throw new CoreException(status);
 					}

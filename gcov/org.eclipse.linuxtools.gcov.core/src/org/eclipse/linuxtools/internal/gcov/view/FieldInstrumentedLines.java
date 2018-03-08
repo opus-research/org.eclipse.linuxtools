@@ -26,7 +26,7 @@ public class FieldInstrumentedLines extends AbstractSTDataViewersField implement
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return "Instrumented Lines";
+		return Messages.FieldInstrumentedLines_column_header;
 	}
 
 	/*
@@ -48,8 +48,8 @@ public class FieldInstrumentedLines extends AbstractSTDataViewersField implement
 	public String getToolTipText(Object element) {
 	    int v = getInstrumentedLines(element);
         String s = NumberFormat.getInstance().format(v);
-        s += " instrumented line";
-        if (v > 1) s += "s";
+        s += Messages.FieldInstrumentedLines_column_tooltip;
+        if (v > 1) s += "s"; //$NON-NLS-1$
 		return s;
 	}
 
