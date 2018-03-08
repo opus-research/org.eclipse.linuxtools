@@ -9,7 +9,7 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
  */
 public final class DMError {
 	
-	private String errtext;
+	private static String errtext;
 	
 	public DMError (int errcode) {
 		
