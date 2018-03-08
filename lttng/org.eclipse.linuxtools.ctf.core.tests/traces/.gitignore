@@ -1,11 +1,11 @@
 *.bz2
 *.gz
 *.tar
+*.ht
 /ctf-testsuite
-/glxgears-finstrument-functions
+/hello-lost
 /kernel
 /kernel_vm
 /synctraces
 /trace2
-*.ht
 

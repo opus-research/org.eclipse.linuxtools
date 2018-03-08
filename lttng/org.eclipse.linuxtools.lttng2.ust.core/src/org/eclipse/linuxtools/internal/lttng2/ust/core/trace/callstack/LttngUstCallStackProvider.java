@@ -12,6 +12,9 @@
 
 package org.eclipse.linuxtools.internal.lttng2.ust.core.trace.callstack;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.linuxtools.lttng2.ust.core.trace.LttngUstTrace;
 import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
@@ -43,14 +46,23 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
     /** Name of the fake field for the procname context */
     private static final String CONTEXT_PROCNAME = "context._procname"; //$NON-NLS-1$
 
-    /** Event name indicating function entry */
-    private static final String FUNC_ENTRY = "lttng_ust_cyg_profile:func_entry"; //$NON-NLS-1$
-
-    /** Event name indicating function exit */
-    private static final String FUNC_EXIT = "lttng_ust_cyg_profile:func_exit"; //$NON-NLS-1$
-
     /** Field name for the target function address */
     private static final String FIELD_ADDR = "addr"; //$NON-NLS-1$
+
+    /** Event names indicating function entry */
+    private static final Set<String> FUNC_ENTRY_EVENTS = new HashSet<String>();
+
+    /** Event names indicating function exit */
+    private static final Set<String> FUNC_EXIT_EVENTS = new HashSet<String>();
+
+    static {
+        /* This seems overkill, but it will be checked every event. Gotta go FAST! */
+        FUNC_ENTRY_EVENTS.add("lttng_ust_cyg_profile:func_entry"); //$NON-NLS-1$
+        FUNC_ENTRY_EVENTS.add("lttng_ust_cyg_profile_fast:func_entry"); //$NON-NLS-1$
+
+        FUNC_EXIT_EVENTS.add("lttng_ust_cyg_profile:func_exit"); //$NON-NLS-1$
+        FUNC_EXIT_EVENTS.add("lttng_ust_cyg_profile_fast:func_exit"); //$NON-NLS-1$
+    }
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -105,7 +117,8 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionEntry(ITmfEvent event) {
-        if (!((CtfTmfEvent) event).getEventName().equals(FUNC_ENTRY)) {
+        String eventName = ((CtfTmfEvent) event).getEventName();
+        if (!FUNC_ENTRY_EVENTS.contains(eventName)) {
             return null;
         }
         Long address = (Long) event.getContent().getField(FIELD_ADDR).getValue();
@@ -114,10 +127,19 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionExit(ITmfEvent event) {
-        if (!((CtfTmfEvent) event).getEventName().equals(FUNC_EXIT)) {
+        String eventName = ((CtfTmfEvent) event).getEventName();
+        if (!FUNC_EXIT_EVENTS.contains(eventName)) {
             return null;
         }
-        Long address = (Long) event.getContent().getField(FIELD_ADDR).getValue();
+        /*
+         * The 'addr' field may or may not be present in func_exit events,
+         * depending on if cyg-profile.so or cyg-profile-fast.so was used.
+         */
+        ITmfEventField field = event.getContent().getField(FIELD_ADDR);
+        if (field == null) {
+            return CallStackStateProvider.UNDEFINED;
+        }
+        Long address = (Long) field.getValue();
         return getFunctionNameFromAddress(address.longValue());
     }
 

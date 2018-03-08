@@ -27,21 +27,16 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 public enum CtfTestTrace {
     /** Example kernel trace */
     KERNEL("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"),
-
     /** Another kernel trace */
     TRACE2("../org.eclipse.linuxtools.ctf.core.tests/traces/trace2"),
-
     /** Kernel trace with event contexts */
     KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"),
-
     /** Trace synchronization: source trace */
     SYNC_SRC("../org.eclipse.linuxtools.ctf.core.tests/traces/synctraces/scp_src"),
-
     /** Trace synchronization: destination trace */
     SYNC_DEST("../org.eclipse.linuxtools.ctf.core.tests/traces/synctraces/scp_dest"),
-
-    /** UST trace with lttng-ust-cyg-profile events (aka -finstrument-functions) */
-    FINSTRUMENT("../org.eclipse.linuxtools.ctf.core.tests/traces/glxgears-finstrument-functions");
+    /** UST trace with lots of lost events */
+    HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost");
 
 
     private final String fPath;
