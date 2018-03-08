@@ -17,7 +17,6 @@ import org.eclipse.osgi.util.NLS;
  * @author Matthew Khouzam
  * @since 2.0
  */
-@SuppressWarnings("javadoc")
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.tests.stubs.trace.messages"; //$NON-NLS-1$
     /**

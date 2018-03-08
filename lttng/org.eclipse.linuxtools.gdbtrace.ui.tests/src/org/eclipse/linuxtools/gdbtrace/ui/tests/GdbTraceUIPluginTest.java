@@ -33,13 +33,13 @@ public class GdbTraceUIPluginTest {
     // ------------------------------------------------------------------------
 
     @Test
-    public void testPluginId() {
-        assertEquals("Plugin ID", "org.eclipse.linuxtools.gdbtrace.ui", GdbTraceUIPlugin.PLUGIN_ID);
+    public static void testPluginId() {
+        assertEquals("Plugin ID", "org.eclipse.linuxtools.gdbtrace.ui", GdbTraceUIPlugin.PLUGIN_ID); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
-    public void testGetDefault() {
+    public static void testGetDefault() {
         Plugin plugin = GdbTraceUIPlugin.getDefault();
-        assertEquals("getDefault()", plugin, fPlugin);
+        assertEquals("getDefault()", plugin, fPlugin); //$NON-NLS-1$
     }
 }
