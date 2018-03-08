@@ -8,7 +8,6 @@
  *
  * Contributors: Matthew Khouzam - Initial API and implementation
  * Contributors: Simon Marchi - Initial API and implementation
- * Contributors: Etienne Bergeron - fix for 33-63 bit integers
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.types;
@@ -101,6 +100,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     @Override
     public void read(BitBuffer input) {
+        final long longNegBit = 0x0000000080000000L;
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
 
@@ -113,33 +113,40 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
          * input buffer? If not, then temporarily set the buffer's endianness to
          * this field's just to read the data
          */
-        ByteOrder previousByteOrder = input.getByteOrder();
+        ByteOrder byteOrder = input.getByteOrder();
         if ((this.declaration.getByteOrder() != null) &&
                 (this.declaration.getByteOrder() != input.getByteOrder())) {
             input.setByteOrder(this.declaration.getByteOrder());
         }
 
-        if (length > 64) {
-            throw new IllegalArgumentException("Cannot read an integer with over 64 bits. Length given: " + length );  //$NON-NLS-1$
-        } else if (length == 64) {
-            bits = input.getLong();
-        } else if (length > 32) {
-            bits = input.getLong(length, signed);
+        // TODO: use the eventual getLong from BitBuffer
+        if (length == 64) {
+            long low = input.getInt(32, false);
+            low = low & 0x00000000FFFFFFFFL;
+            long high = input.getInt(32, false);
+            high = high & 0x00000000FFFFFFFFL;
+            if (this.declaration.getByteOrder() != ByteOrder.BIG_ENDIAN) {
+                bits = (high << 32) | low;
+            } else {
+                bits = (low << 32) | high;
+            }
         } else {
-            /* Read an int and perform a signed-extension to a long. */
             bits = input.getInt(length, signed);
-
-            /* Truncate when unsigned integer is requested. */
-            if (!signed) {
-                bits = bits & 0x00000000FFFFFFFFL;
+            bits = bits & 0x00000000FFFFFFFFL;
+            /*
+             * The previous line loses sign information but is necessary, this
+             * fixes the sign for 32 bit numbers. Sorry, in java all 64 bit ints
+             * are signed.
+             */
+            if ((longNegBit == (bits & longNegBit)) && signed) {
+                bits |= 0xffffffff00000000L;
             }
         }
-
         /*
          * Put the input buffer's endianness back to original if it was changed
          */
-        if (previousByteOrder != input.getByteOrder()) {
-            input.setByteOrder(previousByteOrder);
+        if (byteOrder != input.getByteOrder()) {
+            input.setByteOrder(byteOrder);
         }
 
         value = bits;
