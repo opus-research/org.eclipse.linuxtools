@@ -317,7 +317,7 @@ public class ResourcesView extends TmfView {
     public void createPartControl(Composite parent) {
         fTimeGraphViewer = new TimeGraphViewer(parent, SWT.NONE);
 
-        fTimeGraphViewer.setTimeGraphProvider(new ResourcesPresentationProvider(fTimeGraphViewer));
+        fTimeGraphViewer.setTimeGraphProvider(new ResourcesPresentationProvider());
 
         fTimeGraphViewer.setTimeCalendarFormat(true);
 
