@@ -22,10 +22,10 @@ import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfEventStub;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
@@ -86,13 +86,13 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         fTestName = name;
 
         fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
-        fEvent1 = new TmfEventStub(null, fTimestamp1, fSource, fType1, fContent1, fReference);
+        fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType1, fContent1, fReference);
 
         fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content");
-        fEvent2 = new TmfEventStub(null, fTimestamp2, fSource, fType2, fContent2, fReference);
+        fEvent2 = new TmfEvent(null, fTimestamp2, fSource, fType2, fContent2, fReference);
 
         fContent3 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other different content");
-        fEvent3 = new TmfEventStub(null, fTimestamp3, fSource, fType3, fContent3, fReference);
+        fEvent3 = new TmfEvent(null, fTimestamp3, fSource, fType3, fContent3, fReference);
 
         fStatsTree = new TmfStatisticsTree();
 
