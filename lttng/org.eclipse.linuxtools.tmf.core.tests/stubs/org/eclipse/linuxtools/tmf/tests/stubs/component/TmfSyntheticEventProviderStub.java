@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -31,7 +31,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings({ "nls" })
 public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSyntheticEventStub> {
 
     public static final int BLOCK_SIZE = 100;
@@ -41,6 +41,7 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
         super("TmfSyntheticEventProviderStub", TmfSyntheticEventStub.class);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ITmfContext armRequest(final ITmfDataRequest<TmfSyntheticEventStub> request) {
 
@@ -61,11 +62,10 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
             @Override
             public void handleData(final TmfEvent event) {
                 super.handleData(event);
-                if (event != null) {
+                if (event != null)
                     handleIncomingData(event);
-                } else {
+                else
                     request.done();
-                }
             }
         };
         provider.sendRequest(subRequest);
@@ -87,9 +87,8 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
         TmfSyntheticEventStub data = null;
         try {
             data = fDataQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-            if (data == null) {
+            if (data == null)
                 throw new InterruptedException();
-            }
         }
         catch (final InterruptedException e) {
         }
@@ -100,9 +99,8 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
         boolean ok = false;
         try {
             ok = fDataQueue.offer(data, TIMEOUT, TimeUnit.MILLISECONDS);
-            if (!ok) {
+            if (!ok)
                 throw new InterruptedException();
-            }
         }
         catch (final InterruptedException e) {
         }

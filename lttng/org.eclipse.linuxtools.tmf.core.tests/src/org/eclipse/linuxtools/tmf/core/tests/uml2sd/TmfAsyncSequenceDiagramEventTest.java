@@ -21,13 +21,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfAsyncSequenceDiagramEvent;
 
-/**
- * <b><u>TmfAsyncSequenceDiagramEventTest</u></b>
- * <p>
- * Implement me. Please.
- * <p>
- */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("nls")
 public class TmfAsyncSequenceDiagramEventTest extends TestCase {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;

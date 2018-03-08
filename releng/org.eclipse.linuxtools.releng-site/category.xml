@@ -98,6 +98,9 @@
    <feature url="features/org.eclipse.linuxtools.changelog.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
+   <feature url="features/org.eclipse.linuxtools.changelog.c.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.c.source" version="0.0.0">
+      <category name="Linux Tools Sources"/>
+   </feature>
    <feature url="features/org.eclipse.linuxtools.ctf.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.ctf.source" version="0.0.0" os="linux">
       <category name="Linux Tools Sources"/>
    </feature>

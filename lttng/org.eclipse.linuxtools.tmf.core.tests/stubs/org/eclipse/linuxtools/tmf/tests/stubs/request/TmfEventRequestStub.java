@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -19,50 +19,49 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 /**
  * <b><u>TmfEventRequestStub</u></b>
  * <p>
- * @param <T> The requested event type
+ * TODO: Implement me. Please.
  */
 public class TmfEventRequestStub<T extends TmfEvent> extends TmfEventRequest<T> {
 
     /**
-     * @param dataType the event type
+     * @param dataType
      */
     public TmfEventRequestStub(final Class<T> dataType) {
         super(dataType);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
+     * @param dataType
+     * @param range
      */
     public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range) {
         super(dataType, range);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
-     * @param nbRequested the number of events requested
+     * @param dataType
+     * @param range
+     * @param nbRequested
      */
     public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range, final int nbRequested) {
         super(dataType, range, nbRequested);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
-     * @param nbRequested the number of events requested
-     * @param blockSize the event block size
+     * @param dataType
+     * @param range
+     * @param nbRequested
+     * @param blockSize
      */
     public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range, final int nbRequested, final int blockSize) {
         super(dataType, range, nbRequested, blockSize);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
-     * @param index the initial event index
-     * @param nbRequested the number of events requested
-     * @param blockSize the event block size
+     * @param dataType
+     * @param range
+     * @param nbRequested
+     * @param blockSize
      */
     public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range, final long index, final int nbRequested, final int blockSize) {
         super(dataType, range, index, nbRequested, blockSize);

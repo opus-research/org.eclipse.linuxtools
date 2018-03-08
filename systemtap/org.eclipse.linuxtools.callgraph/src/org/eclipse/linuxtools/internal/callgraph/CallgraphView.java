@@ -998,9 +998,6 @@ public class CallgraphView extends SystemTapView {
 	
 	@Override
 	public void setFocus() {
-		if(masterComposite != null){
-			masterComposite.setFocus();
-		}
 	}
 
 

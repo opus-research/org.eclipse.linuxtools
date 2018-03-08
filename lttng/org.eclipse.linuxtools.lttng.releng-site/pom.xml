@@ -19,7 +19,7 @@
   <parent>
     <artifactId>linuxtools-lttng-parent</artifactId>
     <groupId>org.eclipse.linuxtools.lttng</groupId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.1.0</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.lttng.releng-site</artifactId>
@@ -42,12 +42,12 @@
               <tasks>
                 <delete includeemptydirs="false">
                   <fileset
-                    dir="${lttngPackageDestination}">
+                    dir="/var/www/technology/linuxtools/lttng/update-nightly/">
                     <include name="**" />
                   </fileset>
                 </delete>
                 <copy includeemptydirs="false"
-                  todir="${lttngPackageDestination}">
+                  todir="/var/www/technology/linuxtools/lttng/update-nightly/">
                   <fileset dir="target/repository">
                     <include name="**" />
                   </fileset>
