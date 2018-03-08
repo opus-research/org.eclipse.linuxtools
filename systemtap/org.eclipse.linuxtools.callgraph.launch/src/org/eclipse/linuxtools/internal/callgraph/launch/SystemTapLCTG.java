@@ -14,17 +14,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 
 /**
  * Stripped down version of the Profiling LaunchConfigurationTabGroup
  * 
  *
  */
-public abstract class SystemTapLCTG extends ProfileLaunchConfigurationTabGroup {
+public abstract class SystemTapLCTG extends AbstractLaunchConfigurationTabGroup {
 
-	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
 		
@@ -34,6 +33,5 @@ public abstract class SystemTapLCTG extends ProfileLaunchConfigurationTabGroup {
 		setTabs(tabs.toArray(new AbstractLaunchConfigurationTab[tabs.size()]));
 	}
 	
-	@Override
 	public abstract AbstractLaunchConfigurationTab[] getProfileTabs();
 }

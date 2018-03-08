@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
+ *   Mathieu Denis (mathieu.denis@polymtl.ca)  - Initial design and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
@@ -18,18 +18,15 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnData;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
-/**
- * TmfBaseColumnData Test Case.
- */
 @SuppressWarnings("nls")
 public class TmfBaseColumnDataTest extends TestCase {
 
@@ -83,12 +80,12 @@ public class TmfBaseColumnDataTest extends TestCase {
                 TmfStatisticsTreeNode parent = node;
                 do {
                     parent = parent.getParent();
-                } while (parent != null && parent.getValues().getTotal() == 0);
+                } while (parent != null && parent.getValue().nbEvents == 0);
 
                 if (parent == null) {
                     return 0;
                 }
-                return (double) node.getValues().getTotal() / parent.getValues().getTotal();
+                return (double) node.getValue().nbEvents / parent.getValue().nbEvents;
             }
         };
 
@@ -114,9 +111,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getHeader
     // ------------------------------------------------------------------------
 
-    /**
-     * Test get header
-     */
     public void testGetHeader() {
         assertEquals("getHeader", 0, fBaseColumnData.getHeader().compareTo(fHeader));
     }
@@ -125,9 +119,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getWidth
     // ------------------------------------------------------------------------
 
-    /**
-     * Test getting of column width.
-     */
     public void testGetWidth() {
         assertEquals("getWidth", fWidth, fBaseColumnData.getWidth());
     }
@@ -136,9 +127,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getAlignment
     // ------------------------------------------------------------------------
 
-    /**
-     * Test getting of alignment value
-     */
     public void testGetAlignment() {
         assertEquals("getAlignment", fAlignment, fBaseColumnData.getAlignment());
     }
@@ -147,9 +135,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getToolTip
     // ------------------------------------------------------------------------
 
-    /**
-     * Test getting of tooltip.
-     */
     public void testGetTooltip() {
         assertEquals("getTooltip", fToolTip, fBaseColumnData.getTooltip());
     }
@@ -158,9 +143,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getLabelProvider
     // ------------------------------------------------------------------------
 
-    /**
-     * Test getting of label provider
-     */
     public void testGetLabelProvider() {
         assertEquals("getLabelProvider", 0, fBaseColumnData.getLabelProvider().getText(fTreeNode).compareTo(fLabelProvider.getText(fTreeNode)));
         assertTrue("getLabelProvider", fBaseColumnData.getLabelProvider().getImage(fTreeNode).equals(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT)));
@@ -171,9 +153,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getComparator
     // ------------------------------------------------------------------------
 
-    /**
-     * Test getting of comparator.
-     */
     public void testGetComparator() {
         assertTrue("getComparator", fBaseColumnData.getComparator().equals(fComparator));
     }
@@ -182,9 +161,6 @@ public class TmfBaseColumnDataTest extends TestCase {
     // getPercentageProvider
     // ------------------------------------------------------------------------
 
-    /**
-     * Test getting of percentage provider.
-     */
     public void testGetPercentageProvider() {
         assertTrue("getPercentageProvider", fBaseColumnData.getPercentageProvider().equals(fPercentageProvider));
     }

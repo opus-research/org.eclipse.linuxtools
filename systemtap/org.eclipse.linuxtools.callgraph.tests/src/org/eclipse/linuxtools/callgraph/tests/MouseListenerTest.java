@@ -41,7 +41,7 @@ public class MouseListenerTest extends TestCase {
 		// StapGraphMouseWheelListener mwListener =
 		// CallgraphView.getGraph().getMouseWheelListener();
 
-		StapGraph g = cView.getGraph();
+		StapGraph g = (StapGraph) cView.getGraph();
 		g.setProject(parse.project);
 
 		GraphItem[] nodes = { g.getNode(g.getFirstUsefulNode()) };

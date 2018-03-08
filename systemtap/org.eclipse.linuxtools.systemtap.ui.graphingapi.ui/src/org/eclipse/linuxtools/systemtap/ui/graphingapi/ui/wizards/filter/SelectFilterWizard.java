@@ -30,7 +30,6 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 	}
 	
-	@Override
 	public void addPages() {
 		setWindowTitle(Localization.getString("SelectFilterWizard.CreateFilter"));
 		selectFilterPage = new SelectFilterWizardPage();
@@ -43,7 +42,6 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 		}
 	}
 	
-	@Override
 	public boolean canFinish() {
 		IWizardPage page = this.getContainer().getCurrentPage(); 
 		if((null != filter) && (page instanceof FilterWizardPage))
@@ -51,12 +49,10 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 		return false;
 	}
 
-	@Override
 	public boolean performCancel() {
 		return true;
 	}
 	
-	@Override
 	public boolean performFinish() {
 		return true;
 	}
@@ -65,7 +61,6 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 		return filter;
 	}
 	
-	@Override
 	public void dispose() {
 		if(null != selectFilterPage)
 			selectFilterPage.dispose();

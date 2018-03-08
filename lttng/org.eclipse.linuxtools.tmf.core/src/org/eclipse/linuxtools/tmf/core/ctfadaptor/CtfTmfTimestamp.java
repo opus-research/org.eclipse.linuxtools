@@ -151,15 +151,8 @@ public class CtfTmfTimestamp extends TmfTimestamp {
     private String nanoToString() {
         final long timestamp = getValue();
         StringBuilder retVal = new StringBuilder();
-        String time = Long.toString(timestamp);
-        for (int i = 0; i < time.length(); i++) {
-            int pos = time.length() - i - 1;
-            retVal.append(time.charAt(i));
-            if (pos % 3 == 0) {
-                retVal.append(' ');
-            }
-        }
-        retVal.append("ns"); //$NON-NLS-1$
+        retVal.append(timestamp);
+        retVal.append(" ns"); //$NON-NLS-1$
         return retVal.toString();
     }
 

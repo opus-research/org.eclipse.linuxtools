@@ -55,9 +55,8 @@ public final class DMError {
 		return;
 	}
 	
-	@Override
 	public String toString() {
-		return errtext;
+		return new String(errtext);
 	}
 	
 }

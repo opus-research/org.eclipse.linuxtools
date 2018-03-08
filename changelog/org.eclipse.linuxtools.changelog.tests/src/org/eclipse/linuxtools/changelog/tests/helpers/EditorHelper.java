@@ -45,7 +45,6 @@ public class EditorHelper {
 	public static void closeEditor(final IEditorPart editor) {
 		if (editor.getSite().getWorkbenchWindow().getActivePage() != null) {
 			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-				@Override
 				public void run() {
 					// close editor
 					editor.getSite().getWorkbenchWindow().getActivePage()

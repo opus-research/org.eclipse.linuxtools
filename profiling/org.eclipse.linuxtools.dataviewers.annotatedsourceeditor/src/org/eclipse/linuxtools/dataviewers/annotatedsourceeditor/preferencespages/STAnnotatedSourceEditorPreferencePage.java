@@ -51,7 +51,6 @@ public class STAnnotatedSourceEditorPreferencePage extends PreferencePage
 		return null;
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 		// TODO Auto-generated method stub
 
