@@ -5,4 +5,5 @@
 /kernel_vm
 /trace2
 *.ht
+/synctraces
 
