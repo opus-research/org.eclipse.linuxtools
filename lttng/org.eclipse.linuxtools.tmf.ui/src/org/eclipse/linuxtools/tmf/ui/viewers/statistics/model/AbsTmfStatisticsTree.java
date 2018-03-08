@@ -201,7 +201,7 @@ public abstract class AbsTmfStatisticsTree {
     protected abstract void registerName(final TmfFixedArray<String> path);
 
     /**
-     * Resets a node.
+     * Reset a node.
      *
      * Works recursively.
      *
@@ -226,6 +226,7 @@ public abstract class AbsTmfStatisticsTree {
      */
     public void resetTimeRangeValue(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getChildren(path)) {
+            resetTimeRangeValue(node.getPath());
             node.resetTimeRangeValue();
         }
     }
