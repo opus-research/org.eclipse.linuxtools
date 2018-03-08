@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Thavidu Ranatunga (IBM) - Initial implementation.
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.perf.ui;
 
 import org.eclipse.jface.action.Action;
@@ -16,6 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -38,18 +39,24 @@ public class PerfProfileView extends ViewPart {
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String ID = "org.eclipse.linuxtools.internal.perf.views.ProfileView"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.internal.perf.views.ProfileView";
 
 	private TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
 	private Action doubleClickAction;
-
+	
 	static class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			return (((TreeParent) e1).getPercent()
 					<= ((TreeParent) e2).getPercent()) ? 1 : -1;
 		}
+	}
+
+	/**
+	 * The constructor.
+	 */
+	public PerfProfileView() {
 	}
 
 	/**
@@ -61,24 +68,25 @@ public class PerfProfileView extends ViewPart {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		drillDownAdapter = new DrillDownAdapter(viewer);
 		viewer.setContentProvider(new PerfViewContentProvider());
-
+		
 		viewer.setLabelProvider(new PerfViewLabelProvider());
 		viewer.setSorter(new NameSorter());
 
 		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer"); //$NON-NLS-1$
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer");
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		PerfPlugin.getDefault().setProfileView(this);
 	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
 	}
 
 	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
+		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
 		menuMgr.addMenuListener(new IMenuListener() {
 			@Override
@@ -105,7 +113,7 @@ public class PerfProfileView extends ViewPart {
 		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
-
+	
 	private void fillLocalToolBar(IToolBarManager manager) {
 		drillDownAdapter.addNavigationActions(manager);
 	}
@@ -122,6 +130,14 @@ public class PerfProfileView extends ViewPart {
 
 	public TreeViewer getTreeViewer () {
 		return viewer;
+	}
+	
+	@SuppressWarnings("unused")
+	private void showMessage(String message) {
+		MessageDialog.openInformation(
+			viewer.getControl().getShell(),
+			"Perf Profile View",
+			message);
 	}
 
 	/**

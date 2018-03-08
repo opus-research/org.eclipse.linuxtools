@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
@@ -45,47 +46,47 @@ public class NGC implements IGC {
     /**
      * The graphical context.
      */
-    private GC fContext;
+    protected GC fContext;
     /**
      * The reference to the sequence diagram view.
      */
-    private SDWidget fView;
+    protected SDWidget fView;
     /**
      * A reference to the last used font.
      */
-    private Font fTempFont = null;
+    protected Font fTempFont = null;
     /**
      * The color of the gradient.
      */
-    private IColor fGradientColor = null;
+    protected IColor fGradientColor = null;
     /**
      * The color of the background.
      */
-    private IColor fBackground = null;
+    protected IColor fBackground = null;
     /**
      * The color of the foreground.
      */
-    private IColor fForeground = null;
+    protected IColor fForeground = null;
     /**
      * The current visible y screen bounds
      */
-    private int fVisibleY;
+    protected int fVisibleY;
     /**
      * The current visible x screen bound.
      */
-    private int fVisibleX;
+    protected int fVisibleX;
     /**
      * The current yx value (view visible height - visible screen bounds)
      */
-    private int yx;
+    protected int yx;
     /**
      * The current xx value (view visible width - visible screen bounds)
      */
-    private int xx;
+    protected int xx;
     /**
      * <code>true</code> to draw with focus else <code>false</code>.
      */
-    private boolean fDrawWithFocus = false;
+    protected boolean fDrawWithFocus = false;
 
     /**
      * The static visible screen bounds.
@@ -112,127 +113,73 @@ public class NGC implements IGC {
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setLineStyle(int)
+     */
     @Override
     public void setLineStyle(int style) {
         fContext.setLineStyle(style);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineStyle()
+     */
     @Override
     public int getLineStyle() {
         return fContext.getLineStyle();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getContentsX()
+     */
     @Override
     public int getContentsX() {
-        return Math.round(fView.getContentsX() / fView.getZoomValue());
+        return Math.round(fView.getContentsX() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getContentsY()
+     */
     @Override
     public int getContentsY() {
-        return Math.round(fView.getContentsY() / fView.getZoomValue());
+        return Math.round(fView.getContentsY() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getVisibleWidth()
+     */
     @Override
     public int getVisibleWidth() {
-        return Math.round(fView.getVisibleWidth() / fView.getZoomValue());
+        return Math.round(fView.getVisibleWidth() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getVisibleHeight()
+     */
     @Override
     public int getVisibleHeight() {
-        return Math.round(fView.getVisibleHeight() / fView.getZoomValue());
+        return Math.round(fView.getVisibleHeight() / fView.fZoomValue);
     }
 
-    /**
-     * Returns the current visible y screen bounds.
-     *
-     * @return the current visible y screen bounds
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#contentsToViewX(int)
      */
-    protected int getVisibleY() {
-        return fVisibleY;
-    }
-
-    /**
-     * Sets the current visible y screen bounds.
-     *
-     * @param visibleY
-     *          the current visible y screen bounds
-     * @since 2.0
-     */
-    protected void setVisibleY(int visibleY) {
-        fVisibleY = visibleY;
-    }
-
-    /**
-     * Returns the current visible x screen bound.
-     *
-     * @return the current visible x screen bound.
-     * @since 2.0
-     *
-     */
-    protected int getfVisibleX() {
-        return fVisibleX;
-    }
-
-    /**
-     * Sets the current visible x screen bound.
-     *
-     * @param visibleX
-     *          the current visible x screen bound.
-     * @since 2.0
-     *
-     */
-    protected void setVisibleX(int visibleX) {
-        fVisibleX = visibleX;
-    }
-
-    /**
-     * Returns current yx value (view visible height - visible screen bounds).
-     *
-     * @return current yx value
-     * @since 2.0
-     */
-    protected int getYx() {
-        return yx;
-    }
-
-    /**
-     * Sets current yx value (view visible height - visible screen bounds).
-     *
-     * @param  yx
-     *       current yx value
-     * @since 2.0
-     */
-    protected void setYx(int yx) {
-        this.yx = yx;
-    }
-
-    /**
-     * Returns the current xx value (view visible width - visible screen bounds)
-     *
-     * @return the current xx value
-     * @since 2.0
-     */
-    protected int getXx() {
-        return xx;
-    }
-
-    /**
-     * Sets the current xx value (view visible width - visible screen bounds)
-     *
-     * @param xx
-     *      the current xx value
-     * @since 2.0
-     */
-    protected void setXx(int xx) {
-        this.xx = xx;
-    }
-
     @Override
     public int contentsToViewX(int x) {
         return fView.contentsToViewX(x);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#contentsToViewY(int)
+     */
     @Override
     public int contentsToViewY(int y) {
         return fView.contentsToViewY(y);
@@ -265,6 +212,10 @@ public class NGC implements IGC {
         return c;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawLine(int, int, int, int)
+     */
     @Override
     public void drawLine(int x1, int y1, int x2, int y2) {
         int localX1 = x1;
@@ -272,10 +223,10 @@ public class NGC implements IGC {
         int localX2 = x2;
         int localY2 = y2;
 
-        localX1 = Math.round(localX1 * fView.getZoomValue());
-        localY1 = Math.round(localY1 * fView.getZoomValue());
-        localX2 = Math.round(localX2 * fView.getZoomValue());
-        localY2 = Math.round(localY2 * fView.getZoomValue());
+        localX1 = Math.round(localX1 * fView.fZoomValue);
+        localY1 = Math.round(localY1 * fView.fZoomValue);
+        localX2 = Math.round(localX2 * fView.fZoomValue);
+        localY2 = Math.round(localY2 * fView.fZoomValue);
         localX1 = fView.contentsToViewX(localX1);
         localY1 = fView.contentsToViewY(localY1);
         localX2 = fView.contentsToViewX(localX2);
@@ -327,6 +278,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawRectangle(int, int, int, int)
+     */
     @Override
     public void drawRectangle(int x, int y, int width, int height) {
         int localX = x;
@@ -334,16 +289,16 @@ public class NGC implements IGC {
         int localWidth = width;
         int localHeight = height;
 
-        localX = Math.round(localX * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
         // Workaround to avoid problems for some special cases (not very nice)
         if (localY != getContentsY()) {
-            localY = Math.round(localY * fView.getZoomValue());
+            localY = Math.round(localY * fView.fZoomValue);
             localY = fView.contentsToViewY(localY);
         } else {
             localY = 0;
         }
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
         localX = fView.contentsToViewX(localX);
 
         if (localX < -fVisibleScreenBounds) {
@@ -367,6 +322,10 @@ public class NGC implements IGC {
         fContext.drawRectangle(localX, localY, localWidth, localHeight);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawFocus(int, int, int, int)
+     */
     @Override
     public void drawFocus(int x, int y, int width, int height) {
         int localX = x;
@@ -387,10 +346,10 @@ public class NGC implements IGC {
             localHeight = -localHeight;
         }
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
 
         setForeground(SDViewPref.getInstance().getForeGroundColorSelection());
         setBackground(SDViewPref.getInstance().getBackGroundColorSelection());
@@ -401,14 +360,18 @@ public class NGC implements IGC {
         setForeground(fC);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillPolygon(int[])
+     */
     @Override
     public void fillPolygon(int[] points) {
         int len = (points.length / 2) * 2;
         int[] localPoint = new int[len];
         for (int i = 0; i < len; i++) {
-            localPoint[i] = fView.contentsToViewX(Math.round(points[i] * fView.getZoomValue()));
+            localPoint[i] = fView.contentsToViewX(Math.round(points[i] * fView.fZoomValue));
             i++;
-            localPoint[i] = fView.contentsToViewY(Math.round(points[i] * fView.getZoomValue()));
+            localPoint[i] = fView.contentsToViewY(Math.round(points[i] * fView.fZoomValue));
         }
 
         if (validatePolygonHeight(localPoint) <= 0) {
@@ -418,14 +381,18 @@ public class NGC implements IGC {
         fContext.fillPolygon(localPoint);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawPolygon(int[])
+     */
     @Override
     public void drawPolygon(int[] points) {
         int len = (points.length / 2) * 2;
         int[] localPoint = new int[len];
         for (int i = 0; i < len; i++) {
-            localPoint[i] = fView.contentsToViewX(Math.round(points[i] * fView.getZoomValue()));
+            localPoint[i] = fView.contentsToViewX(Math.round(points[i] * fView.fZoomValue));
             i++;
-            localPoint[i] = fView.contentsToViewY(Math.round(points[i] * fView.getZoomValue()));
+            localPoint[i] = fView.contentsToViewY(Math.round(points[i] * fView.fZoomValue));
         }
 
         if (validatePolygonHeight(localPoint) <= 0) {
@@ -435,6 +402,10 @@ public class NGC implements IGC {
         fContext.drawPolygon(localPoint);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillRectangle(int, int, int, int)
+     */
     @Override
     public void fillRectangle(int x, int y, int width, int height) {
         int localX = x;
@@ -442,16 +413,16 @@ public class NGC implements IGC {
         int localWidth = width;
         int localHeight = height;
 
-        localX = Math.round(localX * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
         // Workaround to avoid problems for some special cases (not very nice)
         if (localY != getContentsY()) {
-            localY = Math.round(localY * fView.getZoomValue());
+            localY = Math.round(localY * fView.fZoomValue);
             localY = fView.contentsToViewY(localY) + 1;
         } else {
             localY = 1;
         }
-        localWidth = Math.round(localWidth * fView.getZoomValue()) - 1;
-        localHeight = Math.round(localHeight * fView.getZoomValue()) - 1;
+        localWidth = Math.round(localWidth * fView.fZoomValue) - 1;
+        localHeight = Math.round(localHeight * fView.fZoomValue) - 1;
         localX = fView.contentsToViewX(localX) + 1;
         if (localX < -fVisibleScreenBounds) {
             localWidth = localWidth + localX + fVisibleScreenBounds;
@@ -472,8 +443,13 @@ public class NGC implements IGC {
             localHeight = fView.getVisibleHeight() + fVisibleScreenBounds - localY;
         }
         fContext.fillRectangle(localX, localY, localWidth, localHeight);
+
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillGradientRectangle(int, int, int, int, boolean)
+     */
     @Override
     public void fillGradientRectangle(int x, int y, int width, int height, boolean isVertical) {
         int localX = x;
@@ -481,10 +457,10 @@ public class NGC implements IGC {
         int localWidth = width;
         int localHeight = height;
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
         IColor tempColor = fForeground;
         setForeground(fGradientColor);
         localX = fView.contentsToViewX(localX);
@@ -518,18 +494,27 @@ public class NGC implements IGC {
         setForeground(tempColor);
     }
 
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#textExtent(java.lang.String)
+     */
     @Override
     public int textExtent(String name) {
         return fContext.textExtent(name).x;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawText(java.lang.String, int, int, boolean)
+     */
     @Override
     public void drawText(String string, int x, int y, boolean isTrans) {
         int localX = x;
         int localY = y;
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
         fContext.drawText(string, fView.contentsToViewX(localX), fView.contentsToViewY(localY), isTrans);
         if (fDrawWithFocus) {
             Point r = fContext.textExtent(string);
@@ -537,13 +522,17 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawText(java.lang.String, int, int)
+     */
     @Override
     public void drawText(String string, int x, int y) {
         int localX = x;
         int localY = y;
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
         fContext.drawText(string, fView.contentsToViewX(localX), fView.contentsToViewY(localY), true);
         if (fDrawWithFocus) {
             Point r = fContext.textExtent(string);
@@ -551,6 +540,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillOval(int, int, int, int)
+     */
     @Override
     public void fillOval(int x, int y, int width, int height) {
         int localX = x;
@@ -558,13 +551,17 @@ public class NGC implements IGC {
         int localWidth = width;
         int localHeight = height;
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
         fContext.fillOval(fView.contentsToViewX(localX), fView.contentsToViewY(localY), localWidth, localHeight);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getBackground()
+     */
     @Override
     public IColor getBackground() {
         if ((fBackground != null) && (fBackground.getColor() instanceof Color) && (!((Color) (fBackground.getColor())).isDisposed())) {
@@ -573,6 +570,10 @@ public class NGC implements IGC {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getForeground()
+     */
     @Override
     public IColor getForeground() {
         if ((fForeground != null) && (fForeground.getColor() instanceof Color) && (!((Color) (fForeground.getColor())).isDisposed())) {
@@ -581,6 +582,10 @@ public class NGC implements IGC {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setBackground(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
+     */
     @Override
     public void setBackground(IColor color) {
         if (color == null) {
@@ -592,6 +597,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setForeground(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
+     */
     @Override
     public void setForeground(IColor color) {
         if (color == null) {
@@ -606,6 +615,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setGradientColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
+     */
     @Override
     public void setGradientColor(IColor color) {
         if (color == null) {
@@ -616,6 +629,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setLineWidth(int)
+     */
     @Override
     public void setLineWidth(int width) {
         if (fView.isPrinting()) {
@@ -626,6 +643,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineWidth()
+     */
     @Override
     public int getLineWidth() {
         return fContext.getLineWidth();
@@ -650,6 +671,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawTextTruncatedCentred(java.lang.String, int, int, int, int, boolean)
+     */
     @Override
     public void drawTextTruncatedCentred(String name, int xValue, int yValue, int width, int height, boolean trans) {
         int localX = xValue;
@@ -658,15 +683,15 @@ public class NGC implements IGC {
         int localHeight = height;
 
         Point tx = fContext.textExtent(name);
-        localX = Math.round(localX * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
         int y = 0;
         // Workaround to avoid round problems for some special cases (not very nice)
         if (localY != getContentsY()) {
-            localY = Math.round(localY * fView.getZoomValue());
+            localY = Math.round(localY * fView.fZoomValue);
             y = fView.contentsToViewY(localY);
         }
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
         int x = fView.contentsToViewX(localX);
         if (tx.y > localHeight) {
             return;
@@ -704,6 +729,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawTextTruncated(java.lang.String, int, int, int, int, boolean)
+     */
     @Override
     public void drawTextTruncated(String name, int xValue, int yValue, int width, int height, boolean trans) {
         int localX = xValue;
@@ -711,10 +740,10 @@ public class NGC implements IGC {
         int localWidth = width;
         int localHeight = height;
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
         int x = fView.contentsToViewX(localX);
         int y = fView.contentsToViewY(localY);
         if (fContext.textExtent(name).x <= localWidth) {
@@ -740,6 +769,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawImage(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage, int, int, int, int)
+     */
     @Override
     public void drawImage(IImage image, int xValue, int yValue, int maxWith, int maxHeight) {
         int localX = xValue;
@@ -749,19 +782,19 @@ public class NGC implements IGC {
         if (image != null && image.getImage() instanceof Image) {
             img = (Image) image.getImage();
         } else {
-            localX = Math.round(localX * fView.getZoomValue());
-            localY = Math.round(localY * fView.getZoomValue());
+            localX = Math.round(localX * fView.fZoomValue);
+            localY = Math.round(localY * fView.fZoomValue);
             int x = fView.contentsToViewX(localX);
             int y = fView.contentsToViewY(localY);
-            float tempZoom = fView.getZoomValue();
+            float tempZoom = fView.fZoomValue;
             int width = Math.round(maxWith * tempZoom);
             int height = Math.round(maxHeight * tempZoom);
             fContext.setBackground(fView.getDisplay().getSystemColor(SWT.COLOR_RED));
             fContext.fillRectangle(x, y, width, height);
             return;
         }
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
         int x = fView.contentsToViewX(localX);
         int y = fView.contentsToViewY(localY);
         Rectangle b = ((Image) image.getImage()).getBounds();
@@ -773,11 +806,11 @@ public class NGC implements IGC {
         if (height > maxHeight) {
             height = maxHeight;
         }
-        float tempZoom = fView.getZoomValue();
+        float tempZoom = fView.fZoomValue;
         width = Math.round(width * tempZoom);
         height = Math.round(height * tempZoom);
 
-        if (fView.isPrinting() && width > 0 && height > 0) {
+        if (fView.fIsPrinting && width > 0 && height > 0) {
             Image dbuffer = new Image(fView.getDisplay(), width, height);
             GC tempgc = new GC(dbuffer);
             tempgc.drawImage(img, 0, 0, b.width, b.height, 0, 0, width, height);
@@ -791,6 +824,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawArc(int, int, int, int, int, int)
+     */
     @Override
     public void drawArc(int x, int y, int width, int height, int startAngle, int endAngle) {
         int localX = x;
@@ -798,22 +835,26 @@ public class NGC implements IGC {
         int localWidth = width;
         int localHeight = height;
 
-        localX = Math.round(localX * fView.getZoomValue());
-        localY = Math.round(localY * fView.getZoomValue());
-        localWidth = Math.round(localWidth * fView.getZoomValue());
-        localHeight = Math.round(localHeight * fView.getZoomValue());
+        localX = Math.round(localX * fView.fZoomValue);
+        localY = Math.round(localY * fView.fZoomValue);
+        localWidth = Math.round(localWidth * fView.fZoomValue);
+        localHeight = Math.round(localHeight * fView.fZoomValue);
         if (localWidth == 0 || localHeight == 0 || endAngle == 0) {
             return;
         }
         fContext.drawArc(fView.contentsToViewX(localX), fView.contentsToViewY(localY), localWidth, localHeight, startAngle, endAngle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setFont(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont)
+     */
     @Override
     public void setFont(IFont font) {
         if (font.getFont() != null && ((Font) font.getFont()).getFontData().length > 0) {
             FontData fontData = ((Font) font.getFont()).getFontData()[0];
-            if (SDViewPref.getInstance().fontLinked() || fView.isPrinting()) {
-                int h = Math.round(fontData.getHeight() * fView.getZoomValue());
+            if (SDViewPref.getInstance().fontLinked() || fView.fIsPrinting) {
+                int h = Math.round(fontData.getHeight() * fView.fZoomValue);
                 if (h > 0) {
                     fontData.setHeight(h);
                 }
@@ -826,6 +867,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getFontHeight(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont)
+     */
     @Override
     public int getFontHeight(IFont font) {
         if (font.getFont() != null && (font.getFont() instanceof Font) && ((Font) font.getFont()).getFontData().length > 0) {
@@ -847,6 +892,10 @@ public class NGC implements IGC {
         return fContext.textExtent("lp").y; //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getFontWidth(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont)
+     */
     @Override
     public int getFontWidth(IFont font) {
         if ((font.getFont() != null) && (font.getFont() instanceof Font)) {
@@ -873,34 +922,58 @@ public class NGC implements IGC {
         fContext = null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getZoom()
+     */
     @Override
     public float getZoom() {
         if (fView != null) {
-            return fView.getZoomValue();
+            return fView.fZoomValue;
         }
         return 1;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineDotStyle()
+     */
     @Override
     public int getLineDotStyle() {
         return SWT.LINE_DOT;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineDashStyle()
+     */
     @Override
     public int getLineDashStyle() {
         return SWT.LINE_DASH;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineSolidStyle()
+     */
     @Override
     public int getLineSolidStyle() {
         return SWT.LINE_SOLID;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#createColor(int, int, int)
+     */
     @Override
     public IColor createColor(int r, int g, int b) {
         return new ColorImpl(Display.getDefault(), r, g, b);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setDrawTextWithFocusStyle(boolean)
+     */
     @Override
     public void setDrawTextWithFocusStyle(boolean focus) {
         fDrawWithFocus = focus;
@@ -922,36 +995,6 @@ public class NGC implements IGC {
      */
     protected static void setVscreenBounds(int vBounds) {
         fVisibleScreenBounds = vBounds;
-    }
-
-    /**
-     * Returns the graphical context.
-     *
-     * @return the graphical context
-     * @since 2.0
-     */
-    protected GC getGc() {
-        return fContext;
-    }
-
-    /**
-     * Returns the SD widget.
-     *
-     * @return the SD widget
-     * @since 2.0
-     */
-    protected SDWidget getSDWidget() {
-        return fView;
-    }
-
-    /**
-     * Returns the gradient color.
-     *
-     * @return the gradient color
-     * @since 2.0
-     */
-    protected IColor setGradientColor() {
-        return fGradientColor;
     }
 
     // ------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,6 +18,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -27,11 +30,10 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * Implementation of ITmfStatistics which uses a state history for storing its
@@ -79,14 +81,22 @@ public class TmfStateStatistics implements ITmfStatistics {
      *             If something went wrong trying to initialize the statistics
      */
     public TmfStateStatistics(ITmfTrace trace) throws TmfTraceException {
+        /* Set up the path to the history tree file we'll use */
         this.trace = trace;
+        IResource resource = trace.getResource();
+        String supplDirectory = null;
 
-        String directory = TmfTraceManager.getSupplementaryFileDir(trace);
-        final File htFile = new File(directory + STATS_STATE_FILENAME);
-        final ITmfStateProvider htInput = new StatsStateProvider(trace);
+        try {
+            // get the directory where the history file will be stored.
+            supplDirectory = resource.getPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER);
+        } catch (CoreException e) {
+            throw new TmfTraceException(e.toString(), e);
+        }
 
-        this.stats = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
-        registerStateSystems();
+        final File htFile = new File(supplDirectory + File.separator + STATS_STATE_FILENAME);
+        final IStateChangeInput htInput = new StatsStateProvider(trace);
+
+        this.stats = StateSystemManager.loadStateHistory(htFile, htInput, false);
     }
 
     /**
@@ -103,16 +113,8 @@ public class TmfStateStatistics implements ITmfStatistics {
      */
     public TmfStateStatistics(ITmfTrace trace, File historyFile) throws TmfTraceException {
         this.trace = trace;
-        final ITmfStateProvider htInput = new StatsStateProvider(trace);
-        this.stats = TmfStateSystemFactory.newFullHistory(historyFile, htInput, true);
-        registerStateSystems();
-    }
-
-    /**
-     * Register the state systems used here into the trace's state system array.
-     */
-    private void registerStateSystems() {
-        trace.registerStateSystem(STATE_ID, stats);
+        final IStateChangeInput htInput = new StatsStateProvider(trace);
+        this.stats = StateSystemManager.loadStateHistory(historyFile, htInput, true);
     }
 
     // ------------------------------------------------------------------------

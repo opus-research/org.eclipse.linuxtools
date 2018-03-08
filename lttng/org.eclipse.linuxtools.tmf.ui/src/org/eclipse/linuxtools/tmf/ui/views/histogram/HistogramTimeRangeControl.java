@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,19 +10,18 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Francois Chouinard - Simplified constructor, handle interval format change
- *   Patrick Tasse - Update value handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import java.text.ParseException;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -53,6 +52,9 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
         TmfSignalManager.register(this);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#dispose()
+     */
     @Override
     public void dispose() {
         TmfSignalManager.deregister(this);
@@ -62,6 +64,10 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#updateValue()
+     */
     @Override
     protected void updateValue() {
         if (getValue() == Long.MIN_VALUE) {
@@ -74,11 +80,7 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
             value = TmfTimestampFormat.getDefaulIntervalFormat().parseValue(string);
         } catch (ParseException e) {
         }
-        if (getValue() != value) {
-            fParentView.updateTimeRange(value);
-        } else {
-            setValue(value);
-        }
+        fParentView.updateTimeRange(value);
     }
 
     @Override

@@ -41,16 +41,12 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 
 	private static final int SUDO_TIMEOUT = 2000;
 
-	/**
-	 *  Location of opcontrol security wrapper
-	 */
+	// Location of opcontrol security wrapper
 	private static final String OPCONTROL_REL_PATH = "natives/linux/scripts/" + OPCONTROL_EXECUTABLE; //$NON-NLS-1$
 
 	private static boolean isInstalled;
 
-	/**
-	 *  Initialize the Oprofile kernel module and oprofilefs
-	 */
+	// Initialize the Oprofile kernel module and oprofilefs
 	private static final String OPD_INIT_MODULE = "--init"; //$NON-NLS-1$
 
 	// Setup daemon collection arguments
@@ -243,12 +239,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	}
 
 	// Convenience function
-	/**
-	 * Run opcontrol process
-	 * @param cmd opcontrol daemon argument
-	 * @return true if any output was produced on the error stream, false otherwise
-	 * @throws OpcontrolException
-	 */
 	private boolean runOpcontrol(String cmd) throws OpcontrolException {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add(cmd);
@@ -258,8 +248,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	// Will add opcontrol program to beginning of args
 	// args: list of opcontrol arguments (not including opcontrol program itself)
 	/**
-	 * Run opcontrol process
-	 * @param args list of opcontrol command and arguments
 	 * @return true if any output was produced on the error stream. Unfortunately
 	 * this appears to currently be the only way we can tell if user correctly
 	 * entered the password
@@ -290,10 +278,9 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	}
 
 	/**
-	 * Create opcontrol process
-	 * @param cmdArray array of opcontrol command and arguments
-	 * @param project project to be profiled
-	 * @return p opcontrol process
+	 * @param cmdArray
+	 * @param project
+	 * @return
 	 * @throws OpcontrolException
 	 * @since 1.1
 	 */
@@ -317,11 +304,10 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	}
 
 	/**
-	 * Check opcontrol process
-	 * @param p opcontrol process
-	 * @return true if any output was produced on the error stream, false otherwise
-	 * @throws OpcontrolException
 	 * @since 1.1
+	 * @param p
+	 * @return
+	 * @throws OpcontrolException
 	 */
 	protected boolean checkOpcontrolProcess(Process p) throws OpcontrolException {
 		if (p != null) {
@@ -378,8 +364,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	}
 
 	/**
-	 * Search for opcontrol executable on the system
-	 * @return a string path to opcontrol executable
 	 * @since 1.1
 	 */
 	protected String findOpcontrolExecutable() {
@@ -405,11 +389,7 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 		return null;
 	}
 
-	/**
-	 * Convert the event into arguments for opcontrol
-	 * @param args List of arguments
-	 * @param event The event to be passed as argument to opcontrol
-	 */
+	// Convert the event into arguments for opcontrol
 	private void eventToArguments(ArrayList<String> args, OprofileDaemonEvent event) {
 		// Event spec: "EVENT:count:mask:profileKernel:profileUser"
 		StringBuilder spec = new StringBuilder();
@@ -426,11 +406,7 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 		args.add(spec.toString());
 	}
 
-	/**
-	 *  Convert the options into arguments for opcontrol
-	 * @param args List of arguments
-	 * @param options The launch options to oprofile daemon
-	 */
+	// Convert the options into arguments for opcontrol
 	private void optionsToArguments(ArrayList<String> args, OprofileDaemonOptions options) {
 		// Add separate flags
 		int mask = options.getSeparateProfilesMask();
@@ -471,8 +447,8 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 	/**
 	 * Checks if the user has permissions to execute opcontrol as root without providing password
 	 * and if opcontrol exists in the indicated path
-	 * @param project The project to be profiled
-	 * @return true if the user has sudo permission to run opcontrol, false otherwise
+	 * @param project
+	 * @return
 	 * @throws OpcontrolException if opcontrol not installed
 	 * @since 1.1
 	 */
@@ -541,10 +517,6 @@ public class LinuxOpcontrolProvider implements IOpcontrolProvider {
 		return false;
 	}
 
-	/**
-	 * Check if opcontrol is installed on the system
-	 * @return true if opcontrol is installed, otherwise false
-	 */
 	private boolean isInstalled(){
 		findOpcontrolExecutable();
 		return isInstalled;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.core.event;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -76,37 +75,36 @@ public interface ITmfEvent extends IAdaptable {
     /**
      * @return the trace that 'owns' the event
      */
-    ITmfTrace getTrace();
+    public ITmfTrace getTrace();
 
     /**
      * @return the event rank within the parent trace
      */
-    long getRank();
+    public long getRank();
 
     /**
      * @return the event timestamp
-     * @since 2.0
      */
-    ITmfTimestamp getTimestamp();
+    public ITmfTimestamp getTimestamp();
 
     /**
      * @return the event source
      */
-    String getSource();
+    public String getSource();
 
     /**
      * @return the event type
      */
-    ITmfEventType getType();
+    public ITmfEventType getType();
 
     /**
      * @return the event content
      */
-    ITmfEventField getContent();
+    public ITmfEventField getContent();
 
     /**
      * @return the event reference
      */
-    String getReference();
+    public String getReference();
 
 }

@@ -85,24 +85,12 @@ public interface IOpcontrolProvider {
 	/**
 	 * Delete the session with the specified name for the specified event
 	 * @param sessionName The name of the session to delete
-	 * @param sessionEvent The name of the event containing the session
+	 * @param eventName The name of the event containing the session
 	 * @throws OpcontrolException
 	 */
 	public void deleteSession (String sessionName, String sessionEvent) throws OpcontrolException;
 
-	/**
-	 * Check if the user has permission to run opcontrol
-	 * @param project The project to be run
-	 * @return true if the user has sudo permission to run opcontrol, otherwise false
-	 * @throws OpcontrolException
-	 * @since 2.0
-	 */
 	public boolean hasPermissions(IProject project) throws OpcontrolException;
 
-	/**
-	 * Check status and return true if any status was returned
-	 * @return true if any status was returned, otherwise false
-	 * @throws OpcontrolException
-	 */
 	public boolean status() throws OpcontrolException;
 }

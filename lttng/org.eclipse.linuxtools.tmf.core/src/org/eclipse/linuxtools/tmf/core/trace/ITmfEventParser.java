@@ -33,6 +33,6 @@ public interface ITmfEventParser {
 	 * @param context the trace context
 	 * @return a parsed event (null if none)
 	 */
-	ITmfEvent parseEvent(ITmfContext context);
+	public ITmfEvent parseEvent(ITmfContext context);
 
 }

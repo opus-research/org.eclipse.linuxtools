@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
@@ -18,26 +7,45 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * The class <code>StringDeclarationTest</code> contains tests for the class
  * <code>{@link StringDeclaration}</code>.
- *
+ * 
  * @author ematkho
  * @version $Revision: 1.0 $
  */
 public class StringDeclarationTest {
-
+    
     private StringDeclaration fixture;
-
+    
+    /**
+     * Launch the test.
+     * 
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(StringDeclarationTest.class);
+    }
+    
     /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new StringDeclaration(Encoding.ASCII);
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -48,7 +56,7 @@ public class StringDeclarationTest {
         StringDeclaration result = new StringDeclaration();
 
         assertNotNull(result);
-        String string = "[declaration] string[";
+        String string = "[declaration] string["; //$NON-NLS-1$
         assertEquals(string, result.toString().substring(0, string.length()));
     }
 
@@ -61,7 +69,7 @@ public class StringDeclarationTest {
         StringDeclaration result = new StringDeclaration(encoding);
 
         assertNotNull(result);
-        String string = "[declaration] string[";
+        String string = "[declaration] string["; //$NON-NLS-1$
         assertEquals(string, result.toString().substring(0, string.length()));
     }
 
@@ -72,7 +80,7 @@ public class StringDeclarationTest {
     @Test
     public void testCreateDefinition() {
         IDefinitionScope definitionScope = null;
-        String fieldName = "id";
+        String fieldName = "id"; //$NON-NLS-1$
         StringDefinition result = fixture.createDefinition(definitionScope,
                 fieldName);
 
@@ -87,8 +95,8 @@ public class StringDeclarationTest {
         Encoding result = fixture.getEncoding();
 
         assertNotNull(result);
-        assertEquals("ASCII", result.name());
-        assertEquals("ASCII", result.toString());
+        assertEquals("ASCII", result.name()); //$NON-NLS-1$
+        assertEquals("ASCII", result.toString()); //$NON-NLS-1$
         assertEquals(1, result.ordinal());
     }
 
@@ -107,9 +115,9 @@ public class StringDeclarationTest {
     @Test
     public void testToString() {
         String result = fixture.toString();
-        String left = "[declaration] string[";
+        String left = "[declaration] string["; //$NON-NLS-1$
         String right = result.substring(0, left.length());
-
+        
         assertEquals(left, right);
     }
 }

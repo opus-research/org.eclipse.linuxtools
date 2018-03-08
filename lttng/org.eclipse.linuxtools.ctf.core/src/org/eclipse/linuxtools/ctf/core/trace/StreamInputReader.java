@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -13,9 +13,6 @@
 package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.nio.ByteOrder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
@@ -59,8 +56,6 @@ public class StreamInputReader {
 
     private CTFTraceReader parent;
 
-    /** Map of all the event types */
-    private final Map<Long, EventDefinition> eventDefs = new HashMap<Long,EventDefinition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -168,30 +163,6 @@ public class StreamInputReader {
      */
     StreamInput getStreamInput() {
         return streamInput;
-    }
-
-    /**
-     * Gets the event definition hashmap for this StreamInput
-     *
-     * @return Unmodifiable map with the event definitions
-     * @since 2.1
-     */
-    public Map<Long, EventDefinition> getEventDefinitions() {
-        return Collections.unmodifiableMap(eventDefs);
-    }
-
-    /**
-     * Add an event definition to this stream input reader.
-     *
-     * @param id
-     *            The id of the event definition. This will overwrite any
-     *            existing definition with the same id.
-     * @param def
-     *            The matching event definition
-     * @since 2.1
-     */
-    public void addEventDefinition(Long id, EventDefinition def) {
-        eventDefs.put(id, def);
     }
 
     // ------------------------------------------------------------------------
@@ -329,6 +300,8 @@ public class StreamInputReader {
          */
         final int len = this.streamInput.getIndex().getEntries().size();
 
+        @SuppressWarnings("unused")
+        StreamInputPacketIndexEntry entry = null;
         /*
          * Go to beginning of trace.
          */
@@ -408,6 +381,11 @@ public class StreamInputReader {
         return packetReader;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -418,6 +396,11 @@ public class StreamInputReader {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

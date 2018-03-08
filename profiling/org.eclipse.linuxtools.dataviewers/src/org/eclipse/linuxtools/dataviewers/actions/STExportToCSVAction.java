@@ -15,16 +15,18 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.window.Window;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersCSVExporter;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersImages;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersMessages;
 import org.eclipse.linuxtools.dataviewers.dialogs.STDataViewersExportToCSVDialog;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * This action export the STViewers data to CSV format file
- *
+ * 
  */
 public class STExportToCSVAction extends Action {
 
@@ -39,32 +41,30 @@ public class STExportToCSVAction extends Action {
 
     /**
      * Constructor
-     *
+     * 
      * @param stViewer
      *            the stViewer to export
      */
     public STExportToCSVAction(AbstractSTViewer stViewer) {
-		super(STDataViewersMessages.exportToCSVAction_title,
-				STDataViewersImages
-						.getImageDescriptor(STDataViewersImages.IMG_EXPORT));
+        super(STDataViewersMessages.exportToCSVAction_title);
+        Image img = STDataViewersImages.getImage(STDataViewersImages.IMG_EXPORT);
+        super.setImageDescriptor(ImageDescriptor.createFromImage(img));
 
-		this.stViewer = stViewer;
-		this.exporter = new STDataViewersCSVExporter(stViewer);
+        this.stViewer = stViewer;
+        this.exporter = new STDataViewersCSVExporter(stViewer);
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.jface.action.Action#run()
      */
-    @Override
-	public void run() {
+    public void run() {
         STDataViewersExportToCSVDialog dialog = new STDataViewersExportToCSVDialog(stViewer.getViewer().getControl()
                 .getShell(), exporter);
-        if (dialog.open() == Window.OK) {
+        if (dialog.open() == Dialog.OK) {
             Job exportToCSVJob = new Job("Export to CSV") {
-                @Override
-				public IStatus run(IProgressMonitor monitor) {
+                public IStatus run(IProgressMonitor monitor) {
                     exporter.export(monitor);
                     return Status.OK_STATUS;
                 }
@@ -81,7 +81,7 @@ public class STExportToCSVAction extends Action {
     }
 
     /**
-     *
+     * 
      * @return exporter
      */
     public STDataViewersCSVExporter getExporter() {

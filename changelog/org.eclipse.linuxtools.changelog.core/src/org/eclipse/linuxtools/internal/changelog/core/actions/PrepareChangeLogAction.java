@@ -235,6 +235,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 						p.setStorage(ancestorStorage);
 					}
 					else {
+						ancestorStorage = null;
 						return;
 					}
 

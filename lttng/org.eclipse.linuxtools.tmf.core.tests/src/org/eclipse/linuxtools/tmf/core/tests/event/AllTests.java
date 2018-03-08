@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,7 +10,6 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Event Model
  *   Alexandre Montplaisir - Port to JUnit4
- *   Patrick Tasse - Added TmfNanoTimestampTest
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
@@ -27,14 +26,10 @@ import org.junit.runners.Suite;
     TmfEventTest.class,
     TmfEventTypeManagerTest.class,
     TmfEventTypeTest.class,
-    TmfNanoTimestampTest.class,
     TmfSimpleTimestampTest.class,
-    TmfTimePreferencesTest.class,
     TmfTimeRangeTest.class,
     TmfTimestampDeltaTest.class,
-    TmfTimestampTest.class,
-    TmfTimestampFormatTest.class,
-    org.eclipse.linuxtools.tmf.core.tests.event.lookup.AllTests.class
+    TmfTimestampTest.class
 })
 public class AllTests {
 

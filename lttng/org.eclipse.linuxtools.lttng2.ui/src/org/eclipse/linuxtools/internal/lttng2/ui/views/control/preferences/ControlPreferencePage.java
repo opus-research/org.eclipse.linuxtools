@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,7 +15,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -36,8 +35,8 @@ public class ControlPreferencePage extends FieldEditorPreferencePage implements 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-    private RadioGroupFieldEditor fVerboseLevel;
-    private BooleanFieldEditor  fIsAppend;
+    RadioGroupFieldEditor fVerboseLevel;
+    BooleanFieldEditor  fIsAppend;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -57,11 +56,18 @@ public class ControlPreferencePage extends FieldEditorPreferencePage implements 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+     */
     @Override
     public void init(IWorkbench workbench) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.FieldEditorPreferencePage#createFieldEditors()
+     */
     @Override
     protected void createFieldEditors() {
 
@@ -108,12 +114,12 @@ public class ControlPreferencePage extends FieldEditorPreferencePage implements 
         fVerboseLevel.setEnabled(enabled, getFieldEditorParent());
         fIsAppend.setEnabled(enabled, getFieldEditorParent());
         logfile.setEnabled(false, getFieldEditorParent());
-
-        IntegerFieldEditor commandTimeout = new IntegerFieldEditor(ControlPreferences.TRACE_CONTROL_COMMAND_TIMEOUT_PREF, Messages.TraceControl_CommandTimeout, getFieldEditorParent());
-        commandTimeout.setValidRange(ControlPreferences.TRACE_CONTROL_MIN_TIMEOUT_VALUE, ControlPreferences.TRACE_CONTROL_MAX_TIMEOUT_VALUE);
-        addField(commandTimeout);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.FieldEditorPreferencePage#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
 
@@ -130,6 +136,10 @@ public class ControlPreferencePage extends FieldEditorPreferencePage implements 
         super.propertyChange(event);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.FieldEditorPreferencePage#performDefaults()
+     */
     @Override
     protected void performDefaults() {
         super.performDefaults();
@@ -137,6 +147,10 @@ public class ControlPreferencePage extends FieldEditorPreferencePage implements 
         fIsAppend.setEnabled(false, getFieldEditorParent());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.FieldEditorPreferencePage#performOk()
+     */
     @Override
     public boolean performOk() {
         boolean ret =  super.performOk();

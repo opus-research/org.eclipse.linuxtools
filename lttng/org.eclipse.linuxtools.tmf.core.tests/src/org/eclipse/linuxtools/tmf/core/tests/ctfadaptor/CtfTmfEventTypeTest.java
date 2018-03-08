@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -28,6 +28,7 @@ import org.junit.Test;
  * @author ematkho
  * @version 1.0
  */
+@SuppressWarnings("nls")
 public class CtfTmfEventTypeTest {
 
     /**
@@ -36,7 +37,7 @@ public class CtfTmfEventTypeTest {
     @Test
     public void testCtfTmfEventType() {
         String eventName = "";
-        ITmfEventField content = new TmfEventField("", null, new ITmfEventField[] {});
+        ITmfEventField content = new TmfEventField("", new ITmfEventField[] {});
         CtfTmfEventType result = new CtfTmfEventType( eventName, content);
 
         assertNotNull(result);
@@ -50,7 +51,7 @@ public class CtfTmfEventTypeTest {
      */
     @Test
     public void testToString() {
-        ITmfEventField emptyField = new TmfEventField("", null, new ITmfEventField[] {});
+        ITmfEventField emptyField = new TmfEventField("", new ITmfEventField[] {});
         CtfTmfEventType fixture = new CtfTmfEventType("", emptyField);
 
         String result = fixture.toString();

@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * @since 2.0
+ * @since 1.3
  */
 public class ResourceSelectorWidget {
 
@@ -80,16 +80,14 @@ public class ResourceSelectorWidget {
 			switch (resourceType) {
 			case FILE: {
 				URI uri = resourceSelector.selectFile(fileSystem.getScheme(), path, ResourceSelectorWidgetMessages.ResourceSelectorWidget_select + sectionLabelText, browseButton.getShell());
-				if (uri != null) {
+				if (uri != null)
 					selectedResource = uri.toString();
-				}
 				break;
 			}
 			case DIRECTORY: {
 				URI uri = resourceSelector.selectDirectory(fileSystem.getScheme(), path, ResourceSelectorWidgetMessages.ResourceSelectorWidget_select + sectionLabelText, browseButton.getShell());
-				if (uri != null) {
+				if (uri != null)
 					selectedResource = uri.toString();
-				}
 				break;
 			}
 			default:
@@ -105,11 +103,11 @@ public class ResourceSelectorWidget {
 		}
 	}
 
-
+	
 
 	/**
 	 * Update the filesystem selector, if possible
-	 *
+	 * 
 	 * @param newPath
 	 */
 	private void updateFilesystemSelector(String newPath) {
@@ -167,11 +165,10 @@ public class ResourceSelectorWidget {
 		composite.setLayout(layout);
 
 		uriLabel = new Label(composite, SWT.NONE);
-		if (uriLabelText != null) {
+		if (uriLabelText != null)
 			uriLabel.setText(uriLabelText);
-		} else {
+		else
 			uriLabel.setText(ResourceSelectorWidgetMessages.uriLabelText);
-		}
 
 		// project location entry field
 		uriField = new Text(composite, SWT.BORDER);
@@ -205,7 +202,6 @@ public class ResourceSelectorWidget {
 			 *
 			 * @see org.eclipse.swt.events.ModifyListener#modifyText(org.eclipse.swt.events.ModifyEvent)
 			 */
-			@Override
 			public void modifyText(ModifyEvent e) {
 				updateFilesystemSelector(uriField.getText());
 			}
@@ -229,24 +225,18 @@ public class ResourceSelectorWidget {
 	}
 
 	public void setEnabled(boolean enabled) {
-		if (mainComp != null) {
+		if (mainComp != null)
 			mainComp.setEnabled(enabled);
-		}
-		if (sectionLabel != null) {
+		if (sectionLabel != null)
 			sectionLabel.setEnabled(enabled);
-		}
-		if (uriLabel != null) {
+		if (uriLabel != null)
 			uriLabel.setEnabled(enabled);
-		}
-		if (browseButton != null) {
+		if (browseButton != null)
 			browseButton.setEnabled(enabled);
-		}
-		if (uriField != null) {
+		if (uriField != null)
 			uriField.setEnabled(enabled);
-		}
-		if (fileSystemSelectionArea != null) {
+		if (fileSystemSelectionArea != null)
 			fileSystemSelectionArea.setEnabled(enabled);
-		}
 	}
 
 	public Text getURIText() {

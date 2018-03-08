@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -240,6 +240,14 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
                     + " DataType=" + getDataType().getSimpleName();
             TmfCoreTracer.traceRequest(this, message);
         }
+    }
+
+    /**
+     * Copy constructor
+     */
+    @SuppressWarnings("unused")
+    private TmfDataRequest(TmfDataRequest other) {
+        this(null, 0, ALL_DATA, DEFAULT_BLOCK_SIZE);
     }
 
     // ------------------------------------------------------------------------
@@ -536,12 +544,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        String name = getClass().getName();
-        int dot = name.lastIndexOf('.');
-        if (dot >= 0) {
-            name = name.substring(dot + 1);
-        }
-        return "[" + name + "(" + fRequestId + "," + fDataType.getSimpleName()+ "," + getExecType()
-                + "," + fIndex + "," + fNbRequested + "," + getBlockSize() + ")]";
+        return "[TmfDataRequest(" + fRequestId + "," + fDataType.getSimpleName() + "," + fIndex + "," + fNbRequested
+                + "," + getBlockSize() + ")]";
     }
 }

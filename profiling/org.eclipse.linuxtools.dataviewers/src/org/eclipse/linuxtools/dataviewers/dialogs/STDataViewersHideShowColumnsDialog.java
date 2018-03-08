@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Shell;
 /**
  * This dialog allows the user to show/hide some columns of the viewer The status of shown/hidden columns is saved in
  * the dialog settings of the view.
- *
+ * 
  */
 public class STDataViewersHideShowColumnsDialog extends Dialog {
 
@@ -53,8 +53,9 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
 
     /**
      * Constructor
-     *
-     * @param stViewer
+     * 
+     * @param parentShell
+     * @param view
      */
     public STDataViewersHideShowColumnsDialog(AbstractSTViewer stViewer) {
         super(stViewer.getViewer().getControl().getShell());
@@ -66,8 +67,7 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
     /*
      * (non-Javadoc) Method declared on Window.
      */
-    @Override
-	protected void configureShell(Shell newShell) {
+    protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(STDataViewersMessages.hideshowDialog_title);
     }
@@ -75,8 +75,7 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
     /*
      * (non-Javadoc) Method declared on Dialog.
      */
-    @Override
-	protected Control createDialogArea(Composite parent) {
+    protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         composite.setLayoutData(layoutData);
@@ -93,13 +92,11 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
         selectAllButton = new Button(composite, SWT.NONE);
         selectAllButton.setText(STDataViewersMessages.selectAll_text);
         selectAllButton.addSelectionListener(new SelectionListener() {
-            @Override
-			public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
 
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 markDirty();
                 checkButtonsTable.setAllChecked(true);
             }
@@ -110,13 +107,11 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
         deselectAllButton = new Button(composite, SWT.NONE);
         deselectAllButton.setText(STDataViewersMessages.deselectAll_text);
         deselectAllButton.addSelectionListener(new SelectionListener() {
-            @Override
-			public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
 
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 markDirty();
                 checkButtonsTable.setAllChecked(false);
             }
@@ -141,15 +136,14 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
     }
 
     private ICheckStateListener checkStateListener = new ICheckStateListener() {
-        @Override
-		public void checkStateChanged(CheckStateChangedEvent event) {
+        public void checkStateChanged(CheckStateChangedEvent event) {
             markDirty();
         }
     };
 
     /**
      * Creates a separator line above the OK/Cancel buttons bar
-     *
+     * 
      * @param parent
      *            the parent composite
      */
@@ -168,8 +162,7 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
         tableViewer.getControl().setLayoutData(layoutData);
 
         tableViewer.setContentProvider(new IStructuredContentProvider() {
-            @Override
-			public Object[] getElements(Object inputElement) {
+            public Object[] getElements(Object inputElement) {
                 if (inputElement instanceof Item[]) {
                     Item[] columns = (Item[]) inputElement;
                     int[] order = stViewer.getColumnOrder();
@@ -185,18 +178,15 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
                 return new Object[] {};
             }
 
-            @Override
-			public void dispose() {
+            public void dispose() {
             }
 
-            @Override
-			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             }
         });
 
         tableViewer.setLabelProvider(new LabelProvider() {
-            @Override
-			public String getText(Object element) {
+            public String getText(Object element) {
                 if (element instanceof Item) {
                     Item column = (Item) element;
 

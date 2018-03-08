@@ -19,63 +19,84 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Item;
 
-/**
- * This class is used to handle the width and visibility of all columns of a {@link AbstractSTViewer}. Width and
- * visibility of these columns are stored in a dialogSetting.
+/*
+ * This class is used to handle the hide/show column state.  
+ * It also handles the save and restore into the .setting    
  */
 public class STDataViewersHideShowManager {
 
     public static final int STATE_SHOWN = 1;
+
     public static final int STATE_HIDDEN = 0;
 
-    private final AbstractSTViewer stViewer;
-    private final int[] defaultColumnsWidth;
-    private final int[] columnsWidth;
-    private final int[] columnsState;
+    private int[] defaultColumnsWidth;
 
-    private final HashMap<Item, STColumnSizeListener> columnsSizeListener = new HashMap<Item, STColumnSizeListener>();
+    private int[] columnsWidth;
 
-    /**
-     * Creates a new instance of STDataViewersHideShowManager.
+    private int[] columnsState;
+
+    private Item[] columns;
+
+    private AbstractSTViewer stViewer;
+
+    private HashMap<Item, STColumnSizeListener> columnsSizeListener = new HashMap<Item, STColumnSizeListener>();
+
+    /*
+     * Creates a new instance of STDataViewersHideShowManager Adding a ColumnSizeListener in order handle the column
+     * width
      */
     public STDataViewersHideShowManager(AbstractSTViewer stViewer) {
         this.stViewer = stViewer;
-        Item[] columns = stViewer.getColumns();
-        this.columnsWidth = new int[columns.length];
-        this.columnsState = new int[columns.length];
-        this.defaultColumnsWidth = new int[columns.length];
+
+        columns = stViewer.getColumns();
+        int[] widths = new int[columns.length];
+        int[] states = new int[columns.length];
         for (int i = 0; i < columns.length; i++) {
+            widths[i] = stViewer.getColumnWidth(columns[i]);
+            states[i] = STATE_SHOWN;
+        }
+
+        this.columnsWidth = widths;
+        this.columnsState = states;
+
+        this.defaultColumnsWidth = new int[columns.length];
+        for (int i = columns.length; i-- > 0;) {
             ISTDataViewersField field = (ISTDataViewersField) columns[i].getData();
-            columnsWidth[i] = stViewer.getColumnWidth(columns[i]);
-            columnsState[i] = field.isShowingByDefault() ? STATE_SHOWN : STATE_HIDDEN;
-            defaultColumnsWidth[i] = field.getPreferredWidth();
+            this.defaultColumnsWidth[i] = field.getPreferredWidth();
             STColumnSizeListener l = new STColumnSizeListener(this);
             columnsSizeListener.put(columns[i], l);
             columns[i].addListener(SWT.Resize, l);
             columns[i].addDisposeListener(new DisposeListener() {
-                @Override
+
                 public void widgetDisposed(DisposeEvent e) {
                     Item column = (Item) e.widget;
                     column.removeListener(SWT.Resize, columnsSizeListener.get(column));
+
                 }
+
             });
         }
     }
 
-    /**
-     * Saves the column width and visibility status in the given dialogSettings
+    /*
+     * It saves the hide/show column state inside the .setting
      */
     public void saveState(IDialogSettings dialogSettings) {
         // delete old settings and save new ones
         IDialogSettings settings = dialogSettings.addNewSection(STDataViewersSettings.TAG_SECTION_HIDESHOW);
+
         for (int i = 0; i < columnsWidth.length; i++) {
             settings.put(STDataViewersSettings.TAG_HIDE_SHOW_COLUMN_WIDTH_ + i, columnsWidth[i]);
+        }
+
+        for (int i = 0; i < columnsState.length; i++) {
             settings.put(STDataViewersSettings.TAG_HIDE_SHOW_COLUMN_STATE_ + i, columnsState[i]);
         }
     }
 
-    /**
-     * Restores the columns width and visibility using the given dialogSettings
+    /*
+     * Restores the columns width and the columns state using the columns state saved into the .setting
+     * 
      * @param dialogSettings
      */
     public void restoreState(IDialogSettings dialogSettings) {
@@ -84,27 +105,37 @@ public class STDataViewersHideShowManager {
             resetState();
             return;
         }
+
         IDialogSettings settings = dialogSettings.getSection(STDataViewersSettings.TAG_SECTION_HIDESHOW);
+
         if (settings == null) {
             // no settings saved
             resetState();
             return;
         }
+
         try {
             for (int i = 0; i < columnsWidth.length; i++) {
                 String width = settings.get(STDataViewersSettings.TAG_HIDE_SHOW_COLUMN_WIDTH_ + i);
+
                 if (width == null) {
                     // no width data
                     resetState();
                     return;
                 }
+
                 columnsWidth[i] = Integer.parseInt(width);
+            }
+
+            for (int i = 0; i < columnsState.length; i++) {
                 String state = settings.get(STDataViewersSettings.TAG_HIDE_SHOW_COLUMN_STATE_ + i);
+
                 if (state == null) {
                     // no state data
                     resetState();
                     return;
                 }
+
                 columnsState[i] = Integer.parseInt(state);
             }
         } catch (NumberFormatException nfe) {
@@ -114,22 +145,21 @@ public class STDataViewersHideShowManager {
         }
     }
 
-    /**
-     * It restores the original columns width and visibility
+    /*
+     * It restores the original columns width
      */
     private void resetState() {
-        Item[] columns = stViewer.getColumns();
-        for (int i = 0; i < columns.length; i++) {
-            ISTDataViewersField field = (ISTDataViewersField) columns[i].getData();
-            columnsState[i] = field.isShowingByDefault() ? STATE_SHOWN : STATE_HIDDEN;
-            columnsWidth[i] = defaultColumnsWidth[i];
+        columnsWidth = defaultColumnsWidth;
+        for (int i = 0; i < columnsState.length; i++) {
+            columnsState[i] = STATE_SHOWN;
         }
     }
 
-    /**
-     * Sets the column width
-     * @param index
-     *            index of column
+    /*
+     * It sets the column width
+     * 
+     * @param index of column
+     * 
      * @param width
      */
     public void setWidth(int index, int width) {
@@ -139,59 +169,59 @@ public class STDataViewersHideShowManager {
         // ignore if this column is set to hidden
     }
 
-    /**
-     * Sets the state of column
-     * @param index
-     *            index of the column
-     * @param state
-     *            one of {@link #STATE_SHOWN} or {@link #STATE_HIDDEN}
+    /*
+     * It sets the state of column
+     * 
+     * @param index of the column
+     * 
+     * @state can be: STATE_SHOWN or STATE_HIDDEN
      */
     public void setState(int index, int state) {
         columnsState[index] = state;
     }
 
-    /**
+    /*
      * Gets the column width
-     * @param index
-     *            index of the column
-     * @return a column width
+     * 
+     * @param index of the column
      */
     public int getWidth(int index) {
         return columnsWidth[index];
     }
 
-    /**
-     * Gets the column state.
-     * @param index
-     *            of the column
-     * @return one of {@link #STATE_SHOWN} or {@link #STATE_HIDDEN}
+    /*
+     * Gets the column state which can be: STATE_SHOWN or STATE_HIDDEN
+     * 
+     * @param index of the column
      */
     public int getState(int index) {
         return columnsState[index];
     }
 
-    /**
-     * Gets the width of all columns
-     * @return an array of width
+    /*
+     * Gets the all columns width of the STViewer
+     * 
+     * @return int[]
      */
     public int[] getColumnsWidth() {
         return columnsWidth;
     }
 
-    /**
-     * Gets the status ({@link #STATE_HIDDEN} or {@link #STATE_SHOWN}) of all columns.
-     * @return an array of status
+    /*
+     * Gets the all columns state of the STViewer
+     * 
+     * @return int[]
      */
     public int[] getColumnsState() {
         return columnsState;
     }
 
-    /**
-     * Updates the columns width and status
-     * @since 5.0
+    /*
+     * Updates the columns width
+     * 
+     * @param column
      */
-    public void updateColumns() {
-        Item[] columns = stViewer.getColumns();
+    public void updateColumns(Item[] columns) {
         for (int i = columns.length; i-- > 0;) {
             Item column = columns[i];
             if (getState(i) == STDataViewersHideShowManager.STATE_HIDDEN) {
@@ -204,8 +234,9 @@ public class STDataViewersHideShowManager {
         }
     }
 
-    /**
+    /*
      * Gets the STViewer hooked to this Hide/Show Manager
+     * 
      * @return AbstractSTViewer
      */
     public AbstractSTViewer getSTViewer() {

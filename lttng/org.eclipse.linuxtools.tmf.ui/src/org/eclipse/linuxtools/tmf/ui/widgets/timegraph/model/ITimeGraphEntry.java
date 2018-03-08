@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -30,7 +30,7 @@ public interface ITimeGraphEntry {
      *
      * @return the parent element, or <code>null</code> if it has none
      */
-    ITimeGraphEntry getParent();
+    public ITimeGraphEntry getParent();
 
     /**
      * Returns whether this entry has children.
@@ -38,7 +38,7 @@ public interface ITimeGraphEntry {
      * @return <code>true</code> if the given element has children,
      *  and <code>false</code> if it has no children
      */
-    boolean hasChildren();
+    public boolean hasChildren();
 
     /**
      * Returns the child elements of this entry.
@@ -46,28 +46,28 @@ public interface ITimeGraphEntry {
      * @return an array of child elements
      * @since 2.0
      */
-    List<? extends ITimeGraphEntry> getChildren();
+    public List<? extends ITimeGraphEntry> getChildren();
 
     /**
      * Returns the name of this entry.
      *
      * @return the entry name
      */
-    String getName();
+    public String getName();
 
     /**
      * Returns the start time of this entry in nanoseconds.
      *
      * @return the start time
      */
-    long getStartTime();
+    public long getStartTime();
 
     /**
      * Returns the end time of this entry in nanoseconds.
      *
      * @return the end time
      */
-    long getEndTime();
+    public long getEndTime();
 
     /**
      * Returns whether this entry has time events.
@@ -78,14 +78,14 @@ public interface ITimeGraphEntry {
      * @see #getTimeEventsIterator
      * @see #getTimeEventsIterator(long, long, long)
      */
-    boolean hasTimeEvents();
+    public boolean hasTimeEvents();
 
     /**
      * Get an iterator which returns all time events.
      *
      * @return the iterator
      */
-    <T extends ITimeEvent> Iterator<T> getTimeEventsIterator();
+    public <T extends ITimeEvent> Iterator<T> getTimeEventsIterator();
 
     /**
      * Get an iterator which only returns events that fall within the start time and the stop time.
@@ -98,5 +98,5 @@ public interface ITimeGraphEntry {
      *
      * @return the iterator
      */
-    <T extends ITimeEvent> Iterator<T> getTimeEventsIterator(long startTime, long stopTime, long visibleDuration);
+    public <T extends ITimeEvent> Iterator<T> getTimeEventsIterator(long startTime, long stopTime, long visibleDuration);
 }

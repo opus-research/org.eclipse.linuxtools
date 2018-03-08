@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
- *
+ * Copyright (c) 2011, 2012 Ericsson
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -16,9 +16,10 @@ import org.eclipse.osgi.util.NLS;
 
 /**
  * Message strings for TMF model handling.
- *
+ * 
  * @version 1.0
  * @author Francois Chouinard
+ *
  */
 public class Messages extends NLS {
 
@@ -73,7 +74,7 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_InvalidTraceDirectory;
     /**
-     * The error message when a trace validation failed (import trace wizard).
+     * The error message when a trace validation failed (import trace wizard). 
      */
     public static String ImportTraceWizard_TraceValidationFailed;
     /**

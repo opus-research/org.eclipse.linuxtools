@@ -28,12 +28,6 @@ import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
  */
 public class EventDeclaration implements IEventDeclaration {
 
-    /** Id of lost events */
-    public static final long LOST_EVENT_ID = -1L;
-
-    /** Id of events when not set */
-    public static final long UNSET_EVENT_ID = -2L;
-
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -56,7 +50,7 @@ public class EventDeclaration implements IEventDeclaration {
     /**
      * Event id (can be null if only event in the stream).
      */
-    private Long id = UNSET_EVENT_ID;
+    private Long id = null;
 
     /**
      * Stream to which belongs this event.
@@ -103,10 +97,10 @@ public class EventDeclaration implements IEventDeclaration {
      *
      * @return the lost event
      */
-    public static synchronized EventDeclaration getLostEventDeclaration() {
+    public synchronized static EventDeclaration getLostEventDeclaration() {
         EventDeclaration lostEvent = new EventDeclaration();
         lostEvent.fields = new StructDeclaration(1);
-        lostEvent.id = LOST_EVENT_ID;
+        lostEvent.id = -1L;
         lostEvent.name = "Lost event"; //$NON-NLS-1$
         return lostEvent;
     }
@@ -224,7 +218,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return (id != null && id != UNSET_EVENT_ID);
+        return id != null;
     }
 
     /**
@@ -341,7 +335,7 @@ public class EventDeclaration implements IEventDeclaration {
         result = (prime * result) + ((id == null) ? 0 : id.hashCode());
         result = (prime * result) + ((name == null) ? 0 : name.hashCode());
         result = (prime * result) + ((stream == null) ? 0 : stream.hashCode());
-        result = (prime * result) + customAttributes.hashCode();
+        result = (prime * result) + ((customAttributes == null) ? 0 : customAttributes.hashCode());
         return result;
     }
 

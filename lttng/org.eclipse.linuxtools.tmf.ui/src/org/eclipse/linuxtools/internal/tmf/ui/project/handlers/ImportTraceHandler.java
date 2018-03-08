@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -43,10 +43,37 @@ public class ImportTraceHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        TmfTraceFolder traceFolder = getTraceFolder();
+        // Check if we are closing down
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (window == null) {
+            return null;
+        }
+
+    	// Get the selection
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        IWorkbenchPart part = page.getActivePart();
+        if (part == null) {
+            return false;
+        }
+        ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
+        if (selectionProvider == null) {
+            return false;
+        }
+        ISelection selection = selectionProvider.getSelection();
+
+        TmfTraceFolder traceFolder = null;
+        if (selection instanceof TreeSelection) {
+            TreeSelection sel = (TreeSelection) selection;
+    		// There should be only one item selected as per the plugin.xml
+            Object element = sel.getFirstElement();
+            if (element instanceof TmfTraceFolder) {
+                traceFolder = (TmfTraceFolder) element;
+            }
+        }
         if (traceFolder == null) {
             return null;
         }
+
         // Fire the Import Trace Wizard
         IWorkbench workbench = PlatformUI.getWorkbench();
         Shell shell = workbench.getActiveWorkbenchWindow().getShell();
@@ -59,40 +86,6 @@ public class ImportTraceHandler extends AbstractHandler {
         traceFolder.refresh();
 
         return null;
-    }
-
-    /**
-     * @return the trace folder or null
-     */
-    protected TmfTraceFolder getTraceFolder() {
-        // Check if we are closing down
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        if (window == null) {
-            return null;
-        }
-
-        // Get the selection
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return null;
-        }
-        ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
-        if (selectionProvider == null) {
-            return null;
-        }
-        ISelection selection = selectionProvider.getSelection();
-
-        TmfTraceFolder traceFolder = null;
-        if (selection instanceof TreeSelection) {
-            TreeSelection sel = (TreeSelection) selection;
-            // There should be only one item selected as per the plugin.xml
-            Object element = sel.getFirstElement();
-            if (element instanceof TmfTraceFolder) {
-                traceFolder = (TmfTraceFolder) element;
-            }
-        }
-        return traceFolder;
     }
 
 }

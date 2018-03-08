@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -19,7 +18,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TargetNodeState;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
@@ -37,8 +35,6 @@ import org.eclipse.rse.core.model.ISystemRegistry;
 import org.eclipse.rse.core.subsystems.CommunicationsEvent;
 import org.eclipse.rse.core.subsystems.ICommunicationsListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
@@ -53,7 +49,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
-
     /**
      * Path to icon file for this component (state connected).
      */
@@ -66,7 +61,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The node connection state.
      */
@@ -95,7 +89,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructor
      * @param name - the name of the component
@@ -125,7 +118,10 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getImage()
+     */
     @Override
     public Image getImage() {
         if (fState == TargetNodeState.CONNECTED) {
@@ -134,27 +130,47 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         return fDisconnectedImage;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getTargetNodeState()
+     */
     @Override
     public TargetNodeState getTargetNodeState() {
         return fState;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#setTargetNodeState(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceControlComponent.TargetNodeState)
+     */
     @Override
     public void setTargetNodeState(TargetNodeState state) {
         fState = state;
         fireComponentChanged(TargetNodeComponent.this);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getControlService()
+     */
     @Override
     public ILttngControlService getControlService() {
         return fService;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#setControlService(org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService)
+     */
     @Override
     public void setControlService(ILttngControlService service) {
         fService = service;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
+     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -175,21 +191,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      */
     public IRemoteSystemProxy getRemoteSystemProxy() {
         return fRemoteProxy;
-    }
-
-    /**
-     * @return port of IP connection (shell) to be used
-     */
-    public int getPort() {
-        return fRemoteProxy.getPort();
-    }
-
-    /**
-     * Sets the port of the IP connections of the shell
-     * @param port - the IP port to set
-     */
-    public void setPort(int port) {
-        fRemoteProxy.setPort(port);
     }
 
     /**
@@ -224,43 +225,13 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
     }
 
-    /**
-     * Returns if node supports networks streaming or not
-     * @return <code>true</code> if node supports filtering else <code>false</code>
-     *
-     */
-    public boolean isNetworkStreamingSupported() {
-        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
-    }
-
-    /**
-     * Returns if node supports configuring buffer type  or not
-     * @return <code>true</code> if node supports buffer type configuration else <code>false</code>
-     */
-    public boolean isBufferTypeConfigSupported() {
-        return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
-    }
-
-    /**
-     * Returns if node supports trace file rotation or not
-     * @return <code>true</code> if node supports trace file rotation else <code>false</code>
-     */
-    public boolean isTraceFileRotationSupported() {
-        return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
-    }
-
-    /**
-     * Returns if node supports periodical flush for metadata or not
-     * @return <code>true</code> if node supports periodical flush for metadata else <code>false</code>
-     */
-    public boolean isPeriodicalMetadataFlushSupported() {
-        return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
+   /*
+    * @see org.eclipse.rse.core.subsystems.ICommunicationsListener#communicationsStateChange(org.eclipse.rse.core.subsystems.CommunicationsEvent)
+    */
    @Override
    public void communicationsStateChange(CommunicationsEvent e) {
        if (e.getState() == CommunicationsEvent.AFTER_DISCONNECT ||
@@ -271,11 +242,18 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
        }
    }
 
+   /* (non-Javadoc)
+    * @see org.eclipse.rse.core.subsystems.ICommunicationsListener#isPassiveCommunicationsListener()
+    */
    @Override
    public boolean isPassiveCommunicationsListener() {
        return true;
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceControlComponent#dispose()
+    */
    @Override
    public void dispose() {
        fRemoteProxy.removeCommunicationListener(this);
@@ -343,7 +321,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
                     sessionGroup.getSessionsFromNode(monitor);
                 } catch (ExecutionException e) {
                     removeAllChildren();
-                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_RetrieveNodeConfigurationFailure, e);
+                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ListSessionFailure, e);
                 }
 
                 return Status.OK_STATUS;
@@ -372,7 +350,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     // ------------------------------------------------------------------------
     // Helper function
     // ------------------------------------------------------------------------
-
     /**
      * @return returns the control service for LTTng specific commands.
      * @throws ExecutionException
@@ -394,24 +371,8 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         try {
             createControlService();
             getConfigurationFromNode();
-        } catch (final ExecutionException e) {
-            // Disconnect only if no control service, otherwise stay connected.
-            if (getControlService() == null) {
-                disconnect();
-            }
-
-            // Notify user
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog er = new ErrorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                            Messages.TraceControl_ErrorTitle, Messages.TraceControl_RetrieveNodeConfigurationFailure,
-                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e),
-                            IStatus.ERROR);
-                    er.open();
-                }
-            });
-            Activator.getDefault().logError(Messages.TraceControl_RetrieveNodeConfigurationFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
+        } catch (ExecutionException e) {
+            Activator.getDefault().logError(Messages.TraceControl_ListSessionFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 

@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.gprof.view.fields;
 
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
-import org.eclipse.linuxtools.internal.gprof.Messages;
 import org.eclipse.linuxtools.internal.gprof.view.GmonView;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 import org.eclipse.swt.graphics.Color;
@@ -56,7 +55,7 @@ public class SamplePerCallField extends SampleProfField {
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return Messages.SamplePerCallField_TIME_CALL;
+		return "Time/Call";
 	}
 
 	/*
@@ -65,7 +64,7 @@ public class SamplePerCallField extends SampleProfField {
 	 */
 	@Override
 	public String getColumnHeaderTooltip() {
-		return Messages.SamplePerCallField_TIME_CALL_TOOLTIP;
+		return "Time/Call spent by function";
 	}
 
 

@@ -22,15 +22,13 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     TraceControlComponentTest.class,
-    TraceControlCreateSessionTests.class,
     TraceControlKernelProviderTests.class,
     TraceControlKernelSessionTests.class,
     TraceControlPropertiesTest.class,
     TraceControlTreeModelNoProvidersTest.class,
     TraceControlTreeModelTest.class,
     TraceControlUstProviderTests.class,
-    TraceControlUstSessionTests.class,
-    TraceControlUstSessionTests2.class
+    TraceControlUstSessionTests.class
 })
 public class AllTests {
 

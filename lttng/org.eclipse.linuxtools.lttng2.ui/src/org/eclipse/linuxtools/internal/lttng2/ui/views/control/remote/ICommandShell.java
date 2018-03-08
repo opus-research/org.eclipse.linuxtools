@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -29,12 +29,12 @@ public interface ICommandShell {
      * @throws ExecutionException
      *             If the command fails
      */
-    void connect() throws ExecutionException;
+    public void connect() throws ExecutionException;
 
     /**
      * Method to disconnect the command shell.
      */
-    void disconnect();
+    public void disconnect();
 
     /**
      * Method to execute a command on the command shell.
@@ -47,7 +47,7 @@ public interface ICommandShell {
      * @throws ExecutionException
      *             If the command fails
      */
-    ICommandResult executeCommand(String command,
+    public ICommandResult executeCommand(String command,
             IProgressMonitor monitor) throws ExecutionException;
 
     /**
@@ -64,7 +64,7 @@ public interface ICommandShell {
      * @throws ExecutionException
      *             If the command fails
      */
-    ICommandResult executeCommand(final String command,
+    public ICommandResult executeCommand(final String command,
             final IProgressMonitor monitor, final boolean checkReturnValue)
             throws ExecutionException;
 

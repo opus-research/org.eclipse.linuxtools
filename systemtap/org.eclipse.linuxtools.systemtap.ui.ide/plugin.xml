@@ -5,7 +5,7 @@
 		point="org.eclipse.ui.perspectives">
 		<perspective
 			name="%perspective.ide.name"
-			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPerspective"
+			class="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"
 			icon="icons/perspective_obj.gif"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"/>
 	</extension>
@@ -35,14 +35,6 @@
         name="%view.probe.name"/>
 	</extension>
 	<extension point="org.eclipse.ui.menus">
-       <menuContribution
-             allPopups="true"
-             locationURI="toolbar:org.eclipse.ui.workbench.file">
-          <separator
-                name="runGroup"
-                visible="true">
-          </separator>
-       </menuContribution>
        <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView">
            <command
                  commandId="org.eclipse.ui.navigate.collapseAll" />
@@ -54,36 +46,6 @@
        <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView">
            <command
                  commandId="org.eclipse.ui.navigate.collapseAll" />
-       </menuContribution>
-       <menuContribution
-             allPopups="true"
-             locationURI="toolbar:org.eclipse.ui.workbench.file?after=runGroup">
-          <command
-                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
-                icon="icons/actions/run/run_exc.gif"
-                label="%action.run.name"
-                style="push">
-          </command>
-       </menuContribution>
-       <menuContribution
-             allPopups="false"
-             locationURI="popup:#TextEditorContext?after=additions">
-          <command
-                commandId="org.eclipse.linuxtools.systemtap.ui.ide.toggleComment"
-                label="%command.toggleComment.name"
-                mnemonic="%command.toggleComment.mne"
-                style="push">
-          </command>
-       </menuContribution>
-       <menuContribution
-             allPopups="false"
-             locationURI="popup:#TextEditorContext?after=additions">
-          <command
-                commandId="org.eclipse.linuxtools.systemtap.ui.ide.indent"
-                label="%command.indent.name"
-                mnemonic="%command.indent.mne"
-                style="push">
-          </command>
        </menuContribution>
     </extension>
 	
@@ -162,6 +124,11 @@
 			description="%command.import.desc"
 			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.file"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"/>
+		<!--command
+			name="%command.runOptions.name"
+			description="%command.runOptions.desc"
+			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.run"
+			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScriptOptions"/-->
 		<command
 			name="%command.run.name"
 			description="%command.run.desc"
@@ -172,6 +139,8 @@
 			description="%command.stop.desc"
 			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.run"
 			id="org.eclipse.linuxtools.systemtap.ui.consolelog.commands.StopScript"/>
+		
+		
 		<command
 			name="%command.insertProbe.name"
 			description="%command.insertProbe.desc"
@@ -181,7 +150,8 @@
 			name="%command.insertFunction.name"
 			description="%command.insertFunction.desc"
 			categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.popup"
-			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.functionaction"/>	
+			id="org.eclipse.linuxtools.systemtap.ui.ide.commands.functionaction"/>
+			
 		<category
 			name="%category.file.name"
 			description="%category.file.desc"
@@ -194,30 +164,6 @@
 			name="%category.popup.name"
 			description="%category.popup.desc"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.category.popup"/>
-		<command
-        	defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptHandler"
-        	description="%action.run.desc"
-        	id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
-        	name="%action.run.name">
- 		</command>
-		<category
-        	id="org.eclipse.linuxtools.systemtap.ui.ide.category.source"
-        	name="%editor.category.source.name">
-		</category>
-		<command
-        	categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.source"
-        	defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.ToggleCommentHandler"
-        	description="%command.toggleComment.desc"
-        	id="org.eclipse.linuxtools.systemtap.ui.ide.toggleComment"
-        	name="%command.toggleComment.name">
-		</command>
-		<command
-        	categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.source"
-        	defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.IndentHandler"
-        	description="%command.indent.desc"
-        	id="org.eclipse.linuxtools.systemtap.ui.ide.indent"
-        	name="%command.indent.name">
-		</command>
 	</extension>
 	<extension
 		point="org.eclipse.ui.actionSets">
@@ -231,11 +177,46 @@
 				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.ImportTapset"
 				icon="icons/actions/import_wiz.gif"
 				toolbarPath="org.eclipse.ui.workbench.file/import.ext"
-				class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.ImportTapsetAction"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.ImportTapsetAction"
 				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"
 				style="push"
 				state="false"/>
 		</actionSet>
+		<actionSet
+			label="%actionset.run.name"
+			visible="false"
+			id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet">
+			<!--action
+				label="%action.runOptions.name"
+				tooltip="%action.runOptions.desc"
+				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptOptions"
+				icon="icons/actions/run/run_tool.gif"
+				toolbarPath="org.eclipse.ui.workbench.file/build.group"
+				menubarPath="launch/wbStart"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptOptionsAction"
+				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScriptOptions"
+				style="push"
+				state="false"/-->
+			<action
+				label="%action.run.name"
+				tooltip="%action.run.desc"
+				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScript"
+				icon="icons/actions/run/run_exc.gif"
+				toolbarPath="org.eclipse.ui.workbench.file/build.group"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptLocallyAction"
+				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScript"
+				style="push"
+				state="false"/>
+	        <action
+                label="%action.runChart.name"
+                tooltip="%action.runChart.desc"
+                id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptChart"
+                icon="icons/actions/run/run_chart.gif"
+                toolbarPath="org.eclipse.ui.workbench.file/build.ext"
+                class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartAction"
+                style="push"
+                state="false"/>
+		</actionSet>	
 	</extension>
 
 	<extension
@@ -243,10 +224,10 @@
 		<objectContribution
 			adaptable="false"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.definitionMenu"
-			objectClass="org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode">
+			objectClass="org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode">
 			<action
 				label="%action.viewDefinition.name"
-				class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.DefinitionAction"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.DefinitionAction"
 				icon="icons/misc/file_obj.gif"
 				id="org.eclipse.linuxtools.systemtap.ui.ide.definitionAction"
 				style="push"/>
@@ -256,7 +237,7 @@
             id="org.eclipse.linuxtools.systemtap.ui.ide.actions">
          <action
                label="%action.addStapProbe.label"
-               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.AddStapProbe"
+               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.AddStapProbe"
                menubarPath="additions"
                id="org.eclipse.linuxtools.systemtap.ui.ide.AddStapProbe">
          </action>
@@ -267,12 +248,14 @@
 		point="org.eclipse.ui.perspectiveExtensions">
 		<perspectiveExtension
 			targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
+			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.editor.FileActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.FileActionSet"/>
 
 		</perspectiveExtension>
 		<perspectiveExtension
            targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
+           <actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
                         <view
                                 ratio="0.40f"
                                 relative="org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView"
@@ -286,6 +269,10 @@
 			targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
 			<perspectiveShortcut id="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"/>
 		</perspectiveExtension>
+		<perspectiveExtension
+           targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
+           <actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
+         </perspectiveExtension>
 	</extension>
  <extension
        point="org.eclipse.ui.newWizards">
@@ -295,7 +282,7 @@
     </category>
     <wizard
           category="org.eclipse.linuxtools.systemtap.ui.ide"
-          class="org.eclipse.linuxtools.internal.systemtap.ui.ide.wizards.StapNewWizard"
+          class="org.eclipse.linuxtools.systemtap.ui.ide.wizards.StapNewWizard"
           icon="icons/smileytap.gif"
           id="org.eclipse.linuxtools.systemtap.ui.ide.wizards.StapNewWizard"
           name="%wizard.name">
@@ -310,41 +297,29 @@
           modes="run">
        <contextualLaunch>
           <enablement>
-             <or>
-                <with
-                      variable="selection">
-                   <count
-                         value="1">
-                   </count>
-                   <iterate>
-                      <or>
-                         <and>
-                            <instanceof
-                                  value="org.eclipse.core.resources.IResource">
-                            </instanceof>
-                            <test
-                                  property="org.eclipse.core.resources.name"
-                                  value="*.stp">
-                            </test>
-                         </and>
-                         <and>
-                            <instanceof
-                                  value="org.eclipse.ui.IFileEditorInput">
-                            </instanceof>
-                            <with
-                                  variable="activeEditorId">
-                               <equals
-                                     value="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor">
-                               </equals>
-                            </with>
-                         </and>
-                      </or>
-                   </iterate>
-                </with>
-             </or>
+             <with
+                   variable="selection">
+                <count
+                      value="1">
+                </count>
+                <test
+                      forcePluginActivation="true"
+                      property="org.eclipse.linuxtools.systemtap.ui.ide.property.systemtap">
+                </test>
+             </with>
           </enablement>
        </contextualLaunch>
     </shortcut>
+ </extension>
+ <extension
+       point="org.eclipse.core.expressions.propertyTesters">
+    <propertyTester
+          class="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester"
+          id="org.eclipse.linuxtools.systemtap.ui.ide.propertyTester1"
+          namespace="org.eclipse.linuxtools.systemtap.ui.ide.property"
+          properties="systemtap"
+          type="java.util.Arrays$ArrayList">
+    </propertyTester>
  </extension>
  <extension
        point="org.eclipse.debug.core.launchConfigurationTypes">
@@ -360,7 +335,7 @@
        point="org.eclipse.debug.ui.launchConfigurationTypeImages">
     <launchConfigurationTypeImage
           configTypeID="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"
-          icon="icons/smileytap_small.gif"
+          icon="icons/smileytap.gif"
           id="org.eclipse.linuxtools.systemtap.ui.ide.systemtapLaunchConfigurationTypeImage">
     </launchConfigurationTypeImage>
  </extension>
@@ -371,29 +346,5 @@
           id="org.eclipse.linuxtools.systemtap.ui.ide.systemTapLaunchConfigurationTabGroup"
           type="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType">
     </launchConfigurationTabGroup>
- </extension>
- <extension
-       point="org.eclipse.ui.bindings">
-    <key
-          commandId="org.eclipse.linuxtools.systemtap.ui.ide.toggleComment"
-          contextId="org.eclipse.linuxtools.systemtap.ui.ide.context"
-          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-          sequence="M1+/">
-    </key>
-    <key
-          commandId="org.eclipse.linuxtools.systemtap.ui.ide.indent"
-          contextId="org.eclipse.linuxtools.systemtap.ui.ide.context"
-          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-          sequence="M1+I">
-    </key>
- </extension>
- <extension
-       point="org.eclipse.ui.contexts">
-    <context
-          description="%editor.context.desc"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.context"
-          name="%editor.context.name"
-          parentId="org.eclipse.ui.textEditorScope">
-    </context>
  </extension>
 </plugin>

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -28,6 +28,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfProviderManager class.
  */
+@SuppressWarnings("nls")
 public class TmfProviderManagerTest {
 
     // ------------------------------------------------------------------------
@@ -77,6 +78,10 @@ public class TmfProviderManagerTest {
     }
 
     private class TmfEvent3 extends TmfEvent {
+        @SuppressWarnings("unused")
+        public TmfEvent3(TmfEvent3 other) {
+            super(other);
+        }
     }
 
     private class TestProvider3 extends TmfDataProvider {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -17,11 +17,10 @@ import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
 /**
  * Variant of the HistoryTreeBackend which runs all the interval-insertion logic
@@ -32,6 +31,12 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  */
 public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
         implements Runnable {
+
+    /*
+     * From superclass:
+     *
+     * protected final StateHistoryTree sht;
+     */
 
     private BlockingQueue<HTInterval> intervalQueue;
     private final Thread shtThread;
@@ -51,10 +56,6 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
      *            The maximum number of children allowed for each core node
      * @param startTime
      *            The earliest timestamp stored in the history
-     * @param providerVersion
-     *            Version of of the state provider. We will only try to reopen
-     *            existing files if this version matches the one in the
-     *            framework.
      * @param queueSize
      *            The size of the interval insertion queue. 2000 - 10000 usually
      *            works well
@@ -62,9 +63,8 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
      *             If there was a problem opening the history file for writing
      */
     public ThreadedHistoryTreeBackend(File newStateFile, int blockSize,
-            int maxChildren, long startTime, int providerVersion, int queueSize)
-                    throws IOException {
-        super(newStateFile, blockSize, maxChildren, providerVersion, startTime);
+            int maxChildren, long startTime, int queueSize) throws IOException {
+        super(newStateFile, blockSize, maxChildren, startTime);
 
         intervalQueue = new ArrayBlockingQueue<HTInterval>(queueSize);
         shtThread = new Thread(this, "History Tree Thread"); //$NON-NLS-1$
@@ -80,10 +80,6 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
      *            in ".ht"
      * @param startTime
      *            The earliest timestamp stored in the history
-     * @param providerVersion
-     *            Version of of the state provider. We will only try to reopen
-     *            existing files if this version matches the one in the
-     *            framework.
      * @param queueSize
      *            The size of the interval insertion queue. 2000 - 10000 usually
      *            works well
@@ -91,8 +87,8 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
      *             If there was a problem opening the history file for writing
      */
     public ThreadedHistoryTreeBackend(File newStateFile, long startTime,
-            int providerVersion, int queueSize) throws IOException {
-        super(newStateFile, providerVersion, startTime);
+            int queueSize) throws IOException {
+        super(newStateFile, startTime);
 
         intervalQueue = new ArrayBlockingQueue<HTInterval>(queueSize);
         shtThread = new Thread(this, "History Tree Thread"); //$NON-NLS-1$
@@ -120,7 +116,9 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
         try {
             intervalQueue.put(interval);
         } catch (InterruptedException e) {
-            Activator.logError("State system interrupted", e); //$NON-NLS-1$
+            /* We should not get interrupted here */
+            System.out.println("State system got interrupted!"); //$NON-NLS-1$
+            e.printStackTrace();
         }
     }
 
@@ -164,16 +162,16 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             intervalQueue.put(pill);
             shtThread.join();
         } catch (TimeRangeException e) {
-            Activator.logError("Error closing state system", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (InterruptedException e) {
-            Activator.logError("State system interrupted", e); //$NON-NLS-1$
+            e.printStackTrace();
         }
     }
 
     @Override
     public void run() {
         if (intervalQueue == null) {
-            Activator.logError("Cannot start the storage backend without its interval queue."); //$NON-NLS-1$
+            System.err.println("Cannot start the storage backend without its interval queue."); //$NON-NLS-1$
             return;
         }
         HTInterval currentInterval;
@@ -193,10 +191,11 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             return;
         } catch (InterruptedException e) {
             /* We've been interrupted abnormally */
-            Activator.logError("State History Tree interrupted!", e); //$NON-NLS-1$
+            System.out.println("State History Tree interrupted!"); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (TimeRangeException e) {
             /* This also should not happen */
-            Activator.logError("Error starting the state system", e); //$NON-NLS-1$
+            e.printStackTrace();
         }
     }
 

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -33,51 +32,51 @@ public interface IEnableUstEvents {
     /**
      * @return a flag whether the tracepoints shall be configured.
      */
-    boolean isTracepoints();
+    public boolean isTracepoints();
 
     /**
      * @return a flag indicating whether all tracepoints shall be enabled or not.
      */
-    boolean isAllTracePoints();
+    public boolean isAllTracePoints();
 
     /**
      * @return a list of event names to be enabled.
      */
-    List<String> getEventNames();
+    public List<String> getEventNames();
 
     /**
      * @return a flag whether events using wildcards should be enabled
      */
-    boolean isWildcard();
+    public boolean isWildcard();
 
     /**
      * @return a wildcard
      */
-    String getWildcard();
+    public String getWildcard();
 
     /**
      * @return a flag whether events using log levels should be enabled
      */
-    boolean isLogLevel();
+    public boolean isLogLevel();
 
     /**
      * @return a log level type (loglevel or loglevel-only)
      */
-    LogLevelType getLogLevelType();
+    public LogLevelType getLogLevelType();
 
     /**
      * @return a log level
      */
-    TraceLogLevel getLogLevel();
+    public TraceLogLevel getLogLevel();
 
     /**
      * @return a event name for the log level enable action
      */
-    String getLogLevelEventName();
+    public String getLogLevelEventName();
 
     /**
      * @return a filter expression
      */
-    String getFilterExpression();
+    public String getFilterExpression();
 
 }

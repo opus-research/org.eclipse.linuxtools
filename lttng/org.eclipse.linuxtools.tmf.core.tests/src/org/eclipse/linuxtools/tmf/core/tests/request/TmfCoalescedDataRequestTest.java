@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfCoalescedDataRequest class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({ "nls", "javadoc" })
 public class TmfCoalescedDataRequestTest {
 
     // ------------------------------------------------------------------------
@@ -219,10 +219,10 @@ public class TmfCoalescedDataRequestTest {
 
     @Test
     public void testToString() {
-        String expected1 = "[TmfCoalescedDataRequest(0,ITmfEvent,FOREGROUND,10,100,200, [])]";
-        String expected2 = "[TmfCoalescedDataRequest(1,ITmfEvent,FOREGROUND,20,100,200, [])]";
-        String expected3 = "[TmfCoalescedDataRequest(2,ITmfEvent,FOREGROUND,20,200,200, [])]";
-        String expected4 = "[TmfCoalescedDataRequest(3,ITmfEvent,FOREGROUND,20,200,300, [])]";
+        String expected1 = "[TmfCoalescedDataRequest(0,ITmfEvent,10,100,200)]";
+        String expected2 = "[TmfCoalescedDataRequest(1,ITmfEvent,20,100,200)]";
+        String expected3 = "[TmfCoalescedDataRequest(2,ITmfEvent,20,200,200)]";
+        String expected4 = "[TmfCoalescedDataRequest(3,ITmfEvent,20,200,300)]";
 
         assertEquals("toString", expected1, fRequest1.toString());
         assertEquals("toString", expected2, fRequest2.toString());

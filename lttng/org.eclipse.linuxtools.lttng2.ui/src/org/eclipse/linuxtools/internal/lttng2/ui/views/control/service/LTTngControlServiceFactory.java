@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013. 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -79,19 +79,14 @@ public class LTTngControlServiceFactory {
         if (ControlPreferences.getInstance().isLoggingEnabled()) {
             ControlCommandLogger.log(command);
         }
-        ICommandResult result = null;
 
-        try {
-            result = shell.executeCommand(command, new NullProgressMonitor());
-        } catch (ExecutionException e) {
-            throw new ExecutionException(Messages.TraceControl_GettingVersionError + ": " + e); //$NON-NLS-1$
-        }
+        ICommandResult result = shell.executeCommand(command, new NullProgressMonitor());
 
         if (ControlPreferences.getInstance().isLoggingEnabled()) {
             ControlCommandLogger.log(LTTngControlService.formatOutput(result));
         }
 
-        if ((result != null) && (result.getResult() == 0) && (result.getOutput().length >= 1)) {
+        if ((result != null) && (result.getResult() == 0) && (result.getOutput().length >= 1) && (!LTTngControlServiceConstants.ERROR_PATTERN.matcher(result.getOutput()[0]).matches())) {
             int index = 0;
             while (index < result.getOutput().length) {
                 String line = result.getOutput()[index];

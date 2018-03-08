@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,10 +12,8 @@
 package org.eclipse.linuxtools.internal.lttng2.stubs.dialogs;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableChannelDialog;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent;
 
 /**
@@ -35,7 +33,7 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
     // Constructor
     // ------------------------------------------------------------------------
     public EnableChannelDialogStub() {
-        fChannelInfo = new ChannelInfo("mychannel");
+        fChannelInfo = new ChannelInfo("mychannel"); //$NON-NLS-1$
         fChannelInfo.setNumberOfSubBuffers(4);
         fChannelInfo.setOverwriteMode(true);
         fChannelInfo.setReadTimer(200);
@@ -80,14 +78,5 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
 
     public void setChannelInfo(ChannelInfo info) {
         fChannelInfo = info;
-    }
-
-    @Override
-    public void setTargetNodeComponent(TargetNodeComponent node) {
-        // Do nothing
-    }
-
-    public void setBufferType (BufferType bufferType) {
-        fChannelInfo.setBufferType(bufferType);
     }
 }

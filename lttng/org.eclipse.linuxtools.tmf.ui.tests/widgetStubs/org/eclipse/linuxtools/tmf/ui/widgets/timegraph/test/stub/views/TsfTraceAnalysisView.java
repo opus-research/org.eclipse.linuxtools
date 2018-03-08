@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alvaro Sanchez-Leon (alvsan09@gmail.com) - Initial API and implementation
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.test.stub.views;
 
@@ -58,14 +57,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
-@SuppressWarnings("javadoc")
+@SuppressWarnings({ "javadoc", "nls" })
 public class TsfTraceAnalysisView extends ViewPart implements
         ITimeGraphSelectionListener, ITimeGraphTimeListener, ITimeGraphRangeListener {
 
     // ========================================================================
     // Data
     // ========================================================================
-
     private TreeViewer viewer;
     private DrillDownAdapter drillDownAdapter;
     private Action action1;
@@ -604,18 +602,18 @@ public class TsfTraceAnalysisView extends ViewPart implements
         } else {
             synchViewer = tsfviewer;
         }
-        long selTimens = event.getBeginTime();
+        long selTimens = event.getTime();
         long tms = (long) (selTimens * 1E-6);
         Date date = new Date(tms);
         String fDate = stimeformat.format(date);
         String ns = formatNs(selTimens);
 
         System.out.println("TsfTraceAnalysisView.timeSelected() Selected Event: \nTime: "
-                + event.getBeginTime()
+                + event.getTime()
                 + "\nSelected Time: "
                 + selTimens + " " + fDate + " " + ns);
 
-        synchViewer.setSelectedTime(event.getBeginTime(), true);
+        synchViewer.setSelectedTime(event.getTime(), true);
     }
 
     @Override

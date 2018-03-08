@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson and others.
+ * Copyright (c)  2011 Ericsson and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     Bernd Hufmann - initial API and implementation
- *     Patrick Tasse - added icons
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.tmf.ui;
 
@@ -42,9 +41,6 @@ public interface ITmfImageConstants {
     public static final String IMG_UI_NEXT_ITEM = IMG_UI_NEXT_PAGE;
     public static final String IMG_UI_PREV_ITEM = IMG_UI_PREV_PAGE;
     public static final String IMG_UI_PIN_VIEW = ICONS_PATH + "elcl16/pin_view.gif";
-    public static final String IMG_UI_HIDE_ARROWS = ICONS_PATH + "elcl16/hide_arrows.gif";
-    public static final String IMG_UI_FOLLOW_ARROW_FORWARD = ICONS_PATH + "elcl16/follow_arrow_fwd.gif";
-    public static final String IMG_UI_FOLLOW_ARROW_BACKWARD = ICONS_PATH + "elcl16/follow_arrow_bwd.gif";
 
     /* eview16 */
     public static final String IMG_UI_SEQ_DIAGRAM_OBJ = ICONS_PATH + "eview16/sequencediagram_view.gif";
@@ -55,7 +51,4 @@ public interface ITmfImageConstants {
     public static final String IMG_UI_ZOOM_OUT = ICONS_PATH + "obj16/zoomout_obj.bmp";
     public static final String IMG_UI_ARROW_COLLAPSE_OBJ = ICONS_PATH + "obj16/arrow_colapse.bmp";
     public static final String IMG_UI_ARROW_UP_OBJ = ICONS_PATH + "obj16/arrow_up.bmp";
-
-    /* wizban */
-    public static final String IMG_UI_CONFLICT = ICONS_PATH + "wizban/conflict_stat.gif";
 }

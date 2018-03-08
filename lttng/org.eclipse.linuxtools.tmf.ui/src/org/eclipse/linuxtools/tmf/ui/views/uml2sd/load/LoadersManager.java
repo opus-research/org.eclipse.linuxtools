@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.load;
 
 import java.util.ArrayList;
@@ -64,11 +65,11 @@ public class LoadersManager {
     /**
      * Map for caching information (view ID to loader class)
      */
-    private Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<String, IUml2SDLoader>();
+    protected Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<String, IUml2SDLoader>();
     /**
      * Map for caching information (view ID to list of configuration elements)
      */
-    private Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<String, ArrayList<IConfigurationElement>>();
+    protected Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<String, ArrayList<IConfigurationElement>>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -87,7 +88,7 @@ public class LoadersManager {
      *
      * @return the manager instance
      */
-    public static synchronized LoadersManager getInstance() {
+    public synchronized static LoadersManager getInstance() {
         if (fLoadersManager == null) {
             fLoadersManager = new LoadersManager();
         }

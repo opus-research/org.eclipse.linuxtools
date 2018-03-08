@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 
 /**
  * The Transient State is used to build intervals from punctual state changes. It
@@ -47,16 +46,16 @@ class TransientState {
     private boolean isActive;
     private long latestTime;
 
-    private List<ITmfStateValue> ongoingStateInfo;
-    private List<Long> ongoingStateStartTimes;
-    private List<Type> stateValueTypes;
+    private ArrayList<ITmfStateValue> ongoingStateInfo;
+    private final ArrayList<Long> ongoingStateStartTimes;
+    private final ArrayList<Byte> stateValueTypes;
 
     TransientState(IStateHistoryBackend backend) {
         this.backend = backend;
         isActive = true;
         ongoingStateInfo = new ArrayList<ITmfStateValue>();
         ongoingStateStartTimes = new ArrayList<Long>();
-        stateValueTypes = new ArrayList<Type>();
+        stateValueTypes = new ArrayList<Byte>();
 
         if (backend != null) {
             latestTime = backend.getStartTime();
@@ -69,18 +68,16 @@ class TransientState {
         return latestTime;
     }
 
-    ITmfStateValue getOngoingStateValue(int index) throws AttributeNotFoundException {
+    ITmfStateValue getOngoingStateValue(int index)
+            throws AttributeNotFoundException {
+
         checkValidAttribute(index);
         return ongoingStateInfo.get(index);
     }
 
-    long getOngoingStartTime(int index) throws AttributeNotFoundException {
-        checkValidAttribute(index);
-        return ongoingStateStartTimes.get(index);
-    }
-
     void changeOngoingStateValue(int index, ITmfStateValue newValue)
             throws AttributeNotFoundException {
+
         checkValidAttribute(index);
         ongoingStateInfo.set(index, newValue);
     }
@@ -92,40 +89,36 @@ class TransientState {
      * @param quark
      * @throws AttributeNotFoundException
      */
-    ITmfStateInterval getOngoingInterval(int quark) throws AttributeNotFoundException {
+    ITmfStateInterval getOngoingInterval(int quark)
+            throws AttributeNotFoundException {
+
         checkValidAttribute(quark);
         return new TmfStateInterval(ongoingStateStartTimes.get(quark), -1, quark,
                 ongoingStateInfo.get(quark));
     }
 
-    private void checkValidAttribute(int quark) throws AttributeNotFoundException {
+    private void checkValidAttribute(int quark)
+            throws AttributeNotFoundException {
+
         if (quark > ongoingStateInfo.size() - 1 || quark < 0) {
             throw new AttributeNotFoundException();
         }
     }
 
     /**
-     * More advanced version of {@link #changeOngoingStateValue}. Replaces the
-     * complete {@link #ongoingStateInfo} in one go, and updates the
-     * {@link #ongoingStateStartTimes} and {@link #stateValuesTypes}
-     * accordingly. BE VERY CAREFUL WITH THIS!
+     * Batch method of changeOngoingStateValue(), updates the complete
+     * ongoingStateInfo in one go. BE VERY CAREFUL WITH THIS! Especially with
+     * the sizes of both arrays.
      *
-     * @param newStateIntervals
-     *            The List of intervals that will represent the new
-     *            "ongoing state". Their end times don't matter, we will only
-     *            check their value and start times.
+     * Note that the new ongoingStateInfo will be a shallow copy of
+     * newStateInfo, so that last one must be already instantiated and all.
+     *
+     * @param newStateInfo
+     *            The List of StateValues to replace the old ongoingStateInfo
+     *            one.
      */
-    synchronized void replaceOngoingState(List<ITmfStateInterval> newStateIntervals) {
-        int size = newStateIntervals.size();
-        ongoingStateInfo = new ArrayList<ITmfStateValue>(size);
-        ongoingStateStartTimes = new ArrayList<Long>(size);
-        stateValueTypes = new ArrayList<Type>(size);
-
-        for (ITmfStateInterval interval : newStateIntervals) {
-            ongoingStateInfo.add(interval.getStateValue());
-            ongoingStateStartTimes.add(interval.getStartTime());
-            stateValueTypes.add(interval.getStateValue().getType());
-        }
+    void changeOngoingStateInfo(ArrayList<ITmfStateValue> newStateInfo) {
+        this.ongoingStateInfo = newStateInfo;
     }
 
     /**
@@ -141,7 +134,7 @@ class TransientState {
          * change.
          */
         ongoingStateInfo.add(TmfStateValue.nullValue());
-        stateValueTypes.add(Type.NULL);
+        stateValueTypes.add((byte) -1);
 
         if (backend == null) {
             ongoingStateStartTimes.add(0L);
@@ -188,20 +181,20 @@ class TransientState {
             AttributeNotFoundException, StateValueTypeException {
         assert (this.isActive);
 
-        Type expectedSvType = stateValueTypes.get(index);
+        byte expectedSvType = stateValueTypes.get(index);
         checkValidAttribute(index);
 
         /*
          * Make sure the state value type we're inserting is the same as the
          * one registered for this attribute.
          */
-        if (expectedSvType == Type.NULL) {
+        if (expectedSvType == -1) {
             /*
              * The value hasn't been used yet, set it to the value
              * we're currently inserting (which might be null/-1 again).
              */
             stateValueTypes.set(index, value.getType());
-        } else if ((value.getType() != Type.NULL) && (value.getType() != expectedSvType)) {
+        } else if ((value.getType() != -1) && (value.getType() != expectedSvType)) {
             /*
              * We authorize inserting null values in any type of attribute,
              * but for every other types, it needs to match our expectations!
@@ -296,7 +289,7 @@ class TransientState {
                  * This shouldn't happen, since we control where the interval's
                  * start time comes from
                  */
-                throw new IllegalStateException(e);
+                e.printStackTrace();
             }
         }
 

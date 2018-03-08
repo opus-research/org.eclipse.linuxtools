@@ -1,14 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
- *   Simon Delisle - Added a method to remove the iterator
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
@@ -72,22 +70,6 @@ public abstract class CtfIteratorManager {
     public static synchronized CtfIterator getIterator(final CtfTmfTrace trace,
             final CtfTmfContext ctx) {
         return map.get(trace).getIterator(ctx);
-    }
-
-    /**
-     * Remove an iterator for a given trace and context
-     *
-     * @param trace
-     *            the trace
-     * @param ctx
-     *            the context
-     * @since 2.1
-     */
-    public static synchronized void removeIterator(final CtfTmfTrace trace, final CtfTmfContext ctx) {
-        CtfTraceManager traceManager = map.get(trace);
-        if (traceManager != null) {
-            traceManager.removeIterator(ctx);
-        }
     }
 }
 
@@ -170,11 +152,6 @@ class CtfTraceManager {
             }
         }
         return retVal;
-    }
-
-    public void removeIterator(CtfTmfContext context) {
-        fMap.remove(context);
-        fRandomAccess.remove(context);
     }
 
     /**

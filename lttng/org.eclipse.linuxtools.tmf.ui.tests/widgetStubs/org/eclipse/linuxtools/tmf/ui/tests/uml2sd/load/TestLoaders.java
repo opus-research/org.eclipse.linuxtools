@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Bernd Hufmann - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.tests.uml2sd.load;
 
 import java.net.URL;
@@ -19,7 +8,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence;
@@ -61,14 +50,10 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     private Frame savedFrame = null;
 
     public TestLoaders() {
-        this("");
+        this(""); //$NON-NLS-1$
     }
 
-    /**
-     * Constructor
-     *
-     * @param name
-     */
+    @SuppressWarnings("unused")
     public TestLoaders(String name) {
         page = 1;
     }
@@ -106,6 +91,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         createFrame();
     }
 
+    @SuppressWarnings("nls")
     private void createFrame() {
         Frame testFrame = new Frame();
         if (page == 1) {
@@ -225,6 +211,10 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         v.setFrame(testFrame);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.hyades.uml2sd.ui.actions.provider.ISDFindProvider#find(org.eclipse.hyades.uml2sd.ui.actions.widgets.Criteria)
+     */
     @Override
     public boolean find(Criteria toSearch) {
         Frame frame = v.getFrame();
@@ -285,7 +275,8 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             // findResults.addAll(Arrays.asList(temp));
             // }
 
-            List<GraphNode> selection = v.getSDWidget().getSelection();
+            @SuppressWarnings("rawtypes")
+            List selection = v.getSDWidget().getSelection();
             if (selection != null && selection.size() == 1) {
                 currentFindIndex = findResults.indexOf(selection.get(0)) + 1;
             } else {
@@ -339,7 +330,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     }
 
     @Override
-    public boolean filter(List<FilterCriteria> filters) {
+    public boolean filter(List<?> filters) {
 
         if (savedFrame != null) {
             savedFrame = v.getFrame();
@@ -355,7 +346,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             return false;
         }
 
-        FilterCriteria filterCriteria = filters.get(0);
+        FilterCriteria filterCriteria = (FilterCriteria) filters.get(0);
 
         // One way is to set visiblity of the item, but this only works for messages and not
         // for lifelines! It's better to create a new frame without the filtered messages.
@@ -384,6 +375,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         return null;
     }
 
+    @SuppressWarnings("nls")
     @Override
     public String getTitleString() {
         return "Test Loader";
@@ -406,6 +398,10 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.hyades.uml2sd.ui.actions.provider.ISDGraphNodeSupporter#isNodeSupported(int)
+     */
     @Override
     public boolean isNodeSupported(int nodeType) {
         switch (nodeType) {
@@ -441,6 +437,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             img = img_;
         }
 
+        @SuppressWarnings("nls")
         public Image getResourceImage(String _name) {
             ImageDescriptor imgage;
             try {

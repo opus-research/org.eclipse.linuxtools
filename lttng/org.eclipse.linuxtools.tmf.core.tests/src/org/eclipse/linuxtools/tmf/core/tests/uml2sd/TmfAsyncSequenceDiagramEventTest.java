@@ -23,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfAsyncSequenceDiagramEvent;
 
 import org.junit.Test;
@@ -31,6 +31,7 @@ import org.junit.Test;
 /**
  * TmfAsyncSequenceDiagramEventTest
  */
+@SuppressWarnings("nls")
 public class TmfAsyncSequenceDiagramEventTest {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;
@@ -54,10 +55,10 @@ public class TmfAsyncSequenceDiagramEventTest {
      * Constructor for the test case
      */
     public TmfAsyncSequenceDiagramEventTest() {
-        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content", null);
+        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType, fContent1, fReference);
 
-        fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content", null);
+        fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content");
         fEvent2 = new TmfEvent(null, fTimestamp2, fSource, fType, fContent2, fReference);
     }
 

@@ -10,7 +10,6 @@
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Adapt to junit.framework.TestCase
  *   Alexandre Montplaisir - Port to JUnit4
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.histogram;
@@ -258,7 +257,7 @@ public class HistogramDataModelTest {
                 }
             }
         }
-        fail("Uncaught assertion error");
+        fail("Uncaught assertion error"); //$NON-NLS-1$
     }
 
     /**
@@ -464,8 +463,7 @@ public class HistogramDataModelTest {
         HistogramScaledData result = model.scaleTo(width, maxHeight, barWidth);
 
         assertEquals(4 * 26, result.fBucketDuration);
-        assertEquals(0, result.fSelectionBeginBucket);
-        assertEquals(0, result.fSelectionEndBucket);
+        assertEquals(0, result.fCurrentBucket);
         assertEquals(0, result.fFirstBucketTime);
         assertEquals(0, result.fFirstEventTime);
         assertEquals(1, result.fLastBucket);
@@ -516,8 +514,7 @@ public class HistogramDataModelTest {
         HistogramScaledData result = model.scaleTo(width, maxHeight, barWidth);
 
         assertEquals(4 * 6, result.fBucketDuration);
-        assertEquals(0, result.fSelectionBeginBucket);
-        assertEquals(0, result.fSelectionEndBucket);
+        assertEquals(0, result.fCurrentBucket);
         assertEquals(-3, result.fFirstBucketTime); // negative is correct, can happen when reverse
         assertEquals(0, result.fFirstEventTime);
         assertEquals(9, result.fLastBucket);
@@ -578,8 +575,7 @@ public class HistogramDataModelTest {
 
         // For the above number of events, result and revResult are exactly the same.
         assertEquals(result.fBucketDuration, revResult.fBucketDuration);
-        assertEquals(result.fSelectionBeginBucket, revResult.fSelectionBeginBucket);
-        assertEquals(result.fSelectionEndBucket, revResult.fSelectionEndBucket);
+        assertEquals(result.fCurrentBucket, revResult.fCurrentBucket);
         assertEquals(result.fFirstBucketTime, revResult.fFirstBucketTime);
         assertEquals(result.fMaxValue, revResult.fMaxValue);
         assertEquals(result.fScalingFactor, revResult.fScalingFactor, DELTA);

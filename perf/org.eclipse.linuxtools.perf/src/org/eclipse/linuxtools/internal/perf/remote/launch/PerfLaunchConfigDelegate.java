@@ -82,6 +82,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			URI exeURI = new URI(configUtils.getExecutablePath());
 			String configWorkingDir = configUtils.getWorkingDirectory();
 			RemoteConnection exeRC = new RemoteConnection(exeURI);
+			monitor.worked(1);
 			String perfPathString = RuntimeProcessFactory.getFactory().whichCommand(PerfPlugin.PERF_COMMAND, project);
 			boolean copyExecutable = configUtils.getCopyExecutable();
 			if (copyExecutable) {
@@ -200,7 +201,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				//Possibly should pass this (the console reference) on to PerfCore.Report if theres anything we ever want to spit out to user.
 			}
 			PerfCore.Report(config, getEnvironment(config), Path.fromOSString(configWorkingDir + IPath.SEPARATOR), monitor, null, print);
-			PerfCore.RefreshView(renderProcessLabel(exeURI.getPath()));
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -216,6 +216,12 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		//			// TODO Auto-generated catch block
 		//			e.printStackTrace();
 		//		} 
+	}
+
+	@Override
+	public String generateCommand(ILaunchConfiguration config) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

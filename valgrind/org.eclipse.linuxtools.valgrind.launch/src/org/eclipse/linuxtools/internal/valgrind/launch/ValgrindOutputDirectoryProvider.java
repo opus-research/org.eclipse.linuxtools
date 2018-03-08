@@ -7,8 +7,10 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.valgrind.launch;
+
+import java.io.IOException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindOutputDirectoryProvider;
@@ -19,12 +21,11 @@ public class ValgrindOutputDirectoryProvider implements IValgrindOutputDirectory
 	public ValgrindOutputDirectoryProvider() {
 		outputPath = ValgrindLaunchPlugin.getDefault().getStateLocation();
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.linuxtools.valgrind.launch.IValgrindOutputDirectoryProvider#getOutputPath()
 	 */
-	@Override
-	public IPath getOutputPath() {
+	public IPath getOutputPath() throws IOException {		
 		return outputPath;
 	}
 

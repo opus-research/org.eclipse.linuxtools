@@ -31,21 +31,21 @@ public class PerfViewLabelProvider extends LabelProvider {
 	@Override
 	public Image getImage(Object obj) {
 		String imageKey;
-
+		
 		if (obj instanceof PMDso) {
-			imageKey = "icons/dso.gif"; //$NON-NLS-1$
+			imageKey = "icons/dso.gif";
 		} else if (obj instanceof PMSymbol) {
-			imageKey = "icons/symbol.gif"; //$NON-NLS-1$
+			imageKey = "icons/symbol.gif";
 			if (((PMSymbol)obj).conflicted())
 				return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
 		} else if (obj instanceof PMLineRef) {
-			imageKey = "icons/line.gif"; //$NON-NLS-1$
+			imageKey = "icons/line.gif";
 		} else if (obj instanceof PMEvent) {
-			imageKey = "icons/event.gif"; //$NON-NLS-1$
+			imageKey = "icons/event.gif";
 		} else if (obj instanceof PMFile) {
-			imageKey = "icons/file.gif"; //$NON-NLS-1$
+			imageKey = "icons/file.gif";
 			if (((PMFile)obj).getName().equals(PerfPlugin.STRINGS_MultipleFilesForSymbol)) {
-				return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
+				return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);				
 			}
 		} else if (obj instanceof TreeParent) {
 			imageKey = ISharedImages.IMG_OBJ_FOLDER;

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,12 +23,12 @@ public interface IFieldInfo extends ITraceInfo {
     /**
      * @return the event field type
      */
-    String getFieldType();
+    public String getFieldType();
 
     /**
      * Sets field type string
      *
      * @param fieldType - sting of event field type
      */
-    void setFieldType(String fieldType);
+    public void setFieldType(String fieldType);
 }

@@ -36,45 +36,45 @@ public class InstallScriptsPage extends AbstractRPMPropertyPage {
 		Label rpmPreInstallLabel = new Label(composite, SWT.NONE);
 		rpmPreInstallLabel.setText(Messages
 				.getString("InstallScriptsPage.PreinstallScript")); //$NON-NLS-1$
-		Text rpmPreInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
+		Text rpm_PreInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
 				| SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
-		rpmPreInstallText.setLayoutData(gd);
+		rpm_PreInstallText.setLayoutData(gd);
 
 		Label rpmPostInstallLabel = new Label(composite, SWT.NONE);
 		rpmPostInstallLabel.setText(Messages
 				.getString("InstallScriptsPage.PostinstallScript")); //$NON-NLS-1$
-		Text rpmPostInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
+		Text rpm_PostInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
 				| SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
-		rpmPostInstallText.setLayoutData(gd);
+		rpm_PostInstallText.setLayoutData(gd);
 
 		Label rpmPreUnInstallLabel = new Label(composite, SWT.NONE);
 		rpmPreUnInstallLabel.setText(Messages
 				.getString("InstallScriptsPage.PreuninstallScript")); //$NON-NLS-1$
-		Text rpmPreUnInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
+		Text rpm_PreUnInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
 				| SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
-		rpmPreUnInstallText.setLayoutData(gd);
+		rpm_PreUnInstallText.setLayoutData(gd);
 
 		Label rpmPostUnInstallLabel = new Label(composite, SWT.NONE);
 		rpmPostUnInstallLabel.setText(Messages
 				.getString("InstallScriptsPage.PostuninstallScript")); //$NON-NLS-1$
-		Text rpmPostUnInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
+		Text rpm_PostUnInstallText = new Text(composite, SWT.MULTI | SWT.BORDER
 				| SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
-		rpmPostUnInstallText.setLayoutData(gd);
+		rpm_PostUnInstallText.setLayoutData(gd);
 
 		// Populate RPM text fields
 		try {
 			IFile rpmFile = (IFile) getElement();
 			String rpm_PreInstall = RPMQuery.getPreInstallScript(rpmFile);
-			rpmPreInstallText.setText(rpm_PreInstall);
+			rpm_PreInstallText.setText(rpm_PreInstall);
 
 			String rpm_PostInstall = RPMQuery.getPostInstallScript(rpmFile);
-			rpmPostInstallText.setText(rpm_PostInstall);
+			rpm_PostInstallText.setText(rpm_PostInstall);
 
 			String rpm_PreUnInstall = RPMQuery.getPreUninstallScript(rpmFile);
-			rpmPreUnInstallText.setText(rpm_PreUnInstall);
+			rpm_PreUnInstallText.setText(rpm_PreUnInstall);
 
 			String rpm_PostUnInstall = RPMQuery.getPostUninstallScript(rpmFile);
-			rpmPostUnInstallText.setText(rpm_PostUnInstall);
+			rpm_PostUnInstallText.setText(rpm_PostUnInstall);
 		} catch (CoreException e) {
 			StatusManager.getManager().handle(new StatusAdapter(e.getStatus()),
 					StatusManager.LOG | StatusManager.SHOW);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,6 +21,7 @@ import org.osgi.framework.BundleContext;
  * <p>
  * The activator class controls the plug-in life cycle
  */
+@SuppressWarnings({ "nls" })
 public class TmfCoreTestPlugin extends Plugin {
 
     // ------------------------------------------------------------------------

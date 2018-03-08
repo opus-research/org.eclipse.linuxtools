@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of streamed traces
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -17,20 +16,17 @@ import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceSessionState;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.ControlView;
@@ -39,13 +35,7 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ImportFil
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.TraceControlDialogFactory;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
-import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.services.files.IFileService;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
@@ -64,16 +54,6 @@ import org.eclipse.ui.PlatformUI;
 public class ImportHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
-    // Constants
-    // ------------------------------------------------------------------------
-    /** Trace Type ID for LTTng Kernel traces */
-    private static final String LTTNG_KERNEL_TRACE_TYPE = "org.eclipse.linuxtools.lttng2.kernel.tracetype"; //$NON-NLS-1$
-    /** Trace Type ID for Generic CTF traces */
-    private static final String GENERIC_CTF_TRACE_TYPE = "org.eclipse.linuxtools.tmf.ui.type.ctf"; //$NON-NLS-1$
-    /** Name of default project to import traces to */
-    public static final String DEFAULT_REMOTE_PROJECT_NAME = "Remote"; //$NON-NLS-1$
-
-    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
@@ -83,9 +63,17 @@ public class ImportHandler extends BaseControlViewHandler {
     protected CommandParameter fParam;
 
     // ------------------------------------------------------------------------
+    // Accessors
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -99,27 +87,8 @@ public class ImportHandler extends BaseControlViewHandler {
         try {
             final CommandParameter param = fParam.clone();
 
-            // create default project
-            IProject project = TmfProjectRegistry.createProject(DEFAULT_REMOTE_PROJECT_NAME, null, null);
-            TmfImportHelper.forceFolderRefresh(project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME));
-
-            if (param.getSession().isStreamedTrace()) {
-                // Streamed trace
-                TmfProjectElement projectElement = TmfProjectRegistry.getProject(project);
-                TmfTraceFolder traceFolder = projectElement.getTracesFolder();
-
-                BatchImportTraceWizard wizard = new BatchImportTraceWizard();
-                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
-                WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
-                dialog.open();
-                traceFolder.refresh();
-                return null;
-            }
-
-            // Remote trace
             final IImportDialog dialog = TraceControlDialogFactory.getInstance().getImportDialog();
             dialog.setSession(param.getSession());
-            dialog.setDefaultProject(DEFAULT_REMOTE_PROJECT_NAME);
 
             if (dialog.open() != Window.OK) {
                 return null;
@@ -128,39 +97,19 @@ public class ImportHandler extends BaseControlViewHandler {
             Job job = new Job(Messages.TraceControl_ImportJob) {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
+                    try {
+                        List<ImportFileInfo> traces = dialog.getTracePathes();
+                        IProject project = dialog.getProject();
 
-                    MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, Messages.TraceControl_ImportFailure, null);
-                    List<ImportFileInfo> traces = dialog.getTracePathes();
-                    IProject selectedProject = dialog.getProject();
-                    for (Iterator<ImportFileInfo> iterator = traces.iterator(); iterator.hasNext();) {
-                        try {
+                        for (Iterator<ImportFileInfo> iterator = traces.iterator(); iterator.hasNext();) {
                             ImportFileInfo remoteFile = iterator.next();
-
-                            downloadTrace(remoteFile, selectedProject);
-
-                            // Set trace type
-                            IFolder traceFolder = selectedProject.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
-                            TmfImportHelper.forceFolderRefresh(traceFolder);
-                            IFile file = traceFolder.getFile(remoteFile.getLocalTraceName());
-
-                            TraceTypeHelper helper = null;
-
-                            if (remoteFile.isKernel()) {
-                                helper = TmfTraceType.getInstance().getTraceType(LTTNG_KERNEL_TRACE_TYPE);
-                            } else {
-                                helper = TmfTraceType.getInstance().getTraceType(GENERIC_CTF_TRACE_TYPE);
-                            }
-
-                            if (helper != null) {
-                                status.add(TmfTraceType.setTraceType(file.getFullPath(), helper));
-                            }
-                        } catch (ExecutionException e) {
-                            status.add(new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e));
-                        } catch (CoreException e) {
-                            status.add(new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e));
+                            downloadTrace(remoteFile, project);
                         }
+
+                    } catch (ExecutionException e) {
+                        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e);
                     }
-                    return status;
+                    return Status.OK_STATUS;
                 }
             };
             job.setUser(true);
@@ -171,6 +120,10 @@ public class ImportHandler extends BaseControlViewHandler {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
         // Get workbench page for the Control View
@@ -212,7 +165,6 @@ public class ImportHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Helper methods
     // ------------------------------------------------------------------------
-
     /**
      * Downloads a trace from the remote host to the given project.
      *

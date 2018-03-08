@@ -15,10 +15,9 @@ import java.io.File;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
+import org.eclipse.linuxtools.internal.systemtap.ui.editor.actions.EditorAction;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.SWT;
@@ -28,23 +27,14 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-/**
- * @since 2.0
- */
-public class OpenFileAction extends Action implements IWorkbenchWindowActionDelegate {
+
+
+public class OpenFileAction extends EditorAction {
 
 	private boolean successful;
-	private IAction action;
-
-	/**
-	 * @since 2.0
-	 */
-	protected IWorkbenchWindow window;
 
 	public OpenFileAction() {
 		super();
@@ -120,31 +110,5 @@ public class OpenFileAction extends Action implements IWorkbenchWindowActionDele
 
 	public boolean isSuccessful() {
 		return successful;
-	}
-
-	/**
-	 * @since 2.0
-	 */
-	@Override
-	public void init(IWorkbenchWindow window) {
-		this.window = window;
-	}
-
-	/**
-	 * @since 2.0
-	 */
-	@Override
-	public void selectionChanged(IAction act, ISelection select) {
-		action = act;
-		action.setEnabled(true);
-	}
-
-	/**
-	 * @since 2.0
-	 */
-	@Override
-	public void dispose() {
-		window = null;
-		action = null;
 	}
 }
