@@ -55,8 +55,6 @@ public abstract class StateSystemTest {
 
     /* Offset in the trace + start time of the trace */
     static final long interestingTimestamp1 = 18670067372290L + 1331649577946812237L;
-    static final long interestingTimestamp2 = 1331668248014135800L;
-    static final int interestingQuark = 233;
 
     @Test
     public void testFullQuery1() {
@@ -147,8 +145,8 @@ public abstract class StateSystemTest {
     }
 
     /**
-     * Range query, but with a t2 far off the end of the trace. The result
-     * should still be valid.
+     * Range query, but with a t2 far off the end of the trace.
+     * The result should still be valid.
      */
     @Test
     public void testRangeQuery2() {
@@ -404,25 +402,6 @@ public abstract class StateSystemTest {
         } catch (TimeRangeException e) {
             fail();
         } catch (StateSystemDisposedException e) {
-            fail();
-        }
-    }
-
-    @Test
-    public void testFirstIntervalIsConsidered() {
-        try {
-            List<ITmfStateInterval> list = ssq.queryFullState(interestingTimestamp2);
-            ITmfStateInterval interval = list.get(interestingQuark);
-            assertEquals(1331668247516664825L, interval.getStartTime());
-            assertEquals(1331668248014135818L, interval.getEndTime());
-
-            int valueInt = interval.getStateValue().unboxInt();
-            assertEquals(1, valueInt);
-        } catch (TimeRangeException e) {
-            fail();
-        } catch (StateSystemDisposedException e) {
-            fail();
-        } catch (StateValueTypeException e) {
             fail();
         }
     }
