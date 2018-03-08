@@ -78,9 +78,15 @@ public class PerfProfileView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		createActionMenu();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-	
+
+	public void createActionMenu() {
+		IMenuManager manager = getViewSite().getActionBars().getMenuManager();
+		manager.add(new PerfDataCollectionAction());
+	}
+
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
