@@ -62,7 +62,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     /**
      * The initial window span (in nanoseconds)
      */
-    public static final long INITIAL_WINDOW_SPAN = (1L * 100 * 1000 * 1000); // .1sec
+    public static final long INITIAL_WINDOW_SPAN = (1L * 100 * 1000 * 1000); /* .1sec */
 
     /**
      * Timestamp scale (nanosecond)
@@ -195,12 +195,15 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     public void init(Composite parent, String viewerName, ITmfTrace trace) {
         super.init(parent, viewerName);
-        // Increment a counter to make sure the tree ID is unique.
+        /* Increment a counter to make sure the tree ID is unique. */
         fCountInstance++;
         fInstanceNb = fCountInstance;
         fTrace = trace;
 
-        // The viewer will process all events if he is assigned to the experiment
+        /*
+         * The viewer will process all events if he is assigned to the
+         * experiment
+         */
         fProcessAll = (trace instanceof TmfExperiment);
 
         initContent(parent);
@@ -225,7 +228,7 @@ public class TmfStatisticsViewer extends TmfViewer {
         cancelOngoingRequest(fRequestRange);
         cancelOngoingRequest(fRequest);
 
-        // Clean the model
+        /* Clean the model */
         TmfStatisticsTreeRootFactory.removeStatTreeRoot(getTreeID());
     }
 
@@ -238,15 +241,15 @@ public class TmfStatisticsViewer extends TmfViewer {
     @TmfSignalHandler
     public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
         TmfExperiment experiment = signal.getExperiment();
-        // validate
+        /* validate */
         if (!experiment.equals(TmfExperiment.getCurrentExperiment())) {
             return;
         }
 
-        // Sends the time range request only once in this method.
+        /* Sends the time range request only once in this method. */
         if (fSendRangeRequest) {
             fSendRangeRequest = false;
-            // Calculate the selected time range to request
+            /* Calculate the selected time range to request */
             long startTime = signal.getRange().getStartTime().normalize(0, TIME_SCALE).getValue();
             TmfTimestamp startTS = new TmfTimestamp(startTime, TIME_SCALE);
             TmfTimestamp endTS = new TmfTimestamp(startTime + INITIAL_WINDOW_SPAN, TIME_SCALE);
@@ -367,7 +370,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     @Override
     public void refresh() {
         final Control viewerControl = getControl();
-        // Ignore update if disposed
+        /* Ignore update if disposed */
         if (viewerControl.isDisposed()) {
             return;
         }
@@ -425,22 +428,23 @@ public class TmfStatisticsViewer extends TmfViewer {
         fTreeViewer.getTree().setHeaderVisible(true);
         fTreeViewer.setUseHashlookup(true);
 
-        // Creates the columns defined by the column data provider
+        /* Creates the columns defined by the column data provider */
         for (final TmfBaseColumnData columnData : columnDataList) {
             final TreeViewerColumn treeColumn = new TreeViewerColumn(fTreeViewer, columnData.getAlignment());
             treeColumn.getColumn().setText(columnData.getHeader());
             treeColumn.getColumn().setWidth(columnData.getWidth());
             treeColumn.getColumn().setToolTipText(columnData.getTooltip());
 
-            if (columnData.getComparator() != null) { // A comparator is defined.
-                // Adds a listener on the columns header for sorting purpose.
+            if (columnData.getComparator() != null) {
+                /* A comparator is defined. */
+                /* Adds a listener on the columns header for sorting purpose. */
                 treeColumn.getColumn().addSelectionListener(new SelectionAdapter() {
 
                     private ViewerComparator reverseComparator;
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        // Initializes the reverse comparator once.
+                        /*  Initializes the reverse comparator once.*/
                         if (reverseComparator == null) {
                             reverseComparator = new ViewerComparator() {
                                 @Override
@@ -473,7 +477,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             treeColumn.setLabelProvider(columnData.getLabelProvider());
         }
 
-        // Handler that will draw the bar charts.
+        /* Handler that will draw the bar charts. */
         fTreeViewer.getTree().addListener(SWT.EraseItem, new Listener() {
             @Override
             public void handleEvent(Event event) {
@@ -481,12 +485,16 @@ public class TmfStatisticsViewer extends TmfViewer {
                     TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) event.item.getData();
 
                     double percentage = columnDataList.get(event.index).getPercentageProvider().getPercentage(node);
-                    if (percentage == 0) {  // No bar to draw
+                    if (percentage == 0) { /* No bar to draw */
                         return;
                     }
 
-                    if ((event.detail & SWT.SELECTED) > 0) {    // The item is selected.
-                        // Draws our own background to avoid overwritten the bar.
+                    if ((event.detail & SWT.SELECTED) > 0) {
+                        /* The item is selected. */
+                        /*
+                         * Draws our own background to avoid overwritten the
+                         * bar.
+                         */
                         event.gc.fillRectangle(event.x, event.y, event.width, event.height);
                         event.detail &= ~SWT.SELECTED;
                     }
@@ -504,7 +512,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                     event.gc.setBackground(event.item.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                     event.gc.fillGradientRectangle(event.x, event.y, barWidth, event.height, true);
                     event.gc.drawRectangle(event.x, event.y, barWidth, event.height);
-                    // Restores old values
+                    /* Restores old values */
                     event.gc.setForeground(oldForeground);
                     event.gc.setBackground(oldBackground);
                     event.gc.setAlpha(oldAlpha);
@@ -513,7 +521,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             }
         });
 
-        // Initializes the comparator parameters
+        /* Initializes the comparator parameters */
         fTreeViewer.setComparator(columnDataList.get(0).getComparator());
         fTreeViewer.getTree().setSortColumn(fTreeViewer.getTree().getColumn(0));
         fTreeViewer.getTree().setSortDirection(SWT.DOWN);
@@ -529,15 +537,15 @@ public class TmfStatisticsViewer extends TmfViewer {
         String treeID = getTreeID();
         TmfStatisticsTreeNode experimentTreeNode;
         if (TmfStatisticsTreeRootFactory.containsTreeRoot(treeID)) {
-            // The experiment root is already present
+            /* The experiment root is already present */
             experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
 
-            // Checks if the trace is already in the statistics tree.
+            /* Checks if the trace is already in the statistics tree. */
             int numNodeTraces = experimentTreeNode.getNbChildren();
 
             int numTraces = 1;
             ITmfTrace[] trace = { fTrace };
-            // For experiment, gets all the traces within it
+            /* For experiment, gets all the traces within it */
             if (fTrace instanceof TmfExperiment) {
                 TmfExperiment experiment = (TmfExperiment) fTrace;
                 numTraces = experiment.getTraces().length;
@@ -559,19 +567,19 @@ public class TmfStatisticsViewer extends TmfViewer {
                 }
 
                 if (same) {
-                    // No need to reload data, all traces are already loaded
+                    /* No need to reload data, all traces are already loaded */
                     fTreeViewer.setInput(experimentTreeNode);
                     return;
                 }
-                // Clears the old content to start over
+                /* Clears the old content to start over */
                 experimentTreeNode.reset();
             }
         } else {
-            // Creates a new tree
+            /* Creates a new tree */
             experimentTreeNode = TmfStatisticsTreeRootFactory.addStatsTreeRoot(treeID, getStatisticData());
         }
 
-        // Sets the input to a clean data model
+        /* Sets the input to a clean data model */
         fTreeViewer.setInput(experimentTreeNode);
         resetUpdateSynchronization();
     }
@@ -613,14 +621,14 @@ public class TmfStatisticsViewer extends TmfViewer {
      *            request.
      */
     protected void modelIncomplete(boolean isGlobalRequest) {
-        if (isGlobalRequest) {  // Clean the global statistics
+        if (isGlobalRequest) {  /* Clean the global statistics */
             /*
              * No need to reset the global number of events, since the index of
              * the last requested event is known.
              */
             resetUpdateSynchronization();
             sendPendingUpdate();
-        } else {    // Clean the partial statistics
+        } else {    /* Clean the partial statistics */
             resetTimeRangeValue();
         }
         refresh();
@@ -636,7 +644,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      *            The range to request to the experiment
      */
     protected void requestData(TmfExperiment experiment, TmfTimeRange range) {
-        // Check if an update is already ongoing
+        /* Check if an update is already ongoing */
         if (checkUpdateBusy(range)) {
             return;
         }
@@ -671,7 +679,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
-     * Resets the number of events within the time range
+     * Resets the number of events within the time range.
      */
     protected void resetTimeRangeValue() {
         TmfStatisticsTreeNode treeModelRoot = TmfStatisticsTreeRootFactory.getStatTreeRoot(getTreeID());
@@ -699,30 +707,30 @@ public class TmfStatisticsViewer extends TmfViewer {
         Display display = fTreeViewer.getControl().getDisplay();
         if (waitRequested) {
             fWaitCursorCount++;
-            if (fWaitCursor == null) { // The cursor hasn't been initialized yet
+            if (fWaitCursor == null) { /* The cursor hasn't been initialized yet */
                 fWaitCursor = new Cursor(display, SWT.CURSOR_WAIT);
             }
-            if (fWaitCursorCount == 1) { // The cursor is not in waiting mode
+            if (fWaitCursorCount == 1) { /* The cursor is not in waiting mode */
                 needsUpdate = true;
             }
         } else {
-            if (fWaitCursorCount > 0) { // The cursor is in waiting mode
+            if (fWaitCursorCount > 0) { /* The cursor is in waiting mode */
                 fWaitCursorCount--;
-                if (fWaitCursorCount == 0) { // No more reason to wait
-                    // Put back the default cursor
+                if (fWaitCursorCount == 0) { /* No more reason to wait */
+                    /* Put back the default cursor */
                     needsUpdate = true;
                 }
             }
         }
 
         if (needsUpdate) {
-            // Performs the updates on the UI thread
+            /* Performs the updates on the UI thread */
             display.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     if ((fTreeViewer != null)
                             && (!fTreeViewer.getTree().isDisposed())) {
-                        Cursor cursor = null; // indicates default
+                        Cursor cursor = null; /* indicates default */
                         if (waitRequested) {
                             cursor = fWaitCursor;
                         }
@@ -733,9 +741,9 @@ public class TmfStatisticsViewer extends TmfViewer {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // Methods reserved for the streaming functionality
-    // ------------------------------------------------------------------------
+    /* --------------------------------------------------------------------- */
+    /* Methods reserved for the streaming functionality */
+    /* --------------------------------------------------------------------- */
 
     /**
      * Resets update synchronization information

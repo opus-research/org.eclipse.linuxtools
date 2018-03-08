@@ -107,10 +107,10 @@ public class TmfStatisticsView extends TmfView {
     public void createPartControl(Composite parent) {
         fStatsViewers.setParent(parent);
         TmfExperiment currentExperiment = TmfExperiment.getCurrentExperiment();
-        // Read current data if any available
+        /* Read current data if any available */
         if (currentExperiment != null) {
             fRequestData = true;
-            // Insert the statistics data into the tree
+            /* Insert the statistics data into the tree */
             TmfExperimentSelectedSignal signal = new TmfExperimentSelectedSignal(this, currentExperiment);
             experimentSelected(signal);
             return;
@@ -135,7 +135,7 @@ public class TmfStatisticsView extends TmfView {
     @TmfSignalHandler
     public void experimentSelected(TmfExperimentSelectedSignal signal) {
         if (signal != null) {
-            // Does not reload the same trace if already opened
+            /* Does not reload the same trace if already opened */
             if (fExperiment == null
                     || signal.getExperiment().toString().compareTo(fExperiment.toString()) != 0) {
                 /*
@@ -143,7 +143,7 @@ public class TmfStatisticsView extends TmfView {
                  * type of the experiment selected
                  */
                 fStatsViewers.clear();
-                // Update the current experiment
+                /* Update the current experiment */
                 fExperiment = signal.getExperiment();
                 createStatisticsViewers();
                 fStatsViewers.layout();
@@ -151,7 +151,7 @@ public class TmfStatisticsView extends TmfView {
                 if (fRequestData) {
                     TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(null, fExperiment, fExperiment.getTimeRange());
                     TmfStatisticsViewer statsViewer;
-                    // Synchronizes the request to make them coalesced
+                    /* Synchronizes the request to make them coalesced */
                     fExperiment.startSynch(new TmfStartSynchSignal(0));
                     for (ITmfViewer viewer : fStatsViewers.getViewers()) {
                         if (!(viewer instanceof TmfStatisticsViewer)) {
@@ -177,7 +177,7 @@ public class TmfStatisticsView extends TmfView {
     public void dispose() {
         super.dispose();
         fStatsViewers.dispose();
-        // clean the model
+        /* clean the model */
         TmfStatisticsTreeRootFactory.removeAll();
     }
 
@@ -205,22 +205,22 @@ public class TmfStatisticsView extends TmfView {
      * @since 2.0
      */
     protected void createStatisticsViewers() {
-        // Default style for the tabs that will be created
+        /* Default style for the tabs that will be created */
         int defaultStyle = SWT.NONE;
 
-        // The folder composite that will contain the tabs
+        /* The folder composite that will contain the tabs */
         Composite folder = fStatsViewers.getParentFolder();
 
-        // Instantiation of the global viewer
+        /* Instantiation of the global viewer */
         TmfStatisticsViewer globalViewer = new TmfStatisticsViewer();
         if (fExperiment != null) {
-            // Shows the name of the experiment in the global tab
+            /* Shows the name of the experiment in the global tab */
             globalViewer.init( folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
 
             String traceName;
             IResource traceResource;
-            // Creates a statistics viewer for each traces.
+            /* Creates a statistics viewer for each traces. */
             for (ITmfTrace trace : fExperiment.getTraces()) {
                 traceName = trace.getName();
                 traceResource = trace.getResource();
@@ -236,11 +236,11 @@ public class TmfStatisticsView extends TmfView {
                 }
             }
         } else {
-            // There is no experiment selected. Shows an empty global tab
+            /* There is no experiment selected. Shows an empty global tab */
             globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
         }
-        // Makes the global viewer visible
+        /* Makes the global viewer visible */
         fStatsViewers.setSelection(0);
     }
 
