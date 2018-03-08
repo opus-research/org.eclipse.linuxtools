@@ -37,6 +37,9 @@ import org.eclipse.ui.PlatformUI;
  * @author Ryan Morse
  */
 public class DashboardGraphsBrowserView extends GraphsView {
+	public DashboardGraphsBrowserView() {
+		super();
+	}
 
 	@Override
 	protected void generateGraphsTree() {
