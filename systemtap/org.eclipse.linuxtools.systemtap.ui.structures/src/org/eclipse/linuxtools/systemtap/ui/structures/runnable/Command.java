@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -73,13 +72,8 @@ public class Command implements Runnable {
 	 * @since 2.0
 	 */
 	public Command(String[] cmd, String[] envVars) {
-		if (cmd != null) {
-			this.cmd = Arrays.copyOf(cmd, cmd.length);
-		}
-
-		if (envVars != null) {
-			this.envVars = Arrays.copyOf(envVars, envVars.length);
-		}
+		this.cmd = cmd;
+		this.envVars = envVars;
 	}
 
 	/**
