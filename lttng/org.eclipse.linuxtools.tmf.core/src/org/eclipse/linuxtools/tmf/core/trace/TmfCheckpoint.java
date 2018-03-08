@@ -79,6 +79,9 @@ public class TmfCheckpoint implements ITmfCheckpoint {
         return fTimestamp;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint#getLocation()
+     */
     @Override
     public ITmfLocation getLocation() {
         return fLocation;
@@ -88,6 +91,12 @@ public class TmfCheckpoint implements ITmfCheckpoint {
     // Comparable
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint#compareTo(org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint)
+     *
+     * Compares the checkpoints timestamp. If either is null, compares the
+     * trace checkpoints locations.
+     */
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public int compareTo(final ITmfCheckpoint other) {
@@ -124,6 +133,9 @@ public class TmfCheckpoint implements ITmfCheckpoint {
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -133,6 +145,9 @@ public class TmfCheckpoint implements ITmfCheckpoint {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -162,6 +177,9 @@ public class TmfCheckpoint implements ITmfCheckpoint {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {

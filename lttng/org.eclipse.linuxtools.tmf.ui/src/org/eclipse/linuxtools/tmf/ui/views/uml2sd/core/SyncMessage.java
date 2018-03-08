@@ -236,11 +236,19 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         return fEventTime;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
+     */
     @Override
     public boolean hasTimeInfo() {
         return fHasTimeInfo;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -257,6 +265,10 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         super.draw(context);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage#isVisible(int, int, int, int)
+     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         if (getY() > y + height +
@@ -276,16 +288,28 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         return super.isVisible(x, y, width, height);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getComparator()
+     */
     @Override
     public Comparator<GraphNode> getComparator() {
         return new SortSyncMessageComparator();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return SYNC_MESS_TAG;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#positiveDistanceToPoint(int, int)
+     */
     @Override
     public boolean positiveDistanceToPoint(int x, int y) {
         if (getY() > y) {
