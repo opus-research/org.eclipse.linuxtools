@@ -121,6 +121,7 @@ public class GmonView extends AbstractSTDataView {
 	 */
 	@Override
 	protected void contributeToToolbar(IToolBarManager manager) {
+		super.contributeToToolbar(manager);
 		manager.add(new Separator());
 		manager.add(action2);
 		action2.setChecked(true);

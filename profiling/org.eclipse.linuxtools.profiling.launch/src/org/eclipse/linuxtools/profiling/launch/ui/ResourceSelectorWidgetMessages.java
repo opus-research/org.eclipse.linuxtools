@@ -12,7 +12,7 @@
 import org.eclipse.osgi.util.NLS;
 
 /**
- * @since 2.0
+ * @since 1.3
  */
 public class ResourceSelectorWidgetMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.profiling.launch.ui.messages";//$NON-NLS-1$

@@ -1,6 +1,5 @@
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -117,7 +116,11 @@ public class VariantDefinitionTest {
         varDec.setTag(TAG_ID);
 
         structDefinition = sDec.createDefinition(null, TEST_STRUCT_ID);
-        fixture = (VariantDefinition) structDefinition.getDefinitions().get(VAR_FIELD_NAME);
+
+        EnumDefinition eDef = tagDec.createDefinition(structDefinition, TAG_ID);
+        fixture = varDec.createDefinition(structDefinition,VAR_FIELD_NAME );
+        fixture.setTagDefinition(eDef);
+
     }
 
     /**
@@ -328,18 +331,5 @@ public class VariantDefinitionTest {
                         Encoding.ASCII, fName, 8)), structDef, fName);
 
         fixture.setTagDefinition(tagDefinition);
-    }
-
-    /**
-     * Run the String toString() method test.
-     */
-    @Test
-    public void testToString() {
-        String result = fixture.toString();
-        assertEquals("{ null = null }", result); //$NON-NLS-1$
-
-        fixture.setCurrentField(ENUM_2);
-        result = fixture.toString();
-        assertEquals("{ b = 0 }", result); //$NON-NLS-1$
     }
 }
