@@ -15,9 +15,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
-import org.eclipse.linuxtools.dataviewers.charts.Activator;
-import org.eclipse.linuxtools.dataviewers.charts.dialogs.ChartDialog;
-import org.eclipse.linuxtools.dataviewers.charts.view.ChartView;
+import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
+import org.eclipse.linuxtools.internal.dataviewers.charts.dialogs.ChartDialog;
+import org.eclipse.linuxtools.internal.dataviewers.charts.view.ChartView;
 import org.eclipse.swt.widgets.Shell;
 
 /**
