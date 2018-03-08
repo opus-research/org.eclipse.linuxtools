@@ -46,7 +46,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 
@@ -117,13 +116,11 @@ public class RunScriptAction extends Action implements IWorkbenchWindowActionDel
 	 */
 	protected String getFilePath() {
 		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
-		
 		if(ed.getEditorInput() instanceof PathEditorInput)
 		 return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
-		if(ed.getEditorInput() instanceof FileStoreEditorInput)
-			return ((FileStoreEditorInput) ed.getEditorInput()).getURI().getPath();
 		else
 	     return ResourceUtil.getFile(ed.getEditorInput()).getLocation().toString();
+		
 	}
 	
 	/**
