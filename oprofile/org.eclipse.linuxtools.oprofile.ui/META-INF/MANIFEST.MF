@@ -12,8 +12,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.4.0",
 Bundle-Activator: org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
-Export-Package: org.eclipse.linuxtools.internal.oprofile.ui,
- org.eclipse.linuxtools.internal.oprofile.ui.view
+Export-Package: org.eclipse.linuxtools.internal.oprofile.ui;x-friends:="org.eclipse.linuxtools.oprofile.launch",
+ org.eclipse.linuxtools.internal.oprofile.ui.view;x-friends:="org.eclipse.linuxtools.oprofile.launch"
 Import-Package: org.eclipse.core.resources,
  org.eclipse.jface.text,
  org.eclipse.linuxtools.internal.oprofile.core,
