@@ -67,15 +67,15 @@ public abstract class LinuxtoolsProcessFactory {
 		StringBuffer newPath = new StringBuffer();
 		newPath.append(PATH_EQUAL);
 
-		if (ltPath != null && !ltPath.isEmpty()) {
+		if (ltPath != null && ltPath.length() > 0) {
 			newPath.append(ltPath);
 			newPath.append(SEPARATOR);
 		}
-		if (envpPath != null && !envpPath.isEmpty()) {
+		if (envpPath != null && envpPath.length() > 0) {
 			newPath.append(envpPath);
 			newPath.append(SEPARATOR);
 		}
-		if (systemPath != null && !systemPath.isEmpty()) {
+		if (systemPath != null && systemPath.length() > 0) {
 			newPath.append(systemPath);
 			newPath.append(SEPARATOR);
 		}
