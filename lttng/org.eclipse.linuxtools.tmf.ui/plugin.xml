@@ -164,6 +164,13 @@
             id="org.eclipse.linuxtools.tmf.ui.batch_import"
             name="%project.import.wizard.name.batch">
       </wizard>
+      <wizard
+            category="org.eclipse.linuxtools.tmf.import.category"
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importexport.ImportTracePackageWizard"
+            icon="icons/etool16/import.gif"
+            id="org.eclipse.linuxtools.tmf.ui.trace.import.package.wizard"
+            name="%project.import.wizard.name.tracepkg">
+      </wizard>
    </extension>
    <extension
          id="org.eclipse.linuxtools.tmf.project.nature"
@@ -405,6 +412,9 @@
                         <instanceof
                               value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
                         </instanceof>
+                        <instanceof
+                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisOutputElement">
+                        </instanceof>
                      </or>
                   </iterate>
                </with>
@@ -594,6 +604,57 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.exporttracepkg"
+               icon="icons/etool16/export.gif"
+               label="%command.export_trace_package"
+               mnemonic="%command.export_trace_package.mnemonic"
+               style="push"
+               tooltip="%command.export_trace_package.description">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <iterate
+                           ifEmpty="false"
+                           operator="and">
+                        <instanceof
+                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+                        </instanceof>
+                     </iterate>
+                  </and>
+               </with>
+            </visibleWhen>
+         </command>
+        <command
+              commandId="org.eclipse.linuxtools.tmf.ui.command.importtracepkg"
+              label="%command.import_trace_package"
+              mnemonic="%command.import_trace_package.mnemonic"
+              style="push"
+              tooltip="%command.import_trace_package.description">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <iterate
+                           ifEmpty="false"
+                           operator="and">
+                        <instanceof
+                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
+                        </instanceof>
+                     </iterate>
+                  </and>
+               </with>
+            </visibleWhen>
+         </command>
          <separator
                name="org.eclipse.linuxtools.tmf.ui.separator3"
                visible="true">
@@ -736,6 +797,30 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.analysis_help"
+               icon="icons/dlcl16/open.gif"
+               label="%command.analysis_help"
+               mnemonic="%command.analysis_help.mnemonic"
+               style="push"
+               tooltip="%command.analysis_help.description">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -750,6 +835,12 @@
             description="%command.new_experiment.description"
             id="org.eclipse.linuxtools.tmf.ui.command.new_experiment"
             name="%command.new_experiment">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.analysis_help.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.analysis_help"
+            name="%command.analysis_help">
       </command>
       <command
             categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
@@ -776,6 +867,16 @@
             categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
             id="org.eclipse.linuxtools.tmf.ui.command.delete_suppl_files"
             name="%command.delete_suppl_files">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            id="org.eclipse.linuxtools.tmf.ui.command.exporttracepkg"
+            name="%command.export_trace_package">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            id="org.eclipse.linuxtools.tmf.ui.command.importtracepkg"
+            name="%command.import_trace_package">
       </command>
       <command
             categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
@@ -851,6 +952,12 @@
             description="%command.batch_import.description"
             id="org.eclipse.linuxtools.tmf.ui.batch_import"
             name="%command.batch_import">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.export_to_text.description"
+            id="org.eclipse.linuxtools.tmf.ui.exportToText"
+            name="%command.export_to_text">
       </command>
    </extension>
    <extension
@@ -928,6 +1035,40 @@
                      operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OpenAnalysisHelpHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.analysis_help">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OpenAnalysisOutputHandler"
+            commandId="org.eclipse.ui.navigate.openResource">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisOutputElement">
                   </instanceof>
                </iterate>
             </and>
@@ -1039,6 +1180,40 @@
                      operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importexport.ExportTracePackageHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.exporttracepkg">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importexport.ImportTracePackageHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.importtracepkg">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
                   </instanceof>
                </iterate>
             </and>
@@ -1170,6 +1345,10 @@
                </iterate>
             </and>
          </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.exportToText">
       </handler>
    </extension>
    <extension point="org.eclipse.ui.bindings">
@@ -1316,5 +1495,18 @@
          </selectionEnablement>
       </linkHelper>
    </extension>
-
+   <extension
+         point="org.eclipse.ui.exportWizards">
+      <wizard
+            category="org.eclipse.linuxtools.tmf.export.category"
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importexport.ExportTracePackageWizard"
+            icon="icons/etool16/export.gif"
+            id="org.eclipse.linuxtools.tmf.ui.trace.export.package.wizard"
+            name="%project.export.wizard.name.tracepkg">
+      </wizard>
+      <category
+            id="org.eclipse.linuxtools.tmf.export.category"
+            name="%project.new.category.name">
+      </category>
+   </extension>
 </plugin>
