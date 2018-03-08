@@ -17,7 +17,7 @@ public class ScpExec implements Runnable {
   
 	public ScpExec(String cmd[], String moduleName) {
 	//	this.moduleName = moduleName;
-		this.command = "";
+		this.command = new String();
 		
 		try{
 			
