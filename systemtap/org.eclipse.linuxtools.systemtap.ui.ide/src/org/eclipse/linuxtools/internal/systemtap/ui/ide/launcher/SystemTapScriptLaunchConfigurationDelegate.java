@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +21,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
@@ -39,7 +42,7 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 
 	static final String CONFIGURATION_TYPE = "org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"; //$NON-NLS-1$
 
-	private IProject[] scriptProject = new IProject[1];
+	private IProject[] scriptProject;
 
 	/**
 	 * Keep a reference to the target running script's parent project, so only that project
@@ -55,19 +58,26 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		// Find the parent project of the target script.
 		IPath path = Path.fromOSString(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, (String)null));
 		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
-		IProject project = file == null ? null : file.getProject();
+		scriptProject = file == null ? null : new IProject[]{file.getProject()};
 
 		// Only save the target script's project if a project is found.
-		if (project != null) {
-			scriptProject[0] = project;
+		if (scriptProject != null) {
 			return super.preLaunchCheck(configuration, mode, monitor);
 		}
 		return true;
 	}
 
+	private String getPluginID() {
+		return this.getClass().getPackage().getName();
+	}
+
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
+
+		if (!SystemTapScriptGraphOptionsTab.isValidLaunch(configuration)) {
+			throw new CoreException(new Status(IStatus.ERROR, getPluginID(), Messages.SystemTapScriptLaunchError_graph));
+		}
 
 		IPreferenceStore preferenceStore = ConsoleLogPlugin.getDefault().getPreferenceStore();
 
@@ -88,10 +98,17 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		}
 
 		// Path
-		String path = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, ""); //$NON-NLS-1$
-		if (!path.isEmpty()){
-			action.setPath(new Path(path));
+		IPath scriptPath = new Path(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, "")); //$NON-NLS-1$
+		if (!scriptPath.toFile().exists()) {
+			throw new CoreException(new Status(IStatus.ERROR, getPluginID(),
+					MessageFormat.format(Messages.SystemTapScriptLaunchError_fileNotFound, scriptPath.toString())));
 		}
+		String extension = scriptPath.getFileExtension();
+		if (extension == null || !extension.equals("stp")) { //$NON-NLS-1$
+			throw new CoreException(new Status(IStatus.ERROR, getPluginID(),
+					MessageFormat.format(Messages.SystemTapScriptLaunchError_fileNotStp, scriptPath.toString())));
+		}
+		action.setPath(scriptPath);
 
 		// User Name
 		String userName = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.USER_NAME_ATTR, ""); //$NON-NLS-1$
