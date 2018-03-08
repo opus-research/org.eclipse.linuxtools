@@ -19,28 +19,30 @@ import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
 /**
- * <b><u>TmfEventProviderStub</u></b>
+ * <b><u>TmfDataProviderStub</u></b>
  * <p>
  * TODO: Implement me. Please.
  */
 @SuppressWarnings("javadoc")
-public class TmfEventProviderStub extends TmfEventProvider {
+public class TmfDataProviderStub extends TmfDataProvider {
+
+    private static final String DIRECTORY   = "testfiles";
+    private static final String TEST_STREAM = "M-Test-10K";
 
     private TmfTraceStub fTrace;
 
-    public TmfEventProviderStub(final String path) throws IOException {
-        super(path, ITmfEvent.class);
+    public TmfDataProviderStub(final String path) throws IOException {
+        super("TmfDataProviderStub", ITmfEvent.class);
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
         try {
             final File test = new File(FileLocator.toFileURL(location).toURI());
@@ -52,18 +54,12 @@ public class TmfEventProviderStub extends TmfEventProvider {
         }
     }
 
-    public TmfEventProviderStub() throws IOException {
-        this(TmfTestTrace.A_TEST_10K.getFullPath());
-    }
-
-    @Override
-    public void dispose() {
-        fTrace.dispose();
-        super.dispose();
+    public TmfDataProviderStub() throws IOException {
+        this(DIRECTORY + File.separator + TEST_STREAM);
     }
 
     // ------------------------------------------------------------------------
-    // TmfEventProvider
+    // TmfProvider
     // ------------------------------------------------------------------------
 
     @Override
@@ -78,6 +74,11 @@ public class TmfEventProviderStub extends TmfEventProvider {
     @Override
     public ITmfEvent getNext(final ITmfContext context) {
         return fTrace.getNext(context);
+    }
+
+    @Override
+    public boolean isCompleted(final ITmfDataRequest request, final ITmfEvent data, final int nbRead) {
+        return false;
     }
 
 }
