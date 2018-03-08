@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -24,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
  * This is the read-only interface to the generic state system. It contains all
  * the read-only quark-getting methods, as well as the history-querying ones.
  *
- * @version 2.0
+ * @version 1.0
  * @author Alexandre Montplaisir
  */
 public interface IStateSystemQuerier {
@@ -45,28 +44,11 @@ public interface IStateSystemQuerier {
     public long getCurrentEndTime();
 
     /**
-     * Return the current total amount of attributes in the system. This is also
-     * equal to the quark that will be assigned to the next attribute that's
-     * created.
+     * Return the current total amount of attributes in the system.
      *
      * @return The current number of attributes in the system
      */
     public int getNbAttributes();
-
-    /**
-     * Check if a given quark is the last attribute that was added to the
-     * system.
-     *
-     * This is a common case, and it's a bit clearer than
-     * " x == getNbAttributes - 1"
-     *
-     * @param quark
-     *            The quark to check for
-     * @return True if this is the last quark that was added to the system,
-     *         false if not
-     * @since 2.0
-     */
-    public boolean isLastAttribute(int quark);
 
     /**
      * @name Read-only quark-getting methods
@@ -269,8 +251,7 @@ public interface IStateSystemQuerier {
     /**
      * Return the state history of a given attribute, but with at most one
      * update per "resolution". This can be useful for populating views (where
-     * it's useless to have more than one query per pixel, for example). A
-     * progress monitor can be used to cancel the query before completion.
+     * it's useless to have more than one query per pixel, for example).
      *
      * @param attributeQuark
      *            Which attribute this query is interested in
@@ -282,19 +263,14 @@ public interface IStateSystemQuerier {
      *            history.
      * @param resolution
      *            The "step" of this query
-     * @param monitor
-     *            A progress monitor. If the monitor is canceled during a query,
-     *            we will return what has been found up to that point. You can
-     *            use "null" if you do not want to use one.
      * @return The List of states that happened between t1 and t2
      * @throws TimeRangeException
      *             If t1 is invalid, if t2 <= t1, or if the resolution isn't
      *             greater than zero.
      * @throws AttributeNotFoundException
      *             If the attribute doesn't exist
-     * @since 2.0
      */
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException;
+            long t1, long t2, long resolution) throws TimeRangeException,
+            AttributeNotFoundException;
 }
