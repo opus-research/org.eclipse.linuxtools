@@ -29,8 +29,7 @@ import org.junit.runners.Suite;
     ProbeEventInfoTest.class,
     SessionInfoTest.class,
     TraceInfoTest.class,
-    UstProviderInfoTest.class,
-    SnapshotInfoTest.class
+    UstProviderInfoTest.class
 })
 public class AllTests {
 
