@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Bernd Hufmann - Added name getters
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -160,5 +161,74 @@ public class TmfTraceType {
             }
         }
         return typeElements.toArray(new IConfigurationElement[typeElements.size()]);
+    }
+
+    /**
+     * Get the configuration element for given trace ID.
+     *
+     * @param aTraceId
+     *          - A trace type ID
+     * @return the corresponding configuration element or null
+     * @since 2.0
+     */
+    public static IConfigurationElement getTypeElement(String aTraceId) {
+        IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceType.TMF_TRACE_TYPE_ID);
+        for (IConfigurationElement ce : config) {
+            String elementName = ce.getName();
+            if (elementName.equals(TmfTraceType.TYPE_ELEM)) {
+                String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                if (traceTypeId.equals(aTraceId)) {
+                    return ce;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the configuration element for a given category ID.
+     *
+     * @param aCategorId
+     *      - A trace type category ID
+     * @return the corresponding configuration element or null
+     * @since 2.0
+     */
+    public static IConfigurationElement getCategoryElement(String aCategorId) {
+        IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceType.TMF_TRACE_TYPE_ID);
+        for (IConfigurationElement ce : config) {
+            String elementName = ce.getName();
+            if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
+                String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                if (categoryId.equals(aCategorId)) {
+                    return ce;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the trace type name qualified with the category name for given trace type ID.
+     * {category name}_{trace_type_name}
+     *
+     * @param aTraceId
+     *          - A trace type ID
+     * @return the qualified trace type name
+     * @since 2.0
+     */
+    public static String getTraceTypeName(String aTraceId) {
+        IConfigurationElement traceCe = getTypeElement(aTraceId);
+        if (traceCe == null) {
+            return null;
+        }
+        String categoryId = traceCe.getAttribute(TmfTraceType.CATEGORY_ATTR);
+        String categoryName = "[no category]"; //$NON-NLS-1$
+        if (categoryId != null) {
+            IConfigurationElement category = getCategoryElement(categoryId);
+            if (category != null) {
+                categoryName = category.getAttribute(TmfTraceType.NAME_ATTR);
+            }
+        }
+        return (categoryName + "_" + traceCe.getAttribute(TmfTraceType.NAME_ATTR)); //$NON-NLS-1$
     }
 }

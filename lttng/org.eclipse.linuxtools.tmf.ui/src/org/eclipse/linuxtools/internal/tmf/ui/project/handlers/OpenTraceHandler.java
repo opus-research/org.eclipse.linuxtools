@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Bernd Hufmann - Create method for the open operation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -52,7 +53,8 @@ public class OpenTraceHandler extends AbstractHandler {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private TmfTraceElement fTrace = null;
+    /** The trace element to open */
+    protected TmfTraceElement fTrace = null;
 
     // ------------------------------------------------------------------------
     // Validation
@@ -114,7 +116,17 @@ public class OpenTraceHandler extends AbstractHandler {
 
         // If trace is under an experiment, use the original trace from the traces folder
         final TmfTraceElement traceElement = fTrace.getElementUnderTraceFolder();
+        performOpen(traceElement);
+        return null;
+    }
 
+    /**
+     * Open the given trace element in an own thread.
+     *
+     * @param traceElement
+     *          - The trace element to open.
+     */
+    protected void performOpen(final TmfTraceElement traceElement) {
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -175,12 +187,10 @@ public class OpenTraceHandler extends AbstractHandler {
                         }
                     }
                 });
-
             }
         };
 
         thread.start();
-        return null;
     }
 
     private static void displayErrorMsg(final String errorMsg) {
