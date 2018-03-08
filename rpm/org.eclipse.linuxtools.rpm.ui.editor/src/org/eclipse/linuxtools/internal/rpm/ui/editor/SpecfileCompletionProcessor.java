@@ -116,15 +116,13 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 			int offset) {
 		List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
 		Specfile specfile = editor.getSpecfile();
-		if (specfile == null) {
+		if (specfile == null)
 			return null;
-		}
 		ITextSelection selection = (ITextSelection) viewer
 				.getSelectionProvider().getSelection();
 		// adjust offset to start of normalized selection
-		if (selection.getOffset() != offset) {
+		if (selection.getOffset() != offset)
 			offset = selection.getOffset();
-		}
 		String prefix = getPrefix(viewer, offset);
 		Region region = new Region(offset - prefix.length(), prefix.length()
 				+ selection.getLength());
@@ -432,9 +430,8 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	 * 			a relevant code (90 if <code>true</code> and 0 if not)
 	 */
 	private int getRelevance(Template template, String prefix) {
-		if (template.getName().startsWith(prefix)) {
+		if (template.getName().startsWith(prefix))
 			return 90;
-		}
 		return 0;
 	}
 
@@ -451,16 +448,14 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	private String getPrefix(ITextViewer viewer, int offset) {
 		int i = offset;
 		IDocument document = viewer.getDocument();
-		if (i > document.getLength()) {
+		if (i > document.getLength())
 			return EMPTY_STRING;
-		}
 
 		try {
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
-				if (!Character.isLetterOrDigit(ch) && (ch != '%') && (ch != '_') && (ch != '-') && (ch != '{')) {
+				if (!Character.isLetterOrDigit(ch) && (ch != '%') && (ch != '_') && (ch != '-') && (ch != '{'))
 					break;
-				}
 				i--;
 			}
 			return document.get(i, offset - i);
@@ -482,16 +477,14 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	private String getGroupPrefix(ITextViewer viewer, int offset) {
 		int i = offset;
 		IDocument document = viewer.getDocument();
-		if (i > document.getLength()) {
+		if (i > document.getLength())
 			return EMPTY_STRING;
-		}
 
 		try {
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
-				if (!Character.isLetterOrDigit(ch) && (ch != '/')) {
+				if (!Character.isLetterOrDigit(ch) && (ch != '/'))
 					break;
-				}
 				i--;
 			}
 			return document.get(i, offset - i);
@@ -517,9 +510,8 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 		String defineName;
 		for (SpecfileDefine define: defines) {
 			defineName = "%" + define.getName(); //$NON-NLS-1$
-			if (defineName.startsWith(prefix.replaceFirst("\\{", EMPTY_STRING))) {//$NON-NLS-1$
+			if (defineName.startsWith(prefix.replaceFirst("\\{", EMPTY_STRING))) //$NON-NLS-1$
 				ret.put(defineName, define.getStringValue());
-			}
 		}
 		return ret;
 	}
@@ -541,11 +533,10 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 		String patchName;
 		for (SpecfileSource patch: patches) {
 			patchName = "%patch" + patch.getNumber(); //$NON-NLS-1$
-			if (patchName.startsWith(prefix)) {
+			if (patchName.startsWith(prefix))
 				ret.put(patchName.toLowerCase(), SpecfileHover
 						.getSourceOrPatchValue(specfile, "patch" //$NON-NLS-1$
 								+ patch.getNumber()));
-			}
 		}
 		return ret;
 	}
@@ -569,10 +560,9 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 			sourceName = ISpecfileSpecialSymbols.MACRO_START_LONG + SOURCE
 					+ source.getNumber()
 					+ ISpecfileSpecialSymbols.MACRO_END_LONG;
-			if (sourceName.startsWith(prefix)) {
+			if (sourceName.startsWith(prefix))
 				ret.put(sourceName, SpecfileHover.getSourceOrPatchValue(
 						specfile, SOURCE + source.getNumber()));
-			}
 		}
 		return ret;
 	}
