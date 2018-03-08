@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,7 +25,7 @@ package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider;
  * @author sveyrier
  *
  */
-public interface ISDGraphNodeSupporter {
+public abstract interface ISDGraphNodeSupporter {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -34,27 +34,27 @@ public interface ISDGraphNodeSupporter {
     /**
      * Lifeline support ID
      */
-    static int LIFELINE = 0;
+    public static int LIFELINE = 0;
     /**
      * Synchronous message support ID
      */
-    static int SYNCMESSAGE = 1;
+    public static int SYNCMESSAGE = 1;
     /**
      * Synchronous message return support ID
      */
-    static int SYNCMESSAGERETURN = 2;
+    public static int SYNCMESSAGERETURN = 2;
     /**
      * Asynchronous message support ID
      */
-    static int ASYNCMESSAGE = 3;
+    public static int ASYNCMESSAGE = 3;
     /**
      * Asynchronous message return support ID
      */
-    static int ASYNCMESSAGERETURN = 4;
+    public static int ASYNCMESSAGERETURN = 4;
     /**
      * Stop support ID
      */
-    static int STOP = 5;
+    public static int STOP = 5;
 
     // ------------------------------------------------------------------------
     // Methods
@@ -67,7 +67,7 @@ public interface ISDGraphNodeSupporter {
      *            The integer value matching the type of the node
      * @return true to enable this options, false otherwise
      */
-    boolean isNodeSupported(int nodeType);
+    public boolean isNodeSupported(int nodeType);
 
     /**
      * Return the name to use in dialogs Not called if isNodeSupported return
@@ -79,5 +79,5 @@ public interface ISDGraphNodeSupporter {
      *            The name of the loader class
      * @return the name to use in dialogs
      */
-    String getNodeName(int nodeType, String loaderClassName);
+    public String getNodeName(int nodeType, String loaderClassName);
 }

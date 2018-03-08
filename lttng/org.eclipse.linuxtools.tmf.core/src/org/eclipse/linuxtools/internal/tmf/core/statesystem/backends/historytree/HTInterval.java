@@ -296,7 +296,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * @return
      */
     int getIntervalSize() {
-        return stringsEntrySize + HTNode.DATA_ENTRY_SIZE;
+        return stringsEntrySize + HTNode.getDataEntrySize();
     }
 
     private int computeStringsEntrySize() {
@@ -314,12 +314,12 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
                 return sv.unboxStr().getBytes().length + 2;
             } catch (StateValueTypeException e) {
                 /* We're inside a switch/case for the string type, can't happen */
-                throw new IllegalStateException(e);
+                throw new RuntimeException();
             }
         default:
             /* It's very important that we know how to write the state value in
              * the file!! */
-            throw new IllegalStateException();
+            throw new RuntimeException();
         }
     }
 
@@ -340,9 +340,10 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof HTInterval &&
-                this.compareTo((HTInterval) other) == 0) {
-            return true;
+        if (other instanceof HTInterval) {
+            if (this.compareTo((HTInterval) other) == 0) {
+                return true;
+            }
         }
         return false;
     }
@@ -387,7 +388,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             return TYPE_LONG;
         default:
             /* Should not happen if the switch is fully covered */
-            throw new IllegalStateException();
+            throw new RuntimeException();
         }
     }
 }
