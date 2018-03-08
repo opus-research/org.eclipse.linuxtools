@@ -33,10 +33,6 @@ import org.eclipse.ui.IWorkbench;
 /**
  * This page selects the project to import to.
  *
-<<<<<<< HEAD
-=======
- *
->>>>>>> e40938b... Tmf: fix missing titles to import wizard pages
  * @author Matthew Khouzam
  * @since 2.0
  */
@@ -55,7 +51,6 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
      */
     public ImportTraceWizardPageOptions(IWorkbench workbench, IStructuredSelection selection) {
         super(workbench, selection);
-
     }
 
     @Override
@@ -117,5 +112,4 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         }
         this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
     }
-
 }
