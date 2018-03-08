@@ -36,9 +36,8 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 @SuppressWarnings({"nls","javadoc"})
 public class VerifyHistoryFile {
 
-    // Enter the .ht file name to test, and its expected version number
-    public static final String pathToHistoryFile = "";
-    public static final int handlerVersion = 0;
+    // Enter the .ht file name to test here
+    public final static String pathToHistoryFile = "";
 
     private static File htFile;
     private static IStateHistoryBackend htBackend;
@@ -52,7 +51,7 @@ public class VerifyHistoryFile {
             TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException {
         htFile = new File(pathToHistoryFile);
-        htBackend = new HistoryTreeBackend(htFile, handlerVersion);
+        htBackend = new HistoryTreeBackend(htFile);
         ss = HistoryBuilder.openExistingHistory(htBackend);
 
         startTime = ss.getStartTime();

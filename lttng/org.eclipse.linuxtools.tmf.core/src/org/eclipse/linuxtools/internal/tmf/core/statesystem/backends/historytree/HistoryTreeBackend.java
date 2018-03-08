@@ -56,19 +56,14 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      *            multiple of 4096.
      * @param maxChildren
      *            The maximum number of children each core node can have
-     * @param handlerVersion
-     *            Version of of the event handler input. We will only try to
-     *            reopen existing files if this version matches the one in the
-     *            framework.
      * @param startTime
      *            The earliest time stamp that will be stored in the history
      * @throws IOException
      *             Thrown if we can't create the file for some reason
      */
     public HistoryTreeBackend(File newStateFile, int blockSize,
-            int maxChildren, int handlerVersion, long startTime) throws IOException {
-        final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren,
-                handlerVersion, startTime);
+            int maxChildren, long startTime) throws IOException {
+        final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren, startTime);
         sht = new HistoryTree(conf);
         treeIO = sht.getTreeIO();
     }
@@ -81,18 +76,14 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      * @param newStateFile
      *            The filename/location where to store the state history (Should
      *            end in .ht)
-     * @param handlerVersion
-     *            Version of of the event handler input. We will only try to
-     *            reopen existing files if this version matches the one in the
-     *            framework.
      * @param startTime
      *            The earliest time stamp that will be stored in the history
      * @throws IOException
      *             Thrown if we can't create the file for some reason
      */
-    public HistoryTreeBackend(File newStateFile, int handlerVersion, long startTime)
+    public HistoryTreeBackend(File newStateFile, long startTime)
             throws IOException {
-        this(newStateFile, 64 * 1024, 50, handlerVersion, startTime);
+        this(newStateFile, 64 * 1024, 50, startTime);
     }
 
     /**
@@ -100,16 +91,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      *
      * @param existingStateFile
      *            Filename/location of the history we want to load
-     * @param handlerVersion
-     *            Expected version of of the event handler input.
      * @throws IOException
-     *             If we can't read the file, if it doesn't exist, is not
-     *             recognized, or if the version of the file does not match the
-     *             expected handlerVersion.
+     *             If we can't read the file, if it doesn't exist or is not
+     *             recognized
      */
-    public HistoryTreeBackend(File existingStateFile, int handlerVersion)
-            throws IOException {
-        sht = new HistoryTree(existingStateFile, handlerVersion);
+    public HistoryTreeBackend(File existingStateFile) throws IOException {
+        sht = new HistoryTree(existingStateFile);
         treeIO = sht.getTreeIO();
         isFinishedBuilding = true;
     }
