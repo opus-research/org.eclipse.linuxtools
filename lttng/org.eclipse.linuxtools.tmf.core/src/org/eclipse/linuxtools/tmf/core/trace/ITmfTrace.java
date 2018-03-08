@@ -13,8 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
@@ -22,7 +20,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -202,12 +199,6 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return the streaming interval in ms (0 if not a streaming trace)
      */
     public long getStreamingInterval();
-
-    /**
-     * @return The state systems that are associated with this trace
-     * @since 2.0
-     */
-    public Map<String, IStateSystemQuerier> getStateSystems();
 
     // ------------------------------------------------------------------------
     // Trace positioning getters
