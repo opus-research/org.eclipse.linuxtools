@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -207,7 +208,10 @@ public interface ITmfTrace extends ITmfDataProvider {
      *
      * @return The map of state systems
      * @since 2.0
-     * @deprecated
+     * @deprecated State systems now should be provided by analysis and use
+     *             {@link ITmfStateSystemAnalysisModule} and retrieve the modules
+     *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
+     *             being TmfStateSystemAnalysisModule.class
      */
     @Deprecated
     Map<String, ITmfStateSystem> getStateSystems();
@@ -224,6 +228,8 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param ss
      *            The already-built state system
      * @since 2.0
+     * @deprecated State systems now should be provided by analysis and use
+     *             {@link ITmfStateSystemAnalysisModule}
      */
     @Deprecated
     void registerStateSystem(String id, ITmfStateSystem ss);
@@ -254,9 +260,9 @@ public interface ITmfTrace extends ITmfDataProvider {
      *
      * @param moduleclass
      *            Class returned module must extend
-     * @return Map of {@link IAnalysisModule} of class moduleclass
+     * @return List of modules of class moduleclass
      */
-    <T extends IAnalysisModule> Map<String, T> getAnalysisModules(Class<T> moduleclass);
+    <T> Map<String, T> getAnalysisModules(Class<T> moduleclass);
 
     /**
      * Returns a map of analysis modules applicable to this trace. The key is

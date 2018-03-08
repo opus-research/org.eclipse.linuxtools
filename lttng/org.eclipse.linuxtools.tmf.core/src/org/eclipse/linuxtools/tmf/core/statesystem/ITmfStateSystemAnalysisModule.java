@@ -10,28 +10,23 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.tests.stubs.analysis;
+package org.eclipse.linuxtools.tmf.core.statesystem;
 
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
+import java.util.Map;
+
 
 /**
- * Test State System module
+ * Interface for analysis modules who provide state systems
  *
  * @author Geneviève Bastien
  */
-public class TestStateSystemModule extends TmfStateSystemAnalysisModule {
+public interface ITmfStateSystemAnalysisModule {
 
-    @Override
-    protected ITmfStateProvider createStateProvider() {
-        return new TestStateSystemProvider(getTrace());
-    }
-
-    @Override
-    protected StateSystemBackend getBackend() {
-        return StateSystemBackend.INMEM;
-    }
-
-
+    /**
+     * Return a map of all state systems this analysis is owner of
+     *
+     * @return A map of state sytems
+     */
+    Map<String, ITmfStateSystem> getStateSystems();
 
 }

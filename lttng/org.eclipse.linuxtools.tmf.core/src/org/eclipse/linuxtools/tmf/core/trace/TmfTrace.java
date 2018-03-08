@@ -53,7 +53,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
@@ -312,6 +311,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *         successfully or not.
      * @since 3.0
      */
+    @Deprecated
     protected IStatus buildStateSystem() {
         /*
          * Nothing is done in the base implementation, please specify
@@ -351,7 +351,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     @Override
-    public <T extends IAnalysisModule> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
+    public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
         Map<String, T> modules = new HashMap<String, T>();
         for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
             if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
@@ -443,10 +443,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
-     * @deprecated State systems now should use the
-     *             {@link TmfStateSystemAnalysisModule} and retrieve the modules
-     *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
-     *             being TmfStateSystemAnalysisModule.class
+     * @deprecated See {@link ITmfTrace}
      */
     @Deprecated
     @Override
@@ -456,8 +453,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
-     * @deprecated State systems now should use the
-     *             {@link TmfStateSystemAnalysisModule}
+     * @deprecated See {@link ITmfTrace}
      */
     @Deprecated
     @Override

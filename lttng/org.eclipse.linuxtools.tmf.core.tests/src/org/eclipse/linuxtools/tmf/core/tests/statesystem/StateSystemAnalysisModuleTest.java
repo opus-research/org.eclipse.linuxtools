@@ -19,10 +19,10 @@ import static org.junit.Assert.fail;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -35,13 +35,22 @@ public class StateSystemAnalysisModuleTest {
     /** ID of the test state system analysis module */
     public static final String MODULE_SS = "org.eclipse.linuxtools.tmf.core.tests.analysis.sstest";
 
+    private TmfTraceStub fTrace;
+
+    /**
+     * Setup test trace
+     */
+    @Before
+    public void setupTraces() {
+        fTrace = (TmfTraceStub) TmfTestTrace.A_TEST_10K.getTrace();
+    }
+
     /**
      * Some tests use traces, let's clean them here
      */
     @After
     public void cleanupTraces() {
         TmfTestTrace.A_TEST_10K.dispose();
-        CtfTmfTestTrace.KERNEL.dispose();
     }
 
     /**
@@ -49,10 +58,9 @@ public class StateSystemAnalysisModuleTest {
      */
     @Test
     public void testSsModule() {
-        TmfTraceStub trace = (TmfTraceStub) TmfTestTrace.A_TEST_10K.getTrace();
-        trace.openTrace();
+        fTrace.openTrace();
 
-        TmfStateSystemAnalysisModule module = (TmfStateSystemAnalysisModule) trace.getAnalysisModule(MODULE_SS);
+        TmfStateSystemAnalysisModule module = (TmfStateSystemAnalysisModule) fTrace.getAnalysisModule(MODULE_SS);
         ITmfStateSystem ss = null;
         ss = module.getStateSystem();
         assertNull(ss);

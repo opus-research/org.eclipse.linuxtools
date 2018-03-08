@@ -23,8 +23,9 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
- * @author Geneviève Bastien
+ * Stub test provider for test state system analysis module
  *
+ * @author Geneviève Bastien
  */
 public class TestStateSystemProvider extends AbstractTmfStateProvider {
 
