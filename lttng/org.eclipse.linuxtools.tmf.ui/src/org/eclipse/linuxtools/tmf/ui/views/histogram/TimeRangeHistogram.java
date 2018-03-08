@@ -67,9 +67,9 @@ public class TimeRangeHistogram extends Histogram {
      */
     @Override
     public synchronized void clear() {
-        fZoom.setFullRange(0L, 0L);
-        fZoom.setNewRange(0L, 0L);
-        fZoom.stop();
+        if (fZoom != null) {
+            fZoom.stop();
+        }
         super.clear();
     }
 
