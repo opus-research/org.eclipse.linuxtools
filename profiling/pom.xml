@@ -75,7 +75,6 @@
     <module>org.eclipse.linuxtools.profiling.provider</module>
     <module>org.eclipse.linuxtools.profiling.remote-feature</module>
     <module>org.eclipse.linuxtools.profiling.snapshot</module>
-    <module>org.eclipse.linuxtools.profiling.coverage</module>
     <module>org.eclipse.linuxtools.profiling.tests</module>
     <module>org.eclipse.linuxtools.profiling.time</module>
     <module>org.eclipse.linuxtools.profiling.ui</module>
