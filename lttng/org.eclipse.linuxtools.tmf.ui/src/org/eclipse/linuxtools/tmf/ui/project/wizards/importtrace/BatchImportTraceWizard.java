@@ -285,7 +285,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         }
     }
 
-    private void setTraceType(FileAndName traceToImport) {
+    private IStatus setTraceType(FileAndName traceToImport) {
         IPath path = fTargetFolder.getFullPath().append(traceToImport.getName());
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         if (resource != null) {
@@ -332,10 +332,10 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                     }
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
-                        + " " + resource.getName(), e); //$NON-NLS-1$
+                Activator.getDefault().logError("Error importing trace resource " + resource.getName(), e); //$NON-NLS-1$
             }
         }
+        return Status.OK_STATUS;
     }
 
     @Override
