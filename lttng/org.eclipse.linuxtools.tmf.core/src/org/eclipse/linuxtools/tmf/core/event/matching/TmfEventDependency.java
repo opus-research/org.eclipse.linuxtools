@@ -23,7 +23,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  *
  */
 public class TmfEventDependency {
-
     private ITmfEvent fSourceEvent;
     private ITmfEvent fDestEvent;
 
