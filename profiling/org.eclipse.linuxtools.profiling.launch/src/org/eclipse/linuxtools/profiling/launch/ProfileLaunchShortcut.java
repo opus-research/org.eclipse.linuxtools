@@ -194,6 +194,30 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 	}
 
 	/**
+	 * Get name of tool with plug-in id <code>id</code>. This looks through
+	 * extensions of the
+	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
+	 * extensions point.
+	 *
+	 * @since 1.2
+	 */
+	public static String getProviderToolNameFromId(String id) {
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
+						"launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
+		for (IConfigurationElement config : configs) {
+			if (config.getName().equals("provider")) { //$NON-NLS-1$
+				String currentId = config.getAttribute("id"); //$NON-NLS-1$
+				if (currentId != null && currentId.equals(id)) {
+					return config.getAttribute("name");
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Get a profiling launch shortcut that is associated with the specified id.
 	 * This looks through extensions of the extension point
 	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> 
