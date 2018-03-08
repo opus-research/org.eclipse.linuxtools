@@ -151,7 +151,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                                 try {
                                     trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
                                 } catch (final TmfTraceException e) {
-                                    throw new PartInitException(Messages.OpenTraceHandler_NoTrace, e);
+                                    throw new PartInitException(Messages.OpenTraceHandler_InitError, e);
                                 }
                                 cacheSize = Math.min(cacheSize, trace.getCacheSize());
                                 traces[i] = trace;
@@ -180,7 +180,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                             try {
                                 trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
                             } catch (final TmfTraceException e) {
-                                throw new PartInitException(Messages.OpenTraceHandler_NoTrace, e);
+                                throw new PartInitException(Messages.OpenTraceHandler_InitError, e);
                             }
                             fTrace = trace;
                             break;
@@ -202,7 +202,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                             try {
                                 trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
                             } catch (final TmfTraceException e) {
-                                throw new PartInitException(Messages.OpenTraceHandler_NoTrace, e);
+                                throw new PartInitException(Messages.OpenTraceHandler_InitError, e);
                             }
                             fTrace = trace;
                             break;
