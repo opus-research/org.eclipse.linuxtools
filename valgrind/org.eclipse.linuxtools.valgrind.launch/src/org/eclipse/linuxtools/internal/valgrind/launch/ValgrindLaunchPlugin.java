@@ -61,6 +61,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 	public static final Version VER_3_3_0 = new Version(3, 3, 0);
 	public static final Version VER_3_4_0 = new Version(3, 4, 0);
 	public static final Version VER_3_6_0 = new Version(3, 6, 0);
+	public static final Version VER_3_8_0 = new Version(3, 8, 0);
 
 	private static final Version MIN_VER = VER_3_3_0;
 	private static final String VERSION_PREFIX = "valgrind-"; //$NON-NLS-1$
