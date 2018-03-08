@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -83,8 +82,6 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
         if (event instanceof CallStackEvent) {
             CallStackEvent callStackEvent = (CallStackEvent) event;
             return callStackEvent.getValue() + 1;
-        } else if (event instanceof NullTimeEvent) {
-            return INVISIBLE;
         }
         return State.MULTIPLE.ordinal();
     }

@@ -12,12 +12,12 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventIterator;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventList;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 
@@ -37,8 +37,8 @@ public class CallStackEntry implements ITimeGraphEntry {
     private String fFunctionName;
     private long fStartTime;
     private long fEndTime;
-    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>(1);
-    private List<ITimeEvent> fZoomedEventList = null;
+    private EventList fEventList = null;
+    private EventList fZoomedEventList = null;
 
     /**
      * Standard constructor
@@ -179,7 +179,7 @@ public class CallStackEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        fEventList = eventList;
+        fEventList = new EventList(eventList, Long.MAX_VALUE, Long.MIN_VALUE);
         if (eventList != null && eventList.size() > 0) {
             fStartTime = eventList.get(0).getTime();
             ITimeEvent lastEvent = eventList.get(eventList.size() - 1);
@@ -194,7 +194,22 @@ public class CallStackEntry implements ITimeGraphEntry {
      *            The list of "zoomed" time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        fZoomedEventList = eventList;
+        fZoomedEventList = new EventList(eventList, Long.MAX_VALUE, Long.MIN_VALUE);
+    }
+
+    /**
+     * Assign the zoomed event list to this view.
+     *
+     * @param eventList
+     *            The list of time events
+     * @param startTime
+     *            The start time
+     * @param endTime
+     *            The end time
+     * @since 2.1
+     */
+    public void setZoomedEventList(List<ITimeEvent> eventList, long startTime, long endTime) {
+        fZoomedEventList = new EventList(eventList, startTime, endTime);
     }
 
     /**
@@ -202,9 +217,10 @@ public class CallStackEntry implements ITimeGraphEntry {
      *
      * @param timeEvent
      *          The event
+     * @deprecated As of 2.1, don't use
      */
+    @Deprecated
     public void addEvent(ITimeEvent timeEvent) {
-        fEventList.add(timeEvent);
     }
 
     @Override
