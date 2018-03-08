@@ -24,72 +24,73 @@ public class SelectServerDialog extends Dialog {
 	private Button connectButton;
 	private Button cancelButton;
 	private boolean result;
-
+	
 	public SelectServerDialog(Shell parent) {
 		super(parent);
 	}
-
+	
 	public boolean open() {
 		if (ConsoleLogPlugin.getDefault().getPreferenceStore().getBoolean(ConsoleLogPreferenceConstants.REMEMBER_SERVER)) {
 			return true;
 		}
 		result = false;
-
+		
 		Shell parent = getParent();
 		final Shell shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-		shell.setText("Remote Server Details"); //$NON-NLS-1$
+		shell.setText("Remote Server Details");
 		shell.pack();
-
+		//shell.setSize(350, 220);
+		
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		layout.makeColumnsEqualWidth = false;
 		shell.setLayout(layout);
-
+		
 		GridData dataLeft = new GridData();
 		dataLeft.grabExcessHorizontalSpace = false;
 		dataLeft.horizontalAlignment = SWT.LEFT;
 		Label hostLabel = new Label(shell, SWT.NONE);
-		hostLabel.setText("Host: "); //$NON-NLS-1$
+		hostLabel.setText("Host: ");
 		hostLabel.setLayoutData(dataLeft);
-
+		
 		GridData dataFill = new GridData();
 		dataFill.grabExcessHorizontalSpace = true;
 		dataFill.horizontalAlignment = SWT.FILL;
 		hostText = new Text(shell, SWT.SINGLE | SWT.BORDER);
 		hostText.setLayoutData(dataFill);
 		hostText.setText(ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.HOST_NAME));
-
+			
 		Label userLabel = new Label(shell, SWT.NONE);
-		userLabel.setText("User: "); //$NON-NLS-1$
+		userLabel.setText("User: ");
 		userLabel.setLayoutData(dataLeft);
-
+		
 		userText = new Text(shell, SWT.SINGLE | SWT.BORDER);
 		userText.setLayoutData(dataFill);
 		userText.setText(ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_USER));
-
+		
 		Label passwordLabel = new Label(shell, SWT.NONE);
-		passwordLabel.setText("Password: "); //$NON-NLS-1$
+		passwordLabel.setText("Password: ");
 		passwordLabel.setLayoutData(dataLeft);
-
+		
 		passwordText = new Text(shell, SWT.SINGLE | SWT.BORDER);
 		passwordText.setEchoChar('*');
 		passwordText.setLayoutData(dataFill);
 		passwordText.setText(ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_PASSWORD));
-
-
+		
+		
 		GridData data = new GridData();
 		data.horizontalAlignment = SWT.LEFT;
 		data.horizontalSpan = 2;
 		rememberButton = new Button(shell, SWT.CHECK);
 		rememberButton.setLayoutData(data);
-		rememberButton.setText("Always connect to this host."); //$NON-NLS-1$
-
+		rememberButton.setText("Always connect to this host.");
+		
 		data = new GridData();
 		data.horizontalAlignment = SWT.RIGHT;
 		cancelButton = new Button(shell, SWT.PUSH);
 		cancelButton.setLayoutData(data);
 		cancelButton.setSize(50, 100);
-		cancelButton.setText("Cancel"); //$NON-NLS-1$
+		cancelButton.setText("Cancel");
 		cancelButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -97,13 +98,13 @@ public class SelectServerDialog extends Dialog {
 				shell.dispose();
 			}
 		});
-
+		
 		data = new GridData();
 		data.horizontalAlignment = SWT.RIGHT;
 		connectButton = new Button(shell, SWT.PUSH);
 		connectButton.setLayoutData(data);
 		connectButton.setSize(50, 100);
-		connectButton.setText("Connect"); //$NON-NLS-1$
+		connectButton.setText("Connect");
 		connectButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
