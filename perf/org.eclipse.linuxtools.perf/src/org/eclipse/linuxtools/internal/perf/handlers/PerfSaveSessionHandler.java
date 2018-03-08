@@ -50,7 +50,6 @@ public class PerfSaveSessionHandler extends AbstractSaveDataHandler {
 					// fail silently
 				}
 
-				newDataFile.setReadOnly();
 				return newDataFile;
 			} catch (IOException e) {
 				openErroDialog(Messages.PerfSaveSession_failure_title,

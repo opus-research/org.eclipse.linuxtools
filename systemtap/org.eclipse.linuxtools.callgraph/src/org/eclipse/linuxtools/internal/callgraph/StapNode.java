@@ -14,6 +14,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import org.eclipse.draw2d.Label;
+import org.eclipse.linuxtools.internal.callgraph.core.MP;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.zest.core.widgets.GraphConnection;
 import org.eclipse.zest.core.widgets.GraphNode;
@@ -96,6 +97,9 @@ public class StapNode extends GraphNode{
 	 * @param called
 	 */
 	public void makeConnection(int style, StapNode n, int called) {
+		if (n == null) {
+			MP.println("Error! Attempting to connect null node to " + this.getText()); //$NON-NLS-1$
+		}
 		this.connection = new GraphConnection(this.getGraphModel(), style, this, n);
 		if (((StapGraph)this.getGraphModel()).isCollapseMode()) {
 			connection.setText("" + called); //$NON-NLS-1$

@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.callstack;
 
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -22,7 +21,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.osgi.util.NLS;
 
 /**
  * The state provider for traces that support the Call Stack view.
@@ -73,9 +71,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
     /** Undefined function exit name */
     public static final String UNDEFINED = "UNDEFINED"; //$NON-NLS-1$
 
-    /** Dummy function name for when no function is expected */
-    private static final String NO_FUNCTION = "no function"; //$NON-NLS-1$
-
     /**
      * Version number of this state provider. Please bump this if you modify
      * the contents of the generated state history in some way.
@@ -99,43 +94,20 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
 
     @Override
     protected void eventHandle(ITmfEvent event) {
-        if (!considerEvent(event)) {
-            return;
-        }
+        String functionEntryName = functionEntry(event);
         try {
-            /* Check if the event is a function entry */
-            String functionEntryName = functionEntry(event);
             if (functionEntryName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                String thread = getThreadName(event);
+                String thread = threadName(event);
                 int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
                 ITmfStateValue value = TmfStateValue.newValueString(functionEntryName);
                 ss.pushAttribute(timestamp, value, quark);
-                return;
-            }
-
-            /* Check if the event is a function exit */
-            String functionExitName = functionExit(event);
-            if (functionExitName != null) {
+            } else if (functionExit(event) != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                String thread = getThreadName(event);
+                String thread = threadName(event);
                 int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
-                ITmfStateValue poppedValue = ss.popAttribute(timestamp, quark);
-                String poppedName = (poppedValue == null ? NO_FUNCTION : poppedValue.unboxStr());
-
-                /*
-                 * Verify that the value we are popping matches the one in the
-                 * event field, unless the latter is undefined.
-                 */
-                if (!functionExitName.equals(UNDEFINED) &&
-                        !functionExitName.equals(poppedName)) {
-                    Activator.logWarning(NLS.bind(
-                            Messages.CallStackStateProvider_UnmatchedPoppedValue,
-                            functionExitName,
-                            poppedName));
-                }
+                ss.popAttribute(timestamp, quark);
             }
-
         } catch (TimeRangeException e) {
             e.printStackTrace();
         } catch (AttributeNotFoundException e) {
@@ -146,44 +118,23 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
     }
 
     /**
-     * Check if this event should be considered at all for function entry/exit
-     * analysis. This check is only run once per event, before
-     * {@link #functionEntry} and {@link #functionExit} (to avoid repeating
-     * checks in those methods).
-     *
-     * @param event
-     *            The event to check
-     * @return If false, the event will be ignored by the state provider. If
-     *         true processing will continue.
+     * Check an event for function entry
+     * @param event an event to check for function entry
+     * @return the function name for a function entry, or null otherwise.
      */
-    protected abstract boolean considerEvent(ITmfEvent event);
+    public abstract String functionEntry(ITmfEvent event);
 
     /**
-     * Check an event if it indicates a function entry.
-     *
-     * @param event
-     *            An event to check for function entry
-     * @return The function name of the function entry, or null if not a
-     *         function entry.
+     * Check an event for function exit
+     * @param event an event to check for function exit
+     * @return the function name or UNDEFINED for a function exit, or null otherwise.
      */
-    protected abstract String functionEntry(ITmfEvent event);
+    public abstract String functionExit(ITmfEvent event);
 
     /**
-     * Check an event if it indicates a function exit.
-     *
-     * @param event
-     *            An event to check for function exit
-     * @return The function name, or UNDEFINED, for a function exit, or null if
-     *         not a function exit.
+     * Return the thread name for a function entry or exit event
+     * @param event an event
+     * @return the thread name
      */
-    protected abstract String functionExit(ITmfEvent event);
-
-    /**
-     * Return the thread name of a function entry or exit event.
-     *
-     * @param event
-     *            The event
-     * @return The thread name (as will be shown in the view)
-     */
-    protected abstract String getThreadName(ITmfEvent event);
+    public abstract String threadName(ITmfEvent event);
 }
