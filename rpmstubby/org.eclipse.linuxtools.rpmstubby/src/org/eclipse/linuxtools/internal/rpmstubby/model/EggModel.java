@@ -144,11 +144,7 @@ public class EggModel {
 	 * @return The package
 	 */
 	public String getPackageName() {
-		String simpleName = getSimplePackageName();
-		if (simpleName.startsWith("python-")) {
-			return simpleName;
-		}
-		return "python-"+simpleName;
+		return "eclipse-"+getSimplePackageName();
 	}
 
 	/**
