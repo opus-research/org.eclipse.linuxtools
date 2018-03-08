@@ -52,7 +52,7 @@ public class VerifyHistoryFile {
             StateSystemDisposedException {
         htFile = new File(pathToHistoryFile);
         htBackend = new HistoryTreeBackend(htFile);
-        ss = HistoryBuilder.openExistingHistory("test-ss", htBackend);
+        ss = HistoryBuilder.openExistingHistory(htBackend);
 
         startTime = ss.getStartTime();
         endTime = ss.getCurrentEndTime();

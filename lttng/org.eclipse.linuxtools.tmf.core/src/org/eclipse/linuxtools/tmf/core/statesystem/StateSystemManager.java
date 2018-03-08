@@ -77,7 +77,7 @@ public abstract class StateSystemManager extends TmfComponent {
             /* Load an existing history */
             try {
                 htBackend = new HistoryTreeBackend(htFile);
-                ss = HistoryBuilder.openExistingHistory(id, htBackend);
+                ss = HistoryBuilder.openExistingHistory(htBackend);
                 return ss;
             } catch (IOException e) {
                 /*

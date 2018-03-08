@@ -20,8 +20,10 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
@@ -46,6 +48,7 @@ public class HistoryBuilder extends TmfComponent {
     private final IStateChangeInput sci;
     private final StateSystem ss;
     private final IStateHistoryBackend hb;
+    private final String id;
     private boolean started = true; /* Don't handle signals until we're ready */
 
     /**
@@ -77,7 +80,8 @@ public class HistoryBuilder extends TmfComponent {
         }
         sci = stateChangeInput;
         hb = backend;
-        ss = new StateSystem(id, hb, true);
+        this.id = id;
+        ss = new StateSystem(hb, true);
 
         sci.assignTargetStateSystem(ss);
 
@@ -94,8 +98,6 @@ public class HistoryBuilder extends TmfComponent {
      * Factory-style method to open an existing history, you only have to
      * provide the already-instantiated IStateHistoryBackend object.
      *
-     * @param id
-     *            The ID that should be assigned to this state system
      * @param hb
      *            The history-backend object
      * @return A IStateSystemBuilder reference to the new state system. If you
@@ -104,9 +106,9 @@ public class HistoryBuilder extends TmfComponent {
      * @throws IOException
      *             If there was something wrong.
      */
-    public static ITmfStateSystemBuilder openExistingHistory(String id,
+    public static ITmfStateSystemBuilder openExistingHistory(
             IStateHistoryBackend hb) throws IOException {
-        return new StateSystem(id, hb, false);
+        return new StateSystem(hb, false);
     }
 
     /**
@@ -222,10 +224,18 @@ public class HistoryBuilder extends TmfComponent {
     }
 
     void close(boolean deleteFiles) {
+        TmfSignal doneSig;
+
         sci.dispose();
         if (deleteFiles) {
             hb.removeFiles();
+            /* We won't broadcast the signal if the request was cancelled */
+        } else {
+            /* Broadcast the signal saying the history is done building */
+            doneSig = new TmfStateSystemBuildCompleted(this, sci.getTrace(), id);
+            TmfSignalManager.dispatchSignal(doneSig);
         }
+
         dispose();
     }
 }

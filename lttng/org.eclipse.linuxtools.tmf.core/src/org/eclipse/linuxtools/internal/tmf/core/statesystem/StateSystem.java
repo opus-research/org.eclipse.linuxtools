@@ -48,8 +48,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  */
 public class StateSystem implements ITmfStateSystemBuilder {
 
-    private final String id;
-
     /* References to the inner structures */
     private final AttributeTree attributeTree;
     private final TransientState transState;
@@ -64,8 +62,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
     /**
      * General constructor
      *
-     * @param id
-     *            The ID, or name, of this state system
      * @param backend
      *            The "state history storage" backend to use.
      * @param newFile
@@ -74,9 +70,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
      * @throws IOException
      *             If there was a problem creating the new history file
      */
-    public StateSystem(String id, IStateHistoryBackend backend, boolean newFile)
+    public StateSystem(IStateHistoryBackend backend, boolean newFile)
             throws IOException {
-        this.id = id;
         this.backend = backend;
         this.transState = new TransientState(backend);
 
@@ -88,11 +83,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
             transState.setInactive();
             finishedLatch.countDown(); /* The history is already built */
         }
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override
