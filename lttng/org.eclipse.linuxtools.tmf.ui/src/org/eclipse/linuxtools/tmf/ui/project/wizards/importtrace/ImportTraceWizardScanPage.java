@@ -114,6 +114,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         final Composite control = (Composite) this.getControl();
+        setTitle(Messages.ImportTraceWizardScanPage_title);
         traceTypeViewer = new CheckboxTreeViewer(control, SWT.CHECK);
         traceTypeViewer.setContentProvider(getBatchWizard().getScannedTraces());
         traceTypeViewer.getTree().setHeaderVisible(true);

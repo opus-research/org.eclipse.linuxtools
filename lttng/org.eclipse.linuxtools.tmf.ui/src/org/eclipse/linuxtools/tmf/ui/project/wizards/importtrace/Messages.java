@@ -36,8 +36,14 @@ public class Messages extends NLS {
     public static String ImportTraceWizardDirectoryHint;
     public static String ImportTraceWizardScanPage_renameError;
     public static String ImportTraceWizardScanPage_SelectAtleastOne;
+
+    public static String ImportTraceWizardScanPage_title;
     public static String ImportTraceWizardSelectAll;
+
+    public static String ImportTraceWizardSelectTraceTypePage_title;
     public static String ImportTraceWizardPageOptions_NoProjectSelected;
+
+    public static String ImportTraceWizardPageOptions_Title;
 
     public static String ImportTraceWizardPageScan_done;
     public static String ImportTraceWizardPageScan_scanning;
