@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +21,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
@@ -68,6 +71,11 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
+		if (!configuration.getAttribute(SystemTapScriptGraphOptionsTab.GRAPHS_VALID, true)) {
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.ide", //$NON-NLS-1$
+					Messages.SystemTapScriptLaunchError_graph));
+		}
+
 		IPreferenceStore preferenceStore = ConsoleLogPlugin.getDefault().getPreferenceStore();
 
 		RunScriptHandler action;
@@ -87,10 +95,17 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		}
 
 		// Path
-		String path = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, ""); //$NON-NLS-1$
-		if (!path.isEmpty()){
-			action.setPath(new Path(path));
+		IPath scriptPath = new Path(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, "")); //$NON-NLS-1$
+		if (!scriptPath.toFile().exists()) {
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.ide", //$NON-NLS-1$
+					MessageFormat.format(Messages.SystemTapScriptLaunchError_fileNotFound, scriptPath.toString())));
 		}
+		String extension = scriptPath.getFileExtension();
+		if (extension == null || !extension.equals("stp")) { //$NON-NLS-1$
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.ide", //$NON-NLS-1$
+					MessageFormat.format(Messages.SystemTapScriptLaunchError_fileNotStp, scriptPath.toString())));
+		}
+		action.setPath(scriptPath);
 
 		// User Name
 		String userName = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.USER_NAME_ATTR, ""); //$NON-NLS-1$
