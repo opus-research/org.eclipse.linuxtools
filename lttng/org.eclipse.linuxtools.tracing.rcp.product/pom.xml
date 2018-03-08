@@ -40,6 +40,7 @@
                         <configuration>
                             <formats>
                                 <linux>tar.gz</linux>
+                                <macosx>tar.gz</macosx>
                                 <solaris>zip</solaris>
                                 <win32>zip</win32>
                             </formats>
@@ -58,5 +59,5 @@
             </plugin>
         </plugins>
     </build>
-    <groupId>org.eclipse.linuxtools.tracing.rcp.product</groupId>
+    <groupId>org.eclipse.linuxtools.tracing.rcp</groupId>
 </project>
