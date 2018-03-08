@@ -46,14 +46,14 @@ public abstract class AGraph extends AChart {
 		maxItems = store.getInt(GraphingAPIPreferenceConstants.P_MAX_DATA_ITEMS);
 		viewableItems = store.getInt(GraphingAPIPreferenceConstants.P_VIEWABLE_DATA_ITEMS);
 		
-		createAxis(Localization.getString("AGraph.xAxis"), xSeriesTicks, GraphAxis.HORIZONTAL); //$NON-NLS-1$
-		createAxis(Localization.getString("AGraph.yAxis"), ySeriesTicks, GraphAxis.VERTICAL); //$NON-NLS-1$
+		createAxis(Localization.getString("AGraph.xAxis"), xSeriesTicks, GraphAxis.HORIZONTAL);
+		createAxis(Localization.getString("AGraph.yAxis"), ySeriesTicks, GraphAxis.VERTICAL);
 		
 		GraphingAPIUIPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
 		
-		parent.addCheckOption(Localization.getString("AGraph.GridLines"), gridListener); //$NON-NLS-1$
+		parent.addCheckOption(Localization.getString("AGraph.GridLines"), gridListener);
 		if(adapter.getSeriesCount() > 1)
-			parent.addCheckOption(Localization.getString("AGraph.Normalize"), normalizeListener); //$NON-NLS-1$
+			parent.addCheckOption(Localization.getString("AGraph.Normalize"), normalizeListener);
 	}
 	
 	protected void createAxis(String title, int tickCount, int style) {
@@ -100,9 +100,15 @@ public abstract class AGraph extends AChart {
 	
 	private synchronized void rebound() {
 		getDisplay().syncExec(new Runnable() {
+			boolean stop = false;
 			public void run() {
-				setGlobalArea(getArea(maxItems));
-				setLocalArea(getArea(viewableItems));
+				if(stop) return;
+				try {
+					setGlobalArea(getArea(maxItems));
+					setLocalArea(getArea(viewableItems));
+				} catch (Exception e) {
+					stop = true;
+				}
 			}
 		});
 	}
@@ -122,7 +128,7 @@ public abstract class AGraph extends AChart {
 	public void addSeriesAxis(int series) {
 		if(selectedSeries != (series+1)) {
 			removeSeriesAxis();
-			seriesAxis = new GraphAxis2(this, Localization.getString("AGraph.SeriesAxis"), ySeriesTicks, //$NON-NLS-1$
+			seriesAxis = new GraphAxis2(this, Localization.getString("AGraph.SeriesAxis"), ySeriesTicks,
 					GraphAxis2.ALIGN_RIGHT | 
 					GraphAxis2.HIDE_GRID_LINES | 
 					GraphAxis2.UNNORMALIZED | 
@@ -157,8 +163,8 @@ public abstract class AGraph extends AChart {
 	public void dispose() {
 		GraphingAPIUIPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
 
-		parent.removeCheckOption(Localization.getString("AGraph.Normalize")); //$NON-NLS-1$
-		parent.removeCheckOption(Localization.getString("AGraph.GridLines")); //$NON-NLS-1$
+		parent.removeCheckOption(Localization.getString("AGraph.Normalize"));
+		parent.removeCheckOption(Localization.getString("AGraph.GridLines"));
 
 		normalizeListener = null;
 		gridListener = null;
