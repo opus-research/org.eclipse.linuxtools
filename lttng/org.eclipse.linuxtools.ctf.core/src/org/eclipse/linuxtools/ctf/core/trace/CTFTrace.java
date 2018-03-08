@@ -936,9 +936,14 @@ public class CTFTrace implements IDefinitionScope {
         if (pos >= candidates.size()) {
             return null;
         }
+        if (pos < 0) {
+            if (candidates.size() > -pos) {
+                return candidates.get(-pos);
+            }
+            return candidates.getFirst();
+        }
         return candidates.get(pos);
     }
-
 }
 
 class MetadataFileFilter implements FileFilter {
