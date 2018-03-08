@@ -82,26 +82,25 @@ public class StreamInputPacketIndex {
     public void addEntry(StreamInputPacketIndexEntry entry)
             throws CTFReaderException {
         assert (entry.getContentSizeBits() != 0);
-        assert (entry.getContentSizeBits() != 0);
 
+        /* Validate consistent entry. */
         if (entry.getTimestampBegin() > entry.getTimestampEnd()) {
             throw new CTFReaderException("Packet begin timestamp is after end timestamp"); //$NON-NLS-1$
         }
 
+        /* Validate entries are inserted in monotonic increasing timestamp order. */
         if (!this.entries.isEmpty()) {
             if (entry.getTimestampBegin() < this.entries.lastElement()
                     .getTimestampBegin()) {
                 throw new CTFReaderException("Packets begin timestamp decreasing"); //$NON-NLS-1$
             }
         }
-
         this.entries.add(entry);
     }
 
     /**
-     * Given a timestamp, this methods returns the first PacketIndexEntry that
-     * could include the timestamp, that is the last packet with a begin
-     * timestamp smaller than the given timestamp.
+     * Returns the first PacketIndexEntry that could include the timestamp,
+     * that is the last packet with a begin timestamp smaller than the given timestamp.
      *
      * @param timestamp
      *            The timestamp to look for.
@@ -129,6 +128,7 @@ public class StreamInputPacketIndex {
             throw new IllegalArgumentException("timestamp is negative"); //$NON-NLS-1$
         }
 
+        /* Dichotomic search algorithm. */
         for (;;) {
             /*
              * Guess in the middle of min and max. The +1 is so that in case
