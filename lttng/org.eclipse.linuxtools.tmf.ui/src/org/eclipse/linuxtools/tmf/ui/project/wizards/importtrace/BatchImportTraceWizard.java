@@ -81,6 +81,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     private IWizardPage fSelectDirectoriesPage;
     private IWizardPage fScanPage;
     private IWizardPage fSelectTypePage;
+    private IWizardPage fOptions;
 
     private final List<String> fTraceTypesToScan = new ArrayList<String>();
     private final Set<String> fParentFilesToScan = new HashSet<String>();
@@ -127,6 +128,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         fSelectDirectoriesPage = new ImportTraceWizardSelectDirectoriesPage(workbench, selection);
         fScanPage = new ImportTraceWizardScanPage(workbench, selection);
         fSelectTypePage = new ImportTraceWizardSelectTraceTypePage(workbench, selection);
+        fOptions = new ImportTraceWizardPageOptions(workbench, selection);
         // keep in case it's called later
         fResults.clear();
     }
@@ -136,6 +138,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         addPage(fSelectTypePage);
         addPage(fSelectDirectoriesPage);
         addPage(fScanPage);
+        addPage(fOptions);
         final WizardDialog container = (WizardDialog) getContainer();
         if (container != null) {
             container.setPageSize(800, 400);
@@ -341,7 +344,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
     @Override
     public boolean canFinish() {
-        return super.canFinish() && hasTracesToImport() && !hasConflicts();
+        return super.canFinish() && hasTracesToImport() && !hasConflicts() && (fTargetFolder != null);
     }
 
     /**
@@ -677,6 +680,17 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      */
     public void setTraceFolder(IFolder targetFolder) {
         fTargetFolder = targetFolder;
+        this.getContainer().updateButtons();
+    }
+
+    /**
+     * Gets the target folder
+     *
+     * @return the target folder
+     */
+    public IFolder getTargetFolder() {
+
+        return fTargetFolder;
     }
 
 }
