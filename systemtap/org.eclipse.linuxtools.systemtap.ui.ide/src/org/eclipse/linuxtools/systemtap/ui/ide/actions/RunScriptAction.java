@@ -156,7 +156,16 @@ public class RunScriptAction extends Action implements IWorkbenchWindowActionDel
 		
 		return true;
 	}
-	
+
+	/**
+	 * Checks whether the directory to which the given file
+	 * belons is a valid directory. Currently this function just
+	 * checks if the given file does not belong ot the tapset 
+	 * directory.
+	 * @param fileName
+	 * @return true if the given path is valid false otherwise.
+	 * @since 1.2
+	 */
 	protected boolean isValidDirectory(String fileName) {
 		this.fileName = fileName;
 		if(0 == IDESessionSettings.tapsetLocation.trim().length())
