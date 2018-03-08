@@ -50,12 +50,10 @@ public class PathEditorInput implements IPathEditorInput, ILocationProvider {
 		fPath = new Path(file.getAbsolutePath());
 	}
 
-	@Override
 	public int hashCode() {
 		return fPath.hashCode();
 	}
 	
-	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;

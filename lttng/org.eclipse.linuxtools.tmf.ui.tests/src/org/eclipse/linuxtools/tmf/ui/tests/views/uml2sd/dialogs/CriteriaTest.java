@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2012 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
@@ -21,10 +21,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.Criteria;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
 
-/**
- *  Test cases to test Criteria class.
- */
-@SuppressWarnings("nls")
 public class CriteriaTest extends TestCase {
 
     @Override
@@ -35,12 +31,10 @@ public class CriteriaTest extends TestCase {
     public void tearDown() throws Exception {
     }
 
-    /**
-     * Test default constructor.
-     */
+    @SuppressWarnings("nls")
     public void testCriteria() {
         Criteria criteria = new Criteria();
-        assertFalse("testCriteria", criteria.isAsyncMessageReturnSelected());
+        assertFalse("testCriteria", criteria.isAsyncMessageReturnSelected()); 
         assertFalse("testCriteria", criteria.isAsyncMessageSelected());
         assertFalse("testCriteria", criteria.isCaseSenstiveSelected());
         assertFalse("testCriteria", criteria.isLifeLineSelected());
@@ -51,9 +45,7 @@ public class CriteriaTest extends TestCase {
         assertNull("testCriteria",  criteria.getPattern());
     }
 
-    /**
-     * Test copy constructor.
-     */
+    @SuppressWarnings("nls")
     public void testCriteriaCriteria() {
         Criteria criteria = new Criteria();
         criteria.setExpression("test");
@@ -73,12 +65,10 @@ public class CriteriaTest extends TestCase {
         assertEquals("testCriteriaCriteria", criteria.getPattern().pattern(), copy.getPattern().pattern());
     }
 
-    /**
-     * Test accessor methods.
-     */
+    @SuppressWarnings("nls")
     public void testAccessors() {
         Criteria criteria = new Criteria();
-        criteria.setAsyncMessageReturnSelected(true);
+        criteria.setAsyncMessageReturnSelected(true); 
         criteria.setAsyncMessageSelected(true);
         criteria.setCaseSenstiveSelected(true);
         criteria.setLifeLineSelected(true);
@@ -88,7 +78,7 @@ public class CriteriaTest extends TestCase {
         criteria.setExpression("test.*");
 
         // set true to all flags
-        assertTrue("testAccessors", criteria.isAsyncMessageReturnSelected());
+        assertTrue("testAccessors", criteria.isAsyncMessageReturnSelected()); 
         assertTrue("testAccessors", criteria.isAsyncMessageSelected());
         assertTrue("testAccessors", criteria.isCaseSenstiveSelected());
         assertTrue("testAccessors", criteria.isLifeLineSelected());
@@ -101,7 +91,7 @@ public class CriteriaTest extends TestCase {
         assertEquals("testAccessors", 0, criteria.getPattern().flags() & Pattern.CASE_INSENSITIVE);
 
         // set false to all flags
-        criteria.setAsyncMessageReturnSelected(false);
+        criteria.setAsyncMessageReturnSelected(false); 
         criteria.setAsyncMessageSelected(false);
         criteria.setCaseSenstiveSelected(false);
         criteria.setLifeLineSelected(false);
@@ -109,7 +99,7 @@ public class CriteriaTest extends TestCase {
         criteria.setSyncMessageReturnSelected(false);
         criteria.setSyncMessageSelected(false);
 
-        assertFalse("testAccessors", criteria.isAsyncMessageReturnSelected());
+        assertFalse("testAccessors", criteria.isAsyncMessageReturnSelected()); 
         assertFalse("testAccessors", criteria.isAsyncMessageSelected());
         assertFalse("testAccessors", criteria.isCaseSenstiveSelected());
         assertFalse("testAccessors", criteria.isLifeLineSelected());
@@ -122,9 +112,7 @@ public class CriteriaTest extends TestCase {
         assertEquals("testAccessors", Pattern.CASE_INSENSITIVE, criteria.getPattern().flags() & Pattern.CASE_INSENSITIVE);
     }
 
-    /**
-     * Test compartTo method.
-     */
+    @SuppressWarnings("nls")
     public void testCompareTo() {
         Criteria criteria = new Criteria();
         criteria.setExpression("test");
@@ -139,25 +127,23 @@ public class CriteriaTest extends TestCase {
         copy.setExpression(null);
         assertFalse("testCompareTo", criteria.compareTo(copy));
         assertFalse("testCompareTo", copy.compareTo(criteria));
-
+        
         criteria.setExpression(null);
         assertTrue("testCompareTo", criteria.compareTo(copy));
         assertTrue("testCompareTo", copy.compareTo(criteria));
-
+        
         criteria.setExpression("test");
         copy.setExpression("test.*[12345]");
         assertFalse("testCompareTo", criteria.compareTo(copy));
         assertFalse("testCompareTo", copy.compareTo(criteria));
-
+        
         copy.setExpression("test");
         copy.setAsyncMessageReturnSelected(true);
         assertFalse("testCompareTo", criteria.compareTo(copy));
         assertFalse("testCompareTo", copy.compareTo(criteria));
     }
-
-    /**
-     * Test save to disk.
-     */
+    
+    @SuppressWarnings("nls")
     public void testSave() {
         DialogSettings settings = new DialogSettings("mysettings");
 
@@ -165,10 +151,10 @@ public class CriteriaTest extends TestCase {
         criteria.setExpression("test");
         criteria.setLifeLineSelected(true);
         criteria.setSyncMessageSelected(true);
-
+        
         // Save the criteria to the dialog settings
         criteria.save(settings);
-
+        
         // Check if all values are saved as expected
         assertEquals("testSave", "test", settings.get("expression"));
         assertEquals("testSave", "false", settings.get("isCaseSenstiveSelected"));
@@ -180,9 +166,7 @@ public class CriteriaTest extends TestCase {
         assertEquals("testSave", "true", settings.get("isSyncMessageSelected"));
     }
 
-    /**
-     * Test restore from disk.
-     */
+    @SuppressWarnings("nls")
     public void testLoad() {
         DialogSettings settings = new DialogSettings("mysettings");
 
@@ -190,10 +174,10 @@ public class CriteriaTest extends TestCase {
         criteria.setExpression("test");
         criteria.setLifeLineSelected(true);
         criteria.setSyncMessageSelected(true);
-
+        
         // Save the criteria to the dialog settings
         criteria.save(settings);
-
+        
         // Load the criteria from the dialog settings
         Criteria copy = new Criteria();
         copy.load(settings);
@@ -201,20 +185,17 @@ public class CriteriaTest extends TestCase {
         assertTrue("testCompareTo", criteria.compareTo(copy));
         assertTrue("testCompareTo", copy.compareTo(criteria));
     }
-
-    /**
-     * Test graph node summary usage.
-     */
+    @SuppressWarnings("nls")
     public void testGetGraphNodeSummary() {
-
+        
         // Create a dummy provider
         ISDFilterProvider provider = new ISDFilterProvider() {
-
+            
             @Override
             public boolean isNodeSupported(int nodeType) {
                 return true;
             }
-
+            
             @Override
             public String getNodeName(int nodeType, String loaderClassName) {
                 // not clear about purpose loaderClassName
@@ -241,10 +222,10 @@ public class CriteriaTest extends TestCase {
                 return false;
             }
         };
-
+        
         Criteria criteria = new Criteria();
         criteria.setExpression("BALL_.*");
-        criteria.setAsyncMessageReturnSelected(true);
+        criteria.setAsyncMessageReturnSelected(true); 
         criteria.setAsyncMessageSelected(true);
         criteria.setLifeLineSelected(true);
         criteria.setStopSelected(true);
@@ -254,26 +235,24 @@ public class CriteriaTest extends TestCase {
         // Test summary when provider is available
         String summary = criteria.getGraphNodeSummary(provider, null);
         assertEquals("testGetGraphNodeSummary", "[MyLifeline or MySyncMessage or MySyncMessageReturn or MyAsyncMessage or MyAsyncMessageReturn or MyStop]", summary);
-
-        // Test default summary when no provider is provided
+        
+        // Test default summary when no provider is provided 
         summary = criteria.getGraphNodeSummary(null, null);
         assertEquals("testGetGraphNodeSummary", "[Lifeline or Synchronous message or Synchronous message return or Asynchronous message or Asynchronous message return or Stop]", summary);
-
+        
     }
 
-    /**
-     * Test matches algorithm.
-     */
+    @SuppressWarnings("nls")
     public void testMatches() {
         Criteria criteria = new Criteria();
         criteria.setExpression("BALL_.*");
-
+        
         /*
          *  Note that method matches uses the Pattern class. Test
          *  only case sensitive/case insensitive case. All other regular
          *  expression cases are covered by Pattern class.
          */
-
+        
         // case insensitive
         assertTrue("testMatches", criteria.matches("BALL_REQUEST"));
         assertTrue("testMatches", criteria.matches("BALL_REPLY"));

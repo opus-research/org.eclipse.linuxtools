@@ -43,7 +43,6 @@ public class StapSettingsDialog extends Dialog {
 		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 	
-	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		LogManager.logDebug("Start configureShell: shell-" + shell, this); //$NON-NLS-1$
@@ -52,7 +51,6 @@ public class StapSettingsDialog extends Dialog {
 		LogManager.logDebug("End configureShell:", this); //$NON-NLS-1$
 	}
 
-	@Override
 	protected Control createDialogArea(Composite parent) {
 		LogManager.logDebug("Start createDialogArea: parent-" + parent, this); //$NON-NLS-1$
 		Composite comp = (Composite) super.createDialogArea(parent);
@@ -124,7 +122,6 @@ public class StapSettingsDialog extends Dialog {
 		return comp;
 	}
   
-	@Override
 	protected void buttonPressed(int buttonID) {
 		LogManager.logDebug("Start buttonPressed: buttonID-" + buttonID, this); //$NON-NLS-1$
 		if(0 == buttonID) {	//OK

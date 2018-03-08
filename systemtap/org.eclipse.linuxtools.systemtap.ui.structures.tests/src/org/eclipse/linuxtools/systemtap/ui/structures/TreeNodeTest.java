@@ -11,18 +11,17 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.TestCase;
 
-public class TreeNodeTest {
+public class TreeNodeTest extends TestCase {
+	public TreeNodeTest(String name) {
+		super(name);
+	}
 
-	@Before
-	public void setUp() {
+	protected void setUp() throws Exception {
+		super.setUp();
 		
 		data = new StringBuilder("Object");
 		data2 = "Data";
@@ -36,7 +35,6 @@ public class TreeNodeTest {
 		t.add(child2);
 	}
 
-	@Test
 	public void testTreeNode() {
 		String d1 = "One";
 		String d2 = "two";
@@ -67,7 +65,6 @@ public class TreeNodeTest {
 		assertFalse("Create child clickable", t4.isClickable());
 	}
 
-	@Test
 	public void testAdd() {
 		t.add(new TreeNode("One", "tne", false));
 		assertEquals("Add child", 3, t.getChildCount());
@@ -76,7 +73,6 @@ public class TreeNodeTest {
 		assertEquals("Add child2", 4, t.getChildCount());
 	}
 	
-	@Test
 	public void testAddAt() {
 		TreeNode test1 = new TreeNode("one", false);
 		t.addAt(test1, 0);
@@ -99,7 +95,6 @@ public class TreeNodeTest {
 		assertEquals("Child correctly added", 6, t.getChildCount());
 	}
 	
-	@Test
 	public void testGetChildAt() {
 		TreeNode child1 = new TreeNode("1", false);
 		t.add(child1);
@@ -118,25 +113,21 @@ public class TreeNodeTest {
 		assertNull("No child here", t.getChildAt(10));
 	}
 	
-	@Test
 	public void testGetChildCount() {
 		assertEquals("Tree child count", 2, t.getChildCount());
 		assertEquals("Child child count", 0, t.getChildAt(0).getChildCount());
 	}
 	
-	@Test
 	public void testGetData() {
 		assertEquals("Correct data", data, t.getData());
 		assertEquals("Correct data2", data2, t.getChildAt(0).getData());
 	}
 	
-	@Test
 	public void testIsClickable() {
 		assertFalse("Nonclickable root", t.isClickable());
 		assertTrue("Clickable child", t.getChildAt(0).isClickable());
 	}
 	
-	@Test
 	public void testRemove() {
 		TreeNode child1 = new TreeNode("1", false);
 		t.add(child1);
@@ -160,7 +151,6 @@ public class TreeNodeTest {
 		assertEquals("Remove IndexOutOfBounds", 2, t.getChildCount());
 	}
 	
-	@Test
 	public void testRemoveAll() {
 		t.add(new TreeNode("Child", false));
 		
@@ -171,7 +161,6 @@ public class TreeNodeTest {
 		assertEquals("Still no children", 0, t.getChildCount());
 	}
 	
-	@Test
 	public void testSetData() {
 		Object o = "asdf";
 		t.setData(o);
@@ -182,14 +171,12 @@ public class TreeNodeTest {
 		assertEquals("Replaced data with string", o1, t.getData());
 	}
 	
-	@Test
 	public void testSetDisplay() {
 		String s1 = "aaaa";
 		t.setDisplay(s1);
 		assertEquals("Replaced display", s1, t.toString());
 	}
 	
-	@Test
 	public void testSortTree() {
 		TreeNode child1 = new TreeNode("2", false);
 		t.add(child1);
@@ -205,7 +192,6 @@ public class TreeNodeTest {
 		assertEquals("Sorted middle correct", child1, t.getChildAt(1));
 	}
 	
-	@Test
 	public void testSortLevel() {
 		TreeNode child1 = new TreeNode("2", false);
 		t.add(child1);
@@ -222,15 +208,17 @@ public class TreeNodeTest {
 		assertEquals("Sorted middle correct", child1, t.getChildAt(1));
 	}
 	
-	@Test
 	public void testToString() {
 		assertEquals("Object to string", data2, child.toString());
 		assertEquals("Dispaly to string", s, t.toString());
 	}
 	
-	@Test
 	public void testDispose() {
 		t.dispose();
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 	
 	TreeNode t;

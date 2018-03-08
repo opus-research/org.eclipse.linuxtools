@@ -25,8 +25,8 @@ public class DashboardModuleFileFilter implements FileFilter {
 	}
 	
 	public String getDescription() {
-		return ".dash files"; //$NON-NLS-1$
+		return ".dash files";
 	}
 	
-	public static final String DashboardModuleExtension = ".dash"; //$NON-NLS-1$
+	public static final String DashboardModuleExtension = ".dash";
 }

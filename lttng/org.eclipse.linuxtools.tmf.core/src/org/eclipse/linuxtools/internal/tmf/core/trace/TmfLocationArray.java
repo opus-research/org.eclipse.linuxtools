@@ -50,9 +50,9 @@ public class TmfLocationArray implements Comparable<TmfLocationArray>, Cloneable
     // ------------------------------------------------------------------------
 
     /**
-     * Get the locations inside this array
+     * The standard constructor
      *
-     * @return the locations
+     * @param locations the locations
      */
     public ITmfLocation<? extends Comparable<?>>[] getLocations() {
         return fLocations;
@@ -80,7 +80,7 @@ public class TmfLocationArray implements Comparable<TmfLocationArray>, Cloneable
     // ------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public int compareTo(TmfLocationArray o) {
         for (int i = 0; i < fLocations.length; i++) {
             ITmfLocation<? extends Comparable> l1 = (ITmfLocation<? extends Comparable>) fLocations[i].getLocation();

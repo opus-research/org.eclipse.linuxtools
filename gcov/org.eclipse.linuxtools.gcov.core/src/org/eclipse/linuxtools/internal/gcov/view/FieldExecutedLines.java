@@ -21,7 +21,6 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
 	 */
-	@Override
 	public String getColumnHeaderText() {
 		return "Executed Lines";
 	}
@@ -30,7 +29,6 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getValue(java.lang.Object)
 	 */
-	@Override
 	public String getValue(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		return Integer.toString(e.getExecutedLines());
@@ -44,7 +42,6 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
 		return s;
 	}
 
-	@Override
 	public int compare(Object obj1, Object obj2) {
 		TreeElement e1 = (TreeElement) obj1;
 		TreeElement e2 = (TreeElement) obj2;
@@ -64,7 +61,6 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.charts.provider.IChartField#getNumber(java.lang.Object)
 	 */
-	@Override
 	public Number getNumber(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		return e.getExecutedLines();

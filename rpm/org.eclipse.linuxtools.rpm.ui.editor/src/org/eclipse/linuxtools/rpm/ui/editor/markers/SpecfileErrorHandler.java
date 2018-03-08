@@ -49,7 +49,7 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 		this.input = input;
 	}
 	
-	private static class SpecfileAnnotation extends Annotation implements IQuickFixableAnnotation {
+	private class SpecfileAnnotation extends Annotation implements IQuickFixableAnnotation {
 		public SpecfileAnnotation(String annotationType, boolean persist, String message) {
 			super(annotationType, persist, message);
 		}

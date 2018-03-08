@@ -10,12 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.ssh.proxy;
 
-import java.text.MessageFormat;
-
 import org.eclipse.linuxtools.internal.ssh.proxy.Messages;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
@@ -29,20 +26,10 @@ import org.eclipse.swt.widgets.Text;
 public class SSHPasswordDialog extends Dialog {
 	private String password;
 	private Text passwordField;
-	private String user, host;
-	public SSHPasswordDialog(Shell parent, String user, String host) {
+	public SSHPasswordDialog(Shell parent) {
 		super(parent);
-		this.user = user;
-		this.host = host;
 	}
 
-	@Override
-	protected void configureShell(Shell shell) {
-		super.configureShell(shell);
-		shell.setText(Messages.SSHPasswordDialog_Title);
-	}
-
-	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite comp = (Composite) super.createDialogArea(parent);
 		
@@ -53,15 +40,7 @@ public class SSHPasswordDialog extends Dialog {
 		}
 		((GridLayout)layout).numColumns = 2;
 
-		Label passwordTitle= new Label(comp, SWT.RIGHT);
 		Label passwordLabel = new Label(comp, SWT.RIGHT);
-		GridData gridData = new GridData(GridData.VERTICAL_ALIGN_END);
-		gridData.horizontalSpan = 2;
-		gridData.horizontalAlignment = GridData.FILL;
-		passwordTitle.setLayoutData(gridData);
-		if (host != null && user != null)
-			passwordTitle.setText(MessageFormat.format(Messages.SSHPasswordDialog_Password_Title, user, host));
-
 		passwordLabel.setText(Messages.SSHPasswordDialog_Password);
 
 		passwordField = new Text(comp, SWT.SINGLE | SWT.PASSWORD);
@@ -71,9 +50,8 @@ public class SSHPasswordDialog extends Dialog {
 	}
 
 
-	@Override
 	protected void buttonPressed(int buttonId) {
-		if (buttonId == Window.OK)
+		if (buttonId == Dialog.OK)
 			this.password = passwordField.getText();
 		super.buttonPressed(buttonId);
 	}

@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -23,9 +23,7 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 
 /**
  * An extension of TmfDataProvider timestamped events providers.
- *
- * @param <T> The provider event type
- *
+ * 
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -35,9 +33,6 @@ public abstract class TmfEventProvider<T extends ITmfEvent> extends TmfDataProvi
     // Constructors
     // ------------------------------------------------------------------------
 
-    /**
-     * Default constructor
-     */
     public TmfEventProvider() {
         super();
     }
@@ -47,38 +42,14 @@ public abstract class TmfEventProvider<T extends ITmfEvent> extends TmfDataProvi
         super.init(name, type);
     }
 
-    /**
-     * Standard constructor
-     *
-     * @param name
-     *            The name of the provider
-     * @param type
-     *            The type of handled events
-     */
-   public TmfEventProvider(String name, Class<T> type) {
+    public TmfEventProvider(String name, Class<T> type) {
         super(name, type);
     }
 
-    /**
-     * Standard constructor which also sets the queue size
-     *
-     * @param name
-     *            The name of the provider
-     * @param type
-     *            The type of handled events
-     * @param queueSize
-     *            The size of the queue
-     */
     public TmfEventProvider(String name, Class<T> type, int queueSize) {
         super(name, type, queueSize);
     }
 
-    /**
-     * Copy constructor
-     *
-     * @param other
-     *            The other TmfEventProvider to copy
-     */
     public TmfEventProvider(TmfEventProvider<T> other) {
         super(other);
     }
@@ -169,10 +140,10 @@ public abstract class TmfEventProvider<T extends ITmfEvent> extends TmfDataProvi
                         public void handleCompleted() {
                             nbRead[0] += this.getNbRead();
                             if (nbRead[0] >= request.getNbRequested() || (this.getNbRead() < CHUNK_SIZE[0])) {
-                                if (this.isCancelled()) {
+                                if (this.isCancelled()) { 
                                     request.cancel();
                                 } else if (this.isFailed()) {
-                                    request.fail();
+                                    request.fail();  
                                 } else {
                                     request.done();
                                 }

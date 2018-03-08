@@ -32,7 +32,6 @@ public class MatchFilterWizardPage extends FilterWizardPage {
 		setTitle(Localization.getString("MatchFilterWizardPage.CreateMatchFilter"));
 	}
 	
-	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 
@@ -80,12 +79,10 @@ public class MatchFilterWizardPage extends FilterWizardPage {
 		setControl(comp);
 	}
 	
-	@Override
 	public boolean canFlipToNextPage() {
 		return false;
 	}
 
-	@Override
 	protected void createFilter() {
 		int selected = cboColumn.getSelectionIndex();
 		String compare = txtCompare.getText().trim();
@@ -96,7 +93,6 @@ public class MatchFilterWizardPage extends FilterWizardPage {
 		}
 	}
 
-	@Override
 	public void dispose() {
 		if(null != txtCompare) {
 			txtCompare.removeModifyListener(modifyListener);

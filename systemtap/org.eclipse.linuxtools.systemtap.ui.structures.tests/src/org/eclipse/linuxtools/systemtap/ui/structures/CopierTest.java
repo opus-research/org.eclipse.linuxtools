@@ -11,15 +11,26 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import org.junit.Test;
+import org.eclipse.linuxtools.systemtap.ui.structures.Copier;
 
-public class CopierTest {
+import junit.framework.TestCase;
 
-	@Test
+public class CopierTest extends TestCase {
+	public CopierTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+	
+	public <T> ArrayList<T>[] createArray(int size, ArrayList<T>... elements) {
+		return Arrays.copyOf(elements, size);
+	}
+	
 	public void testCopy() {
 		ArrayList<String> list = new ArrayList<String>();
 		@SuppressWarnings("unchecked")
@@ -28,10 +39,8 @@ public class CopierTest {
 
 		for(int i=0; i<listsSize; i++) {
 			list.add("" + i);
-			for(int j=0; j<5; j++){
-				lists[i] = new ArrayList<Integer>();
+			for(int j=0; j<5; j++)
 				lists[i].add(new Integer(j));
-			}
 		}
 		
 		ArrayList<String> list2 = Copier.copy(list);
@@ -45,4 +54,7 @@ public class CopierTest {
 		}
 	}
 	
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
 }

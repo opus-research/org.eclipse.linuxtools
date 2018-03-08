@@ -112,15 +112,13 @@ public class OpenGCDialog extends Dialog {
     }
 
 
-    @Override
-	protected Control createContents(Composite parent) {
+    protected Control createContents(Composite parent) {
         Control composite = super.createContents(parent);
         validateBinary();
         return composite;
     }
 
-    @Override
-	protected Control createDialogArea(Composite parent) {
+    protected Control createDialogArea(Composite parent) {
     	this.getShell().setText("Gcov - Open coverage results...");
         Composite composite = (Composite) super.createDialogArea(parent);
 
@@ -155,8 +153,7 @@ public class OpenGCDialog extends Dialog {
         binBrowseWorkspaceButton.addSelectionListener(
                 new SelectionAdapter()
                 {
-                    @Override
-					public void widgetSelected(SelectionEvent sev)
+                    public void widgetSelected(SelectionEvent sev)
                     {
                     	handleBrowseWorkspace("Open Binary file...", binText);
                     }
@@ -167,8 +164,7 @@ public class OpenGCDialog extends Dialog {
         binBrowseFileSystemButton.addSelectionListener(
                 new SelectionAdapter()
                 {
-                    @Override
-					public void widgetSelected(SelectionEvent sev)
+                    public void widgetSelected(SelectionEvent sev)
                     {
                         handleBrowse("Open Binary file...", binText);
                     }
@@ -193,8 +189,7 @@ public class OpenGCDialog extends Dialog {
         openCoverageSummaryButton.setSelection(true);
         
         SelectionAdapter sa = new SelectionAdapter() {
-        	@Override
-			public void widgetSelected(SelectionEvent sev)
+        	public void widgetSelected(SelectionEvent sev)
             {
         		openCoverageSummary = openCoverageSummaryButton.getSelection();
             }
@@ -251,8 +246,7 @@ public class OpenGCDialog extends Dialog {
 
     private class BinaryModifyListener implements ModifyListener
     {
-        @Override
-		public void modifyText(ModifyEvent e) {
+        public void modifyText(ModifyEvent e) {
             validateBinary();
         }
 
@@ -268,8 +262,7 @@ public class OpenGCDialog extends Dialog {
         IContainer c = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(this.gcFile);
         if (c != null) dialog.setInitialSelection(c.getProject());
         dialog.setValidator(new ISelectionStatusValidator() {
-            @Override
-			public IStatus validate(Object[] selection)
+            public IStatus validate(Object[] selection)
             {
                 if (selection.length != 1) {
                         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "", null); //$NON-NLS-1$

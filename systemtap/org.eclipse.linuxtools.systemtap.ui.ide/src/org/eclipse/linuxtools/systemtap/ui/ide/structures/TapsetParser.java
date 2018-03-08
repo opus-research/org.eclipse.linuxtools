@@ -67,8 +67,8 @@ public class TapsetParser implements Runnable {
 	public void start() {
 		stopped = false;
 		init();
-		this.thread = new Thread(this, "TapsetParser");
-		thread.start();
+		Thread t = new Thread(this, "TapsetParser");
+		t.start();
 	}
 	
 	/**
@@ -77,11 +77,6 @@ public class TapsetParser implements Runnable {
 	 */
 	public synchronized void stop() {
 		stopped = true;
-		try {
-			this.thread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}		
 	}
 	
 	/**
@@ -137,6 +132,7 @@ public class TapsetParser implements Runnable {
 		fireUpdateEvent();	//Inform listeners that a new batch of functions has variable info
 		runPass2Probes();
 		fireUpdateEvent();	//Inform listeners that a new batch of probes has variable info
+		stop();
 		successfulFinish = true;
 		fireUpdateEvent();	//Inform listeners that everything is done
 	}
@@ -163,8 +159,8 @@ public class TapsetParser implements Runnable {
 	 * This method will fire an updateEvent to all listeners.
 	 */
 	private void fireUpdateEvent() {
-		for(int i=0; i<listeners.size() && !stopped; i++)
-			listeners.get(i).handleUpdateEvent();
+		for(int i=0; i<listeners.size(); i++)
+			((IUpdateListener)listeners.get(i)).handleUpdateEvent();
 	}
 	
 	/**
@@ -328,25 +324,6 @@ public class TapsetParser implements Runnable {
 					child.add(new TreeNode(prev2 + ":unknown", prev2, false));
 				
 				prev2 = null;
-			} else if ("/*".equals(token.toString())){
-				// Skip comments
-				for(; i<s.length()-1; i++) {
-					if (s.regionMatches(i, "*/", 0, 2)){
-						i++;
-						break;
-					}
-				}
-				// clear token
-				token.delete(0, token.length());
-			} else if ("//".equals(token.toString())){
-				// Skip comments
-				for(; i<s.length(); i++) {
-					if (s.charAt(i) == '\n'){
-						break;
-					}
-				}
-				// clear token
-				token.delete(0, token.length());
 			}
 		}
 	}
@@ -388,7 +365,7 @@ public class TapsetParser implements Runnable {
 				functionNames.add(probe.toString());
 			}
 		}
-		parameters = functionNames.toArray(parameters);
+		parameters = (String[])functionNames.toArray(parameters);
 		runPass2FunctionSet(parameters, 0, parameters.length-1);
 	}
 	
@@ -437,18 +414,14 @@ public class TapsetParser implements Runnable {
 	}
 	
 	/**
-	 * Does a depth first search for valid probes: Runs stap -up2 on the
-	 * selected probe group, using high and low to determine which
-	 * subelements to select. If an error is encountered in a group this
-	 * function divides the group into a top and bottom half and makes a
-	 * recursive call on each subgroup to isolate the failing probes.
+	 * Runs stap -up2 on the selected probe group, using high and low
+	 * to determin which subelements to select.
 	 * @param probe The top level probe group to probe.
 	 * @param low The lower bound of child elements of probe to include
-	 * @param high The upper bound of child elements of probe to include
+	 * @param high The upper bound of child elements of probe to inclue
 	 */
 	private void runPass2ProbeSet(TreeNode probe, int low, int high) {
-
-		if(low == high || this.stopped)
+		if(low == high)
 			return;
 		
 		TreeNode temp;
@@ -465,8 +438,8 @@ public class TapsetParser implements Runnable {
 		result = runStap(new String[] {"-u"}, probeStr.toString(), 2);
 		
 		if(0 < result.trim().length()) {
-			boolean success = parsePass2Probes(result,probe);
-			if(!success && low+1 != high) {
+			boolean success = parsePass2Probes(result, probe);
+			if(!success) {
 				runPass2ProbeSet(probe, low, low+((high-low)>>1));
 				runPass2ProbeSet(probe, low+((high-low)>>1), high);
 			}
@@ -711,5 +684,4 @@ public class TapsetParser implements Runnable {
 	private TreeNode functions;
 	private TreeNode probes;
 	private String[] tapsets;
-	private Thread thread;
 }
