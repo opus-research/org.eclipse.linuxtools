@@ -456,7 +456,14 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public boolean validate(TraceValidationHelper traceToValidate) {
-        return validate(traceToValidate.getTraceType(), traceToValidate.getTraceToScan());
+        boolean valid = false;
+        try {
+            valid = validate(traceToValidate.getTraceType(), traceToValidate.getTraceToScan());
+        } catch (Exception e) {
+            Activator.getDefault().logError(
+                    Messages.TmfTraceType_errorValidatingTrace + " " + traceToValidate.getTraceToScan() + " " + Messages.TmfTraceType_withTraceType + " " + traceToValidate.getTraceType() + " " + Messages.TmfTraceType_exception + ":" + e.toString());   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        }
+        return valid;
     }
 
     /**
