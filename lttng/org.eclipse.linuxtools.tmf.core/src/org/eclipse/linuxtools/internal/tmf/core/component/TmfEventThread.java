@@ -8,10 +8,11 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Bernd Hufmann - Update handling of suspend and resume
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.component;
+
+import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
@@ -60,11 +61,8 @@ public class TmfEventThread implements Runnable {
      */
     private volatile boolean isCompleted = false;
 
-    /** The synchronization object */
-    private final Object fSynchObject = new Object();
-
-    /** The flag for suspending a thread */
-    private volatile boolean fIsPaused = false;
+    /** Latch indicating if the thread is currently paused (>0 means paused) */
+    private CountDownLatch pausedLatch = new CountDownLatch(0);
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -139,8 +137,8 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The request execution state
      */
-    public boolean isPaused() {
-        return fIsPaused;
+    public synchronized boolean isPaused(){
+        return (pausedLatch.getCount() > 0);
     }
 
     /**
@@ -185,16 +183,7 @@ public class TmfEventThread implements Runnable {
                 }
 
                 // Pause execution if requested
-
-                while (fIsPaused) {
-                    synchronized (fSynchObject) {
-                        try {
-                            fSynchObject.wait();
-                        } catch (InterruptedException e) {
-                            // continue
-                        }
-                    }
-                }
+                pausedLatch.await();
 
                 // To avoid an unnecessary read passed the last event requested
                 if (++nbRead < nbRequested) {
@@ -226,19 +215,16 @@ public class TmfEventThread implements Runnable {
     /**
      * Suspend the thread
      */
-    public void suspend() {
-        fIsPaused = true;
+    public synchronized void suspend() {
+        pausedLatch = new CountDownLatch(1);
         TmfCoreTracer.traceRequest(fRequest, "SUSPENDED"); //$NON-NLS-1$
     }
 
     /**
      * Resume the thread
      */
-    public void resume() {
-        fIsPaused = false;
-        synchronized (fSynchObject) {
-            fSynchObject.notifyAll();
-        }
+    public synchronized void resume() {
+        pausedLatch.countDown();
         TmfCoreTracer.traceRequest(fRequest, "RESUMED"); //$NON-NLS-1$
     }
 
