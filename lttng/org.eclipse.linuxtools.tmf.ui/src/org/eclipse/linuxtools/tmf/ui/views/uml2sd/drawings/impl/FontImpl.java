@@ -33,7 +33,7 @@ public class FontImpl implements IFont {
     /**
      * The font object
      */
-    private final Font fFont;
+    protected Font fFont = null;
     /**
      * Flag to indicate that this object is managing the resource.
      */

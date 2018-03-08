@@ -44,13 +44,13 @@ public class PagesDialog extends Dialog {
     /**
      * viewer and provided are kept here as attributes
      */
-    private ISDAdvancedPagingProvider fProvider = null;
+    protected ISDAdvancedPagingProvider fProvider = null;
 
     /** Current page */
-    private TextArea fCurrentPage;
+    protected TextArea fCurrentPage;
 
     /** Comment label */
-    private Label fTotalPageComment;
+    protected Label fTotalPageComment;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -111,7 +111,7 @@ public class PagesDialog extends Dialog {
     /**
      * Updates the comments texts.
      */
-    private void updateComments() {
+    protected void updateComments() {
         int pages = Math.max(0, fProvider.pagesCount());
         StringBuffer totalPageCommentText = new StringBuffer();
         totalPageCommentText.append(Messages.SequenceDiagram_Total);

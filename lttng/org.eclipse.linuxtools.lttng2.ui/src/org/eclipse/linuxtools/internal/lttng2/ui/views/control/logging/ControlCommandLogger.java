@@ -1,12 +1,12 @@
 /**********************************************************************
  * Copyright (c) 2012 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
+ * 
+ * Contributors: 
  *   Bernd Hufmann - Initial API and implementation
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.logging;
@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
  * <p>
  * Class to log control commands.
  * </p>
- *
+ * 
  * @author Bernd Hufmann
  */
 public class ControlCommandLogger {
@@ -33,19 +33,12 @@ public class ControlCommandLogger {
      * The bufferd writer reference
      */
     private static BufferedWriter fTraceLog = null;
-
-    // ------------------------------------------------------------------------
-    // Constructor
-    // ------------------------------------------------------------------------
-    private ControlCommandLogger() {
-
-    }
-
+    
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
     /**
-     * Initializes the logger class and opens the log file with the given parameter.
+     * Initializes the logger class and opens the log file with the given parameter. 
      * @param filename - file name of logger output
      * @param append - true to open log file in append mode else false (overwrite)
      */
@@ -55,14 +48,13 @@ public class ControlCommandLogger {
         }
         fTraceLog = openLogFile(filename, append);
     }
-
+    
     /**
      * Closes the log file if open.
      */
     public static void close() {
-        if (fTraceLog == null) {
+        if (fTraceLog == null)
             return;
-        }
 
         try {
             fTraceLog.close();
@@ -71,7 +63,7 @@ public class ControlCommandLogger {
             Activator.getDefault().logWarning("Can't close log file of the trace control", e); //$NON-NLS-1$
         }
     }
-
+    
     /**
      * Logs a message to the log file.
      * @param msg - message (e.g. command or command result) to log
