@@ -25,6 +25,8 @@ import org.eclipse.linuxtools.internal.profiling.provider.ProviderProfileConstan
 import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
@@ -38,6 +40,7 @@ public class LaunchTest extends AbstractTest {
 	ProviderLaunchShortcut shortcut;
 	String launchConfigTypeId;
 
+	@BeforeClass
 	@Override
 	public void setUp() throws Exception {
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), BIN_NAME);
@@ -57,6 +60,7 @@ public class LaunchTest extends AbstractTest {
 		}
 	}
 
+	@AfterClass
 	@Override
 	public void tearDown () {
 		try {
