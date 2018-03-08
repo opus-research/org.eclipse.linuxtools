@@ -37,6 +37,7 @@ import org.eclipse.ui.ide.IDE;
  */
 public class SourcesFileCreateHyperlink implements IHyperlink {
 
+	private static final String EDITOR_ID = "org.eclipse.ui.DefaultTextEditor"; //$NON-NLS-1$
 	String fileName;
 	IFile original;
 	IRegion region;
@@ -113,7 +114,7 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 					.getActiveWorkbenchWindow().getActivePage();
 			try {
 				if (resourceToOpen.getType() == IResource.FILE) {
-					IDE.openEditor(page, (IFile) resourceToOpen);
+					IDE.openEditor(page, (IFile) resourceToOpen, EDITOR_ID);
 				}
 			} catch (PartInitException e) {
 				SpecfileLog.logError(e);
