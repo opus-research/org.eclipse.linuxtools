@@ -13,8 +13,6 @@ package org.eclipse.linuxtools.tmf.core.interval;
 
 import java.util.Comparator;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 /**
  * Comparator for ITmfStateInterval, using their *end times*. Making intervals
  * Comparable wouldn't be clear if it's using their start or end times (or maybe
@@ -26,11 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 public class TmfIntervalEndComparator implements Comparator<ITmfStateInterval> {
 
     @Override
-    public int compare(@Nullable ITmfStateInterval o1, @Nullable ITmfStateInterval o2) {
-        if (o1 == null || o2 == null) {
-            throw new IllegalArgumentException();
-        }
-
+    public int compare(ITmfStateInterval o1, ITmfStateInterval o2) {
         long e1 = o1.getEndTime();
         long e2 = o2.getEndTime();
 

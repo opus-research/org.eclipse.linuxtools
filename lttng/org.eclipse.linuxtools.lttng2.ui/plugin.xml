@@ -182,13 +182,6 @@
             name="%commands.control.calibrate">
       </command>
 
-      <command
-            categoryId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.category"
-            description="%commands.control.snapshot.description"
-            id="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.snapshot"
-            name="%commands.control.snapshot">
-      </command>
-
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -249,16 +242,6 @@
          </command>
          <separator
                name="org.eclipse.linuxtools.internal.lttng2.ui.views.control.toolbar.separator2"
-               visible="true">
-         </separator>
-         <command
-               commandId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.snapshot"
-               icon="icons/elcl16/snapshot.gif"
-               label="%commands.control.snapshot"
-               style="push">
-         </command>
-         <separator
-               name="org.eclipse.linuxtools.internal.lttng2.ui.views.control.toolbar.separator3"
                visible="true">
          </separator>
          <command
@@ -727,28 +710,20 @@
                <with
                      variable="activeMenuSelection">
                   <and>
+                     <iterate
+                           operator="or">
+                        <instanceof
+                              value="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceEventComponent">
+                        </instanceof>
+                     </iterate>
                      <count
                            value="1">
                      </count>
-                     <iterate
-                           ifEmpty="false"
-                           operator="and">
-                        <and>
-                           <or>
-                              <instanceof
-                                    value="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceEventComponent">
-                              </instanceof>
-                           </or>
-                           <test
-                                 forcePluginActivation="true"
-                                 property="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.isAddContextOnEventSupported">
-                           </test>
-                        </and>
-                     </iterate>
                   </and>
                </with>
             </visibleWhen>
          </command>
+
          <command
                commandId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.calibrate"
                icon="icons/elcl16/calibrate.gif"
@@ -763,30 +738,6 @@
                            operator="or">
                         <instanceof
                               value="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent">
-                        </instanceof>
-                     </iterate>
-                     <count
-                           value="1">
-                     </count>
-                  </and>
-               </with>
-            </visibleWhen>
-         </command>
-
-         <command
-               commandId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.snapshot"
-               icon="icons/elcl16/snapshot.gif"
-               label="%commands.control.snapshot"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="activeMenuSelection">
-                  <and>
-                     <iterate
-                           operator="or">
-                        <instanceof
-                              value="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent">
                         </instanceof>
                      </iterate>
                      <count
@@ -1018,23 +969,6 @@
       </handler>
 
       <handler
-            class="org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.SnaphshotHandler"
-            commandId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.snapshot">
-         <activeWhen>
-            <with
-                  variable="selection">
-               <iterate
-                     operator="or">
-                  <instanceof
-                        value="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent">
-                  </instanceof>
-               </iterate>
-            </with>
-         </activeWhen>
-      </handler>
-
-
-      <handler
             class="org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.AssignEventHandler"
             commandId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.assign.event">
          <activeWhen>
@@ -1222,16 +1156,6 @@
       <initializer
             class="org.eclipse.linuxtools.internal.lttng2.ui.views.control.preferences.ControlPreferenceInitializer">
       </initializer>
-   </extension>
-   <extension
-         point="org.eclipse.core.expressions.propertyTesters">
-      <propertyTester
-            class="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlPropertyTester"
-            id="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.propertyTester"
-            namespace="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model"
-            properties="isAddContextOnEventSupported"
-            type="org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent">
-      </propertyTester>
    </extension>
    
    

@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytre
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -363,11 +362,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * intervals when we close down a node.
      */
     @Override
-    public int compareTo(@Nullable HTInterval other) {
-        if (other == null) {
-            throw new IllegalArgumentException();
-        }
-
+    public int compareTo(HTInterval other) {
         if (this.end < other.end) {
             return -1;
         } else if (this.end > other.end) {
@@ -378,7 +373,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     }
 
     @Override
-    public boolean equals(@Nullable Object other) {
+    public boolean equals(Object other) {
         if (other instanceof HTInterval &&
                 this.compareTo((HTInterval) other) == 0) {
             return true;
@@ -392,7 +387,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     }
 
     @Override
-    public @Nullable String toString() {
+    public String toString() {
         /* Only for debug, should not be externalized */
         StringBuilder sb = new StringBuilder();
         sb.append('[');

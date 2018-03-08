@@ -18,7 +18,6 @@ import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceSessionState;
 
 /**
@@ -50,11 +49,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
      * Flag to indicate whether trace is streamed over network or not.
      */
     private boolean fIsStreamedTrace = false;
-    /**
-     * Flag to indicate whether the session is a snapshot session or not.
-     */
-    private ISnapshotInfo fSnapshotInfo = null;
-
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -76,7 +70,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         fState = other.fState;
         fSessionPath = other.fSessionPath;
         fIsStreamedTrace = other.fIsStreamedTrace;
-        fSnapshotInfo = other.fSnapshotInfo;
 
         for (Iterator<IDomainInfo> iterator = other.fDomains.iterator(); iterator.hasNext();) {
             IDomainInfo domain = iterator.next();
@@ -113,9 +106,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
 
     @Override
     public String getSessionPath() {
-        if(isSnapshotSession()) {
-            return fSnapshotInfo.getSnapshotPath();
-        }
         return fSessionPath;
     }
 
@@ -140,30 +130,12 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
 
     @Override
     public boolean isStreamedTrace() {
-        if (isSnapshotSession()) {
-            return fSnapshotInfo.isStreamedSnapshot();
-        }
         return fIsStreamedTrace;
     }
 
     @Override
     public void setStreamedTrace(boolean isStreamedTrace) {
         fIsStreamedTrace = isStreamedTrace;
-    }
-
-    @Override
-    public boolean isSnapshotSession() {
-        return fSnapshotInfo != null;
-    }
-
-    @Override
-    public ISnapshotInfo getSnapshotInfo() {
-        return fSnapshotInfo;
-    }
-
-    @Override
-    public void setSnapshotInfo(ISnapshotInfo info) {
-        fSnapshotInfo = info;
     }
 
     // ------------------------------------------------------------------------
@@ -175,6 +147,47 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         fDomains.add(domainInfo);
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + fDomains.hashCode();
+        result = prime * result + (fIsStreamedTrace ? 1231 : 1237);
+        result = prime * result + ((fSessionPath == null) ? 0 : fSessionPath.hashCode());
+        result = prime * result + ((fState == null) ? 0 : fState.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        SessionInfo other = (SessionInfo) obj;
+        if (!fDomains.equals(other.fDomains)) {
+            return false;
+        }
+        if (fIsStreamedTrace != other.fIsStreamedTrace) {
+            return false;
+        }
+        if (fSessionPath == null) {
+            if (other.fSessionPath != null) {
+                return false;
+            }
+        } else if (!fSessionPath.equals(other.fSessionPath)) {
+            return false;
+        }
+        if (fState != other.fState) {
+            return false;
+        }
+        return true;
+    }
 
     @SuppressWarnings("nls")
     @Override
@@ -182,16 +195,10 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         StringBuffer output = new StringBuffer();
             output.append("[SessionInfo(");
             output.append(super.toString());
-            output.append(",Path=");
-            output.append(getSessionPath());
             output.append(",State=");
             output.append(fState);
             output.append(",isStreamedTrace=");
             output.append(fIsStreamedTrace);
-            if (fSnapshotInfo != null) {
-                output.append(",snapshotInfo=");
-                output.append(fSnapshotInfo.toString());
-            }
             output.append(",Domains=");
             for (Iterator<IDomainInfo> iterator = fDomains.iterator(); iterator.hasNext();) {
                 IDomainInfo domain = iterator.next();
