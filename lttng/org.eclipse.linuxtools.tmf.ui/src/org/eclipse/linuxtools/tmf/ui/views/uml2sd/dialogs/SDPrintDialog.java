@@ -1,13 +1,15 @@
-/**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
- * All rights reserved.   This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+/********************************************************************** 
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *  
+ * All rights reserved.   This program and the accompanying materials 
+ * are made available under the terms of the Eclipse Public License v1.0 
+ * which accompanies this distribution, and is available at 
+ * http://www.eclipse.org/legal/epl-v10.html         
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF 
  **********************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
@@ -28,7 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * This class implements a dialog box for collecting printing information.
- *
+ * 
  * @version 1.0
  * @author sveyrier
  */
@@ -63,7 +65,7 @@ public class SDPrintDialog extends Dialog {
     // ------------------------------------------------------------------------
     /**
      * Standard constructor
-     *
+     * 
      * @param shell Shell reference
      * @param viewer Sequence diagram widget reference
      */
@@ -97,7 +99,7 @@ public class SDPrintDialog extends Dialog {
 
         return parent;
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.eclipse.jface.dialogs.Dialog#okPressed()
@@ -105,9 +107,8 @@ public class SDPrintDialog extends Dialog {
     @Override
     protected void okPressed() {
 
-        if (fDialogUI.okPressed()) {
+        if (fDialogUI.okPressed())
             super.okPressed();
-        }
     }
 
     /*
@@ -151,7 +152,7 @@ public class SDPrintDialog extends Dialog {
 
     /**
      * Sets the error message.
-     *
+     * 
      * @param message error message to set
      */
     public void setErrorMessage(String message) {
