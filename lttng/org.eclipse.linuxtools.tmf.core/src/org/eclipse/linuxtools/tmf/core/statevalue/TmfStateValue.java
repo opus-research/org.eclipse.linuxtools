@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 
 /**
@@ -23,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * example, we can save numerical values as integers instead of arrays of
  * 1-digit characters.
  *
- * For now the two available types are either int or String.
+ * The available types are Int, Long, Double and String.
  *
  * @version 1.0
  * @author Alexandre Montplaisir
@@ -44,7 +43,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
     protected abstract Object getValue();
 
     @Override
-    public boolean equals(@Nullable Object other) {
+    public boolean equals(Object other) {
         if (this == other) {
             return true;
         }
@@ -126,13 +125,27 @@ public abstract class TmfStateValue implements ITmfStateValue {
     }
 
     /**
+     * Factory constructor for Double state values
+     *
+     * @param value
+     *            The double value to contain
+     * @return The newly-created TmfStateValue object
+     */
+    public static TmfStateValue newValueDouble(double value) {
+        if (value == Double.NaN) {
+            return nullValue();
+        }
+        return new DoubleStateValue(value);
+    }
+
+    /**
      * Factory constructor for String state values
      *
      * @param strValue
      *            The string value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueString(@Nullable String strValue) {
+    public static TmfStateValue newValueString(String strValue) {
         if (strValue == null) {
             return nullValue();
         }
@@ -146,7 +159,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
 
     private String unboxErrMsg(String targetType) {
         return "Type " + getClass().getSimpleName() + //$NON-NLS-1$
-                "cannot be unboxed into a " + targetType + " value."; //$NON-NLS-1$ //$NON-NLS-2$
+                " cannot be unboxed into a " + targetType + " value."; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -157,6 +170,11 @@ public abstract class TmfStateValue implements ITmfStateValue {
     @Override
     public long unboxLong() throws StateValueTypeException {
         throw new StateValueTypeException(unboxErrMsg("Long")); //$NON-NLS-1$
+    }
+
+    @Override
+    public double unboxDouble() throws StateValueTypeException {
+        throw new StateValueTypeException(unboxErrMsg("Double")); //$NON-NLS-1$
     }
 
     @Override
