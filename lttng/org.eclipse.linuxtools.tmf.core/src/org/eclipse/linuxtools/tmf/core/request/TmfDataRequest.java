@@ -242,14 +242,6 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
         }
     }
 
-    /**
-     * Copy constructor
-     */
-    @SuppressWarnings("unused")
-    private TmfDataRequest(TmfDataRequest other) {
-        this(null, 0, ALL_DATA, DEFAULT_BLOCK_SIZE);
-    }
-
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
@@ -544,7 +536,12 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        return "[TmfDataRequest(" + fRequestId + "," + fDataType.getSimpleName() + "," + fIndex + "," + fNbRequested
-                + "," + getBlockSize() + ")]";
+        String name = getClass().getName();
+        int dot = name.lastIndexOf('.');
+        if (dot >= 0) {
+            name = name.substring(dot + 1);
+        }
+        return "[" + name + "(" + fRequestId + "," + fDataType.getSimpleName()+ "," + getExecType()
+                + "," + fIndex + "," + fNbRequested + "," + getBlockSize() + ")]";
     }
 }

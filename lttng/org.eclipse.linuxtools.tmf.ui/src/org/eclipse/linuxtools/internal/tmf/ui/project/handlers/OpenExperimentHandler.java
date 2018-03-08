@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Geneviève Bastien - Experiment instantiates with an experiment type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -32,8 +31,8 @@ import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IReusableEditor;
@@ -112,19 +111,12 @@ public class OpenExperimentHandler extends AbstractHandler {
             @Override
             public void run() {
 
-                /* Experiment element now has an experiment type associated with it */
-                final TmfExperiment experiment = experimentElement.instantiateTrace();
-                if (experiment == null) {
-                    displayErrorMsg(Messages.OpenTraceHandler_NoTraceType);
-                    return;
-                }
-
                 final IFile file;
                 try {
                     file = experimentElement.createBookmarksFile();
                 } catch (final CoreException e) {
                     Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$
-                    displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
+                    TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
                     return;
                 }
 
@@ -149,7 +141,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                     final ITmfTrace trace = element.instantiateTrace();
                     final ITmfEvent traceEvent = element.instantiateEvent();
                     if ((trace == null) || (traceEvent == null)) {
-                        displayErrorMsg(Messages.OpenExperimentHandler_NoTraceType);
+                        TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenExperimentHandler_NoTraceType);
                         for (int j = 0; j < i; j++) {
                             traces[j].dispose();
                         }
@@ -161,7 +153,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                     try {
                         trace.initTrace(element.getResource(), element.getLocation().getPath(), traceEvent.getClass());
                     } catch (final TmfTraceException e) {
-                        displayErrorMsg(Messages.OpenTraceHandler_InitError + "\n\n" + e); //$NON-NLS-1$
+                        TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenTraceHandler_InitError + '\n'+'\n' + e);
                         for (int j = 0; j < i; j++) {
                             traces[j].dispose();
                         }
@@ -181,7 +173,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                 }
 
                 // Create the experiment
-                experiment.initExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
                 experiment.setBookmarksFile(file);
 
                 final String editorId = commonEditorId;
@@ -204,7 +196,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                             // editor should dispose the experiment on close
                         } catch (final CoreException e) {
                             Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$
-                            displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
+                            TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
                             experiment.dispose();
                             return;
                         }
@@ -218,15 +210,4 @@ public class OpenExperimentHandler extends AbstractHandler {
         return null;
     }
 
-    private static void displayErrorMsg(final String errorMsg) {
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-                mb.setText(Messages.OpenExperimentHandler_Title);
-                mb.setMessage(errorMsg);
-                mb.open();
-            }
-        });
-    }
 }
