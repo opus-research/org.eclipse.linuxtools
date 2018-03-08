@@ -60,6 +60,7 @@ final public class Messages extends NLS {
     public static String TraceControl_DestroyConfirmationMessage;
 
     public static String TraceControl_ImportJob;
+    public static String TraceControl_DownloadTask;
     public static String TraceControl_ImportFailure;
 
     public static String TraceControl_ChangeSessionStateJob;
@@ -215,8 +216,6 @@ final public class Messages extends NLS {
     public static String TraceControl_ImportDialogNoProjectSelectedError;
     public static String TraceControl_ImportDialogInvalidTracingProject;
     public static String TraceControl_ImportDialogNoTraceSelectedError;
-    public static String TraceControl_ImportDialog_SelectAll;
-    public static String TraceControl_ImportDialog_DeselectAll;
 
     public static String TraceControl_ImportDialogConfirmationTitle;
     public static String TraceControl_ImportDialogConfirmationOverwriteLabel;
