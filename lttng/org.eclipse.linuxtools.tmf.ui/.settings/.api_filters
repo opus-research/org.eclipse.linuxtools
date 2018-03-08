@@ -8,20 +8,4 @@
             </message_arguments>
         </filter>
     </resource>
-    <resource path="src/org/eclipse/linuxtools/tmf/ui/project/wizards/importtrace/CElement.java" type="org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.CElement">
-        <filter id="574619656">
-            <message_arguments>
-                <message_argument value="IConfigurationElement"/>
-                <message_argument value="CElement"/>
-            </message_arguments>
-        </filter>
-    </resource>
-    <resource path="src/org/eclipse/linuxtools/tmf/ui/project/wizards/importtrace/ImportUtils.java" type="org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportUtils$CElement">
-        <filter id="574619656">
-            <message_arguments>
-                <message_argument value="IConfigurationElement"/>
-                <message_argument value="CElement"/>
-            </message_arguments>
-        </filter>
-    </resource>
 </component>
