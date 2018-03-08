@@ -17,6 +17,7 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -148,8 +149,9 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param path the trace path
      *
      * @return true if trace is valid
+     * @since 2.0
      */
-    public boolean validate(IProject project, String path);
+    public IStatus validate(IProject project, String path);
 
     // ------------------------------------------------------------------------
     // Basic getters
