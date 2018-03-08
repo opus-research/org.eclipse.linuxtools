@@ -102,7 +102,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     private final Color fHistoBarColor = new Color(Display.getDefault(), 74, 112, 139);
     private final Color fLostEventColor = new Color(Display.getCurrent(), 208, 62, 120);
     private final Color fFillColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-    private final Color fTimeRangeColor = new Color(Display.getCurrent(), 255, 128, 0);
 
     // Drag states
     /**
@@ -120,11 +119,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      * @since 2.2
      */
     protected final int DRAG_RANGE = 2;
-    /**
-     * Drag the zoom range
-     * @since 2.2
-     */
-    protected final int DRAG_ZOOM = 3;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -179,7 +173,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      * @see #DRAG_NONE
      * @see #DRAG_SELECTION
      * @see #DRAG_RANGE
-     * @see #DRAG_ZOOM
      * @since 2.2
      */
     protected int fDragState = DRAG_NONE;
@@ -231,7 +224,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
         fHistoBarColor.dispose();
         fLastEventColor.dispose();
-        fTimeRangeColor.dispose();
         fDataModel.removeHistogramListener(this);
     }
 
@@ -745,51 +737,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         imageGC.fillRectangle(index, 3 * dash, 1, height - 3 * dash);
     }
 
-    /**
-     * Draw a time range window
-     *
-     * @param imageGC
-     *            the GC
-     * @param rangeStartTime
-     *            the range start time
-     * @param rangeDuration
-     *            the range duration
-     * @since 2.2
-     */
-    protected void drawTimeRangeWindow(GC imageGC, long rangeStartTime, long rangeDuration) {
-
-        // Map times to histogram coordinates
-        long bucketSpan = Math.max(fScaledData.fBucketDuration, 1);
-        long startTime = Math.min(rangeStartTime, rangeStartTime + rangeDuration);
-        int rangeWidth = (int) (Math.abs(rangeDuration) / bucketSpan);
-
-        int left = (int) ((startTime - fDataModel.getFirstBucketTime()) / bucketSpan);
-        int right = left + rangeWidth;
-        int center = (left + right) / 2;
-        int height = fCanvas.getSize().y;
-
-        // Draw the selection window
-        imageGC.setForeground(fTimeRangeColor);
-        imageGC.setLineWidth(1);
-        imageGC.setLineStyle(SWT.LINE_SOLID);
-        imageGC.drawRoundRectangle(left, 0, rangeWidth, height - 1, 15, 15);
-
-        // Fill the selection window
-        imageGC.setBackground(fTimeRangeColor);
-        imageGC.setAlpha(35);
-        imageGC.fillRoundRectangle(left + 1, 1, rangeWidth - 1, height - 2, 15, 15);
-        imageGC.setAlpha(255);
-
-        // Draw the cross hair
-        imageGC.setForeground(fTimeRangeColor);
-        imageGC.setLineWidth(1);
-        imageGC.setLineStyle(SWT.LINE_SOLID);
-
-        int chHalfWidth = ((rangeWidth < 60) ? (rangeWidth * 2) / 3 : 40) / 2;
-        imageGC.drawLine(center - chHalfWidth, height / 2, center + chHalfWidth, height / 2);
-        imageGC.drawLine(center, (height / 2) - chHalfWidth, center, (height / 2) + chHalfWidth);
-    }
-
     // ------------------------------------------------------------------------
     // KeyListener
     // ------------------------------------------------------------------------
@@ -872,12 +819,15 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
     @Override
     public void mouseHover(final MouseEvent event) {
-        if (fDataModel.getNbEvents() > 0 && fScaledData != null && fScaledData.fLastBucket >= event.x) {
-            final String tooltip = formatToolTipLabel(event.x);
-            fCanvas.setToolTipText(tooltip);
-        } else {
-            fCanvas.setToolTipText(null);
+        if (fDataModel.getNbEvents() > 0 && fScaledData != null) {
+            int delimiterIndex = (int) ((fDataModel.getEndTime() - fScaledData.getFirstBucketTime()) / fScaledData.fBucketDuration) + 1;
+            if (event.x < delimiterIndex) {
+                final String tooltip = formatToolTipLabel(event.x - fOffset);
+                fCanvas.setToolTipText(tooltip);
+                return;
+            }
         }
+        fCanvas.setToolTipText(null);
     }
 
     private String formatToolTipLabel(final int index) {
