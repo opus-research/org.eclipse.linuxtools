@@ -81,7 +81,7 @@
 
   <profiles>
     <profile>
-     <id>build-server</id>
+     <id>build-server-signers</id>
      <build>
        <plugins>
          <plugin>
