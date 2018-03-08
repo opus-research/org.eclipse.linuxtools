@@ -60,7 +60,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 
 				// create the tab item, and load the specified tab inside
 				for (ILaunchConfigurationTab tab : tabs) {
-					tab.setLaunchConfigurationDialog(getLaunchConfigurationDialog());
 					CTabItem item = new CTabItem(tabgroup, SWT.NONE);
 					item.setText(tab.getName());
 					item.setImage(tab.getImage());
