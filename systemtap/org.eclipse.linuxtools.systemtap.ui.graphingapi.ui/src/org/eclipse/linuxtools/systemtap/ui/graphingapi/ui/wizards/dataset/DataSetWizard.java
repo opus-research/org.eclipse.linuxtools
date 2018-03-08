@@ -142,9 +142,9 @@ public class DataSetWizard extends Wizard implements INewWizard {
 
 	protected boolean saveColumns(IMemento target, String[] columns) {
 		IMemento child;
-		for(String column: columns) {
+		for(int i=0; i<columns.length; i++) {
 			child = target.createChild(IDataSetParser.XMLColumn);
-			child.putString(IDataSetParser.XMLname, column);
+			child.putString(IDataSetParser.XMLname, columns[i]);
 		}
 		return true;
 	}
