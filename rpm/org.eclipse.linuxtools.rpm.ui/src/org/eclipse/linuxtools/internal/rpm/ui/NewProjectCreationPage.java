@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Red Hat, Inc.
+ * Copyright (c) 2011, 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.rpm.ui;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -112,7 +111,7 @@ public class NewProjectCreationPage extends WizardNewProjectCreationPage {
 	 */
 	public void setWorkingSets(IWorkingSet[] workingSets) {
 		if (workingSets == null) {
-			throw new IllegalArgumentException();
+			workingSetGroup.setWorkingSets(EMPTY_WORKING_SET_ARRAY);
 		}
 		workingSetGroup.setWorkingSets(workingSets);
 	}
@@ -129,8 +128,7 @@ public class NewProjectCreationPage extends WizardNewProjectCreationPage {
 		if (treeSelection.isEmpty())
 			return EMPTY_WORKING_SET_ARRAY;
 
-		@SuppressWarnings("unchecked")
-		List<Object> elements= treeSelection.toList();
+		List<?> elements= treeSelection.toList();
 		if (elements.size() == 1) {
 			Object element = elements.get(0);
 			TreePath[] paths = treeSelection.getPathsFor(element);
@@ -149,14 +147,13 @@ public class NewProjectCreationPage extends WizardNewProjectCreationPage {
 		}
 
 		ArrayList<IWorkingSet> result = new ArrayList<IWorkingSet>();
-		for (Iterator<Object> iterator = elements.iterator(); iterator.hasNext();) {
-			Object element = iterator.next();
+		for (Object element : elements) {
 			if (element instanceof IWorkingSet && !((IWorkingSet) element).isAggregateWorkingSet()) {
 				result.add((IWorkingSet)element);
 			}
 		}
 
-		if (result.size() > 0) {
+		if (!result.isEmpty()) {
 			return result.toArray(new IWorkingSet[result.size()]);
 		} else {
 			return EMPTY_WORKING_SET_ARRAY;
