@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -24,11 +24,13 @@ import org.eclipse.zest.core.widgets.GraphNode;
 public class StapGraphMouseListener implements MouseListener {
 	private StapGraph graph;
 	private StapGraphMouseMoveListener listener;
+	private StapGraphFocusListener focus;
 	private StapGraphMouseExitListener exitListener;
 
 	public StapGraphMouseListener(StapGraph g) {
 		this.graph = g;
 		listener = new StapGraphMouseMoveListener(graph);
+		focus = new StapGraphFocusListener(listener);
 		exitListener = new StapGraphMouseExitListener(listener);
 	}
 
@@ -38,13 +40,12 @@ public class StapGraphMouseListener implements MouseListener {
 			controlDoubleClick();
 			return;
 		}
-
+		
 		if (graph.getDrawMode() == StapGraph.CONSTANT_DRAWMODE_RADIAL) {
 			StapNode node = getNodeFromSelection();
-			if (node == null) {
+			if (node == null)
 				return;
-			}
-
+			
 			graph.getTreeViewer().collapseToLevel(node.getData(), 0);
 			graph.getTreeViewer().expandToLevel(node.getData(), 0);
 			graph.getTreeViewer().setSelection(new StructuredSelection(node.getData()));
@@ -70,7 +71,7 @@ public class StapGraphMouseListener implements MouseListener {
 			if (node == null) {
 				return;
 			}
-
+			
 			unhighlightall(node);
 			graph.setSelection(null);
 
@@ -157,7 +158,7 @@ public class StapGraphMouseListener implements MouseListener {
 		if (callees == null) {
 			return;
 		}
-
+		
 		for (int subID : callees) {
 			if (graph.getNode(subID) != null) {
 				graph.getNode(subID).unhighlight();
@@ -169,8 +170,8 @@ public class StapGraphMouseListener implements MouseListener {
 		}
 		n.unhighlight();
 	}
-
-
+	
+	
 	private StapNode getNodeFromSelection() {
 		List<GraphNode> stapNodeList = graph.getSelection();
 		if (stapNodeList.isEmpty() || stapNodeList.size() != 1) {
@@ -187,7 +188,7 @@ public class StapGraphMouseListener implements MouseListener {
 		}
 		return node;
 	}
-
+	
 	private GraphNode getAggregateNodeFromSelection() {
 		List<GraphNode> graphNodeList = graph.getSelection();
 		if (graphNodeList.isEmpty() || graphNodeList.size() != 1) {
@@ -204,21 +205,21 @@ public class StapGraphMouseListener implements MouseListener {
 		}
 		return node;
 	}
-
+	
 	public void controlDoubleClick() {
 		if (graph.getDrawMode() == StapGraph.CONSTANT_DRAWMODE_AGGREGATE) {
 			GraphNode node = getAggregateNodeFromSelection();
-
+			
 			if (node == null) {
 				return;
 			}
-
+			
 			String functionName = (String) node.getData("AGGREGATE_NAME"); //$NON-NLS-1$
 			FileFinderOpener.findAndOpen(graph.getProject(), functionName);
 			node.unhighlight();
 		} else {
 			StapNode node = getNodeFromSelection();
-
+			
 			if (node == null) {
 				return;
 			}
@@ -235,15 +236,15 @@ public class StapGraphMouseListener implements MouseListener {
 
 		graph.setSelection(null);
 	}
-
+	
 	public void mouseDownEvent(int x, int y) {
 		List<?> list = graph.getSelection();
-		if (list.size() < 1) {
+		if (list.size() < 1) {		
 			listener.setPoint(x, y);
 			listener.setStop(false);
 			graph.addMouseMoveListener(listener);
 			graph.addListener(SWT.MouseExit, exitListener);
 		}
 	}
-
+	
 }

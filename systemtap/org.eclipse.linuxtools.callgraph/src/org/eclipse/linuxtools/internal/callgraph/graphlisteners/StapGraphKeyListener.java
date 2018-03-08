@@ -34,15 +34,15 @@ public class StapGraphKeyListener extends KeyAdapter {
 		
 		//TODO: Use accelerator in menu actions instead of this hard-coded stuff
 		if (e.character == 'R') {
-			callgraphView.getViewRefresh().run();
+			callgraphView.getView_refresh().run();
 		}else if (e.character == 'C') {
-			callgraphView.getModeCollapsednodes().run();
+			callgraphView.getMode_collapsednodes().run();
 		} else if (e.character == 'N') {
-			callgraphView.getGotoNext().run();
+			callgraphView.getGoto_next().run();
 		} else if (e.character == 'P') {
-			callgraphView.getGotoPrevious().run();
+			callgraphView.getGoto_previous().run();
 		} else if (e.character == 'L') {
-			callgraphView.getGotoLast().run();
+			callgraphView.getGoto_last().run();
 		} else if (e.character == 'D') {
 			callgraphView.getPlay().run();
 		}

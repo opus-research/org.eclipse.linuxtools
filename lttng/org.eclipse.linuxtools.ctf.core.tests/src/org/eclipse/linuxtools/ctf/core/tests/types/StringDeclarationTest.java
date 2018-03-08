@@ -18,6 +18,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,11 +34,29 @@ public class StringDeclarationTest {
     private StringDeclaration fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(StringDeclarationTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new StringDeclaration(Encoding.ASCII);
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -48,7 +67,7 @@ public class StringDeclarationTest {
         StringDeclaration result = new StringDeclaration();
 
         assertNotNull(result);
-        String string = "[declaration] string[";
+        String string = "[declaration] string["; //$NON-NLS-1$
         assertEquals(string, result.toString().substring(0, string.length()));
     }
 
@@ -61,7 +80,7 @@ public class StringDeclarationTest {
         StringDeclaration result = new StringDeclaration(encoding);
 
         assertNotNull(result);
-        String string = "[declaration] string[";
+        String string = "[declaration] string["; //$NON-NLS-1$
         assertEquals(string, result.toString().substring(0, string.length()));
     }
 
@@ -72,7 +91,7 @@ public class StringDeclarationTest {
     @Test
     public void testCreateDefinition() {
         IDefinitionScope definitionScope = null;
-        String fieldName = "id";
+        String fieldName = "id"; //$NON-NLS-1$
         StringDefinition result = fixture.createDefinition(definitionScope,
                 fieldName);
 
@@ -87,8 +106,8 @@ public class StringDeclarationTest {
         Encoding result = fixture.getEncoding();
 
         assertNotNull(result);
-        assertEquals("ASCII", result.name());
-        assertEquals("ASCII", result.toString());
+        assertEquals("ASCII", result.name()); //$NON-NLS-1$
+        assertEquals("ASCII", result.toString()); //$NON-NLS-1$
         assertEquals(1, result.ordinal());
     }
 
@@ -107,7 +126,7 @@ public class StringDeclarationTest {
     @Test
     public void testToString() {
         String result = fixture.toString();
-        String left = "[declaration] string[";
+        String left = "[declaration] string["; //$NON-NLS-1$
         String right = result.substring(0, left.length());
 
         assertEquals(left, right);
