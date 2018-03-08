@@ -101,6 +101,20 @@ Invalid values will be assigned the lowest priority to the extension.
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Name of launch provider.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="default" type="boolean" use="required">
+            <annotation>
+               <documentation>
+                  If true, this launch provider is set as default for the given type.
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
