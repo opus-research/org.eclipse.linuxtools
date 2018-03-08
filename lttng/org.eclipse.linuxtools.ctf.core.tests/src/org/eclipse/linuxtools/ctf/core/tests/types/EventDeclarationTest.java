@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,16 +44,6 @@ public class EventDeclarationTest {
     private EventDeclaration fixture;
 
     /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(EventDeclarationTest.class);
-    }
-
-    /**
      * Perform pre-test initialization.
      *
      * @throws CTFReaderException
@@ -67,15 +56,7 @@ public class EventDeclarationTest {
         fixture.setId(1L);
         fixture.setFields(new StructDeclaration(1L));
         fixture.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
-        fixture.setName(""); //$NON-NLS-1$
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
+        fixture.setName("");
     }
 
     /**
@@ -119,7 +100,7 @@ public class EventDeclarationTest {
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
         obj.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
-        obj.setName(""); //$NON-NLS-1$
+        obj.setName("");
 
         assertTrue(fixture.equals(fixture));
         boolean result = fixture.equals(obj);
@@ -196,7 +177,7 @@ public class EventDeclarationTest {
         obj.setContext(new StructDeclaration(1L));
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
-        obj.setName(""); //$NON-NLS-1$
+        obj.setName("");
 
         boolean result = fixture.equals(obj);
         assertFalse(result);
@@ -349,9 +330,9 @@ public class EventDeclarationTest {
         assertNotNull(ed.getCPU());
         assertNotNull(ed.getPacketContext());
         assertNotNull(ed.getStreamInputReader());
-        assertNull(ed.lookupDefinition("context")); //$NON-NLS-1$
-        assertNotNull(ed.lookupDefinition("fields")); //$NON-NLS-1$
-        assertNull(ed.lookupDefinition("other")); //$NON-NLS-1$
+        assertNull(ed.lookupDefinition("context"));
+        assertNotNull(ed.lookupDefinition("fields"));
+        assertNull(ed.lookupDefinition("other"));
         assertNotNull(ed.toString());
         ed.setContext( ed.getFields());
         assertNotNull(ed.toString());
