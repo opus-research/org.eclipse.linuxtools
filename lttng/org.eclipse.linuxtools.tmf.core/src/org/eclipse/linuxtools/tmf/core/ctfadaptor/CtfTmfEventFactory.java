@@ -36,7 +36,6 @@ public final class CtfTmfEventFactory {
 
     /**
      * Don't let anyone instantiate this class.
-     * @since 3.0
      */
     private CtfTmfEventFactory() {}
 
