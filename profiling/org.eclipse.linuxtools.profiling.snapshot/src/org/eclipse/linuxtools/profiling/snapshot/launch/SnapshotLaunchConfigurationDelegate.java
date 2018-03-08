@@ -10,28 +10,23 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot.launch;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.profiling.snapshot.SnapshotProviderPlugin;
 
+/**
+ * The launch configuration delegate for this plug-in.
+ * 
+ */
 public class SnapshotLaunchConfigurationDelegate extends
-		ProfileLaunchConfigurationDelegate {
+		ProviderLaunchConfigurationDelegate {
 
 	@Override
 	protected String getPluginID() {
-		return "org.eclipse.linuxtools.profiling.snapshot";
+		return SnapshotProviderPlugin.PLUGIN_ID;
 	}
 
 	@Override
-	public void launch(ILaunchConfiguration arg0, String arg1, ILaunch arg2,
-			IProgressMonitor arg3) {
-		return;
+	public String getProfilingType() {
+		return SnapshotProviderPlugin.PROFILING_TYPE;
 	}
-
-	@Override
-	public String generateCommand(ILaunchConfiguration config) {
-		return null;
-	}
-
 }
