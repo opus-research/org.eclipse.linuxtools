@@ -39,12 +39,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 			{ PROBE_KEYWORD, Messages.STPCompletionProcessor_probe },
 			{ FUNCTION_KEYWORD, Messages.STPCompletionProcessor_function } };
 
-	private STPMetadataSingleton stpMetadataSingleton;
-
-	public STPCompletionProcessor(){
-		this.stpMetadataSingleton = STPMetadataSingleton.getInstance(); 
-	}
-
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
 	 */
@@ -88,7 +82,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	}
 
 	private ICompletionProposal[] getProbeCompletionList(String prefix, int offset){
-		String[] completionData = stpMetadataSingleton.getCompletionResults(prefix);
+		String[] completionData = STPMetadataSingleton.getCompletionResults(prefix);
 		return buildCompletionList(offset, prefix.length(), completionData);
 	}
 
