@@ -18,7 +18,6 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF structure definition (similar to a C structure).
@@ -91,7 +90,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         alignRead(input, this.declaration);
         final List<String> fieldList = declaration.getFieldsList();
         for (String fName : fieldList) {

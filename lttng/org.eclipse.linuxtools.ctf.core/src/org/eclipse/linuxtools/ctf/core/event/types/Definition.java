@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF definition
@@ -124,12 +123,9 @@ public abstract class Definition {
      *
      * @param input
      *            the bitbuffer containing the data to read.
-     * @throws CTFReaderException
-     *             An error occurred reading the data. If the buffer is reading
-     *             beyond its end, this exception will be raised.
      * @since 2.0
      */
-    public abstract void read(BitBuffer input) throws CTFReaderException;
+    public abstract void read(BitBuffer input);
 
     /**
      * Offset the buffer position wrt the current alignment.
@@ -150,6 +146,7 @@ public abstract class Definition {
             return;
         }
         pos = (pos + mask) & ~mask;
+
         input.position(pos);
     }
 
