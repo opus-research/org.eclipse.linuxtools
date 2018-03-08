@@ -134,9 +134,6 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_ZoomInActionToolTipText;
     public static String TmfTimeGraphViewer_ZoomOutActionNameText;
     public static String TmfTimeGraphViewer_ZoomOutActionToolTipText;
-    public static String TmfTimeGraphViewer_MouseLeftActionNameText;
-    public static String TmfTimeGraphViewer_MouseLeftActionSelectTooltipText;
-    public static String TmfTimeGraphViewer_MouseLeftActionPanToolTipText;
 
     public static String ColorsView_AddActionToolTipText;
     public static String ColorsView_BackgroundButtonText;

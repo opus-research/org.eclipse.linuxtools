@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -28,7 +27,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.TimeGraphLegend;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider2;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
@@ -61,7 +60,7 @@ import org.eclipse.swt.widgets.Slider;
  * @version 1.0
  * @author Patrick Tasse, and others
  */
-public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
+public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
 
     private static final int DEFAULT_NAME_WIDTH = 200;
     private static final int MIN_NAME_WIDTH = 6;
@@ -76,8 +75,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private long fEndTime;
     private long fTime0;
     private long fTime1;
-    private long fSelect0 = 0;
-    private long fSelect1 = 0;
     private long fTime0Bound;
     private long fTime1Bound;
     private long fTime0ExtSynch = 0;
@@ -111,7 +108,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private Action fPreviousItemAction;
     private Action fZoomInAction;
     private Action fZoomOutAction;
-    private Action fDefaultMouseLeftAction;
 
     /**
      * Standard constructor
@@ -547,22 +543,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         return fTime0Bound;
     }
 
-    /**
-     * @since 2.1
-     */
-    @Override
-    public long getSelectionStart() {
-        return fSelect0;
-    }
-
-    /**
-     * @since 2.1
-     */
-    @Override
-    public long getSelectionEnd() {
-        return fSelect1;
-    }
-
     @Override
     public void setStartFinishTimeNotify(long time0, long time1) {
         setStartFinishTime(time0, time1);
@@ -574,34 +554,8 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         notifyRangeListeners(fTime0, fTime1);
     }
 
-    /**
-     * @since 2.1
-     */
-    @Override
-    public void setSelectionStartFinishTime(long time0, long time1) {
-        fSelect0 = time0;
-        if (fSelect0 < fTime0) {
-            fSelect0 = fTime0;
-        }
-        if (fSelect0 > fTime1) {
-            fSelect0 = fTime1;
-        }
-        fSelect1 = time1;
-        if (fSelect1 < fTime0) {
-            fSelect1 = fTime0;
-        }
-        if (fSelect1 > fTime1) {
-            fSelect1 = fTime1;
-        }
-        if (fSelect1 - fSelect0 < fMinTimeInterval) {
-            fSelect1 = Math.min(fTime1, fSelect0 + fMinTimeInterval);
-        }
-        notifyRangeListeners(time0, time1);
-    }
-
     @Override
     public void setStartFinishTime(long time0, long time1) {
-        fSelect0 = fSelect1 = 0;
         fTime0 = time0;
         if (fTime0 < fTime0Bound) {
             fTime0 = fTime0Bound;
@@ -746,24 +700,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     public void selectPrevItem() {
         fTimeGraphCtrl.selectPrevTrace();
         adjustVerticalScrollBar();
-    }
-
-    /**
-     * Callback for when toggling the default mouse left button
-     * @since 2.1
-     */
-    public void setDefaultMouseLeft() {
-        // If checked, default is select, otherwise pan
-        boolean defaultPan = false;
-        if (fDefaultMouseLeftAction.isChecked()) {
-            defaultPan = false;
-            this.fDefaultMouseLeftAction.setToolTipText(Messages.TmfTimeGraphViewer_MouseLeftActionSelectTooltipText);
-        } else {
-            defaultPan = true;
-            this.fDefaultMouseLeftAction.setToolTipText(Messages.TmfTimeGraphViewer_MouseLeftActionPanToolTipText);
-        }
-        fTimeGraphCtrl.setDefaultMouseLeft(defaultPan);
-
     }
 
     /**
@@ -1399,27 +1335,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
             fPreviousItemAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_PREV_ITEM));
         }
         return fPreviousItemAction;
-    }
-
-    /**
-     * Toggle the default mouse left drag action.
-     *
-     * @return The Action object
-     * @since 2.1
-     */
-    public Action getDefaultMouseLeftAction() {
-        if (fDefaultMouseLeftAction == null) {
-
-            fDefaultMouseLeftAction = new Action(Messages.TmfTimeGraphViewer_MouseLeftActionNameText, IAction.AS_CHECK_BOX) {
-                @Override
-                public void run() {
-                    setDefaultMouseLeft();
-                }
-            };
-            fDefaultMouseLeftAction.setToolTipText(Messages.TmfTimeGraphViewer_MouseLeftActionPanToolTipText);
-            fDefaultMouseLeftAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_SELECT_MENU));
-        }
-        return fDefaultMouseLeftAction;
     }
 
     /**

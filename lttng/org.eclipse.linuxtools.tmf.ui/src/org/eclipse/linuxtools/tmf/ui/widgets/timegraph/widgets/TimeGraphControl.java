@@ -1,6 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson, École Polytechnique
- *     de Montréal
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +10,6 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
- *   Geneviève Bastien - Move code to provide base classes for time graph view
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -28,7 +26,6 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTreeExpansionEvent;
@@ -73,7 +70,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener {
 
 
     /** Max scrollbar size */
@@ -83,7 +80,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     private static final int DRAG_TRACE_ITEM = 1;
     private static final int DRAG_SPLIT_LINE = 2;
     private static final int DRAG_ZOOM = 3;
-    private static final int DRAG_SELECTION = 4;
 
     private static final int CUSTOM_ITEM_HEIGHT = -1; // get item height from provider
 
@@ -102,8 +98,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     private boolean fIsDragCursor = false;
     private boolean fIsWaitCursor = true;
     private boolean fMouseOverSplitLine = false;
-    private boolean fIsSelectingRange = false;
-    private boolean fDefaultMouseLeftPan = true;
     private int fGlobalItemHeight = CUSTOM_ITEM_HEIGHT;
     private int fMinimumItemWidth = 0;
     private int fTopIndex = 0;
@@ -111,8 +105,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     private int fDragX0 = 0;
     private int fDragX = 0;
     private int fIdealNameSpace = 0;
-    private int fSelectStart = 0;
-    private int fSelectEnd = 0;
     private long fTime0bak;
     private long fTime1bak;
     private ITimeGraphPresentationProvider fTimeGraphProvider = null;
@@ -218,10 +210,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      */
     public void setTimeGraphProvider(ITimeGraphPresentationProvider timeGraphProvider) {
         fTimeGraphProvider = timeGraphProvider;
-
-        if (timeGraphProvider instanceof ITimeGraphPresentationProvider2) {
-            ((ITimeGraphPresentationProvider2)timeGraphProvider).setDrawingHelper(this);
-        }
 
         if (fEventColorMap != null) {
             for (Color color : fEventColorMap) {
@@ -918,9 +906,13 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
+     * Return the x coordinate corresponding to a time
+     *
+     * @param time the time
+     * @return the x coordinate corresponding to the time
+     *
      * @since 2.0
      */
-    @Override
     public int getXForTime(long time) {
         if (null == fTimeProvider) {
             return -1;
@@ -935,9 +927,13 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
+     * Return the time corresponding to an x coordinate
+     *
+     * @param coord The X coordinate
+     * @return The time corresponding to the x coordinate
+     *
      * @since 2.0
      */
-    @Override
     public long getTimeAtX(int coord) {
         if (null == fTimeProvider) {
             return -1;
@@ -1117,20 +1113,17 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         gc.setBackground(getColorScheme().getBkColor(false, false, true));
         drawBackground(gc, bounds.x, bounds.y, nameSpace, bounds.height);
 
-        drawItems(bounds, fTimeProvider, fItemData.fExpandedItems, fTopIndex, nameSpace, gc);
-
-        if (fDragState == DRAG_ZOOM || fDragState == DRAG_SELECTION) {
+        if (fDragState == DRAG_ZOOM) {
             // draw selected zoom region background
             gc.setBackground(getColorScheme().getBkColor(false, false, true));
-            int alpha = gc.getAlpha();
-            gc.setAlpha(100);
             if (fDragX0 < fDragX) {
                 gc.fillRectangle(new Rectangle(fDragX0, bounds.y, fDragX - fDragX0, bounds.height));
             } else if (fDragX0 > fDragX) {
                 gc.fillRectangle(new Rectangle(fDragX, bounds.y, fDragX0 - fDragX, bounds.height));
             }
-            gc.setAlpha(alpha);
         }
+
+        drawItems(bounds, fTimeProvider, fItemData.fExpandedItems, fTopIndex, nameSpace, gc);
 
         // draw selected time
         long time0 = fTimeProvider.getTime0();
@@ -1143,28 +1136,11 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             gc.drawLine(x, bounds.y, x, bounds.y + bounds.height);
         }
 
-        // draw selection
-        long select0 = ((ITimeDataProvider2)fTimeProvider).getSelectionStart();
-        long select1 = ((ITimeDataProvider2)fTimeProvider).getSelectionEnd();
-        if ( (select0 != 0) && (select1 != 0) ) {
-            gc.setBackground(getColorScheme().getBkColor(false, false, true));
-            int alpha = gc.getAlpha();
-            int x0 = bounds.x + nameSpace + (int) ((select0 - time0) * pixelsPerNanoSec);
-            int x1 = bounds.x + nameSpace + (int) ((select1 - time0) * pixelsPerNanoSec);
-            gc.setAlpha(100);
-            gc.fillRectangle(new Rectangle(x0, bounds.y, x1 - x0, bounds.height));
-            gc.setAlpha(alpha);
-        }
-
         // draw drag line, no line if name space is 0.
         if (DRAG_SPLIT_LINE == fDragState) {
             gc.setForeground(getColorScheme().getColor(TimeGraphColorScheme.BLACK));
             gc.drawLine(bounds.x + nameSpace, bounds.y, bounds.x + nameSpace, bounds.y + bounds.height - 1);
         } else if (DRAG_ZOOM == fDragState && Math.max(fDragX, fDragX0) > nameSpace && fDragX != fDragX0) {
-            gc.setForeground(getColorScheme().getColor(TimeGraphColorScheme.TOOL_FOREGROUND));
-            gc.drawLine(fDragX0, bounds.y, fDragX0, bounds.y + bounds.height - 1);
-            gc.drawLine(fDragX, bounds.y, fDragX, bounds.y + bounds.height - 1);
-        } else if (DRAG_SELECTION == fDragState && Math.max(fDragX, fDragX0) > nameSpace && fDragX != fDragX0) {
             gc.setForeground(getColorScheme().getColor(TimeGraphColorScheme.TOOL_FOREGROUND));
             gc.drawLine(fDragX0, bounds.y, fDragX0, bounds.y + bounds.height - 1);
             gc.drawLine(fDragX, bounds.y, fDragX, bounds.y + bounds.height - 1);
@@ -1543,8 +1519,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                 }
             }
             idx = -1;
-        } else if (SWT.CTRL == e.keyCode){
-            fIsSelectingRange = fDefaultMouseLeftPan;
         }
         if (idx >= 0) {
             selectItem(idx, false);
@@ -1554,9 +1528,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (SWT.CTRL == e.keyCode){
-            fIsSelectingRange = !fDefaultMouseLeftPan;
-        }
     }
 
     @Override
@@ -1671,9 +1642,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         } else if (DRAG_SPLIT_LINE == fDragState) {
             fDragX = e.x;
             fTimeProvider.setNameSpace(e.x);
-        } else if (DRAG_SELECTION == fDragState) {
-            fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), size.x - RIGHT_MARGIN);
-            redraw();
         } else if (DRAG_ZOOM == fDragState) {
             fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), size.x - RIGHT_MARGIN);
             redraw();
@@ -1716,7 +1684,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             return;
         }
         int idx;
-        // Reinitialise the selection
         if (1 == e.button) {
             int nameSpace = fTimeProvider.getNameSpace();
             if (nameSpace != 0 && isOverSplitLine(e.x)) {
@@ -1738,22 +1705,15 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                     long hitTime = getTimeAtX(e.x);
                     if (hitTime >= 0) {
                         setCapture(true);
-
-                        if (!fIsSelectingRange) {
-                            fDragState = DRAG_TRACE_ITEM;
-                        } else {
-                            fDragState = DRAG_SELECTION;
-                        }
+                        fDragState = DRAG_TRACE_ITEM;
                         fDragX = e.x - nameSpace;
                         fDragX0 = fDragX;
                         fTime0bak = fTimeProvider.getTime0();
                         fTime1bak = fTimeProvider.getTime1();
                     }
                 }
-                if (fDragState != DRAG_SELECTION){
-                    selectItem(idx, false);
-                    fireSelectionChanged();
-                }
+                selectItem(idx, false);
+                fireSelectionChanged();
             } else {
                 selectItem(idx, false); // clear selection
                 redraw();
@@ -1779,35 +1739,18 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             setCapture(false);
             if (e.button == 1 && DRAG_TRACE_ITEM == fDragState) {
                 if (fDragX == fDragX0) { // click without drag
-                    long ltime = getTimeAtX(e.x);
-                    fTimeProvider.setSelectedTimeNotify(ltime, false);
+                    long time = getTimeAtX(e.x);
+                    fTimeProvider.setSelectedTimeNotify(time, false);
                 } else {
                     // Notify time provider to check the need for listener
                     // notification
-                    fSelectStart = fSelectEnd = 0;
                     fTimeProvider.notifyStartFinishTime();
-
                 }
                 fDragState = DRAG_NONE;
             } else if (e.button == 1 && DRAG_SPLIT_LINE == fDragState) {
                 redraw();
                 fDragState = DRAG_NONE;
-            }  else if (e.button == 1 && DRAG_SELECTION == fDragState) {
-                if (fDragX == fDragX0) { // click without selecting anything
-                    long ltime = getTimeAtX(e.x);
-                    fTimeProvider.setSelectedTimeNotify(ltime, false);
-                } else {
-                    long time0 = getTimeAtX(fDragX0);
-                    long time1 = getTimeAtX(fDragX);
-                    if (fDragX0 < fDragX) {
-                        ((ITimeDataProvider2)fTimeProvider).setSelectionStartFinishTime(time0, time1);
-                    } else {
-                        ((ITimeDataProvider2)fTimeProvider).setSelectionStartFinishTime(time1, time0);
-                    }
-                }
-                fDragState = DRAG_NONE;
             } else if (e.button == 3 && DRAG_ZOOM == fDragState) {
-                fSelectStart = fSelectEnd = 0;
                 int nameWidth = fTimeProvider.getNameSpace();
                 if (Math.max(fDragX, fDragX0) > nameWidth && fDragX != fDragX0) {
                     long time0 = getTimeAtX(fDragX0);
@@ -1846,7 +1789,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         if ((fMouseScrollFilterListener == null) || fDragState != DRAG_NONE) {
             return;
         }
-        fSelectStart = fSelectEnd = 0;
         boolean zoomScroll = false;
         Point p = getParent().toControl(getDisplay().getCursorLocation());
         Point parentSize = getParent().getSize();
@@ -1987,18 +1929,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         return fItemData.getFilteredOut();
     }
 
-    /**
-     * Set what is the default behavior when dragging the left mouse button
-     *
-     * @param toggle The default behavior (true = pan, false = select)
-     * @since 2.1
-     */
-    public void setDefaultMouseLeft(boolean toggle) {
-        this.fDefaultMouseLeftPan = toggle;
-        this.fIsSelectingRange = !toggle;
-    }
-
-    // @Override
     @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener) {
         if (listener != null && !fSelectionChangedListeners.contains(listener)) {
