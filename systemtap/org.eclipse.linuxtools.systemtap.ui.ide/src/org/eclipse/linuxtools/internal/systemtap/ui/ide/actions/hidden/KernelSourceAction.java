@@ -68,14 +68,13 @@ public class KernelSourceAction extends Action implements ISelectionListener, ID
 				.getString("KernelSourceAction.InsertSelectedFunction")); //$NON-NLS-1$
 		window.getSelectionService().addSelectionListener(this);
 		viewer = browser;
-		expandAction = new TreeExpandCollapseAction(viewer);
+		expandAction = new TreeExpandCollapseAction(KernelBrowserView.class);
 	}
 
 	/**
 	 * Updates <code>selection</code> with the current selection whenever the user changes
 	 * the current selection.
 	 */
-	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection incoming) {
 		if (incoming instanceof IStructuredSelection) {
 			selection = (IStructuredSelection) incoming;
@@ -145,7 +144,6 @@ public class KernelSourceAction extends Action implements ISelectionListener, ID
 		}
 	}
 
-	@Override
 	public void doubleClick(DoubleClickEvent event) {
 		run();
 	}

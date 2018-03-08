@@ -2,9 +2,6 @@ package org.eclipse.linuxtools.systemtap.ui.ide.structures;
 
 import org.eclipse.osgi.util.NLS;
 
-/**
- * @since 2.0
- */
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.systemtap.ui.ide.structures.messages"; //$NON-NLS-1$
 	public static String TapsetParser_CannotRunStapMessage;

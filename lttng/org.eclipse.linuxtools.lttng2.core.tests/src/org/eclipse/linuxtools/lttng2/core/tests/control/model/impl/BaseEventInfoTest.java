@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,15 +8,13 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.core.tests.control.model.impl;
-
-import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
@@ -24,20 +22,16 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.FieldInfo;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
- * The class <code>BaseEventInfoTest</code> contains test for the class
- * <code>{@link BaseEventInfo}</code>.
+ * The class <code>BaseEventInfoTest</code> contains test for the class <code>{@link BaseEventInfo}</code>.
  */
-@SuppressWarnings("nls")
-public class BaseEventInfoTest {
+@SuppressWarnings({"nls", "javadoc"})
+public class BaseEventInfoTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Test data
     // ------------------------------------------------------------------------
-
     private IBaseEventInfo fEventInfo1 = null;
     private IBaseEventInfo fEventInfo2 = null;
 
@@ -46,12 +40,26 @@ public class BaseEventInfoTest {
     // ------------------------------------------------------------------------
     /**
      * Perform pre-test initialization.
+     *
+     * @throws Exception if the initialization fails for some reason
+     *
      */
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
         ModelImplFactory factory = new ModelImplFactory();
         fEventInfo1 = factory.getBaseEventInfo1();
         fEventInfo2 = factory.getBaseEventInfo2();
+    }
+
+    /**
+     * Perform post-test clean-up.
+     *
+     * @throws Exception if the clean-up fails for some reason
+     *
+     */
+    @Override
+    public void tearDown() throws Exception {
     }
 
     // ------------------------------------------------------------------------
@@ -60,8 +68,8 @@ public class BaseEventInfoTest {
 
     /**
      * Run the BaseEventInfo() constructor test.
+     *
      */
-    @Test
     public void testBaseEventInfo() {
         BaseEventInfo fixture = new BaseEventInfo("event");
         assertNotNull(fixture);
@@ -84,7 +92,6 @@ public class BaseEventInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testEventInfoCopy() {
         BaseEventInfo info = new BaseEventInfo((BaseEventInfo)fEventInfo1);
 
@@ -105,7 +112,6 @@ public class BaseEventInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testEventCopy2() {
         try {
             BaseEventInfo info = null;
@@ -119,8 +125,10 @@ public class BaseEventInfoTest {
 
     /**
      * Run the TraceEventType getEventType() method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
     public void testGetEventType_1() {
         BaseEventInfo fixture = new BaseEventInfo("event");
         fixture.setEventType("unknown");
@@ -168,8 +176,8 @@ public class BaseEventInfoTest {
 
     /**
      * Run the void setEventType(TraceEventType) method test.
+     *
      */
-    @Test
     public void testSetEventType_2() {
         BaseEventInfo fixture = new BaseEventInfo("event");
         fixture.setEventType(TraceEventType.TRACEPOINT);
@@ -212,8 +220,8 @@ public class BaseEventInfoTest {
     /**
      * Run the void setLogLevel(TraceLogLevel) method test.
      * Run the TraceLogLevel getLogLevel() method test
+     *
      */
-    @Test
     public void testSetLogLevel1() {
         BaseEventInfo fixture = new BaseEventInfo("event");
         fixture.setEventType(TraceEventType.TRACEPOINT);
@@ -240,8 +248,8 @@ public class BaseEventInfoTest {
     /**
      * Run the void setLogLevel(String) method test.
      * Run the TraceLogLevel getLogLevel() method test
+     *
      */
-    @Test
     public void testSetLogLevel2() {
         BaseEventInfo fixture = new BaseEventInfo("event");
         fixture.setEventType(TraceEventType.TRACEPOINT);
@@ -400,7 +408,6 @@ public class BaseEventInfoTest {
     /**
      * test filter expression
      */
-    @Test
      public void testSetFields() {
          BaseEventInfo info = new BaseEventInfo((BaseEventInfo)fEventInfo2);
          info.setFilterExpression("stringfield==test");
@@ -411,7 +418,6 @@ public class BaseEventInfoTest {
    /**
     * test add field
     */
-    @Test
     public void testAddField() {
         BaseEventInfo info = new BaseEventInfo((BaseEventInfo)fEventInfo2);
 
@@ -432,7 +438,6 @@ public class BaseEventInfoTest {
     /**
      * test set fields
      */
-    @Test
     public void testFields() {
         BaseEventInfo info = new BaseEventInfo((BaseEventInfo)fEventInfo2);
 
@@ -461,8 +466,8 @@ public class BaseEventInfoTest {
 
     /**
      * Run the String toString() method test.
+     *
      */
-    @Test
     public void testToString_1() {
         BaseEventInfo fixture = new BaseEventInfo("event");
         fixture.setName("testName");
@@ -479,10 +484,6 @@ public class BaseEventInfoTest {
     // equals
     // ------------------------------------------------------------------------
 
-    /**
-     * Test the .equals() method.
-     */
-    @Test
     public void testEqualsReflexivity() {
         assertTrue("equals", fEventInfo1.equals(fEventInfo1));
         assertTrue("equals", fEventInfo2.equals(fEventInfo2));
@@ -491,10 +492,6 @@ public class BaseEventInfoTest {
         assertTrue("equals", !fEventInfo2.equals(fEventInfo1));
     }
 
-    /**
-     * Test the .equals() method.
-     */
-    @Test
     public void testEqualsSymmetry() {
         BaseEventInfo info1 = new BaseEventInfo((BaseEventInfo)fEventInfo1);
         BaseEventInfo info2 = new BaseEventInfo((BaseEventInfo)fEventInfo2);
@@ -506,10 +503,6 @@ public class BaseEventInfoTest {
         assertTrue("equals", fEventInfo2.equals(info2));
     }
 
-    /**
-     * Test the .equals() method.
-     */
-    @Test
     public void testEqualsTransivity() {
         BaseEventInfo info1 = new BaseEventInfo((BaseEventInfo)fEventInfo1);
         BaseEventInfo info2 = new BaseEventInfo((BaseEventInfo)fEventInfo1);
@@ -520,10 +513,6 @@ public class BaseEventInfoTest {
         assertTrue("equals", info1.equals(info3));
     }
 
-    /**
-     * Test the .equals() method.
-     */
-    @Test
     public void testEqualsNull() {
         assertTrue("equals", !fEventInfo1.equals(null));
         assertTrue("equals", !fEventInfo2.equals(null));
@@ -533,10 +522,6 @@ public class BaseEventInfoTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    /**
-     * Test the hashCode() method.
-     */
-    @Test
     public void testHashCode() {
         BaseEventInfo info1 = new BaseEventInfo((BaseEventInfo)fEventInfo1);
         BaseEventInfo info2 = new BaseEventInfo((BaseEventInfo)fEventInfo2);

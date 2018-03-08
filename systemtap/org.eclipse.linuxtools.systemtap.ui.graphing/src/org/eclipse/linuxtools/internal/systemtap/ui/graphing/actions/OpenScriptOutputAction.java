@@ -50,7 +50,6 @@ import org.eclipse.ui.WorkbenchException;
  * @author Ryan Morse
  */
 public class OpenScriptOutputAction extends Action implements IWorkbenchWindowActionDelegate {
-	@Override
 	public void init(IWorkbenchWindow window) {
 		fWindow = window;
 	}
@@ -62,7 +61,6 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 	 * it will generate a new <code>DataSet</code> to hold all of the data.
 	 * @param act The action that fired this method.
 	 */
-	@Override
 	public void run(IAction act) {
 		File f = queryFile();
 
@@ -167,7 +165,6 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 		return(null != parser && null != dataSet);
 	}
 
-	@Override
 	public void selectionChanged(IAction a, ISelection s) {
 	}
 
@@ -175,7 +172,6 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 	 * Removes all internal references in this class.  Nothing should make any references
 	 * to anyting in this class after calling the dispose method.
 	 */
-	@Override
 	public void dispose() {
 		fWindow = null;
 		parser = null;
