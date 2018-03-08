@@ -23,10 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -54,6 +53,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
@@ -351,11 +351,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     @Override
-    public List<IAnalysisModule> getAnalysisModules(Class<? extends IAnalysisModule> moduleclass) {
-        List<IAnalysisModule> modules = new ArrayList<IAnalysisModule>();
+    public <T extends IAnalysisModule> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
+        Map<String, T> modules = new HashMap<String, T>();
         for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
             if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
-                modules.add(entry.getValue());
+                modules.put(entry.getKey(), moduleclass.cast(entry.getValue()));
             }
         }
         return modules;
@@ -443,7 +443,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
+     * @deprecated State systems now should use the
+     *             {@link TmfStateSystemAnalysisModule} and retrieve the modules
+     *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
+     *             being TmfStateSystemAnalysisModule.class
      */
+    @Deprecated
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
         return Collections.unmodifiableMap(fStateSystems);
@@ -451,7 +456,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
+     * @deprecated State systems now should use the
+     *             {@link TmfStateSystemAnalysisModule}
      */
+    @Deprecated
     @Override
     public final void registerStateSystem(String id, ITmfStateSystem ss) {
         fStateSystems.put(id, ss);
