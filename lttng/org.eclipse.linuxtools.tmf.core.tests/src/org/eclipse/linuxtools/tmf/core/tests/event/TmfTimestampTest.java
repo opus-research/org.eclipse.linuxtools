@@ -13,6 +13,11 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
@@ -249,10 +254,17 @@ public class TmfTimestampTest extends TestCase {
      *
      */
     public void testToStringDefault() {
-        assertEquals("toString", "00:00:00.000 000 000", ts0.toString());
-        assertEquals("toString", "03:25:45.000 000 000", ts1.toString());
-        assertEquals("toString", "00:20:34.500 000 000", ts2.toString());
-        assertEquals("toString", "06:55:00.000 000 000", ts3.toString());
+        DateFormat df = new SimpleDateFormat("HH:mm:ss.SSS");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        int timeOffset = TimeZone.getDefault().getOffset(0);
+        Date d0 = new Date(0 + timeOffset);
+        Date d1 = new Date(12345000L + timeOffset);
+        Date d2 = new Date(1234500L + timeOffset);
+        Date d3 = new Date(1234500000L + timeOffset);
+        assertEquals("toString", df.format(d0) +" 000 000", ts0.toString());
+        assertEquals("toString", df.format(d1) +" 000 000", ts1.toString());
+        assertEquals("toString", df.format(d2) +" 000 000", ts2.toString());
+        assertEquals("toString", df.format(d3) +" 000 000", ts3.toString());
     }
 
     /**
