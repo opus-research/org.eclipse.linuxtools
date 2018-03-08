@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
+import static org.junit.Assert.*;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -21,6 +23,9 @@ import org.eclipse.linuxtools.internal.valgrind.tests.ValgrindStubCommand;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class MinVersionTest extends AbstractMemcheckTest {
 
@@ -32,6 +37,7 @@ public class MinVersionTest extends AbstractMemcheckTest {
 	}
 
 	@Override
+	@Before
 	protected void setUp() throws Exception {
 		super.setUp();
 		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
@@ -44,6 +50,7 @@ public class MinVersionTest extends AbstractMemcheckTest {
 	}
 
 	@Override
+	@After
 	protected void tearDown() throws Exception {
 		restoreVersion();
 
@@ -54,7 +61,7 @@ public class MinVersionTest extends AbstractMemcheckTest {
 	private void restoreVersion() {
 		ValgrindLaunchPlugin.getDefault().setValgrindCommand(new ValgrindCommand());
 	}
-
+	@Test
 	public void testLaunchBadVersion() throws Exception {
 		// Put this back so we can make a valid config
 		restoreVersion();
@@ -69,7 +76,7 @@ public class MinVersionTest extends AbstractMemcheckTest {
 		}
 
 	}
-
+	@Test
 	public void testTabsBadVersion() throws Exception {
 		Shell testShell = new Shell(Display.getDefault());
 		testShell.setLayout(new GridLayout());
