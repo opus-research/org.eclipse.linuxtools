@@ -31,8 +31,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.IEditorReference;
@@ -313,36 +311,5 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
                 }
             }
         }
-    }
-
-    /**
-     * Get the list of analysis elements
-     *
-     * @return Array of analysis elements
-     * @since 3.0
-     */
-    public List<TmfAnalysisElement> getAvailableAnalysis() {
-        List<TmfAnalysisElement> list = new ArrayList<TmfAnalysisElement>();
-
-        /** Get the base path to put the resource to */
-        IPath path = getProject().getTracesFolder().getPath();
-        if (fResource instanceof IFolder) {
-            IFolder folder = (IFolder) fResource;
-            path = folder.getFullPath();
-        } else if (fResource instanceof IFile) {
-            IFile file = (IFile) fResource;
-            path = path.append(file.getName());
-        }
-
-        for (IAnalysisModule module : TmfAnalysisManager.getAnalysisModules(TmfExperiment.class).values()) {
-
-            /** No need for the resource to exist, nothing will be done with it */
-            IFolder newresource = ResourcesPlugin.getWorkspace().getRoot().getFolder(path.append(module.getId()));
-
-            TmfAnalysisElement analysis = new TmfAnalysisElement(module.getName(), newresource, this, module.getId());
-            list.add(analysis);
-        }
-
-        return list;
     }
 }

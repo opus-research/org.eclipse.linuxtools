@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Consolidated constructors
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.request;
@@ -19,20 +18,19 @@ import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 
 /**
- * TmfDataRequests are used to obtain blocks of contiguous data from a data
- * provider. Open ranges can be used, especially for continuous streaming.
+ * TmfDataRequests are used to obtain blocks of contiguous data from a data provider. Open ranges can be used,
+ * especially for continuous streaming.
  * <p>
- * The request is processed asynchronously by a TmfProvider and, as blocks of
- * data become available, handleData() is invoked synchronously for each block.
- * Upon return, the data instances go out of scope and become eligible for gc.
- * It is is thus the responsibility of the requester to either clone or keep a
- * reference to the data it wishes to track specifically.
+ * The request is processed asynchronously by a TmfProvider and, as blocks of data become available, handleData() is
+ * invoked synchronously for each block. Upon return, the data instances go out of scope and become eligible for gc. It
+ * is is thus the responsibility of the requester to either clone or keep a reference to the data it wishes to track
+ * specifically.
  * <p>
- * This data block approach is used to avoid busting the heap for very large
- * trace files. The block size is configurable.
+ * This data block approach is used to avoid busting the heap for very large trace files. The block size is
+ * configurable.
  * <p>
- * The TmfProvider indicates that the request is completed by calling done().
- * The request can be canceled at any time with cancel().
+ * The TmfProvider indicates that the request is completed by calling done(). The request can be canceled at any time
+ * with cancel().
  * <p>
  * Typical usage:
  *
@@ -62,12 +60,10 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  * </i></code>
  * </pre>
  *
- * TODO: Consider decoupling from "time range", "rank", etc and for the more
- * generic notion of "criteria". This would allow to extend for "time range",
- * etc instead of providing specialized constructors. This also means removing
- * the criteria info from the data structure (with the possible exception of
- * fNbRequested). The nice thing about it is that it would prepare us well for
- * the coming generation of analysis tools.
+ * TODO: Consider decoupling from "time range", "rank", etc and for the more generic notion of "criteria". This would
+ * allow to extend for "time range", etc instead of providing specialized constructors. This also means removing the
+ * criteria info from the data structure (with the possible exception of fNbRequested). The nice thing about it is that
+ * it would prepare us well for the coming generation of analysis tools.
  *
  * TODO: Implement request failures (codes, etc...)
  *
@@ -79,6 +75,9 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
+
+    /** The default maximum number of events per chunk */
+    public static final int DEFAULT_BLOCK_SIZE = 1000;
 
     /** The request count for all the events */
     public static final int ALL_DATA = Integer.MAX_VALUE;
@@ -100,6 +99,9 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
 
     /** The number of requested events (ALL_DATA for all) */
     protected int fNbRequested;
+
+    /** The block size (for BG requests) */
+    private final int fBlockSize;
 
     /** The number of reads so far */
     private int fNbRead;
@@ -123,29 +125,103 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     }
 
     /**
+     * Request all the events of a given type (high priority)
+     * Events are returned in blocks of the default size (DEFAULT_BLOCK_SIZE).
+     *
+     * @param dataType the requested data type
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType) {
+        this(dataType, 0, ALL_DATA, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
+    }
+
+    /**
+     * Request all the events of a given type (given priority)
+     * Events are returned in blocks of the default size (DEFAULT_BLOCK_SIZE).
+     *
+     * @param dataType the requested data type
+     * @param priority the requested execution priority
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, ExecutionType priority) {
+        this(dataType, 0, ALL_DATA, DEFAULT_BLOCK_SIZE, priority);
+    }
+
+    /**
+     * Request all the events of a given type from the given index (high priority)
+     * Events are returned in blocks of the default size (DEFAULT_BLOCK_SIZE).
+     *
+     * @param dataType the requested data type
+     * @param index the index of the first event to retrieve
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index) {
+        this(dataType, index, ALL_DATA, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
+    }
+
+    /**
+     * Request all the events of a given type from the given index (given priority)
+     * Events are returned in blocks of the default size (DEFAULT_BLOCK_SIZE).
+     *
+     * @param dataType the requested data type
+     * @param index the index of the first event to retrieve
+     * @param priority the requested execution priority
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, ExecutionType priority) {
+        this(dataType, index, ALL_DATA, DEFAULT_BLOCK_SIZE, priority);
+    }
+
+    /**
+     * Request 'n' events of a given type from the given index (high priority)
+     * Events are returned in blocks of the default size (DEFAULT_BLOCK_SIZE).
+     *
+     * @param dataType the requested data type
+     * @param index the index of the first event to retrieve
+     * @param nbRequested the number of events requested
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested) {
+        this(dataType, index, nbRequested, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
+    }
+
+    /**
+     * Request 'n' events of a given type from the given index (given priority)
+     * Events are returned in blocks of the default size (DEFAULT_BLOCK_SIZE).
+     *
+     * @param dataType the requested data type
+     * @param index the index of the first event to retrieve
+     * @param nbRequested the number of events requested
+     * @param priority the requested execution priority
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested, ExecutionType priority) {
+        this(dataType, index, nbRequested, DEFAULT_BLOCK_SIZE, priority);
+    }
+
+    /**
+     * Request 'n' events of a given type from the given index (high priority).
+     * Events are returned in blocks of the given size.
+     *
+     * @param dataType the requested data type
+     * @param index the index of the first event to retrieve
+     * @param nbRequested the number of events requested
+     * @param blockSize the number of events per block
+     */
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested, int blockSize) {
+        this(dataType, index, nbRequested, blockSize, ExecutionType.FOREGROUND);
+    }
+
+    /**
      * Request 'n' events of a given type from the given index (given priority).
      * Events are returned in blocks of the given size.
      *
-     * @param dataType
-     *            The requested data type.
-     * @param index
-     *            The index of the first event to retrieve. Use '0' to start at
-     *            the beginning of the trace.
-     * @param nbRequested
-     *            The number of events requested. You can use
-     *            {@link TmfDataRequest#ALL_DATA} to specify you want all events
-     *            in the trace.
-     * @param priority
-     *            The requested execution priority.
+     * @param dataType the requested data type
+     * @param index the index of the first event to retrieve
+     * @param nbRequested the number of events requested
+     * @param blockSize the number of events per block
+     * @param priority the requested execution priority
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType,
-            long index,
-            int nbRequested,
-            ExecutionType priority) {
+    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested, int blockSize, ExecutionType priority) {
         fRequestId = fRequestNumber++;
         fDataType = dataType;
         fIndex = index;
         fNbRequested = nbRequested;
+        fBlockSize = blockSize;
         fExecType = priority;
         fNbRead = 0;
 
@@ -200,6 +276,14 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     @Override
     public int getNbRequested() {
         return fNbRequested;
+    }
+
+    /**
+     * @return the block size (for BG requests)
+     */
+    @Override
+    public int getBlockSize() {
+        return fBlockSize;
     }
 
     /**
@@ -458,6 +542,6 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
             name = name.substring(dot + 1);
         }
         return "[" + name + "(" + fRequestId + "," + fDataType.getSimpleName()+ "," + getExecType()
-                + "," + fIndex + "," + fNbRequested + ")]";
+                + "," + fIndex + "," + fNbRequested + "," + getBlockSize() + ")]";
     }
 }
