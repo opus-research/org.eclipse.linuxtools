@@ -49,8 +49,8 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 	private static String ASM = "\\s+([0-9]+\\.[0-9]+ )?:\\s+[0-9a-f]+:\\s+[0-9a-z]+\\s+.*"; //$NON-NLS-1$
 	private static String CODE = "\\s+:\\s+.*"; //$NON-NLS-1$
 	private static String WORD_BOUNDARY = "\\b"; //$NON-NLS-1$'
-	private StyledText text;
 	private static int SECONDARY_ID = 0;
+	protected StyledText text;
 	public SourceDisassemblyView() {
 	}
 
