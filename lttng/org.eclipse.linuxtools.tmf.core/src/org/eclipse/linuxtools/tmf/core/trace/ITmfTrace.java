@@ -339,4 +339,23 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @since 2.0
      */
     ITmfTimestamp getInitialRangeOffset();
+
+   /**
+    * Returns the host this trace is from
+    *
+    * @return The host of this trace
+    * @since 3.0
+    */
+   String getHost();
+
+   /**
+    * Sets the host provider for this trace. The host provider is used to
+    * determine the host the trace is from
+    *
+    * @param provider
+    *            The trace's host provider
+    * @since 3.0
+    */
+   void setHostProvider(ITmfHostProvider provider);
+
 }
