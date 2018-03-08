@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.rpm.core.IRPMConstants;
-import org.eclipse.linuxtools.rpm.core.utils.DownloadJob;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -103,7 +102,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 						savedFileName));
 				int rc = mb.open();
 				if (rc == SWT.OK) {
-					new DownloadJob(savedFile, connection).schedule();
+					new DownloadJob(savedFile, connection, true).schedule();
 				}
 
 			} else {
