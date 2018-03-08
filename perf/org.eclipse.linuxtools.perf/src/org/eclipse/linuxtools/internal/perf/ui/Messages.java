@@ -8,24 +8,18 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.perf.handlers;
+package org.eclipse.linuxtools.internal.perf.ui;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.perf.handlers.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.perf.ui.messages"; //$NON-NLS-1$
 	public static String PerfSaveSession_title;
 	public static String PerfSaveSession_msg;
 	public static String PerfSaveSession_invalid_filename_title;
 	public static String PerfSaveSession_invalid_filename_msg;
-	public static String PerfSaveSession_file_exists_title;
-	public static String PerfSaveSession_file_exists_msg;
-	public static String PerfSaveStat_error_title;
-	public static String PerfSaveStat_error_msg;
-	public static String PerfSaveSession_failure_title;
-	public static String PerfSaveSession_failure_msg;
-	public static String PerfResourceLeak_title;
-	public static String PerfResourceLeak_msg;
+	public static String PerfSaveSession_no_data_found_title;
+	public static String PerfSaveSession_no_data_found_msg;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
