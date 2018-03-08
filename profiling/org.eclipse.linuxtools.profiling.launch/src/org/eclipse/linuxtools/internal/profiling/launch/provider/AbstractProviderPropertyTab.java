@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
@@ -159,7 +158,6 @@ public abstract class AbstractProviderPropertyTab extends AbstractCPropertyTab {
         });
 		updateOptionsEnable();
 		updateValue(getPreferenceStore().getString(ProviderProfileConstants.PREFS_KEY + getType()));
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, getHelpContextId());
 	}
 	
 	private void setButtonsEnabled(boolean value) {
@@ -245,11 +243,6 @@ public abstract class AbstractProviderPropertyTab extends AbstractCPropertyTab {
         return;
     }
     
-	@Override
-	public String getHelpContextId() {
-		return ProviderProfileConstants.PLUGIN_ID + ".profiling_categories";  //$NON-NLS-1$
-	}
-   
 	// This page can be displayed for project only
 	@Override
 	public boolean canBeVisible() {
