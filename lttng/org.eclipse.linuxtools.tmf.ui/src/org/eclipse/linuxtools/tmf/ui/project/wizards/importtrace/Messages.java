@@ -37,19 +37,12 @@ public class Messages extends NLS {
     public static String ImportTraceWizardScanPage_renameError;
     public static String ImportTraceWizardScanPage_SelectAtleastOne;
     public static String ImportTraceWizardSelectAll;
-    public static String ImportTraceWizardPageOptions_NoProjectSelected;
-
     public static String ImportTraceWizardPageScan_done;
     public static String ImportTraceWizardPageScan_scanning;
     public static String ImportTraceWizardPageSelectNone;
     public static String ImportTraceWizardPageSelectHint;
     public static String BatchImportTraceWizard_remove;
     public static String BatchImportTraceWizard_add;
-
-    public static String BatchImportTraceWizard_errorImportingTraceResource;
-
-    public static String BatchImportTraceWizard_SelectProject;
-    public static String Shared_selectProject;
 
     static {
         // initialize resource bundle
