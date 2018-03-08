@@ -182,6 +182,11 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     protected int fDragButton = 0;
 
+    /**
+     * The bucket display offset
+     */
+    private int fOffset = 0;
+
     // ------------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------------
@@ -447,7 +452,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     public synchronized long getTimestamp(final int offset) {
         assert offset > 0 && offset < fScaledData.fWidth;
         try {
-            return fDataModel.getFirstBucketTime() + fScaledData.fBucketDuration * offset;
+            return fScaledData.fFirstBucketTime + fScaledData.fBucketDuration * offset;
         } catch (final Exception e) {
             return 0; // TODO: Fix that racing condition (NPE)
         }
@@ -464,6 +469,17 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             return -1;
         }
         return (int) ((timestamp - fDataModel.getFirstBucketTime()) / fScaledData.fBucketDuration);
+    }
+
+    /**
+     * Set the bucket display offset
+     *
+     * @param offset
+     *            the bucket display offset
+     * @since 2.2
+     */
+    protected void setOffset(final int offset) {
+        fOffset = offset;
     }
 
     /**
@@ -657,7 +673,8 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             for (int i = 0; i < limit; i++) {
                 imageGC.setForeground(fHistoBarColor);
                 final int value = (int) Math.ceil(scaledData.fData[i] * factor);
-                imageGC.drawLine(i, height - value, i, height);
+                int x = i + fOffset;
+                imageGC.drawLine(x, height - value, x, height);
 
                 if (!HistogramScaledData.hideLostEvents) {
                     imageGC.setForeground(fLostEventColor);
@@ -665,10 +682,10 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                     if (lostEventValue != 0) {
                         if (lostEventValue == 1) {
                             // in linux, a line from x to x is not drawn, in windows it is.
-                            imageGC.drawPoint(i, height - value - 1);
+                            imageGC.drawPoint(x, height - value - 1);
                         } else {
                             // drawing a line is inclusive, so we need to remove 1 from the destination to have the correct length
-                            imageGC.drawLine(i, height - value - lostEventValue, i, height - value - 1);
+                            imageGC.drawLine(x, height - value - lostEventValue, x, height - value - 1);
                         }
                     }
                 }
@@ -679,11 +696,11 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             imageGC.setAlpha(100);
             imageGC.setForeground(fSelectionForegroundColor);
             imageGC.setBackground(fSelectionBackgroundColor);
-            final int beginBucket = scaledData.fSelectionBeginBucket;
+            final int beginBucket = scaledData.fSelectionBeginBucket + fOffset;
             if (beginBucket >= 0 && beginBucket < limit) {
                 imageGC.drawLine(beginBucket, 0, beginBucket, height);
             }
-            final int endBucket = scaledData.fSelectionEndBucket;
+            final int endBucket = scaledData.fSelectionEndBucket + fOffset;
             if (endBucket >= 0 && endBucket < limit && endBucket != beginBucket) {
                 imageGC.drawLine(endBucket, 0, endBucket, height);
             }
