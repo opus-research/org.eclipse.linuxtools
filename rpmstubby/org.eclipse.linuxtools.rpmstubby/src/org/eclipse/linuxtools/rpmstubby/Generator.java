@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.linuxtools.internal.rpmstubby.StubbyEggGenerator;
 import org.eclipse.linuxtools.internal.rpmstubby.StubbyGemGenerator;
 import org.eclipse.linuxtools.internal.rpmstubby.StubbyGenerator;
+import org.eclipse.linuxtools.internal.rpmstubby.StubbyGeneratorWithTycho;
 import org.eclipse.linuxtools.internal.rpmstubby.StubbyMakefilePLGenerator;
 import org.eclipse.linuxtools.internal.rpmstubby.StubbyPomGenerator;
 
@@ -44,9 +45,15 @@ public class Generator {
 	 *            The input file.
 	 */
 	public void generate(IFile file) {
+		IFile parentPom = RPMStubbyUtils.findPom(file.getParent());
 		switch (type) {
 		case ECLIPSE_FEATURE:
-			new StubbyGenerator(file).writeContent();
+			// generate stub that uses Tycho to build if parent POM exists
+			if (parentPom != null && parentPom.exists()) {
+				new StubbyGeneratorWithTycho(parentPom).writeContent();
+			} else {
+				new StubbyGenerator(file).writeContent();
+			}
 			break;
 		case MAVEN_POM:
 			new StubbyPomGenerator(file).writeContent();
@@ -64,5 +71,4 @@ public class Generator {
 			break;
 		}
 	}
-
 }
