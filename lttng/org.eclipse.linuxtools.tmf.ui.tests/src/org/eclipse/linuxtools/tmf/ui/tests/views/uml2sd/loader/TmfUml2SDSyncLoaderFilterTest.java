@@ -24,9 +24,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.Criteria;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterCriteria;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.loader.TmfSyncMessage;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,7 +52,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
         Criteria criteria = new Criteria();
         criteria.setLifeLineSelected(true);
         criteria.setExpression(IUml2SDTestConstants.FIRST_PLAYER_NAME);
-        filterToSave.add(new FilterCriteria(criteria, false, false));
+        filterToSave.add(new FilterCriteria(criteria, true, false));
 
         criteria = new Criteria();
         criteria.setLifeLineSelected(true);
@@ -77,27 +75,6 @@ public class TmfUml2SDSyncLoaderFilterTest {
     }
 
     /**
-     * Test Case set-up code.
-     */
-    @Before
-    public void beforeTest(){
-        // Make sure we are at the first page
-        fFacility.firstPage();
-    }
-
-    /**
-     * Test case clean-up code.
-     */
-    @After
-    public void afterTest() {
-        filterToSave.get(0).setActive(false);
-        filterToSave.get(1).setActive(false);
-        filterToSave.get(2).setActive(false);
-        fFacility.getLoader().filter(filterToSave);
-        fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
-    }
-
-    /**
      * Verify the filter lifelines (1 out of 2 is hidden)
      *
      * Verified Methods: loader.filter()
@@ -105,9 +82,6 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyFilter1of2() {
-        // Initialize the filter
-        filterToSave.get(0).setActive(true);
-        // Run the filter
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
 
@@ -125,10 +99,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyFilter2of2() {
-        // Initialize the filter
-        filterToSave.get(0).setActive(true);
         filterToSave.get(1).setActive(true);
-        // Run the filter
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
 
@@ -144,13 +115,6 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyRemoval() {
-        // First set 2 filter
-        filterToSave.get(0).setActive(true);
-        filterToSave.get(1).setActive(true);
-        fFacility.getLoader().filter(filterToSave);
-        fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
-
-        // Remove the filter
         filterToSave.get(0).setActive(false);
         filterToSave.get(1).setActive(false);
         fFacility.getLoader().filter(filterToSave);
@@ -169,9 +133,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyMessageFilter() {
-        // Initialize the filter
         filterToSave.get(2).setActive(true);
-        // Run the filter
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
 
@@ -198,7 +160,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
     @Test
     public void verifyFilter1of3() {
         filterToSave.get(0).setActive(true);
-        fFacility.getLoader().filter(filterToSave);
+        filterToSave.get(2).setActive(false);
         fFacility.setPage(IUml2SDTestConstants.PAGE_OF_ALL_LIFELINES);
 
         assertEquals("filter", 2, fFacility.getSdView().getFrame().lifeLinesCount());
@@ -210,5 +172,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
         }
 
         assertTrue(fFacility.getSdView().getFrame().syncMessageCount() > 0);
+
+        filterToSave.get(2).setActive(false);
     }
 }
