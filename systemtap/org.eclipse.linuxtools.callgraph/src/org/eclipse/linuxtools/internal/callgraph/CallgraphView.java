@@ -39,7 +39,6 @@ import org.eclipse.linuxtools.internal.callgraph.core.SystemTapParser;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapUIErrorMessages;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapView;
 import org.eclipse.linuxtools.internal.callgraph.graphlisteners.AutoScrollSelectionListener;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -708,10 +707,9 @@ public class CallgraphView extends SystemTapView {
 			e.printStackTrace();
 		}
 
-		SystemTapUIErrorMessages message = new SystemTapUIErrorMessages(
-				Messages.getString("CallgraphView.StapError1"),
-				Messages.getString("CallgraphView.StapError1"), NLS.bind(
-						Messages.getString("CallgraphView.StapError2"), user));
+		SystemTapUIErrorMessages message = new SystemTapUIErrorMessages(Messages.getString("CallgraphView.StapError1"),
+				Messages.getString("CallgraphView.StapError1"), Messages.getString("CallgraphView.StapError2")
+				+ user + " " + Messages.getString("CallgraphView.StapError3") + "usermod -aG stapdev " + user); //$NON-NLS-1$
 		message.schedule();
 	}
 	/**
