@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Part of the BitBuffet tests with test the methods to read/write integers.
+ * Part of the BitBuffer tests which test the methods to read/write integers.
  * These are separated from the main file because the fixture is different.
  *
  * @author alexmont
@@ -200,6 +200,16 @@ public class BitBufferIntTest {
         fixture.position(0);
         long result = fixture.getLong();
         assertEquals(0x01020304050607L, result);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong_pos7() {
+        fixture.position(7);
+        long result = fixture.getLong();
+        assertEquals(0x81018202830384L, result);
     }
 
     /**
