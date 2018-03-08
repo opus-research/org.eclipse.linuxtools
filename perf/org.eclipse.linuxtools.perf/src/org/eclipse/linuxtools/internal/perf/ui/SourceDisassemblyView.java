@@ -67,11 +67,11 @@ public class SourceDisassemblyView extends ViewPart {
 		return;
 	}
 
-	private StyledText getStyledText () {
+	public StyledText getStyledText () {
 		return text;
 	}
 
-	private void setStyledText (String text) {
+	public void setStyledText (String text) {
 		List<StyleRange> styles = new ArrayList<StyleRange> ();
 		int ptr = 0;
 

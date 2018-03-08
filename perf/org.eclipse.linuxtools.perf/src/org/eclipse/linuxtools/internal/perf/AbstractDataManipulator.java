@@ -37,22 +37,10 @@ public abstract class AbstractDataManipulator {
 		return title;
 	}
 
-	public void performCommand(String[] cmd, int fd) {
+	public void performCommand(String[] cmd) {
 		try {
 			Process proc = RuntimeProcessFactory.getFactory().exec(cmd, null);
-
-			BufferedReader buff;
-			switch (fd) {
-			case 1:
-				buff = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				break;
-			case 2:
-				buff = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-				break;
-			default:
-				buff = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-			}
-
+			BufferedReader buff = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 			StringBuffer strBuff = new StringBuffer();
 			String line = ""; //$NON-NLS-1$
 			while ((line = buff.readLine()) != null) {
