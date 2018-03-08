@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -298,7 +298,9 @@ public final class TmfTraceType {
         // remove the customTraceTypes
         final String[] keySet = fTraceTypes.keySet().toArray(new String[0]);
         for (String key : keySet) {
-            if (fTraceTypes.get(key).getCategoryName().equals(CUSTOM_TXT_CATEGORY) || fTraceTypes.get(key).getCategoryName().equals(CUSTOM_XML_CATEGORY)) {
+            TraceTypeHelper helper = fTraceTypes.get(key);
+            if (helper.getCategoryName().equals(CUSTOM_TXT_CATEGORY) || helper.getCategoryName().equals(CUSTOM_XML_CATEGORY)) {
+                helper.getTrace().dispose();
                 fTraceTypes.remove(key);
             }
         }
@@ -563,8 +565,8 @@ public final class TmfTraceType {
     }
 
     /**
-     * Is the trace type id a custom (user-defined) trace type. These are the traces
-     * like : text and xml defined by the custom trace wizard.
+     * Is the trace type id a custom (user-defined) trace type. These are the
+     * traces like : text and xml defined by the custom trace wizard.
      *
      * @param traceTypeId
      *            the trace type id
@@ -604,21 +606,26 @@ public final class TmfTraceType {
         return traceTypeId;
     }
 
+    TraceTypeHelper selectTraceType(String path, Shell shell) throws TmfTraceImportException {
+        return selectTraceType(path, shell, null);
+    }
+
     /**
-     * Select a trace file for
+     * This member figures out the trace type of a given file. It will prompt
+     * the user if it needs more information to properly pick the trace type.
      *
      * @param path
      *            The path of file to import
      * @param shell
      *            a shell to display the message to. If it is null, it is
      *            assumed to be cancelled.
-     * @return null if the request is cancelled or a string in the form
-     *         "category:type" if it passes.
+     * @param traceTypeHint the ID of a trace (like "o.e.l.specifictrace" )
+     * @return null if the request is cancelled or a TraceTypeHelper if it passes.
      * @throws TmfTraceImportException
      *             if the traces don't match or there are errors in the trace
      *             file
      */
-    TraceTypeHelper selectTraceType(String path, Shell shell) throws TmfTraceImportException {
+    TraceTypeHelper selectTraceType(String path, Shell shell, String traceTypeHint) throws TmfTraceImportException {
         List<TraceTypeHelper> validCandidates = new ArrayList<TraceTypeHelper>();
         getCustomTraceTypes();
         final Set<String> traceTypes = fTraceTypes.keySet();
@@ -628,23 +635,29 @@ public final class TmfTraceType {
             }
         }
 
-        TraceTypeHelper traceTypeToSet;
+        TraceTypeHelper traceTypeToSet = null;
         if (validCandidates.isEmpty()) {
             final String errorMsg = Messages.TmfOpenTraceHelper_NoTraceTypeMatch + path;
             throw new TmfTraceImportException(errorMsg);
         } else if (validCandidates.size() != 1) {
             List<TraceTypeHelper> reducedCandidates = reduce(validCandidates);
-            if (reducedCandidates.size() == 0) {
-                throw new TmfTraceImportException(Messages.TmfOpenTraceHelper_ReduceError);
-            } else if (reducedCandidates.size() == 1) {
-                traceTypeToSet = reducedCandidates.get(0);
-            } else {
-                if (shell == null) {
-                    return null;
+            for (TraceTypeHelper tth : reducedCandidates) {
+                if (tth.getCanonicalName().equals(traceTypeHint)) {
+                    traceTypeToSet = tth;
                 }
-                traceTypeToSet = getTraceTypeToSet(reducedCandidates, shell);
             }
-
+            if (traceTypeToSet == null) {
+                if (reducedCandidates.size() == 0) {
+                    throw new TmfTraceImportException(Messages.TmfOpenTraceHelper_ReduceError);
+                } else if (reducedCandidates.size() == 1) {
+                    traceTypeToSet = reducedCandidates.get(0);
+                } else {
+                    if (shell == null) {
+                        return null;
+                    }
+                    traceTypeToSet = getTraceTypeToSet(reducedCandidates, shell);
+                }
+            }
         } else {
             traceTypeToSet = validCandidates.get(0);
         }
@@ -686,6 +699,7 @@ public final class TmfTraceType {
     private TraceTypeHelper getTraceTypeToSet(List<TraceTypeHelper> candidates, Shell shell) {
         final Map<String, String> names = new HashMap<String, String>();
         Shell shellToShow = new Shell(shell);
+        shellToShow.setText(Messages.TmfTraceType_SelectTraceType);
         final String candidatesToSet[] = new String[1];
         for (TraceTypeHelper candidate : candidates) {
             Button b = new Button(shellToShow, SWT.RADIO);
