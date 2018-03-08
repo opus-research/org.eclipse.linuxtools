@@ -82,6 +82,7 @@ public class CheckboxFieldEditor extends FieldEditor {
 
 
 	@Override
+	// TODO Auto-generated method stub
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.preference.FieldEditor#doFillIntoGrid(org.eclipse.swt.widgets.Composite, int)
 	 */
