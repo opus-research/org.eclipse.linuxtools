@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     IBM - initial API and implementation
  *
@@ -13,14 +13,15 @@
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts;
 
 import org.eclipse.linuxtools.dataviewers.piechart.PieChart;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters.IAdapter;
 import org.eclipse.swt.widgets.Composite;
+
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters.IAdapter;
 
 /**
  * Builds Pie chart.
  */
 public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.piechartbuilder"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.piechartbuilder";
 
 	public PieChartBuilder(Composite parent, int style, String title,IAdapter adapter) {
 		super(adapter, parent, style, title);
