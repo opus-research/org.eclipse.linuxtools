@@ -57,18 +57,14 @@ public class DashboardPlugin extends AbstractUIPlugin {
 	}
 
 	private void removeFolder(File folder) {
-		if (folder != null) {
-			File[] files = folder.listFiles();
-			if (files != null) {
-				for (File file : folder.listFiles()) {
-					if (file.isDirectory())
-						removeFolder(file);
-					else
-						file.delete();
-				}
-			}
-			folder.delete();
+		File[] files = folder.listFiles();
+		for(int j=0; j<files.length; j++) {
+			if(files[j].isDirectory())
+				removeFolder(files[j]);
+			else
+				files[j].delete();
 		}
+		folder.delete();
 	}
 
 	/**
