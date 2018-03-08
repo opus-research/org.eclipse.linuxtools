@@ -52,7 +52,6 @@ public class LoggingStreamDaemon implements IGobblerListener {
 	/**
 	 * Outputs one line.
 	 */
-	@Override
 	public void handleDataEvent(String line) {
 		output.append(line);
 		this.pushData();

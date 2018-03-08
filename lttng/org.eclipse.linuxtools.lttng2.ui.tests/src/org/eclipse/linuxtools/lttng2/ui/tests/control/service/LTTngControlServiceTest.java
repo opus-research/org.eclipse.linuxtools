@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,12 +8,8 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.ui.tests.control.service;
-
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URL;
@@ -21,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import junit.framework.TestCase;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.FileLocator;
@@ -44,16 +42,12 @@ import org.eclipse.linuxtools.internal.lttng2.stubs.shells.LTTngToolsFileShell;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.LTTngControlService;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.LTTngControlServiceFactory;
-import org.junit.Before;
-import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
-
 /**
- * The class <code>LTTngControlServiceTest</code> contains test for the class
- * <code>{@link  LTTngControlService}</code>.
+ * The class <code>LTTngControlServiceTest</code> contains test for the class <code>{@link  LTTngControlService}</code>.
  */
 @SuppressWarnings({"nls", "javadoc"})
-public class LTTngControlServiceTest {
+public class LTTngControlServiceTest extends TestCase {
 
     private static final String DIRECTORY   = "testfiles";
     private static final String TEST_STREAM = "LTTngServiceTest.cfg";
@@ -83,29 +77,32 @@ public class LTTngControlServiceTest {
     private static final String SCEN_CONTEXT_HANDLING = "ContextHandling";
     private static final String SCEN_CONTEXT_ERROR_HANDLING = "ContextErrorHandling";
     private static final String SCEN_CALIBRATE_HANDLING = "CalibrateHandling";
-    private static final String SCEN_CREATE_SESSION_2_1 = "CreateSessionLttng2.1";
 
     // ------------------------------------------------------------------------
     // Test data
     // ------------------------------------------------------------------------
-
     private CommandShellFactory fShellFactory;
     private String fTestfile;
     private LTTngToolsFileShell fShell;
     private ILttngControlService fService;
 
+
+   // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
-
     /**
      * Perform pre-test initialization.
      *
-     * @throws Exception
-     *             if the initialization fails for some reason
+     * @throws Exception if the initialization fails for some reason
+     *
      */
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         fShellFactory = CommandShellFactory.getInstance();
 
         URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
@@ -117,11 +114,20 @@ public class LTTngControlServiceTest {
         fService = new LTTngControlService(fShell);
     }
 
+    /**
+     * Perform post-test clean-up.
+     *
+     * @throws Exception if the clean-up fails for some reason
+     *
+     */
+    @Override
+    public void tearDown() throws Exception {
+    }
+
     // ------------------------------------------------------------------------
     // Test Cases
     // ------------------------------------------------------------------------
 
-    @Test
     public void testVersion() {
         try {
             fShell.setScenario(SCEN_LTTNG_VERSION);
@@ -133,7 +139,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testVersionWithPrompt() {
         try {
             fShell.setScenario(SCEN_LTTNG_VERSION_WITH_PROMPT);
@@ -145,7 +150,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testUnsupportedVersion() {
         try {
             fShell.setScenario(SCEN_LTTNG_UNSUPPORTED_VERSION);
@@ -156,7 +160,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testNoVersion() {
         try {
             fShell.setScenario(SCEN_LTTNG_NO_VERSION);
@@ -167,7 +170,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testLttngNotInstalled() {
         try {
             fShell.setScenario(SCEN_LTTNG_NOT_INSTALLED);
@@ -178,7 +180,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetSessionNames1() {
         try {
             fShell.setScenario(SCEN_NO_SESSION_AVAILABLE);
@@ -192,7 +193,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetSessionNames2() {
         try {
             fShell.setScenario(SCEN_GET_SESSION_NAMES1);
@@ -208,7 +208,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetSessionNotExist() {
         try {
             fShell.setScenario(SCEN_GET_SESSION_NAME_NOT_EXIST);
@@ -220,7 +219,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetSessionNameGarbage() {
         try {
             fShell.setScenario(SCEN_GET_SESSION_GARBAGE_OUT);
@@ -234,7 +232,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetSession1() {
         try {
             fShell.setScenario(SCEN_GET_SESSION1);
@@ -382,7 +379,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetKernelProviderNoKernel1() {
         try {
             fShell.setScenario(SCEN_LIST_WITH_NO_KERNEL1);
@@ -397,7 +393,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetKernelProviderNoKernel2() {
         try {
             fShell.setScenario(SCEN_LIST_WITH_NO_KERNEL2);
@@ -412,7 +407,7 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
+
     public void testGetUstProvider() {
         try {
             fShell.setScenario(SCEN_GET_UST_PROVIDER1);
@@ -467,7 +462,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testUstProvider2() {
         try {
             fShell.setScenario(SCEN_GET_UST_PROVIDER2);
@@ -481,7 +475,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testGetUstProvider3() {
         try {
             fShell.setScenario(SCEN_GET_UST_PROVIDER3);
@@ -558,7 +551,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testCreateSession() {
         try {
             fShell.setScenario(SCEN_CREATE_SESSION1);
@@ -574,7 +566,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testCreateSessionWithPrompt() {
         try {
             // First line has the shell prompt before the command output
@@ -593,7 +584,7 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
+
     public void testCreateSessionVariants() {
 
         fShell.setScenario(SCEN_CREATE_SESSION_VARIANTS);
@@ -644,7 +635,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testDestroySession() {
         try {
             fShell.setScenario(SCEN_DESTROY_SESSION1);
@@ -654,7 +644,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testCreateChannel() {
         try {
 
@@ -693,7 +682,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testDisableChannel() {
         try {
 
@@ -716,7 +704,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testEnableChannel() {
         try {
 
@@ -752,7 +739,6 @@ public class LTTngControlServiceTest {
 //        }
 //    }
 
-    @Test
     public void testEnableEvents() {
         try {
             // 1) session name, channel = null, 3 event names, kernel
@@ -791,7 +777,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testEnableSyscalls() {
         try {
             // 1) session name, channel = null, 3 event names, kernel
@@ -811,7 +796,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testDynamicProbe() {
         try {
             // 1) session name, channel = null, 3 event names, kernel
@@ -835,7 +819,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testEnableLogLevel() {
         try {
             // 1) session name, channel = null, 3 event names, kernel
@@ -859,7 +842,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testAddContext() {
         try {
             // 1) session name, channel = null, 3 event names, kernel
@@ -901,7 +883,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testAddContextFailure() {
 
         // 1) session name, channel = null, 3 event names, kernel
@@ -927,7 +908,6 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testCalibrate() {
         try {
             fShell.setScenario(SCEN_CALIBRATE_HANDLING);
@@ -938,8 +918,8 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
     public void testCalibrateFailure() {
+
         try {
             fShell.setScenario(SCEN_CALIBRATE_HANDLING);
             fService.calibrate(false, new NullProgressMonitor());
@@ -949,49 +929,4 @@ public class LTTngControlServiceTest {
         }
     }
 
-    @Test
-    public void testCreateSession2_1() {
-
-        try {
-            fShell.setScenario(SCEN_CREATE_SESSION_2_1);
-
-            ISessionInfo info = fService.createSession("mysession", "net://172.0.0.1", null, null, new NullProgressMonitor());
-            assertNotNull(info);
-            assertEquals("mysession", info.getName());
-            assertEquals("net://172.0.0.1", info.getSessionPath());
-            assertTrue(info.isStreamedTrace());
-            fService.destroySession("mysession", new NullProgressMonitor());
-
-            info = fService.createSession("mysession", "file:///tmp", null, null, new NullProgressMonitor());
-            assertNotNull(info);
-            assertEquals("mysession", info.getName());
-            assertEquals("file:///tmp", info.getSessionPath());
-            assertTrue(info.isStreamedTrace());
-            fService.destroySession("mysession", new NullProgressMonitor());
-
-            info = fService.createSession("mysession", "file:///tmp", null, null, new NullProgressMonitor());
-            assertNotNull(info);
-            assertEquals("mysession", info.getName());
-            assertEquals("file:///tmp", info.getSessionPath());
-            assertTrue(info.isStreamedTrace());
-            fService.destroySession("mysession", new NullProgressMonitor());
-
-            info = fService.createSession("mysession", null, "tcp://172.0.0.1", "tcp://172.0.0.1:5343", new NullProgressMonitor());
-            assertNotNull(info);
-            assertEquals("mysession", info.getName());
-            assertEquals("", info.getSessionPath()); // TODO: currently there is a bug in LTTng tracer and it returns string null
-            assertTrue(info.isStreamedTrace());
-            fService.destroySession("mysession", new NullProgressMonitor());
-
-            info = fService.createSession("mysession", "net://172.0.0.1:1234:2345", null, null, new NullProgressMonitor());
-            assertNotNull(info);
-            assertEquals("mysession", info.getName());
-            assertEquals("net://172.0.0.1:1234:2345", info.getSessionPath());
-            assertTrue(info.isStreamedTrace());
-            fService.destroySession("mysession", new NullProgressMonitor());
-
-        } catch (ExecutionException e) {
-            fail(e.toString());
-        }
-    }
 }

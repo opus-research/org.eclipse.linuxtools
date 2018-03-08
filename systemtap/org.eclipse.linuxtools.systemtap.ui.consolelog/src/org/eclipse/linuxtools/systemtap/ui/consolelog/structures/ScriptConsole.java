@@ -26,6 +26,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
+import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.IOConsole;
 
 
@@ -130,6 +132,20 @@ public class ScriptConsole extends IOConsole {
 		}
 	}
 
+	/**
+	 * Finds and returns the active console.
+	 * @return The active <code>ScriptConsole<code> in the ConsoleView
+	 */
+	public static ScriptConsole getActive() {
+	        IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IConsoleConstants.ID_CONSOLE_VIEW);
+	        IConsole activeConsole = ((IConsoleView)ivp).getConsole();
+	        if (activeConsole instanceof ScriptConsole){
+	                return (ScriptConsole)activeConsole;
+	        }else{
+	                return null;
+	        }
+	}
+
 	ScriptConsole(String name, ImageDescriptor imageDescriptor) {
 		super(name, imageDescriptor);
 		cmd = null;
@@ -164,7 +180,6 @@ public class ScriptConsole extends IOConsole {
 	public void run(String[] command, String[] envVars, IErrorParser errorParser) {
 	    cmd = new ScpExec(command);
 		this.stopCommand = new Runnable() {
-			@Override
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
 				stop.start();
@@ -184,7 +199,6 @@ public class ScriptConsole extends IOConsole {
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
 		cmd = new LoggedCommand(command, envVars);
 		this.stopCommand = new Runnable() {
-			@Override
 			public void run() {
 				try {
 					RuntimeProcessFactory.getFactory().exec(getStopString(), null, null);

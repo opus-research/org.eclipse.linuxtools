@@ -16,6 +16,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import org.eclipse.linuxtools.systemtap.ui.editor.RecentFileMenuManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
@@ -51,23 +52,18 @@ public abstract class BrowserView extends ViewPart {
 	 *
 	 */
 	static class ViewContentProvider implements ITreeContentProvider {
-		@Override
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 
-		@Override
 		public void dispose() {}
 
-		@Override
 		public Object[] getElements(Object parent) {
 			return getChildren(parent);
 		}
 
-		@Override
 		public Object getParent(Object child) {
 			return null;
 		}
 
-		@Override
 		public Object[] getChildren(Object par) {
 			TreeNode parent = ((TreeNode)par);
 
@@ -80,7 +76,6 @@ public abstract class BrowserView extends ViewPart {
 			return children;
 		}
 
-		@Override
 		public boolean hasChildren(Object parent) {
 			return ((TreeNode)parent).getChildCount() > 0;
 		}
@@ -157,6 +152,7 @@ public abstract class BrowserView extends ViewPart {
 		IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
 		collapseHandler = new CollapseAllHandler(getViewer());
 		handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
+		RecentFileMenuManager.getInstance().registerActionBar(getViewSite().getActionBars());
 	}
 
 	public TreeViewer getViewer() {
@@ -180,10 +176,8 @@ public abstract class BrowserView extends ViewPart {
 	abstract void refresh();
 
 	protected class ViewUpdater implements IUpdateListener {
-		@Override
 		public void handleUpdateEvent() {
 			viewer.getControl().getDisplay().asyncExec(new Runnable() {
-				@Override
 				public void run() {
 					refresh();
 				}

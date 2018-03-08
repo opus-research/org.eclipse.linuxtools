@@ -22,12 +22,10 @@ public class TableEntry implements IDataEntry {
 		bodyContent = new ArrayList<Object[]>();
 	}
 
-	@Override
 	public int getRowCount() {
 		return bodyContent.size();
 	}
 
-	@Override
 	public int getColCount() {
 		if(getRowCount() > 0) {
 			return bodyContent.get(0).length;
@@ -35,7 +33,6 @@ public class TableEntry implements IDataEntry {
 		return 0;
 	}
 
-	@Override
 	public Object get(String key, int col) {
 		if(col >= 0 && col < getColCount()) {
 			Object[] row = getRow(key);
@@ -45,7 +42,6 @@ public class TableEntry implements IDataEntry {
 		return null;
 	}
 
-	@Override
 	public Object[][] getData() {
 		Object[][] d = new Object[getRowCount()][getColCount()];
 		for(int i=0; i<getRowCount(); i++) {
@@ -54,14 +50,12 @@ public class TableEntry implements IDataEntry {
 		return d;
 	}
 
-	@Override
 	public Object[] getRow(int row) {
 		if(row < 0 || row >= getRowCount())
 			return null;
 		return bodyContent.get(row);
 	}
 
-	@Override
 	public Object[] getRow(String key) {
 		Object[] row;
 		for(int i=0; i<bodyContent.size(); i++) {
@@ -72,7 +66,6 @@ public class TableEntry implements IDataEntry {
 		return null;
 	}
 
-	@Override
 	public Object[] getColumn(int col) {
 		return getColumn(col, 0, getRowCount());
 	}
@@ -87,7 +80,6 @@ public class TableEntry implements IDataEntry {
 		return null;
 	}
 
-	@Override
 	public void putRow(int row, Object[] data) {
 		if(row >= bodyContent.size())
 			add(data);
@@ -102,7 +94,6 @@ public class TableEntry implements IDataEntry {
 			bodyContent.add(data);
 	}
 
-	@Override
 	public IDataEntry copy() {
 		TableEntry entry = new TableEntry();
 		for(int i=0; i<bodyContent.size(); i++)
@@ -111,7 +102,6 @@ public class TableEntry implements IDataEntry {
 		return entry;
 	}
 
-	@Override
 	public boolean remove(int row) {
 		return (null != bodyContent.remove(row));
 	}

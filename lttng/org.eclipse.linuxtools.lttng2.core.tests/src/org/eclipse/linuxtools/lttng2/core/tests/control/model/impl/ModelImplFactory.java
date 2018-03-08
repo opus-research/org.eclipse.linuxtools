@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.linuxtools.lttng2.core.tests.control.model.impl;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
@@ -134,7 +133,6 @@ public class ModelImplFactory {
         fSessionInfo2.setSessionState(TraceSessionState.INACTIVE);
         fSessionInfo2.addDomain(fDomainInfo1);
         fSessionInfo2.addDomain(fDomainInfo2);
-        fSessionInfo2.setStreamedTrace(true);
 
         fProbeEventInfo1 = new ProbeEventInfo("probeEvent1");
         fProbeEventInfo1.setEventType(TraceEventType.TRACEPOINT);

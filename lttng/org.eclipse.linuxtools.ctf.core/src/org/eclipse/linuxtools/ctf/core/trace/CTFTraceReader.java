@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -418,7 +419,9 @@ public class CTFTraceReader {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + (int) (startTime ^ (startTime >>> 32));
-        result = (prime * result) + streamInputReaders.hashCode();
+        result = (prime * result)
+                + ((streamInputReaders == null) ? 0 : streamInputReaders
+                        .hashCode());
         result = (prime * result) + ((trace == null) ? 0 : trace.hashCode());
         return result;
     }
@@ -435,7 +438,11 @@ public class CTFTraceReader {
             return false;
         }
         CTFTraceReader other = (CTFTraceReader) obj;
-        if (!streamInputReaders.equals(other.streamInputReaders)) {
+        if (streamInputReaders == null) {
+            if (other.streamInputReaders != null) {
+                return false;
+            }
+        } else if (!streamInputReaders.equals(other.streamInputReaders)) {
             return false;
         }
         if (trace == null) {
@@ -466,5 +473,28 @@ public class CTFTraceReader {
      */
     public CTFTrace getTrace() {
         return trace;
+    }
+
+    /**
+     * Gets the relative position for progress bars
+     *
+     * @return the position in the trace between 0.0 to 1.0
+     * @since 2.0
+     */
+    public double getApproxPosition(){
+        double retVal = 0.0;
+        long totalSize = 0;
+        long pos = 0;
+        for(StreamInputReader sir: streamInputReaders){
+            try {
+                totalSize += sir.getStreamInput().getFileChannel().size();
+                pos += sir.getPacketReader().getCurrentPacket().getOffsetBytes();
+                retVal = (double)pos / totalSize;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return retVal;
     }
 }

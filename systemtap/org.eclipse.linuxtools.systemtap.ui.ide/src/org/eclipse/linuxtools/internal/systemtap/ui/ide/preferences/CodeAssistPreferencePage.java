@@ -26,7 +26,7 @@ public class CodeAssistPreferencePage extends FieldEditorPreferencePage implemen
 	public CodeAssistPreferencePage() {
 		super(GRID);
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("CodeAssistPreferencePage.CodeAssistPreferenceDescription")); //$NON-NLS-1$
+		setDescription(Localization.getString("CodeAssistPreferencePage.CodeAssistPreferenceDescription"));
 	}
 	
 	/**
@@ -40,29 +40,28 @@ public class CodeAssistPreferencePage extends FieldEditorPreferencePage implemen
 		addField(
 			new BooleanFieldEditor(
 				IDEPreferenceConstants.P_USE_CODE_ASSIST,
-				Localization.getString("CodeAssistPreferencePage.UseCodeAssist"), //$NON-NLS-1$
+				Localization.getString("CodeAssistPreferencePage.UseCodeAssist"),
 				getFieldEditorParent()));
 		addField(new RadioGroupFieldEditor(
 				IDEPreferenceConstants.P_COMPLETION,
-				Localization.getString("CodeAssistPreferencePage.HowCodeAdded"), //$NON-NLS-1$
+				Localization.getString("CodeAssistPreferencePage.HowCodeAdded"),
 				1,
 				new String[][] { 
-						{Localization.getString("CodeAssistPreferencePage.Insert"), IDEPreferenceConstants.P_COMPLETION_INSERT }, //$NON-NLS-1$
-						{Localization.getString("CodeAssistPreferencePage.Overwrite"), IDEPreferenceConstants.P_COMPLETION_OVERWRITE }}, //$NON-NLS-1$
+						{Localization.getString("CodeAssistPreferencePage.Insert"), IDEPreferenceConstants.P_COMPLETION_INSERT },
+						{Localization.getString("CodeAssistPreferencePage.Overwrite"), IDEPreferenceConstants.P_COMPLETION_OVERWRITE }},
 				getFieldEditorParent()));
 		addField(
 				new IntegerFieldEditor(
 						IDEPreferenceConstants.P_ACTIVATION_DELAY,
-				Localization.getString("CodeAssistPreferencePage.ActivationDelay"), //$NON-NLS-1$
+				Localization.getString("CodeAssistPreferencePage.ActivationDelay"),
 				getFieldEditorParent()));
 		addField(
 				new StringFieldEditor(
 						IDEPreferenceConstants.P_ACTIVATION_TRIGGER,
-				Localization.getString("CodeAssistPreferencePage.ActivationTrigger"), //$NON-NLS-1$
+				Localization.getString("CodeAssistPreferencePage.ActivationTrigger"),
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 

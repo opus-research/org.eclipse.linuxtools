@@ -18,6 +18,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
 import org.eclipse.ui.IEditorPart;
@@ -42,7 +43,11 @@ import org.eclipse.ui.PlatformUI;
 public class DefinitionAction extends Action implements IObjectActionDelegate, IWorkbenchWindowActionDelegate {
 	private IStructuredSelection selection = null;
 
-	@Override
+	public DefinitionAction() {
+		super();
+		LogManager.logInfo("initialized", this); //$NON-NLS-1$
+	}
+
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 	}
 
@@ -50,7 +55,6 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 	 * The main body of the event. This code gets the filename from the selected entry in the viewer,
 	 * then opens a new <code>STPEditor</code> for that file.
 	 */
-	@Override
 	public void run(IAction action) {
 		if(!isEnabled())
 			return;
@@ -118,7 +122,6 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 	 * Updates <code>selection</code> with the current selection whenever the user changes
 	 * the current selection.
 	 */
-	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 		if(selection instanceof IStructuredSelection) {
 			this.selection = (IStructuredSelection)selection;
@@ -139,10 +142,8 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 		}
 	}
 
-	@Override
 	public void init(IWorkbenchWindow window) {}
 
-	@Override
 	public void dispose() {}
 
 }

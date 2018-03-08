@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.tmf.ui.properties;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 
 /**
  * TMF Time format preferences

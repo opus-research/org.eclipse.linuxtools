@@ -10,11 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.view;
 
-import java.io.IOException;
-
 import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
@@ -48,6 +45,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -121,6 +119,7 @@ public class GmonView extends AbstractSTDataView {
 	 */
 	@Override
 	protected void contributeToToolbar(IToolBarManager manager) {
+		super.contributeToToolbar(manager);
 		manager.add(new Separator());
 		manager.add(action2);
 		action2.setChecked(true);
@@ -234,7 +233,7 @@ public class GmonView extends AbstractSTDataView {
 		GmonDecoder decoder = new GmonDecoder(binary, project);
 		try {
 			decoder.read(gmonPath);
-		} catch(IOException e) {
+		} catch(Exception e) {
 			Status status = new Status(
 					IStatus.ERROR,
 					Activator.PLUGIN_ID,
@@ -274,7 +273,15 @@ public class GmonView extends AbstractSTDataView {
 				gmonview.action2.setChecked(false);
 				gmonview.action1.run();
 			}
-		} catch(CoreException e) {
+			if (decoder.isDCache() || decoder.isICache()) {
+				TreeViewer tv = (TreeViewer) gmonview.getSTViewer().getViewer();
+				TreeColumn tc = tv.getTree().getColumn(1);
+				SampleProfField spf = (SampleProfField) tc.getData();
+				tc.setText(spf.getColumnHeaderText());
+				tc.setToolTipText(spf.getColumnHeaderTooltip());
+				tv.refresh();
+			}
+		} catch(Exception e) {
 			Status status = new Status(
 					IStatus.ERROR,
 					Activator.PLUGIN_ID,

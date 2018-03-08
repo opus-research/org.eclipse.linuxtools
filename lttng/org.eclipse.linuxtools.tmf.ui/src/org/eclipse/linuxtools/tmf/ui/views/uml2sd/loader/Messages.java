@@ -28,16 +28,11 @@ public class Messages extends NLS {
     public static String TmfUml2SDSyncLoader_SearchJobDescrition;
     public static String TmfUml2SDSyncLoader_SearchNotFound;
 
-    /** @since 2.0  */
-    public static String TmfUml2SDSyncLoader_EventTypeSend;
-    /** @since 2.0  */
-    public static String TmfUml2SDSyncLoader_EventTypeReceive;
-    /** @since 2.0  */
-    public static String TmfUml2SDSyncLoader_FieldSender;
-    /** @since 2.0  */
-    public static String TmfUml2SDSyncLoader_FieldReceiver;
-    /** @since 2.0  */
-    public static String TmfUml2SDSyncLoader_FieldSignal;
+    public static String TmfUml2SDSyncCloader_EventTypeSend;
+    public static String TmfUml2SDSyncCloader_EventTypeReceive;
+    public static String TmfUml2SDSyncCloader_FieldSender;
+    public static String TmfUml2SDSyncCloader_FieldReceiver;
+    public static String TmfUml2SDSyncCloader_FieldSignal;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

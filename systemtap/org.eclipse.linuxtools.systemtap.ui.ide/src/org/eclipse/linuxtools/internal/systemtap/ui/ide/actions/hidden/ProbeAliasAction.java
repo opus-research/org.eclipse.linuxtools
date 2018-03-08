@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
@@ -52,6 +53,7 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 * @param view	browser that fires this action
 	 */
 	public ProbeAliasAction(IWorkbenchWindow window, ProbeAliasBrowserView view) {
+		LogManager.logInfo("initialized", this); //$NON-NLS-1$
 		this.window = window;
 		setId(ID);
 		setActionDefinitionId(ID);
@@ -66,7 +68,6 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 * Updates <code>selection</code> with the current selection whenever the user changes
 	 * the current selection.
 	 */
-	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection incoming) {
 		if (incoming instanceof IStructuredSelection) {
 			selection = (IStructuredSelection) incoming;
@@ -79,6 +80,7 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
+		LogManager.logInfo("disposed", this); //$NON-NLS-1$
 	}
 
 	/**
@@ -92,6 +94,7 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 		IEditorPart editor = page.getActiveEditor();
 		if(null == editor) {
 			NewFileAction action = new NewFileAction();
+			//action.init(page.getWorkbenchWindow());
 			action.run();
 			editor = page.getWorkbenchWindow().getActivePage().getActiveEditor();
 		}
@@ -130,7 +133,6 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 		}
 	}
 
-	@Override
 	public void doubleClick(DoubleClickEvent event) {
 		run();
 	}

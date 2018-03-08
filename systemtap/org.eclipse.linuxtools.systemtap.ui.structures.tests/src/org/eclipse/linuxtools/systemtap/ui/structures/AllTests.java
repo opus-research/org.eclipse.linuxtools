@@ -15,6 +15,9 @@ import org.eclipse.linuxtools.systemtap.ui.structures.runnable.CommandTest;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobblerTest;
 import org.eclipse.linuxtools.systemtap.ui.structures.validators.ConditionalExpressionValidatorTest;
 import org.eclipse.linuxtools.systemtap.ui.structures.validators.DirectoryValidatorTest;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.IntegerValidatorTest;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.MultiValidatorTest;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.NumberValidatorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -27,6 +30,8 @@ import org.junit.runners.Suite;
 		ZipArchiveTest.class,
 
 		// structures.validators
-		ConditionalExpressionValidatorTest.class, DirectoryValidatorTest.class })
+		ConditionalExpressionValidatorTest.class, DirectoryValidatorTest.class,
+		IntegerValidatorTest.class, MultiValidatorTest.class,
+		NumberValidatorTest.class })
 public class AllTests {
 }

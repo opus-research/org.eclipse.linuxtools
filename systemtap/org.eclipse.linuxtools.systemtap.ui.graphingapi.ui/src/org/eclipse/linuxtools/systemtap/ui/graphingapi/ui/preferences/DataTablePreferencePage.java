@@ -48,7 +48,6 @@ public class DataTablePreferencePage extends FieldEditorPreferencePage implement
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {}
 	
 }

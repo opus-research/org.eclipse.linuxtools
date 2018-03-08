@@ -21,6 +21,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IViewPart;
@@ -44,21 +45,20 @@ public class ImportTapsetAction extends Action implements IWorkbenchWindowAction
 		setEnabled(true);
 	}
 
-	@Override
 	public void dispose() {
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
+		fWindow= null;
 	}
 
-	@Override
 	public void init(IWorkbenchWindow window) {
+		LogManager.logInfo("Initializing fWindow: " + window, this); //$NON-NLS-1$
 		fWindow= window;
 	}
 
-	@Override
 	public void run(IAction action) {
 		run();
 	}
 
-	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
