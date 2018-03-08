@@ -242,7 +242,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Sends the time range request only once from this method.
             if (fSendRangeRequest) {
                 fSendRangeRequest = false;
-                requestTimeRangeData(trace, fTrace.getCurrentRange());
+                requestTimeRangeData(trace, signal.getRange());
             }
         }
         requestData(trace, signal.getRange());
