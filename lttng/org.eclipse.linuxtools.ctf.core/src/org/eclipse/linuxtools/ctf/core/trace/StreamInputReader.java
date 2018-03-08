@@ -243,10 +243,15 @@ public class StreamInputReader {
         if (getPacketSize() >= (packetIndex + 1)) {
             this.packetReader.setCurrentPacket(getPacket());
         } else {
-            if (this.streamInput.addPacketHeaderIndex()) {
-                packetIndex = getPacketSize() - 1;
-                this.packetReader.setCurrentPacket(getPacket());
-            } else {
+            try {
+                if (this.streamInput.addPacketHeaderIndex()) {
+                    packetIndex = getPacketSize() - 1;
+                    this.packetReader.setCurrentPacket(getPacket());
+                } else {
+                    this.packetReader.setCurrentPacket(null);
+                }
+
+            } catch (CTFReaderException e) {
                 this.packetReader.setCurrentPacket(null);
             }
         }
@@ -293,8 +298,8 @@ public class StreamInputReader {
         /*
          * Advance until either of these conditions are met
          * <ul>
-         *  <li> reached the end of the trace file (the given timestamp is after the last event), </li>
-         *  <li> found the first event with a timestamp greater  or equal the given timestamp. </li>
+         *   <li> reached the end of the trace file (the given timestamp is after the last event), </li>
+         *   <li> found the first event with a timestamp greater or equal the given timestamp. </li>
          * </ul>
          */
         readNextEvent();
