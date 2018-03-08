@@ -22,10 +22,6 @@ import java.util.Map;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -251,21 +247,16 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * The default implementation of TmfTrace uses a TmfStatistics back-end.
      * Override this if you want to specify another type (or none at all).
      *
-     * @return An IStatus indicating if the statistics could be built
-     *         successfully or not.
-     * @since 3.0
+     * @throws TmfTraceException
+     *             If there was a problem setting up the statistics
+     * @since 2.0
      */
-    protected IStatus buildStatistics() {
+    protected void buildStatistics() throws TmfTraceException {
         /*
          * Initialize the statistics provider, but only if a Resource has been
          * set (so we don't build it for experiments, for unit tests, etc.)
          */
-        try {
-            fStatistics = (fResource == null ? null : new TmfStateStatistics(this) );
-        } catch (TmfTraceException e) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-        }
-        return Status.OK_STATUS;
+        fStatistics = (fResource == null ? null : new TmfStateStatistics(this) );
     }
 
     /**
@@ -274,16 +265,17 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Suppressing the warning, because the 'throws' will usually happen in
      * sub-classes.
      *
-     * @return An IStatus indicating if the state system could be build
-     *         successfully or not.
-     * @since 3.0
+     * @throws TmfTraceException
+     *             If there is a problem during the build
+     * @since 2.0
      */
-    protected IStatus buildStateSystem() {
+    @SuppressWarnings("unused")
+    protected void buildStateSystem() throws TmfTraceException {
         /*
          * Nothing is done in the base implementation, please specify
          * how/if to register a new state system in derived classes.
          */
-        return Status.OK_STATUS;
+        return;
     }
 
     /**
@@ -416,14 +408,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     public ITmfTimestamp getInitialRangeOffset() {
         final long DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
         return new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public String getHostId() {
-        return this.getName();
     }
 
     // ------------------------------------------------------------------------
@@ -676,11 +660,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
          * The signal is either for this trace, or for an experiment containing
          * this trace.
          */
-        MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
-        status.add(buildStatistics());
-        status.add(buildStateSystem());
-        if (!status.isOK()) {
-            Activator.log(status);
+        try {
+            buildStatistics();
+            buildStateSystem();
+        } catch (TmfTraceException e) {
+            e.printStackTrace();
         }
 
         /* Refresh the project, so it can pick up new files that got created. */

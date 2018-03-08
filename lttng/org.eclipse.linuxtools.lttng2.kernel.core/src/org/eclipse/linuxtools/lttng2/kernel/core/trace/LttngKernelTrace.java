@@ -91,11 +91,8 @@ public class LttngKernelTrace extends CtfTmfTrace {
         return validStatus;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
-    protected IStatus buildStateSystem() {
+    protected void buildStateSystem() throws TmfTraceException {
         super.buildStateSystem();
 
         /* Build the state system specific to LTTng kernel traces */
@@ -103,13 +100,8 @@ public class LttngKernelTrace extends CtfTmfTrace {
         final File htFile = new File(directory + HISTORY_TREE_FILE_NAME);
         final ITmfStateProvider htInput = new LttngKernelStateProvider(this);
 
-        try {
-            ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
-            fStateSystems.put(STATE_ID, ss);
-        } catch (TmfTraceException e) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-        }
-        return Status.OK_STATUS;
+        ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
+        fStateSystems.put(STATE_ID, ss);
     }
 
 }
