@@ -133,5 +133,6 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
     public void serialize(ByteBuffer bufferOut) {
         bufferOut.putLong(timestamp);
         bufferOut.putLong(index);
+
     }
 }
