@@ -70,6 +70,11 @@ public interface ITmfDataRequest {
     int getNbRequested();
 
     /**
+     * @return the block size (for BG requests)
+     */
+    int getBlockSize();
+
+    /**
      * @return the number of events read so far
      */
     int getNbRead();
