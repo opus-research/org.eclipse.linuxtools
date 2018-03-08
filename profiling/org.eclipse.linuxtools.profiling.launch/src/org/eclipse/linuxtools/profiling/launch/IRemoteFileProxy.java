@@ -22,5 +22,6 @@ public interface IRemoteFileProxy {
 	public String toPath(URI uri);
 	public String getDirectorySeparator();
 	public IFileStore getResource(String path);
+	public URI getRemoteDir();
 
 }

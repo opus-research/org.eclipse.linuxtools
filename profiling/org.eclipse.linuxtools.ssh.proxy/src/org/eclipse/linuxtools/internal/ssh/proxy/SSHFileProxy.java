@@ -54,4 +54,9 @@ public class SSHFileProxy extends SSHBase implements IRemoteFileProxy {
 			return null;
 		}
 	}
+
+	@Override
+	public URI getRemoteDir() {
+		return null;
+	}
 }

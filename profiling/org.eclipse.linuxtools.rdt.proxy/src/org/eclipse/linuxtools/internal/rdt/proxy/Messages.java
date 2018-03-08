@@ -14,6 +14,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.rdt.proxy.messages"; //$NON-NLS-1$
+	final static String SYNC_NATURE = "org.eclipse.ptp.rdt.sync.core.remoteSyncNature"; //$NON-NLS-1$ 
 	public static String RDTCommandLauncher_malformed_env_var_string;
 	static {
 	   // initialize resource bundle
