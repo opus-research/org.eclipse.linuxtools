@@ -45,7 +45,6 @@ public class EnableEventsDialogStub implements IEnableEventsDialog {
     private String fLogLevelEventName;
     private TraceLogLevel fLogLevel;
     private LogLevelType fLogLevelType;
-    private String fFilter;
     List<String> fNames = new ArrayList<String>();
 
     // ------------------------------------------------------------------------
@@ -117,10 +116,6 @@ public class EnableEventsDialogStub implements IEnableEventsDialog {
 
     public void setNames(List<String> names) {
         fNames = names;
-    }
-
-    public void setFilterExpression(String filter) {
-        fFilter = filter;
     }
 
     @Override
@@ -225,10 +220,4 @@ public class EnableEventsDialogStub implements IEnableEventsDialog {
     public int open() {
         return 0;
     }
-
-    @Override
-    public String getFilterExpression() {
-        return fFilter;
-    }
-
 }

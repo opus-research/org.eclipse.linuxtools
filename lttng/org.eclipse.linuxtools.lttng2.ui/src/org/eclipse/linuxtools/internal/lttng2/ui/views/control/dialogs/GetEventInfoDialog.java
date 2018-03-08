@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 /**
  * <p>
@@ -75,10 +74,6 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
      */
     private CCombo fChannelsCombo = null;
     /**
-     * The filter text
-     */
-    private Text fFilterText;
-    /**
      * The list of available sessions.
      */
     private TraceSessionComponent[] fSessions;
@@ -98,10 +93,6 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
      * List of available channels of the selected session.
      */
     private TraceChannelComponent[] fChannels;
-    /**
-     * The filter expression
-     */
-    private String fFilterExpression;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -152,14 +143,6 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
     @Override
     public void setSessions(TraceSessionComponent[] sessions) {
         fSessions = Arrays.copyOf(sessions, sessions.length);
-    }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IGetEventInfoDialog#getFilterExpression()
-     */
-    @Override
-    public String getFilterExpression() {
-       return fFilterExpression;
     }
 
     // ------------------------------------------------------------------------
@@ -258,21 +241,6 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
             }
         });
 
-        // take first session to test whether events filtering is supported or not
-        if (fSessions[0].isEventFilteringSupported() && !fIsKernel) {
-            Group filterMainGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-            filterMainGroup.setText(Messages.TraceControl_EnableEventsFilterGroupName);
-            layout = new GridLayout(2, false);
-            filterMainGroup.setLayout(layout);
-            data = new GridData(GridData.FILL_HORIZONTAL);
-            filterMainGroup.setLayoutData(data);
-
-            fFilterText = new Text(filterMainGroup, SWT.LEFT);
-            fFilterText.setToolTipText(Messages.TraceControl_EnableEventsFilterTooltip);
-            data = new GridData(GridData.FILL_HORIZONTAL);
-            fFilterText.setLayoutData(data);
-        }
-
         getShell().setMinimumSize(new Point(300, 200));
 
         return fDialogComposite;
@@ -304,20 +272,16 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
 
         fSessionIndex = fSessionsCombo.getSelectionIndex();
 
-        // if no channel is available or no channel is selected use default channel indicated by fChannel=null
-        fChannel = null;
-        if ((fChannels != null) && (fChannelsCombo.getSelectionIndex() >= 0)) {
-            fChannel = fChannels[fChannelsCombo.getSelectionIndex()];
+        if ((fChannels != null) && (fChannels.length > 0) && (fChannelsCombo.getSelectionIndex() < 0)) {
+            MessageDialog.openError(getShell(),
+                    Messages.TraceControl_EnableEventsDialogTitle,
+                    Messages.TraceControl_EnableEventsNoChannelError);
+              return;
         }
-
-        // initialize filter with null
-        fFilterExpression = null;
-        if (fSessions[0].isEventFilteringSupported() && !fIsKernel) {
-            String tempFilter = fFilterText.getText();
-
-            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
-                fFilterExpression = tempFilter;
-            }
+        // Initialize fChannel to null
+        fChannel = null;
+        if ((fChannels != null) && (fChannels.length > 0)) {
+            fChannel = fChannels[fChannelsCombo.getSelectionIndex()];
         }
 
         super.okPressed();

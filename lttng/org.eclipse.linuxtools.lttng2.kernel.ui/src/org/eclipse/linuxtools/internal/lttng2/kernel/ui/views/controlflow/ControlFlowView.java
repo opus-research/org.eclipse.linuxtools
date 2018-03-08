@@ -227,7 +227,7 @@ public class ControlFlowView extends TmfView {
                     return Integer.toString(entry.getParentThreadId());
                 }
             } else if (columnIndex == 3) {
-                return Utils.formatTime(entry.getBirthTime(), TimeFormat.ABSOLUTE, Resolution.NANOSEC);
+                return Utils.formatTime(entry.getBirthTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
             } else if (columnIndex == 4) {
                 return entry.getTrace().getName();
             }
@@ -398,7 +398,7 @@ public class ControlFlowView extends TmfView {
             }
         });
 
-        fTimeGraphCombo.getTimeGraphViewer().setTimeCalendarFormat(true);
+        fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         // View Action Handling
         makeActions();
@@ -746,16 +746,16 @@ public class ControlFlowView extends TmfView {
     private static List<ITimeEvent> getEventList(ControlFlowEntry entry,
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor) {
-        startTime = Math.max(startTime, entry.getStartTime());
-        endTime = Math.min(endTime, entry.getEndTime());
-        if (endTime <= startTime) {
+        final long realStart = Math.max(startTime, entry.getStartTime());
+        final long realEnd = Math.min(endTime, entry.getEndTime());
+        if (realEnd <= realStart) {
             return null;
         }
         ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
         List<ITimeEvent> eventList = null;
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
-            List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, startTime, endTime - 1, resolution, monitor);
+            List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
             eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
             long lastEndTime = -1;
             for (ITmfStateInterval statusInterval : statusIntervals) {
