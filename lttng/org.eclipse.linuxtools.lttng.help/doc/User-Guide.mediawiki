@@ -524,7 +524,6 @@ The Histogram View displays the trace events distribution with respect to time. 
 
 [[Image:images/HistogramView.png]]
 
-The '''Hide lost events''' button [[Image:images/hide_lost_events.gif]] in the local toolbar allows to hide the bars of lost events or not. When the button is toggled it will become a '''Show lost events''' button.
 
 On the top left, there are two data controls:
 
