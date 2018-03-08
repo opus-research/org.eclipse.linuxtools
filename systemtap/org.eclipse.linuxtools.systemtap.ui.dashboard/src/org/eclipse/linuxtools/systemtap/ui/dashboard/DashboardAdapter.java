@@ -74,6 +74,7 @@ public class DashboardAdapter {
 
 		folder.setLayoutData(folder);
 		folder.setLayout(new FormLayout());
+		//folder.setTabHeight(0);
 
 		ToolBar toolBar = new ToolBar (folder, SWT.FLAT | SWT.BORDER);
 		min = new ToolItem(toolBar, SWT.PUSH);
@@ -109,6 +110,7 @@ public class DashboardAdapter {
 		c.setLayoutData(data);
 		c.setLayout(new FormLayout());
 		item.setControl(c);
+		//item.setText(gd.title);
 		folder.setSelection(item);
 
 		//Create graph
