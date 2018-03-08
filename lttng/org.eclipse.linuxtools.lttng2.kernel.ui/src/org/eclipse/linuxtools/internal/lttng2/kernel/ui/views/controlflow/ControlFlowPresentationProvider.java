@@ -77,7 +77,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             int status = ((ControlFlowEvent) event).getStatus();
             return getMatchingState(status).ordinal();
         }
-        return State.UNKNOWN.ordinal();
+        return TRANSPARENT;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             int status = ((ControlFlowEvent) event).getStatus();
             return getMatchingState(status).toString();
         }
-        return State.UNKNOWN.toString();
+        return Messages.ControlFlowView_multipleStates;
     }
 
     private static State getMatchingState(int status) {
