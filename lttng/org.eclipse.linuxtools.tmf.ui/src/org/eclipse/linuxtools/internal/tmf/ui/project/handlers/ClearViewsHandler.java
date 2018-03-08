@@ -16,19 +16,17 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.linuxtools.tmf.core.signal.TmfClearExperimentSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * <b><u>ClearViewsHandler</u></b>
- * <p>
- * Implement me. Please.
- * <p>
+ * Sends the clear signal to the TmfView:s
+ *
+ * @version 1.0
+ * @author Francois Chouinard
  */
 public class ClearViewsHandler extends AbstractHandler {
-
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
 
     // ------------------------------------------------------------------------
     // Execution
@@ -36,7 +34,12 @@ public class ClearViewsHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        MessageDialog.openInformation(PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Clear Views", "Clear the tracing views"); //$NON-NLS-1$ //$NON-NLS-2$
+        boolean clearViewConfirmed = MessageDialog.openConfirm(
+                PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+                Messages.ClearViewsHandler_title, Messages.ClearViewsHandler_message);
+        if (clearViewConfirmed) {
+            TmfSignalManager.dispatchSignal(new TmfClearExperimentSignal(this));
+        }
         return null;
     }
 
