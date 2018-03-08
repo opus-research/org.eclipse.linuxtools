@@ -66,8 +66,8 @@ public class TapsetParser implements Runnable {
 	 */
 	protected void init() {
 		disposed = false;
-		functions = new TreeNode("", false); //$NON-NLS-1$
-		probes = new TreeNode("", false); //$NON-NLS-1$
+		functions = new TreeNode("", false);
+		probes = new TreeNode("", false);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class TapsetParser implements Runnable {
 	public void start() {
 		stopped = false;
 		init();
-		this.thread = new Thread(this, "TapsetParser"); //$NON-NLS-1$
+		this.thread = new Thread(this, "TapsetParser");
 		thread.start();
 	}
 
@@ -162,9 +162,8 @@ public class TapsetParser implements Runnable {
 	 * @param listener The listener that will receive updateEvents
 	 */
 	public void addListener(IUpdateListener listener) {
-		if (null != listener) {
+		if(null != listener)
 			listeners.add(listener);
-		}
 	}
 
 	/**
@@ -172,9 +171,8 @@ public class TapsetParser implements Runnable {
 	 * @param listener The listener that no longer wants to recieve update events
 	 */
 	public void removeListener(IUpdateListener listener) {
-		if (null != listener) {
+		if(null != listener)
 			listeners.remove(listener);
-		}
 	}
 
 	/**
@@ -195,17 +193,15 @@ public class TapsetParser implements Runnable {
 		String[] args = null;
 
 		int size = 2;	//start at 2 for stap, script, options will be added in later
-		if (null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
+		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0)
 			size += tapsets.length<<1;
-		}
-		if (null != options && options.length > 0 && options[0].trim().length() > 0) {
+		if(null != options && options.length > 0 && options[0].trim().length() > 0)
 			size += options.length;
-		}
 
 		args = new String[size];
 		args[0] = ""; //$NON-NLS-1$
 		args[size-1] = probe;
-		args[size-2] = ""; //$NON-NLS-1$
+		args[size-2] = "";
 
 		//Add extra tapset directories
 		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
@@ -223,11 +219,10 @@ public class TapsetParser implements Runnable {
 		StringOutputStream strErr = new StringOutputStream();
 		try {
 			URI uri;
-			if (IDEPlugin.getDefault().getPreferenceStore().getBoolean(IDEPreferenceConstants.P_REMOTE_PROBES)) {
+			if(IDEPlugin.getDefault().getPreferenceStore().getBoolean(IDEPreferenceConstants.P_REMOTE_PROBES))
 				uri = IDEPlugin.getDefault().createRemoteUri(null);
-			} else {
+			else
 				uri = new URI(Path.ROOT.toOSString());
-			}
 			IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(uri);
 			Process process = launcher.execute(new Path("stap"), args, null, null, null); //$NON-NLS-1$
 			if(process == null){
@@ -254,8 +249,8 @@ public class TapsetParser implements Runnable {
 	private String readPass1(String script) {
 		String[] options;
 		if(null == script) {
-			script = "**"; //$NON-NLS-1$
-			options = new String[] {"-p1", "-v", "-L"};   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+			script = "**";
+			options = new String[] {"-p1", "-v", "-L"};
 		} else {
 			options = null;
 		}
@@ -288,9 +283,8 @@ public class TapsetParser implements Runnable {
 
 			// If the token starts with '_' or '__' it is a private probe so
 			// skip it.
-			if (tokenString.startsWith("_")) { //$NON-NLS-1$
-				continue;
-			}
+ 			if (tokenString.startsWith("_")) //$NON-NLS-1$
+ 				continue;
 
 	 		int firstDotIndex = tokenString.indexOf('.');
  			String groupName = tokenString;
@@ -351,21 +345,21 @@ public class TapsetParser implements Runnable {
 	private void runPass2Functions() {
 		int i = 0;
 		TreeNode parent;
-		String script = "probe begin{}"; //$NON-NLS-1$
-		String result = runStap(new String[] {"-v", "-p1", "-e"}, script);   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-		StringTokenizer st = new StringTokenizer(result, "\n", false); //$NON-NLS-1$
+		String script = "probe begin{}";
+		String result = runStap(new String[] {"-v", "-p1", "-e"}, script);
+		StringTokenizer st = new StringTokenizer(result, "\n", false);
 		st.nextToken(); //skip that stap command
-		String tok = ""; //$NON-NLS-1$
+		String tok = "";
 		while(st.hasMoreTokens()) {
 			tok = st.nextToken().toString();
-			String regex = "^function .*\\)\n$"; //match ^function and ending the line with ')' //$NON-NLS-1$
+			String regex = "^function .*\\)\n$"; //match ^function and ending the line with ')'
 			Pattern p = Pattern.compile(regex, Pattern.MULTILINE | Pattern.UNIX_LINES | Pattern.COMMENTS);
 			Matcher m = p.matcher(tok);
 			while(m.find()) {
 				// this gives us function foo (bar, bar)
 				// we need to strip the ^function and functions with a leading _
-				Pattern secondp = Pattern.compile("[\\W]"); //take our function line and split it up //$NON-NLS-1$
-				Pattern underscorep = Pattern.compile("^function _.*"); //remove any lines that "^function _" //$NON-NLS-1$
+				Pattern secondp = Pattern.compile("[\\W]"); //take our function line and split it up
+				Pattern underscorep = Pattern.compile("^function _.*"); //remove any lines that "^function _"
 				String[] us = underscorep.split(m.group().toString());
 
 				for(String s : us) {
@@ -380,7 +374,7 @@ public class TapsetParser implements Runnable {
 						}
 						else if(i > 1 && t.length() >= 1) {
 							parent = functions.getChildAt(functions.getChildCount()-1);
-							parent.add(new TreeDefinitionNode("function " + t, t, parent.getData().toString(), false)); //$NON-NLS-1$
+							parent.add(new TreeDefinitionNode("function " + t, t, parent.getData().toString(), false));
 						}
 						i++;
 					}
