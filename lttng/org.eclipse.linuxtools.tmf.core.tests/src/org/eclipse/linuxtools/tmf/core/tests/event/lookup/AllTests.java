@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,29 +7,20 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Adjusted for new Event Model
- *   Alexandre Montplaisir - Port to JUnit4
+ *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.event;
+package org.eclipse.linuxtools.tmf.core.tests.event.lookup;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for org.eclipse.linuxtools.tmf.core.event
+ * Test suite for org.eclipse.linuxtools.tmf.core.event.lookup
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TmfEventFieldTest.class,
-    TmfEventTest.class,
-    TmfEventTypeManagerTest.class,
-    TmfEventTypeTest.class,
-    TmfSimpleTimestampTest.class,
-    TmfTimeRangeTest.class,
-    TmfTimestampDeltaTest.class,
-    TmfTimestampTest.class,
+    TmfCallsiteTest.class
 })
 public class AllTests {
 
