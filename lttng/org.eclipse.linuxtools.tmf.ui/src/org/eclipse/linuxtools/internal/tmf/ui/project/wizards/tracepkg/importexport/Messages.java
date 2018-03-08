@@ -148,11 +148,6 @@ public class Messages extends NLS {
     public static String ImportTracePackageWizardPage_ErrorSettingTraceType;
 
     /**
-     * Message when the trace could not be found after importing the files
-     */
-    public static String ImportTracePackageWizardPage_ErrorFindingImportedTrace;
-
-    /**
      * The message displayed under the title
      */
     public static String ImportTracePackageWizardPage_Message;

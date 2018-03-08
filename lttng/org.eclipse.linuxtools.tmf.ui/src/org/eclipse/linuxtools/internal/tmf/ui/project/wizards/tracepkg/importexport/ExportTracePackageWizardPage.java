@@ -18,10 +18,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -42,8 +39,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -98,7 +93,7 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
         fSelectedTraces = new ArrayList<TmfTraceElement>();
         for (Object selectedElement : selectedElements) {
             if (selectedElement instanceof TmfTraceElement) {
-                fSelectedTraces.add(((TmfTraceElement) selectedElement).getElementUnderTraceFolder());
+                fSelectedTraces.add((TmfTraceElement) selectedElement);
             }
         }
     }
@@ -132,7 +127,7 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
         createElementViewer(composite);
         createButtonsGroup(composite);
-        createFilePathGroup(composite, Messages.ExportTracePackageWizardPage_ToArchive, SWT.SAVE);
+        createFilePathGroup(composite, Messages.ExportTracePackageWizardPage_ToArchive);
         createOptionsGroup(composite);
 
         restoreWidgetValues();
@@ -163,18 +158,6 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
             fTargzFormatButton.setSelection(!settings.getBoolean(STORE_FORMAT_ID));
             updateWithFilePathSelection();
         }
-    }
-
-    @Override
-    protected void createFilePathGroup(Composite parent, String label, int fileDialogStyle) {
-        super.createFilePathGroup(parent, label, fileDialogStyle);
-
-        getFilePathCombo().addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                updatePageCompletion();
-            }
-        });
     }
 
     private void createOptionsGroup(Composite parent) {
@@ -314,19 +297,7 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
             suppFilesElement.setChildren(suppFilesChildren.toArray(new TracePackageElement[] {}));
 
             // Bookmarks
-            IFile bookmarksFile = tmfTraceElement.getBookmarksFile();
-            if (bookmarksFile != null && bookmarksFile.exists()) {
-                IMarker[] findMarkers;
-                try {
-                    findMarkers = bookmarksFile.findMarkers(IMarker.BOOKMARK, false, IResource.DEPTH_ZERO);
-                    if (findMarkers.length > 0) {
-                        children.add(new TracePackageBookmarkElement(traceElement, null));
-                    }
-                } catch (CoreException e) {
-                    // Should not happen since we just checked bookmarksFile.exists() but log it just in case
-                    Activator.getDefault().logError("Error finding bookmarks", e); //$NON-NLS-1$
-                }
-            }
+            children.add(new TracePackageBookmarkElement(traceElement, null));
 
             traceElement.setChildren(children.toArray(new TracePackageElement[] {}));
 
@@ -342,7 +313,7 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
         Composite buttonGroup = super.createButtonsGroup(parent);
 
         // Add the label on the same row of the select/deselect all buttons
-        fApproximateSizeLabel = new Label(buttonGroup, SWT.RIGHT);
+        fApproximateSizeLabel = new Label(buttonGroup, SWT.SINGLE | SWT.RIGHT);
         GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
         layoutData.grabExcessHorizontalSpace = true;
         fApproximateSizeLabel.setLayoutData(layoutData);

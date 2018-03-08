@@ -38,10 +38,10 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -94,7 +94,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
                 | GridData.HORIZONTAL_ALIGN_FILL));
         composite.setFont(parent.getFont());
 
-        createFilePathGroup(composite, Messages.ImportTracePackageWizardPage_FromArchive, SWT.OPEN);
+        createFilePathGroup(composite, Messages.ImportTracePackageWizardPage_FromArchive);
         createElementViewer(composite);
         createButtonsGroup(composite);
         if (fTmfTraceFolder == null) {
@@ -248,8 +248,8 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
     }
 
     @Override
-    protected void createFilePathGroup(Composite parent, String label, int fileDialogStyle) {
-        super.createFilePathGroup(parent, label, fileDialogStyle);
+    protected void createFilePathGroup(Composite parent, String label) {
+        super.createFilePathGroup(parent, label);
 
         Combo filePathCombo = getFilePathCombo();
         filePathCombo.addSelectionListener(new SelectionAdapter() {
@@ -260,11 +260,10 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         });
 
         // User can type-in path and press return to validate
-        filePathCombo.addTraverseListener(new TraverseListener() {
+        filePathCombo.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
-                    e.doit = false;
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == '\r') {
                     updateWithFilePathSelection();
                 }
             }
@@ -273,9 +272,8 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
     @Override
     protected void updateWithFilePathSelection() {
-        if (!isFilePathValid()) {
+        if (!new File(getFilePathValue()).exists()) {
             setErrorMessage(Messages.ImportTracePackageWizardPage_ErrorFileNotFound);
-            getElementViewer().setInput(null);
             return;
         }
         setErrorMessage(null);
@@ -297,10 +295,6 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         });
     }
 
-    private boolean isFilePathValid() {
-        return new File(getFilePathValue()).exists();
-    }
-
     /**
      * Finish the wizard page
      *
@@ -314,18 +308,18 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         saveWidgetValues();
 
         TracePackageElement[] input = (TracePackageElement[]) getElementViewer().getInput();
-        TracePackageTraceElement traceElement = (TracePackageTraceElement) input[0];
-        final TracePackageImportOperation importOperation = new TracePackageImportOperation(fValidatedFilePath, traceElement, fTmfTraceFolder);
+        TracePackageTraceElement exportTraceTraceElement = (TracePackageTraceElement) input[0];
+        final TracePackageImportOperation exporter = new TracePackageImportOperation(fValidatedFilePath, exportTraceTraceElement, fTmfTraceFolder);
 
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    importOperation.run(monitor);
+                    exporter.run(monitor);
                 }
             });
 
-            IStatus status = importOperation.getStatus();
+            IStatus status = exporter.getStatus();
             if (status.getSeverity() == IStatus.ERROR) {
                 handleErrorStatus(status);
             }
@@ -335,7 +329,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         } catch (InterruptedException e) {
         }
 
-        return importOperation.getStatus().getSeverity() == IStatus.OK;
+        return exporter.getStatus().getSeverity() == IStatus.OK;
     }
 
     private boolean checkForOverwrite() {

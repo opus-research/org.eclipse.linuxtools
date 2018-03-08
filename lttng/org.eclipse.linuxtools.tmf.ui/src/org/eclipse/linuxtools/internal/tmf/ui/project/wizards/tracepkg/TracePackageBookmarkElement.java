@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg;
 
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.swt.graphics.Image;
@@ -25,19 +24,67 @@ import org.eclipse.swt.graphics.Image;
  */
 public class TracePackageBookmarkElement extends TracePackageElement {
     private static final String BOOKMARK_IMAGE_PATH = "icons/elcl16/bookmark_obj.gif"; //$NON-NLS-1$
-    private final List<Map<String, String>> bookmarkAttribs;
+    private final List<BookmarkInfo> bookmarkInfos;
+
+    /**
+     * Information about a single bookmark
+     */
+    public static class BookmarkInfo {
+
+        /**
+         * The bookmark message
+         */
+        private final String fMessageAttr;
+
+        /**
+         * The bookmark location
+         */
+        private final Integer fLocation;
+
+        /**
+         * Get the bookmark message
+         *
+         * @return the bookmark message
+         */
+        public String getMessage() {
+            return fMessageAttr;
+        }
+
+        /**
+         * Get the bookmark location
+         *
+         * @return the bookmark location
+         */
+        public Integer getLocation() {
+            return fLocation;
+        }
+
+        /**
+         * Create the information for a single bookmark
+         *
+         * @param location
+         *            the bookmark location
+         * @param message
+         *            the bookmark message
+         */
+        public BookmarkInfo(Integer location, String message) {
+            fLocation = location;
+            fMessageAttr = message;
+        }
+
+    }
 
     /**
      * Construct a bookmark element containing all the bookmarks
      *
      * @param parent
      *            the parent node
-     * @param bookmarkAttribs
+     * @param bookmarkInfos
      *            the bookmarks for the trace
      */
-    public TracePackageBookmarkElement(TracePackageElement parent, List<Map<String, String>> bookmarkAttribs) {
+    public TracePackageBookmarkElement(TracePackageElement parent, List<BookmarkInfo> bookmarkInfos) {
         super(parent);
-        this.bookmarkAttribs = bookmarkAttribs;
+        this.bookmarkInfos = bookmarkInfos;
     }
 
     @Override
@@ -60,7 +107,7 @@ public class TracePackageBookmarkElement extends TracePackageElement {
      *
      * @return the bookmarks
      */
-    public List<Map<String, String>> getBookmarks() {
-        return bookmarkAttribs;
+    public List<BookmarkInfo> getBookmarks() {
+        return bookmarkInfos;
     }
 }

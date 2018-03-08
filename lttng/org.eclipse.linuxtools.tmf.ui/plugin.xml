@@ -644,9 +644,13 @@
                      <iterate
                            ifEmpty="false"
                            operator="and">
-                        <instanceof
-                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                        </instanceof>
+                        <and>
+                           <or>
+                              <instanceof
+                                    value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
+                              </instanceof>
+                           </or>
+                        </and>
                      </iterate>
                   </and>
                </with>
@@ -889,12 +893,6 @@
             description="%command.batch_import.description"
             id="org.eclipse.linuxtools.tmf.ui.batch_import"
             name="%command.batch_import">
-      </command>
-      <command
-            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
-            description="%command.export_to_text.description"
-            id="org.eclipse.linuxtools.tmf.ui.exportToText"
-            name="%command.export_to_text">
       </command>
    </extension>
    <extension
@@ -1231,10 +1229,6 @@
                </iterate>
             </and>
          </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler"
-            commandId="org.eclipse.linuxtools.tmf.ui.exportToText">
       </handler>
    </extension>
    <extension point="org.eclipse.ui.bindings">

@@ -19,7 +19,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -30,19 +29,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageOperation;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageBookmarkElement;
+import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageBookmarkElement.BookmarkInfo;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFileElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
@@ -186,8 +183,8 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 ModalContext.checkCanceled(progressMonitor);
 
                 if (element instanceof TracePackageFilesElement) {
-                    TracePackageFilesElement traceFilesElement = (TracePackageFilesElement) element;
-                    setStatus(importTraceFiles(progressMonitor, traceFilesElement));
+                    TracePackageFilesElement exportTraceFilesElement = (TracePackageFilesElement) element;
+                    setStatus(importTraceFiles(progressMonitor, exportTraceFilesElement));
 
                 } else if (element instanceof TracePackageSupplFilesElement) {
                     TracePackageSupplFilesElement suppFilesElement = (TracePackageSupplFilesElement) element;
@@ -199,26 +196,17 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 }
             }
 
-            String traceName = fImportTraceElement.getText();
-            IResource traceRes = fTmfTraceFolder.getResource().findMember(traceName);
-            if (traceRes == null || !traceRes.exists()) {
-                setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, MessageFormat.format(Messages.ImportTracePackageWizardPage_ErrorFindingImportedTrace, traceName)));
-                return;
-            }
+            IResource traceRes = fTmfTraceFolder.getResource().findMember(fImportTraceElement.getText());
 
             TraceTypeHelper traceType = TmfTraceType.getInstance().getTraceType(fImportTraceElement.getTraceType());
-            if (traceType == null) {
-                setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, MessageFormat.format(Messages.ImportTracePackageWizardPage_ErrorSettingTraceType, fImportTraceElement.getTraceType(), traceName)));
-                return;
-            }
-
             try {
                 TmfTraceType.setTraceType(traceRes.getFullPath(), traceType);
             } catch (CoreException e) {
-                setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, MessageFormat.format(Messages.ImportTracePackageWizardPage_ErrorSettingTraceType, fImportTraceElement.getTraceType(), traceName), e));
+                // Only log errors from this point because they are non-fatal
+                Activator.getDefault().logError(MessageFormat.format(Messages.ImportTracePackageWizardPage_ErrorSettingTraceType, traceType.getCanonicalName(), traceRes.getName()), e);
             }
 
-            importBookmarks(traceRes, progressMonitor);
+            importBookmarks(traceRes);
 
         } catch (InterruptedException e) {
             setStatus(Status.CANCEL_STATUS);
@@ -238,7 +226,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
 
         if (existingTrace != null) {
             try {
-                existingTrace.delete(new SubProgressMonitor(progressMonitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
+                existingTrace.delete(progressMonitor);
             } catch (CoreException e) {
                 return new Status(IStatus.ERROR, Activator.PLUGIN_ID, org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.Messages.TracePackage_ErrorOperation, e);
             }
@@ -247,7 +235,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
         return Status.OK_STATUS;
     }
 
-    private void importBookmarks(IResource traceRes, IProgressMonitor monitor) {
+    private void importBookmarks(IResource traceRes) {
         for (TracePackageElement o : fImportTraceElement.getChildren()) {
             if (o instanceof TracePackageBookmarkElement && o.isChecked()) {
 
@@ -259,8 +247,10 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                         try {
                             bookmarksFile = t.createBookmarksFile();
 
-                            // Make sure that if a bookmark is double-clicked first
-                            // before opening the trace, it opens the right editor
+                            // Make sure that if a bookmark is double-clicked
+                            // first
+                            // before opening the trace, it opens the right
+                            // editor
 
                             // Get the editor id from the extension point
                             String traceEditorId = t.getEditorId();
@@ -278,10 +268,10 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                     break;
                 }
 
-                TracePackageBookmarkElement bookmarkElement = (TracePackageBookmarkElement) o;
+                TracePackageBookmarkElement exportTraceBookmarkElement = (TracePackageBookmarkElement) o;
 
-                List<Map<String, String>> bookmarks = bookmarkElement.getBookmarks();
-                for (Map<String, String> attrs : bookmarks) {
+                List<TracePackageBookmarkElement.BookmarkInfo> bookmarks = exportTraceBookmarkElement.getBookmarks();
+                for (BookmarkInfo attrs : bookmarks) {
                     IMarker createMarker = null;
                     try {
                         createMarker = bookmarksFile.createMarker(IMarker.BOOKMARK);
@@ -290,14 +280,8 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                     }
                     if (createMarker != null && createMarker.exists()) {
                         try {
-                            for (String key : attrs.keySet()) {
-                                String value = attrs.get(key);
-                                if (key.equals(IMarker.LOCATION)) {
-                                    createMarker.setAttribute(IMarker.LOCATION, Integer.valueOf(value).intValue());
-                                } else {
-                                    createMarker.setAttribute(key, value);
-                                }
-                            }
+                            createMarker.setAttribute(IMarker.MESSAGE, attrs.getMessage());
+                            createMarker.setAttribute(IMarker.LOCATION, attrs.getLocation());
                         } catch (CoreException e) {
                             Activator.getDefault().logError(MessageFormat.format(Messages.TracePackageImportOperation_ErrorCreatingBookmark, traceRes.getName()), e);
                         }
@@ -305,8 +289,6 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 }
             }
         }
-
-        monitor.worked(1);
     }
 
     private static boolean fileNameMatches(String fileName, String entryName) {
@@ -315,16 +297,11 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
         return fileMatch || folderMatch;
     }
 
-    private IStatus importTraceFiles(IProgressMonitor monitor, TracePackageFilesElement traceFilesElement) {
+    private IStatus importTraceFiles(IProgressMonitor monitor, TracePackageFilesElement exportTraceFilesElement) {
         List<String> fileNames = new ArrayList<String>();
-        IPath prefix = new Path(TmfTraceFolder.TRACE_FOLDER_NAME);
-        fileNames.add(traceFilesElement.getFileName());
+        fileNames.add(exportTraceFilesElement.getFileName());
         IPath containerPath = fTmfTraceFolder.getPath();
-        IStatus status = importFiles(getSpecifiedArchiveFile(), fileNames, prefix, containerPath, monitor);
-        if (status.isOK()) {
-            new TmfNavigatorContentProvider().getChildren(fTmfTraceFolder);
-        }
-        return status;
+        return importFiles(getSpecifiedArchiveFile(), fileNames, containerPath, monitor);
     }
 
     private IStatus importSupplFiles(IProgressMonitor monitor, TracePackageSupplFilesElement suppFilesElement) {
@@ -340,64 +317,44 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
             for (TmfTraceElement t : traces) {
                 if (t.getName().equals(fImportTraceElement.getText())) {
                     traceElement = t;
-                    break;
                 }
             }
 
             if (traceElement != null) {
                 ArchiveFile archiveFile = getSpecifiedArchiveFile();
                 traceElement.refreshSupplementaryFolder();
-                String traceName = traceElement.getResource().getName();
-                // Project/.tracing/tracename
-                IPath destinationContainerPath = traceElement.getTraceSupplementaryFolder(traceName).getFullPath();
-                // .tracing/tracename
-                IPath pathInArchive = new Path(TmfCommonConstants.TRACE_SUPPLEMENATARY_FOLDER_NAME).append(traceName);
-                return importFiles(archiveFile, fileNames, pathInArchive, destinationContainerPath, monitor);
+                IPath containerPath = traceElement.getTraceSupplementaryFolder(traceElement.getResource().getName()).getFullPath();
+                return importFiles(archiveFile, fileNames, containerPath, monitor);
             }
         }
 
         return Status.OK_STATUS;
     }
 
-    private IStatus importFiles(ArchiveFile archiveFile, List<String> fileNames, IPath pathInArchive, IPath destinationContainerPath, IProgressMonitor monitor) {
+    private IStatus importFiles(ArchiveFile archiveFile, List<String> fileNames, IPath destinationPath, IProgressMonitor monitor) {
         List<ArchiveProviderElement> objects = new ArrayList<ArchiveProviderElement>();
         Enumeration<?> entries = archiveFile.entries();
         while (entries.hasMoreElements()) {
             ArchiveEntry entry = (ArchiveEntry) entries.nextElement();
-            String entryName = entry.getName();
-            IPath fullArchivePath = new Path(entryName);
-            if (fullArchivePath.hasTrailingSeparator()) {
-                // We only care about file entries as the folders will get created by the ImportOperation
-                continue;
-            }
-
             for (String fileName : fileNames) {
-                // Check if this archive entry matches the searched file name at this archive location
-                IPath searchedArchivePath = pathInArchive.append(fileName);
-                if (fileNameMatches(searchedArchivePath.toString(), entryName)) {
-                    // Traces/kernel/metadata
-                    // kernel/metadata, the ImportOperation will take care of creating the kernel folder
-                    IPath destinationPath = fullArchivePath.removeFirstSegments(pathInArchive.segmentCount());
-                    // metadata
-                    String resourceLabel = fullArchivePath.lastSegment();
-
-                    ArchiveProviderElement pe = new ArchiveProviderElement(destinationPath.toString(), resourceLabel, archiveFile, entry);
+                if (fileNameMatches(fileName, entry.getName())) {
+                    Path path = new Path(entry.getName());
+                    ArchiveProviderElement pe = new ArchiveProviderElement(entry.getName(), path.lastSegment(), archiveFile, entry);
                     objects.add(pe);
-                    break;
                 }
             }
         }
 
         ImportProvider provider = new ImportProvider();
 
-        ImportOperation operation = new ImportOperation(destinationContainerPath,
+        ImportOperation operation = new ImportOperation(destinationPath,
                 null, provider, this,
                 objects);
         operation.setCreateContainerStructure(true);
         operation.setOverwriteResources(true);
 
         try {
-            operation.run(new SubProgressMonitor(monitor, fileNames.size(), SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
+            operation.run(monitor);
             archiveFile.close();
         } catch (InvocationTargetException e) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.Messages.TracePackage_ErrorOperation, e);

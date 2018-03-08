@@ -108,7 +108,7 @@ abstract public class AbstractTracePackageOperation {
 
         try {
             TarFile tarFile = new TarFile(fFileName);
-            return new TarArchiveFile(tarFile);
+            return new TarAchiveFile(tarFile);
         } catch (TarException e) {
             // ignore
         } catch (IOException e) {
@@ -183,7 +183,7 @@ abstract public class AbstractTracePackageOperation {
     /**
      * Adapter for TarFile to ArchiveFile
      */
-    protected class TarArchiveFile implements ArchiveFile {
+    protected class TarAchiveFile implements ArchiveFile {
 
         private TarFile fTarFile;
 
@@ -193,7 +193,7 @@ abstract public class AbstractTracePackageOperation {
          * @param tarFile
          *            the TarFile
          */
-        public TarArchiveFile(TarFile tarFile) {
+        public TarAchiveFile(TarFile tarFile) {
             this.fTarFile = tarFile;
         }
 
@@ -247,11 +247,6 @@ abstract public class AbstractTracePackageOperation {
         public TarEntry getTarEntry() {
             return fTarEntry;
         }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
     }
 
     /**
@@ -283,11 +278,6 @@ abstract public class AbstractTracePackageOperation {
          */
         public ZipEntry getZipEntry() {
             return fZipEntry;
-        }
-
-        @Override
-        public String toString() {
-            return getName();
         }
     }
 

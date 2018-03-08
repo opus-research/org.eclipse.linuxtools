@@ -18,9 +18,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,8 +28,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -46,6 +44,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFileElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -104,11 +103,7 @@ public class TracePackageExtractManifestOperation extends AbstractTracePackageOp
                 ModalContext.checkCanceled(progressMonitor);
 
                 ArchiveEntry entry = (ArchiveEntry) entries.nextElement();
-                IPath p = new Path(entry.getName());
-                //Remove project name
-                p = p.removeFirstSegments(1);
-
-                if (entry.getName().endsWith(ITracePackageConstants.MANIFEST_FILENAME)) {
+                if (entry.getName().equalsIgnoreCase(ITracePackageConstants.MANIFEST_FILENAME)) {
                     found = true;
                     InputStream inputStream = archiveFile.getInputStream(entry);
                     validateManifest(inputStream);
@@ -210,7 +205,7 @@ public class TracePackageExtractManifestOperation extends AbstractTracePackageOp
                 }
 
                 // bookmarks
-                List<Map<String, String>> bookmarkAttribs = new ArrayList<Map<String, String>>();
+                List<TracePackageBookmarkElement.BookmarkInfo> bookmarkInfos = new ArrayList<TracePackageBookmarkElement.BookmarkInfo>();
                 NodeList bookmarksElements = traceElement.getElementsByTagName(ITracePackageConstants.BOOKMARKS_ELEMENT);
                 for (int j = 0; j < bookmarksElements.getLength(); ++j) {
                     Node bookmarksNode = bookmarksElements.item(j);
@@ -221,18 +216,22 @@ public class TracePackageExtractManifestOperation extends AbstractTracePackageOp
                             if (bookmarkNode.getNodeType() == Node.ELEMENT_NODE) {
                                 Element bookmarkElement = (Element) bookmarkNode;
                                 NamedNodeMap attributesMap = bookmarkElement.getAttributes();
-                                Map<String, String> attribs = new HashMap<String, String>();
-                                for (int l = 0; l < attributesMap.getLength(); ++l) {
-                                    Node item = attributesMap.item(l);
-                                    attribs.put(item.getNodeName(), item.getNodeValue());
+                                Node locationNode = attributesMap.getNamedItem(IMarker.LOCATION);
+                                Node messageNode = attributesMap.getNamedItem(IMarker.MESSAGE);
+
+                                if (locationNode != null && messageNode != null) {
+                                    Attr locationAttr = (Attr) locationNode;
+                                    Integer location = Integer.valueOf(locationAttr.getValue());
+                                    Attr messageAttr = (Attr) messageNode;
+                                    bookmarkInfos.add(new TracePackageBookmarkElement.BookmarkInfo(location, messageAttr.getValue()));
+
                                 }
-                                bookmarkAttribs.add(attribs);
                             }
                         }
                     }
                 }
-                if (!bookmarkAttribs.isEmpty()) {
-                    children.add(new TracePackageBookmarkElement(element, bookmarkAttribs));
+                if (!bookmarkInfos.isEmpty()) {
+                    children.add(new TracePackageBookmarkElement(element, bookmarkInfos));
                 }
 
                 element.setChildren(children.toArray(new TracePackageElement[] {}));
