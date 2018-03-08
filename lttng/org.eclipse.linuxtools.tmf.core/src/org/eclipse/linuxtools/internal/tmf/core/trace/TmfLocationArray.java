@@ -17,7 +17,6 @@ import java.util.Arrays;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
-
 /**
  * A convenience class to store trace location arrays. The main purpose is to
  * provide a Comparable implementation for TmfExperimentLocation.
@@ -25,7 +24,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @version 1.0
  * @author Patrick Tasse
  */
-public final class TmfLocationArray implements Comparable<TmfLocationArray> {
+public class TmfLocationArray implements Comparable<TmfLocationArray>, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -46,36 +45,34 @@ public final class TmfLocationArray implements Comparable<TmfLocationArray> {
         fLocations = locations;
     }
 
-    /**
-     * The "update" constructor. Copies the array of locations and updates
-     * a single entry.
-     *
-     * @param locations the locations
-     * @param index the entry to modify
-     * @param location the new entry
-     */
-    public TmfLocationArray(TmfLocationArray locations, int index, ITmfLocation location) {
-        assert(locations != null && index >= 0 && index < locations.fLocations.length);
-        fLocations = Arrays.copyOf(locations.fLocations, locations.fLocations.length);
-        fLocations[index] = location;
-    }
-
     // ------------------------------------------------------------------------
     // Getters
     // ------------------------------------------------------------------------
 
     /**
-     * Get a specific location
+     * Get the locations inside this array
      *
-     * @param index the location element
-     *
-     * @return the specific location (possibly null)
+     * @return the locations
      */
-    public ITmfLocation getLocation(int index) {
-        if (fLocations != null && index >= 0 && index < fLocations.length) {
-            return fLocations[index];
+    public ITmfLocation[] getLocations() {
+        return fLocations;
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfLocationArray clone() {
+        ITmfLocation[] clones = new ITmfLocation[fLocations.length];
+        for (int i = 0; i < fLocations.length; i++) {
+            ITmfLocation location = fLocations[i];
+            clones[i] = (location != null) ? location.clone() : null;
         }
-        return null;
+        return new TmfLocationArray(clones);
     }
 
     // ------------------------------------------------------------------------

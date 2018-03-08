@@ -1,6 +1,6 @@
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
 
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsValues;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatistics;
 
 import junit.framework.TestCase;
 
@@ -13,7 +13,7 @@ public class TmfStatisticsTest extends TestCase {
     // Fields
     // ------------------------------------------------------------------------
 
-    TmfStatisticsValues stats = new TmfStatisticsValues();
+    TmfStatistics stats = new TmfStatistics();
 
     // ------------------------------------------------------------------------
     // Checks initial state

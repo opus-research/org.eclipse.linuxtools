@@ -17,7 +17,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
  * Signal that a trace was closed
- *
+ * 
  * @version 1.0
  * @author Patrick Tasse
  */
