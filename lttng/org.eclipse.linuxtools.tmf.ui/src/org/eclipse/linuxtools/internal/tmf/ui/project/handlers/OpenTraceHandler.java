@@ -107,6 +107,7 @@ public class OpenTraceHandler extends AbstractHandler {
     // ------------------------------------------------------------------------
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object execute(final ExecutionEvent event) throws ExecutionException {
 
         // Check if we are closing down
