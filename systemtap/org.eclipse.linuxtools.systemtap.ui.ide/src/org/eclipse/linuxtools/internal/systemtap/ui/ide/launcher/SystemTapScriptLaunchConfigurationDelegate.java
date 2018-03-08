@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,10 +45,11 @@ public class SystemTapScriptLaunchConfigurationDelegate implements
 
 		boolean runWithChart = configuration.getAttribute(SystemTapScriptGraphOptionsTab.RUN_WITH_CHART, false);
 		if (runWithChart){
-			IDataSet dataSet = SystemTapScriptGraphOptionsTab.createDataset(configuration);
-			IDataSetParser parser = SystemTapScriptGraphOptionsTab.createDatasetParser(configuration);
-			LinkedList<GraphData> graphs = SystemTapScriptGraphOptionsTab.createGraphsFromConfiguration(configuration);
-			action = new RunScriptChartHandler(parser, dataSet, graphs);
+			List<IDataSetParser> parsers = SystemTapScriptGraphOptionsTab.createDatasetParsers(configuration);
+			List<IDataSet> dataSets = SystemTapScriptGraphOptionsTab.createDataset(configuration);
+			List<String> names = SystemTapScriptGraphOptionsTab.createDatasetNames(configuration);
+			List<LinkedList<GraphData>> graphs = SystemTapScriptGraphOptionsTab.createGraphsFromConfiguration(configuration);
+			action = new RunScriptChartHandler(parsers, dataSets, names, graphs);
 		}else{
 			action = new RunScriptHandler();
 		}
