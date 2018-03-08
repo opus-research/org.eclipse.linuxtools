@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <description>
-      Nightly builds of LTTng project.
+<site
+      mirrorsURL="http://www.eclipse.org/downloads/download.php?file=/linuxtools/updates-nightly-juno/site.xml&amp;format=xml">
+   <description url="http://download.eclipse.org/linuxtools/updates-nightly-juno">
+      Nightly builds of Linux Tools project.
    </description>
-   <feature url="features/org.eclipse.linuxtools.lttng_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng" version="0.0.0" os="linux" ws="*" arch="*">
-      <category name="LTTng"/>
-   </feature>
    <feature url="features/org.eclipse.linuxtools.lttng2.kernel_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2.kernel" version="0.0.0">
       <category name="LTTng"/>
    </feature>
