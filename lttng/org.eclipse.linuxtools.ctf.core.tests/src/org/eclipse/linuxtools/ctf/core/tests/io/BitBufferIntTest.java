@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     Alexandre Montplaisir - Initial API and implementation
- *     Matthew Khouzam - additional tests
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.io;
@@ -26,7 +25,7 @@ import org.junit.Test;
  * Part of the BitBuffer tests which test the methods to read/write integers.
  * These are separated from the main file because the fixture is different.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
  */
 public class BitBufferIntTest {
 
@@ -92,7 +91,7 @@ public class BitBufferIntTest {
         int length = 1;
         boolean signed = true;
 
-        long result = fixture.get(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
@@ -108,12 +107,12 @@ public class BitBufferIntTest {
         int length = 0;
         boolean signed = true;
 
-        long result = fixture.get(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
     /**
-     * Run the get method test.
+     * Run the int getInt(int,int,boolean) method test.
      *
      * @throws CTFReaderException
      *             Not expected
@@ -124,12 +123,12 @@ public class BitBufferIntTest {
         int length = 0;
         boolean signed = true;
 
-        long result = fixture.get(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
     /**
-     * Run the get method test.
+     * Run the int getInt(int,int,boolean) method test.
      *
      * @throws CTFReaderException
      *             Not expected
@@ -140,12 +139,13 @@ public class BitBufferIntTest {
         int length = 1;
         boolean signed = true;
 
-        long result = fixture.get(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
     /**
-     * Run the get method test with a little-endian BitBuffer.
+     * Run the int getInt(int,int,boolean) method test with a little-endian
+     * BitBuffer.
      *
      * @throws CTFReaderException
      *             Not expected
@@ -157,14 +157,15 @@ public class BitBufferIntTest {
         createBuffer(le_fixture);
         le_fixture.position(1);
         int length = 24;
-        long result = le_fixture.get(length, false);
+        int result = le_fixture.getInt(length, false);
 
         /* 0x020100 downshifted */
         assertEquals(0x810080, result);
     }
 
     /**
-     * Run the get method test with a little-endian BitBuffer.
+     * Run the int getInt(int,int,boolean) method test with a little-endian
+     * BitBuffer.
      *
      * @throws CTFReaderException
      *             Not expected
@@ -176,7 +177,7 @@ public class BitBufferIntTest {
         createBuffer(le_fixture);
         le_fixture.position(0);
         int length = 24;
-        long result = le_fixture.get(length, false);
+        int result = le_fixture.getInt(length, false);
         assertEquals(0x020100, result);
     }
 
@@ -194,11 +195,13 @@ public class BitBufferIntTest {
         small_fixture.position(10);
         int length = 32;
         boolean signed = true;
-        small_fixture.get(length, signed);
+
+        int result = small_fixture.getInt(length, signed);
+        assertEquals(0, result);
     }
 
     /**
-     * Run the get method test and expect an overflow.
+     * Run the int getInt(int,int,boolean) method test and expect an overflow.
      *
      * @throws CTFReaderException
      *             Expected
@@ -212,268 +215,8 @@ public class BitBufferIntTest {
         int length = 64;
         boolean signed = true;
 
-        small_fixture.get(length, signed);
-    }
-
-    /**
-     * Run the getLong method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong_pos0() throws CTFReaderException {
-        fixture.position(0);
-        long result = fixture.getLong();
-        assertEquals(0x01020304050607L, result);
-    }
-
-    /**
-     * Run the getLong method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong_pos7() throws CTFReaderException {
-        fixture.position(7);
-        long result = fixture.getLong();
-        assertEquals(0x81018202830384L, result);
-    }
-
-    /**
-     * Run the getLong method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong_pos8() throws CTFReaderException {
-        fixture.position(8);
-        long result = fixture.getLong();
-        assertEquals(result, 0x0102030405060708L);
-    }
-
-    /**
-     * Run the getLong method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong_pos0LE() throws CTFReaderException {
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.getLong();
-        assertEquals(result, 0x0706050403020100L);
-    }
-
-    /**
-     * Run the getLong method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong_pos7LE() throws CTFReaderException {
-        fixture.position(7);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.getLong();
-        assertEquals(result, 0x100e0c0a08060402L);
-    }
-
-    /**
-     * Run the getLong method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong_pos8LE() throws CTFReaderException {
-        fixture.position(8);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.getLong();
-        assertEquals(result, 0x0807060504030201L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGet35_pos0BE() throws CTFReaderException {
-        fixture.position(0);
-        long result = fixture.get(35, false);
-        assertEquals(result, 0x081018L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGet35_pos8BE() throws CTFReaderException {
-        fixture.position(8);
-        long result = fixture.get(35, false);
-        assertEquals(result, 0x08101820L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGet35_pos0LE() throws CTFReaderException {
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(35, false);
-
-        assertEquals(result, 0x0403020100L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong35_pos7LE() throws CTFReaderException {
-        fixture.position(7);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(35, false);
-        assertEquals(result, 0x0208060402L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong35_pos8LE() throws CTFReaderException {
-        fixture.position(8);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(35, false);
-        assertEquals(result, 0x0504030201L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong35s_pos0LE() throws CTFReaderException {
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(35, true);
-        assertEquals(result, 0xfffffffc03020100L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong35s_pos7LE() throws CTFReaderException {
-        fixture.position(7);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(35, true);
-        assertEquals(result, 0x0208060402L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetLong35s_pos8LE() throws CTFReaderException {
-        fixture.position(8);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(35, true);
-        assertEquals(result, 0xfffffffd04030201L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetSigned() throws CTFReaderException {
-        fixture.position(0);
-        fixture.putInt(-1);
-        fixture.putInt(-1);
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(32, true);
-        assertEquals(result, -1L);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGetUnsigned() throws CTFReaderException {
-        fixture.position(0);
-        fixture.putInt(-1);
-        fixture.putInt(-1);
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(32, false);
-        assertEquals(0xFFFFFFFFL, result);
-    }
-
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGet24Signed() throws CTFReaderException {
-        fixture.position(0);
-        fixture.putInt(-1);
-        fixture.putInt(-1);
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(24, true);
-        assertEquals(-1L, result);
-    }
-
-    /**
-     * Run the get method test.
-     *
-     * @throws CTFReaderException
-     *             error
-     */
-    @Test
-    public void testGet24Unsigned() throws CTFReaderException {
-        fixture.position(0);
-        fixture.putInt(-1);
-        fixture.putInt(-1);
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        long result = fixture.get(24, false);
-        assertEquals(0xFFFFFFL, result);
+        int result = small_fixture.getInt(length, signed);
+        assertEquals(0, result);
     }
 
     /**
@@ -574,6 +317,8 @@ public class BitBufferIntTest {
         int value = 1;
 
         fixture2.putInt(length, value);
-        fixture2.get(1, true);
+
+        int read = fixture2.getInt(1, true);
+        assertEquals(value, read);
     }
 }
