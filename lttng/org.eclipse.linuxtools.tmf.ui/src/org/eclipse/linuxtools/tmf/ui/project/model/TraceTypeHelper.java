@@ -115,16 +115,6 @@ public class TraceTypeHelper {
         return f.exists() && f.isFile();
     }
 
-    /**
-     * Get the class associated with this trace type
-     *
-     * @return The trace class
-     * @since 3.0
-     */
-    public Class<? extends ITmfTrace> getTraceClass() {
-        return fTrace.getClass();
-    }
-
     @Override
     public String toString() {
         return fName;

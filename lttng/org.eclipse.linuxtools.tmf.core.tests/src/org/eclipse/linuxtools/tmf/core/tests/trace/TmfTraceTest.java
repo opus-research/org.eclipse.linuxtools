@@ -39,6 +39,7 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -63,8 +64,7 @@ public class TmfTraceTest {
     // ------------------------------------------------------------------------
 
     private static final long   DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
-    private static final String DIRECTORY   = "testfiles";
-    private static final String TEST_STREAM = "A-Test-10K";
+
     private static final int    NB_EVENTS   = 10000;
     private static TmfTraceStub fTrace      = null;
 
@@ -76,7 +76,7 @@ public class TmfTraceTest {
 
     @Before
     public void setUp() {
-        fTrace = setupTrace(DIRECTORY + File.separator + TEST_STREAM);
+        fTrace = setupTrace(TmfTestTrace.A_TEST_10K.getFullPath());
     }
 
     @After
@@ -114,7 +114,7 @@ public class TmfTraceTest {
     @Test
     public void testFullConstructor() throws TmfTraceException {
         try {
-            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
+            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.A_TEST_10K.getFullPath()), null);
             File testfile = new File(FileLocator.toFileURL(location).toURI());
             TmfTraceStub trace = new TmfTraceStub(testfile.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false, null, null);
             trace.indexTrace(true);
@@ -124,7 +124,7 @@ public class TmfTraceTest {
             assertEquals("getPath", testfile.toURI().getPath(), trace.getPath());
             assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
             assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
-            assertEquals("getName", TEST_STREAM, trace.getName());
+            assertEquals("getName", TmfTestTrace.A_TEST_10K.getPath(), trace.getName());
 
             assertEquals("getNbEvents", NB_EVENTS, trace.getNbEvents());
             assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
@@ -143,7 +143,7 @@ public class TmfTraceTest {
     public void testLiveTraceConstructor() throws TmfTraceException {
         final long interval = 100;
         try {
-            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
+            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.A_TEST_10K.getFullPath()), null);
             File testfile = new File(FileLocator.toFileURL(location).toURI());
             TmfTraceStub trace = new TmfTraceStub(testfile.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, interval);
             trace.indexTrace(true);
@@ -153,7 +153,7 @@ public class TmfTraceTest {
             assertEquals("getPath", testfile.toURI().getPath(), trace.getPath());
             assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
             assertEquals("getStreamingInterval", interval, trace.getStreamingInterval());
-            assertEquals("getName", TEST_STREAM, trace.getName());
+            assertEquals("getName", TmfTestTrace.A_TEST_10K.getPath(), trace.getName());
 
             assertEquals("getNbEvents", NB_EVENTS, trace.getNbEvents());
             assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
@@ -171,7 +171,7 @@ public class TmfTraceTest {
     @Test
     public void testCopyConstructor() throws TmfTraceException {
         try {
-            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
+            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.A_TEST_10K.getFullPath()), null);
             File testfile = new File(FileLocator.toFileURL(location).toURI());
             TmfTraceStub original = new TmfTraceStub(testfile.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false, new TmfCheckpointIndexer(null), null);
             TmfTraceStub trace = new TmfTraceStub(original);
@@ -182,7 +182,7 @@ public class TmfTraceTest {
             assertEquals("getPath", testfile.toURI().getPath(), trace.getPath());
             assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
             assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
-            assertEquals("getName", TEST_STREAM, trace.getName());
+            assertEquals("getName", TmfTestTrace.A_TEST_10K.getPath(), trace.getName());
 
             assertEquals("getNbEvents", NB_EVENTS, trace.getNbEvents());
             assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
@@ -299,7 +299,7 @@ public class TmfTraceTest {
         assertEquals("getEndTime",     Long.MIN_VALUE, trace.getEndTime().getValue());
 
         // Validate
-        final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
+        final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.A_TEST_10K.getFullPath()), null);
         final File testfile = new File(FileLocator.toFileURL(location).toURI());
         assertTrue("validate", trace.validate(null, testfile.getPath()).isOK());
 
@@ -319,7 +319,7 @@ public class TmfTraceTest {
         assertNull  ("getResource", trace.getResource());
         assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
         assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
-        assertEquals("getName", TEST_STREAM, trace.getName());
+        assertEquals("getName", TmfTestTrace.A_TEST_10K.getPath(), trace.getName());
 
         assertEquals("getNbEvents",    NB_EVENTS, trace.getNbEvents());
         assertEquals("getRange-start", 1,         trace.getTimeRange().getStartTime().getValue());
@@ -1331,7 +1331,7 @@ public class TmfTraceTest {
         assertEquals("getType",  ITmfEvent.class, fTrace.getType());
         assertNull  ("getResource", fTrace.getResource());
         assertEquals("getStreamingInterval", 0, fTrace.getStreamingInterval());
-        assertEquals("getName", TEST_STREAM, fTrace.getName());
+        assertEquals("getName", TmfTestTrace.A_TEST_10K.getPath(), fTrace.getName());
 
         assertEquals("getNbEvents",    NB_EVENTS, fTrace.getNbEvents());
         assertEquals("getRange-start", 1,         fTrace.getTimeRange().getStartTime().getValue());
@@ -1356,7 +1356,7 @@ public class TmfTraceTest {
         TmfTraceStub trace = null;
         File testfile = null;
         try {
-            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
+            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.A_TEST_10K.getFullPath()), null);
             testfile = new File(FileLocator.toFileURL(location).toURI());
             trace = new TmfTraceStub(testfile.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false, null, null);
             // verify initial values

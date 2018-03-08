@@ -20,16 +20,9 @@ import org.eclipse.osgi.util.NLS;
  * @author Jean-Christian Kouamé
  * @since 2.1
  */
-@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.model.messages"; //$NON-NLS-1$
-
-    /** Instantiate analysis message box title */
-    public static String TmfAnalysisElement_InstantiateAnalysis;
-
-    /** The message when analysis view is not available */
-    public static String TmfTraceAnalysis_ViewUnavailable;
 
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
@@ -54,24 +47,26 @@ public class Messages extends NLS {
 
     /** Error opening a trace */
     public static String TmfOpenTraceHelper_ErrorOpeningTrace;
+    /** Error opening an experiment */
+    public static String TmfOpenTraceHelper_ErrorOpeningExperiment;
     /** Could not link trace */
     public static String TmfOpenTraceHelper_LinkFailed;
     /** No trace type match */
     public static String TmfOpenTraceHelper_NoTraceTypeMatch;
     /** Open Trace*/
     public static String TmfOpenTraceHelper_OpenTrace;
+    /** Open Experiment*/
+    public static String TmfOpenTraceHelper_OpenExperiment;
     /** Reduce was too efficient, no candidates found! */
     public static String TmfOpenTraceHelper_ReduceError;
     /** No trace type */
     public static String TmfOpenTraceHelper_NoTraceType;
+    /** Error opening trace*/
+    public static String TmfOpenTraceHelper_ErrorTrace;
+    /** Error opening experiment */
+    public static String TmfOpenTraceHelper_ErrorExperiment;
     /** Init error */
     public static String TmfOpenTraceHelper_InitError;
-    /** Error */
-    public static String TmfOpenTraceHelper_Error;
-
-    public static String TmfTraceElement_Title;
-    public static String TmfTraceElement_NoTraceType;
-    public static String TmfTraceElement_InitError;
 
     static {
         // initialize resource bundle
