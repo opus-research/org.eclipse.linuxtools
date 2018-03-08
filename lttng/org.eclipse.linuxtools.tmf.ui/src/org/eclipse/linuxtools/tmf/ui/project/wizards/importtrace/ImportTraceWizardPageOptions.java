@@ -110,7 +110,6 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         } else {
             this.setErrorMessage(Messages.SharedSelectProject);
         }
-        this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
     }
 
 }
