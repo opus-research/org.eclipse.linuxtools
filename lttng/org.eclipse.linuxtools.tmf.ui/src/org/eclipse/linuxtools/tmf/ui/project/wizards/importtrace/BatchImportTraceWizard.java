@@ -16,7 +16,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,9 +62,6 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
  */
 public class BatchImportTraceWizard extends ImportTraceWizard {
 
-    private static final int WIN_HEIGHT = 400;
-    private static final int WIN_WIDTH = 800;
-    private static final Status CANCEL_STATUS = new Status(IStatus.CANCEL, Activator.PLUGIN_ID, ""); //$NON-NLS-1$
     private static final int TOTALWORK = 65536;
     // -----------------
     // Constants
@@ -82,9 +78,10 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     private IWizardPage fSelectDirectoriesPage;
     private IWizardPage fScanPage;
     private IWizardPage fSelectTypePage;
+    private NonModalWizardDialog fNonModalWizard = null;
 
     private final List<String> fTraceTypesToScan = new ArrayList<String>();
-    private final Set<String> fParentFilesToScan = new HashSet<String>();
+    private final Set<String> fParentFilesToScan = new TreeSet<String>();
 
     private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider();
 
@@ -94,9 +91,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
     private BlockingQueue<TraceValidationHelper> fTracesToScan;
     private final Set<FileAndName> fTraces = new TreeSet<FileAndName>();
-
-    private Map<String, Set<String>> fParentFiles = new HashMap<String, Set<String>>();
-
     // Target import directory ('Traces' folder)
     private IFolder fTargetFolder;
 
@@ -137,11 +131,25 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         addPage(fSelectTypePage);
         addPage(fSelectDirectoriesPage);
         addPage(fScanPage);
-        final WizardDialog container = (WizardDialog) getContainer();
-        if (container != null) {
-            container.setPageSize(WIN_WIDTH, WIN_HEIGHT);
-            container.updateSize();
+        final WizardDialog container = (WizardDialog)getContainer();
+        container.setPageSize(800, 400);
+        container.updateSize();
+    }
+
+    /**
+     * A non-modal wizard container
+     *
+     * @return a non-modal wizard container
+     */
+    public NonModalWizardDialog getNMContainer() {
+        if (!(super.getContainer() instanceof NonModalWizardDialog)) {
+            if (fNonModalWizard == null) {
+                WizardDialog dlg = (WizardDialog) super.getContainer();
+                fNonModalWizard = new NonModalWizardDialog(dlg);
+            }
+            return fNonModalWizard;
         }
+        return (NonModalWizardDialog) super.getContainer();
     }
 
     /**
@@ -151,12 +159,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      *            the file to scan
      */
     public void addFileToScan(final String fileName) {
-        if (!fParentFiles.containsKey(fileName)) {
-            fParentFiles.put(fileName, new HashSet<String>());
-            startUpdateTask(Messages.BatchImportTraceWizard_add + ' ' + fileName, fileName);
-
-        }
-
+        fParentFilesToScan.add(fileName);
+        startUpdateTask(Messages.BatchImportTraceWizard_add + " " + fileName); //$NON-NLS-1$
     }
 
     /**
@@ -166,14 +170,13 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      *            the name of the file to remove
      */
     public void removeFile(final String fileName) {
-        fParentFiles.remove(fileName);
         fParentFilesToScan.remove(fileName);
-        startUpdateTask(Messages.BatchImportTraceWizard_remove + ' ' + fileName, null);
+        startUpdateTask(Messages.BatchImportTraceWizard_remove + " " + fileName);//$NON-NLS-1$
     }
 
-    private void startUpdateTask(final String taskName, final String fileName) {
+    private void startUpdateTask(final String taskName) {
         try {
-            this.getContainer().run(true, true, new IRunnableWithProgress() {
+            this.getContainer().run(true, false, new IRunnableWithProgress() {
 
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -184,13 +187,15 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         sm = SubMonitor.convert(monitor);
                         sm.setTaskName(taskName);
                         sm.setWorkRemaining(TOTALWORK);
-                        updateFiles(sm, fileName);
+                        updateFiles(sm);
                         sm.done();
                     }
                 }
             });
         } catch (InvocationTargetException e) {
         } catch (InterruptedException e) {
+        } finally {
+
         }
     }
 
@@ -344,7 +349,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
     /**
      * Returns if a trace to import is selected
-     *
      * @return if there are traces to import
      */
     public boolean hasTracesToImport() {
@@ -533,10 +537,12 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     /*
      * I am a job. Make me work
      */
-    private synchronized IStatus updateFiles(IProgressMonitor monitor, String traceToScan) {
+    private synchronized IStatus updateFiles(IProgressMonitor monitor) {
         final Set<String> filesToScan = new TreeSet<String>();
+        final String[] parentFiles = fParentFilesToScan.toArray(new String[0]);
+        final String[] traceTypes = fTraceTypesToScan.toArray(new String[0]);
         int workToDo = 1;
-        for (String name : fParentFiles.keySet()) {
+        for (String name : parentFiles) {
 
             final File file = new File(name);
             final File[] listFiles = file.listFiles();
@@ -546,34 +552,19 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         }
         int step = TOTALWORK / workToDo;
         try {
-            for (String name : fParentFiles.keySet()) {
+            for (String name : parentFiles) {
                 final File fileToAdd = new File(name);
-                final Set<String> parentFilesToScan = fParentFiles.get(fileToAdd.getAbsolutePath());
-                recurse(parentFilesToScan, fileToAdd, monitor, step);
-                if (monitor.isCanceled()) {
-                    fParentFilesToScan.remove(traceToScan);
-                    fParentFiles.remove(traceToScan);
-                    return CANCEL_STATUS;
-                }
+                recurse(filesToScan, fileToAdd, monitor, step);
             }
-            filesToScan.clear();
-            for (String name : fParentFiles.keySet()) {
-                filesToScan.addAll(fParentFiles.get(name));
-                fParentFilesToScan.add(name);
-            }
+
             for (String fileToScan : filesToScan) {
-                for (String traceCat : fTraceTypesToScan) {
+                for (String traceCat : traceTypes) {
                     TraceValidationHelper tv = new TraceValidationHelper(fileToScan, traceCat);
                     // for thread safety, keep checks in this order.
                     if (!fResults.containsKey(tv)) {
                         if (!fTracesToScan.contains(tv)) {
                             fTracesToScan.put(tv);
                             monitor.subTask(tv.getTraceToScan());
-                            if (monitor.isCanceled()) {
-                                fParentFilesToScan.remove(traceToScan);
-                                fParentFiles.remove(traceToScan);
-                                return CANCEL_STATUS;
-                            }
                         }
                     }
                 }
@@ -587,7 +578,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         return Status.OK_STATUS;
     }
 
-    private IStatus recurse(Set<String> filesToScan, File fileToAdd, IProgressMonitor monitor, int step) {
+    private void recurse(Set<String> filesToScan, File fileToAdd, IProgressMonitor monitor, int step) {
         final String absolutePath = fileToAdd.getAbsolutePath();
         if (!filesToScan.contains(absolutePath) && (filesToScan.size() < MAX_FILES)) {
             filesToScan.add(absolutePath);
@@ -595,38 +586,24 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             if (null != listFiles) {
                 for (File child : listFiles) {
                     monitor.subTask(child.getName());
-                    if (monitor.isCanceled()) {
-                        return CANCEL_STATUS;
-                    }
-                    IStatus retVal = recurse(filesToScan, child, monitor);
-                    if (retVal.getSeverity() == IStatus.CANCEL) {
-                        return retVal;
-                    }
+                    recurse(filesToScan, child);
                     monitor.worked(step);
                 }
             }
         }
-        return Status.OK_STATUS;
     }
 
-    private IStatus recurse(Set<String> filesToScan, File fileToAdd, IProgressMonitor monitor) {
+    private void recurse(Set<String> filesToScan, File fileToAdd) {
         final String absolutePath = fileToAdd.getAbsolutePath();
         if (!filesToScan.contains(absolutePath) && (filesToScan.size() < MAX_FILES)) {
             filesToScan.add(absolutePath);
             final File[] listFiles = fileToAdd.listFiles();
             if (null != listFiles) {
                 for (File child : listFiles) {
-                    if (monitor.isCanceled()) {
-                        return CANCEL_STATUS;
-                    }
-                    IStatus retVal = recurse(filesToScan, child, monitor);
-                    if (retVal.getSeverity() == IStatus.CANCEL) {
-                        return retVal;
-                    }
+                    recurse(filesToScan, child);
                 }
             }
         }
-        return Status.OK_STATUS;
     }
 
     /**
