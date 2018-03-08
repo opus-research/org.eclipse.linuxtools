@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2008 Phil Muldoon <pkmuldoon@picobot.org>.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Phil Muldoon <pkmuldoon@picobot.org> - initial API and implementation.
+ *    Phil Muldoon <pkmuldoon@picobot.org> - initial API and implementation. 
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
@@ -30,9 +30,9 @@ import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
 
 /**
- *
+ * 
  * Build and hold completion metadata for Systemtap. This originally is generated from stap coverage data
- *
+ * 
  *
  */
 
@@ -46,7 +46,7 @@ public class STPMetadataSingleton {
 
 	private HashMap<String, ArrayList<String>> builtMetadata = new HashMap<String, ArrayList<String>>();
 	private boolean barLookups = false;
-
+	
 	// Not a true singleton, but enough for the simplistic purpose
 	// it has to serve.
 	protected STPMetadataSingleton() {
@@ -56,12 +56,12 @@ public class STPMetadataSingleton {
 	public static STPMetadataSingleton getInstance() {
 		if (instance == null) {
 			instance = new STPMetadataSingleton();
-
+			
 			URL completionURL = null;
-
+			
 			completionURL = buildCompletionDataLocation("completion/stp_completion.properties"); //$NON-NLS-1$
 			STPMetadataSingleton completionDataStore = STPMetadataSingleton.getInstance();
-
+			
 			if (completionURL != null)
 				completionDataStore.build(completionURL);
 
@@ -71,48 +71,48 @@ public class STPMetadataSingleton {
 	}
 
 	private static URL buildCompletionDataLocation(String completionDataLocation) {
-		URL completionURLLocation = null;
+		URL completionURLLocation = null; 
 		try {
-			completionURLLocation = getCompletionURL(completionDataLocation);
+			completionURLLocation = getCompletionURL(completionDataLocation);			
 		} catch (IOException e) {
 			completionURLLocation = null;
 		}
-
+		
 		if (completionURLLocation == null) {
-			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID,
+			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, 
 					IStatus.OK, "Cannot locate plug-in location for System Tap completion metadata " +
 							"(completion/stp_completion.properties). Completions are not available.", null));
 			return null;
-		}
-
+		} 
+		
 		File completionFile = new File(completionURLLocation.getFile());
 		if ((completionFile == null) || (!completionFile.exists()) || (!completionFile.canRead())) {
-			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID,
-					IStatus.OK, "Cannot find System Tap completion metadata at  " +completionFile.getPath() +
+			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, 
+					IStatus.OK, "Cannot find System Tap completion metadata at  " +completionFile.getPath() + 
 					"Completions are not available.", null));
-
+					
 			return null;
 		}
 
 		return completionURLLocation;
-
+		
 	}
 	private static URL getCompletionURL(String completionLocation) throws IOException {
 		URL fileURL = null;
 		URL location = IDEPlugin.getDefault().getBundle().getEntry(completionLocation);
 
 		if (location != null)
-			fileURL = FileLocator.toFileURL(location);
+			fileURL = FileLocator.toFileURL(location);		
 		return fileURL;
 	}
 
 	/**
-	 * Given the parameter return the completion proposals that best match the data.
-	 *
+	 * Given the parameter return the completion proposals that best match the data. 
+	 * 
 	 * @param match - completion hint.
-	 *
+	 * 
 	 * @return - completion proposals.
-	 *
+	 * 
 	 */
 	public String[] getCompletionResults(String match) {
 		// TODO: Until an error strategy is devised to better inform
@@ -127,7 +127,7 @@ public class STPMetadataSingleton {
 
 		TreeNode node = TapsetLibrary.getProbes();
 
-		// If the result is a tapset and partial probe, get the tapset, then
+		// If the result is a tapset and partial probe, get the tapset, then 
 		// narrow down the list with partial probe matches.
 		if (tapsetAndProbeIncluded) {
 			node = getChildByName(node, getTapset(match));
@@ -145,7 +145,7 @@ public class STPMetadataSingleton {
 	/**
 	 * Returns a list of variables available in the given probe.
 	 * @param probe The probe for which to find variables
-	 * @param prefix The prefix to complete.
+	 * @param prefix The prefix to complete.  
 	 * @return a list of variables matching the prefix.
 	 */
 	public String[] getProbeVariableCompletions(String probe, String prefix){
@@ -189,18 +189,18 @@ public class STPMetadataSingleton {
 	}
 
 	/**
-	 *
+	 * 
 	 * From the file, read the metadata. The data follows the format of
-	 *
+	 * 
 	 * <tapset>.<probe>(<parameter list>)
-	 *
+	 * 
 	 * ie
-	 *
+	 * 
 	 * tcp.disconnect(name:string,sock:long,flags:long)
-	 * @param fileURL
+	 * @param fileURL 
 
-	 * @throws IOException
-	 *
+	 * @throws IOException 
+	 * 
 	 */
 	private void readCompletionMetadata(URL fileURL) throws IOException {
 		try {
@@ -210,8 +210,12 @@ public class STPMetadataSingleton {
 				while ((line = input.readLine()) != null) {
 					String tapset = ""; //$NON-NLS-1$
 					String probe = ""; //$NON-NLS-1$
-					tapset = getTapset(line);
-					probe = getTapsetProbe(line);
+					try {
+						tapset = getTapset(line);
+						probe = getTapsetProbe(line);
+					} catch (Exception e) {
+						continue;
+					}
 					ArrayList<String> data = builtMetadata.get(tapset);
 					if (data == null)
 						data = new ArrayList<String>();
@@ -227,23 +231,23 @@ public class STPMetadataSingleton {
 		}
 	}
 
-	/**
+	/** 
 	 * Given data, decide whether it is comprised of a <tapset>.<probe>
 	 * hint, or just a <tapset>.
-	 *
+	 * 
 	 * @param data - hint data
 	 * @return
 	 */
 	private boolean isTapsetAndProbe(String data) {
 		if (data.indexOf('.') >= 0)
 			return true;
-
+		
 		return false;
 	}
 
-	/**
+	/** 
 	 * Given data, extract <tapset>
-	 *
+	 * 
 	 * @param data - hint data
 	 * @return
 	 */
@@ -254,9 +258,9 @@ public class STPMetadataSingleton {
 		return data.substring(0, data.indexOf('.'));
 	}
 
-	/**
+	/** 
 	 * Given data, extract <probe>
-	 *
+	 * 
 	 * @param data - hint data
 	 * @return
 	 */
@@ -267,28 +271,28 @@ public class STPMetadataSingleton {
 		return data.substring(data.indexOf('.') + 1, data.length());
 	}
 
-
+	
 	/**
-	 *
+	 * 
 	 * Decide whether cached metadata exists on disk.
-	 *
+	 * 
 	 * @return - whether metadata exists.
 	 */
 	/*private boolean haveMetadata(String location) {
 		File fileExists = new File(location);
 		if ((fileExists.canRead()) && fileExists.exists())
-			return true;
+			return true; 
 
 		return false;
 	}*/
 
 	/**
-	 *
+	 * 
 	 * Build the metadata from visiting the tapsets in turn and
 	 * requesting coverage data from each one.
-	 *
-	 * @throws FileNotFoundException
-	 *
+	 * 
+	 * @throws FileNotFoundException 
+	 * 
 	 */
 	/*private void buildCompletionMetadata(String location) throws FileNotFoundException {
 		String[] tapsets = { "syscall", "signal", "netdev", "ioblock",
@@ -334,13 +338,13 @@ public class STPMetadataSingleton {
 	}*/
 
 	/**
-	 *
+	 * 
 	 * Execute Systemtap binary, cpature stdout and return.
-	 *
+	 * 
 	 * @param tapset to request coverage data from.
 	 * @return
 	 */
-
+	
 	// TODO: This could stand to be completely rewritten to be safer,
 	// and be tolerant of faults. As it is we ship default meta-data
 	// so this should never be executed in the user context. But eventually
@@ -387,6 +391,6 @@ public class STPMetadataSingleton {
 			readCompletionMetadata(fileURL);
 		} catch (IOException e) {
 			barLookups = true;
-		}
+		}		
 	}
 }
