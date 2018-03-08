@@ -43,7 +43,6 @@ import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -195,7 +194,12 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		}			
 	};
 
-	protected FocusListener focusListener = new FocusAdapter() {
+	protected FocusListener focusListener = new FocusListener() {
+
+		@Override
+		public void focusGained(FocusEvent e) {
+			//Do nothing
+		}
 
 		@Override
 		public void focusLost(FocusEvent e) {

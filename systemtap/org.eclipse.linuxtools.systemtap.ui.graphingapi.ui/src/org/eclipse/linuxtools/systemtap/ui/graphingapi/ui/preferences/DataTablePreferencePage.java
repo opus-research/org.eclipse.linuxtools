@@ -26,30 +26,33 @@ public class DataTablePreferencePage extends FieldEditorPreferencePage implement
 	public DataTablePreferencePage() {
 		super(GRID);
 		setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("DataTablePreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
+		setDescription(Localization.getString("DataTablePreferencePage.GraphDisplayPreferences"));
 	}
 	
 	@Override
 	public void createFieldEditors() {
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_JUMP_NEW_TABLE_ENTRY, 
-				Localization.getString("DataTablePreferencePage.JumpNewestEntry"), //$NON-NLS-1$
+				Localization.getString("DataTablePreferencePage.JumpNewestEntry"),
 				getFieldEditorParent()));
 		
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_AUTO_RESIZE, 
-				Localization.getString("DataTablePreferencePage.AutoResizeColumns"), //$NON-NLS-1$
+				Localization.getString("DataTablePreferencePage.AutoResizeColumns"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_MAX_DATA_ITEMS,
-				Localization.getString("DataTablePreferencePage.MaxDataItems"), //$NON-NLS-1$
+				Localization.getString("DataTablePreferencePage.MaxDataItems"),
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {}
 	
+	@Override
+	public void dispose() {
+		super.dispose();
+	}
 }
 

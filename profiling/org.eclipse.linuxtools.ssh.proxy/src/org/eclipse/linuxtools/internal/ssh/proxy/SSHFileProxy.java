@@ -19,11 +19,8 @@ import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 
 public class SSHFileProxy extends SSHBase implements IRemoteFileProxy {
 
-	URI uri;
-	
 	public SSHFileProxy(URI uri) {
 		super(uri);
-		this.uri = uri;
 	}
 
 	@Override
@@ -56,10 +53,5 @@ public class SSHFileProxy extends SSHBase implements IRemoteFileProxy {
 			//This is not suppose to happen
 			return null;
 		}
-	}
-
-	@Override
-	public URI getWorkingDir() {
-		return uri;
 	}
 }

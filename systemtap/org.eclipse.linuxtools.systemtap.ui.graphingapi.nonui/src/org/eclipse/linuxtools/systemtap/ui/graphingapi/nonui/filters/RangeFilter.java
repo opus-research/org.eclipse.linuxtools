@@ -34,7 +34,6 @@ public class RangeFilter implements IDataSetFilter {
 	 * 
 	 * @return The filtered dataset.
 	 */
-	@Override
 	public ArrayList<Object>[] filter(ArrayList<Object>[] data) {
 		if(column < 0 || column >= data.length)
 			return null;
@@ -49,7 +48,6 @@ public class RangeFilter implements IDataSetFilter {
 		return newData;
 	}
 	
-	@Override
 	public String getID() {
 		return ID;
 	}
@@ -94,7 +92,6 @@ public class RangeFilter implements IDataSetFilter {
 	 * 
 	 * @param parent Parent object of the new child Memento to create.
 	 */
-	@Override
 	public void writeXML(IMemento parent) {
 		IMemento child = parent.createChild("Filter", ID);
 		child.putInteger("column", column);

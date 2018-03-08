@@ -19,6 +19,7 @@ import org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.HistRoot;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 
+
 /**
  * Tree content provider on charge of displaying call graph
  *
@@ -27,25 +28,22 @@ import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 public class FileHistogramContentProvider implements ITreeContentProvider {
 
 	public static final FileHistogramContentProvider sharedInstance = new FileHistogramContentProvider();
-
+	
 	/**
 	 * Constructor
 	 */
 	FileHistogramContentProvider() {
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
 	 */
 	@Override
 	public Object[] getChildren(Object parentElement) {
-	    if (parentElement instanceof AbstractTreeElement) {
-	        AbstractTreeElement elem = (AbstractTreeElement) parentElement;
-	        LinkedList<? extends TreeElement> list = elem.getChildren();
-	        return list.toArray();
-	    }
-	    return null;
+		AbstractTreeElement elem = (AbstractTreeElement) parentElement;
+		LinkedList<? extends TreeElement> list = elem.getChildren();
+		return list.toArray();
 	}
 
 	/*
@@ -54,11 +52,8 @@ public class FileHistogramContentProvider implements ITreeContentProvider {
 	 */
 	@Override
 	public Object getParent(Object element) {
-		if (element instanceof AbstractTreeElement) {
-			AbstractTreeElement elem = (AbstractTreeElement) element;
-			return elem.getParent();
-		}
-		return null;
+		AbstractTreeElement elem = (AbstractTreeElement) element;
+		return elem.getParent();
 	}
 
 	/*
@@ -67,11 +62,8 @@ public class FileHistogramContentProvider implements ITreeContentProvider {
 	 */
 	@Override
 	public boolean hasChildren(Object element) {
-	    if (element instanceof AbstractTreeElement) {
-	        AbstractTreeElement elem = (AbstractTreeElement) element;
-	        return elem.hasChildren() && !elem.getChildren().isEmpty();
-	    }
-	    return false;
+		AbstractTreeElement elem = (AbstractTreeElement) element;
+		return elem.hasChildren() && !elem.getChildren().isEmpty();
 	}
 
 	/*
@@ -80,15 +72,12 @@ public class FileHistogramContentProvider implements ITreeContentProvider {
 	 */
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if (inputElement instanceof GmonDecoder) {
-		    GmonDecoder obj = (GmonDecoder) inputElement;
-	        HistRoot root = obj.getRootNode();
-	        return new Object[] {
-	                root
-	        };
-		}
-        return new Object[0];
-
+		if (inputElement == null) return new Object[0];
+		GmonDecoder obj = (GmonDecoder) inputElement;
+		HistRoot root = obj.getRootNode();
+		return new Object[] {
+				root
+		};
 	}
 
 	/*

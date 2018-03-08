@@ -37,7 +37,7 @@ import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseE
 
 /**
  * The CTF trace metadata file
- *
+ * 
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
@@ -161,7 +161,19 @@ public class Metadata {
                 metadataTextInput = new FileReader(metadataFile);
             }
 
-            CommonTree tree = createAST(metadataTextInput);
+            /* Create an ANTLR reader */
+            ANTLRReaderStream antlrStream;
+            antlrStream = new ANTLRReaderStream(metadataTextInput);
+
+            /* Parse the metadata text and get the AST */
+            CTFLexer ctfLexer = new CTFLexer(antlrStream);
+            CommonTokenStream tokens = new CommonTokenStream(ctfLexer);
+            CTFParser ctfParser = new CTFParser(tokens, false);
+            parse_return ret;
+
+            ret = ctfParser.parse();
+
+            CommonTree tree = (CommonTree) ret.getTree();
 
             /* Generate IO structures (declarations) */
             IOStructGen gen = new IOStructGen(tree, trace);
@@ -208,24 +220,6 @@ public class Metadata {
         if (tempException != null) {
             throw tempException;
         }
-    }
-
-    private static CommonTree createAST(Reader metadataTextInput) throws IOException,
-            RecognitionException {
-        /* Create an ANTLR reader */
-        ANTLRReaderStream antlrStream;
-        antlrStream = new ANTLRReaderStream(metadataTextInput);
-
-        /* Parse the metadata text and get the AST */
-        CTFLexer ctfLexer = new CTFLexer(antlrStream);
-        CommonTokenStream tokens = new CommonTokenStream(ctfLexer);
-        CTFParser ctfParser = new CTFParser(tokens, false);
-        parse_return ret;
-
-        ret = ctfParser.parse();
-
-        CommonTree tree = (CommonTree) ret.getTree();
-        return tree;
     }
 
     /**

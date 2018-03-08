@@ -31,9 +31,8 @@ public class StapTreeDoubleClickListener implements IDoubleClickListener {
 
 	@Override
 	public void doubleClick(DoubleClickEvent event) {
-		if (!(event.getSelection() instanceof IStructuredSelection)) {
+		if (!(event.getSelection() instanceof IStructuredSelection))
 			return;
-		}
 		IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 		if (selection.size() != 1) return;
 		

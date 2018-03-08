@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,14 +9,12 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.linuxtools.lttng2.core.tests.control.model.impl;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IUstProviderInfo;
@@ -28,7 +26,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BaseEventI
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.DomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.FieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.SessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.UstProviderInfo;
@@ -36,7 +33,7 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.UstProvide
 /**
  *  Test facility to constants across test case
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class ModelImplFactory {
 
     private ISessionInfo fSessionInfo1 = null;
@@ -48,8 +45,6 @@ public class ModelImplFactory {
     private IEventInfo fEventInfo1 = null;
     private IEventInfo fEventInfo2 = null;
     private IEventInfo fEventInfo3 = null;
-    private IFieldInfo fFieldInfo1 = null;
-    private IFieldInfo fFieldInfo2 = null;
     private IBaseEventInfo fBaseEventInfo1 = null;
     private IBaseEventInfo fBaseEventInfo2 = null;
     private IUstProviderInfo fUstProviderInfo1 = null;
@@ -58,19 +53,9 @@ public class ModelImplFactory {
     private IProbeEventInfo fProbeEventInfo2 = null;
 
     public ModelImplFactory() {
-
-        fFieldInfo1 = new FieldInfo("intfield");
-        fFieldInfo1.setFieldType("int");
-        fFieldInfo2 = new FieldInfo("stringfield");
-        fFieldInfo2.setFieldType("string");
-
         fBaseEventInfo1 = new BaseEventInfo("event1");
         fBaseEventInfo1.setEventType(TraceEventType.UNKNOWN);
         fBaseEventInfo1.setLogLevel(TraceLogLevel.TRACE_ERR);
-        fBaseEventInfo1.addField(fFieldInfo1);
-        fBaseEventInfo1.addField(fFieldInfo2);
-        fBaseEventInfo1.setFilterExpression("intField==10");
-
         fBaseEventInfo2 = new BaseEventInfo("event2");
         fBaseEventInfo2.setEventType(TraceEventType.TRACEPOINT);
         fBaseEventInfo1.setLogLevel(TraceLogLevel.TRACE_DEBUG);
@@ -134,7 +119,6 @@ public class ModelImplFactory {
         fSessionInfo2.setSessionState(TraceSessionState.INACTIVE);
         fSessionInfo2.addDomain(fDomainInfo1);
         fSessionInfo2.addDomain(fDomainInfo2);
-        fSessionInfo2.setStreamedTrace(true);
 
         fProbeEventInfo1 = new ProbeEventInfo("probeEvent1");
         fProbeEventInfo1.setEventType(TraceEventType.TRACEPOINT);
@@ -208,11 +192,4 @@ public class ModelImplFactory {
         return fProbeEventInfo2;
     }
 
-    public IFieldInfo getFieldInfo1() {
-        return fFieldInfo1;
-    }
-
-    public IFieldInfo getFieldInfo2() {
-        return fFieldInfo2;
-    }
 }

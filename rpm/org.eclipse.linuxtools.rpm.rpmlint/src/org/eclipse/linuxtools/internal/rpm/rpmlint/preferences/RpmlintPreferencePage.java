@@ -10,14 +10,12 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.rpmlint.preferences;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.Activator;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 /**
  * Preference page for setting rpmlint specific preferences.
@@ -31,7 +29,7 @@ public class RpmlintPreferencePage extends FieldEditorPreferencePage implements
 	 */
 	public RpmlintPreferencePage() {
 		super(GRID);
-		setPreferenceStore(new ScopedPreferenceStore(InstanceScope.INSTANCE,Activator.PLUGIN_ID));
+		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 	}
 
 	/**

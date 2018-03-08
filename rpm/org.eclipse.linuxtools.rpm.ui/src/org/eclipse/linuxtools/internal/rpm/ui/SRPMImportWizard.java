@@ -23,12 +23,14 @@ import org.eclipse.ui.IWorkbench;
  * for the import rpm plug-in.
  */
 public class SRPMImportWizard extends Wizard implements IImportWizard {
+	private IWorkbench workbench;
 	private SRPMImportPage mainPage;
 
 	/**
 	 * @see org.eclipse.ui.IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
+		this.workbench = workbench;
 		setWindowTitle(Messages.getString("SRPMImportwizard.Import_an_SRPM")); //$NON-NLS-1$
 		setNeedsProgressMonitor(true);
 	}
@@ -61,7 +63,7 @@ public class SRPMImportWizard extends Wizard implements IImportWizard {
 	// Add the SRPMImportPage as the only page in this wizard.
 	@Override
 	public void addPages() {
-		mainPage = new SRPMImportPage();
+		mainPage = new SRPMImportPage(workbench);
 		addPage(mainPage);
 		super.addPages();
 	}

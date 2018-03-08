@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.property;
 
@@ -50,11 +49,6 @@ public class TraceEventPropertySource extends BasePropertySource {
      */
     public static final String TRACE_EVENT_STATE_PROPERTY_ID = "trace.event.state"; //$NON-NLS-1$
     /**
-     * The trace event 'filter' property ID.
-     */
-    public static final String TRACE_EVENT_FILTER_PROPERTY_ID = "trace.event.filter"; //$NON-NLS-1$
-
-    /**
      *  The trace event 'name' property name.
      */
     public static final String TRACE_EVENT_NAME_PROPERTY_NAME = Messages.TraceControl_EventNamePropertyName;
@@ -70,10 +64,6 @@ public class TraceEventPropertySource extends BasePropertySource {
      * The trace event 'state' property name.
      */
     public static final String TRACE_EVENT_STATE_PROPERTY_NAME = Messages.TraceControl_StatePropertyName;
-    /**
-     * The trace event 'filter' property name.
-     */
-    public static final String TRACE_EVENT_FILTER_PROPERTY_NAME = Messages.TraceControl_FilterPropertyName;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -110,9 +100,6 @@ public class TraceEventPropertySource extends BasePropertySource {
         if (fEvent.getLogLevel() != TraceLogLevel.LEVEL_UNKNOWN) {
             list.add(new TextPropertyDescriptor(TRACE_EVENT_LOGLEVEL_PROPERTY_ID, TRACE_EVENT_LOGLEVEL_PROPERTY_NAME));
         }
-        if (fEvent.getFilterExpression() != null) {
-            list.add(new TextPropertyDescriptor(TRACE_EVENT_FILTER_PROPERTY_ID, TRACE_EVENT_FILTER_PROPERTY_NAME));
-        }
         return list.toArray(new IPropertyDescriptor[list.size()]);
     }
 
@@ -134,10 +121,6 @@ public class TraceEventPropertySource extends BasePropertySource {
         if (TRACE_EVENT_STATE_PROPERTY_ID.equals(id)) {
             return fEvent.getState().name();
         }
-        if (TRACE_EVENT_FILTER_PROPERTY_ID.equals(id)) {
-            return fEvent.getFilterExpression();
-        }
-
         return null;
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,23 +17,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocation;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.After;
 import org.junit.Before;
@@ -48,10 +45,19 @@ import org.junit.Test;
  */
 public class CtfTmfTraceTest {
 
-    private static final int TRACE_INDEX = 0;
-    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
+    private static final String PATH = TestParams.getPath();
 
     private CtfTmfTrace fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CtfTmfTraceTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -61,7 +67,6 @@ public class CtfTmfTraceTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
         fixture = new CtfTmfTrace();
         fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
     }
@@ -71,9 +76,7 @@ public class CtfTmfTraceTest {
      */
     @After
     public void tearDown() {
-        if (fixture != null) {
-            fixture.dispose();
-        }
+        fixture.dispose();
     }
 
     /**
@@ -88,6 +91,7 @@ public class CtfTmfTraceTest {
         assertEquals(1000, result.getCacheSize());
         assertEquals(0L, result.getNbEvents());
         assertEquals(0L, result.getStreamingInterval());
+        assertNull(result.getStateSystem());
         assertNull(result.getResource());
         assertEquals(1000, result.getQueueSize());
         assertNull(result.getType());
@@ -187,9 +191,9 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetEnvValue() {
-        String key = "tracer_name";
+        String key = "tracer_name"; //$NON-NLS-1$
         String result = fixture.getEnvValue(key);
-        assertEquals("\"lttng-modules\"",result);
+        assertEquals("\"lttng-modules\"",result); //$NON-NLS-1$
     }
 
     /**
@@ -197,7 +201,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetEventType() {
-        Class<ITmfEvent> result = fixture.getEventType();
+        Class<CtfTmfEvent> result = fixture.getEventType();
         assertNotNull(result);
     }
 
@@ -206,8 +210,8 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetLocationRatio() {
-        final CtfLocationInfo location2 = new CtfLocationInfo(1, 0);
-        CtfLocation location = new CtfLocation(location2);
+        CtfLocation location = new CtfLocation(Long.valueOf(1));
+        location.setLocation(Long.valueOf(1));
         double result = fixture.getLocationRatio(location);
 
         assertEquals(Double.NEGATIVE_INFINITY, result, 0.1);
@@ -237,7 +241,7 @@ public class CtfTmfTraceTest {
     @Test
     public void testGetNbEvents() {
         long result = fixture.getNbEvents();
-        assertEquals(1L, result);
+        assertEquals(0L, result);
     }
 
     /**
@@ -275,6 +279,15 @@ public class CtfTmfTraceTest {
     public void testGetStartTime() {
         ITmfTimestamp result = fixture.getStartTime();
         assertNotNull(result);
+    }
+
+    /**
+     * Run the IStateSystemQuerier getStateSystem() method test.
+     */
+    @Test
+    public void testGetStateSystem() {
+        IStateSystemQuerier result = fixture.getStateSystem();
+        assertNull(result);
     }
 
     /**
@@ -340,8 +353,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testSeekEvent_location() {
-        final CtfLocationInfo location2 = new CtfLocationInfo(1L, 0L);
-        CtfLocation ctfLocation = new CtfLocation(location2);
+        CtfLocation ctfLocation = new CtfLocation(new Long(1L));
         ITmfContext result = fixture.seekEvent(ctfLocation);
         assertNotNull(result);
     }

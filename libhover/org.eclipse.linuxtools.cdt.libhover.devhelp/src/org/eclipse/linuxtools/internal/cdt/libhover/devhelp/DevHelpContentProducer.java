@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.help.IHelpContentProducer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.linuxtools.cdt.libhover.devhelp.DevHelpPlugin;
 import org.eclipse.linuxtools.internal.cdt.libhover.devhelp.preferences.PreferenceConstants;
 
 public class DevHelpContentProducer implements IHelpContentProducer {

@@ -14,6 +14,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ RPMProjectTest.class, RPMProjectNatureTest.class, RPMProjectCreatorTest.class })
+@Suite.SuiteClasses({ RPMProjectTest.class, RPMProjectNatureTest.class })
 public class AllTests {
 }

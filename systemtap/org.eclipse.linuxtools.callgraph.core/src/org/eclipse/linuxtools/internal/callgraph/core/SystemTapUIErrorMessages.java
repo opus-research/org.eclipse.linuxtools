@@ -35,9 +35,8 @@ public class SystemTapUIErrorMessages extends UIJob {
 
 	@Override
 	public IStatus runInUIThread(IProgressMonitor monitor) {
-		if (!active) {
+		if (!active)
 			return Status.CANCEL_STATUS;
-		}
 		//Test that this job is running in the UI thread 
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		
@@ -46,6 +45,7 @@ public class SystemTapUIErrorMessages extends UIJob {
 		}
 		
 		Shell sh = new Shell();
+		
 	
 		MessageDialog.openError(sh, title, message);
 		return Status.OK_STATUS;

@@ -16,7 +16,9 @@ import java.io.File;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
+import org.eclipse.linuxtools.internal.systemtap.ui.editor.RecentFileLog;
 import org.eclipse.linuxtools.internal.systemtap.ui.editor.actions.EditorAction;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
@@ -33,20 +35,19 @@ import org.eclipse.ui.PlatformUI;
 
 
 public class OpenFileAction extends EditorAction {
-
+	
 	private boolean successful;
-
+	
 	public OpenFileAction() {
 		super();
 		setEnabled(true);
 		successful = false;
 	}
-
-	@Override
+	
 	public void run(IAction act) {
 		run();
 	}
-
+	
 	/**
 	 * Opens the editor input.
 	 */
@@ -62,18 +63,19 @@ public class OpenFileAction extends EditorAction {
 			IWorkbenchPage page= window.getActivePage();
 			try {
 				page.openEditor(input, editorId);
+				RecentFileLog.updateRecentFiles(file);
 				successful = true;
 			} catch (PartInitException e) {}
 		}
 	}
-
+	
 	/**
 	 * Request the name and location of the file to the user.
 	 * @return the File object associated to the selected file.
 	 */
 	protected File queryFile() {
 		FileDialog dialog= new FileDialog(window.getShell(), SWT.OPEN);
-		dialog.setText(Localization.getString("OpenFileAction.OpenFile")); //$NON-NLS-1$
+		dialog.setText(Localization.getString("OpenFileAction.OpenFile"));
 		String path= dialog.open();
 		if (path != null && path.length() > 0)
 			return new File(path);
@@ -90,8 +92,8 @@ public class OpenFileAction extends EditorAction {
 		IEditorRegistry editorRegistry= workbench.getEditorRegistry();
 		IEditorDescriptor[] descriptors= editorRegistry.getEditors(file.getName());
 		for (IEditorDescriptor d : descriptors)
-			if (d.getId().startsWith("org.eclipse.linuxtools.systemtap.ui.ide.editors") || //$NON-NLS-1$
-				d.getId().startsWith("org.eclipse.linuxtools.internal.systemtap.ui.ide.editors")) { //$NON-NLS-1$
+			if (d.getId().startsWith("org.eclipse.linuxtools.systemtap.ui.ide.editors") ||
+				d.getId().startsWith("org.eclipse.linuxtools.internal.systemtap.ui.ide.editors")) {
 				return d.getId();
 			}
 		return SimpleEditor.ID;
@@ -107,7 +109,7 @@ public class OpenFileAction extends EditorAction {
 		PathEditorInput input= new PathEditorInput(location);
 		return input;
 	}
-
+	
 	public boolean isSuccessful() {
 		return successful;
 	}

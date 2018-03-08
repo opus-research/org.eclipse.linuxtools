@@ -59,12 +59,12 @@ public class LineGraph extends AGraph implements IScrollGraph {
 
 			px2 = 0;
 			py2 = super.getSize().y - super.getYPadding();
-			for(DataPoint point: points) {
-				px = (point.x-super.getLocalXMin());
+			for(int i=0; i<points.length; i++) {
+				px = (points[i].x-super.getLocalXMin());
 				px *= xSize;
 				px += super.getXPadding();
 	
-				py = super.getLocalYMax() - point.y;
+				py = super.getLocalYMax() - points[i].y;
 				py *= ySize;
 				py += super.getYPadding();
 	
@@ -90,7 +90,6 @@ public class LineGraph extends AGraph implements IScrollGraph {
 		if(null == adapter) return;
 
 		this.getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				Object[][] data = adapter.getData(removedItems, adapter.getRecordCount());
 				if(normalize) {

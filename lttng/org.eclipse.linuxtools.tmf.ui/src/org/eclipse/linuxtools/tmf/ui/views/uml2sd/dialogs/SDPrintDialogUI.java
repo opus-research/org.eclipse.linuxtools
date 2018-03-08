@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import java.text.MessageFormat;
@@ -142,27 +143,10 @@ public class SDPrintDialogUI {
      * List of pages to print.
      */
     protected int fPagesList[];
-
     /**
-     * Value for dividing the sequence diagram into pages
+     * Values for dividing sequence diagram into pages.
      */
-    protected float fStepX;
-
-    /**
-     * Value for dividing the sequence diagram into pages
-     */
-    protected float fStepY;
-
-    /**
-     * Value for dividing the sequence diagram into pages
-     */
-    protected float sTX;
-
-    /**
-     * Value for dividing the sequence diagram into pages
-     */
-    protected float sTY;
-
+    protected float fStepX, fStepY, sTX, sTY;
     /**
      * Page which to print from.
      */

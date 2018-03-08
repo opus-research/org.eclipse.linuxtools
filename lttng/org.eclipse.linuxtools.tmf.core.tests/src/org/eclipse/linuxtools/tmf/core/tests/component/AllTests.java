@@ -1,28 +1,26 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- *
- * All rights reserved. This program and the accompanying materials are
- * made available under the terms of the Eclipse Public License v1.0 which
- * accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Alexandre Montplaisir - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.core.tests.component;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
- * Unit tests for the component package.
+ * <b><u>AllTests</u></b>
+ * <p>
+ * Implement me. Please.
+ * <p>
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TmfEventProviderTest.class,
-    TmfProviderManagerTest.class
-})
 public class AllTests {
+
+	/**
+	 * @return the TMF Core Component test suite
+	 */
+	public static Test suite() {
+		TestSuite suite = new TestSuite(AllTests.class.getName());
+		//$JUnit-BEGIN$
+		suite.addTestSuite(TmfProviderManagerTest.class);
+		suite.addTestSuite(TmfEventProviderTest.class);
+		//$JUnit-END$
+		return suite;
+	}
 
 }

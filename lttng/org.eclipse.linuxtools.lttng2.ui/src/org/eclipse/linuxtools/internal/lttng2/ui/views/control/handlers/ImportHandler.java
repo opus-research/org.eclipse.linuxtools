@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of streamed traces
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -57,10 +56,6 @@ public class ImportHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
-    /**
-     * The command parameter
-     */
     protected CommandParameter fParam;
 
     // ------------------------------------------------------------------------
@@ -91,7 +86,7 @@ public class ImportHandler extends BaseControlViewHandler {
             final IImportDialog dialog = TraceControlDialogFactory.getInstance().getImportDialog();
             dialog.setSession(param.getSession());
 
-            if ((dialog.open() != Window.OK) || param.getSession().isStreamedTrace()) {
+            if (dialog.open() != Window.OK) {
                 return null;
             }
 

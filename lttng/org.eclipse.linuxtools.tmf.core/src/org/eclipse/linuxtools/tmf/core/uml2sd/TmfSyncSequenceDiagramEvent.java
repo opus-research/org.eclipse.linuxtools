@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,13 +12,13 @@
 package org.eclipse.linuxtools.tmf.core.uml2sd;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 
 /**
  * <p>
  * A basic implementation of ITmfSyncSequenceDiagramEvent.
  * </p>
- *
+ * 
  * @version 1.0
  * @author Bernd Hufmann
  */
@@ -49,12 +49,12 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     // ------------------------------------------------------------------------
     /**
      * Constructor
-     *
+     * 
      * @param startEvent The start event (on sender side).
      * @param sender The name of sender of signal.
      * @param receiver The Name of receiver of signal.
      * @param name - The signal name
-     */
+     */    
     public TmfSyncSequenceDiagramEvent(ITmfEvent startEvent, String sender, String receiver, String name) {
 
         if ((startEvent == null) || (sender == null) || (receiver == null) || (name == null)) {
@@ -65,7 +65,7 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
                     (name == null ? ", name=null" : "")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        fStartTime = startEvent.getTimestamp();
+        fStartTime = startEvent.getTimestamp().clone();
 
         fSender = sender;
         fReceiver = receiver;
@@ -103,8 +103,9 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
         return fName;
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getStartTime()
      */
     @Override
     public ITmfTimestamp getStartTime() {

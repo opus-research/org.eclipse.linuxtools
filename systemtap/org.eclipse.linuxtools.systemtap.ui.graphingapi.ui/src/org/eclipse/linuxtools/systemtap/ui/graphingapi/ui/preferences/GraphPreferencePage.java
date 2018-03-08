@@ -26,48 +26,51 @@ public class GraphPreferencePage extends FieldEditorPreferencePage implements IW
 	public GraphPreferencePage() {
 		super(GRID);
 		setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("GraphPreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
+		setDescription(Localization.getString("GraphPreferencePage.GraphDisplayPreferences"));
 	}
 	
 	@Override
 	public void createFieldEditors() {
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES, 
-				Localization.getString("GraphPreferencePage.ShowXGridLines"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.ShowXGridLines"),
 				getFieldEditorParent()));
 
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_SHOW_Y_GRID_LINES, 
-				Localization.getString("GraphPreferencePage.ShowYGridLines"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.ShowYGridLines"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_MAX_DATA_ITEMS,
-				Localization.getString("GraphPreferencePage.MaxDataItems"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.MaxDataItems"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_VIEWABLE_DATA_ITEMS,
-				Localization.getString("GraphPreferencePage.ViewableDataItems"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.ViewableDataItems"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_X_SERIES_TICKS,
-				Localization.getString("GraphPreferencePage.XSeriesTicks"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.XSeriesTicks"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_Y_SERIES_TICKS,
-				Localization.getString("GraphPreferencePage.YSeriesTicks"), //$NON-NLS-1$
+				Localization.getString("GraphPreferencePage.YSeriesTicks"),
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {}
 	
+	@Override
+	public void dispose() {
+		super.dispose();
+	}
 }
 

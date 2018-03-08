@@ -11,9 +11,6 @@
 
 package org.eclipse.linuxtools.tools.launch.core.factory;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 
@@ -75,15 +72,10 @@ public abstract class LinuxtoolsProcessFactory {
 				else
 					newEnvp[i] = envp[i];
 		} else {
-			Map<String, String> envVars = System.getenv();
-			Set<String> keySet = envVars.keySet();
-			newEnvp = new String[envVars.size()];
-
-			int i = 0;
-			for (String key : keySet) {
-				newEnvp[i] = key + "=" + envVars.get(key);
-				i++;
-			}
+			newEnvp = new String[envp.length + 1];
+			for (int i = 0; i < envp.length; i++)
+				newEnvp[i] = envp[i];
+			newEnvp[envp.length] = newPath.toString();
 		}
 		return newEnvp;
 	}

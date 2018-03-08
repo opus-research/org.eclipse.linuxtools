@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2010, 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,23 +9,19 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Added supplementary files handling
- *   Geneviève Bastien - Moved supplementary files handling to parent class, added
- *                      code to copy trace
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
@@ -37,7 +33,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefin
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -52,7 +47,7 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfTraceElement extends TmfWithFolderElement implements IActionFilter, IPropertySource2 {
+public class TmfTraceElement extends TmfProjectModelElement implements IActionFilter, IPropertySource2 {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -92,9 +87,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         sfTypeDescriptor.setCategory(sfInfoCategory);
         sfIsLinkedDescriptor.setCategory(sfInfoCategory);
     }
-
-    private static final String BOOKMARKS_HIDDEN_FILE = ".bookmarks"; //$NON-NLS-1$
-
+    
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -185,7 +178,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      *
      * @return the <code>ITmfTrace</code> or <code>null</code> for an error
      */
-    public ITmfTrace instantiateTrace() {
+    public ITmfTrace<?> instantiateTrace() {
         try {
 
             // make sure that supplementary folder exists
@@ -207,7 +200,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
                     }
                 }
                 IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
-                ITmfTrace trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                ITmfTrace<?> trace = (ITmfTrace<?>) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
                 return trace;
             }
         } catch (CoreException e) {
@@ -270,54 +263,10 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     }
 
     /**
-     * Returns the file resource used to store bookmarks after creating it if necessary.
-     * If the trace resource is a file, it is returned directly.
-     * If the trace resource is a folder, a linked file is returned.
-     * The file will be created if it does not exist.
-     * @return the bookmarks file
-     * @throws CoreException if the bookmarks file cannot be created
-     * @since 2.0
-     */
-    public IFile createBookmarksFile() throws CoreException {
-        IFile file = getBookmarksFile();
-        if (fResource instanceof IFolder) {
-            if (!file.exists()) {
-                final IFile bookmarksFile = getProject().getTracesFolder().getResource().getFile(BOOKMARKS_HIDDEN_FILE);
-                if (!bookmarksFile.exists()) {
-                    final InputStream source = new ByteArrayInputStream(new byte[0]);
-                    bookmarksFile.create(source, true, null);
-                }
-                bookmarksFile.setHidden(true);
-                file.createLink(bookmarksFile.getLocation(), IResource.REPLACE, null);
-                file.setHidden(true);
-                file.setPersistentProperty(TmfCommonConstants.TRACETYPE, TmfTrace.class.getCanonicalName());
-            }
-        }
-        return file;
-    }
-
-    /**
-     * Returns the file resource used to store bookmarks.
-     * The file may not exist.
-     * @return the bookmarks file
-     * @since 2.0
-     */
-    public IFile getBookmarksFile() {
-        IFile file = null;
-        if (fResource instanceof IFile) {
-            file = (IFile) fResource;
-        } else if (fResource instanceof IFolder) {
-            final IFolder folder = (IFolder) fResource;
-            file = folder.getFile(getName() + '_');
-        }
-        return file;
-    }
-
-    /**
      * Returns the <code>TmfTraceElement</code> located under the <code>TmfTracesFolder</code>.
-     *
-     * @return <code>this</code> if this element is under the <code>TmfTracesFolder</code>
-     *         else the corresponding <code>TmfTraceElement</code> if this element is under
+     * 
+     * @return <code>this</code> if this element is under the <code>TmfTracesFolder</code> 
+     *         else the corresponding <code>TmfTraceElement</code> if this element is under 
      *         <code>TmfExperimentElement</code>.
      */
     public TmfTraceElement getElementUnderTraceFolder() {
@@ -331,6 +280,146 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             }
         }
         return this;
+    }
+    
+    /**
+     * Deletes the trace specific supplementary folder.
+     */
+    public void deleteSupplementaryFolder() {
+        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
+        if (supplFolder.exists()) {
+            try {
+                supplFolder.delete(true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error deleting supplementary folder " + supplFolder, e); //$NON-NLS-1$
+            }
+        }
+    }
+
+    /**
+     * Renames the trace specific supplementary folder according to the new trace name.
+     * 
+     * @param newTraceName The new trace name 
+     */
+    public void renameSupplementaryFolder(String newTraceName) {
+        IFolder oldSupplFolder = getTraceSupplementaryFolder(fResource.getName());
+        IFolder newSupplFolder =  getTraceSupplementaryFolder(newTraceName);
+
+        // Rename supplementary folder
+        if (oldSupplFolder.exists()) {
+            try {
+                oldSupplFolder.move(newSupplFolder.getFullPath(), true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error renaming supplementary folder " + oldSupplFolder, e); //$NON-NLS-1$
+            }
+        }
+    }
+
+    /**
+     * Copies the trace specific supplementary folder to the new trace name.
+     * 
+     * @param newTraceName The new trace name 
+     */
+    public void copySupplementaryFolder(String newTraceName) {
+        IFolder oldSupplFolder = getTraceSupplementaryFolder(fResource.getName());
+        IFolder newSupplFolder = getTraceSupplementaryFolder(newTraceName);
+
+        // copy supplementary folder
+        if (oldSupplFolder.exists()) {
+            try {
+                oldSupplFolder.copy(newSupplFolder.getFullPath(), true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error renaming supplementary folder " + oldSupplFolder, e); //$NON-NLS-1$
+            }
+        }
+    }
+
+    /**
+     * Copies the trace specific supplementary folder a new folder.
+     * 
+     * @param destination The destination folder to copy to. 
+     */
+    public void copySupplementaryFolder(IFolder destination) {
+        IFolder oldSupplFolder = getTraceSupplementaryFolder(fResource.getName());
+
+        // copy supplementary folder
+        if (oldSupplFolder.exists()) {
+            try {
+                oldSupplFolder.copy(destination.getFullPath(), true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error copying supplementary folder " + oldSupplFolder, e); //$NON-NLS-1$
+            }
+        }
+    }
+
+    
+    /**
+     * Refreshes the trace specific supplementary folder information. It creates the folder if not exists.
+     * It sets the persistence property of the trace resource  
+     */
+    public void refreshSupplementaryFolder() {
+        createSupplementaryDirectory();
+    }
+
+    /**
+     * Checks if supplementary resource exist or not.
+     *  
+     * @return <code>true</code> if one or more files are under the trace supplementary folder
+     */
+    public boolean hasSupplementaryResources() {
+        IResource[] resources = getSupplementaryResources();
+        return (resources.length > 0);
+    }
+    
+    /**
+     * Returns the supplementary resources under the trace supplementary folder.
+     *  
+     * @return array of resources under the trace supplementary folder.
+     */
+    public IResource[] getSupplementaryResources() {
+        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
+        if (supplFolder.exists()) {
+            try {
+                return supplFolder.members();
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error deleting supplementary folder " + supplFolder, e); //$NON-NLS-1$
+            }
+        }
+        return new IResource[0];
+    }
+
+    /**
+     * Deletes the given resources.  
+     * 
+     * @param resources array of resources to delete.
+     */
+    public void deleteSupplementaryResources(IResource[] resources) {
+        
+        for (int i = 0; i < resources.length; i++) {
+            try {
+                resources[i].delete(true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error deleting supplementary resource " + resources[i], e); //$NON-NLS-1$
+            }
+        }
+    }
+
+    private void createSupplementaryDirectory() {
+        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
+        if (!supplFolder.exists()) {
+            try {
+                supplFolder.create(true, true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                Activator.getDefault().logError("Error creating resource supplementary file " + supplFolder, e); //$NON-NLS-1$
+            }
+        }
+
+        try {
+            fResource.setPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, supplFolder.getLocationURI().getPath());
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
+        }
+        
     }
 
     // ------------------------------------------------------------------------
@@ -388,7 +477,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
+        return (sfDescriptors != null) ? Arrays.copyOf(sfDescriptors, sfDescriptors.length) : null;
     }
 
     /*
@@ -468,21 +557,5 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     public boolean isPropertySet(Object id) {
         return false;
     }
-
-    /**
-     * Copy this trace in the trace folder. No other parameters are mentioned so
-     * the trace is copied in this element's project trace folder
-     *
-     * @param string
-     *            The new trace name
-     * @return the new Resource object
-     * @since 2.0
-     */
-    public TmfTraceElement copy(String string) {
-        TmfTraceFolder folder = this.getProject().getTracesFolder();
-        IResource res = super.copy(string, false);
-        return new TmfTraceElement(string, res, folder);
-    }
-
 
 }

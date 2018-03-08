@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.SequenceInputStream;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.core.resources.IProject;
@@ -54,6 +53,24 @@ public class Utils {
 	 * 
 	 * @param outStream
 	 *            The stream to write the output to.
+	 * 
+	 * @param command
+	 *            The command with all parameters.
+	 * @return int The return value of the command.
+	 * @throws IOException If an IOException occurs.
+	 * @deprecated use {@link Utils#runCommand(OutputStream, IProject, String...)} instead.
+	 */
+	@Deprecated
+	public static IStatus runCommand(final OutputStream outStream,
+			String... command) throws IOException {
+		return runCommand(null, null, command);
+	}
+
+	/**
+	 * Runs the given command and parameters.
+	 * 
+	 * @param outStream
+	 *            The stream to write the output to.
 	 * @param project
 	 * 			  The project which is executing this command.
 	 * @param command
@@ -66,10 +83,8 @@ public class Utils {
 			String... command) throws IOException {
 		Process child = RuntimeProcessFactory.getFactory().exec(command, project);
 
-		final BufferedInputStream in = new BufferedInputStream(
-				new SequenceInputStream(child.getInputStream(),
-						child.getErrorStream()));
-
+		final BufferedInputStream in = new BufferedInputStream(child
+				.getInputStream());
 		Job readinJob = new Job("") { //$NON-NLS-1$
 
 			@Override
@@ -164,6 +179,8 @@ public class Utils {
 		FileChannel outChannel = new FileOutputStream(out).getChannel();
 		try {
 			inChannel.transferTo(0, inChannel.size(), outChannel);
+		} catch (IOException e) {
+			throw e;
 		} finally {
 			if (inChannel != null)
 				inChannel.close();

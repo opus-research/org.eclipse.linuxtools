@@ -30,35 +30,35 @@ public interface IProjectConfiguration {
 	 * 
 	 * @return The build folder.
 	 */
-	IContainer getBuildFolder();
+	public abstract IContainer getBuildFolder();
 
 	/**
 	 * Returns the folder to put built binary rpms.
 	 * 
 	 * @return The rpms folder.
 	 */
-	IContainer getRpmsFolder();
+	public abstract IContainer getRpmsFolder();
 
 	/**
 	 * Returns the folder to retrieve sources from.
 	 * 
 	 * @return The sources folder.
 	 */
-	IContainer getSourcesFolder();
+	public abstract IContainer getSourcesFolder();
 
 	/**
 	 * Returns the folder to retrieve spec file from.
 	 * 
 	 * @return The specs folder.
 	 */
-	IContainer getSpecsFolder();
+	public abstract IContainer getSpecsFolder();
 
 	/**
 	 * Returns the folder to put src.rpm.
 	 * 
 	 * @return The source rpms folder.
 	 */
-	IContainer getSrpmsFolder();
+	public abstract IContainer getSrpmsFolder();
 	
 	
 	/**
@@ -66,6 +66,6 @@ public interface IProjectConfiguration {
 	 * 
 	 * @return The defines setting various directories.
 	 */
-	List<String> getConfigDefines();
+	public abstract List<String> getConfigDefines();
 
 }

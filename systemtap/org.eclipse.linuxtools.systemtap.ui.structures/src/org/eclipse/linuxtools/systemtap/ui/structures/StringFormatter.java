@@ -20,12 +20,10 @@ public class StringFormatter implements IFormattingStyles {
 		format = IFormattingStyles.UNFORMATED;
 	}
 	
-	@Override
 	public int getFormat() {
 		return format;
 	}
 	
-	@Override
 	public void setFormat(int format) {
 		this.format = format;
 	}
@@ -38,7 +36,6 @@ public class StringFormatter implements IFormattingStyles {
 	 *
 	 * @return The modified string.
 	 */
-	@Override
 	public String format(String s) {
 		switch (format) {
 			case STRING:

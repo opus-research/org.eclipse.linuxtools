@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.callgraph.graphlisteners;
 
-import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 
 /**
  * Set mouseDown flag to false when focus is lost (prevents the graph from
@@ -19,13 +19,17 @@ import org.eclipse.swt.events.FocusEvent;
  * 
  *
  */
-public class StapGraphFocusListener extends FocusAdapter{
+public class StapGraphFocusListener implements FocusListener{
 	private StapGraphMouseMoveListener listener;
 
 	public StapGraphFocusListener(StapGraphMouseMoveListener listener) {
 		this.listener = listener;
 	}
 	
+	@Override
+	public void focusGained(FocusEvent e) {		
+	}
+
 	@Override
 	public void focusLost(FocusEvent e) {			
 		listener.setStop(true);

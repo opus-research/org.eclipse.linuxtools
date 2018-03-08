@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Messages;
  *
  * @version 1.0
  * @author Bernd Hufmann
- * @since 2.0
+ * @since 1.2
  */
 public class PinTmfViewAction extends Action {
     /**

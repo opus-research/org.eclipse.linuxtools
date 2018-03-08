@@ -46,7 +46,6 @@ public class ConsoleStreamDaemon implements IGobblerListener {
 	/**
 	 * Captures data events and pushes the data to the console
 	 */
-	@Override
 	public void handleDataEvent(String line) {
 		output = line;
 		this.pushData();

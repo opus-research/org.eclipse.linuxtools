@@ -25,9 +25,9 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
+import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptions;
+import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileEventConfigTab;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileSetupTab;
-import org.eclipse.linuxtools.oprofile.launch.tests.utils.LaunchTestingOptions;
-import org.eclipse.linuxtools.oprofile.launch.tests.utils.OprofileTestingEventConfigTab;
 import org.eclipse.linuxtools.oprofile.launch.tests.utils.TestingOprofileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.layout.GridLayout;
@@ -37,8 +37,8 @@ import org.osgi.framework.FrameworkUtil;
 
 public class TestLaunchingExternalProject extends AbstractTest {
 	
-	private final Path EXTERNAL_PROJECT_PATH = new Path("/tmp/eclipse-oprofile-ext_project_test"); //$NON-NLS-1$
-	private final String PROJECT_NAME = "primeTest"; //$NON-NLS-1$
+	private final Path EXTERNAL_PROJECT_PATH = new Path("/tmp/eclipse-oprofile-ext_project_test");
+	private final String PROJECT_NAME = "primeTest";
 	private ILaunchConfiguration config;
 	private Shell testShell;
 	private IProject externalProject;	// external project to work with
@@ -80,8 +80,7 @@ public class TestLaunchingExternalProject extends AbstractTest {
 	// Implemented abstract method of AbstractTest
 	@Override
 	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
-		OprofileTestingEventConfigTab configTab = new OprofileTestingEventConfigTab();
-		configTab.setOprofileProject(externalProject);
+		OprofileEventConfigTab configTab = new OprofileEventConfigTab();
 		OprofileSetupTab setupTab = new OprofileSetupTab();
 		configTab.setDefaults(wc);
 		setupTab.setDefaults(wc);
@@ -93,8 +92,7 @@ public class TestLaunchingExternalProject extends AbstractTest {
 	 * @throws CoreException
 	 */
 	public void testLaunchExternalProject() throws CoreException {		
-		LaunchTestingOptions options = new LaunchTestingOptions();
-		options.setOprofileProject(externalProject);
+		LaunchOptions options = new LaunchOptions();
 		options.loadConfiguration(config);
 		
 		TestingOprofileLaunchConfigurationDelegate delegate = new TestingOprofileLaunchConfigurationDelegate();
@@ -104,11 +102,11 @@ public class TestLaunchingExternalProject extends AbstractTest {
 		assertEquals("", options.getBinaryImage()); //$NON-NLS-1$
 		assertEquals("", options.getKernelImageFile()); //$NON-NLS-1$
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, options.getSeparateSamples());
-
+		
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
 		assertTrue(delegate.eventsIsNull);
 		assertNotNull(delegate._options);
 		assertTrue(delegate._options.getBinaryImage().length() > 0);
-		assertEquals(EXTERNAL_PROJECT_PATH.toOSString() + IPath.SEPARATOR + "Debug" + IPath.SEPARATOR + PROJECT_NAME, delegate._options.getBinaryImage()); //$NON-NLS-1$
+		assertEquals(EXTERNAL_PROJECT_PATH.toOSString() + IPath.SEPARATOR + "Debug" + IPath.SEPARATOR + PROJECT_NAME, delegate._options.getBinaryImage());
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,10 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * <b><u>TmfEmptyTraceStub</u></b>
@@ -44,7 +45,7 @@ public class TmfEmptyTraceStub extends TmfTraceStub {
     // ------------------------------------------------------------------------
 
     @Override
-    public TmfContext seekEvent(final ITmfLocation location) {
+    public TmfContext seekEvent(final ITmfLocation<?> location) {
         return new TmfContext();
     }
 
@@ -54,17 +55,17 @@ public class TmfEmptyTraceStub extends TmfTraceStub {
     }
 
     @Override
-    public double getLocationRatio(ITmfLocation location) {
+    public double getLocationRatio(ITmfLocation<?> location) {
         return 0;
     }
 
     @Override
-    public ITmfLocation getCurrentLocation() {
+    public TmfLocation<Long> getCurrentLocation() {
         return null;
     }
 
     @Override
-    public ITmfEvent parseEvent(final ITmfContext context) {
+    public TmfEvent parseEvent(final ITmfContext context) {
         return null;
     }
 

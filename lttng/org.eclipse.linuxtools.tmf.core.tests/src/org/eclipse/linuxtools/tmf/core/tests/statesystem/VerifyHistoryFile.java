@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,14 +17,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.HistoryBuilder;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * Small program to ensure a history file does not contain any "holes".
@@ -32,26 +30,26 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
  * trigger NPE's elsewhere in the stack.
  *
  * @author alexmont
+ *
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class VerifyHistoryFile {
 
     // Enter the .ht file name to test here
-    public static final String pathToHistoryFile = "";
+    public final static String pathToHistoryFile = "";
 
     private static File htFile;
     private static IStateHistoryBackend htBackend;
-    private static ITmfStateSystem ss;
+    private static IStateSystemQuerier ss;
 
     private static long startTime;
     private static long endTime;
     private static int nbErrors;
 
     public static void main(String[] args) throws IOException,
-            TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException {
+            TimeRangeException, AttributeNotFoundException {
         htFile = new File(pathToHistoryFile);
-        htBackend = new HistoryTreeBackend(htFile, IStateChangeInput.IGNORE_PROVIDER_VERSION);
+        htBackend = new HistoryTreeBackend(htFile);
         ss = HistoryBuilder.openExistingHistory(htBackend);
 
         startTime = ss.getStartTime();
@@ -67,8 +65,7 @@ public class VerifyHistoryFile {
     }
 
     private static void verifyAttribute(int attribute)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException {
+            throws TimeRangeException, AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
 
         System.out.print("Checking attribute " + attribute);

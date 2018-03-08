@@ -24,26 +24,26 @@ public class CommandTest {
 
 	@Before
 	public void setUp() {
-		tc = new Command(new String[] {"ls", "/home/"}, null);
+		tc = new Command(new String[] {"ls", "/home/"}, null, null);
 	}
 
 	@Test
 	public void testCommand() {
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(null, null);
+		tc = new Command(null, null, null);
+		assertNotNull("Command not null", tc);
+		
+		tc = new Command(new String[] {}, null, null);
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(new String[] {}, null);
+		tc = new Command(new String[] {""}, null, null);
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(new String[] {""}, null);
+		tc = new Command(new String[] {"a"}, null, null);
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(new String[] {"a"}, null);
-		assertNotNull("Command not null", tc);
-
-		tc = new Command(new String[] {"ls", "/"}, null);
+		tc = new Command(new String[] {"ls", "/"}, null, null);
 		assertNotNull("Command not null", tc);
 	}
 
@@ -53,7 +53,7 @@ public class CommandTest {
 		tc.stop();
 		assertFalse("Finished", tc.isRunning());
 	}
-
+	
 	@Test
 	public void testStop() {
 		assertTrue("Running", tc.isRunning());
@@ -65,14 +65,14 @@ public class CommandTest {
 	public void testGetReturnValue() {
 		assertEquals(Integer.MAX_VALUE, tc.getReturnValue());
 	}
-
+	
 	@Test
 	public void testIsDisposed() {
 		assertFalse(tc.isDisposed());
 		tc.dispose();
 		assertTrue(tc.isDisposed());
 	}
-
+	
 	@Test
 	public void testDispose() {
 		tc.dispose();

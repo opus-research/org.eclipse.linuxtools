@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,10 +17,12 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 /**
  * The TMF data request
  *
+ * @param <T> The request data type
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
-public interface ITmfDataRequest {
+public interface ITmfDataRequest<T extends ITmfEvent> {
 
 	// ------------------------------------------------------------------------
 	// Constants
@@ -47,7 +49,7 @@ public interface ITmfDataRequest {
     /**
      * @return request data type (T)
      */
-    public Class<? extends ITmfEvent> getDataType();
+    public Class<T> getDataType();
 
     /**
      * @return request ID
@@ -112,7 +114,7 @@ public interface ITmfDataRequest {
      *
      * @param data the data to process
      */
-    public void handleData(ITmfEvent data);
+    public void handleData(T data);
 
 	// ------------------------------------------------------------------------
 	// Request notifications

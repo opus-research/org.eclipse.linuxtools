@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson and others.
+ * Copyright (c) 2009, 2010, 2011, 2012 Ericsson and others.
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -740,10 +740,10 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
             List<File> traces = isolateTraces();
             for (File trace : traces) {
-                ITmfTrace tmfTrace = null;
+                ITmfTrace<?> tmfTrace = null;
                 try {
                     IConfigurationElement ce = fTraceAttributes.get(traceTypeName);
-                    tmfTrace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    tmfTrace = (ITmfTrace<?>) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
                     if (tmfTrace != null && !tmfTrace.validate(fProject, trace.getAbsolutePath())) {
                         setMessage(null);
                         setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
@@ -811,8 +811,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             return false;
         }
 
+        String sourceDirPath;
         try {
-            sourceDir.getCanonicalPath();
+            sourceDirPath = sourceDir.getCanonicalPath();
         } catch (IOException e) {
             MessageDialog.openInformation(getContainer().getShell(), Messages.ImportTraceWizard_Information,
                     Messages.ImportTraceWizard_InvalidTraceDirectory);
@@ -834,7 +835,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         }
 
         if (fileSystemObjects.size() > 0) {
-            boolean ok = importResources(fileSystemObjects);
+            boolean ok = importResources(sourceDirPath, fileSystemObjects);
             String traceBundle = null;
             String traceTypeId = null;
             String traceIcon = null;
@@ -918,7 +919,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         return false;
     }
 
-    private boolean importResources(Map<String, File> fileSystemObjects) {
+    private boolean importResources(String rootDirectory, Map<String, File> fileSystemObjects) {
 
         // Determine the sorted canonical list of items to import
         List<File> fileList = new ArrayList<File>();

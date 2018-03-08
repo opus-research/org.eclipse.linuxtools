@@ -1,3 +1,6 @@
-Linux_Tools_Project/
+bin
+@dot
+javaCompiler...args
+build.xml
 target
-toc.xml
+build-helper-ericsson.xml

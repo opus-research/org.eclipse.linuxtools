@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -82,10 +82,6 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
-    private void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-    }
-
     // ------------------------------------------------------------------------
     // ITmfProjectModelElement
     // ------------------------------------------------------------------------
@@ -160,9 +156,6 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
     @Override
     public void removeChild(ITmfProjectModelElement child) {
         fChildren.remove(child);
-        if (child instanceof TmfProjectModelElement) {
-            ((TmfProjectModelElement) child).dispose();
-        }
         refresh();
     }
     /*
@@ -199,6 +192,8 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((fLocation == null) ? 0 : fLocation.hashCode());
+        result = prime * result + ((fName == null) ? 0 : fName.hashCode());
         result = prime * result + ((fPath == null) ? 0 : fPath.hashCode());
         return result;
     }
@@ -218,7 +213,7 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
             return false;
         }
         TmfProjectModelElement element = (TmfProjectModelElement) other;
-        return element.fPath.equals(fPath);
+        return element.fName.equals(fName) && element.fLocation.equals(fLocation);
     }
 
     /**

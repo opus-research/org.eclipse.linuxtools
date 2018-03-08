@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF enum definition.
@@ -54,7 +54,7 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
 
         integerValue = declaration.getContainerType().createDefinition(
                 definitionScope, fieldName);
-        value = declaration.query(integerValue.getValue());
+        value = ((Long) integerValue.getValue()).toString();
     }
 
     // ------------------------------------------------------------------------
@@ -89,7 +89,7 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
      */
     public void setIntegerValue(long Value) {
         integerValue.setValue(Value);
-        value = declaration.query(Value);
+        value = ((Long) integerValue.getValue()).toString();
     }
 
     @Override
@@ -114,10 +114,4 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
         value = declaration.query(val);
     }
 
-    @Override
-    public String toString() {
-        return "{ value = " + getValue() + //$NON-NLS-1$
-                ", container = " + integerValue.toString() + //$NON-NLS-1$
-                " }"; //$NON-NLS-1$
-    }
 }

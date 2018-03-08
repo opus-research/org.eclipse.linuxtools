@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,44 +8,44 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Added support for pre-emption
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.request;
 
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Comparator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
 
-import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
-import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
+import org.eclipse.linuxtools.internal.tmf.core.component.TmfThread;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 
 /**
  * A simple, straightforward request executor.
  *
+ * @version 1.0
  * @author Francois Chouinard
- * @version 1.1
  */
 public class TmfRequestExecutor implements Executor {
 
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-
-    // The request executor
-	private final ExecutorService fExecutor = Executors.newFixedThreadPool(2);
+	private final ExecutorService fExecutor;
 	private final String fExecutorName;
-
-	// The request queues
-	private final Queue<TmfEventThread> fHighPriorityTasks = new ArrayBlockingQueue<TmfEventThread>(100);
-    private final Queue<TmfEventThread> fLowPriorityTasks  = new ArrayBlockingQueue<TmfEventThread>(100);
-
-	// The tasks
-	private TmfEventThread fActiveTask;
-    private TmfEventThread fSuspendedTask;
+    private final PriorityBlockingQueue<TmfThread> fRequestQueue = new PriorityBlockingQueue<TmfThread>(
+            100, new Comparator<TmfThread>() {
+                @Override
+                public int compare(TmfThread o1, TmfThread o2) {
+                    if (o1.getExecType() == o2.getExecType()) {
+                        return 0;
+                    }
+                    if (o1.getExecType() == ExecutionType.BACKGROUND) {
+                        return 1;
+                    }
+                    return -1;
+                }
+            });
+    private TmfThread fCurrentRequest;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -55,11 +55,7 @@ public class TmfRequestExecutor implements Executor {
      * Default constructor
      */
     public TmfRequestExecutor() {
-        String canonicalName = fExecutor.getClass().getCanonicalName();
-        fExecutorName = canonicalName.substring(canonicalName.lastIndexOf('.') + 1);
-        if (TmfCoreTracer.isComponentTraced()) {
-            TmfCoreTracer.trace(fExecutor + " created"); //$NON-NLS-1$
-        }
+        this(Executors.newSingleThreadExecutor());
     }
 
     /**
@@ -67,21 +63,21 @@ public class TmfRequestExecutor implements Executor {
      *
      * @param executor The executor service to use
      */
-    @Deprecated
     public TmfRequestExecutor(ExecutorService executor) {
-        this();
+        fExecutor = executor;
+        String canonicalName = fExecutor.getClass().getCanonicalName();
+        fExecutorName = canonicalName.substring(canonicalName.lastIndexOf('.') + 1);
+        if (Tracer.isComponentTraced())
+        {
+            Tracer.trace(fExecutor + " created"); //$NON-NLS-1$
+        }
     }
-
-    // ------------------------------------------------------------------------
-    // Getters
-    // ------------------------------------------------------------------------
 
 	/**
 	 * @return the number of pending requests
 	 */
-    @Deprecated
 	public synchronized int getNbPendingRequests() {
-		return fHighPriorityTasks.size() + fLowPriorityTasks.size();
+		return fRequestQueue.size();
 	}
 
 	/**
@@ -98,83 +94,63 @@ public class TmfRequestExecutor implements Executor {
 		return fExecutor.isTerminated();
 	}
 
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
+	/**
+	 * Stops the executor
+	 */
+	public synchronized void stop() {
+	    if (fCurrentRequest != null) {
+	        fCurrentRequest.cancel();
+	    }
+
+	    while ((fCurrentRequest = fRequestQueue.poll()) != null) {
+	        fCurrentRequest.cancel();
+	    }
+
+		fExecutor.shutdown();
+		if (Tracer.isComponentTraced())
+         {
+            Tracer.trace(fExecutor + " terminated"); //$NON-NLS-1$
+        }
+	}
+
+	// ------------------------------------------------------------------------
+	// Operations
+	// ------------------------------------------------------------------------
 
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.Executor#execute(java.lang.Runnable)
 	 */
 	@Override
-	public synchronized void execute(final Runnable command) {
-
-        // We are expecting MyEventThread:s
-        if (!(command instanceof TmfEventThread)) {
-            // TODO: Log an error
-            return;
-        }
-
-        // Wrap the thread in a MyThread
-        TmfEventThread thread = (TmfEventThread) command;
-        TmfEventThread wrapper = new TmfEventThread(thread) {
+	public synchronized void execute(final Runnable requestThread) {
+		fRequestQueue.offer(new TmfThread(((TmfThread) requestThread).getExecType()) {
+			@Override
+			public void run() {
+				try {
+					requestThread.run();
+				} finally {
+					scheduleNext();
+				}
+			}
             @Override
-            public void run() {
-                try {
-                    command.run();
-                } finally {
-                    scheduleNext();
-                }
+            public void cancel() {
+                ((TmfThread) requestThread).cancel();
             }
-        };
-
-        // Add the thread to the appropriate queue
-        ExecutionType priority = thread.getExecType();
-        (priority == ExecutionType.FOREGROUND ? fHighPriorityTasks : fLowPriorityTasks).offer(wrapper);
-
-        // Schedule or preempt as appropriate
-        if (fActiveTask == null) {
-            scheduleNext();
-        } else if (priority == ExecutionType.FOREGROUND && priority != fActiveTask.getExecType()) {
-            fActiveTask.getThread().suspend();
-            fSuspendedTask = fActiveTask;
-            scheduleNext();
-        }
+		});
+		if (fCurrentRequest == null) {
+			scheduleNext();
+		}
 	}
 
 	/**
 	 * Executes the next pending request, if applicable.
 	 */
 	protected synchronized void scheduleNext() {
-	       if (!isShutdown()) {
-	            if ((fActiveTask = fHighPriorityTasks.poll()) != null) {
-	                fExecutor.execute(fActiveTask);
-	            } else if (fSuspendedTask != null) {
-	                fActiveTask = fSuspendedTask;
-	                fSuspendedTask = null;
-	                fActiveTask.getThread().resume();
-	            } else if ((fActiveTask = fLowPriorityTasks.poll()) != null) {
-	                fExecutor.execute(fActiveTask);
-	            }
-	        }
+		if ((fCurrentRequest = fRequestQueue.poll()) != null) {
+			if (!isShutdown()) {
+                fExecutor.execute(fCurrentRequest);
+            }
+		}
 	}
-
-    /**
-     * Stops the executor
-     */
-    public synchronized void stop() {
-        if (fActiveTask != null) {
-            fActiveTask.cancel();
-        }
-
-        while ((fActiveTask = fHighPriorityTasks.poll()) != null) {
-            fActiveTask.cancel();
-        }
-
-        fExecutor.shutdown();
-        if (TmfCoreTracer.isComponentTraced()) {
-            TmfCoreTracer.trace(fExecutor + " terminated"); //$NON-NLS-1$
-        }
-    }
 
 	// ------------------------------------------------------------------------
 	// Object

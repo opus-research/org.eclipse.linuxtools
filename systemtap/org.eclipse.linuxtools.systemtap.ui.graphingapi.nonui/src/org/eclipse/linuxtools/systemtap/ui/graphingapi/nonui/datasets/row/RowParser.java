@@ -43,7 +43,6 @@ public class RowParser implements IDataSetParser {
 		wholePattern = Pattern.compile(wholeRegExpr.toString());
 	}
 	
-	@Override
 	public IDataEntry parse(StringBuilder s) {
 		if(null == s)
 			return null;
@@ -73,7 +72,6 @@ public class RowParser implements IDataSetParser {
 		return e;
 	}
 	
-	@Override
 	public boolean saveXML(IMemento target) {
 		target.putString(IDataSetParser.XMLdataset, RowDataSet.ID);
 		IMemento child2;
