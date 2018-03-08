@@ -1,20 +1,21 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.Comparator;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -48,6 +49,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SortAsyncMessageComparato
  * @see Lifeline Lifeline for more event occurence details
  * @version 1.0
  * @author sveyrier
+ * @since 2.0
  */
 public class AsyncMessage extends BaseMessage implements ITimeRange {
 
@@ -183,7 +185,9 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
      * Informs the given lifeline about the maximum occurrence if applicable.
      *
      * @param lifeLine
+     *            Concerned lifeline
      * @param occurrence
+     *            Occurrence number
      */
     protected void informFrame(Lifeline lifeLine, int occurrence) {
         if ((lifeLine != null) && (lifeLine.getFrame() != null) && (lifeLine.getFrame().getMaxEventOccurrence() < occurrence)) {
@@ -397,9 +401,10 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
      * Set the time when the message end
      *
      * @param time the time when the message end
+     * @since 2.0
      */
     public void setEndTime(ITmfTimestamp time) {
-        fEndTime = time.clone();
+        fEndTime = time;
         fHasTime = true;
         if (getStartLifeline() != null && getStartLifeline().getFrame() != null) {
             getStartLifeline().getFrame().setHasTimeInfo(true);
@@ -412,9 +417,10 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
      * Set the time when the message start
      *
      * @param time the time when the message start
+     * @since 2.0
      */
     public void setStartTime(ITmfTimestamp time) {
-        fStartTime = time.clone();
+        fStartTime = time;
         fHasTime = true;
         if (getStartLifeline() != null && getStartLifeline().getFrame() != null) {
             getStartLifeline().getFrame().setHasTimeInfo(true);
@@ -423,28 +429,22 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getEndTime() {
         return fEndTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getStartTime() {
         return fStartTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
-     */
     @Override
     public boolean hasTimeInfo() {
         return fHasTime;

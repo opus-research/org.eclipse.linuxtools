@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.io;
 
 import static org.junit.Assert.assertEquals;
@@ -6,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +25,7 @@ import org.junit.Test;
 /**
  * The class <code>BitBufferTest</code> contains tests for the class
  * <code>{@link BitBuffer}</code>.
- * 
+ *
  * @author ematkho
  * @version $Revision: 1.0 $
  */
@@ -24,7 +35,7 @@ public class BitBufferTest {
 
     /**
      * Launch the test.
-     * 
+     *
      * @param args
      *            the command line arguments
      */
@@ -87,18 +98,6 @@ public class BitBufferTest {
     }
 
     /**
-     * Run the boolean canRead(int,int) method test.
-     */
-    @Test
-    public void testCanRead_2params() {
-        int index = 1;
-        int length = 1;
-        boolean result = fixture.canRead(index, length);
-
-        assertEquals(false, result);
-    }
-
-    /**
      * Run the void clear() method test.
      */
     @Test
@@ -143,7 +142,7 @@ public class BitBufferTest {
      */
     @Test
     public void testGetOrder() {
-        ByteOrder result = fixture.order();
+        ByteOrder result = fixture.getByteOrder();
 
         assertNotNull(result);
         assertEquals("BIG_ENDIAN", result.toString()); //$NON-NLS-1$
@@ -156,7 +155,7 @@ public class BitBufferTest {
     public void testSetOrder() {
         ByteOrder order = ByteOrder.BIG_ENDIAN;
 
-        fixture.order(order);
+        fixture.setByteOrder(order);
     }
 
     /**

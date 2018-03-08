@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -18,11 +18,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.Activator;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.RpmlintLog;
+import org.eclipse.linuxtools.internal.rpm.rpmlint.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.rpm.core.utils.Utils;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -35,6 +37,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 /**
  * Manually invoke rpmlint action, which prints the output of rpmlint execution to the console.
@@ -64,9 +67,9 @@ public class RunRpmlintAction extends AbstractHandler{
 			IEditorPart editor = HandlerUtil.getActiveEditor(event);
 			if (editor != null) {
 				IEditorInput editorInput = editor.getEditorInput();
-				if (editorInput != null && editorInput instanceof IFileEditorInput) {
+				if (editorInput instanceof IFileEditorInput) {
 					runRpmlint(((IFileEditorInput) editorInput).getFile().getLocation().toString());
-				} else if (editorInput != null && editorInput instanceof IURIEditorInput) {
+				} else if (editorInput instanceof IURIEditorInput) {
 					runRpmlint(((IURIEditorInput) editorInput).getURI().getPath().toString());
 				}
 			}
@@ -76,10 +79,11 @@ public class RunRpmlintAction extends AbstractHandler{
 	}
 
 	private void runRpmlint(String location) {
+		String rpmlintPath = new ScopedPreferenceStore(InstanceScope.INSTANCE,Activator.PLUGIN_ID).getString(
+				PreferenceConstants.P_RPMLINT_PATH);
 		try {
-			if (Utils.fileExist(Activator.getRpmlintPath())) {
-				String output = Utils.runCommandToString(Activator
-						.getRpmlintPath(),
+			if (Utils.fileExist(rpmlintPath)) {
+				String output = Utils.runCommandToString(rpmlintPath,
 						"-i", location); //$NON-NLS-1$
 				MessageConsole myConsole = findConsole(Messages.RunRpmlintAction_0);
 				MessageConsoleStream out = myConsole

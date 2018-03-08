@@ -1,19 +1,18 @@
 /**********************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage;
@@ -131,9 +130,10 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * Set the time when the execution occurrence starts.
      *
      * @param time the time when the execution occurrence starts
+     * @since 2.0
      */
     public void setStartTime(ITmfTimestamp time) {
-        fStartTime = time.clone();
+        fStartTime = time;
         fHasTimeInfo = true;
         if (fLifeline != null) {
             fLifeline.setTimeInfo(true);
@@ -144,27 +144,26 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * Set the time when the execution occurrence ends.
      *
      * @param time the time when the execution occurrence ends
+     * @since 2.0
      */
     public void setEndTime(ITmfTimestamp time) {
-        fEndTime = time.clone();
+        fEndTime = time;
         fHasTimeInfo = true;
         if (fLifeline != null) {
             fLifeline.setTimeInfo(true);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getStartTime() {
         return fStartTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getEndTime() {

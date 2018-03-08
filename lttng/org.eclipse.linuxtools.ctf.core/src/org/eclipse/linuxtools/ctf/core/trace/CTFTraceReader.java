@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -19,13 +19,11 @@ import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.Activator;
-import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
-import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputReaderTimestampComparator;
 
 /**
  * A CTF trace reader. Reads the events of a trace.
- * 
+ *
  * @version 1.0
  * @author Matthew Khouzam
  * @author Alexandre Montplaisir
@@ -65,10 +63,6 @@ public class CTFTraceReader {
      * Timestamp of the last event read so far
      */
     private long endTime;
-
-    protected void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -119,6 +113,19 @@ public class CTFTraceReader {
         return newReader;
     }
 
+    /**
+     * Dispose the CTFTraceReader
+     * @since 2.0
+     */
+    public void dispose() {
+        for (StreamInputReader reader : streamInputReaders) {
+            if (reader != null) {
+                reader.dispose();
+            }
+        }
+        streamInputReaders.clear();
+    }
+
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
@@ -131,6 +138,17 @@ public class CTFTraceReader {
     public long getStartTime() {
         return this.startTime;
     }
+
+    /**
+     * Set the trace's end time
+     *
+     * @param endTime
+     *            The end time to use
+     */
+    protected void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
 
     // ------------------------------------------------------------------------
     // Operations
@@ -244,8 +262,7 @@ public class CTFTraceReader {
              * Add it back in the queue.
              */
             this.prio.add(top);
-            final long topEnd = top.getCurrentEvent().getTimestamp()
-                    + this.getTrace().getOffset();
+            final long topEnd = this.trace.timestampCyclesToNanos(top.getCurrentEvent().getTimestamp());
             this.setEndTime(Math.max(topEnd, this.getEndTime()));
             this.eventCountPerTraceFile[top.getName()]++;
 
@@ -401,9 +418,7 @@ public class CTFTraceReader {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + (int) (startTime ^ (startTime >>> 32));
-        result = (prime * result)
-                + ((streamInputReaders == null) ? 0 : streamInputReaders
-                        .hashCode());
+        result = (prime * result) + streamInputReaders.hashCode();
         result = (prime * result) + ((trace == null) ? 0 : trace.hashCode());
         return result;
     }
@@ -420,11 +435,7 @@ public class CTFTraceReader {
             return false;
         }
         CTFTraceReader other = (CTFTraceReader) obj;
-        if (streamInputReaders == null) {
-            if (other.streamInputReaders != null) {
-                return false;
-            }
-        } else if (!streamInputReaders.equals(other.streamInputReaders)) {
+        if (!streamInputReaders.equals(other.streamInputReaders)) {
             return false;
         }
         if (trace == null) {

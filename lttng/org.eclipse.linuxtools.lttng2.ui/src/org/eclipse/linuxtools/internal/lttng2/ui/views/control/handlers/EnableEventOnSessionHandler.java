@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -45,11 +46,11 @@ public class EnableEventOnSessionHandler extends BaseEnableEventHandler {
     // ------------------------------------------------------------------------
     /*
      * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseEnableEventHandler#enableEvents(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter, java.util.List, boolean, org.eclipse.core.runtime.IProgressMonitor)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseEnableEventHandler#enableEvents(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter, java.util.List, boolean, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
-    public void enableEvents(CommandParameter param, List<String> eventNames, boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
-        param.getSession().enableEvents(eventNames, isKernel, monitor);
+    public void enableEvents(CommandParameter param, List<String> eventNames, boolean isKernel, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+        param.getSession().enableEvents(eventNames, isKernel, filterExpression, monitor);
     }
 
     /*
@@ -72,13 +73,12 @@ public class EnableEventOnSessionHandler extends BaseEnableEventHandler {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseEnableEventHandler#enableLogLevel(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter, java.lang.String, org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.LogLevelType, org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceLogLevel, org.eclipse.core.runtime.IProgressMonitor)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseEnableEventHandler#enableLogLevel(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter, java.lang.String, org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType, org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
-    public void enableLogLevel(CommandParameter param, String eventName, LogLevelType logLevelType, TraceLogLevel level, IProgressMonitor monitor) throws ExecutionException {
-        param.getSession().enableLogLevel(eventName, logLevelType, level, monitor);
+    public void enableLogLevel(CommandParameter param, String eventName, LogLevelType logLevelType, TraceLogLevel level, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+        param.getSession().enableLogLevel(eventName, logLevelType, level, filterExpression, monitor);
     }
-
 
     /*
      * (non-Javadoc)

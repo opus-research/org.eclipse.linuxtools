@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,8 +12,8 @@
 
 package org.eclipse.linuxtools.ctf.core.event;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
@@ -34,7 +34,7 @@ public class EventDefinition implements IDefinitionScope {
     /**
      * The corresponding event declaration.
      */
-    private final EventDeclaration declaration;
+    private final IEventDeclaration declaration;
 
     /**
      * The timestamp of the current event.
@@ -67,8 +67,9 @@ public class EventDefinition implements IDefinitionScope {
      *            The corresponding event declaration
      * @param streamInputReader
      *            The SIR from where this EventDef was read
+     * @since 2.0
      */
-    public EventDefinition(EventDeclaration declaration,
+    public EventDefinition(IEventDeclaration declaration,
             StreamInputReader streamInputReader) {
         this.declaration = declaration;
         this.streamInputReader = streamInputReader;
@@ -87,8 +88,9 @@ public class EventDefinition implements IDefinitionScope {
      * Gets the declaration (the form) of the data
      *
      * @return the event declaration
+     * @since 2.0
      */
-    public EventDeclaration getDeclaration() {
+    public IEventDeclaration getDeclaration() {
         return declaration;
     }
 
@@ -134,7 +136,7 @@ public class EventDefinition implements IDefinitionScope {
         StructDeclaration mergedDeclaration = new StructDeclaration(1);
 
         /* Add fields from the stream */
-        HashMap<String, Definition> defs = streamContext.getDefinitions();
+        Map<String, Definition> defs = streamContext.getDefinitions();
         for (Entry<String, Definition> entry : defs.entrySet()) {
             mergedDeclaration.addField(entry.getKey(), entry.getValue().getDeclaration());
         }
@@ -237,7 +239,7 @@ public class EventDefinition implements IDefinitionScope {
 
     @Override
     public String toString() {
-        HashMap<String, Definition> definitions;
+        Map<String, Definition> definitions;
         List<String> list;
         StringBuilder retString = new StringBuilder();
         final String cr = System.getProperty("line.separator");//$NON-NLS-1$

@@ -95,7 +95,7 @@ public class SpecfileEditor extends TextEditor {
 
 	protected void validateAndMark() {
 		try {
-			IDocument document = getInputDocument();
+			IDocument document = getDocumentProvider().getDocument(input);
 			SpecfileErrorHandler specfileErrorHandler = new SpecfileErrorHandler(
 					getEditorInput(), document);
 			specfileErrorHandler.removeExistingMarkers();
@@ -114,27 +114,24 @@ public class SpecfileEditor extends TextEditor {
 	 * Get a {@link IFile}, this implementation return <code>null</code> if the
 	 * <code>IEditorInput</code> instance is not of type
 	 * {@link IFileEditorInput}.
-	 * 
+	 *
 	 * @return a <code>IFile</code> or <code>null</code>.
 	 */
 	protected IFile getInputFile() {
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput ife = (IFileEditorInput) input;
-			IFile file = ife.getFile();
-			return file;
+			return ife.getFile();
 		}
 		return null;
-	}
-
-	public IDocument getInputDocument() {
-		IDocument document = getDocumentProvider().getDocument(input);
-		return document;
 	}
 
 	@Override
 	public Object getAdapter(Class required) {
 		if (IContentOutlinePage.class.equals(required)) {
 			return getOutlinePage();
+		}
+		if (IDocument.class.equals(required)) {
+			return getDocumentProvider().getDocument(input);
 		}
 		if (projectionSupport != null) {
 			Object adapter = projectionSupport.getAdapter(getSourceViewer(),
@@ -161,8 +158,8 @@ public class SpecfileEditor extends TextEditor {
 		getSourceViewerDecorationSupport(viewer);
 		return viewer;
 	}
-	
-	public ContentOutlinePage getOutlinePage() {
+
+	private ContentOutlinePage getOutlinePage() {
 		if (outlinePage == null) {
 			outlinePage = new SpecfileContentOutlinePage(this);
 			if (getEditorInput() != null)
@@ -191,7 +188,7 @@ public class SpecfileEditor extends TextEditor {
 			fDocumentProvider = new SpecfileDocumentProvider();
 		return fDocumentProvider;
 	}
-	
+
 	/*
 	 * @see
 	 * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createPartControl
@@ -234,7 +231,7 @@ public class SpecfileEditor extends TextEditor {
 
 	/**
 	 * Get the spefile source viewer, this method is useful for test cases.
-	 * 
+	 *
 	 * @return the specfile source viewer
 	 */
 	public SourceViewer getSpecfileSourceViewer() {

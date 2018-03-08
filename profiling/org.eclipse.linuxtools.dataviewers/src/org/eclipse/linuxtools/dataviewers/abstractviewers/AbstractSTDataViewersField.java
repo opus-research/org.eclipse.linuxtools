@@ -15,126 +15,155 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 
-
-
 /**
  * Simple implementation of ISTField
  */
 public abstract class AbstractSTDataViewersField implements ISTDataViewersField {
 
-	private boolean showing = true;
-		
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderImage()
-	 */
+    private boolean showing = true;
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderImage()
+     */
+    @Override
 	public Image getColumnHeaderImage() {
-		return null;
-	}
+        return null;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getDefaultDirection()
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getDefaultDirection()
+     */
+    @Override
 	public int getDefaultDirection() {
-		return STDataViewersComparator.ASCENDING;
-	}
+        return STDataViewersComparator.ASCENDING;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getDescription()
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getDescription()
+     */
+    @Override
 	public String getDescription() {
-		return getColumnHeaderText();
-	}
+        return getColumnHeaderText();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getDescriptionImage()
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getDescriptionImage()
+     */
+    @Override
 	public Image getDescriptionImage() {
-		return null;
-	}
+        return null;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getImage(java.lang.Object)
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getImage(java.lang.Object)
+     */
+    @Override
 	public Image getImage(Object obj) {
-		return null;
-	}
+        return null;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getPreferredWidth()
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getPreferredWidth()
+     */
+    @Override
 	public int getPreferredWidth() {
-		return 100;
-	}
+        return 100;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#isShowing()
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#isShowing()
+     */
+    @Override
 	public boolean isShowing() {
-		return this.showing;
-	}
+        return this.showing;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#setShowing(boolean)
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#setShowing(boolean)
+     */
+    @Override
 	public void setShowing(boolean showing) {
-		this.showing = showing;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getSpecialDrawer(java.lang.Object)
-	 */
+        this.showing = showing;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getSpecialDrawer(java.lang.Object)
+     */
+    @Override
 	public ISpecialDrawerListener getSpecialDrawer(Object element) {
-		return null;
-	}
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getBackground(java.lang.Object)
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getBackground(java.lang.Object)
+     */
+    @Override
 	public Color getBackground(Object element) {
-		return null;
-	}
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getForeground(java.lang.Object)
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getForeground(java.lang.Object)
+     */
+    @Override
 	public Color getForeground(Object element) {
-		return null;
-	}
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getToolTipText(java.lang.Object)
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getToolTipText(java.lang.Object)
+     */
+    @Override
 	public String getToolTipText(Object element) {
-		return null;
-	}
+        return null;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderTooltip()
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderTooltip()
+     */
+    @Override
 	public String getColumnHeaderTooltip() {
-		return getColumnHeaderText();
-	}
+        return getColumnHeaderText();
+    }
 
-	@Override
-	public String toString() {
-		return getColumnHeaderText();
-	}
-	
-	public int getAlignment(){
-		return SWT.NONE;
-	}
-	
-	public boolean isHyperLink(Object element){
-		return false;
-	}
+    @Override
+    public String toString() {
+        return getColumnHeaderText();
+    }
+
+    @Override
+	public int getAlignment() {
+        return SWT.NONE;
+    }
+
+    @Override
+	public boolean isHyperLink(Object element) {
+        return false;
+    }
 }

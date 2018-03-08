@@ -1,17 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
- *
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd;
 
 import java.util.ArrayList;
@@ -19,8 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BaseMessage;
@@ -484,12 +482,13 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
     /**
      * Checks for focus of children.
      *
-     * @param children Control to check
+     * @param children
+     *            Control to check
      * @return true if child is on focus else false
      */
-    protected boolean checkFocusOnChilds(Control childs) {
-        if (childs instanceof Composite) {
-            Control[] child = ((Composite) childs).getChildren();
+    protected boolean checkFocusOnChilds(Control children) {
+        if (children instanceof Composite) {
+            Control[] child = ((Composite) children).getChildren();
             for (int i = 0; i < child.length; i++) {
                 if (child[i].isFocusControl()) {
                     return true;

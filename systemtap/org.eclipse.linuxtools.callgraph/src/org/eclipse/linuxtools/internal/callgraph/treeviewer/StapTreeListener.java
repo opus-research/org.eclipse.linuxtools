@@ -35,14 +35,10 @@ public class StapTreeListener implements ITreeViewerListener{
 	@Override
 	public void treeCollapsed(TreeExpansionEvent event) {
 		StapData data = (StapData) event.getElement();
-		if (highestLevelNodes.get(highestLevelOfExpansion) != null) {
-			if (highestLevelNodes.get(highestLevelOfExpansion).remove((Integer) data.id)) {
+		if (highestLevelNodes.get(highestLevelOfExpansion) != null
+				&& highestLevelNodes.get(highestLevelOfExpansion).remove((Integer) data.id)) {
 					scrollbar.setSelection(scrollbar.getSelection() - INCREMENT);
-	//				scrollbar.setMaximum(scrollbar.getMaximum() - scrollbar.getThumb() - INCREMENT);
-	//			if (highestLevelNodes.size() == 0) {
 					highestLevelOfExpansion--;
-	//			}
-			}
 		}
 		
 	}
@@ -60,8 +56,9 @@ public class StapTreeListener implements ITreeViewerListener{
 		}
 		
 		int lvl = d.levelOfRecursion;
-		if (highestLevelNodes.get(lvl) == null)
+		if (highestLevelNodes.get(lvl) == null) {
 			highestLevelNodes.put(lvl, new ArrayList<Integer>());
+		}
 		highestLevelNodes.get(lvl).add(d.id);
 	}
 

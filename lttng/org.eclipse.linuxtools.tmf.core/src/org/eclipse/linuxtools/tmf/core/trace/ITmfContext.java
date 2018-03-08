@@ -1,14 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012 Ericsson
- * 
+ * Copyright (c) 2009, 2013 Ericsson
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
+ *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -20,7 +21,7 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * The context should be sufficient to allow the trace to position itself so
  * that performing a trace read operation will yield the corresponding 'nth'
  * event.
- * 
+ *
  * @version 1.0
  * @author Francois Chouinard
  *
@@ -49,7 +50,7 @@ public interface ITmfContext {
     /**
      * @return the location of the event at the context rank
      */
-    public ITmfLocation<? extends Comparable<?>> getLocation();
+    public ITmfLocation getLocation();
 
     /**
      * @return indicates if the context rank is valid (!= UNKNOWN_RANK)
@@ -63,7 +64,7 @@ public interface ITmfContext {
     /**
      * @param location the new location
      */
-    public void setLocation(ITmfLocation<? extends Comparable<?>> location);
+    public void setLocation(ITmfLocation location);
 
     /**
      * @param rank the new rank
@@ -79,10 +80,5 @@ public interface ITmfContext {
      * Cleanup hook
      */
     public void dispose();
-
-    /**
-     * @return a clone of the context
-     */
-    public ITmfContext clone();
 
 }

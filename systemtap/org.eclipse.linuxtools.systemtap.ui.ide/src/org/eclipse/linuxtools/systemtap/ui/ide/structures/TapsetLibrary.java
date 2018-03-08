@@ -18,6 +18,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.FunctionParser;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ProbeParser;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
@@ -34,61 +37,77 @@ import org.eclipse.ui.PlatformUI;
  * @author Ryan Morse
  */
 public final class TapsetLibrary {
+
+	private static TreeNode functionTree = null;
+	private static TreeNode probeTree = null;
+
+	private static FunctionParser functionParser = null;
+	private static ProbeParser probeParser = null;
+
 	public static TreeNode getProbes() {
 		return probeTree;
 	}
-	
+
 	public static TreeNode getFunctions() {
 		return functionTree;
 	}
-	
+
 	/**
-	 * This mthod will attempt to get the most up-to-date information.
-	 * However, if the TapsetParser is running already it will quit, 
-	 * assuming that new information will be avilable soon.  By registering
+	 * This method will attempt to get the most up-to-date information.
+	 * However, if the TapsetParser is running already it will quit,
+	 * assuming that new information will be available soon.  By registering
 	 * a listener at that point the class can be notified when an update is
 	 * available.
 	 */
 	public static void init() {
-		if(null != stpp && stpp.isRunning())
+		if (null != functionParser && null != probeParser) {
 			return;
+		}
 
-		if(IDEPlugin.getDefault().getPreferenceStore()
-				.getBoolean(IDEPreferenceConstants.P_STORED_TREE) && 
-				isTreeFileCurrent())
+		IPreferenceStore preferenceStore = IDEPlugin.getDefault().getPreferenceStore();
+
+		if (preferenceStore.contains(IDEPreferenceConstants.P_STORED_TREE)
+				&& preferenceStore.getBoolean(IDEPreferenceConstants.P_STORED_TREE)
+				&& isTreeFileCurrent()) {
 			readTreeFile();
-		else
+		} else {
 			runStapParser();
+		}
 	}
-	
+
 	/**
 	 * This method will create a new instance of the TapsetParser in order
 	 * to get the information directly from the files.
 	 */
 	private static void runStapParser() {
-		String[] tapsets = IDEPlugin.getDefault().getPreferenceStore()
-								.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
+		functionParser = FunctionParser.getInstance();
+		functionParser.addListener(functionCompletionListener);
+		functionParser.schedule();
 
-		stpp = new TapsetParser(tapsets);
-		stpp.start();
-		stpp.addListener(completionListener);
-		functionTree = stpp.getFunctions();
-		probeTree = stpp.getProbes();
+		probeParser = ProbeParser.getInstance();
+		probeParser.addListener(probeCompletionListener);
+		probeParser.schedule();
 	}
-	
+
 	/**
-	 * This method will get all of the tree information from 
+	 * @since 2.0
+	 */
+	public static boolean isFinishSuccessful(){
+		return functionParser.isFinishSuccessful() && probeParser.isFinishSuccessful();
+	}
+	/**
+	 * This method will get all of the tree information from
 	 * the TreeSettings xml file.
 	 */
 	private static void readTreeFile() {
 		functionTree = TreeSettings.getFunctionTree();
 		probeTree = TreeSettings.getProbeTree();
 	}
-	
+
 	/**
 	 * This method checks to see if the tapsets have changed
 	 * at all since the TreeSettings.xml file was created.
-	 * @return boolean indecating whether or not the TreeSettings.xml file has the most up-to-date version
+	 * @return boolean indicating whether or not the TreeSettings.xml file has the most up-to-date version
 	 */
 	private static boolean isTreeFileCurrent() {
 		long treesDate = TreeSettings.getTreeFileDate();
@@ -97,22 +116,25 @@ public final class TapsetLibrary {
 		String[] tapsets = p.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
 
 		File f = getTapsetLocation(p);
-		
-		if(!checkIsCurrentFolder(treesDate, f))
+
+		if (!checkIsCurrentFolder(treesDate, f)) {
 			return false;
-		
+		}
+
 		if(null != tapsets) {
 			for(int i=0; i<tapsets.length; i++) {
 				f = new File(tapsets[i]);
-				if(f.lastModified() > treesDate)
+				if (f.lastModified() > treesDate) {
 					return false;
-				if(f.canRead() && !checkIsCurrentFolder(treesDate, f))
+				}
+				if (f.canRead() && !checkIsCurrentFolder(treesDate, f)) {
 					return false;
+				}
 			}
 		}
 		return true;
 	}
-	
+
 	/**
 	 * This method attempts to locate the default tapset directory.
 	 * @param p Preference store where the tapset location might be stored
@@ -121,14 +143,14 @@ public final class TapsetLibrary {
 	public static File getTapsetLocation(IPreferenceStore p) {
 		File f;
 		String path = p.getString(PreferenceConstants.P_ENV[2][0]);
-		if(path.trim().equals("")) {
-			f = new File("/usr/share/systemtap/tapset");
+		if(path.trim().equals("")) { //$NON-NLS-1$
+			f = new File("/usr/share/systemtap/tapset"); //$NON-NLS-1$
 			if(!f.exists()) {
-				f = new File("/usr/local/share/systemtap/tapset");
+				f = new File("/usr/local/share/systemtap/tapset"); //$NON-NLS-1$
 				if(!f.exists()) {
 					InputDialog i = new InputDialog(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
-							Localization.getString("TapsetBrowserView.TapsetLocation"), Localization.getString("TapsetBrowserView.WhereDefaultTapset"), "", null);
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+							Localization.getString("TapsetBrowserView.TapsetLocation"), Localization.getString("TapsetBrowserView.WhereDefaultTapset"), "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					i.open();
 					p.setValue(PreferenceConstants.P_ENV[2][0], i.getValue());
 					f = new File( i.getValue() );
@@ -140,74 +162,123 @@ public final class TapsetLibrary {
 		IDESessionSettings.tapsetLocation = f.getAbsolutePath();
 		return f;
 	}
-	
+
 	/**
 	 * This method checks the provided time stap against the folders
 	 * time stamp.  This is to see if the folder may have new data in it
 	 * @param time The current time stamp
 	 * @param folder The folder to check if it is newer the then time stamp
-	 * @return boolean indicating whther the time stamp is newer then the folder
+	 * @return boolean indicating whether the time stamp is newer then the folder
 	 */
 	private static boolean checkIsCurrentFolder(long time, File folder) {
 		File[] fs = folder.listFiles();
 
 		for(int i=0; i<fs.length; i++) {
-			if(fs[i].lastModified() > time)
+			if (fs[i].lastModified() > time) {
 				return false;
+			}
 
-			if(fs[i].isDirectory() && fs[i].canRead())
-				if(!checkIsCurrentFolder(time, fs[i]))
-					return false;
+			if (fs[i].isDirectory() && fs[i].canRead()
+					&& !checkIsCurrentFolder(time, fs[i])) {
+				return false;
+			}
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Adds a new listener to the TapsetParser
 	 * @param listener the listener to be added
-	 * @return boolean indacating whether or not the listener was added
+	 * @return boolean indicating whether or not the listener was added
+	 * @since 2.0
 	 */
-	public static boolean addListener(IUpdateListener listener) {
-		if(null == stpp)
+	public static boolean addFunctionListener(IUpdateListener listener) {
+		if(null == functionParser)
 			return false;
-		
-		stpp.addListener(listener);
+		functionParser.addListener(listener);
 		return true;
 	}
-	
+
+	/**
+	 * @since 2.0
+	 */
+	public static boolean addProbeListener(IUpdateListener listener) {
+		if(null == probeParser)
+			return false;
+		probeParser.addListener(listener);
+		return true;
+	}
+
 	/**
 	 * Removes the provided listener from the tapsetParser.
 	 * @param listener The listener to be removed from the tapsetParser
 	 */
 	public static void removeUpdateListener(IUpdateListener listener) {
-		stpp.removeListener(listener);
+		functionParser.removeListener(listener);
 	}
-	
-	/**
-	 * This class handles saving the results of the TapsetParser to 
-	 * the TreeSettings.xml file.
-	 */
-	private static final IUpdateListener completionListener = new IUpdateListener() {
+
+	private static final IUpdateListener functionCompletionListener = new IUpdateListener() {
+		@Override
 		public void handleUpdateEvent() {
-			functionTree = stpp.getFunctions();
-			probeTree = stpp.getProbes();
-			if(stpp.isFinishSuccessful())
-				TreeSettings.setTrees(functionTree, probeTree);
+			functionTree = functionParser.getFunctions();
+			TreeSettings.setTrees(functionTree, probeTree);
+			synchronized (functionParser) {
+				functionParser.notifyAll();
+			}
+		}
+	};
+
+	private static final IUpdateListener probeCompletionListener = new IUpdateListener() {
+		@Override
+		public void handleUpdateEvent() {
+			probeTree = probeParser.getProbes();
+			synchronized (probeParser) {
+				probeParser.notifyAll();
+			}
 		}
 	};
 
 	/**
-	 * This method will stop services started by
-	 * {@link TapsetLibrary#init()} such as the {@link TapsetParser} 
-	 * @since 1.2
+	 * Blocks the current thread until the parser has finished
+	 * parsing probes and functions.
+	 * @since 2.0
 	 */
-	public static void stop(){
-		if(null != stpp && stpp.isRunning()){
-			stpp.stop();
+	public static void waitForInitialization() {
+		while (!functionParser.isFinishSuccessful()){
+			try {
+				synchronized (functionParser) {
+					functionParser.wait(5000);
+				}
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		while (!probeParser.isFinishSuccessful()){
+			try {
+				synchronized (probeParser) {
+					probeParser.wait(5000);
+				}
+			} catch (InterruptedException e) {
+				break;
+			}
 		}
 	}
 
-	private static TreeNode functionTree = null;
-	private static TreeNode probeTree = null;
-	private static TapsetParser stpp = null;
+	/**
+	 * This method will stop services started by
+	 * {@link TapsetLibrary#init()} such as the {@link TapsetParser}
+	 * @since 1.2
+	 */
+	public static void stop(){
+		if(null != functionParser){
+			functionParser.cancel();
+			try {
+				functionParser.join();
+			} catch (InterruptedException e) {
+				// The current thread was interrupted while waiting
+				// for the parser thread to exit. Nothing to do
+				// continue stopping.
+			}
+		}
+	}
 }

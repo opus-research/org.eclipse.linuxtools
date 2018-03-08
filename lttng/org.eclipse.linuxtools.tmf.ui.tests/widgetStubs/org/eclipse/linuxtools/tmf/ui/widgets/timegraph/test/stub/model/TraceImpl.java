@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.test.stub.model;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
@@ -98,7 +99,7 @@ public class TraceImpl implements ITimeGraphEntry {
     }
 
     @Override
-    public ITimeGraphEntry[] getChildren() {
+    public List<ITimeGraphEntry> getChildren() {
         return null;
     }
 

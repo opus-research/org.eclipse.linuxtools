@@ -34,25 +34,25 @@ public class ViewFactory {
 	 */
 	public static SystemTapView createView(final String viewID) {
 		Display.getDefault().syncExec(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				try {
 					IViewPart view = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage().
 					showView(viewID);
-					if (!(view instanceof SystemTapView))
-						throw new Exception("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
+					if (!(view instanceof SystemTapView)) {
+						return;
+					}
+					
 					newView = ((SystemTapView) view);
 					newView.setViewID();
 				} catch (PartInitException e) {
 					e.printStackTrace();
-				}  catch (Exception e) {
-					e.printStackTrace();
 				}
 			}
 		});
-		
+
 		addView(newView);
 		return newView;
 	}
@@ -70,13 +70,12 @@ public class ViewFactory {
 				try {
 					IViewPart view = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage().showView(viewID, secondaryID, IWorkbenchPage.VIEW_VISIBLE);
-					if (!(view instanceof SystemTapView))
-						throw new Exception("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
+					if (!(view instanceof SystemTapView)) {
+						return;
+					}
 					newView = ((SystemTapView) view);
 					newView.setViewID();
 				} catch (PartInitException e) {
-					e.printStackTrace();
-				}  catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -91,8 +90,9 @@ public class ViewFactory {
 	 * Adds a view to the factory's list of active SystemTapViews.
 	 */
 	public static void addView(SystemTapView view) {
-		if (views == null)
+		if (views == null) {
 			views = new ArrayList<IViewPart>();
+		}
 		views.add(view);
 	}
 	
@@ -101,8 +101,9 @@ public class ViewFactory {
 	 */
 	public static IViewPart getView() {
 		for (IViewPart view : views) {
-			if (view instanceof SystemTapView)
+			if (view instanceof SystemTapView) {
 				return view;
+			}
 		}
 		return null;
 	}

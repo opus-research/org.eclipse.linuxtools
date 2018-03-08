@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007 Intel Corporation, 2009, 2012 Ericsson.
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,6 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
- *
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -33,18 +32,21 @@ import org.eclipse.swt.widgets.Composite;
 public abstract class TimeGraphBaseControl extends Canvas implements PaintListener {
 
     /** Default left margin size */
-    static public final int MARGIN = 4;
+    public static final int MARGIN = 4;
 
     /** Default expanded size */
-    static public final int EXPAND_SIZE = 9; // the [+] or [-] control size
+    public static final int EXPAND_SIZE = 9; // the [+] or [-] control size
 
     /** Default size of the right margin */
-    static public final int RIGHT_MARGIN = 1; // 1 pixels less to make sure end time is visible
+    public static final int RIGHT_MARGIN = 1; // 1 pixels less to make sure end time is visible
 
     /** Default size for small icons */
-    static public final int SMALL_ICON_SIZE = 16;
+    public static final int SMALL_ICON_SIZE = 16;
 
+    /** Color scheme */
     protected TimeGraphColorScheme _colors;
+
+    /** Font size */
     protected int _fontHeight = 0;
 
     /**

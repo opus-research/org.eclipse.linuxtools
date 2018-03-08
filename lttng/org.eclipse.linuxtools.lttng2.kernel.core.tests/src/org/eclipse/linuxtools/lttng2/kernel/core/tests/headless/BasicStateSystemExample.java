@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,15 +17,16 @@ import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
-import org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider.CtfTestFiles;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 
 /**
  * Simple example of how to use the state system using a CTF kernel trace.
@@ -42,8 +43,8 @@ public class BasicStateSystemExample {
         /* Read a trace and build the state system */
         try {
             File newStateFile = new File("/tmp/helloworldctf.ht"); //$NON-NLS-1$
-            IStateChangeInput input = new CtfKernelStateInput(CtfTestFiles.getTestTrace());
-            IStateSystemQuerier ss = StateSystemManager.loadStateHistory(newStateFile, input, true);
+            IStateChangeInput input = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(1));
+            ITmfStateSystem ss = StateSystemManager.loadStateHistory(newStateFile, input, true);
 
             requestExample(ss);
         } catch (TmfTraceException e) {
@@ -59,7 +60,7 @@ public class BasicStateSystemExample {
      * @param ssb
      *            the State System Builder through which make request
      */
-    private static void requestExample(final IStateSystemQuerier ssb) {
+    private static void requestExample(final ITmfStateSystem ssb) {
         try {
             /* Request the current thread executing on each CPU */
             List<Integer> currentThreadByCPUS;
@@ -95,6 +96,8 @@ public class BasicStateSystemExample {
         } catch (AttributeNotFoundException e) {
             e.printStackTrace();
         } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
             e.printStackTrace();
         }
     }

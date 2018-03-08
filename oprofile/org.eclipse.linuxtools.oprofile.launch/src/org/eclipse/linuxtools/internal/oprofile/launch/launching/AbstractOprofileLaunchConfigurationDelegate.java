@@ -7,14 +7,16 @@
  *
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
- *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially 
+ *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially
  *        written in the now-defunct OprofileSession class
- *    QNX Software Systems and others - the section of code marked in the launch 
+ *    QNX Software Systems and others - the section of code marked in the launch
  *        method, and the exec method
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.oprofile.launch.launching;
 
+import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
@@ -22,7 +24,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -31,6 +35,7 @@ import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
+import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileCounter;
@@ -44,7 +49,7 @@ import org.eclipse.ui.PlatformUI;
 
 public abstract class AbstractOprofileLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
 	protected ILaunchConfiguration config;
-	
+
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		this.config = config;
@@ -58,50 +63,56 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		OprofileDaemonEvent[] daemonEvents = null;
 		if (!config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false)) {
 			//get the events to profile from the counters
-			OprofileCounter[] counters = OprofileCounter.getCounters(config);
+			OprofileCounter[] counters = oprofileCounters(config);
 			ArrayList<OprofileDaemonEvent> events = new ArrayList<OprofileDaemonEvent>();
-			
+
 			for (int i = 0; i < counters.length; ++i) {
 				if (counters[i].getEnabled())
 					events.add(counters[i].getDaemonEvent());
 			}
-			
+
 			daemonEvents = new OprofileDaemonEvent[events.size()];
 			events.toArray(daemonEvents);
 		}
-		
+
 		if (!preExec(options, daemonEvents, launch)) return;
 
-		/* 
-		 * this code written by QNX Software Systems and others and was 
+		/*
+		 * this code written by QNX Software Systems and others and was
 		 * originally in the CDT under LocalCDILaunchDelegate::RunLocalApplication
 		 */
 		//set up and launch the local c/c++ program
-		IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(Oprofile.OprofileProject.getProject());
-
-		URI workingDirURI = Oprofile.OprofileProject.getProject().getLocationURI();
-
-		IPath workingDirPath = new Path(workingDirURI.getPath());
+		IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(oprofileProject());
+		IPath workingDirPath = new Path(oprofileWorkingDirURI(config).getPath());
 
 		String arguments[] = getProgramArgumentsArray( config );
-		Process process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
+		Process process = null;
+		for(int i = 0; i < options.getExecutionsNumber(); i++){
+			process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
+			DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
+			try{
+				process.waitFor();
+			} catch (InterruptedException e){
+				process.destroy();
+				Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message"));
+				throw new CoreException(status);
+			}
+		}
 
-		DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
-
-			postExec(options, daemonEvents, process);
+		postExec(options, daemonEvents, process);
 	}
-	
+
 	protected abstract boolean preExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, ILaunch launch);
 
 	protected abstract void postExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, Process process);
 
 	@Override
 	protected String getPluginID() {
-		return OprofileLaunchPlugin.getUniqueIdentifier();
+		return OprofileLaunchPlugin.PLUGIN_ID;
 	}
-	
-	//Helper function to refresh the oprofile view. Opens and focuses the view 
-	// if it isn't already. 
+
+	//Helper function to refresh the oprofile view. Opens and focuses the view
+	// if it isn't already.
 	protected void refreshOprofileView() {
 		OprofileView view = OprofileUiPlugin.getDefault().getOprofileView();
 		if (view != null) {
@@ -115,31 +126,65 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 			OprofileUiPlugin.getDefault().getOprofileView().refreshView();
 		}
 	}
-	
+
 	/* all these functions exist to be overridden by the test class in order to allow launch testing */
-	
+
 	protected void oprofileShutdown() throws OpcontrolException {
-		OprofileCorePlugin.getDefault().getOpcontrolProvider().shutdownDaemon();	
+		OprofileCorePlugin.getDefault().getOpcontrolProvider().shutdownDaemon();
 	}
-	
+
 	protected void oprofileReset() throws OpcontrolException {
-		OprofileCorePlugin.getDefault().getOpcontrolProvider().reset();		
+		OprofileCorePlugin.getDefault().getOpcontrolProvider().reset();
 	}
-	
+
 	protected void oprofileSetupDaemon(OprofileDaemonOptions options, OprofileDaemonEvent[] events) throws OpcontrolException {
-		OprofileCorePlugin.getDefault().getOpcontrolProvider().setupDaemon(options, events);		
+		OprofileCorePlugin.getDefault().getOpcontrolProvider().setupDaemon(options, events);
 	}
 
 	protected void oprofileStartCollection() throws OpcontrolException {
 		OprofileCorePlugin.getDefault().getOpcontrolProvider().startCollection();
 	}
-	
+
 	protected void oprofileDumpSamples() throws OpcontrolException {
 		OprofileCorePlugin.getDefault().getOpcontrolProvider().dumpSamples();
 	}
-	
+
+	protected IProject oprofileProject(){
+		return Oprofile.OprofileProject.getProject();
+	}
+
+
 	/**
-	 * Runs opcontrol --help. Returns true if there was any output, false 
+	 * Return the URI of the current working directory from the current
+	 * project's file proxy.
+	 *
+	 * @return URI URI of the working directory.
+	 * @throws CoreException
+	 */
+	protected URI oprofileWorkingDirURI(ILaunchConfiguration config) throws CoreException{
+		File workingDirectory = this.getWorkingDirectory(config);
+		if(workingDirectory == null){
+			return getProject().getLocationURI();
+		} else {
+			URI uri = null;
+			try {
+				uri = new URI(workingDirectory.getAbsolutePath());
+			} catch (URISyntaxException e) {
+				//Since working directory paths are verified by the launch tab, this exception should never be thrown
+				Status status = new Status(IStatus.ERROR, OprofileCorePlugin.getId(),
+						OprofileLaunchMessages.getString("oprofilelaunch.error.invalidworkingdir.status_message"));
+				throw new CoreException(status);
+			}
+			return uri;
+		}
+	}
+
+	protected OprofileCounter[] oprofileCounters(ILaunchConfiguration config){
+		return OprofileCounter.getCounters(config);
+	}
+
+	/**
+	 * Runs opcontrol --help. Returns true if there was any output, false
 	 * otherwise. Return value can be used to tell if the user successfully
 	 * entered a password.
 	 * @return true if opcontrol --help was run correctly. False otherwise
@@ -148,7 +193,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 	protected boolean oprofileStatus() throws OpcontrolException {
 		return OprofileCorePlugin.getDefault().getOpcontrolProvider().status();
 	}
-	
+
 	protected IProject getProject(){
 		try{
 			IProject project = CDebugUtils.verifyCProject(config).getProject();

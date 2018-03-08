@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -103,7 +102,7 @@ public class SpecfileNewWizardPage extends WizardPage {
 	}
 
 	/**
-	 * @see IDialogPage#createControl(Composite)
+	 * @see WizardPage#createControl(Composite)
 	 */
 	public void createControl(Composite parent) {
 		final Composite container = new Composite(parent, SWT.NULL);
@@ -359,8 +358,8 @@ public class SpecfileNewWizardPage extends WizardPage {
 		 * versions of rpm may need to reserve characters other than '-'.
 		 */
 		String packageName = nameText.getText();
-		if (packageName.indexOf(" ") != -1 || packageName.indexOf("<") != -1 //$NON-NLS-1$ //$NON-NLS-2$
-				|| packageName.indexOf(">") != -1 || packageName.indexOf("=") != -1) { //$NON-NLS-1$ //$NON-NLS-2$
+		if (packageName.indexOf(' ') != -1 || packageName.indexOf('<') != -1
+				|| packageName.indexOf('>') != -1 || packageName.indexOf('=') != -1) {
 			updateStatus(Messages.SpecfileNewWizardPage_26
 					+ Messages.SpecfileNewWizardPage_27);
 			return;

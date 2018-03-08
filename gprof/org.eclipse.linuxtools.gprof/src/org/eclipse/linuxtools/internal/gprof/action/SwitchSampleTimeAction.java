@@ -14,7 +14,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
-import org.eclipse.linuxtools.gprof.Activator;
+import org.eclipse.linuxtools.internal.gprof.Activator;
 import org.eclipse.linuxtools.internal.gprof.parser.GmonDecoder;
 import org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField;
 import org.eclipse.swt.SWT;
@@ -38,7 +38,7 @@ public class SwitchSampleTimeAction extends Action {
 	 */
 	public SwitchSampleTimeAction(AbstractSTDataView view) {
 		super("Switch sample/time", SWT.TOGGLE);
-		this.setImageDescriptor(Activator.getImageDescriptor("icons/datetime_obj.gif"));
+		this.setImageDescriptor(Activator.getImageDescriptor("icons/datetime_obj.gif")); //$NON-NLS-1$
 		this.setToolTipText("Switch sample/time");
 		this.view = view;
 	}

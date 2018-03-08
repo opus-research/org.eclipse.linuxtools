@@ -22,6 +22,7 @@ import org.eclipse.linuxtools.rpm.ui.editor.tests.FileTestCase;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,6 +45,12 @@ public class SpecfileChangelogFormatterTest extends FileTestCase {
 		formatter = new SpecfileChangelogFormatter();
 	}
 
+	@Override
+	@After
+	public void tearDown () {
+		closeEditor(editor);
+	}
+
 	@Test
 	public void testFormatDateLine() {
 		String expectedLine = MessageFormat
@@ -56,7 +63,7 @@ public class SpecfileChangelogFormatterTest extends FileTestCase {
 	@Test
 	public void testMergeChangelogStringStringStringIEditorPartStringString() {
 		// TODO find how to test this
-		formatter.mergeChangelog("proba", "", editor, "", "");
+		formatter.mergeChangelog("proba", "", "", editor, "", "");
 	}
 
 }
