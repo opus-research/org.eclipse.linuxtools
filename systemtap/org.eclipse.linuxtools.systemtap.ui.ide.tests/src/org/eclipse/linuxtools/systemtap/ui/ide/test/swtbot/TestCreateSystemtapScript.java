@@ -12,17 +12,11 @@
 
 package org.eclipse.linuxtools.systemtap.ui.ide.test.swtbot;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,37 +28,16 @@ public class TestCreateSystemtapScript {
 
 	private static final String SYSTEMTAP_PROJECT_NAME = "SystemtapTest";
 
-	private static class ShellIsClosed extends DefaultCondition{
-
-		private SWTBotShell shell;
-
-		public ShellIsClosed(SWTBotShell shell) {
-			super();
-			this.shell = shell;
-		}
-
-		@Override
-		public boolean test() {
-			return !shell.isOpen();
-		}
-
-		@Override
-		public String getFailureMessage() {
-				return "Timed out waiting for " + shell + " to close."; //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
 	@BeforeClass
 	public static void beforeClass() {
 		bot = new SWTWorkbenchBot();
 
 		// Dismiss "Systemtap not installed" dialog(s) if present.
 		try {
-			SWTBotShell shell = bot.shell("Cannot Run Systemtap").activate();
-			shell.close();
-
-			shell = bot.shell("Cannot Run Systemtap").activate();
-			shell.close();
+			bot.shell("Cannot Run Systemtap").activate();
+			bot.button("OK").click();
+			bot.shell("Cannot Run Systemtap").activate();
+			bot.button("OK").click();
 		} catch (WidgetNotFoundException e) {
 			//ignore
 		}
@@ -87,14 +60,15 @@ public class TestCreateSystemtapScript {
 		SWTBotShell shell = bot.shell("New Project");
 		shell.activate();
 
-		SWTBotTreeItem node = bot.tree().expandNode("General").select("Project");
-		assertNotNull(node);
+		bot.tree().expandNode("General").select("Project");
 
 		bot.button("Next >").click();
 
 		bot.textWithLabel("Project name:").setText(SYSTEMTAP_PROJECT_NAME);
 		bot.button("Finish").click();
-		bot.waitUntil(new ShellIsClosed(shell));
+		while (shell.isOpen()){
+			bot.sleep(1000);
+		}
 	}
 
 	public static void createScript(SWTWorkbenchBot bot, String scriptName) {
@@ -107,21 +81,16 @@ public class TestCreateSystemtapScript {
 		SWTBotShell shell = bot.shell("New");
 		shell.activate();
 
-		SWTBotTreeItem node = bot.tree().expandNode("Systemtap").select("Systemtap Script");
-		assertNotNull(node);
-
+		bot.tree().expandNode("Systemtap").select("Systemtap Script");
 		bot.button("Next >").click();
 
-		SWTBotText text = bot.textWithLabel("Script Name:").setText(scriptName);
-		assert(text.getText().equals(scriptName));
+		bot.textWithLabel("Script Name:").setText(scriptName);
 		bot.button("Browse").click();
 
-		SWTBotTree tree = bot.tree().select(SYSTEMTAP_PROJECT_NAME);
-		assertNotNull(tree);
-
+		bot.tree().select(SYSTEMTAP_PROJECT_NAME);
 		bot.button("OK").click();
+
 		bot.button("Finish").click();
-		bot.waitUntil(new ShellIsClosed(shell));
 
 		assert(bot.activeEditor().getTitle().equals(scriptName));
 	}
@@ -130,5 +99,4 @@ public class TestCreateSystemtapScript {
 	public void testCreateScript(){
 		createScript(bot, "testScript.stp");
 	}
-
 }
