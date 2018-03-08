@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis (mathieu.denis@polymtl.ca) - Initial API and Implementation
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
  *   Bernd Hufmann - Fixed header and warnings
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
@@ -62,7 +62,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     private final TmfTimestamp fTimestamp2 = new TmfTimestamp(12350, (byte) 2, 5);
     private final TmfTimestamp fTimestamp3 = new TmfTimestamp(12355, (byte) 2, 5);
 
-    private final String       fSource = "Source";
+    private final String fSource = "Source";
 
     private final TmfEventType fType1 = new TmfEventType(fContext, fTypeId1, TmfEventField.makeRoot(fLabels));
     private final TmfEventType fType2 = new TmfEventType(fContext, fTypeId1, TmfEventField.makeRoot(fLabels));
@@ -164,7 +164,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
             if (columnData.getHeader().compareTo(LEVEL_COLUMN) == 0) {
                 assertNull("getColumnData", percentProvider);
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                double percentage = (double) treeNode1.getValue().nbEvents / parentNode.getValue().nbEvents;
+                double percentage = (double) treeNode1.getValue().getTotal() / parentNode.getValue().getTotal();
                 assertEquals("getColumnData", percentage, percentProvider.getPercentage(treeNode1));
             }
         }
