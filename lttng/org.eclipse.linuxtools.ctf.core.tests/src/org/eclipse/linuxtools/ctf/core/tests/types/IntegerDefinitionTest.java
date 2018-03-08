@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
@@ -93,6 +94,55 @@ public class IntegerDefinitionTest {
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
 
         fixture.read(input);
+    }
+
+    /**
+     * Test the read endianness in a big endian bit buffer
+     */
+    @Test
+    public void testReadEndianness() {
+
+      ByteBuffer bb = java.nio.ByteBuffer.allocateDirect(8);
+      bb.put((byte) 0xab);
+      bb.put((byte) 0xcd);
+      bb.put((byte) 0xef);
+      bb.put((byte) 0x12);
+      bb.put((byte) 0x34);
+      bb.put((byte) 0x56);
+      bb.put((byte) 0x78);
+      bb.put((byte) 0x9a);
+      BitBuffer input = new BitBuffer(bb);
+
+      /* Read 32-bits BE */
+      IntegerDeclaration be = new IntegerDeclaration( 32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+      IntegerDefinition fixture_be = be.createDefinition(null, name);
+      fixture_be.read(input);
+      assertEquals(0xabcdef12, fixture_be.getValue());
+
+      /* Read 64-bits BE */
+      be = new IntegerDeclaration( 64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+      fixture_be = be.createDefinition(null, name);
+      bb.position(0);
+      input.position(0);
+      fixture_be.read(input);
+      assertEquals(0xabcdef123456789aL, fixture_be.getValue());
+
+      /* Read 32-bits LE */
+      IntegerDeclaration le = new IntegerDeclaration( 32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
+      IntegerDefinition fixture_le = le.createDefinition(null, name);
+      bb.position(0);
+      input.position(0);
+      fixture_le.read(input);
+      assertEquals(0x12efcdab, fixture_le.getValue());
+
+      /* Read 64-bits LE */
+      le = new IntegerDeclaration( 64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
+      fixture_le = le.createDefinition(null, name);
+      bb.position(0);
+      input.position(0);
+      fixture_le.read(input);
+      assertEquals(0x9a78563412efcdabL, fixture_le.getValue());
+
     }
 
     /**
