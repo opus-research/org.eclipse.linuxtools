@@ -406,7 +406,7 @@ public class TmfStatisticsView extends TmfView {
      * in case the indexing is not coalesced with a statistics request.
      * @param signal The experiment updated signal
      *
-     * @since 1.1
+     * @since 2.0
      */
     @TmfSignalHandler
     public void experimentUpdated(TmfExperimentUpdatedSignal signal) {

@@ -56,7 +56,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
      *
      * @param ctfTmfTrace
      *            the parent trace
-     * @since 1.1
+     * @since 2.0
      */
     public CtfTmfLightweightContext(CtfTmfTrace ctfTmfTrace) {
         fTrace = ctfTmfTrace;
