@@ -506,47 +506,45 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
     @Override
     protected void okPressed() {
         // Set channel information
-        ChannelInfo channelInfo = new ChannelInfo(fChannelNameText.getText());
-        channelInfo.setSubBufferSize(fSubBufferSizeText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Long.parseLong(fSubBufferSizeText.getText()));
-        channelInfo.setNumberOfSubBuffers(fNumberOfSubBuffersText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Integer.parseInt(fNumberOfSubBuffersText.getText()));
-        channelInfo.setSwitchTimer(fSwitchTimerText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Long.parseLong(fSwitchTimerText.getText()));
-        channelInfo.setReadTimer(fReadTimerText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Long.parseLong(fReadTimerText.getText()));
-        channelInfo.setOverwriteMode(fOverwriteModeButton.getSelection());
+        fChannelInfo = new ChannelInfo(fChannelNameText.getText());
+        fChannelInfo.setSubBufferSize(fSubBufferSizeText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Long.parseLong(fSubBufferSizeText.getText()));
+        fChannelInfo.setNumberOfSubBuffers(fNumberOfSubBuffersText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Integer.parseInt(fNumberOfSubBuffersText.getText()));
+        fChannelInfo.setSwitchTimer(fSwitchTimerText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Long.parseLong(fSwitchTimerText.getText()));
+        fChannelInfo.setReadTimer(fReadTimerText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Long.parseLong(fReadTimerText.getText()));
+        fChannelInfo.setOverwriteMode(fOverwriteModeButton.getSelection());
         if (fTargetNodeComponent.isTraceFileRotationSupported()) {
-            channelInfo.setMaxSizeTraceFiles(fMaxSizeTraceText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Integer.parseInt(fMaxSizeTraceText.getText()));
-            channelInfo.setMaxNumberTraceFiles(fMaxNumberTraceText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Integer.parseInt(fMaxNumberTraceText.getText()));
+            fChannelInfo.setMaxSizeTraceFiles(fMaxSizeTraceText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Integer.parseInt(fMaxSizeTraceText.getText()));
+            fChannelInfo.setMaxNumberTraceFiles(fMaxNumberTraceText.getText().equals(DEFAULT_TEXT) ? LTTngControlServiceConstants.UNUSED_VALUE : Integer.parseInt(fMaxNumberTraceText.getText()));
         }
         if (fTargetNodeComponent.isBufferTypeConfigSupported()) {
             if (fSharedBuffersButton.getSelection()) {
-                channelInfo.setBufferType(BufferType.BUFFER_SHARED);
+                fChannelInfo.setBufferType(BufferType.BUFFER_SHARED);
             } else if (fPIDBuffersButton.getSelection()) {
-                channelInfo.setBufferType(BufferType.BUFFER_PER_PID);
+                fChannelInfo.setBufferType(BufferType.BUFFER_PER_PID);
             } else if (fUIDBuffersButton.getSelection()) {
-                channelInfo.setBufferType(BufferType.BUFFER_PER_UID);
+                fChannelInfo.setBufferType(BufferType.BUFFER_PER_UID);
             } else {
-                channelInfo.setBufferType(BufferType.BUFFER_TYPE_UNKNOWN);
+                fChannelInfo.setBufferType(BufferType.BUFFER_TYPE_UNKNOWN);
             }
         }
 
         fIsKernel = fKernelButton.getSelection();
 
         // Check for invalid names
-        if (!channelInfo.getName().matches("^[a-zA-Z0-9\\-\\_]{1,}$")) { //$NON-NLS-1$
+        if (!fChannelInfo.getName().matches("^[a-zA-Z0-9\\-\\_]{1,}$")) { //$NON-NLS-1$
             MessageDialog.openError(getShell(),
                   Messages.TraceControl_EnableChannelDialogTitle,
-                  Messages.TraceControl_InvalidChannelNameError + " (" + channelInfo.getName() + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
+                  Messages.TraceControl_InvalidChannelNameError + " (" + fChannelInfo.getName() + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
 
         // Check for duplicate names
-        if (fDomain != null && fDomain.containsChild(channelInfo.getName())) {
+        if (fDomain != null && fDomain.containsChild(fChannelInfo.getName())) {
             MessageDialog.openError(getShell(),
                     Messages.TraceControl_EnableChannelDialogTitle,
-                    Messages.TraceControl_ChannelAlreadyExistsError + " (" + channelInfo.getName() + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
+                    Messages.TraceControl_ChannelAlreadyExistsError + " (" + fChannelInfo.getName() + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
-
-        fChannelInfo = channelInfo;
 
         // validation successful -> call super.okPressed()
         super.okPressed();
