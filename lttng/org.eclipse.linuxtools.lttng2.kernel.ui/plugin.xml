@@ -30,15 +30,6 @@
             name="%resources.view.name"
             restorable="true">
       </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.lttng2.ui.views.category"
-            class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.statistics.StateSystemStatisticsView"
-            icon="icons/eview16/statistics_view.gif"
-            id="org.eclipse.linuxtools.lttng2.kernel.ui.views.statistics"
-            name="%statistics.view.name"
-            restorable="true">
-      </view>
    </extension>
    <extension
          point="org.eclipse.linuxtools.tmf.ui.tracetype">

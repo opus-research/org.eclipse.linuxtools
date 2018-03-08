@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 public abstract class AbsTmfStatisticsTree {
 
     /**
-     * String builder used to merge string more efficienctly.
+     * String builder used to merge string more efficiently.
      */
     protected static final StringBuilder fBuilder = new StringBuilder();
 
@@ -44,7 +44,7 @@ public abstract class AbsTmfStatisticsTree {
     public static final TmfFixedArray<String> ROOT = new TmfFixedArray<String>("root"); //$NON-NLS-1$
 
     /**
-     * Function to merge many string more efficienctly.
+     * Function to merge many string more efficiently.
      *
      * @param strings
      *            Strings to merge.
@@ -212,7 +212,7 @@ public abstract class AbsTmfStatisticsTree {
     protected abstract void registerName(final TmfFixedArray<String> path);
 
     /**
-     * Reset a node.
+     * Resets a node.
      *
      * Works recursively.
      *
@@ -227,7 +227,7 @@ public abstract class AbsTmfStatisticsTree {
     }
 
     /**
-     * Reset the time range value of a node.
+     * Reset the global value of a node.
      *
      * Works recursively.
      *
@@ -237,7 +237,6 @@ public abstract class AbsTmfStatisticsTree {
      */
     public void resetGlobalValue(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getChildren(path)) {
-            resetGlobalValue(node.getPath());
             node.resetGlobalValue();
         }
     }
@@ -253,7 +252,6 @@ public abstract class AbsTmfStatisticsTree {
      */
     public void resetTimeRangeValue(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getChildren(path)) {
-            resetTimeRangeValue(node.getPath());
             node.resetTimeRangeValue();
         }
     }
