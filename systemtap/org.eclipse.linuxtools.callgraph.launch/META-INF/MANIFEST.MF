@@ -27,5 +27,5 @@ Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.ui.model,
  org.eclipse.ui.views.navigator
 Bundle-Localization: plugin
-Export-Package: org.eclipse.linuxtools.internal.callgraph.launch
+Export-Package: org.eclipse.linuxtools.internal.callgraph.launch;x-internal:=true
 Bundle-Vendor: %Bundle-Vendor
