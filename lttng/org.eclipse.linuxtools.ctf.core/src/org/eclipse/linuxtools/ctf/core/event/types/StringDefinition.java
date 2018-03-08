@@ -34,7 +34,7 @@ public class StringDefinition extends Definition {
     private StringDeclaration declaration;
 
     private StringBuilder string;
-    private long mask, flippedMask;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -54,8 +54,6 @@ public class StringDefinition extends Definition {
         super(definitionScope, fieldName);
 
         this.declaration = declaration;
-        this.mask = declaration.getAlignment() - 1;
-        this.flippedMask = ~mask;
 
         string = new StringBuilder();
     }
@@ -114,7 +112,7 @@ public class StringDefinition extends Definition {
     @Override
     public void read(BitBuffer input) {
         /* Offset the buffer position wrt the current alignment */
-        alignRead(input, mask, flippedMask);
+        alignRead(input, this.declaration);
         string.setLength(0);
         char c = (char) input.getInt(8, false);
         while (c != 0) {

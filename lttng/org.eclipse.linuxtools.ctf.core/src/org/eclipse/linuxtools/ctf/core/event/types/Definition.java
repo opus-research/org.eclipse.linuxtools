@@ -17,8 +17,8 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 /**
  * A CTF definiton
  *
- * A definition is like an object of a declaration class. It fills the
- * declaration with values. <br>
+ * A definition is like an object of a declaration class. It fills the declaration
+ * with values. <br>
  * An example: <br>
  * int i = 0; <br>
  * <b>int</b> is the declaration.<br>
@@ -136,42 +136,9 @@ public abstract class Definition {
      *            The declaration which has an alignment
      * @since 2.2
      */
-    @Deprecated
-    protected static void alignRead(BitBuffer input, IDeclaration declaration) {
+    protected static void alignRead(BitBuffer input, IDeclaration declaration){
         int align = (int) declaration.getAlignment();
-        int pos = input.position();
-        /*
-         * Upon re-reading the ctf specification, alignments are only powers of
-         * 2. If that is no longer the case, this code would be required: pos =
-         * pos + (pos + align) % align;
-         */
-        int mask = align - 1;
-        if( (pos & mask) == 0 ) {
-            return ;
-        }
-        pos = (pos + mask) & ~mask;
-        input.position(pos);
-    }
-
-    /**
-     * Offset the buffer position wrt the current alignment. it takes a mask and
-     * it's flipped value, so for an alignment of 32 the mask would be
-     * 0x0...001f and the flipped mask would be 0xf...ffe0
-     *
-     * @param input
-     *            The bitbuffer that is being read
-     * @param alignMask
-     *            the alignment mask
-     * @param alignMaskMask
-     *            the flipped alignment mask
-     * @since 2.2
-     */
-    protected static void alignRead(BitBuffer input, long alignMask, long alignMaskMask) {
-        int pos = input.position();
-        if( (pos & alignMask) == 0 ) {
-            return ;
-        }
-        pos = (int) ((pos + alignMask) & alignMaskMask);
+        int pos = input.position() + ((align - (input.position() % align)) % align);
         input.position(pos);
     }
 
