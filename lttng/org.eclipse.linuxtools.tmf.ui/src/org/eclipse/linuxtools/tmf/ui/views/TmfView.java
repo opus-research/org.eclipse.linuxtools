@@ -17,11 +17,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.tmf.core.component.ITmfComponent;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
@@ -53,12 +49,6 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
      * @since 2.0
      */
     protected final TmfTraceManager fTraceManager;
-
-    /**
-     * Reference to the selected trace.
-     * @since 2.0
-     */
-    protected ITmfTrace fTrace;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -148,61 +138,4 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
         return null;
     }
 
-    /**
-     * Handler for the trace opened signal.
-     * @param signal the trace opened signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
-
-    /**
-     * Handler for the trace selected signal
-     *
-     * @param signal
-     *            The signal that's received
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceSelected(final TmfTraceSelectedSignal signal) {
-        if (signal.getTrace() == fTrace) {
-            return;
-        }
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
-
-    /**
-     * Trace is disposed: clear the data structures and the view
-     *
-     * @param signal the signal received
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceClosed(final TmfTraceClosedSignal signal) {
-        if (signal.getTrace() == fTrace) {
-            closeTrace();
-            fTrace = null;
-        }
-    }
-
-    /**
-     * Method for loading the current selected trace into the view.
-     * Sub-classes need to override this method to add the view specific implementation.
-     * @since 2.0
-     */
-    protected void loadTrace() {
-    }
-
-
-    /**
-     * Method for handling the closing of a trace.
-     * Sub-classes need to override this method to add the view specific implementation.
-     * @since 2.0
-     */
-    protected void closeTrace() {
-    }
 }
