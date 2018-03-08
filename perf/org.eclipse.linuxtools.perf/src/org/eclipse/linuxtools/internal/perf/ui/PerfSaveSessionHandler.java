@@ -11,79 +11,86 @@
 package org.eclipse.linuxtools.internal.perf.ui;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
+import org.eclipse.swt.widgets.Display;
 
-/**
- * Handler for saving a perf profile session.
- */
-public class PerfSaveSessionHandler extends AbstractSaveDataHandler {
-	private static String DATA_EXT = "data"; //$NON-NLS-1$
+public class PerfSaveSessionHandler implements IHandler {
 
 	@Override
-	public File saveData(String filename) {
-		// get paths
-		IPath newDataLoc = getNewDataLocation(filename, DATA_EXT);
-		IPath defaultDataLoc = PerfPlugin.getDefault().getPerfProfileData();
+	public Object execute(ExecutionEvent event) {
+		InputDialog dialog = new InputDialog(Display.getCurrent()
+				.getActiveShell(), Messages.PerfSaveSession_title,
+				Messages.PerfSaveSession_msg, "", new IInputValidator() {
 
-		// get files
-		File newDataFile = new File(newDataLoc.toOSString());
-		File defaultDataFile = defaultDataLoc.toFile();
+					@Override
+					public String isValid(String newText) {
+						if ("".equals(newText)) {
+							return Messages.PerfSaveSession_invalid_filename_msg;
+						}
+						return null;
+					}
+				});
 
-		if (canSave(newDataFile)) {
-			// copy default data into new location
-			try {
-				newDataFile.createNewFile();
-				if (copyFile(defaultDataFile, newDataFile)) {
-					PerfPlugin.getDefault().setPerfProfileData(newDataLoc);
-					PerfPlugin.getDefault().getProfileView()
-							.setContentDescription(newDataLoc.toOSString());
+		if (dialog.open() == Window.OK) {
+			String fileName = dialog.getValue();
 
-					return newDataFile;
-				} else {
-					openErroDialog(Messages.PerfSaveSession_failure_title,
-							Messages.PerfSaveSession_failure_msg,
-							newDataLoc.lastSegment());
-				}
+			// get paths
+			IPath curWorkingDirectory = PerfPlugin.getDefault().getWorkingDir();
+			IPath newDataLoc = curWorkingDirectory.append(fileName).addFileExtension("data"); //$NON-NLS-1$
+			IPath defaultDataLoc = PerfPlugin.getDefault().getPerfProfileData();
 
-			} catch (IOException e) {
-				openErroDialog(Messages.PerfSaveSession_failure_title,
-						Messages.PerfSaveSession_failure_msg,
-						newDataLoc.lastSegment());
+			// get files
+			File newDataFile = newDataLoc.toFile();
+			File defaultDataFile = defaultDataLoc.toFile();
+
+			// rename default perf data file
+			if (defaultDataFile.renameTo(newDataFile)) {
+				PerfPlugin.getDefault().setPerfProfileData(newDataLoc);
+				PerfPlugin.getDefault().getProfileView().setContentDescription(newDataLoc.toOSString());
+			} else{
+				MessageDialog.openError(Display.getCurrent().getActiveShell(),
+						Messages.PerfSaveSession_no_data_found_title,
+						Messages.PerfSaveSession_no_data_found_msg);
 			}
 		}
-		return null;
 
+		return null;
 	}
 
 	@Override
-	public boolean verifyData() {
+	public boolean isEnabled() {
 		IPath defaultDataLoc = PerfPlugin.getDefault().getPerfProfileData();
-		return defaultDataLoc != null && !defaultDataLoc.isEmpty();
-	}
-
-	private boolean copyFile(File src, File dest) throws IOException {
-		InputStream destInput = null;
-		OutputStream srcOutput = null;
-		destInput = new FileInputStream(src);
-		srcOutput = new FileOutputStream(dest);
-
-		byte[] buffer = new byte[1024];
-
-		int length;
-		while ((length = destInput.read(buffer)) > 0) {
-			srcOutput.write(buffer, 0, length);
+		IPath curWorkingDirectory = PerfPlugin.getDefault().getWorkingDir();
+		if (defaultDataLoc == null || curWorkingDirectory == null
+				|| defaultDataLoc.isEmpty() || curWorkingDirectory.isEmpty()) {
+			return false;
 		}
-
-		destInput.close();
-		srcOutput.close();
-
 		return true;
 	}
 
+	@Override
+	public boolean isHandled() {
+		return isEnabled();
+	}
+
+	@Override
+	public void removeHandlerListener(IHandlerListener handlerListener) {
+	}
+	@Override
+	public void addHandlerListener(IHandlerListener handlerListener) {
+
+	}
+
+	@Override
+	public void dispose() {
+
+	}
 }
