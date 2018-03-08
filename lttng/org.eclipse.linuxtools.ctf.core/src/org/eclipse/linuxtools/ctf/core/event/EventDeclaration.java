@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.ctf.core.event;
 
+import java.util.HashMap;
+
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
 import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
@@ -55,6 +57,8 @@ public class EventDeclaration {
      * Loglevel of an event
      */
     private long logLevel;
+
+    private HashMap<String, String> customAttributes = new HashMap<String, String>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -292,6 +296,9 @@ public class EventDeclaration {
         } else if (!stream.equals(other.stream)) {
             return false;
         }
+        if (!customAttributes.equals(other.customAttributes)) {
+            return false;
+        }
         return true;
     }
 
@@ -305,7 +312,27 @@ public class EventDeclaration {
         result = (prime * result) + ((id == null) ? 0 : id.hashCode());
         result = (prime * result) + ((name == null) ? 0 : name.hashCode());
         result = (prime * result) + ((stream == null) ? 0 : stream.hashCode());
+        result = (prime * result) + ((customAttributes == null) ? 0 : customAttributes.hashCode());
         return result;
     }
 
+    /**
+     * Add a custom attribute to an event
+     * @param name the name of the attribute
+     * @param value the value of the attribute
+     * @since 2.0
+     */
+    public void addAttribute(String name, String value) {
+        customAttributes.put(name, value);
+    }
+
+    /**
+     * Get a custom attribute to an event
+     * @param name the name of the attribute
+     * @return the value of the attribute can be null
+     * @since 2.0
+     */
+    public String getAttribute(String name){
+        return customAttributes.get(name);
+    }
 }
