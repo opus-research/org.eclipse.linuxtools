@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 /**
  * An entry for use in the time graph views
  *
- * @since 3.0
+ * @since 2.1
  */
 public class TimeGraphEntry implements ITimeGraphEntry {
 
@@ -222,6 +222,11 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     public void addChild(TimeGraphEntry child) {
         child.fParent = this;
         fChildren.add(child);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '(' + fName + ')';
     }
 
 }

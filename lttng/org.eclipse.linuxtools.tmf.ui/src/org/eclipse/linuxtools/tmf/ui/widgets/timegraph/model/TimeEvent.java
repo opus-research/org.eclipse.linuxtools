@@ -63,7 +63,7 @@ public class TimeEvent implements ITimeEvent {
      *            The duration of this event
      * @param value
      *            The status assigned to the event
-     * @since 3.0
+     * @since 2.1
      */
     public TimeEvent(ITimeGraphEntry entry, long time, long duration,
             int value) {
@@ -77,7 +77,7 @@ public class TimeEvent implements ITimeEvent {
      * Get this event's status
      *
      * @return The integer matching this status
-     * @since 3.0
+     * @since 2.1
      */
     public int getValue() {
         return fValue;
@@ -87,7 +87,7 @@ public class TimeEvent implements ITimeEvent {
      * Return whether an event has a value
      *
      * @return true if the event has a value
-     * @since 3.0
+     * @since 2.1
      */
     public boolean hasValue() {
         return (fValue != NOVALUE);
@@ -110,6 +110,6 @@ public class TimeEvent implements ITimeEvent {
 
     @Override
     public String toString() {
-        return "TimeEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " value=" + (hasValue() ? fValue : "N/A"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        return getClass().getSimpleName() + " start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + (hasValue() ? (" value=" + fValue) : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 }
