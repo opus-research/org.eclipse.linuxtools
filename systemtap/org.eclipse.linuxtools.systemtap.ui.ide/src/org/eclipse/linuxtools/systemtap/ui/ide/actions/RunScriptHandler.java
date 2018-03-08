@@ -344,18 +344,18 @@ public class RunScriptHandler extends AbstractHandler {
 		Matcher modNameMatch = validModName.matcher(modname);
 		if (!modNameMatch.matches()) {
 			continueRun = false;
-        	Display.getDefault().asyncExec(new Runnable() {
-        		@Override
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
 				public void run() {
 
-			Shell parent = PlatformUI.getWorkbench().getDisplay()
-					.getActiveShell();
-			MessageDialog.openError(parent,
-					Messages.ScriptRunAction_InvalidScriptTitle,
-					Messages.ScriptRunAction_InvalidScriptTMessage);
-        		}
-        	});
-        	return new String[0];
+					Shell parent = PlatformUI.getWorkbench().getDisplay()
+							.getActiveShell();
+					MessageDialog.openError(parent,
+							Messages.ScriptRunAction_InvalidScriptTitle,
+							Messages.ScriptRunAction_InvalidScriptTMessage);
+				}
+			});
+			return new String[0];
 		}
 
 		script[script.length-2]=modname;
