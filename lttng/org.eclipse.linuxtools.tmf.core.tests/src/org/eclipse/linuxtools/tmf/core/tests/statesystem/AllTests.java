@@ -21,7 +21,6 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ExperimentStateSystemTest.class,
     StateSystemPushPopTest.class
 })
 public class AllTests {

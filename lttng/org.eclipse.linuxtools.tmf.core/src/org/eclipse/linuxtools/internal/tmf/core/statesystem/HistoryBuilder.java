@@ -30,7 +30,6 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * This is the high-level wrapper around the State History and its provider and
@@ -193,15 +192,16 @@ public class HistoryBuilder extends TmfComponent {
      * this trace.
      */
     private boolean signalIsForUs(ITmfTrace sender) {
-        if (sender == sp.getTrace()) {
-            return true;
-        } else if (sender instanceof TmfExperiment) {
+        if (sender instanceof TmfExperiment) {
             /* Yeah doing a lazy instanceof check here, but it's a special case! */
-            for (ITmfTrace childtrace : TmfTraceManager.getTraceSet(sender)) {
-                if (sp.getTrace() == childtrace) {
+            TmfExperiment exp = (TmfExperiment) sender;
+            for (ITmfTrace childTrace : exp.getTraces()) {
+                if (childTrace == sp.getTrace()) {
                     return true;
                 }
             }
+        } else if (sender == sp.getTrace()) {
+            return true;
         }
         return false;
     }
@@ -225,6 +225,10 @@ public class HistoryBuilder extends TmfComponent {
 }
 
 class StateSystemBuildRequest extends TmfEventRequest {
+
+    /** The amount of events queried at a time through the requests */
+    private static final int CHUNK_SIZE = 50000;
+
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
     private final ITmfTrace trace;
@@ -232,8 +236,8 @@ class StateSystemBuildRequest extends TmfEventRequest {
     StateSystemBuildRequest(HistoryBuilder builder) {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
-                0,
                 TmfDataRequest.ALL_DATA,
+                CHUNK_SIZE,
                 ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
@@ -243,12 +247,8 @@ class StateSystemBuildRequest extends TmfEventRequest {
     @Override
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
-        if (event != null) {
-            for (ITmfTrace onetrace : TmfTraceManager.getTraceSet(trace)) {
-                if (event.getTrace() == onetrace) {
-                    sci.processEvent(event);
-                }
-            }
+        if (event != null && event.getTrace() == trace) {
+            sci.processEvent(event);
         }
     }
 
