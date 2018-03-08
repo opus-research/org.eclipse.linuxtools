@@ -80,16 +80,4 @@ public class UtilsTest {
         assertEquals(0, result.variant());
         assertEquals(0, result.version());
     }
-
-    /**
-     * Run the int unsignedCompare(long,long) method test.
-     */
-    @Test
-    public void testUnsignedCompare() {
-        long a = 1L;
-        long b = 1L;
-
-        int result = Utils.unsignedCompare(a, b);
-        assertEquals(0, result);
-    }
 }
