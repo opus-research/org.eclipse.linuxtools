@@ -279,7 +279,7 @@ public class TmfRequestExecutor implements Executor {
     }
 
     /**
-     * Check if current task is alone
+     * Check if the scheduler has tasks
      */
     private boolean hasTasks() {
         return !(fForegroundTasks.isEmpty() && fBackgroundTasks.isEmpty());
