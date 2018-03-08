@@ -152,18 +152,11 @@ public class ProjectModelAnalysisTest {
         traceElement.closeEditors();
         analysis.activateParent();
 
-        ITmfTrace trace = null;
-        int cnt = 0;
-
         /* Give some time to the trace to open */
-        while ((trace == null) && (cnt++ < 10)) {
+        ProjectModelTestData.delayThread(1000);
 
-            ProjectModelTestData.delayThread(500);
-
-            /* Get the analysis module associated with the element */
-            trace = traceElement.getTrace();
-        }
-
+        /* Get the analysis module associated with the element */
+        ITmfTrace trace = traceElement.getTrace();
         assertNotNull(trace);
         TestAnalysisUi module = (TestAnalysisUi) trace.getAnalysisModule(analysis.getAnalysisId());
         assertNotNull(module);
