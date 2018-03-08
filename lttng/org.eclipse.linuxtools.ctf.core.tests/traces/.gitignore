@@ -4,7 +4,6 @@
 *.ht
 /ctf-testsuite
 /cyg-profile
-/funky_trace
 /hello-lost
 /kernel
 /kernel_vm
