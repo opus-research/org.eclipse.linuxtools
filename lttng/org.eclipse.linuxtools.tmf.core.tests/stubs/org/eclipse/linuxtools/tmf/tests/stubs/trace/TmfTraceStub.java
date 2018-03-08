@@ -29,12 +29,12 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
 /**
  * <b><u>TmfTraceStub</u></b>
@@ -50,6 +50,9 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
 
     // The actual stream
     private RandomAccessFile fTrace;
+
+//    // The associated event parser
+//    private ITmfEventParser<TmfEvent> fParser;
 
     // The synchronization lock
     private final ReentrantLock fLock = new ReentrantLock();
@@ -369,11 +372,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
             return Status.OK_STATUS;
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
-    }
-
-    @Override
-    protected void buildStateSystem() {
-        return;
     }
 
 }

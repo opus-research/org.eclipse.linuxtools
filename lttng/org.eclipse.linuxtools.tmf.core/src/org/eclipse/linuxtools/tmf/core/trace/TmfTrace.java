@@ -22,6 +22,8 @@ import java.util.Map;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -37,9 +39,6 @@ import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -265,11 +264,20 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     /**
      * Build the state system(s) associated with this trace type.
      *
-     * @throws TmfTraceException
-     *             If there is a problem during the build
-     * @since 2.0
+     * Suppressing the warning, because the 'throws' will usually happen in
+     * sub-classes.
+     *
+     * @return An IStatus indicating if the state system could be build
+     *         successfully or not.
+     * @since 3.0
      */
-    protected abstract void buildStateSystem() throws TmfTraceException;
+    protected IStatus buildStateSystem() {
+        /*
+         * Nothing is done in the base implementation, please specify
+         * how/if to register a new state system in derived classes.
+         */
+        return Status.OK_STATUS;
+    }
 
     /**
      * Clears the trace
@@ -325,7 +333,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @return the trace indexer
-     * @since 3.0
      */
     protected ITmfTraceIndexer getIndexer() {
         return fIndexer;
@@ -404,6 +411,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
     }
 
+    /**
+     * @since 3.0
+     */
+    @Override
+    public String getHostId() {
+        return this.getName();
+    }
+
     // ------------------------------------------------------------------------
     // Convenience setters
     // ------------------------------------------------------------------------
@@ -471,7 +486,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Set the trace indexer. Must be done at initialization time.
      *
      * @param indexer the trace indexer
-     * @since 3.0
      */
     protected void setIndexer(final ITmfTraceIndexer indexer) {
         fIndexer = indexer;

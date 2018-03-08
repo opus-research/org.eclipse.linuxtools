@@ -31,10 +31,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
 /**
  * GDB Tracepoint extension of TmfTrace. This class implements the necessary
@@ -194,11 +194,5 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
      */
     public void selectFrame(long rank) {
         fGdbTpRef.selectDataFrame(rank, true);
-    }
-
-    @Override
-    protected void buildStateSystem() {
-        /* No custom state systems for GDB traces */
-        return;
     }
 }
