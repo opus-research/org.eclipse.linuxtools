@@ -9,7 +9,6 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   François Rajotte - Filter implementation
- *   Geneviève Bastien - Add event links between entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
@@ -37,7 +36,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.TimeGraphFilterDialog;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -830,16 +828,6 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.getTree().getVerticalBar().setVisible(false);
         fTimeGraphViewer.setItemHeight(getItemHeight(fTreeViewer.getTree()));
         fTimeGraphViewer.setInput(input);
-    }
-
-    /**
-     * Sets or clears the list of links to display on this combo
-     *
-     * @param links the links to display in this time graph combo
-     * @since 2.1
-     */
-    public void setLinks(List<ILinkEvent> links) {
-        fTimeGraphViewer.setLinks(links);
     }
 
     /**
