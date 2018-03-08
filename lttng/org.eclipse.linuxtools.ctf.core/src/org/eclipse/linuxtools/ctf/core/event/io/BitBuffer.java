@@ -9,6 +9,7 @@
  * Contributors: Matthew Khouzam - Initial Design and implementation
  * Contributors: Francis Giraldeau - Initial API and implementation
  * Contributors: Philippe Proulx - Some refinement and optimization
+ * Contributors: Etienne Bergeron - Helped with getLong()
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -21,6 +22,7 @@ import java.nio.ByteOrder;
  * <b><u>BitBuffer</u></b>
  * <p>
  * A bitwise buffer capable of accessing fields with bit offsets.
+ *
  * @since 2.0
  */
 public final class BitBuffer {
@@ -100,6 +102,20 @@ public final class BitBuffer {
     }
 
     /**
+     * Relative <i>get</i> method for reading 64-bit integer.
+     *
+     * Reads next eight bytes from the current bit position according to current
+     * byte order.
+     *
+     * @return The long value read from the buffer
+     */
+    public long getLong() {
+        long retVal = buf.getLong((int) (pos / 8L));
+        pos += 64L; // 64 bits to a long
+        return retVal;
+    }
+
+    /**
      * Relative <i>get</i> method for reading integer of <i>length</i> bits.
      *
      * Reads <i>length</i> bits starting at the current position. The result is
@@ -117,12 +133,19 @@ public final class BitBuffer {
         if (!canRead(length)) {
             throw new BufferOverflowException();
         }
+        if(length > BIT_INT){
+            throw new IllegalArgumentException("Maximum size of value is 32 requested size" + length); //$NON-NLS-1$
+        }
+        if( length < 0){
+            throw new IllegalArgumentException("Cannot handle negative reads"); //$NON-NLS-1$
+        }
         if (length == 0) {
             return 0;
         }
         boolean gotIt = false;
 
-        // Fall back to fast ByteBuffer reader if we want to read byte-aligned bytes
+        // Fall back to fast ByteBuffer reader if we want to read byte-aligned
+        // bytes
         if (this.pos % BitBuffer.BIT_CHAR == 0) {
             switch (length) {
             case BitBuffer.BIT_CHAR:
