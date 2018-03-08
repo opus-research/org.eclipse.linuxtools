@@ -70,7 +70,6 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     final private BlockingQueue<TraceValidationHelper> fTracesToScan = new ArrayBlockingQueue<TraceValidationHelper>(MAX_TRACES);
     private volatile boolean fCanRun = true;
 
-
     // --------------------------------------------------------------------------------
     // Constructor and destructor
     // --------------------------------------------------------------------------------
@@ -373,7 +372,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                 @Override
                 public void run() {
                     fMonitor = SubMonitor.convert(getMonitor());
-                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
+                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
                 }
             });
@@ -387,7 +386,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         @Override
                         public void run() {
                             if (!control.isDisposed()) {
-                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
+                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
                                 getMonitor().subTask(Messages.ImportTraceWizardPageScan_done);
                             }
                         }
