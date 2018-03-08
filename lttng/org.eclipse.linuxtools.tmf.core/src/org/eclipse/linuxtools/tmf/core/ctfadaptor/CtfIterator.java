@@ -65,19 +65,19 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparab
     /**
      * Constructor for CtfIterator.
      * @param trace CtfTmfTrace the trace
-     * @param ctfLocationData long the timestamp in ns of the trace for positioning
+     * @param timestampValue long the timestamp in ns of the trace for positioning
      * @param rank long the index of the trace for positioning
-     * @since 2.0
      */
-    public CtfIterator(final CtfTmfTrace trace, final CtfLocationData ctfLocationData,
+    public CtfIterator(final CtfTmfTrace trace, final long timestampValue,
             final long rank) {
         super(trace.getCTFTrace());
 
         this.ctfTmfTrace = trace;
         if (this.hasMoreEvents()) {
-            this.curLocation = new CtfLocation(ctfLocationData);
-            if (this.getCurrentEvent().getTimestampValue() != ctfLocationData.getTimestamp()) {
-                this.seek(ctfLocationData);
+            this.curLocation = (new CtfLocation(this.getCurrentEvent()
+                    .getTimestampValue()));
+            if (this.getCurrentEvent().getTimestampValue() != timestampValue) {
+                this.seek(timestampValue);
                 this.curRank = rank;
             }
         } else {
@@ -109,34 +109,22 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparab
 
     /**
      * Method seek. Seeks to a given timestamp
-     * @param ctfLocationData long the timestamp in ns (utc)
+     * @param timestamp long the timestamp in ns (utc)
      * @return boolean
-     * @since 2.0
      */
-    public boolean seek(final CtfLocationData ctfLocationData) {
+    @Override
+    public boolean seek(final long timestamp) {
         boolean ret = false;
-        long currTimestamp = ctfLocationData.getTimestamp();
-        final long offsetTimestamp = currTimestamp
+        final long offsetTimestamp = timestamp
                 - this.getTrace().getOffset();
         if (offsetTimestamp < 0) {
             ret = super.seek(0L);
         } else {
             ret = super.seek(offsetTimestamp);
         }
-        currTimestamp = this.getCurrentEvent().getTimestampValue();
-        long offset = 0;
-        for( long i = 0; i < ctfLocationData.getOffset(); i++) {
-            if( currTimestamp == this.getCurrentEvent().getTimestampValue()){
-                offset++;
-            } else {
-                offset = 0;
-            }
-            this.advance();
-
-        }
 
         if (ret) {
-            curLocation.setLocation(new CtfLocationData(getCurrentEvent().getTimestampValue(), offset));
+            curLocation.setLocation(getCurrentEvent().getTimestampValue());
         } else {
             curLocation = NULL_LOCATION;
         }
@@ -171,7 +159,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparab
     @Override
     public CtfIterator clone() {
         CtfIterator clone = null;
-        clone = new CtfIterator(ctfTmfTrace, this.getLocation().getLocation(), curRank);
+        clone = new CtfIterator(ctfTmfTrace, this.getCurrentEvent().getTimestampValue(), curRank);
         return clone;
     }
 
@@ -234,18 +222,9 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparab
      */
     @Override
     public boolean advance() {
-        long offset = curLocation.getLocation().getOffset();
-        long timestamp = curLocation.getLocation().getTimestamp();
         boolean ret = super.advance();
-
         if (ret) {
-            final long timestampValue = getCurrentEvent().getTimestampValue();
-            if( timestamp == timestampValue){
-                curLocation.setLocation(timestampValue, offset +1 );
-            }
-            else{
-                curLocation.setLocation(timestampValue, 0L );
-            }
+            curLocation.setLocation(getCurrentEvent().getTimestampValue());
         } else {
             curLocation = NULL_LOCATION;
         }
