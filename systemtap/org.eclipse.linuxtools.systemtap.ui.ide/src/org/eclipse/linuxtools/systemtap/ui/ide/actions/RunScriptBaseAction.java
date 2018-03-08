@@ -37,7 +37,6 @@ import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
@@ -47,6 +46,7 @@ import org.eclipse.ui.PlatformUI;
 /**
  * This <code>Action</code> is used to run a SystemTap script that is currently open in the editor.
  * @author Ryan Morse
+ * @since 1.2
  */
 
 abstract public class RunScriptBaseAction extends Action implements IWorkbenchWindowActionDelegate {
@@ -98,24 +98,20 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 					 scpclient.transfer(fileName,tmpfileName);
 			        }catch(Exception e){e.printStackTrace();}
 			}
-			final String[] script = buildScript();
-			final String[] envVars = getEnvironmentVariables();
+			String[] script = buildScript();
+			String[] envVars = getEnvironmentVariables();
             if(continueRun)
             {
-            	Display.getDefault().asyncExec(new Runnable() {
-            		public void run() {
-            			final ScriptConsole console;
-            			if(getRunLocal() == false) {
-            				console = ScriptConsole.getInstance(serverfileName);
-            				console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
-            			} else {
-            				console = ScriptConsole.getInstance(fileName);
-            				console.runLocally(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
-            			}
-            		}
-            	});
+            	ScriptConsole console;
+            	if(getRunLocal() == false) {
+            		console = ScriptConsole.getInstance(serverfileName);
+            	} else {
+            		console = ScriptConsole.getInstance(fileName);
+            	}
+                console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
             }
 		}
+		
 		LogManager.logDebug("End run:", this); //$NON-NLS-1$
 	}
 	

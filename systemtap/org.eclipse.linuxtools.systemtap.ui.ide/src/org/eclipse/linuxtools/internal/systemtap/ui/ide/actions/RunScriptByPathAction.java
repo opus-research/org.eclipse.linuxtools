@@ -8,11 +8,13 @@
  *     Sami Wagiaalla
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.ide.actions;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.systemtap.ui.ide.launcher.SystemtapScriptTester;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester;
+import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction;
+import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptBaseAction;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**
@@ -38,7 +40,7 @@ public class RunScriptByPathAction extends RunScriptBaseAction {
 
 	@Override
 	protected boolean isValid() {
-		return this.getFilePath().endsWith(SystemtapScriptTester.STP_SUFFIX)
+		return this.getFilePath().endsWith(SystemTapScriptTester.STP_SUFFIX)
 				&& isValidDirectory(this.getFilePath());
 	}
 
