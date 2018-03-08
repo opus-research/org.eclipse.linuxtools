@@ -30,13 +30,13 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 
 /**
  * Handler for the tool tips in the generic time graph view.
@@ -48,7 +48,7 @@ import org.eclipse.swt.widgets.Shell;
 public class TimeGraphTooltipHandler {
 
     private Shell _tipShell;
-    private Composite _tipComposite;
+    private Table _tipTable;
     private Point _tipPosition;
     private final ITimeDataProvider _timeDataProvider;
     ITimeGraphPresentationProvider _utilImp = null;
@@ -83,10 +83,36 @@ public class TimeGraphTooltipHandler {
         _tipShell.setLayout(gridLayout);
         _tipShell.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 
-        _tipComposite = new Composite(_tipShell, SWT.NONE);
-        _tipComposite.setLayout(new GridLayout(3, false));
-        setupControl(_tipComposite);
+        _tipTable = new Table(_tipShell, SWT.NONE);
+        new TableColumn(_tipTable, SWT.NONE);
+        new TableColumn(_tipTable, SWT.NONE);
+        _tipTable.setForeground(display
+                .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+        _tipTable.setBackground(display
+                .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        _tipTable.setHeaderVisible(false);
+        _tipTable.setLinesVisible(false);
 
+        _tipTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                _tipShell.dispose();
+            }
+        });
+
+        _tipTable.addMouseTrackListener(new MouseTrackAdapter() {
+            @Override
+            public void mouseExit(MouseEvent e) {
+                _tipShell.dispose();
+            }
+        });
+
+        _tipTable.addMouseMoveListener(new MouseMoveListener() {
+            @Override
+            public void mouseMove(MouseEvent e) {
+                _tipShell.dispose();
+            }
+        });
     }
 
     /**
@@ -126,17 +152,9 @@ public class TimeGraphTooltipHandler {
             }
 
             private void addItem(String name, String value) {
-                Label nameLabel = new Label(_tipComposite, SWT.NO_FOCUS);
-                nameLabel.setText(name);
-                setupControl(nameLabel);
-                Label separator = new Label(_tipComposite, SWT.NO_FOCUS | SWT.SEPARATOR | SWT.VERTICAL);
-                GridData gd = new GridData(SWT.CENTER, SWT.CENTER, false, false);
-                gd.heightHint = nameLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-                separator.setLayoutData(gd);
-                setupControl(separator);
-                Label valueLabel = new Label(_tipComposite, SWT.NO_FOCUS);
-                valueLabel.setText(value);
-                setupControl(valueLabel);
+                TableItem line = new TableItem(_tipTable, SWT.NONE);
+                line.setText(0, name);
+                line.setText(1, value);
             }
 
             private void fillValues(Point pt, TimeGraphControl timeGraphControl, ITimeGraphEntry entry) {
@@ -158,25 +176,14 @@ public class TimeGraphTooltipHandler {
                     if (currEvent == null || currEvent.getTime() < currPixelTime) {
                         if (nextEvent != null && nextEvent.getTime() < nextPixelTime) {
                             currEvent = nextEvent;
-                            currPixelTime = nextEvent.getTime();
                         }
                     }
 
                     // state name
-                    String stateTypeName = _utilImp.getStateTypeName(entry);
-                    String entryName = entry.getName();
-                    if (stateTypeName == null) {
-                        stateTypeName = _utilImp.getStateTypeName();
-                    }
-
-                    if (!entryName.isEmpty()) {
-                        addItem(stateTypeName, entry.getName());
-                    }
-
+                    addItem(_utilImp.getStateTypeName(), entry.getName());
                     if (currEvent == null) {
                         return;
                     }
-
                     // state
                     String state = _utilImp.getEventName(currEvent);
                     if (state != null) {
@@ -184,7 +191,7 @@ public class TimeGraphTooltipHandler {
                     }
 
                     // This block receives a list of <String, String> values to be added to the tip table
-                    Map<String, String> eventAddOns = _utilImp.getEventHoverToolTipInfo(currEvent, currPixelTime);
+                    Map<String, String> eventAddOns = _utilImp.getEventHoverToolTipInfo(currEvent);
                     if (eventAddOns != null) {
                         for (Iterator<String> iter = eventAddOns.keySet().iterator(); iter.hasNext();) {
                             String message = iter.next();
@@ -257,13 +264,13 @@ public class TimeGraphTooltipHandler {
                 TimeGraphControl timeGraphControl = (TimeGraphControl) event.widget;
                 createTooltipShell(timeGraphControl.getShell());
                 ITimeGraphEntry entry = timeGraphControl.getEntry(pt);
-                for (Control child : _tipComposite.getChildren()) {
-                    child.dispose();
-                }
+                _tipTable.remove(0, _tipTable.getItemCount() - 1);
                 fillValues(pt, timeGraphControl, entry);
-                if (_tipComposite.getChildren().length == 0) {
+                if (_tipTable.getItemCount() == 0) {
                     return;
                 }
+                _tipTable.getColumn(0).pack();
+                _tipTable.getColumn(1).pack();
                 _tipShell.pack();
                 _tipPosition = control.toDisplay(pt);
                 _tipShell.pack();
@@ -289,29 +296,4 @@ public class TimeGraphTooltipHandler {
         shell.setBounds(shellBounds);
     }
 
-    private void setupControl(Control control) {
-        control.setForeground(_tipShell.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-        control.setBackground(_tipShell.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-
-        control.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                _tipShell.dispose();
-            }
-        });
-
-        control.addMouseTrackListener(new MouseTrackAdapter() {
-            @Override
-            public void mouseExit(MouseEvent e) {
-                _tipShell.dispose();
-            }
-        });
-
-        control.addMouseMoveListener(new MouseMoveListener() {
-            @Override
-            public void mouseMove(MouseEvent e) {
-                _tipShell.dispose();
-            }
-        });
-    }
 }

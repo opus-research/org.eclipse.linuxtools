@@ -425,32 +425,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * Collapses all nodes of the viewer's tree, starting with the root.
-     *
-     * @since 2.0
-     */
-    public void collapseAll() {
-        for (Item item : _data._items) {
-            item._expanded = false;
-        }
-        _data.updateExpandedItems();
-        redraw();
-    }
-
-    /**
-     * Expands all nodes of the viewer's tree, starting with the root.
-     *
-     * @since 2.0
-     */
-    public void expandAll() {
-        for (Item item : _data._items) {
-            item._expanded = true;
-        }
-        _data.updateExpandedItems();
-        redraw();
-    }
-
-    /**
      * Add a tree listener
      *
      * @param listener
@@ -497,7 +471,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      * Add a menu listener on {@link ITimeGraphEntry}s
      * @param listener
      *            The listener to add
-     * @since 2.0
+     * @since 1.2
      */
     public void addTimeGraphEntryMenuListener(MenuDetectListener listener) {
         if (!_timeGraphEntryMenuListeners.contains(listener)) {
@@ -510,7 +484,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param listener
      *            The listener to remove
-     * @since 2.0
+     * @since 1.2
      */
     public void removeTimeGraphEntryMenuListener(MenuDetectListener listener) {
         if (_timeGraphEntryMenuListeners.contains(listener)) {
@@ -535,7 +509,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param listener
      *            The listener to add
-     * @since 2.0
+     * @since 1.2
      */
     public void addTimeEventMenuListener(MenuDetectListener listener) {
         if (!_timeEventMenuListeners.contains(listener)) {
@@ -548,7 +522,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param listener
      *            The listener to remove
-     * @since 2.0
+     * @since 1.2
      */
     public void removeTimeEventMenuListener(MenuDetectListener listener) {
         if (_timeEventMenuListeners.contains(listener)) {
@@ -1679,13 +1653,12 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         if (DRAG_NONE != _dragState) {
             setCapture(false);
             if (e.button == 1 && DRAG_TRACE_ITEM == _dragState) {
+                // Notify time provider to check the need for listener
+                // notification
+                _timeProvider.notifyStartFinishTime();
                 if (_dragX == _dragX0) { // click without drag
                     long time = getTimeAtX(e.x);
                     _timeProvider.setSelectedTimeNotify(time, false);
-                } else {
-                    // Notify time provider to check the need for listener
-                    // notification
-                    _timeProvider.notifyStartFinishTime();
                 }
                 _dragState = DRAG_NONE;
             } else if (e.button == 1 && DRAG_SPLIT_LINE == _dragState) {
@@ -2046,7 +2019,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * @since 2.0
+     * @since 1.2
      */
     @Override
     public void menuDetected(MenuDetectEvent e) {

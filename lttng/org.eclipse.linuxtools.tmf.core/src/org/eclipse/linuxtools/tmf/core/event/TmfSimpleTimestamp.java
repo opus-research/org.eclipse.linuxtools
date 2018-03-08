@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Standardize on the default toString()
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
@@ -16,7 +15,7 @@ package org.eclipse.linuxtools.tmf.core.event;
 /**
  * A simplified timestamp where scale and precision are set to 0.
  *
- * @version 1.1
+ * @version 1.0
  * @author Francois Chouinard
  */
 public class TmfSimpleTimestamp extends TmfTimestamp {
@@ -42,16 +41,15 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
     }
 
     /**
-     * Copy constructor.
+     * Copy constructor
      *
-     * If the parameter is not a TmfSimpleTimestamp, the timestamp will be
-     * scaled to seconds, and the precision will be discarded.
-     *
-     * @param timestamp
-     *            The timestamp to copy
+     * @param timestamp the timestamp to copy
      */
     public TmfSimpleTimestamp(final ITmfTimestamp timestamp) {
-        super(timestamp.normalize(0, ITmfTimestamp.SECOND_SCALE).getValue(), 0, 0);
+        if (timestamp == null || timestamp.getScale() != 0 || timestamp.getPrecision() != 0) {
+            throw new IllegalArgumentException();
+        }
+        setValue(timestamp.getValue(), 0, 0);
     }
 
     // ------------------------------------------------------------------------
@@ -87,9 +85,21 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
     @Override
     public ITmfTimestamp getDelta(final ITmfTimestamp ts) {
         if (ts instanceof TmfSimpleTimestamp) {
-            return new TmfTimestampDelta(getValue() - ts.getValue());
+            return new TmfSimpleTimestamp(getValue() - ts.getValue());
         }
         return super.getDelta(ts);
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.TmfTimestamp#clone()
+     */
+    @Override
+    public TmfSimpleTimestamp clone() {
+        return (TmfSimpleTimestamp) super.clone();
     }
 
     // ------------------------------------------------------------------------
@@ -121,6 +131,15 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
         final TmfSimpleTimestamp ts = (TmfSimpleTimestamp) other;
 
         return compareTo(ts, false) == 0;
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.TmfTimestamp#toString()
+     */
+    @Override
+    @SuppressWarnings("nls")
+    public String toString() {
+        return "TmfSimpleTimestamp [fValue=" + getValue() + "]";
     }
 
 }
