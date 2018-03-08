@@ -152,10 +152,7 @@ public class CtfTmfEventFieldTest {
     public void testParseField_sequence_value() {
         Definition fieldDef = fixture.lookupDefinition(SEQ);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        long[] values = (long[]) result.getValue();
-        assertEquals(2, values.length);
-        assertEquals(2, values[0]);
-        assertEquals(2, values[1]);
+        assertEquals("[2, 2]", result.getValue().toString());
     }
 
     /**
