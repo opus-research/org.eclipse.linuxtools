@@ -91,7 +91,10 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     @Override
     public void read(BitBuffer input) {
-        alignRead(input, this.declaration);
+        final int align = (int) declaration.getAlignment();
+        int pos = input.position()
+                + ((align - (input.position() % align)) % align);
+        input.position(pos);
         final List<String> fieldList = declaration.getFieldsList();
         for (String fName : fieldList) {
             Definition def = definitions.get(fName);
