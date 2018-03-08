@@ -33,20 +33,16 @@ import org.eclipse.ui.console.IOConsole;
 
 
 /**
- * This class serves as a pane in the ConsoleView.  It is used to create a new Command that,
- * through ConsoleDaemons, will print all the output the the console.  In order to stop the
+ * This class serves as a pain in the ConsoleView.  It is used to create a new Command that,
+ * through ConsoleDaemons will print all the output the the console.  In order to stop the
  * running Command <code>StopScriptAction</code> should be used to stop this console from
  * running.
  * @author Ryan Morse
  */
 public class ScriptConsole extends IOConsole {
-	private static final long RETRY_STOP_TIME = 500;
 
 	private Command cmd;
 	private Runnable stopCommand;
-	private Thread stopWatcher;
-	private Thread stopThread;
-	private Thread startThread;
 	private String moduleName;
 
 	private ErrorStreamDaemon errorDaemon;
@@ -82,15 +78,8 @@ public class ScriptConsole extends IOConsole {
 					if (consoleIterator instanceof ScriptConsole){
 						activeConsole = (ScriptConsole) consoleIterator;
 						if(activeConsole.getName().endsWith(name)) {
-							//Stop any script currently running, and terminate stream listeners.
-							if (activeConsole.isRunning()) {
-								activeConsole.stopWatcher.interrupt();
-								activeConsole.stop();
-								if (activeConsole.errorDaemon != null) {
-									activeConsole.cmd.removeErrorStreamListener(activeConsole.errorDaemon);
-								}
-								activeConsole.cmd.removeInputStreamListener(activeConsole.consoleDaemon);
-							}
+							//Stop any script currently running
+							activeConsole.stop();
 							//Remove output from last run
 							activeConsole.clearConsole();
 							activeConsole.setName(name);
@@ -141,7 +130,9 @@ public class ScriptConsole extends IOConsole {
 		for(IConsole con : ic) {
 			if (con instanceof ScriptConsole){
 				console = (ScriptConsole)con;
-				console.stop();
+				if(console.isRunning()){
+					console.stop();
+				}
 			}
 		}
 	}
@@ -180,30 +171,15 @@ public class ScriptConsole extends IOConsole {
 	 * @since 2.0
 	 */
 	public void run(String[] command, String[] envVars, IErrorParser errorParser) {
-		// Don't start a new command if one is already waiting to be started.
-		if (startThread != null && startThread.isAlive()) {
-			return;
-		}
-		cmd = new ScpExec(command);
-
+	    cmd = new ScpExec(command);
 		this.stopCommand = new Runnable() {
-			private Command stopcmd = cmd;
-			private String stopString = getStopString();
-
 			@Override
 			public void run() {
-				ScpExec stop = new ScpExec(new String[]{stopString});
+				ScpExec stop = new ScpExec(new String[]{getStopString()});
 				try {
-					do {
-						stop.start();
-						synchronized (stopcmd) {
-							stopcmd.wait(RETRY_STOP_TIME);
-						}
-					} while (stopcmd.isRunning());
+					stop.start();
 				} catch (CoreException e) {
-					// Failed to start the 'stop' process. Ignore.
-				} catch (InterruptedException e) {
-					// Wait was interrupted. Exit.
+				  // Failed to start the 'stop' process. Ignore.
 				}
 			}
 		};
@@ -219,90 +195,37 @@ public class ScriptConsole extends IOConsole {
 	 * @since 2.0
 	 */
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
-		// Don't start a new command if one is already waiting to be started.
-		if (startThread != null && startThread.isAlive()) {
-			return;
-		}
 		cmd = new Command(command, envVars);
-
 		this.stopCommand = new Runnable() {
-			private Command stopcmd = cmd;
-			String stopString = getStopString();
-
 			@Override
 			public void run() {
 				try {
-					do {
-						RuntimeProcessFactory.getFactory().exec(stopString, null, null);
-						synchronized (stopcmd) {
-							stopcmd.wait(RETRY_STOP_TIME);
-						}
-					} while (stopcmd.isRunning());
+					RuntimeProcessFactory.getFactory().exec(getStopString(), null, null);
 				} catch (IOException e) {
 					ExceptionErrorDialog.openError(Localization.getString("ScriptConsole.ErrorKillingStap"), e); //$NON-NLS-1$
-				} catch (InterruptedException e) {
-					//Wait was interrupted. Exit.
 				}
 			}
 		};
 		this.run(cmd, errorParser);
 	}
 
-	private void run(final Command cmd, IErrorParser errorParser){
-		final Runnable runOnStop = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					synchronized (cmd) {
-						cmd.wait();
-					}
-					onCmdStopActions();
-				} catch (InterruptedException e) {
-					return;
-				}
-			}
-		};
-		Runnable startOnStop = new Runnable() {
-			@Override
-			public void run() {
-				if (stopThread != null && stopThread.isAlive()) {
-					try {
-						stopThread.join();
-					} catch (InterruptedException e) {
-						return;
-					}
-				}
-				createConsoleDaemon();
-				if (errorDaemon != null) {
-					cmd.addErrorStreamListener(errorDaemon);
-				}
-				cmd.addInputStreamListener(consoleDaemon);
-				try {
-					cmd.start();
-				} catch (CoreException e) {
-					ExceptionErrorDialog.openError(e.getMessage(), e);
-					notifyConsoleObservers(false);
-					cmd.dispose();
-					return;
-				}
-				notifyConsoleObservers(true);
-				stopWatcher = new Thread(runOnStop);
-				stopWatcher.start();
-			}
-		};
-
-        if (errorParser != null) {
+	private void run(Command cmd, IErrorParser errorParser){
+		createConsoleDaemon();
+		if (errorParser != null) {
 			createErrorDaemon(errorParser);
 		}
-		activate();
-		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
-
-		startThread = new Thread(startOnStop);
-        startThread.start();
-	}
-
-	private final void onCmdStopActions() {
-		notifyConsoleObservers(false);
+	    if (errorDaemon != null) {
+	    	cmd.addErrorStreamListener(errorDaemon);
+	    }
+        cmd.addInputStreamListener(consoleDaemon);
+        try {
+			cmd.start();
+		} catch (CoreException e) {
+			ExceptionErrorDialog.openError(e.getMessage(), e);
+		}
+        activate();
+        notifyConsoleObservers(true);
+        ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
 	}
 
 	void notifyConsoleObservers(boolean running){
@@ -372,11 +295,12 @@ public class ScriptConsole extends IOConsole {
 	 * Stops the running command and the associated listeners.
 	 */
 	public synchronized void stop() {
-		if (isRunning() && (stopThread == null || !stopThread.isAlive())) {
-			// Stop the underlying stap process
-			stopThread = new Thread(this.stopCommand);
-			stopThread.start();
-			setName(Localization.getString("ScriptConsole.Terminated") + super.getName()); //$NON-NLS-1$
+		  if(isRunning()) {
+			  // Stop the underlying stap process
+			  this.stopCommand.run();
+
+              setName(Localization.getString("ScriptConsole.Terminated") + super.getName()); //$NON-NLS-1$
+              notifyConsoleObservers(false);
 		}
 	}
 
