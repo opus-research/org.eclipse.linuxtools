@@ -184,9 +184,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
                         result = Integer.parseInt(strLine);
                     }  else if (OUTPUT_END_KEY.equals(strLine)) {
                         // Save output/result in command map
-                        if (output != null) {
-                            commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()])));
-                        }
+                        commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()])));
                         inOutput = false;
                     } else if (OUTPUT_KEY.equals(strLine)) {
                         // first line of output
@@ -197,14 +195,10 @@ public class LTTngToolsFileShell extends TestCommandShell {
                         while (isComment(strLine)) {
                             strLine = br.readLine();
                         }
-                        if (output != null) {
-                            output.add(strLine);
-                        }
+                        output.add(strLine);
                     } else if (inOutput) {
                         // subsequent lines of output
-                        if (output != null) {
-                            output.add(strLine);
-                        }
+                        output.add(strLine);
                     }
 //                    else {
 //                        if (RESULT_END_KEY.equals(strLine)) {

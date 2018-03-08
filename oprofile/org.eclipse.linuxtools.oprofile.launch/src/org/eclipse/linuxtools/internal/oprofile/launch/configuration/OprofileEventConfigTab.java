@@ -144,8 +144,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 	 * @since 1.1
 	 */
 	private Composite getTabFolderComposite(){
-		// check for length and first tab being null to prevent AIOBE
-		if(counterSubTabs.length == 0 ||counterSubTabs[0] == null){
+		if(counterSubTabs[0] == null){
 			return null;
 		} else {
 			Composite c = counterSubTabs[0].getTabTopContainer();
@@ -190,9 +189,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		String host = project.getLocationURI().getHost();
 
 		// Create the counter tabs if host has changed or if they haven't been created yet
-		// Check that initialization is not done for current project. 
-		// Any calculation based on project doesn't work as the very first time for local project they are both null. 
-		if(previousProject == null || previousHost != host || host == null || counters == null){
+		if(previousProject == null || previousHost != host || counters == null){
 			Control[] children = top.getChildren();
 
 			for (Control control : children) {
