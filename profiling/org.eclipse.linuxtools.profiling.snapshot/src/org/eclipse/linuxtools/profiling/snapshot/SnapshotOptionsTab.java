@@ -19,12 +19,12 @@ import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
 public class SnapshotOptionsTab extends ProviderOptionsTab {
 
 	public String getName() {
-		return SnapshotConstants.PLUGIN_NAME;
+		return SnapshotProviderPlugin.PLUGIN_NAME;
 	}
 
 	@Override
 	protected String getProfilingType() {
-		return SnapshotConstants.PROFILING_TYPE;
+		return SnapshotProviderPlugin.PROFILING_TYPE;
 	}
 
 }
