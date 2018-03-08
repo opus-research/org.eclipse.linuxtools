@@ -21,7 +21,6 @@ import java.util.List;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
 import org.junit.Before;
@@ -80,7 +79,7 @@ public class ChannelInfoTest {
         assertEquals(0, result.getSwitchTimer());
         assertEquals(0, result.getMaxSizeTraceFiles());
         assertEquals(0, result.getMaxNumberTraceFiles());
-        assertEquals(false, result.getBufferType());
+        assertEquals(false, result.isBuffersUID());
     }
 
     /**
@@ -100,7 +99,7 @@ public class ChannelInfoTest {
         assertEquals(fChannelInfo1.getEvents().length, channelInfo.getEvents().length);
         assertEquals(fChannelInfo1.getMaxSizeTraceFiles(), channelInfo.getMaxSizeTraceFiles());
         assertEquals(fChannelInfo1.getMaxNumberTraceFiles(), channelInfo.getMaxNumberTraceFiles());
-        assertEquals(fChannelInfo1.getBufferType(), channelInfo.getBufferType());
+        assertEquals(fChannelInfo1.isBuffersUID(), channelInfo.isBuffersUID());
 
         IEventInfo[] orignalEvents = fChannelInfo1.getEvents();
         IEventInfo[] resultEvents = channelInfo.getEvents();
@@ -166,7 +165,7 @@ public class ChannelInfoTest {
         fixture.setSubBufferSize(1L);
         fixture.setMaxSizeTraceFiles(1024);
         fixture.setMaxNumberTraceFiles(20);
-        fixture.setBufferType(BufferType.BUFFER_PER_UID);
+        fixture.setBuffersUID(true);
         fixture.addEvent(new EventInfo("event"));
 
         long switchTimer = fixture.getSwitchTimer();
@@ -196,8 +195,8 @@ public class ChannelInfoTest {
         int maxNumberTraceFiles = fixture.getMaxNumberTraceFiles();
         assertEquals(20, maxNumberTraceFiles);
 
-        BufferType bufferType = fixture.getBufferType();
-        assertTrue(bufferType == BufferType.BUFFER_PER_UID);
+        boolean buffersUID = fixture.isBuffersUID();
+        assertTrue(buffersUID);
 
         fixture.setSwitchTimer(5L);
         fixture.setOverwriteMode(false);
@@ -208,7 +207,7 @@ public class ChannelInfoTest {
         fixture.setSubBufferSize(8L);
         fixture.setMaxSizeTraceFiles(4096);
         fixture.setMaxNumberTraceFiles(10);
-        fixture.setBufferType(BufferType.BUFFER_PER_PID);
+        fixture.setBuffersUID(false);
 
         switchTimer = fixture.getSwitchTimer();
         assertEquals(5L, switchTimer);
@@ -237,8 +236,8 @@ public class ChannelInfoTest {
         maxNumberTraceFiles = fixture.getMaxNumberTraceFiles();
         assertEquals(10, maxNumberTraceFiles);
 
-        bufferType = fixture.getBufferType();
-        assertTrue(bufferType == BufferType.BUFFER_PER_PID);
+        buffersUID = fixture.isBuffersUID();
+        assertFalse(buffersUID);
     }
 
     /**
