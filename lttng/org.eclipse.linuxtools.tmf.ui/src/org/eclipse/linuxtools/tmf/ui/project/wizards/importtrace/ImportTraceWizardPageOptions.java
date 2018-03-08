@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
- *   Marc-Andre Laperle - Use common method to get opened tmf projects
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
@@ -18,8 +17,10 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
+import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -65,13 +66,21 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         optionPane.setLayout(new GridLayout());
         optionPane.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
 
+        IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+
         fProjects = new List(optionPane, SWT.NONE);
         fProjects.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        for (IProject project : TraceUtils.getOpenedTmfProjects()) {
-            final String name = project.getName();
-            fProjectsMap.put(name, project);
-            fProjects.add(name);
+        for (IProject project : projects) {
+            try {
+                if (project.getNature(TmfProjectNature.ID) != null) {
+                    final String name = project.getName();
+                    fProjectsMap.put(name, project);
+                    fProjects.add(name);
+                }
+            } catch (CoreException e) {
+                // TODO: add a logger to activator and then log it
+            }
         }
 
         fProjects.getSelection();
@@ -81,22 +90,18 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                handleSelected();
+                final String listItem = fProjects.getSelection()[0];
+                IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
+                getBatchWizard().setTraceFolder(folder);
+                ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                handleSelected();
-            }
-
-            private void handleSelected() {
-                String[] selection = fProjects.getSelection();
-                if (selection.length > 0) {
-                    final String listItem = selection[0];
-                    IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
-                    getBatchWizard().setTraceFolder(folder);
-                    ImportTraceWizardPageOptions.this.setErrorMessage(null);
-                }
+                final String listItem = fProjects.getSelection()[0];
+                IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
+                getBatchWizard().setTraceFolder(folder);
+                ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
         });
         if (proj != null) {
