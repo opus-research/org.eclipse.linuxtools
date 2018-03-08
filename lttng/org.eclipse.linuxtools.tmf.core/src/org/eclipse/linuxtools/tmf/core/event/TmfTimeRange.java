@@ -11,14 +11,13 @@
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.timestamp;
+package org.eclipse.linuxtools.tmf.core.event;
 
 /**
  * A utility class to define and manage time ranges.
  *
- * @author Francois Chouinard
  * @version 1.0
- * @since 2.0
+ * @author Francois Chouinard
  *
  * @see ITmfTimestamp
  */

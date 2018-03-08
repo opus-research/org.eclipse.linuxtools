@@ -45,7 +45,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     protected boolean isFinishedBuilding = false;
 
     /**
-     * Constructor for new history files. Use this when creating a new history
+     * Construtor for new history files. Use this when creating a new history
      * from scratch.
      *
      * @param newStateFile
@@ -63,13 +63,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      */
     public HistoryTreeBackend(File newStateFile, int blockSize,
             int maxChildren, long startTime) throws IOException {
-        final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren, startTime);
-        sht = new HistoryTree(conf);
+        sht = new HistoryTree(newStateFile, blockSize, maxChildren, startTime);
         treeIO = sht.getTreeIO();
     }
 
     /**
-     * Constructor for new history files. Use this when creating a new history
+     * Construtor for new history files. Use this when creating a new history
      * from scratch. This version supplies sane defaults for the configuration
      * parameters.
      *
