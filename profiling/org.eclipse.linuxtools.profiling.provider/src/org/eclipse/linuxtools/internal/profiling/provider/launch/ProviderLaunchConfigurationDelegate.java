@@ -36,13 +36,7 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 					providerId = getProviderIdToRun();
 				}
 				// get configuration delegate associated with provider id.
-				ProfileLaunchShortcut shortcut= ProfileLaunchShortcut.getLaunchShortcutProviderFromId(providerId);
-				// set attributes related to the specific profiling shortcut configuration.
-				shortcut.setDefaultProfileLaunchShortcutAttributes(config);
-				// get delegate associated with provider id.
 				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
-
-				// launch delegate
 				if (delegate != null) {
 					delegate.launch(config, mode, launch, monitor);
 				}
@@ -61,7 +55,7 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 		if (providerId.equals("")) {
 			providerId = ProfileLaunchConfigurationTabGroup
 					.getHighestProviderId(getProfilingType());
-			if (providerId == null) {
+			if (providerId.equals("")) {
 				// Get highest priority provider
 				providerId = ProfileLaunchShortcut
 						.getDefaultLaunchShortcutProviderId(getProfilingType());
