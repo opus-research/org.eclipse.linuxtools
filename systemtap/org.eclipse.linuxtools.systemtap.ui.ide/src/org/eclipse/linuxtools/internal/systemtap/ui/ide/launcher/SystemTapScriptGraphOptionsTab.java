@@ -88,7 +88,7 @@ public class SystemTapScriptGraphOptionsTab extends
 	private Button runWithChartCheckButton;
 
 	private Table graphsTable;
-	private Button addGraphButton, removeGraphButton;
+	private Button addGraphButton, copyGraphButton, removeGraphButton;
 	private TableItem selectedTableItem;
 	private Group graphsGroup;
 
@@ -302,6 +302,12 @@ public class SystemTapScriptGraphOptionsTab extends
 		addGraphButton.setToolTipText(Messages.SystemTapScriptGraphOptionsTab_AddGraphButtonToolTip);
 		addGraphButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+		// Button to copy an existing graph
+		copyGraphButton = new Button(buttonComposite, SWT.PUSH);
+		copyGraphButton.setText(Messages.SystemTapScriptGraphOptionsTab_CopyGraphButton);
+		copyGraphButton.setToolTipText(Messages.SystemTapScriptGraphOptionsTab_CopyGraphButtonToolTip);
+		copyGraphButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
 		// Button to remove the selected graph/filter
 		removeGraphButton = new Button(buttonComposite, SWT.PUSH);
 		removeGraphButton.setText("Remove"); //$NON-NLS-1$
@@ -315,7 +321,7 @@ public class SystemTapScriptGraphOptionsTab extends
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				selectedTableItem = (TableItem) e.item;
-				removeGraphButton.setEnabled(true);
+				setSelectionControlsEnabled(true);
 			}
 		});
 
@@ -344,12 +350,26 @@ public class SystemTapScriptGraphOptionsTab extends
 			}
 		});
 
+		// Adds a new entry to the list of graphs that is a copy of the one selected.
+		copyGraphButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				GraphData gd = (GraphData) selectedTableItem.getData();
+
+				TableItem item = new TableItem(graphsTable, SWT.NONE);
+				item.setText(GraphFactory.getGraphName(gd.graphID) + ":" //$NON-NLS-1$
+						+ gd.title);
+				item.setData(gd);
+				updateLaunchConfigurationDialog();
+			}
+		});
+
 		// Removes the selected graph/filter from the table
 		removeGraphButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				selectedTableItem.dispose();
-				removeGraphButton.setEnabled(false);
+				setSelectionControlsEnabled(false);
 				updateLaunchConfigurationDialog();
 			}
 		});
@@ -524,16 +544,24 @@ public class SystemTapScriptGraphOptionsTab extends
 	private void setGraphingEnabled(boolean enabled){
 		this.setControlEnabled(outputParsingGroup, enabled);
 		this.setControlEnabled(graphsGroup, enabled);
+		// Disable buttons that rely on a selected graph if no graph is selected.
+		this.setSelectionControlsEnabled(selectedTableItem != null);
 		updateLaunchConfigurationDialog();
 	}
 
 	private void setControlEnabled(Composite composite, boolean enabled){
 		composite.setEnabled(enabled);
 		for (Control child : composite.getChildren()) {
-			child.setEnabled(enabled);
+				child.setEnabled(enabled);
 			if(child instanceof Composite){
 				setControlEnabled((Composite)child, enabled);
 			}
 		}
+	}
+
+	//Call this to enable/disable all buttons whose actions depend on a selected graph.
+	private void setSelectionControlsEnabled(boolean enabled) {
+		copyGraphButton.setEnabled(enabled);
+		removeGraphButton.setEnabled(enabled);
 	}
 }
