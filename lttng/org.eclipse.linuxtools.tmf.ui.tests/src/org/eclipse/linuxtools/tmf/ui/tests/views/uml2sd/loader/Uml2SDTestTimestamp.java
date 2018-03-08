@@ -11,7 +11,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.tests.views.uml2sd.loader;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 
 /**
  * Timestamp implementation for UML2SD test cases.

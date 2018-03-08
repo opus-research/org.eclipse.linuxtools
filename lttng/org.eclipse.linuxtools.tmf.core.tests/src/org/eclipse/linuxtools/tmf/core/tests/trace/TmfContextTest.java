@@ -10,17 +10,17 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adapted for TMF Trace Model 1.0
  *   Alexandre Montplaisir - Port to JUnit4
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
@@ -226,6 +226,32 @@ public class TmfContextTest {
         assertEquals("toString", expected1, fContext1.toString());
         assertEquals("toString", expected2, fContext2.toString());
         assertEquals("toString", expected3, fContext3.toString());
+    }
+
+    // ------------------------------------------------------------------------
+    // clone
+    // ------------------------------------------------------------------------
+
+    @Test
+    public void testClone() {
+        try {
+            final TmfContext context1 = fContext1.clone();
+            final TmfContext context2 = fContext2.clone();
+            final TmfContext context3 = fContext3.clone();
+
+            assertEquals("clone", context1, fContext1);
+            assertEquals("clone", context2, fContext2);
+            assertEquals("clone", context3, fContext3);
+
+            context1.setLocation(null);
+            final TmfContext context4 = context1.clone();
+            assertEquals("clone", context1, context4);
+            assertNull(context1.getLocation());
+            assertNull(context4.getLocation());
+
+        } catch (final InternalError e) {
+            fail("clone()");
+        }
     }
 
     // ------------------------------------------------------------------------

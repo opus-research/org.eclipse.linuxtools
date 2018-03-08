@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
@@ -21,9 +20,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -317,7 +316,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         try {
             // parseNextEvent will update the context
             if (fTrace != null && getParser() != null && context != null) {
-                final ITmfEvent event = getParser().parseEvent(context);
+                final ITmfEvent event = getParser().parseEvent(context.clone());
                 return event;
             }
         } finally {

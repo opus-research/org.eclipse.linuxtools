@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.linuxtools.systemtap.ui.ide.actions.Messages;
-import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler;
+import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction;
 import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
@@ -34,7 +34,7 @@ import org.eclipse.ui.WorkbenchException;
  * and send the output to both the <code>ScriptConsole</code> window and a <code>DataSet</code>.
  * @author Ryan Morse
  */
-public class RunScriptChartHandler extends RunScriptHandler {
+public class RunScriptChartAction extends RunScriptAction {
 
 	@Override
 	protected void scriptConsoleInitialized(ScriptConsole console){

@@ -19,19 +19,22 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.ClientSession;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
@@ -42,6 +45,8 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 
@@ -53,25 +58,38 @@ import com.jcraft.jsch.JSchException;
  *    Ryan Morse - Original author.
  *    Red Hat Inc. - Copied most code from RunScriptAction here and made it into
  *                   base class for run actions.
- * @since 2.0
+ * @since 1.2
  */
 
-public class RunScriptHandler extends AbstractHandler {
+public class RunScriptAction extends Action implements IWorkbenchWindowActionDelegate {
 
-	/**
-	 * @since 2.0
-	 */
+	protected boolean runLocal = true;
 	protected boolean continueRun = true;
-	private boolean runLocal = true;
-	private String fileName = null;
-	private String tmpfileName = null;
-	private String serverfileName = null;
-	private IPath path;
+	protected String fileName = null;
+	protected String tmpfileName = null;
+	protected String serverfileName = null;
+	protected IWorkbenchWindow fWindow;
+	private IAction act;
+	protected Subscription subscription;
+	protected int SCRIPT_ID;
+	protected ScriptConsole console;
+	protected IPath path;
 
+	@Override
+	public void dispose() {
+		fWindow= null;
+	}
 
-	/**
-	 * @since 2.0
-	 */
+	@Override
+	public void init(IWorkbenchWindow window) {
+		fWindow= window;
+	}
+
+	@Override
+	public void run(IAction action) {
+		run();
+	}
+
 	public void setPath(IPath path){
 		this.path = path;
 	}
@@ -82,7 +100,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * Finally, it gets an instance of <code>ScriptConsole</code> to run the script.
 	 */
 	@Override
-	public Object execute(ExecutionEvent event) {
+	public void run() {
 
 		if(isValid()) {
 			if(getRunLocal() == false) {
@@ -118,15 +136,12 @@ public class RunScriptHandler extends AbstractHandler {
             	});
             }
 		}
-
-		return null;
 	}
 
 	/**
 	 * Once a console for running the script has been created this
 	 * function is called so that observers can be added for example
 	 * @param console
-	 * @since 2.0
 	 */
 	protected void scriptConsoleInitialized(ScriptConsole console){
 	}
@@ -142,7 +157,7 @@ public class RunScriptHandler extends AbstractHandler {
 		if (path != null){
 			return path.toOSString();
 		}
-		IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
 		if(ed.getEditorInput() instanceof PathEditorInput){
 			return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
 		} else {
@@ -159,7 +174,7 @@ public class RunScriptHandler extends AbstractHandler {
 		// If the path is not set this action will run the script from
 		// the active editor
 		if (this.path == null){
-			IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			IEditorPart ed = fWindow.getActivePage().getActiveEditor();
 			if(!isValidEditor(ed)){
 				return false;
 			}
@@ -172,7 +187,7 @@ public class RunScriptHandler extends AbstractHandler {
 	private boolean isValidEditor(IEditorPart ed) {
 		if(null == ed) {
 			String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null); //$NON-NLS-1$
-			MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
+			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
 			return false;
 		}
 
@@ -199,7 +214,7 @@ public class RunScriptHandler extends AbstractHandler {
 
 		if(fileName.contains(IDESessionSettings.tapsetLocation)) {
 			String msg = MessageFormat.format(Localization.getString("RunScriptAction.TapsetDirectoryRun"),(Object []) null); //$NON-NLS-1$
-			MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Error"), msg); //$NON-NLS-1$
+			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Error"), msg); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -210,7 +225,6 @@ public class RunScriptHandler extends AbstractHandler {
 	 * a stap command line that includes the tapsets specified in user preferences, a guru mode flag
 	 * if necessary, and the path to the script on disk.
 	 * @return The command to invoke to start the script running in stap.
-	 * @since 2.0
 	 */
 	protected String[] buildStandardScript() {
 	//FixMe: Take care of this in the next release. For now only the guru mode is sent
@@ -230,7 +244,6 @@ public class RunScriptHandler extends AbstractHandler {
 	/**
 	 * Adds the tapsets that the user has added in preferences to the input <code>ArrayList</code>
 	 * @param cmdList The list to add the user-specified tapset locations to.
-	 * @since 2.0
 	 */
 
 	protected void getImportedTapsets(ArrayList<String> cmdList) {
@@ -250,7 +263,6 @@ public class RunScriptHandler extends AbstractHandler {
 	 * Checks the current script to determine if guru mode is required in order to run. This is determined
 	 * by the presence of embedded C.
 	 * @return True if the script contains embedded C code.
-	 * @since 2.0
 	 */
 	protected boolean isGuru() {
 		try {
@@ -291,6 +303,19 @@ public class RunScriptHandler extends AbstractHandler {
 		return false;
 	}
 
+	protected boolean createClientSession()
+	{
+		if (!ClientSession.isConnected() && new SelectServerDialog(fWindow.getShell()).open()) {
+			subscription = new Subscription(fileName,isGuru());
+			/*	if (ClientSession.isConnected())
+				{
+				console = ScriptConsole.getInstance(fileName, subscription);
+				console.run();
+				}*/
+		}
+		return true;
+	}
+
 	/**
 	 * Produces a <code>String[]</code> from the <code>ArrayList</code> passed in with stap inserted
 	 * as the first entry, and the filename as the last entry. Used to convert the arguments generated
@@ -298,7 +323,6 @@ public class RunScriptHandler extends AbstractHandler {
 	 * command line argument array that can be passed to <code>Runtime.exec</code>.
 	 * @param cmdList The list of arguments for stap for this script
 	 * @return An array suitable to pass to <code>Runtime.exec</code> to start stap on this file.
-	 * @since 2.0
 	 */
 	protected String[] finalizeScript(ArrayList<String> cmdList) {
 
@@ -354,31 +378,27 @@ public class RunScriptHandler extends AbstractHandler {
 	}
 
 	@Override
-	public boolean isEnabled() {
-		return (PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor() instanceof STPEditor);
+	public void selectionChanged(IAction act, ISelection select) {
+		this.act = act;
+		setEnablement(false);
+		buildEnablementChecks();
 	}
 
-	/**
-	 * @since 2.0
-	 */
+	private void buildEnablementChecks() {
+		if(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor() instanceof STPEditor)
+			setEnablement(true);
+	}
+
+	private void setEnablement(boolean enabled) {
+		act.setEnabled(enabled);
+	}
+
 	public void setLocalScript(boolean enabled) {
 		runLocal = enabled;
 	}
 
 	private boolean getRunLocal() {
 		return runLocal;
-	}
-
-	@Override
-	public void addHandlerListener(IHandlerListener handlerListener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void removeHandlerListener(IHandlerListener handlerListener) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

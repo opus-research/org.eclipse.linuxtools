@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.core.control.model.impl;
 
@@ -193,7 +192,7 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + fDomains.hashCode();
+        result = prime * result + ((fDomains == null) ? 0 : fDomains.hashCode());
         result = prime * result + (fIsStreamedTrace ? 1231 : 1237);
         result = prime * result + ((fSessionPath == null) ? 0 : fSessionPath.hashCode());
         result = prime * result + ((fState == null) ? 0 : fState.hashCode());
@@ -216,7 +215,11 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
             return false;
         }
         SessionInfo other = (SessionInfo) obj;
-        if (!fDomains.equals(other.fDomains)) {
+        if (fDomains == null) {
+            if (other.fDomains != null) {
+                return false;
+            }
+        } else if (!fDomains.equals(other.fDomains)) {
             return false;
         }
         if (fIsStreamedTrace != other.fIsStreamedTrace) {
@@ -247,8 +250,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
             output.append(super.toString());
             output.append(",State=");
             output.append(fState);
-            output.append(",isStreamedTrace=");
-            output.append(fIsStreamedTrace);
             output.append(",Domains=");
             for (Iterator<IDomainInfo> iterator = fDomains.iterator(); iterator.hasNext();) {
                 IDomainInfo domain = iterator.next();

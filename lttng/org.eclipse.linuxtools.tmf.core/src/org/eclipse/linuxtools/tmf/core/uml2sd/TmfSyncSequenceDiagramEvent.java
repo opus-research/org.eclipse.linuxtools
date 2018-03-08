@@ -12,7 +12,7 @@
 package org.eclipse.linuxtools.tmf.core.uml2sd;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 
 /**
  * <p>
@@ -103,8 +103,9 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
         return fName;
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getStartTime()
      */
     @Override
     public ITmfTimestamp getStartTime() {
