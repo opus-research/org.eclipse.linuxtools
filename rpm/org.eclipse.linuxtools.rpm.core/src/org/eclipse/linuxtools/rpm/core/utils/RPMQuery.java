@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -97,13 +98,13 @@ public class RPMQuery {
 		command.add(rpmFile.getLocation().toOSString());
 		try {
 			return Utils.runCommandToString(command.toArray(new String[command
-					.size()]));
+			                                                           .size()]));
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, IRPMConstants.RPM_CORE_ID,
 					e.getMessage(), e));
 		}
 	}
-	
+
 	/**
 	 * Uses RPM to eval the given string.
 	 * @param toEval The string to be evaled.
@@ -119,8 +120,30 @@ public class RPMQuery {
 		command.add("--eval"); //$NON-NLS-1$
 		command.add(toEval);
 		try {
-			return Utils.runCommandToString(command.toArray(new String[command
-					.size()]));
+			return Utils.runCommandToString(command.toArray(new String[command.size()]));
+		} catch (IOException e) {
+			throw new CoreException(new Status(IStatus.ERROR,
+					IRPMConstants.RPM_CORE_ID, e.getMessage(), e));
+		}
+	}
+
+	/**
+	 * Uses RPM to eval the given string.
+	 * @param toEval The string to be evaled.
+	 * @return The value of the evaluation.
+	 * @throws CoreException If there is IOException when calling.
+	 * @since 2.1
+	 */
+	public static String eval(IProject project, String toEval) throws CoreException {
+		IEclipsePreferences node = DefaultScope.INSTANCE
+				.getNode(IRPMConstants.RPM_CORE_ID);
+		String rpmCmd = node.get(IRPMConstants.RPM_CMD, ""); //$NON-NLS-1$
+		List<String> command = new ArrayList<String>();
+		command.add(rpmCmd);
+		command.add("--eval"); //$NON-NLS-1$
+		command.add(toEval);
+		try {
+			return Utils.runCommandToString(project, command.toArray(new String[command.size()]));
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR,
 					IRPMConstants.RPM_CORE_ID, e.getMessage(), e));
