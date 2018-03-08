@@ -413,13 +413,4 @@
                mode="linuxtools">
          </launchMode>
       </extension>
-   </extension>   
-   <extension
-         point="org.eclipse.cdt.launch.profilingProvider">
-      <provider
-            delegate="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.CProfilingLaunchConfigurationDelegate"
-            id="org.eclipse.linuxtools.profiling.launch.provider.cdt"
-            tab="org.eclipse.linuxtools.internal.profiling.launch.provider.CProfilingOptionsTab">
-      </provider>
-   </extension>
 </plugin>
