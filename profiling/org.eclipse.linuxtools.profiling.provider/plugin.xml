@@ -14,6 +14,7 @@
          name="Profile Timing"
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
+            icon="icons/time_obj.gif"
             id="org.eclipse.linuxtools.profiling.provider.TimingLaunchShortcut"
             label="%shortcut.label"
             modes="profile"
@@ -110,6 +111,7 @@
          name="Profile Memory"
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
+            icon="icons/memory_view.gif"
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchShortcut"
             label="%shortcut.label.0"
             modes="profile"
@@ -206,6 +208,7 @@
          name="Profile Memory"
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
+            icon="icons/toggle.gif"
             id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchShortcut"
             label="%shortcut.label.1"
             modes="profile"
@@ -298,38 +301,27 @@
       </page>
    </extension>
    <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            class="org.eclipse.linuxtools.internal.profiling.provider.ProfilingPropertyPage"
-            id="org.eclipse.linuxtools.profiling.provider.properties.page1"
-            name="%page.name">
-      </page>
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.eclipse.linuxtools.profiling.provider.CoverageLaunchConfigurationType"
+            icon="icons/toggle.gif"
+            id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchConfigurationType.image">
+      </launchConfigurationTypeImage>
    </extension>
    <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            category="org.eclipse.linuxtools.profiling.provider.properties.page1"
-            class="org.eclipse.linuxtools.internal.profiling.provider.TimingPropertyPage"
-            id="org.eclipse.linuxtools.profiling.provider.page2"
-            name="%page.name.0">
-      </page>
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.eclipse.linuxtools.profiling.provider.TimingLaunchConfigurationType"
+            icon="icons/time_obj.gif"
+            id="org.eclipse.linuxtools.profiling.provider.TimingLaunchConfigurationType.image">
+      </launchConfigurationTypeImage>
    </extension>
    <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            category="org.eclipse.linuxtools.profiling.provider.properties.page1"
-            class="org.eclipse.linuxtools.internal.profiling.provider.MemoryPropertyPage"
-            id="org.eclipse.linuxtools.profiling.provider.page3"
-            name="%page.name.1">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            category="org.eclipse.linuxtools.profiling.provider.properties.page1"
-            class="org.eclipse.linuxtools.internal.profiling.provider.CoveragePropertyPage"
-            id="org.eclipse.linuxtools.profiling.provider.page4"
-            name="%page.name.2">
-      </page>
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.eclipse.linuxtools.profiling.provider.MemoryLaunchConfigurationType"
+            icon="icons/memory_view.gif"
+            id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchConfigurationType.image">
+      </launchConfigurationTypeImage>
    </extension>
 </plugin>
