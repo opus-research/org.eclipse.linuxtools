@@ -284,6 +284,8 @@ public class Messages extends NLS {
     public static String TmfView_PinActionNameText;
     public static String TmfView_PinActionToolTipText;
 
+    public static String CallStackView_StackInfoNotAvailable;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

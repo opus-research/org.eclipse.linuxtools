@@ -367,7 +367,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        if (stackDepth >= 10) {
+        if (stackDepth >= 100000) {
             /*
              * Limit stackDepth to 10, to avoid having Attribute Trees grow out
              * of control due to buggy insertions
