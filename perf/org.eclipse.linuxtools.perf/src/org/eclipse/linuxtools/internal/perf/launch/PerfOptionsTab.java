@@ -15,6 +15,7 @@
 package org.eclipse.linuxtools.internal.perf.launch;
 
 import java.io.File;
+import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -44,17 +45,18 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
 public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
-	protected Text txtKernelLocation;
-	protected Button chkRecordRealtime;
-	protected Button chkRecordVerbose;
-	protected Button chkSourceLineNumbers;
-	protected Button chkKernelSourceLineNumbers;
-	protected Button chkMultiplexEvents;
-	protected Button chkModuleSymbols;
-	protected Button chkHideUnresolvedSymbols;
-	protected Button chkShowSourceDisassembly;
-	protected Button chkShowStat;
-	protected Spinner statRunCount;
+	protected Text _txtKernel_Location;
+	protected Button _chkRecord_Realtime;
+	protected Button _chkRecord_Verbose;
+	protected Button _chkSourceLineNumbers;
+	protected Button _chkKernel_SourceLineNumbers;
+	protected Button _chkMultiplexEvents;
+	protected Button _chkModuleSymbols;
+	protected Button _chkHideUnresolvedSymbols;
+	protected Button _chkShowSourceDisassembly;
+	protected Button _chkShowStat;
+	protected Spinner _statRunCount;
+	protected Exception ex;
 	
 	protected Composite top;
 	protected ScrolledComposite scrollTop;
@@ -64,13 +66,34 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 	 */
 	@Override
 	public Image getImage() {
+		//return PerfPlugin.getImageDescriptor("icons/event.gif").createImage();
 		return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
 	}
 	
+	//TODO Implement more options.
+	//perf record -c, count?
+	//profile frequency --freq <n>	
+	//--For later?----
+	//record -g, call graph?
+	//mmap pages?
+	//child tasks inherit counts?
+	//--stat, per thread counts
+	
+	/*// hm this flag doesn't seem to actually do anything.
+	public boolean canSave() {
+		return isValid(); // probably not best practice but for this case the two are the same.
+	}*/
 	@Override
 	public boolean isValid(ILaunchConfiguration config) {
-		if (txtKernelLocation != null) {
-			String filename = txtKernelLocation.getText();
+		setErrorMessage(null);
+
+		if (ex != null) {
+			setErrorMessage(ex.getLocalizedMessage());
+			return false;
+		}
+		
+		if (_txtKernel_Location != null) {
+			String filename = _txtKernel_Location.getText();
 			if (filename.length() > 0) {
 				File file = new File(filename);
 				return (file.exists() && file.isFile());
@@ -79,9 +102,10 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		return true;
 	}
 	
+	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	@Override
 	public void createControl(Composite parent) {
-		scrollTop = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+		scrollTop = new ScrolledComposite(parent,	SWT.H_SCROLL | SWT.V_SCROLL);
 		scrollTop.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		scrollTop.setExpandVertical(true);
 		scrollTop.setExpandHorizontal(true);
@@ -91,95 +115,106 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		top = new Composite(scrollTop, SWT.NONE);
 		top.setLayout(new GridLayout());
 
-		createVerticalSpacer(top, 1);
 		GridData data;
+		GridLayout layout;
+		createVerticalSpacer(top, 1);
 
-		// Kernel Selection
-		Composite kernelComp = new Composite(top, SWT.NONE);
-		GridLayout parallelLayout = new GridLayout(2, false);
+		// Create container for kernel image file selection
+		Composite p = new Composite(top, SWT.NONE);
+		layout = new GridLayout();
+		layout.numColumns = 2;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		p.setLayout(layout);
 		data = new GridData(GridData.FILL_HORIZONTAL);
-		parallelLayout.marginHeight = 0;
-		parallelLayout.marginWidth = 0;
-		kernelComp.setLayout(parallelLayout);
-		kernelComp.setLayoutData(data);
+		p.setLayoutData(data);
 
-		Label kernelLabel = new Label(kernelComp, SWT.NONE);
-		kernelLabel.setText(PerfPlugin.STRINGS_Kernel_Location); //$NON-NLS-1$
+		Label l = new Label(p, SWT.NONE);
+		l.setText(PerfPlugin.STRINGS_Kernel_Location); //$NON-NLS-1$
 		data = new GridData();
 		data.horizontalSpan = 2;
-		kernelLabel.setLayoutData(data);
+		l.setLayoutData(data);
 
-		txtKernelLocation = new Text(kernelComp, SWT.SINGLE | SWT.BORDER);
+		_txtKernel_Location = new Text(p, SWT.SINGLE | SWT.BORDER);
 		data = new GridData(GridData.FILL_HORIZONTAL);
-		txtKernelLocation.setLayoutData(data);
-		txtKernelLocation.addModifyListener(new ModifyListener() {
+		_txtKernel_Location.setLayoutData(data);
+		_txtKernel_Location.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent mev) {
-				handleKernelImageFileTextModify(txtKernelLocation);
+				_handleKernelImageFileTextModify(_txtKernel_Location);
 			}
 		});
 
-		Button button = createPushButton(kernelComp, "Browse", null);
+		Button button = createPushButton(p, "Browse", null); //$NON-NLS-1$
 		final Shell shell = top.getShell();
 		button.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent sev) {
-				showFileDialog(shell);
+				_showFileDialog(shell);
 			}
 		});
 
 		createVerticalSpacer(top, 1);
 
 		// Create checkbox options container
-		Composite chkBoxComp = new Composite(top, SWT.NONE);
-		GridLayout chkBoxLayout = new GridLayout();
-		chkBoxLayout.marginHeight = 0;
-		chkBoxLayout.marginWidth = 0;
-		chkBoxComp.setLayout(chkBoxLayout);
+		p = new Composite(top, SWT.NONE);
+		layout = new GridLayout();
+		layout.numColumns = 1;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		p.setLayout(layout);
+		data = new GridData(GridData.FILL_HORIZONTAL);
+		data.horizontalSpan = 2;
+		p.setLayoutData(data);
 		
-		chkRecordVerbose = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_Record_Verbose);
-		chkModuleSymbols = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_ModuleSymbols);
-		chkHideUnresolvedSymbols = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_HideUnresolvedSymbols);
-		chkSourceLineNumbers = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_SourceLineNumbers);
-		chkShowSourceDisassembly = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_ShowSourceDisassembly);
+		
+		_chkRecord_Verbose = _createCheckButton(p, PerfPlugin.STRINGS_Record_Verbose);
+		_chkModuleSymbols = _createCheckButton(p, PerfPlugin.STRINGS_ModuleSymbols);
+		_chkHideUnresolvedSymbols = _createCheckButton(p, PerfPlugin.STRINGS_HideUnresolvedSymbols);
+		_chkSourceLineNumbers = _createCheckButton(p, PerfPlugin.STRINGS_SourceLineNumbers);
+		_chkShowSourceDisassembly = _createCheckButton(p, PerfPlugin.STRINGS_ShowSourceDisassembly);
 
 		Composite showStatComp = new Composite(top, SWT.NONE);
-		showStatComp.setLayout(parallelLayout);
+		layout = new GridLayout();
+		layout.numColumns = 2;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		showStatComp.setLayout(layout);
 
-		chkShowStat = createCheckButtonHelper(showStatComp, PerfPlugin.STRINGS_ShowStat);
-		chkShowStat.addSelectionListener(new SelectionAdapter() {
+		_chkShowStat = _createCheckButton(showStatComp, PerfPlugin.STRINGS_ShowStat);
+		_chkShowStat.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent se) {
-				if (chkShowStat.getSelection()) {
-					statRunCount.setEnabled(true);
+				if (_chkShowStat.getSelection()) {
+					_statRunCount.setEnabled(true);
 				}else{
-					statRunCount.setEnabled(false);
+					_statRunCount.setEnabled(false);
 				}
 			}
 		});
-		statRunCount = new Spinner(showStatComp, SWT.BORDER);
-		statRunCount.setEnabled(false);
-		statRunCount.setMinimum(1);
-		statRunCount.addModifyListener(new ModifyListener() {
+		_statRunCount = new Spinner(showStatComp, SWT.BORDER);
+		_statRunCount.setEnabled(false);
+		_statRunCount.setMinimum(1);
+		_statRunCount.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
 		});
 
-		chkSourceLineNumbers.addSelectionListener(new SelectionAdapter() {
+		_chkSourceLineNumbers.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent se) {
-				if ((chkKernelSourceLineNumbers != null) && (!chkSourceLineNumbers.getSelection())) {
-					chkKernelSourceLineNumbers.setEnabled(false);
+				if ((_chkKernel_SourceLineNumbers != null) && (!_chkSourceLineNumbers.getSelection())) {
+					_chkKernel_SourceLineNumbers.setEnabled(false);
 				} else {
-					chkKernelSourceLineNumbers.setEnabled(true);
+					_chkKernel_SourceLineNumbers.setEnabled(true);
 				}
 			}
 		});
-		chkKernelSourceLineNumbers = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_Kernel_SourceLineNumbers);
-		chkRecordRealtime = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_Record_Realtime);
-		chkMultiplexEvents = createCheckButtonHelper(chkBoxComp, PerfPlugin.STRINGS_Multiplex);
+		_chkKernel_SourceLineNumbers = _createCheckButton(p, PerfPlugin.STRINGS_Kernel_SourceLineNumbers);
+		_chkRecord_Realtime = _createCheckButton(p, PerfPlugin.STRINGS_Record_Realtime);
+		_chkMultiplexEvents = _createCheckButton(p, PerfPlugin.STRINGS_Multiplex);
 
 		scrollTop.setContent(top);
 		recomputeSize();
@@ -192,8 +227,9 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		scrollTop.setMinSize(point);
 	}
 
+	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	// Helper function for creating buttons. 
-	private Button createCheckButtonHelper(Composite parent, String label) {
+	private Button _createCheckButton(Composite parent, String label) {
 		final Button b = new Button(parent, SWT.CHECK);
 		b.setText(label);
 		b.addSelectionListener(new SelectionAdapter() {
@@ -205,50 +241,56 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		});
 		return b;
 	}
-
+	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	// handles text modification event for kernel file location
-	private void handleKernelImageFileTextModify(Text text) {
+	private void _handleKernelImageFileTextModify(Text text) {
 		String errorMessage = null;
 		String filename = text.getText();
 
 		if (filename.length() > 0) {
 			File file = new File(filename);
 			if (!file.exists() || !file.isFile()) {
-				errorMessage = "The entered location does not exist.";
+				String msg = "The entered location does not exist"; //$NON-NLS-1$
+				Object[] args = new Object[] { filename };
+				errorMessage = MessageFormat.format(msg, args);
 			}
 		}
 
+		//setDirty(true);
 		// Update dialog and error message
 		setErrorMessage(errorMessage);
 		updateLaunchConfigurationDialog();
 	}
-
+	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	// Displays a file dialog to allow the user to select the kernel image file
-	private void showFileDialog(Shell shell) {
-		FileDialog fDialog = new FileDialog(shell, SWT.OPEN);
-		File kernel = new File(txtKernelLocation.getText());
+	private void _showFileDialog(Shell shell) {
+		FileDialog d = new FileDialog(shell, SWT.OPEN);
+		File kernel = new File(_txtKernel_Location.getText());
 		if (!kernel.exists()) {
-			kernel = new File("/boot"); //$NON-NLS-1$
-			if (!kernel.exists()) {
-				kernel = new File("/"); //$NON-NLS-1$
-			}
+			kernel = new File("/boot"); 	//$NON-NLS-1$
+			if (!kernel.exists())
+				kernel = new File("/"); 	//$NON-NLS-1$
 		}
-		fDialog.setFileName(kernel.toString());
-		fDialog.setText("Select location of kernel image file");
-		String newKernel = fDialog.open();
+		d.setFileName(kernel.toString());
+		d.setText("Select location of kernel image file"); //$NON-NLS-1$
+		String newKernel = d.open();
 		if (newKernel != null) {
 			kernel = new File(newKernel);
 			if (!kernel.exists()) {
 				MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.RETRY | SWT.CANCEL);
-				mb.setMessage("File does not exist");
+				mb.setMessage("File doesn't exist"); 	//$NON-NLS-1$
 				switch (mb.open()) {
 					case SWT.RETRY:
-						showFileDialog(shell);
+						// Ok, it's recursive, but it shouldn't matter
+						_showFileDialog(shell);
 						break;
 					default:
+					case SWT.CANCEL:
+						break;
 				}
 			} else {
-				txtKernelLocation.setText(newKernel);
+				//setDirty(true);
+				_txtKernel_Location.setText(newKernel);
 			}
 		}
 	}
@@ -262,42 +304,43 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 	public void initializeFrom(ILaunchConfiguration config) {
 
 		try {
-			txtKernelLocation.setText(config.getAttribute(PerfPlugin.ATTR_Kernel_Location, PerfPlugin.ATTR_Kernel_Location_default));
-			chkRecordRealtime.setSelection(config.getAttribute(PerfPlugin.ATTR_Record_Realtime, PerfPlugin.ATTR_Record_Realtime_default));
-			chkRecordVerbose.setSelection(config.getAttribute(PerfPlugin.ATTR_Record_Verbose, PerfPlugin.ATTR_Record_Verbose_default));
-			chkSourceLineNumbers.setSelection(config.getAttribute(PerfPlugin.ATTR_SourceLineNumbers, PerfPlugin.ATTR_SourceLineNumbers_default));
-			chkKernelSourceLineNumbers.setSelection(config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, PerfPlugin.ATTR_Kernel_SourceLineNumbers_default));
+			_txtKernel_Location.setText(config.getAttribute(PerfPlugin.ATTR_Kernel_Location, PerfPlugin.ATTR_Kernel_Location_default));
+			_chkRecord_Realtime.setSelection(config.getAttribute(PerfPlugin.ATTR_Record_Realtime, PerfPlugin.ATTR_Record_Realtime_default));
+			_chkRecord_Verbose.setSelection(config.getAttribute(PerfPlugin.ATTR_Record_Verbose, PerfPlugin.ATTR_Record_Verbose_default));
+			_chkSourceLineNumbers.setSelection(config.getAttribute(PerfPlugin.ATTR_SourceLineNumbers, PerfPlugin.ATTR_SourceLineNumbers_default));
+			_chkKernel_SourceLineNumbers.setSelection(config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, PerfPlugin.ATTR_Kernel_SourceLineNumbers_default));
 			
-			chkMultiplexEvents.setSelection(config.getAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default));
-			chkModuleSymbols.setSelection(config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, PerfPlugin.ATTR_ModuleSymbols_default));
-			chkHideUnresolvedSymbols.setSelection(config.getAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, PerfPlugin.ATTR_HideUnresolvedSymbols_default));
-			chkShowSourceDisassembly.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, PerfPlugin.ATTR_ShowSourceDisassembly_default));
-			chkShowStat.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowStat, PerfPlugin.ATTR_ShowStat_default));
+			_chkMultiplexEvents.setSelection(config.getAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default));
+			_chkModuleSymbols.setSelection(config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, PerfPlugin.ATTR_ModuleSymbols_default));
+			_chkHideUnresolvedSymbols.setSelection(config.getAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, PerfPlugin.ATTR_HideUnresolvedSymbols_default));
+			_chkShowSourceDisassembly.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, PerfPlugin.ATTR_ShowSourceDisassembly_default));
+			_chkShowStat.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowStat, PerfPlugin.ATTR_ShowStat_default));
 			int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount, PerfPlugin.ATTR_StatRunCount_default);
-			statRunCount.setSelection(runCount);
+			_statRunCount.setSelection(runCount);
 			if (runCount == 1) {
-				statRunCount.setEnabled(false);
+				_statRunCount.setEnabled(false);
 			} else {
-				statRunCount.setEnabled(true);
+				_statRunCount.setEnabled(true);
 			}
 		} catch (CoreException e) {
-			// do nothing
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}		
 	}
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy wconfig) {
-		wconfig.setAttribute(PerfPlugin.ATTR_Kernel_Location, txtKernelLocation.getText());
-		wconfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, chkRecordRealtime.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, chkRecordVerbose.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_SourceLineNumbers, chkSourceLineNumbers.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, chkKernelSourceLineNumbers.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, chkMultiplexEvents.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, chkModuleSymbols.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, chkHideUnresolvedSymbols.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, chkShowSourceDisassembly.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_ShowStat, chkShowStat.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_StatRunCount, statRunCount.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_Kernel_Location, _txtKernel_Location.getText());
+		wconfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, _chkRecord_Realtime.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, _chkRecord_Verbose.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_SourceLineNumbers, _chkSourceLineNumbers.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, _chkKernel_SourceLineNumbers.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, _chkMultiplexEvents.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, _chkModuleSymbols.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, _chkHideUnresolvedSymbols.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, _chkShowSourceDisassembly.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_ShowStat, _chkShowStat.getSelection());
+		wconfig.setAttribute(PerfPlugin.ATTR_StatRunCount, _statRunCount.getSelection());
 	}
 
 	@Override
