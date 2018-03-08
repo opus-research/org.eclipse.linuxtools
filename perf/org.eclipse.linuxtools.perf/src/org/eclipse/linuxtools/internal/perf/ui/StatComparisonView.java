@@ -12,7 +12,6 @@ package org.eclipse.linuxtools.internal.perf.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,11 +87,9 @@ public class StatComparisonView extends ViewPart {
 		// set default TextConsole font (monospaced).
 		text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
 
-		StringTokenizer tok = new StringTokenizer(input, "\n"); //$NON-NLS-1$
+		String[] lines = input.split("\n");
 
-		// set colours
-		while (tok.hasMoreTokens()) {
-			String line = tok.nextToken();
+		for(String line : lines){
 			if (Pattern.matches(OCCURRENCE, line)) {
 				Matcher m = Pattern.compile(OCCURRENCE).matcher(line);
 				if (m.matches() && m.group(1) != null) {
