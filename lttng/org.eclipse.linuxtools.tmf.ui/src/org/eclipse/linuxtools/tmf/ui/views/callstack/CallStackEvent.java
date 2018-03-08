@@ -46,12 +46,13 @@ public class CallStackEvent extends TimeEvent {
      *
      * @return The integer value
      */
+    @Override
     public int getValue() {
         return fValue;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " value=" + fValue; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        return getClass().getSimpleName() + " start=" + getTime() + " end=" + (getTime() + getDuration()) + " duration=" + getDuration() + " value=" + fValue; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

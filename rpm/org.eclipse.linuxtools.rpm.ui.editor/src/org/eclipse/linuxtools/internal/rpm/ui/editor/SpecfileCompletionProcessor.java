@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007 Alphonse Van Assche.
+ * Copyright (c) 2007, 2013 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    Alphonse Van Assche - initial API and implementation
+ *    Neil Guzman - autocomplete with "." and "+" in name (B#375195)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor;
@@ -458,7 +459,7 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 		try {
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
-				if (!Character.isLetterOrDigit(ch) && (ch != '%') && (ch != '_') && (ch != '-') && (ch != '{')) {
+				if (!Character.isLetterOrDigit(ch) && (ch != '%') && (ch != '_') && (ch != '-') && (ch != '{') && (ch != '.') && (ch != '+')) {
 					break;
 				}
 				i--;

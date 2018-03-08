@@ -41,11 +41,6 @@ public final class LaunchConfigurationConstants {
 
 	public static final String DEFAULT_TOOL = PLUGIN_ID + ".memcheck";;
 
-	// 3.8.0 specific
-	public static final String ATTR_GENERAL_CUSTOM_MALLOC_BOOL = PLUGIN_ID + ".CUSTOM_MALLOC_BOOL";
-	public static final String ATTR_GENERAL_CUSTOM_MALLOC = PLUGIN_ID + ".CUSTOM_MALLOC";
-	public static final String ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL = PLUGIN_ID + ".CUSTOM_MALLOC_DYNAMIC_BOOL"; //$NON-NLS-1$
-
 	public static final boolean DEFAULT_GENERAL_TRACECHILD = false;
 	public static final boolean DEFAULT_GENERAL_CHILDSILENT = true; // necessary for parsing
 	public static final boolean DEFAULT_GENERAL_FREERES = true;
@@ -55,7 +50,6 @@ public final class LaunchConfigurationConstants {
 	public static final boolean DEFAULT_GENERAL_BELOWMAIN = false;
 	public static final int DEFAULT_GENERAL_MAXFRAME = 2000000;
 	public static final List<?> DEFAULT_GENERAL_SUPPFILES = Collections.EMPTY_LIST;
-	public static final String DEFAULT_GENERAL_CUSTOM_MALLOC = "";
 
 	// 3.4.0 specific
 	public static final boolean DEFAULT_GENERAL_MAINSTACK_BOOL = false;
@@ -63,8 +57,4 @@ public final class LaunchConfigurationConstants {
 
 	// 3.6.0 specific
 	public static final boolean DEFAULT_GENERAL_DSYMUTIL = true; // necessary for OS X, Bug #333640
-
-	// 3.8.0 specific
-	public static final boolean DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL = false;
-	public static final boolean DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL = true;
 }

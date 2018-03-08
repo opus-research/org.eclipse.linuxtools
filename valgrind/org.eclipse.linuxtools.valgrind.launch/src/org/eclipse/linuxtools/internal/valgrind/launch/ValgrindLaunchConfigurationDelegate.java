@@ -27,6 +27,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -65,9 +67,6 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 	protected static final String NO = "no"; //$NON-NLS-1$
 	protected static final String YES = "yes"; //$NON-NLS-1$
 	protected static final String EQUALS = "="; //$NON-NLS-1$
-
-	// 3.8.0 specific
-	public static final String OPT_CUSTOM_MALLOC = "--soname-synonyms=somalloc"; //$NON-NLS-1$
 
 	protected static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
 	protected static final FileFilter LOG_FILTER = new FileFilter() {
@@ -191,6 +190,11 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 
 			// show view
 			ValgrindUIPlugin.getDefault().showView();
+
+			// set up resource listener for post-build events.
+			ResourcesPlugin.getWorkspace().addResourceChangeListener(
+					new ProjectBuildListener(project), IResourceChangeEvent.POST_BUILD);
+
 			monitor.worked(1);				
 		} catch (IOException e) {
 			abort(Messages.getString("ValgrindLaunchConfigurationDelegate.Error_starting_process"), e, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR); //$NON-NLS-1$
@@ -353,20 +357,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			if (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) != LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL)
 				opts.add(CommandLineConstants.OPT_DSYMUTIL + EQUALS + (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) ? YES : NO));
 		}
-
-		// 3.8.0 specific
-		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
-			boolean useCustomMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL);
-			if (useCustomMalloc) {
-				boolean dynamicMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL);
-				if(dynamicMalloc){
-					opts.add(OPT_CUSTOM_MALLOC + EQUALS + config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC));
-				} else {
-					opts.add(OPT_CUSTOM_MALLOC + EQUALS + CommandLineConstants.OPT_CUSTOM_MALLOC_STATIC);
-				}
-			}
-		}
-
+		
 		List<?> suppFiles = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, LaunchConfigurationConstants.DEFAULT_GENERAL_SUPPFILES); 
 		for (Object strpath : suppFiles) {
 			IPath suppfile = getPlugin().parseWSPath((String) strpath);
@@ -397,5 +388,4 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 		root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 		return super.finalLaunchCheck(configuration, mode, monitor);
 	}
-
 }

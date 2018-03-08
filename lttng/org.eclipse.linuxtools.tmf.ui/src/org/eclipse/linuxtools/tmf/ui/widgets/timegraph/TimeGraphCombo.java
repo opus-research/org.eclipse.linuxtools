@@ -9,6 +9,7 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   François Rajotte - Filter implementation
+ *   Geneviève Bastien - Add event links between entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
@@ -36,6 +37,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.TimeGraphFilterDialog;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -75,42 +77,50 @@ public class TimeGraphCombo extends Composite {
 
     private static final Object FILLER = new Object();
 
+    private static final String ITEM_HEIGHT = "$height$"; //$NON-NLS-1$
+
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
 
-    // The tree viewer
+    /** The tree viewer */
     private TreeViewer fTreeViewer;
 
-    // The time viewer
+    /** The time viewer */
     private TimeGraphViewer fTimeGraphViewer;
 
-    // The top-level input (children excluded)
+    /** The top-level input (children excluded) */
     private List<? extends ITimeGraphEntry> fTopInput;
 
-    // The selection listener map
+    /** The selection listener map */
     private final Map<ITimeGraphSelectionListener, SelectionListenerWrapper> fSelectionListenerMap = new HashMap<ITimeGraphSelectionListener, SelectionListenerWrapper>();
 
-    // The map of viewer filters
+    /** The map of viewer filters */
     private final Map<ViewerFilter, ViewerFilter> fViewerFilterMap = new HashMap<ViewerFilter, ViewerFilter>();
 
-    // Flag to block the tree selection changed listener when triggered by the time graph combo
+    /**
+     * Flag to block the tree selection changed listener when triggered by the
+     * time graph combo
+     */
     private boolean fInhibitTreeSelection = false;
 
-    // Number of filler rows used by the tree content provider
+    /** Number of filler rows used by the tree content provider */
     private int fNumFillerRows;
 
-    // Calculated item height for Linux workaround
+    /** Calculated item height for Linux workaround */
     private int fLinuxItemHeight = 0;
 
-    // The button that opens the filter dialog
+    /** The button that opens the filter dialog */
     private Action showFilterAction;
 
-    // The filter dialog
+    /** The filter dialog */
     private TimeGraphFilterDialog fFilterDialog;
 
-    // The filter generated from the filter dialog
+    /** The filter generated from the filter dialog */
     private RawViewerFilter fFilter;
+
+    /** Default weight of each part of the sash */
+    private static final int[] DEFAULT_WEIGHTS = { 1, 1 };
 
     // ------------------------------------------------------------------------
     // Classes
@@ -326,6 +336,23 @@ public class TimeGraphCombo extends Composite {
      * @param style the style of widget to construct
      */
     public TimeGraphCombo(Composite parent, int style) {
+        this(parent, style, DEFAULT_WEIGHTS);
+    }
+
+    /**
+     * Constructs a new instance of this class given its parent and a style
+     * value describing its behavior and appearance.
+     *
+     * @param parent
+     *            a widget which will be the parent of the new instance (cannot
+     *            be null)
+     * @param style
+     *            the style of widget to construct
+     * @param weights
+     *            The relative weights of each side of the sash form
+     * @since 2.1
+     */
+    public TimeGraphCombo(Composite parent, int style, int[] weights) {
         super(parent, style);
         setLayout(new FillLayout());
 
@@ -603,12 +630,34 @@ public class TimeGraphCombo extends Composite {
             }
         });
 
+        // ensure the time graph item heights are equal to the tree item heights
+        tree.addPaintListener(new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                List<TreeItem> items = getVisibleExpandedItems(tree);
+                for (int i = 0; i < items.size() - 1; i++) {
+                    TreeItem item = items.get(i);
+                    /*
+                     * Bug in Linux. The method getBounds doesn't always return the correct height.
+                     * Use the difference of y position between items to calculate the height.
+                     */
+                    Integer itemHeight = items.get(i + 1).getBounds().y - item.getBounds().y;
+                    if (!itemHeight.equals(item.getData(ITEM_HEIGHT))) {
+                        ITimeGraphEntry entry = (ITimeGraphEntry) item.getData();
+                        if (fTimeGraphViewer.getTimeGraphControl().setItemHeight(entry, itemHeight)) {
+                            item.setData(ITEM_HEIGHT, itemHeight);
+                        }
+                    }
+                }
+            }
+        });
+
         // The filler rows are required to ensure alignment when the tree does not have a
         // visible horizontal scroll bar. The tree does not allow its top item to be set
         // to a value that would cause blank space to be drawn at the bottom of the tree.
         fNumFillerRows = Display.getDefault().getBounds().height / getItemHeight(tree);
 
-        sash.setWeights(new int[] { 1, 1 });
+        sash.setWeights(weights);
     }
 
     // ------------------------------------------------------------------------
@@ -805,6 +854,16 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.getTree().getVerticalBar().setVisible(false);
         fTimeGraphViewer.setItemHeight(getItemHeight(fTreeViewer.getTree()));
         fTimeGraphViewer.setInput(input);
+    }
+
+    /**
+     * Sets or clears the list of links to display on this combo
+     *
+     * @param links the links to display in this time graph combo
+     * @since 2.1
+     */
+    public void setLinks(List<ILinkEvent> links) {
+        fTimeGraphViewer.setLinks(links);
     }
 
     /**

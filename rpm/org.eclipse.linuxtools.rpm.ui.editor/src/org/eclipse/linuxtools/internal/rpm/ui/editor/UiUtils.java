@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007 Alphonse Van Assche.
+ * Copyright (c) 2007, 2013 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,7 +68,7 @@ public class UiUtils {
 			while (variableMatcher.find()) {
 				define = specfile.getDefine(variableMatcher.group(1));
 				if (define != null) {
-					stringToResolve = stringToResolve.replaceAll(variableMatcher.group(1), define.getStringValue());
+					stringToResolve = stringToResolve.replaceAll("\\b"+variableMatcher.group(1)+"\\b", define.getStringValue()); //$NON-NLS-1$ //$NON-NLS-2$
 				} else {
 					return originalString;
 				}
