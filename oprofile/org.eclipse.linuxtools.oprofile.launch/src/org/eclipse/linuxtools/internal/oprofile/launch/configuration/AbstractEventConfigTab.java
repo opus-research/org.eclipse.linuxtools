@@ -203,8 +203,10 @@ public abstract class AbstractEventConfigTab extends
 				for (int i = 0; i < counters.length; i++) {
 					counters[i].loadConfiguration(config);
 				}
+
 				for (CounterSubTab tab : counterSubTabs) {
 					tab.initializeTab(config);
+					tab.createEventsFilter();
 				}
 			try{
 				boolean enabledState = config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
