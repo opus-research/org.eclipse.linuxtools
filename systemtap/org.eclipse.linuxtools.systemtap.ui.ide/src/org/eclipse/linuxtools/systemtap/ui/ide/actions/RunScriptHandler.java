@@ -16,7 +16,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,7 +67,7 @@ public class RunScriptHandler extends AbstractHandler {
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private List<String> cmdList;
+	private ArrayList<String> cmdList;
 
 
 	public RunScriptHandler(){
@@ -242,7 +241,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 
-	protected void getImportedTapsets(List<String> cmdList) {
+	protected void getImportedTapsets(ArrayList<String> cmdList) {
 		IPreferenceStore preferenceStore = IDEPlugin.getDefault().getPreferenceStore();
 		String[] tapsets = preferenceStore.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
 
@@ -309,7 +308,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @return An array suitable to pass to <code>Runtime.exec</code> to start stap on this file.
 	 * @since 2.0
 	 */
-	protected String[] finalizeScript(List<String> cmdList) {
+	protected String[] finalizeScript(ArrayList<String> cmdList) {
 
 		String[] script;
 
