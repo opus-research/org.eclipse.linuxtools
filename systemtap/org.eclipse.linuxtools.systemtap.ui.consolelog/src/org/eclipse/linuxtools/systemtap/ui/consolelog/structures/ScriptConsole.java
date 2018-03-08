@@ -13,16 +13,14 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.LocalLoggedCommand;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.LoggedCommand2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpExec;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScriptAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView;
-import org.eclipse.linuxtools.systemtap.ui.structures.IPasswordPrompt;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -43,12 +41,19 @@ import org.eclipse.ui.console.IOConsole;
  */
 public class ScriptConsole extends IOConsole {
 
-	private LoggedCommand2 cmd;
+	private LoggedCommand cmd;
 	private Runnable stopCommand;
 	private String moduleName;
 
 	private ErrorStreamDaemon errorDaemon;
 	private ConsoleStreamDaemon consoleDaemon;
+
+	public static interface ScriptConsoleObserver {
+		public void runningStateChanged(boolean running);
+	}
+
+	private LinkedList<ScriptConsoleObserver> activeConsoleObservers
+	= new LinkedList<ScriptConsoleObserver>();
 
 	/**
 	 * This method is used to get a reference to a <code>ScriptConsole</code>.  If there
@@ -66,14 +71,12 @@ public class ScriptConsole extends IOConsole {
 			//Prevent running the same script twice
 			if(null != ic) {
 				ScriptConsole activeConsole;
-				StopScriptAction ssa = new StopScriptAction();
-				ssa.init(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-				for(int i=0; i<ic.length; i++) {
-					if (ic[i] instanceof ScriptConsole){
-						activeConsole = (ScriptConsole)ic[i];
+				for (IConsole consoleIterator: ic) {
+					if (consoleIterator instanceof ScriptConsole){
+						activeConsole = (ScriptConsole) consoleIterator;
 						if(activeConsole.getName().endsWith(name)) {
 							//Stop any script currently running
-							ssa.run(i);
+							activeConsole.stop();
 							//Remove output from last run
 							activeConsole.clearConsole();
 							activeConsole.setName(name);
@@ -93,9 +96,40 @@ public class ScriptConsole extends IOConsole {
 		return console;
 	}
 
-	public static boolean isActiveConsoleRunning(){
-		ScriptConsole active = getActive();
-		return (active != null && getActive().isRunning());
+	/**
+	 * This method will check to see if any scripts are currently running.
+	 * @return - boolean indicating whether any scripts are running
+	 */
+	public static boolean anyRunning() {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		ScriptConsole console;
+
+		for(int i=0; i<ic.length; i++) {
+			if (ic[i] instanceof ScriptConsole){
+				console = (ScriptConsole)ic[i];
+				if(console.isRunning()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * This method will stop all consoles that are running.
+	 */
+	public static void stopAll() {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		ScriptConsole console;
+
+		for(int i=0; i<ic.length; i++) {
+			if (ic[i] instanceof ScriptConsole){
+				console = (ScriptConsole)ic[i];
+				if(console.isRunning()){
+					console.stop();
+				}
+			}
+		}
 	}
 
 	/**
@@ -103,16 +137,16 @@ public class ScriptConsole extends IOConsole {
 	 * @return The active <code>ScriptConsole<code> in the ConsoleView
 	 */
 	public static ScriptConsole getActive() {
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IConsoleConstants.ID_CONSOLE_VIEW);
-		IConsole activeConsole = ((IConsoleView)ivp).getConsole();
-		if (activeConsole instanceof ScriptConsole){
-			return (ScriptConsole)activeConsole;
-		}else{
-			return null;
-		}
+	        IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IConsoleConstants.ID_CONSOLE_VIEW);
+	        IConsole activeConsole = ((IConsoleView)ivp).getConsole();
+	        if (activeConsole instanceof ScriptConsole){
+	                return (ScriptConsole)activeConsole;
+	        }else{
+	                return null;
+	        }
 	}
 
-	private ScriptConsole(String name, ImageDescriptor imageDescriptor) {
+	ScriptConsole(String name, ImageDescriptor imageDescriptor) {
 		super(name, imageDescriptor);
 		cmd = null;
 	}
@@ -141,11 +175,10 @@ public class ScriptConsole extends IOConsole {
 	 * Runs the provided command in this ScriptConsole instance.
 	 * @param command The command and arguments to run.
 	 * @param envVars The environment variables to use while running
-	 * @param prompt The prompt to get the users password if needed.
 	 * @param errorParser The parser to handle error messages generated by the command
 	 */
-	public void run(String[] command, String[] envVars, IPasswordPrompt prompt, IErrorParser errorParser) {
-	    cmd = new LoggedCommand2(command, envVars, prompt, 100);
+	public void run(String[] command, String[] envVars, IErrorParser errorParser) {
+	    cmd = new ScpExec(command);
 		this.stopCommand = new Runnable() {
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
@@ -160,12 +193,11 @@ public class ScriptConsole extends IOConsole {
 	 * host.
 	 * @param command The command and arguments to run.
 	 * @param envVars The environment variables to use while running
-	 * @param prompt The prompt to get the users password if needed.
 	 * @param errorParser The parser to handle error messages generated by the command
 	 * @since 1.2
 	 */
-	public void runLocally(String[] command, String[] envVars, IPasswordPrompt prompt, IErrorParser errorParser) {
-		cmd = new LocalLoggedCommand(command, envVars, prompt, 100);
+	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
+		cmd = new LoggedCommand(command, envVars);
 		this.stopCommand = new Runnable() {
 			public void run() {
 				try {
@@ -178,7 +210,7 @@ public class ScriptConsole extends IOConsole {
 		this.run(cmd, errorParser);
 	}
 
-	private void run(LoggedCommand2 cmd, IErrorParser errorParser){
+	private void run(LoggedCommand cmd, IErrorParser errorParser){
 		createConsoleDaemon();
 		if (errorParser != null)
 			createErrorDaemon(errorParser);
@@ -187,7 +219,18 @@ public class ScriptConsole extends IOConsole {
         cmd.addInputStreamListener(consoleDaemon);
         cmd.start();
         activate();
+        notifyConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
+	}
+
+	void notifyConsoleObservers(boolean running){
+		for (ScriptConsoleObserver observer : activeConsoleObservers) {
+			observer.runningStateChanged(running);
+		}
+	}
+
+	public void addScriptConsoleObserver (ScriptConsoleObserver observer){
+		activeConsoleObservers.add(observer);
 	}
 
 	/**
@@ -232,7 +275,7 @@ public class ScriptConsole extends IOConsole {
 	 * Gets the command that is running in this console, or null if there is no running command.
 	 * @return The <code>LoggedCommand</code> that is running in this console.
 	 */
-	public LoggedCommand2 getCommand() {
+	public LoggedCommand getCommand() {
 		return cmd;
 	}
 
@@ -242,7 +285,7 @@ public class ScriptConsole extends IOConsole {
 	public synchronized void stop() {
 		  if(isRunning()) {
 			  // Remove the readers so the process is not blocked
-			  // on writing to console 
+			  // on writing to console
 			  cmd.removeErrorStreamListener(errorDaemon);
 			  cmd.removeInputStreamListener(consoleDaemon);
 
@@ -252,6 +295,7 @@ public class ScriptConsole extends IOConsole {
 			  // Stop the command
 			  cmd.stop();
               setName(Localization.getString("ScriptConsole.Terminated") + super.getName()); //$NON-NLS-1$
+              notifyConsoleObservers(false);
 		}
 	}
 
@@ -259,8 +303,11 @@ public class ScriptConsole extends IOConsole {
 		if(this.moduleName == null){
 			moduleName = this.getName();
 			int lastSlash = moduleName.lastIndexOf('/')+1;
+			if (lastSlash < 0){
+				lastSlash = 0;
+			}
 			int lastDot = moduleName.indexOf(".stp"); //$NON-NLS-1$
-			if (lastSlash > 0 && lastDot > 0){
+			if (lastDot > 0){
 				moduleName = moduleName.substring(lastSlash, lastDot);
 			}
 		}
