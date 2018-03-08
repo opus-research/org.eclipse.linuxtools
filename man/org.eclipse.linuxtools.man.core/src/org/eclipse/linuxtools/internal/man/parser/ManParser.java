@@ -47,8 +47,8 @@ public class ManParser {
 			}
 
 			InputStream manContent = process.getInputStream();
-			InputStreamReader streamReader = new InputStreamReader(manContent);
-			BufferedReader reader = new BufferedReader(streamReader);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					manContent));
 
 			String line = null;
 			try {
@@ -59,16 +59,16 @@ public class ManParser {
 				e.printStackTrace();
 			} finally {
 				try {
-					reader.close();
-					streamReader.close();
 					manContent.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		} catch (IOException e1) {
+			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		return sb;
