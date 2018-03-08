@@ -23,9 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -311,7 +312,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *         successfully or not.
      * @since 3.0
      */
-    @Deprecated
     protected IStatus buildStateSystem() {
         /*
          * Nothing is done in the base implementation, please specify
@@ -351,11 +351,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     @Override
-    public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
-        Map<String, T> modules = new HashMap<String, T>();
+    public List<IAnalysisModule> getAnalysisModules(Class<? extends IAnalysisModule> moduleclass) {
+        List<IAnalysisModule> modules = new ArrayList<IAnalysisModule>();
         for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
             if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
-                modules.put(entry.getKey(), moduleclass.cast(entry.getValue()));
+                modules.add(entry.getValue());
             }
         }
         return modules;
@@ -443,9 +443,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
-     * @deprecated See {@link ITmfTrace}
      */
-    @Deprecated
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
         return Collections.unmodifiableMap(fStateSystems);
@@ -453,9 +451,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
-     * @deprecated See {@link ITmfTrace}
      */
-    @Deprecated
     @Override
     public final void registerStateSystem(String id, ITmfStateSystem ss) {
         fStateSystems.put(id, ss);
