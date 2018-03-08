@@ -40,10 +40,12 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDocumentProvider;
 
 public class SimpleDocumentProvider extends AbstractDocumentProvider {
+	@Override
 	public boolean canSaveDocument(Object element) {
 		return super.canSaveDocument(element);
 	}
 
+	@Override
 	protected IDocument createDocument(Object element) throws CoreException {
 		if (element instanceof IEditorInput) {
 			IDocument document= new Document();
@@ -129,13 +131,15 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	/*
 	 * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#createAnnotationModel(java.lang.Object)
 	 */
-	protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
+	@Override
+	protected IAnnotationModel createAnnotationModel(Object element) {
 		return null;
 	}
 
 	/*
 	 * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#doSaveDocument(org.eclipse.core.runtime.IProgressMonitor, java.lang.Object, org.eclipse.jface.text.IDocument, boolean)
 	 */
+	@Override
 	protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
 		if (element instanceof IPathEditorInput) {
 			IPathEditorInput pei= (IPathEditorInput) element;
@@ -179,6 +183,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	/*
 	 * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#getOperationRunner(org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@Override
 	protected IRunnableContext getOperationRunner(IProgressMonitor monitor) {
 		return null;
 	}
@@ -186,6 +191,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProviderExtension#isModifiable(java.lang.Object)
 	 */
+	@Override
 	public boolean isModifiable(Object element) {
 		if (element instanceof IPathEditorInput) {
 			IPathEditorInput pei= (IPathEditorInput) element;
@@ -198,6 +204,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProviderExtension#isReadOnly(java.lang.Object)
 	 */
+	@Override
 	public boolean isReadOnly(Object element) {
 		return !isModifiable(element);
 	}
@@ -205,6 +212,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProviderExtension#isStateValidated(java.lang.Object)
 	 */
+	@Override
 	public boolean isStateValidated(Object element) {
 		return true;
 	}

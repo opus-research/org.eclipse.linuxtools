@@ -24,6 +24,7 @@ import org.eclipse.linuxtools.internal.oprofile.ui.model.UiModelSymbol;
 public class TestUiDataModel extends TestCase {
 
 	private static class TestingUiModelRoot extends UiModelRoot {
+		@Override
 		protected OpModelEvent[] getModelDataEvents() {
 			TestingOpModelRoot modelRoot = new TestingOpModelRoot();
 			modelRoot.refreshModel();
@@ -32,6 +33,7 @@ public class TestUiDataModel extends TestCase {
 	}
 
 	private static class TestingUiModelRoot2 extends UiModelRoot {
+		@Override
 		protected OpModelEvent[] getModelDataEvents() {
 			return null;
 		}
@@ -45,7 +47,7 @@ public class TestUiDataModel extends TestCase {
 	}
 	
 	@Override
-	protected void setUp() throws Exception {
+	protected void setUp() {
 		_uiModelRoot = new TestingUiModelRoot();
 		_uiModelRoot.refreshModel();
 		
