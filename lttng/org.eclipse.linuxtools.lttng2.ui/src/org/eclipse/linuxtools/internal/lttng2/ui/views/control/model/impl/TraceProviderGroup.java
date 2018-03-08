@@ -79,9 +79,12 @@ public class TraceProviderGroup extends TraceControlComponent {
     public void getProviderFromNode(IProgressMonitor monitor) throws ExecutionException {
 
         List<IBaseEventInfo> eventInfos = getControlService().getKernelProvider(monitor);
-        KernelProviderComponent component = new KernelProviderComponent(Messages.TraceControl_KernelProviderDisplayName, this);
-        addChild(component);
-        component.setEventInfo(eventInfos);
+
+        if (!eventInfos.isEmpty()) {
+            KernelProviderComponent component = new KernelProviderComponent(Messages.TraceControl_KernelProviderDisplayName, this);
+            addChild(component);
+            component.setEventInfo(eventInfos);
+        }
 
         List<IUstProviderInfo> allProviders = getControlService().getUstProvider(monitor);
 
