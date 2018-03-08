@@ -175,6 +175,8 @@ public class StreamInputReader {
                     .getCurrentPacket();
             if (prevPacket != null) {
                 goToNextPacket();
+                @SuppressWarnings("unused")
+                final StreamInputPacketIndexEntry currentPacket = this.packetReader.getCurrentPacket();
             }
         }
 
