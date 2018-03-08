@@ -39,7 +39,7 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 
 	static final String CONFIGURATION_TYPE = "org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"; //$NON-NLS-1$
 
-	private IProject[] scriptProject;
+	private IProject[] scriptProject = new IProject[1];
 
 	/**
 	 * Keep a reference to the target running script's parent project, so only that project
@@ -55,10 +55,11 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		// Find the parent project of the target script.
 		IPath path = Path.fromOSString(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, (String)null));
 		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
-		scriptProject = file == null ? null : new IProject[]{file.getProject()};
+		IProject project = file == null ? null : file.getProject();
 
 		// Only save the target script's project if a project is found.
-		if (scriptProject != null) {
+		if (project != null) {
+			scriptProject[0] = project;
 			return super.preLaunchCheck(configuration, mode, monitor);
 		}
 		return true;
