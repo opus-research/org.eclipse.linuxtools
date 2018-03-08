@@ -16,7 +16,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation to move the focus to the previous page of the whole sequence diagram.
@@ -57,8 +57,8 @@ public class PrevPage extends Action {
     public PrevPage(SDView view) {
         super();
         fView = view;
-        setText(Messages.SequenceDiagram_PreviousPage);
-        setToolTipText(Messages.SequenceDiagram_GoToPreviousPage);
+        setText(SDMessages._35);
+        setToolTipText(SDMessages._37);
         setId(ID);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_PREV_PAGE));
     }

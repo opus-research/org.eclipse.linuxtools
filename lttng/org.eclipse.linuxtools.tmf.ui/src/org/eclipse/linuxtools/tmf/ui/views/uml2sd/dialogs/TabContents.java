@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -113,7 +113,7 @@ public class TabContents extends Composite {
 
         // Inform the user how to fill the string to search
         Label searchTitle = new Label(this, SWT.LEFT);
-        searchTitle.setText(Messages.SequenceDiagram_MatchingString);
+        searchTitle.setText(SDMessages._26);
         Composite searchPart = new Composite(this, SWT.NONE);
         GridData searchPartData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_FILL);
         GridLayout searchPartLayout = new GridLayout();
@@ -137,11 +137,11 @@ public class TabContents extends Composite {
 
         // Create the case sensitive check button
         fCaseSensitive = new Button(searchPart, SWT.CHECK);
-        fCaseSensitive.setText(Messages.SequenceDiagram_CaseSensitive);
+        fCaseSensitive.setText(SDMessages._27);
 
         // Create the group for searched graph node kind selection
         fKindSelection = new Group(this, SWT.SHADOW_NONE);
-        fKindSelection.setText(Messages.SequenceDiagram_SearchFor);
+        fKindSelection.setText(SDMessages._25);
         // kindSelection.setLayoutData(tabLayoutData2);
         GridLayout kindSelectionLayout = new GridLayout();
         kindSelectionLayout.numColumns = 1;
@@ -156,7 +156,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fLifelineButton.setText(nodeName);
             } else {
-                fLifelineButton.setText(Messages.SequenceDiagram_Lifeline);
+                fLifelineButton.setText(SDMessages._28);
             }
             fLifelineButton.setEnabled(true);
             fLifelineButton.addSelectionListener(fGraphNodeTypeListener);
@@ -169,7 +169,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fStopButton.setText(nodeName);
             } else {
-                fStopButton.setText(Messages.SequenceDiagram_Stop);
+                fStopButton.setText(SDMessages._29);
             }
 
             fStopButton.setEnabled(true);
@@ -183,7 +183,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fSynMessageButton.setText(nodeName);
             } else {
-                fSynMessageButton.setText(Messages.SequenceDiagram_SynchronousMessage);
+                fSynMessageButton.setText(SDMessages._30);
             }
             fSynMessageButton.setEnabled(true);
             fSynMessageButton.addSelectionListener(fGraphNodeTypeListener);
@@ -196,7 +196,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fSynMessageReturnButton.setText(nodeName);
             } else {
-                fSynMessageReturnButton.setText(Messages.SequenceDiagram_SynchronousMessageReturn);
+                fSynMessageReturnButton.setText(SDMessages._31);
             }
             fSynMessageReturnButton.setEnabled(true);
             fSynMessageReturnButton.addSelectionListener(fGraphNodeTypeListener);
@@ -209,7 +209,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fAsynMessageButton.setText(nodeName);
             } else {
-                fAsynMessageButton.setText(Messages.SequenceDiagram_AsynchronousMessage);
+                fAsynMessageButton.setText(SDMessages._32);
             }
             fAsynMessageButton.setEnabled(true);
             fAsynMessageButton.addSelectionListener(fGraphNodeTypeListener);
@@ -222,14 +222,14 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fAsynMessageReturnButton.setText(nodeName);
             } else {
-                fAsynMessageReturnButton.setText(Messages.SequenceDiagram_AsynchronousMessageReturn);
+                fAsynMessageReturnButton.setText(SDMessages._33);
             }
             fAsynMessageReturnButton.setEnabled(true);
             fAsynMessageReturnButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         fResult = new Label(this, SWT.LEFT);
-        fResult.setText(Messages.SequenceDiagram_StringNotFound);
+        fResult.setText(SDMessages._23);
         fResult.setVisible(false);
     }
 
