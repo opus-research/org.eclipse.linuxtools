@@ -33,7 +33,7 @@ public interface ITmfStateProvider {
      * don't match.
      * @since 2.0
      */
-    static final int IGNORE_PROVIDER_VERSION = -42;
+    public final static int IGNORE_PROVIDER_VERSION = -42;
 
     /**
      * Event handler plugins should provide a version number. This is used to
