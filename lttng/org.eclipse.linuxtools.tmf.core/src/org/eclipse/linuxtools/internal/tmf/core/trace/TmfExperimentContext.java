@@ -66,6 +66,9 @@ public class TmfExperimentContext extends TmfContext {
         fLastTraceRead = NO_TRACE;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#dispose()
+     */
     @Override
     public void dispose() {
         for (ITmfContext context : fContexts) {

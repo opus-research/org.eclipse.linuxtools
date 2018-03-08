@@ -154,9 +154,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Refresh the view
      */
     public void refresh() {
-        setTimeRange(_stateCtrl.getTraces());
-        _verticalScrollBar.setEnabled(true);
-        refreshAllData(_stateCtrl.getTraces());
+        setInput(_stateCtrl.getTraces());
     }
 
     /**
@@ -543,17 +541,35 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         return _time0_;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.linuxtools.tmf.ui.viewers.timeAnalysis.widgets.ITimeDataProvider
+     * #setStartFinishTimeNotify(long, long)
+     */
     @Override
     public void setStartFinishTimeNotify(long time0, long time1) {
         setStartFinishTime(time0, time1);
         notifyRangeListeners(time0, time1);
     }
 
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.timeAnalysis.widgets.ITimeDataProvider#notifyStartFinishTime()
+     */
     @Override
     public void notifyStartFinishTime() {
         notifyRangeListeners(_time0, _time1);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.linuxtools.tmf.ui.viewers.timeAnalysis.widgets.ITimeDataProvider
+     * #setStartFinishTime(long, long)
+     */
     @Override
     public void setStartFinishTime(long time0, long time1) {
         _time0 = time0;
@@ -1039,9 +1055,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Returns the time graph control associated with this viewer.
      *
      * @return the time graph control
-     * @since 2.0
      */
-    public TimeGraphControl getTimeGraphControl() {
+    TimeGraphControl getTimeGraphControl() {
         return _stateCtrl;
     }
 
@@ -1049,9 +1064,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Returns the time graph scale associated with this viewer.
      *
      * @return the time graph scale
-     * @since 2.0
      */
-    public TimeGraphScale getTimeGraphScale() {
+    TimeGraphScale getTimeGraphScale() {
         return _timeScaleCtrl;
     }
 

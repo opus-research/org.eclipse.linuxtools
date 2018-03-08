@@ -39,15 +39,6 @@
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.statesystem.TmfStateSystemExplorer"
-            icon="icons/eview16/events_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.ssvisualizer"
-            name="%ssvisualizer.view.name"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
             class="org.eclipse.linuxtools.tmf.ui.views.colors.ColorsView"
             icon="icons/eview16/colors_view.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.colors"
@@ -87,14 +78,6 @@
             icon="icons/eview16/histogram.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.histogram"
             name="%histogram.view.name"
-            restorable="true">
-      </view>
-      <view
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.callstack.CallStackView"
-            icon="icons/eview16/callstack_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.callstack"
-            name="%callstack.view.name"
             restorable="true">
       </view>
    </extension>
