@@ -13,12 +13,14 @@
 package org.eclipse.linuxtools.tmf.core.tests.statistics;
 
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
@@ -28,33 +30,30 @@ import org.junit.BeforeClass;
  */
 public class TmfStateStatisticsTest extends TmfStatisticsTest {
 
+    private static File htFile;
+
     /**
-     * Set up the fixtures (build the state history, etc.) once for all tests.
+     * Set up the fixture (build the state history, etc.) once for all tests.
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(testTraceKernel.exists());
-        assumeTrue(testTraceLostEvents.exists());
+        assumeTrue(testTrace.exists());
         try {
-            File totalsFileKernel = File.createTempFile("stats-test-kernel-totals", ".ht");
-            File typesFileKernel = File.createTempFile("stats-test-kernel-types", ".ht");
-            totalsFileKernel.deleteOnExit();
-            typesFileKernel.deleteOnExit();
-
-            File totalsFileLostEvents = File.createTempFile("stats-test-lostevents-totals", ".ht");
-            File typesFileLostEvents = File.createTempFile("stats-test-lostevents-types", ".ht");
-            totalsFileLostEvents.deleteOnExit();
-            typesFileLostEvents.deleteOnExit();
-
-            backendKernel = new TmfStateStatistics(testTraceKernel.getTrace(),
-                    totalsFileKernel, typesFileKernel);
-            backendLostEvents = new TmfStateStatistics(testTraceLostEvents.getTrace(),
-                    totalsFileLostEvents, typesFileLostEvents);
+            htFile = File.createTempFile("stats-test", ".ht");
+            backend = new TmfStateStatistics(testTrace.getTrace(), htFile);
 
         } catch (TmfTraceException e) {
-            e.printStackTrace();
+            fail();
         } catch (IOException e) {
-            e.printStackTrace();
+            fail();
         }
+    }
+
+    /**
+     * Class cleanup
+     */
+    @AfterClass
+    public static void tearDownClass() {
+        htFile.delete();
     }
 }

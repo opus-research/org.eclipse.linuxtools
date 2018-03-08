@@ -17,13 +17,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.linuxtools.ctf.core.CTFStrings;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 /**
  * Base unit test class for any type of ITmfStatistics. Sub-classes should
@@ -33,28 +29,18 @@ import org.junit.rules.Timeout;
  */
 public abstract class TmfStatisticsTest {
 
-    /** Time-out tests after 20 seconds */
-    @Rule
-    public TestRule globalTimeout= new Timeout(20000);
-
     /** Test trace used for these tests */
-    protected static final CtfTmfTestTrace testTraceKernel = CtfTmfTestTrace.KERNEL;
+    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
 
-    /** Other test trace with lost events */
-    protected static final CtfTmfTestTrace testTraceLostEvents = CtfTmfTestTrace.HELLO_LOST;
+    /** The statistics back-end object */
+    protected static ITmfStatistics backend;
 
-    /** The statistics back-end object for trace "kernel" */
-    protected static ITmfStatistics backendKernel;
-
-    /** The statistics back-end object for the trace with lost events */
-    protected static ITmfStatistics backendLostEvents;
-
-    /* Known values about the trace "kernel" */
+    /* Known values about the trace */
     private static final int totalNbEvents = 695319;
     private static final long tStart = 1332170682440133097L; /* Timestamp of first event */
     private static final long tEnd   = 1332170692664579801L; /* Timestamp of last event */
 
-    /* Timestamps of interest in "kernel" */
+    /* Timestamps of interest */
     private static final long t1 = 1332170682490946000L;
     private static final long t2 = 1332170682490947524L; /* event exactly here */
     private static final long t3 = 1332170682490948000L;
@@ -76,7 +62,7 @@ public abstract class TmfStatisticsTest {
     @Test
     public void testHistogramQuerySmall() {
         final int NB_REQ = 10;
-        List<Long> results = backendKernel.histogramQuery(t1, t6, NB_REQ);
+        List<Long> results = backend.histogramQuery(t1, t6, NB_REQ);
 
         /* Make sure the returned array has the right size */
         assertEquals(NB_REQ, results.size());
@@ -102,7 +88,7 @@ public abstract class TmfStatisticsTest {
     @Test
     public void testHistogramQueryFull() {
         final int NB_REQ = 10;
-        List<Long> results = backendKernel.histogramQuery(tStart, tEnd, NB_REQ);
+        List<Long> results = backend.histogramQuery(tStart, tEnd, NB_REQ);
 
         /* Make sure the returned array has the right size */
         assertEquals(NB_REQ, results.size());
@@ -136,7 +122,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsTotal() {
-        long count = backendKernel.getEventsTotal();
+        long count = backend.getEventsTotal();
         assertEquals(totalNbEvents, count);
     }
 
@@ -149,7 +135,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testEventTypesTotal() {
-        Map<String, Long> res = backendKernel.getEventTypesTotal();
+        Map<String, Long> res = backend.getEventTypesTotal();
         assertEquals(126, res.size()); /* Number of different event types in the trace */
 
         long count = sumOfEvents(res);
@@ -165,7 +151,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeWholeRange() {
-        long count = backendKernel.getEventsInRange(tStart, tEnd);
+        long count = backend.getEventsInRange(tStart, tEnd);
         assertEquals(totalNbEvents, count);
     }
 
@@ -175,7 +161,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeMinusStart() {
-        long count = backendKernel.getEventsInRange(tStart + 1, tEnd);
+        long count = backend.getEventsInRange(tStart + 1, tEnd);
         assertEquals(totalNbEvents - 1, count);
     }
 
@@ -185,7 +171,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeMinusEnd() {
-        long count = backendKernel.getEventsInRange(tStart, tEnd - 1);
+        long count = backend.getEventsInRange(tStart, tEnd - 1);
         assertEquals(totalNbEvents - 1, count);
     }
 
@@ -195,7 +181,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeNoEventsAtEdges() {
-        long count = backendKernel.getEventsInRange(t1, t6);
+        long count = backend.getEventsInRange(t1, t6);
         assertEquals(2, count);
     }
 
@@ -205,10 +191,10 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeEventAtStart() {
-        long count = backendKernel.getEventsInRange(t2, t3);
+        long count = backend.getEventsInRange(t2, t3);
         assertEquals(1, count);
 
-        count = backendKernel.getEventsInRange(t2, t6);
+        count = backend.getEventsInRange(t2, t6);
         assertEquals(2, count);
     }
 
@@ -218,10 +204,10 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeEventAtEnd() {
-        long count = backendKernel.getEventsInRange(t4, t5);
+        long count = backend.getEventsInRange(t4, t5);
         assertEquals(1, count);
 
-        count = backendKernel.getEventsInRange(t1, t5);
+        count = backend.getEventsInRange(t1, t5);
         assertEquals(2, count);
     }
 
@@ -232,7 +218,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeEventAtBoth() {
-        long count = backendKernel.getEventsInRange(t2, t5);
+        long count = backend.getEventsInRange(t2, t5);
         assertEquals(2, count);
     }
 
@@ -242,7 +228,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventsInRangeNoEvents() {
-        long count = backendKernel.getEventsInRange(t3, t4);
+        long count = backend.getEventsInRange(t3, t4);
         assertEquals(0, count);
     }
 
@@ -255,7 +241,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeWholeRange() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(tStart, tEnd);
+        Map<String, Long> result = backend.getEventTypesInRange(tStart, tEnd);
         /* Number of events of that type in the whole trace */
         assertEquals(new Long(464L), result.get(eventType));
 
@@ -269,7 +255,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeMinusStart() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(tStart + 1, tEnd);
+        Map<String, Long> result = backend.getEventTypesInRange(tStart + 1, tEnd);
 
         long count = sumOfEvents(result);
         assertEquals(totalNbEvents - 1, count);
@@ -281,7 +267,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeMinusEnd() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(tStart, tEnd - 1);
+        Map<String, Long> result = backend.getEventTypesInRange(tStart, tEnd - 1);
 
         long count = sumOfEvents(result);
         assertEquals(totalNbEvents - 1, count);
@@ -293,7 +279,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeNoEventsAtEdges() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(t1, t6);
+        Map<String, Long> result = backend.getEventTypesInRange(t1, t6);
         assertEquals(new Long(2L), result.get(eventType));
 
         long count = sumOfEvents(result);
@@ -306,12 +292,12 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeEventAtStart() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(t2, t3);
+        Map<String, Long> result = backend.getEventTypesInRange(t2, t3);
         assertEquals(new Long(1L), result.get(eventType));
         long count = sumOfEvents(result);
         assertEquals(1, count);
 
-        result = backendKernel.getEventTypesInRange(t2, t6);
+        result = backend.getEventTypesInRange(t2, t6);
         assertEquals(new Long(2L), result.get(eventType));
         count = sumOfEvents(result);
         assertEquals(2, count);
@@ -323,12 +309,12 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeEventAtEnd() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(t4, t5);
+        Map<String, Long> result = backend.getEventTypesInRange(t4, t5);
         assertEquals(new Long(1L), result.get(eventType));
         long count = sumOfEvents(result);
         assertEquals(1, count);
 
-        result = backendKernel.getEventTypesInRange(t1, t5);
+        result = backend.getEventTypesInRange(t1, t5);
         assertEquals(new Long(2L), result.get(eventType));
         count = sumOfEvents(result);
         assertEquals(2, count);
@@ -341,7 +327,7 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeEventAtBoth() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(t2, t5);
+        Map<String, Long> result = backend.getEventTypesInRange(t2, t5);
         assertEquals(new Long(2L), result.get(eventType));
         long count = sumOfEvents(result);
         assertEquals(2, count);
@@ -353,62 +339,9 @@ public abstract class TmfStatisticsTest {
      */
     @Test
     public void testGetEventTypesInRangeNoEvents() {
-        Map<String, Long> result = backendKernel.getEventTypesInRange(t3, t4);
+        Map<String, Long> result = backend.getEventTypesInRange(t3, t4);
         long count = sumOfEvents(result);
         assertEquals(0, count);
-    }
-
-    // ------------------------------------------------------------------------
-    // Tests for lost event counts
-    // ------------------------------------------------------------------------
-
-    /*
-     * Trace start = 1376592664828559410
-     * Trace end   = 1376592665108210547
-     */
-
-    /**
-     * Test the total number of "real" events. Make sure the lost events aren't
-     * counted in the total.
-     */
-    @Test
-    public void testLostEventsTotals() {
-        long realEvents = backendLostEvents.getEventsTotal();
-        assertEquals(32300, realEvents);
-    }
-
-    /**
-     * Test the number of real events in a given range. Lost events shouldn't be
-     * counted.
-     */
-    @Test
-    public void testLostEventsTotalInRange() {
-        long start = 1376592664900000000L;
-        long end =   1376592665000000000L;
-        long realEventsInRange = backendLostEvents.getEventsInRange(start, end);
-        assertEquals(11209L, realEventsInRange);
-    }
-
-    /**
-     * Test the total number of lost events reported in the trace.
-     */
-    @Test
-    public void testLostEventsTypes() {
-        Map<String, Long> events = backendLostEvents.getEventTypesTotal();
-        Long lostEvents = events.get(CTFStrings.LOST_EVENT_NAME);
-        assertEquals(Long.valueOf(967700L), lostEvents);
-    }
-
-    /**
-     * Test the number of lost events reported in a given range.
-     */
-    @Test
-    public void testLostEventsTypesInRange() {
-        long start = 1376592664900000000L;
-        long end =   1376592665000000000L;
-        Map<String, Long> eventsInRange = backendLostEvents.getEventTypesInRange(start, end);
-        long lostEventsInRange = eventsInRange.get(CTFStrings.LOST_EVENT_NAME);
-        assertEquals(363494L, lostEventsInRange);
     }
 
     // ------------------------------------------------------------------------
