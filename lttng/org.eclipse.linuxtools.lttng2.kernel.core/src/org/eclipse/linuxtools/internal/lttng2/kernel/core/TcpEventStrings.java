@@ -20,7 +20,7 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.core;
  *
  * These events should be eventually mainlined and when this happens,
  * this class won't be necessary anymore and they should be moved to
- * {@link org.eclipse.linuxtools.internal.lttng2.kernel.core.LttngStrings} class
+ * {@link LttngStrings} class
  *
  *
  * @author gbastien

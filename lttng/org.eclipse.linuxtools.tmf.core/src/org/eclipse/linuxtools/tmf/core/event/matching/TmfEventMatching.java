@@ -12,8 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.core.event.matching;
 
-import java.util.Hashtable;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -40,9 +43,9 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     protected TmfEventMatches fMatches;
 
     /**
-     * Hashtables for unmatches events
+     * Map for unmatches events
      */
-    protected Hashtable<String, ITmfEvent>[] fUnmatched;
+    protected List<Map<String, ITmfEvent>> fUnmatched;
 
     /**
      * Constructor with one trace
@@ -98,10 +101,10 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      */
     @Override
     public void initMatching() {
-        // Initialize the matching infrastructure (unmatched event lists)
-        fUnmatched = new Hashtable[fTraces.length];
+        /* Initialize the matching infrastructure (unmatched event lists) */
+        fUnmatched = new ArrayList<Map<String, ITmfEvent>>();
         for (int i = 0; i < fTraces.length; i++) {
-            fUnmatched[i] = new Hashtable<String, ITmfEvent>();
+            fUnmatched.add(new HashMap<String, ITmfEvent>());
         }
     }
 
@@ -135,7 +138,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     public String printMatchingStats() {
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < fTraces.length; i++) {
-            b.append("Trace " + i + ": " + fUnmatched[i].size() + " unmatched events");
+            b.append("Trace " + i + ": " + fUnmatched.get(i).size() + " unmatched events");
         }
         return b.toString();
     }
@@ -148,22 +151,23 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     @Override
     public boolean matchEvents() {
 
-        // Are there traces to match? If no, return false
+        /* Are there traces to match? If no, return false */
         if (!(fTraces.length > 0)) {
             return false;
         }
 
-        // Start a new thread here? maybe
+        // TODO Start a new thread here? maybe
         initMatching();
 
-        // For each trace, get the events and for each event, call the
-        // MatchEvent method
+        /* For each trace, get the events and for each event, call the
+         * MatchEvent method
+         */
         TmfEventDependency dep;
         for (int i = 0; i < fTraces.length; i++) {
             Iterator<ITmfEvent> it = fTraces[i].iterator();
             while (it.hasNext()) {
                 dep = matchEvent(it.next(), i);
-                // For each match returned, call fMatches.addMatch
+                /* For each match returned, call fMatches.addMatch */
                 if (dep != null) {
                     fMatches.addMatch(dep);
                 }
