@@ -128,21 +128,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
     }
 
     @Override
-    public int getPort() {
-        if (getShellServiceSubSystem() != null) {
-            return getShellServiceSubSystem().getConnectorService().getPort();
-        }
-        return IRemoteSystemProxy.INVALID_PORT_NUMBER;
-    }
-
-    @Override
-    public void setPort(int port) {
-        if ((getShellServiceSubSystem() != null) && (port > 0)) {
-            getShellServiceSubSystem().getConnectorService().setPort(port);
-        }
-    }
-
-    @Override
     public void connect(IRSECallback callback) throws ExecutionException {
         ISubSystem shellSubSystem = getShellServiceSubSystem();
         if (shellSubSystem != null) {

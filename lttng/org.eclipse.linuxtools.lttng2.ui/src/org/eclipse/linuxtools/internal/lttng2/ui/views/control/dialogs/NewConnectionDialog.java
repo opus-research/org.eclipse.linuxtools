@@ -19,14 +19,11 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceControlComponent;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -87,10 +84,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
      */
     private Text fHostNameText = null;
     /**
-     * The text widget for the IP port
-     */
-    private Text fPortText = null;
-    /**
      * The parent where the new node should be added.
      */
     private ITraceControlComponent fParent;
@@ -102,10 +95,7 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
      * The node address (IP or DNS name) string.
      */
     private String fHostName = null;
-    /**
-     * The IP port of the connection.
-     */
-    private int fPort = IRemoteSystemProxy.INVALID_PORT_NUMBER;
+
     /**
      * Input list of existing RSE hosts available for selection.
      */
@@ -140,11 +130,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
     }
 
     @Override
-    public int getPort() {
-        return fPort;
-    }
-
-    @Override
     public void setTraceControlParent(ITraceControlComponent parent) {
         fParent = parent;
     }
@@ -154,11 +139,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
         if (hosts != null) {
             fExistingHosts = Arrays.copyOf(hosts, hosts.length);
         }
-    }
-
-    @Override
-    public void setPort(int port) {
-        fPort = port;
     }
 
     // ------------------------------------------------------------------------
@@ -225,19 +205,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
         fHostNameText.setToolTipText(Messages.TraceControl_NewNodeHostNameTooltip);
         fHostNameText.setEnabled(fExistingHosts.length == 0);
 
-        Label portLabel = new Label(fTextGroup, SWT.RIGHT);
-        portLabel.setText(Messages.TraceControl_NewNodePortLabel);
-        fPortText = new Text(fTextGroup, SWT.NONE);
-        fPortText.setToolTipText(Messages.TraceControl_NewNodePortTooltip);
-        fPortText.setEnabled(fExistingHosts.length == 0);
-        fPortText.addVerifyListener(new VerifyListener() {
-            @Override
-            public void verifyText(VerifyEvent e) {
-                // only numbers are allowed.
-                e.doit = e.text.matches("[0-9]*"); //$NON-NLS-1$
-            }
-        });
-
         fButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -246,12 +213,10 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
                     fExistingHostsCombo.setEnabled(false);
                     fConnectionNameText.setEnabled(true);
                     fHostNameText.setEnabled(true);
-                    fPortText.setEnabled(true);
                 } else {
                     fExistingHostsCombo.setEnabled(true);
                     fConnectionNameText.setEnabled(false);
                     fHostNameText.setEnabled(false);
-                    fPortText.setEnabled(false);
                 }
             }
 
@@ -266,7 +231,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
                 int index = fExistingHostsCombo.getSelectionIndex();
                 fConnectionNameText.setText(fExistingHosts[index].getAliasName());
                 fHostNameText.setText(fExistingHosts[index].getHostName());
-                fPortText.setText(""); //$NON-NLS-1$
             }
 
             @Override
@@ -278,20 +242,11 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
         data = new GridData(GridData.FILL_HORIZONTAL);
         fHostNameText.setText("666.666.666.666"); //$NON-NLS-1$
         Point minSize = fHostNameText.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-        int widthHint = minSize.x + 5;
-        data.widthHint = widthHint;
+        data.widthHint = minSize.x + 5;
         data.horizontalSpan = 2;
+
         fConnectionNameText.setLayoutData(data);
-
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = widthHint;
-        data.horizontalSpan = 2;
         fHostNameText.setLayoutData(data);
-
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = widthHint;
-        data.horizontalSpan = 2;
-        fPortText.setLayoutData(data);
 
         fHostNameText.setText(""); //$NON-NLS-1$
 
@@ -309,7 +264,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
         // Validate input data
         fConnectionName = fConnectionNameText.getText();
         fHostName = fHostNameText.getText();
-        fPort = (fPortText.getText().length() > 0) ? Integer.parseInt(fPortText.getText()) : IRemoteSystemProxy.INVALID_PORT_NUMBER;
 
         if (!"".equals(fHostName)) { //$NON-NLS-1$
             // If no node name is specified use the node address as name
