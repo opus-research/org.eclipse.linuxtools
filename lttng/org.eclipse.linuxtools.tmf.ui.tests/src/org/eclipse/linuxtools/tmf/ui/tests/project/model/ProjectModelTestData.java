@@ -15,12 +15,14 @@ package org.eclipse.linuxtools.tmf.ui.tests.project.model;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -34,6 +36,8 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 /**
  * Creates objects used for this package's testing purposes
@@ -77,6 +81,47 @@ public class ProjectModelTestData {
         traceElement.refreshTraceType();
 
         return projectElement;
+    }
+
+    /**
+     * Adds a new experiment to the project
+     *
+     * @param projectElement
+     *            The project to add to
+     * @param experimentName
+     *            Name of the experiment
+     * @return The newly created experiment
+     */
+    public static TmfExperimentElement addExperiment(TmfProjectElement projectElement, String experimentName) {
+        IFolder experimentFolder = projectElement.getExperimentsFolder().getResource();
+        final IFolder folder = experimentFolder.getFolder(experimentName);
+
+        WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
+            @Override
+            public void execute(IProgressMonitor monitor) throws CoreException {
+                monitor.beginTask("", 1000);
+                folder.create(false, true, monitor);
+                monitor.done();
+            }
+        };
+        try {
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(operation);
+        } catch (InterruptedException exception) {
+
+        } catch (InvocationTargetException exception) {
+
+        } catch (RuntimeException exception) {
+
+        }
+
+        TmfImportHelper.forceFolderRefresh(experimentFolder);
+
+        for (ITmfProjectModelElement el : projectElement.getExperimentsFolder().getChildren()) {
+            if (el.getName().equals(experimentName) && (el instanceof TmfExperimentElement)) {
+                return (TmfExperimentElement) el;
+            }
+        }
+        return null;
     }
 
     /**
