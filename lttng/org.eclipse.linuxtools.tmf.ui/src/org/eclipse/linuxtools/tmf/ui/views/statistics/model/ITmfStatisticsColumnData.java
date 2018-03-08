@@ -10,18 +10,17 @@
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
 
 /**
  * Provide the basic interface to create a statistics column for the statistics
  * table tree.
  *
- * @version 2.0
- * @since 2.0
+ * @version 1.0
  * @author Mathieu Denis
  */
 public interface ITmfStatisticsColumnData {
