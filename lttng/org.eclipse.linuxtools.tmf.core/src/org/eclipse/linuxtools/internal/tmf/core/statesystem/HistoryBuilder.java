@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
@@ -55,22 +54,26 @@ public class HistoryBuilder extends TmfComponent {
      * @param stateChangeInput
      *            The input plugin to use. This is required.
      * @param backend
-     *            The back-end storage to use.
+     *            The backend storage to use.
      * @param buildManually
      *            Should we build this history in-band or not. True means we
      *            will start the building ourselves and block the caller until
      *            construction is done. False (out-of-band) means we will start
      *            listening for the signal and return immediately. Another
      *            signal will be sent when finished.
+     * @throws IOException
+     *             Is thrown if anything went wrong (usually with the storage
+     *             backend)
      */
     public HistoryBuilder(IStateChangeInput stateChangeInput,
-            IStateHistoryBackend backend, boolean buildManually) {
+            IStateHistoryBackend backend, boolean buildManually)
+            throws IOException {
         if (stateChangeInput == null || backend == null) {
             throw new IllegalArgumentException();
         }
         sci = stateChangeInput;
         hb = backend;
-        ss = new StateSystem(hb);
+        ss = new StateSystem(hb, true);
 
         sci.assignTargetStateSystem(ss);
 

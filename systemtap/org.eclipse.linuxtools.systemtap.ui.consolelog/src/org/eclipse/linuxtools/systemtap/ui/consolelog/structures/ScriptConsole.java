@@ -13,11 +13,11 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpExec;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScriptAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
@@ -26,6 +26,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
+import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.IOConsole;
 
 
@@ -46,13 +48,6 @@ public class ScriptConsole extends IOConsole {
 	private ErrorStreamDaemon errorDaemon;
 	private ConsoleStreamDaemon consoleDaemon;
 
-	public static interface ScriptConsoleObserver {
-		public void runningStateChanged(boolean running);
-	}
-
-	private LinkedList<ScriptConsoleObserver> activeConsoleObservers
-	= new LinkedList<ScriptConsoleObserver>();
-
 	/**
 	 * This method is used to get a reference to a <code>ScriptConsole</code>.  If there
 	 * is already an console that has the same name as that provided it will be stopped,
@@ -69,12 +64,14 @@ public class ScriptConsole extends IOConsole {
 			//Prevent running the same script twice
 			if(null != ic) {
 				ScriptConsole activeConsole;
-				for (IConsole consoleIterator: ic) {
-					if (consoleIterator instanceof ScriptConsole){
-						activeConsole = (ScriptConsole) consoleIterator;
+				StopScriptAction ssa = new StopScriptAction();
+				ssa.init(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+				for(int i=0; i<ic.length; i++) {
+					if (ic[i] instanceof ScriptConsole){
+						activeConsole = (ScriptConsole)ic[i];
 						if(activeConsole.getName().endsWith(name)) {
 							//Stop any script currently running
-							activeConsole.stop();
+							ssa.run(i);
 							//Remove output from last run
 							activeConsole.clearConsole();
 							activeConsole.setName(name);
@@ -94,43 +91,26 @@ public class ScriptConsole extends IOConsole {
 		return console;
 	}
 
-	/**
-	 * This method will check to see if any scripts are currently running.
-	 * @return - boolean indicating whether any scripts are running
-	 */
-	public static boolean anyRunning() {
-		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
-		ScriptConsole console;
-
-		for(int i=0; i<ic.length; i++) {
-			if (ic[i] instanceof ScriptConsole){
-				console = (ScriptConsole)ic[i];
-				if(console.isRunning()){
-					return true;
-				}
-			}
-		}
-		return false;
+	public static boolean isActiveConsoleRunning(){
+		ScriptConsole active = getActive();
+		return (active != null && getActive().isRunning());
 	}
 
 	/**
-	 * This method will stop all consoles that are running.
+	 * Finds and returns the active console.
+	 * @return The active <code>ScriptConsole<code> in the ConsoleView
 	 */
-	public static void stopAll() {
-		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
-		ScriptConsole console;
-
-		for(int i=0; i<ic.length; i++) {
-			if (ic[i] instanceof ScriptConsole){
-				console = (ScriptConsole)ic[i];
-				if(console.isRunning()){
-					console.stop();
-				}
-			}
+	public static ScriptConsole getActive() {
+		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IConsoleConstants.ID_CONSOLE_VIEW);
+		IConsole activeConsole = ((IConsoleView)ivp).getConsole();
+		if (activeConsole instanceof ScriptConsole){
+			return (ScriptConsole)activeConsole;
+		}else{
+			return null;
 		}
 	}
 
-	ScriptConsole(String name, ImageDescriptor imageDescriptor) {
+	private ScriptConsole(String name, ImageDescriptor imageDescriptor) {
 		super(name, imageDescriptor);
 		cmd = null;
 	}
@@ -203,18 +183,7 @@ public class ScriptConsole extends IOConsole {
         cmd.addInputStreamListener(consoleDaemon);
         cmd.start();
         activate();
-        notifyConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
-	}
-
-	void notifyConsoleObservers(boolean running){
-		for (ScriptConsoleObserver observer : activeConsoleObservers) {
-			observer.runningStateChanged(running);
-		}
-	}
-
-	public void addScriptConsoleObserver (ScriptConsoleObserver observer){
-		activeConsoleObservers.add(observer);
 	}
 
 	/**
@@ -279,7 +248,6 @@ public class ScriptConsole extends IOConsole {
 			  // Stop the command
 			  cmd.stop();
               setName(Localization.getString("ScriptConsole.Terminated") + super.getName()); //$NON-NLS-1$
-              notifyConsoleObservers(false);
 		}
 	}
 
