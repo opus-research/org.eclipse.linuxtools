@@ -50,6 +50,12 @@ public class Messages extends NLS {
     /** Select trace file */
     public static String OpenFileHandler_SelectTraceFile;
 
+    /** No --open trace specified */
+    public static String TextDump_NoOpenTrace;
+
+    /** Not trace type matching */
+    public static String TextDump_NoTypeMatch;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

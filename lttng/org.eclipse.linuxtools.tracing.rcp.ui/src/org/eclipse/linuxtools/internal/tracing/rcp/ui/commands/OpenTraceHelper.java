@@ -116,11 +116,8 @@ public class OpenTraceHelper {
 
         String[] traceInfo = traceTypeToSet.split(":", 2); //$NON-NLS-1$
         String traceTypeId = tt.getTraceTypeId(traceInfo[0], traceInfo[1]);
-        IProject project = ResourcesPlugin
-                .getWorkspace()
-                .getRoot()
-                .getProject(
-                        Messages.ApplicationWorkbenchWindowAdvisor_DefaultProjectName);
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(
+                Messages.ApplicationWorkbenchWindowAdvisor_DefaultProjectName);
         IFolder folder = project.getFolder(TRACES_DIRECTORY);
         String traceName = getTraceName(file, folder);
         if (traceExists(file, folder)) {
@@ -269,7 +266,13 @@ public class OpenTraceHelper {
 
     private String fCandidate;
 
-    private String getTraceTypeToSet(ArrayList<String> candidates, Shell shell) {
+    /**
+     * Create a menu and select a trace type
+     * @param candidates the candidates to choose from
+     * @param shell the shell to display to
+     * @return the selected trace type
+     */
+    String getTraceTypeToSet(ArrayList<String> candidates, Shell shell) {
         Shell shellToShow = new Shell(shell);
         for (String candidate : candidates) {
             Button b = new Button(shellToShow, SWT.RADIO);
@@ -280,8 +283,8 @@ public class OpenTraceHelper {
                 public void widgetSelected(SelectionEvent e) {
                     final Button source = (Button) e.getSource();
                     setCandidate(source.getText());
+                    source.getShell().setVisible(false);
                     source.getParent().dispose();
-
                 }
 
                 @Override
@@ -300,6 +303,7 @@ public class OpenTraceHelper {
                 display.sleep();
             }
         }
+
         return fCandidate;
     }
 
@@ -387,10 +391,8 @@ public class OpenTraceHelper {
                                 // editor should dispose the trace on close
                             }
                         } catch (final PartInitException e) {
-                            TracingRcpPlugin
-                                    .getDefault()
-                                    .logError(
-                                            "Error opening trace " + traceElement.getName()); //$NON-NLS-1$
+                            TracingRcpPlugin.getDefault().logError(
+                                    Messages.OpenTraceHelper_ErrorOpeningTrace+ ' ' + traceElement.getName());
                             trace.dispose();
                         }
                     }

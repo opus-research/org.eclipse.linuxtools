@@ -41,29 +41,29 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     // ------------------------------------------------------------------------
     @SuppressWarnings("nls")
     private static final String[] UNWANTED_ACTION_SET = {
-        "org.eclipse.search.searchActionSet",
-        "org.eclipse.rse.core.search.searchActionSet",
-        "org.eclipse.debug.ui.launchActionSet",
-        "org.eclipse.debug.ui.debugActionSet",
-        "org.eclipse.debug.ui.breakpointActionSet",
-        "org.eclipse.team.ui",
-        "org.eclipse.ui.externaltools.ExternalToolsSet",
-//        "org.eclipse.update.ui.softwareUpdates",
-//        "org.eclipse.ui.edit.text.actionSet.navigation",
-//        "org.eclipse.ui.actionSet.keyBindings",
-//        "org.eclipse.ui.edit.text.actionSet.navigation",
-        "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
-//        "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
-//        "org.eclipse.ui.NavigateActionSet",
-//        "org.eclipse.jdt.ui.JavaActionSet",
-//        "org.eclipse.jdt.ui.A_OpenActionSet",
-//        "org.eclipse.jdt.ui.text.java.actionSet.presentation",
-//        "org.eclipse.jdt.ui.JavaElementCreationActionSet",
-//        "org.eclipse.jdt.ui.CodingActionSet",
-//        "org.eclipse.jdt.ui.SearchActionSet",
-//        "org.eclipse.jdt.debug.ui.JDTDebugActionSet",
-        "org.eclipse.ui.edit.text.actionSet.openExternalFile",
-//        "org.eclipse.debug.ui.profileActionSet"
+            "org.eclipse.search.searchActionSet",
+            "org.eclipse.rse.core.search.searchActionSet",
+            "org.eclipse.debug.ui.launchActionSet",
+            "org.eclipse.debug.ui.debugActionSet",
+            "org.eclipse.debug.ui.breakpointActionSet",
+            "org.eclipse.team.ui",
+            "org.eclipse.ui.externaltools.ExternalToolsSet",
+            // "org.eclipse.update.ui.softwareUpdates",
+            // "org.eclipse.ui.edit.text.actionSet.navigation",
+            // "org.eclipse.ui.actionSet.keyBindings",
+            // "org.eclipse.ui.edit.text.actionSet.navigation",
+            "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
+            // "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
+            // "org.eclipse.ui.NavigateActionSet",
+            // "org.eclipse.jdt.ui.JavaActionSet",
+            // "org.eclipse.jdt.ui.A_OpenActionSet",
+            // "org.eclipse.jdt.ui.text.java.actionSet.presentation",
+            // "org.eclipse.jdt.ui.JavaElementCreationActionSet",
+            // "org.eclipse.jdt.ui.CodingActionSet",
+            // "org.eclipse.jdt.ui.SearchActionSet",
+            // "org.eclipse.jdt.debug.ui.JDTDebugActionSet",
+            "org.eclipse.ui.edit.text.actionSet.openExternalFile",
+            // "org.eclipse.debug.ui.profileActionSet"
     };
 
     // ------------------------------------------------------------------------
@@ -100,13 +100,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     @Override
     public void postWindowCreate() {
         super.postWindowOpen();
-        TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(new PerspectiveListener());
-        createDefaultProject();
-        hideActionSets();
-        openTraceIfNecessary();
+        if (TracingRcpPlugin.getDefault() != null && TracingRcpPlugin.getDefault().getWorkbench() != null && TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow() != null) {
+            TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(new PerspectiveListener());
+            createDefaultProject();
+            hideActionSets();
+            openTraceIfNecessary();
+        }
+
     }
-
-
 
     private static void openTraceIfNecessary() {
         String traceToOpen = TracingRcpPlugin.getDefault().getCli().getArgument(CliParser.OPEN_FILE_LOCATION);
@@ -115,7 +116,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
             final IWorkspaceRoot root = workspace.getRoot();
             IProject project = root.getProject(Messages.ApplicationWorkbenchWindowAdvisor_DefaultProjectName);
             final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-            ncp.getChildren( project ); // force the model to be populated
+            ncp.getChildren(project); // force the model to be populated
             OpenTraceHelper oth = new OpenTraceHelper();
             try {
                 oth.open(traceToOpen, TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getShell());
