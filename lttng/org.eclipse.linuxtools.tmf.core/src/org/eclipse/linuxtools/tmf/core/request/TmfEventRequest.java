@@ -31,9 +31,6 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
     // Constants
     // ------------------------------------------------------------------------
 
-    /** The request count for all the events */
-    public static final int ALL_DATA = Integer.MAX_VALUE;
-
     private static int fRequestNumber = 0;
 
     // ------------------------------------------------------------------------
