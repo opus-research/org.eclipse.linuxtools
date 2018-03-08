@@ -15,9 +15,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
@@ -192,7 +189,7 @@ public abstract class CtfTmfEventField implements ITmfEventField {
                     other.name);
         case FIELDTYPE_INTEGER_ARRAY:
             return new CTFIntegerArrayField(
-                    ((CTFIntegerArrayField) other).getLongValues(), other.name);
+                    ((CTFIntegerArrayField) other).getValue(), other.name);
         case FIELDTYPE_FLOAT:
             return new CTFFloatField(((CTFFloatField) other).getValue(),
                     other.name);
@@ -400,32 +397,22 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return FIELDTYPE_INTEGER_ARRAY;
     }
 
-    /**
-     * Gets the values of the array
-     * @return the values in the array
-     *
-     * @since 2.0
-     */
-    long[] getLongValues() {
-        return this.longValues;
-    }
-
     @Override
-    public List<Long> getValue() {
-        List<Long> retVal = new ArrayList<Long>();
-        for( Long l : longValues){
-            retVal.add(l);
-        }
-        return retVal;
+    public long[] getValue() {
+        return this.longValues;
     }
 
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(name);
-        buffer.append('=');
-        buffer.append(getValue());
-        return buffer.toString();
+        buffer.append("{ "); //$NON-NLS-1$
+
+        buffer.append(longValues[0]);
+        for (int i = 1; i < longValues.length; i++) {
+            buffer.append(", " + longValues[i]); //$NON-NLS-1$
+        }
+        buffer.append('}');
+        return name + '=' + buffer.toString();
     }
 }
 
