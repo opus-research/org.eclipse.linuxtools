@@ -12,10 +12,10 @@ package org.eclipse.linuxtools.dataviewers.annotatedsourceeditor;
 
 import org.eclipse.swt.graphics.Color;
 
-public interface IAnnotationProvider {
+public interface IAnnotationEditorInput {
     /**
      * gets the background column of a editor line
-     * 
+     *
      * @param line
      * @return
      */
@@ -23,14 +23,8 @@ public interface IAnnotationProvider {
 
     /**
      * gets the ISTAnnotationColumn objects list
-     * 
+     *
      * @return
      */
     ISTAnnotationColumn getColumn();
-
-    /**
-     * Dispose method
-     */
-    void dispose();
-
 }
