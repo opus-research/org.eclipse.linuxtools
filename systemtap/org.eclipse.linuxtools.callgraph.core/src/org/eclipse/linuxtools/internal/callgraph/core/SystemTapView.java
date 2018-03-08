@@ -55,14 +55,24 @@ public abstract class SystemTapView extends ViewPart {
     private Action kill;
 
     protected String viewID;
-    private Action helpVersion;
-    protected Action saveFile;
-    protected Action openFile;
-    protected Action openDefault;
+    @SuppressWarnings("unused")
+    private Action help_about;
+    private Action help_version;
+    protected Action save_file;
+    protected Action open_file;
+    protected Action open_default;
     protected String sourcePath;
     protected IMenuManager file;
     private SystemTapParser parser;
 
+
+    /**
+     * The constructor.
+     *
+     * @return
+     */
+    public SystemTapView() {
+    }
 
     /**
      * This method will be called from GraphUIJob to load the view
@@ -212,14 +222,14 @@ public abstract class SystemTapView extends ViewPart {
         }
 
         if (createOpenAction()) {
-            file.add(openFile);
+            file.add(open_file);
         }
         if (createOpenDefaultAction()) {
-            file.add(openDefault);
+            file.add(open_default);
         }
 
         createSaveAction();
-        file.add(saveFile);
+        file.add(save_file);
     }
 
 
@@ -229,12 +239,12 @@ public abstract class SystemTapView extends ViewPart {
         menu.add(help);
         createHelpActions();
 
-        help.add(helpVersion);
+        help.add(help_version);
     }
 
 
     public void createHelpActions() {
-        helpVersion = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
+        help_version = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
             @Override
 			public void run() {
                 try {
@@ -265,7 +275,7 @@ public abstract class SystemTapView extends ViewPart {
             }
         };
 
-        Action helpAbout = new Action(Messages.getString("SystemTapView.AboutMenu")) { //$NON-NLS-1$
+        help_about = new Action(Messages.getString("SystemTapView.AboutMenu")) { //$NON-NLS-1$
             @Override
 			public void run() {
                 Display disp = Display.getCurrent();
@@ -325,7 +335,7 @@ public abstract class SystemTapView extends ViewPart {
 
     protected void createSaveAction() {
         //Save callgraph.out
-        saveFile = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
+        save_file = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
             @Override
 			public void run(){
                 Shell sh = new Shell();
@@ -357,6 +367,23 @@ public abstract class SystemTapView extends ViewPart {
         if (kill != null) {
             kill.setEnabled(val);
         }
+    }
+
+
+    public Action getKillButton() {
+        return kill;
+    }
+
+    public  Action getHelp_version() {
+        return help_version;
+    }
+
+    public  void setHelp_version(Action helpVersion) {
+        help_version = helpVersion;
+    }
+
+    public Action getSave_file() {
+        return save_file;
     }
 
 
@@ -413,4 +440,7 @@ public abstract class SystemTapView extends ViewPart {
         sourcePath = file;
     }
 
+    public Action getOpen_file() {
+        return open_file;
+    }
 }
