@@ -61,15 +61,20 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 	public void run() {
 		errorGobbler.start();
 		inputGobbler.start();
-		
 		try {
-			while(!stopped) {
-				try {
-					process.exitValue();	//Dont care what the value is, just whether it throws an exception
-					stop();	//Above line will throw an exception if not finished
-				} catch(IllegalThreadStateException itse) {}				
-			}
-		} catch(NullPointerException npe) {}
+			process.waitFor();
+		} catch (InterruptedException e) {} 
+		stop();
 	}
 
+	public synchronized void stop() {
+		if(!stopped) {
+			process.destroy();
+			stopped = true;
+			if(null != errorGobbler)
+				errorGobbler.stop();
+			if(null != inputGobbler)
+				inputGobbler.stop();
+		}
+	}
 }
