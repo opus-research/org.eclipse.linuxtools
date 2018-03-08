@@ -10,7 +10,7 @@
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Implementation and Initial API
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,8 +21,8 @@ import java.util.Vector;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.Messages;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
@@ -33,7 +33,6 @@ import org.eclipse.ui.PlatformUI;
  *
  * @version 2.0
  * @author Mathieu Denis
- * @since 2.0
  */
 public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
 
@@ -53,6 +52,11 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
     protected final static String EVENTS_COUNT_COLUMN = Messages.TmfStatisticsView_NbEventsColumn;
 
     /**
+     * Number of events in time range column names
+     * @since 2.0
+     */
+    protected final static String PARTIAL_EVENTS_COUNT_COLUMN = Messages.TmfStatisticsView_NbEventsTimeRangeColumn;
+    /**
      * Level column tooltips
      */
     protected final static String LEVEL_COLUMN_TIP = Messages.TmfStatisticsView_LevelColumnTip;
@@ -62,6 +66,11 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
      */
     protected final static String EVENTS_COUNT_COLUMN_TIP = Messages.TmfStatisticsView_NbEventsTip;
 
+    /**
+     * Number of events in time range column tooltips
+     * @since 2.0
+     */
+    protected final static String PARTIAL_COUNT_COLUMN_TIP = Messages.TmfStatisticsView_NbEventsTimeRangeTip;
     /**
      * Level for which statistics should not be displayed.
      */
@@ -73,6 +82,7 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
     public TmfBaseColumnDataProvider() {
         /* List that will be used to create the table. */
         fColumnData = new Vector<TmfBaseColumnData>();
+        /* Column showing the name of the events and its level in the tree */
         fColumnData.add(new TmfBaseColumnData(LEVEL_COLUMN, 200, SWT.LEFT, LEVEL_COLUMN_TIP, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -97,12 +107,13 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
             }
         }, null));
 
-        fColumnData.add(new TmfBaseColumnData(EVENTS_COUNT_COLUMN, 125, SWT.LEFT, EVENTS_COUNT_COLUMN_TIP, new ColumnLabelProvider() {
+        /* Column showing the total number of events */
+        fColumnData.add(new TmfBaseColumnData(EVENTS_COUNT_COLUMN, 140, SWT.LEFT, EVENTS_COUNT_COLUMN_TIP, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
                 if (!fFolderLevels.contains(node.getKey())) {
-                    return Long.toString(node.getValue().nbEvents);
+                    return Long.toString(node.getValue().getTotal());
                 }
                 return ""; //$NON-NLS-1$
             }
@@ -112,7 +123,7 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode n1 = (TmfStatisticsTreeNode) e1;
                 TmfStatisticsTreeNode n2 = (TmfStatisticsTreeNode) e2;
 
-                return (int) (n1.getValue().nbEvents - n2.getValue().nbEvents);
+                return (int) (n1.getValue().getTotal() - n2.getValue().getTotal());
             }
         }, new ITmfColumnPercentageProvider() {
 
@@ -121,12 +132,47 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode parent = node;
                 do {
                     parent = parent.getParent();
-                } while (parent != null && parent.getValue().nbEvents == 0);
+                } while (parent != null && parent.getValue().getTotal() == 0);
 
                 if (parent == null) {
                     return 0;
                 }
-                return (double) node.getValue().nbEvents / parent.getValue().nbEvents;
+                return (double) node.getValue().getTotal() / parent.getValue().getTotal();
+            }
+        }));
+
+        /* Column showing the number of events within the selected time range */
+        fColumnData.add(new TmfBaseColumnData(PARTIAL_EVENTS_COUNT_COLUMN, 140, SWT.LEFT, PARTIAL_COUNT_COLUMN_TIP,
+                new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
+                if (!fFolderLevels.contains(node.getKey())) {
+                    return Long.toString(node.getValue().getPartial());
+                }
+                return ""; //$NON-NLS-1$
+            }
+        }, new ViewerComparator() {
+            @Override
+            public int compare(Viewer viewer, Object e1, Object e2) {
+                TmfStatisticsTreeNode n1 = (TmfStatisticsTreeNode) e1;
+                TmfStatisticsTreeNode n2 = (TmfStatisticsTreeNode) e2;
+
+                return (int) (n1.getValue().getPartial() - n2.getValue().getPartial());
+            }
+        }, new ITmfColumnPercentageProvider() {
+
+            @Override
+            public double getPercentage(TmfStatisticsTreeNode node) {
+                TmfStatisticsTreeNode parent = node;
+                do {
+                    parent = parent.getParent();
+                } while (parent != null && parent.getValue().getPartial() == 0);
+
+                if (parent == null) {
+                    return 0;
+                }
+                return (double) node.getValue().getPartial() / parent.getValue().getPartial();
             }
         }));
     }

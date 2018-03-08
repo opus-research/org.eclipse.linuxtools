@@ -25,11 +25,11 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
 
 /**
  * TmfBaseStatistics Test Cases.
@@ -209,14 +209,14 @@ public class TmfBaseStatisticsDataTest extends TestCase {
      */
     public void testRegisterEvent() {
         TmfStatisticsTreeNode trace = fStatsData.get(new TmfFixedArray<String>(fTestName));
-        assertEquals("registerEvent", 3, trace.getValue().nbEvents);
+        assertEquals("registerEvent", 3, trace.getValue().getTotal());
 
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.getChildren(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes));
         for (TmfStatisticsTreeNode child : childrenTreeNode) {
             if (child.getKey().compareTo(fEvent1.getType().toString()) == 0) {
-                assertEquals("registerEvent", 2, child.getValue().nbEvents);
+                assertEquals("registerEvent", 2, child.getValue().getTotal());
             } else if (child.getKey().compareTo(fEvent3.getType().toString()) == 0) {
-                assertEquals("registerEvent", 1, child.getValue().nbEvents);
+                assertEquals("registerEvent", 1, child.getValue().getTotal());
             }
         }
     }
@@ -232,7 +232,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         TmfStatisticsTreeNode traceRoot = fStatsData.get(new TmfFixedArray<String>(fTestName));
         assertNotNull("get", traceRoot);
         assertEquals("get", 0, traceRoot.getPath().toString().compareTo("[" + fTestName + "]"));
-        assertEquals("get", 3, traceRoot.getValue().nbEvents);
+        assertEquals("get", 3, traceRoot.getValue().getTotal());
         assertEquals("get", 1, traceRoot.getNbChildren());
     }
 
