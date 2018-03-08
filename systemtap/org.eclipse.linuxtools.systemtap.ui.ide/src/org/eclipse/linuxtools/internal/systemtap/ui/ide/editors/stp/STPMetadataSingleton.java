@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import java.util.Set;
 
 
 /**
@@ -36,7 +34,7 @@ import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 // the generation of new meta-data is too slow to do this efficiently.
 public class STPMetadataSingleton {
 
-	private static String[] NO_MATCHES = new String[] {"No completion data found."};
+
 	private static STPMetadataSingleton instance = null;
 	private static HashMap<String, ArrayList<String>> builtMetadata = new HashMap<String, ArrayList<String>>();
 
@@ -45,7 +43,6 @@ public class STPMetadataSingleton {
 	// Not a true singleton, but enough for the simplistic purpose
 	// it has to serve.
 	protected STPMetadataSingleton() {
-		TapsetLibrary.init();
 	}
 
 	public static STPMetadataSingleton getInstance() {
@@ -64,55 +61,48 @@ public class STPMetadataSingleton {
 	 * 
 	 */
 	public static String[] getCompletionResults(String match) {
+
+		ArrayList<String> data = new ArrayList<String>();
+	
 		// TODO: Until an error strategy is devised to better inform
 		// the user that there was a problem compiling completions other than
 		// a modal error dialog, or a log message use this.
 		if (barLookups)
-			return NO_MATCHES;
-
+			return new String[] {"No completion data found."};
+		
 		// Check to see if the proposal hint included a <tapset>.<partialprobe>
 		// or just a <probe>. (ie syscall. or syscall.re).
 		boolean tapsetAndProbeIncluded = isTapsetAndProbe(match);
 
-		TreeNode node = TapsetLibrary.getProbes();
-
 		// If the result is a tapset and partial probe, get the tapset, then 
-		// narrow down the list with partial probe matches.
+		/// narrow down the list with partial probe matches.
 		if (tapsetAndProbeIncluded) {
-			node = getChildByName(node, getTapset(match));
-			if (node == null )
-				return NO_MATCHES;
+			ArrayList<String> temp = builtMetadata.get(getTapset(match));
 
-			// Now get the completions.
-			return getMatchingChildren(node, match);			
-		}
+			if (temp == null)
+				return new String[] {"No completion data found."};
 
-		// Now get the completions.
-		return getMatchingChildren(node, match);
-	}
-
-	private static TreeNode getChildByName(TreeNode node, String name){
-		int n = node.getChildCount();
-
-		for (int i = 0; i < n; i++) {
-			if (node.getChildAt(i).getData().equals(name))
-				return node.getChildAt(i);
-		}
-
-		return null;
-	}
-
-	private static String[] getMatchingChildren(TreeNode node, String prefix) {
-		ArrayList<String> matches = new ArrayList<String>();
-
-		int n = node.getChildCount();
-		for (int i = 0; i < n; i++) {
-			if (node.getChildAt(i).toString().startsWith(prefix)){
-				matches.add(node.getChildAt(i).toString());
+			String probe = getTapsetProbe(match);
+			for (int i=0; i<temp.size(); i++) {
+				if (temp.get(i).startsWith(probe)) {
+					data.add(temp.get(i));
+				}
 			}
 		}
-
-		return matches.toArray(new String[0]);
+		// If the result was a <tapset>, return all <probe> matches.
+		else{
+			Set<String> tapset = builtMetadata.keySet();
+			for (String probePoint : tapset) {
+				if (probePoint.startsWith(match)){
+					data.add(probePoint);
+				}
+			}
+		}
+		
+		if (data == null)
+			return new String[] {};
+		else
+			return data.toArray(new String[0]);
 	}
 
 	/**

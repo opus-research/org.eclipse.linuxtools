@@ -24,7 +24,7 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
-class STPCompletionProcessor implements IContentAssistProcessor {
+public class STPCompletionProcessor implements IContentAssistProcessor {
 
 	private final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
 	private final char[] PROPOSAL_ACTIVATION_CHARS = new char[] { '.' };
@@ -44,10 +44,13 @@ class STPCompletionProcessor implements IContentAssistProcessor {
 	 */
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
+		return computeCompletionProposals(viewer.getDocument(), offset);
+	}
+
+	public ICompletionProposal[] computeCompletionProposals(IDocument document, int offset){
 
 		ITypedRegion partition = null;
 		
-		IDocument document = viewer.getDocument();
 		try {
 			partition = document.getPartition(offset);
 		} catch (BadLocationException e1) {
@@ -80,9 +83,15 @@ class STPCompletionProcessor implements IContentAssistProcessor {
 
 	private ICompletionProposal[] getProbeCompletionList(String prefix, int offset){
 		String[] completionData = STPMetadataSingleton.getCompletionResults(prefix);
+		// get the last section of the prefix
+		int i = prefix.indexOf('.');
+		if (i > 0){
+			prefix = prefix.substring(i+1);
+		}
 		return buildCompletionList(offset, prefix.length(), completionData);
+		
 	}
-
+	
 	private ICompletionProposal[] buildCompletionList(int offset, int prefixLength,String[] completionData){
 		// Build proposals and submit
 		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
