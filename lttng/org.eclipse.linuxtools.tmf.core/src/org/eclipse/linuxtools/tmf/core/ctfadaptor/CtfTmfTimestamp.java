@@ -50,7 +50,7 @@ public class CtfTmfTimestamp extends TmfTimestamp {
      * @param timestamp long
      */
     public CtfTmfTimestamp(long timestamp) {
-        super(timestamp, ITmfTimestamp.NANOSECOND_SCALE, 0);
+        setValue(timestamp, ITmfTimestamp.NANOSECOND_SCALE, 0);
         type = TimestampType.DAY;
     }
 

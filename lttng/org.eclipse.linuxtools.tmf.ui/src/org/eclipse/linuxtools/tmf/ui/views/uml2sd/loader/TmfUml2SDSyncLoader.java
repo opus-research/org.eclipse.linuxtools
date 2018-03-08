@@ -237,7 +237,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         fLock.lock();
         try {
             if (fCurrentTime != null) {
-                return fCurrentTime;
+                return fCurrentTime.clone();
             }
             return null;
         } finally {
@@ -307,10 +307,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                         ++fNbSeqEvents;
 
                         if (fFirstTime == null) {
-                            fFirstTime = event.getTimestamp();
+                            fFirstTime = event.getTimestamp().clone();
                         }
 
-                        fLastTime = event.getTimestamp();
+                        fLastTime = event.getTimestamp().clone();
 
                         if ((fNbSeqEvents % MAX_NUM_OF_MSG) == 0) {
                             fLock.lock();
@@ -1190,7 +1190,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 return false;
             }
 
-            TmfTimeRange window = new TmfTimeRange(fCheckPoints.get(nextPage).getStartTime(), fCheckPoints.get(fCheckPoints.size()-1).getEndTime());
+            TmfTimeRange window = new TmfTimeRange(fCheckPoints.get(nextPage).getStartTime().clone(), fCheckPoints.get(fCheckPoints.size()-1).getEndTime().clone());
             fFindJob = new SearchJob(findCriteria, window);
             fFindJob.schedule();
             fView.toggleWaitCursorAsync(true);
@@ -1422,20 +1422,20 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
                 if (fCriteria.isLifeLineSelected()) {
                     if (fCriteria.matches(sdEvent.getSender())) {
-                        fFoundTime = event.getTimestamp();
+                        fFoundTime = event.getTimestamp().clone();
                         fIsFound = true;
                         super.cancel();
                     }
 
                     if (fCriteria.matches(sdEvent.getReceiver())) {
-                        fFoundTime = event.getTimestamp();
+                        fFoundTime = event.getTimestamp().clone();
                         fIsFound = true;
                         super.cancel();
                     }
                 }
 
                 if (fCriteria.isSyncMessageSelected() && fCriteria.matches(sdEvent.getName())) {
-                    fFoundTime = event.getTimestamp();
+                    fFoundTime = event.getTimestamp().clone();
                     fIsFound = true;
                     super.cancel();
                 }
