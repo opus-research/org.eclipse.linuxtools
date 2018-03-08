@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -85,41 +84,12 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 			return getGlobalKeywordCompletion(prefix, offset);
 		}
 
-		// If inside a probe return probe variable completions and functions
-		// which can be called.
+		// If inside a probe return probe variable completions.
 		if (partition.getType() == STPPartitionScanner.STP_PROBE){
-			ICompletionProposal[] variableCompletions = getProbeVariableCompletions(document, offset, prefix);
-			ICompletionProposal[] functionCompletions = getFunctionCompletions(offset, prefix);
-			
-			ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>(
-					variableCompletions.length + functionCompletions.length);
-			completions.addAll(Arrays.asList(variableCompletions));
-			completions.addAll(Arrays.asList(functionCompletions));
-
-			return completions.toArray(new ICompletionProposal[0]);
+			return getProbeVariableCompletions(document, offset, prefix);
 		}
 
 		return NO_COMPLETIONS;
-	}
-
-	private ICompletionProposal[] getFunctionCompletions(int offset,
-			String prefix) {
-		String[] completionData = stpMetadataSingleton.getFunctionCompletions(prefix);
-		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
-		int prefixLength = prefix.length();
-		for (int i = 0; i < completionData.length; i++){
-			result[i] = new CompletionProposal(
-							completionData[i].substring(prefixLength) + "()", //$NON-NLS-1$
-							offset,
-							0,
-							completionData[i].length() - prefixLength + 1,
-							null,
-							completionData[i] + " - function", //$NON-NLS-1$
-							null,
-							null);
-		}
-
-		return result;
 	}
 
 	private ICompletionProposal[] getProbeVariableCompletions(IDocument document, int offset, String prefix){
@@ -127,6 +97,8 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		String[] completionData = stpMetadataSingleton.getProbeVariableCompletions(probe, prefix);
 		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
 
+
+		// return buildCompletionList(offset, prefix.length(), completionData);
 		int prefixLength = prefix.length();
 		for (int i = 0; i < completionData.length; i++){
 			int endIndex = completionData[i].indexOf(':');
@@ -136,7 +108,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 							0,
 							endIndex - prefixLength,
 							null,
-							completionData[i] + " - variable", //$NON-NLS-1$
+							completionData[i],
 							null,
 							null);
 		}
