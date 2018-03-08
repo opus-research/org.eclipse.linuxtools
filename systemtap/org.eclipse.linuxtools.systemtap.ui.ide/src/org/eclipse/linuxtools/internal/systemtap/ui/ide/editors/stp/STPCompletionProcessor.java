@@ -16,8 +16,6 @@ import java.util.Arrays;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
@@ -26,9 +24,9 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 
-public class STPCompletionProcessor implements IContentAssistProcessor, ITextHover {
+public class STPCompletionProcessor implements IContentAssistProcessor {
 
 	private final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
 	private final char[] PROPOSAL_ACTIVATION_CHARS = new char[] { '.' };
@@ -44,26 +42,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 			{ FUNCTION_KEYWORD, Messages.STPCompletionProcessor_function } };
 
 	private STPMetadataSingleton stpMetadataSingleton;
-
-	private static class Token implements IRegion{
-		String tokenString;
-		int offset;
-
-		public Token(String string, int n) {
-			this.tokenString = string;
-			this.offset = n;
-		}
-
-		@Override
-		public int getLength() {
-			return this.tokenString.length();
-		}
-
-		@Override
-		public int getOffset() {
-			return this.offset;
-		}
-	}
 
 	public STPCompletionProcessor(){
 		this.stpMetadataSingleton = STPMetadataSingleton.getInstance();
@@ -95,16 +73,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		// Get completion hint from document
 		try {
 			prefix = getPrefix(document, offset);
-			Token previousToken = getPrecedingToken(document, offset - prefix.length() - 1);
-
-			while (previousToken.tokenString.equals("=") || //$NON-NLS-1$
-					previousToken.tokenString.equals(",") ){ //$NON-NLS-1$
-				previousToken = getPrecedingToken(document, previousToken.offset - 1);
-				previousToken = getPrecedingToken(document, previousToken.offset - 1);
-			}
-
-			prePrefix = previousToken.tokenString;
-
+			prePrefix = getPrecedingToken(document, prefix, offset);
 		} catch (BadLocationException e) {
 			return NO_COMPLETIONS;
 		}
@@ -214,7 +183,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 
 		// Build proposals and submit
 		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
-		for (int i = 0; i < completionData.length; i++) {
+		for (int i = 0; i < completionData.length; i++)
 			result[i] = new CompletionProposal(
 							completionData[i].substring(prefix.length()),
 							offset,
@@ -224,7 +193,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 							completionData[i],
 							null,
 							TapsetLibrary.getDocumentation(manPrefix + completionData[i]));
-		}
 		return result;
 
 	}
@@ -239,9 +207,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 	private String canonicalizePrefix(String prefix) {
 
 		if (prefix.isEmpty())
-		 {
 			return ""; //$NON-NLS-1$
-		}
 
 		if(prefix.matches("process\\(\".*\"\\).*")){ //$NON-NLS-1$
 			prefix = prefix.replaceAll("process\\(\".*\"\\)", "process\\(\"PATH\"\\)"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -303,45 +269,13 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 	 * @return The preceding token.
 	 * @throws BadLocationException
 	 */
-	private Token getPrecedingToken(IDocument doc, int offset) throws BadLocationException{
+	private String getPrecedingToken(IDocument doc, String prefix, int offset) throws BadLocationException{
 		// Skip trailing space
-		int n = offset;
+		int n = offset - prefix.length() - 1;
 		while (n >= 0 && Character.isSpaceChar(doc.getChar(n))){
 			n--;
 		}
-
-		char c = doc.getChar(n);
-		if(isTokenDelimiter(c)){
-			return new Token(Character.toString(c), n);
-		}
-
-		int end = n;
-		while (n >= 0 && !isTokenDelimiter((doc.getChar(n)))){
-			n--;
-		}
-
-		return new Token(doc.get(n+1, end-n), n+1);
-	}
-
-	private Token getCurrentToken(IDocument doc, int offset) throws BadLocationException{
-		char c = doc.getChar(offset);
-
-		if(isDelimiter(c)){
-			return new Token(Character.toString(c), offset);
-		}
-
-		int start = offset;
-		while (start >= 0 && !isDelimiter((doc.getChar(start)))){
-			start--;
-		}
-
-		int end = offset;
-		while (end < doc.getLength() && !isDelimiter((doc.getChar(end)))){
-			end++;
-		}
-
-		start++;
-		return new Token(doc.get(start, end-start), start);
+		return getPrefix(doc, n + 1);
 	}
 
 	/**
@@ -359,7 +293,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 
 		for (int n = offset - 1; n >= 0; n--) {
 			char c = doc.getChar(n);
-			if (isTokenDelimiter(c)) {
+			if (isDelimiter(c)) {
 				String word = doc.get(n + 1, offset - n - 1);
 				return word;
 			}
@@ -367,10 +301,9 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		return ""; //$NON-NLS-1$
 	}
 
-	private boolean isTokenDelimiter(char c) {
-		if (Character.isSpaceChar(c)) {
+	private boolean isDelimiter(char c) {
+		if (Character.isSpaceChar(c))
 			return true;
-		}
 
 		switch (c) {
 		case '\n':
@@ -378,20 +311,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		case ',':
 		case '{':
 		case '}':
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isDelimiter (char c) {
-
-		if (isTokenDelimiter(c)) {
-			return true;
-		}
-
-		switch (c) {
-		case '(':
-		case ')':
 			return true;
 		}
 		return false;
@@ -441,49 +360,5 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 	public String getErrorMessage() {
 		// TODO: When does this trigger?
 		return "Error."; //$NON-NLS-1$
-	}
-
-	@Override
-	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		String documentation = null;
-		try {
-			String keyword = textViewer.getDocument().get(hoverRegion.getOffset(), hoverRegion.getLength());
-
-			documentation = TapsetLibrary.getDocumentationNoCache("function::" + keyword); //$NON-NLS-1$
-			if (documentation != null){
-				return documentation;
-			}
-
-			documentation = TapsetLibrary.getDocumentationNoCache("probe::" + keyword); //$NON-NLS-1$
-			if (documentation != null){
-				return documentation;
-			}
-
-			documentation = TapsetLibrary.getDocumentationNoCache("tapset::" + keyword); //$NON-NLS-1$
-			if (documentation != null){
-				return documentation;
-			}
-
-			if (keyword.indexOf('.') > 0){
-				keyword = keyword.split("\\.")[0]; //$NON-NLS-1$
-				documentation = TapsetLibrary.getDocumentationNoCache("tapset::" + keyword); //$NON-NLS-1$
-			}
-
-		} catch (BadLocationException e) {
-			// Bad hover location; just ignore it.
-		}
-
-		return documentation;
-	}
-
-	@Override
-	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-		try {
-			return getCurrentToken(textViewer.getDocument(), offset);
-		} catch (BadLocationException e) {
-			// Bad hover location; just ignore it.
-		}
-
-		return null;
 	}
 }

@@ -22,13 +22,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ExportScriptDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ScriptDetails;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.filters.IDataSetFilter;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetWizard;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.structures.ZipArchive;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.preferences.DashboardPreferenceConstants;
@@ -37,6 +30,13 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleFileFilter;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.ZipArchive;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewPart;
@@ -54,14 +54,15 @@ import org.eclipse.ui.XMLMemento;
  * @author Ryan Morse
  */
 public class CreateModuleHandler extends AbstractHandler {
-	public String script = null;
-
 	/**
 	 * This method will bring up the export script dialog window for the user to
 	 * select what they want to new module to contain. If the user enters module
 	 * information and clicks ok the module will be built and added to the
 	 * dashboard.
 	 */
+
+	public String script = null;
+
 	@Override
 	public Object execute(ExecutionEvent event) {
 		ScriptDetails sd = new ScriptDetails(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
@@ -114,9 +115,10 @@ public class CreateModuleHandler extends AbstractHandler {
 				String archiveName = getSaveDirectory() + "/" //$NON-NLS-1$
 						+ category.replace(' ', '_') + "." //$NON-NLS-1$
 						+ display.replace(' ', '_');
-				buildArchive(archiveName, meta);
+				buildArchive(archiveName, new File(script), meta);
 				cleanupFiles(new String[] { archiveName, meta.getAbsolutePath() });
 				updateDashboard();
+				// }
 			}
 		}
 		return null;
@@ -130,9 +132,8 @@ public class CreateModuleHandler extends AbstractHandler {
 	private void validateDirectory() {
 		File folder = new File(getSaveDirectory());
 
-		if (!folder.exists()) {
+		if (!folder.exists())
 			folder.mkdir();
-		}
 	}
 
 	/**
@@ -230,10 +231,13 @@ public class CreateModuleHandler extends AbstractHandler {
 	 *
 	 * @param archiveName
 	 *            The name to use for the file containing the new module data.
+	 * @param script
+	 *            The file representing the .stp script file to use for the
+	 *            module
 	 * @param meta
 	 *            The XML Memento file representing the module details.
 	 */
-	private void buildArchive(String archiveName, File meta) {
+	private void buildArchive(String archiveName, File script, File meta) {
 		String[] files = new String[] { meta.getAbsolutePath() };
 		String[] names = new String[] { DashboardModule.metaFileName };
 
@@ -251,16 +255,14 @@ public class CreateModuleHandler extends AbstractHandler {
 	 *            A list of all of the file paths that should be removed
 	 */
 	private void cleanupFiles(String[] files) {
-		if (null == files) {
+		if (null == files)
 			return;
-		}
 
 		File f;
-		for (String fileName:files) {
-			f = new File(fileName);
-			if (f.exists()) {
+		for (int i = 0; i < files.length; i++) {
+			f = new File(files[i]);
+			if (f.exists())
 				f.delete();
-			}
 		}
 	}
 
@@ -283,6 +285,9 @@ public class CreateModuleHandler extends AbstractHandler {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 			IViewPart ivp = p.findView(DashboardModuleBrowserView.ID);
 			((DashboardModuleBrowserView) ivp).refresh();
+
+			// p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID,
+			// PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		} catch (WorkbenchException we) {
 		}
 	}
