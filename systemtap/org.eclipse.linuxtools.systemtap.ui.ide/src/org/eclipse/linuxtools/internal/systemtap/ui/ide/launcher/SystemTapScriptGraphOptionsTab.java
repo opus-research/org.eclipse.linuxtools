@@ -68,8 +68,6 @@ public class SystemTapScriptGraphOptionsTab extends
 	 */
 	static final int MAX_NUMBER_OF_REGEXS = 20;
 
-	static final String GRAPHS_VALID = "graphsValid";
-
 	// Note: any non-private String key with a trailing underscore is to be appended with an integer when looking up values.
 	static final String RUN_WITH_CHART = "runWithChart"; //$NON-NLS-1$
 	static final String NUMBER_OF_REGEXS = "numberOfRegexs"; //$NON-NLS-1$
@@ -634,7 +632,6 @@ public class SystemTapScriptGraphOptionsTab extends
 					badGraphs.remove(old_gd);
 					setUpGraphTableItem(selectedTableItem, gd, false);
 					graphsData.set(graphsTable.indexOf(selectedTableItem), gd);
-					checkErrors(selectedRegex);
 					updateLaunchConfigurationDialog();
 				}
 			}
@@ -649,7 +646,6 @@ public class SystemTapScriptGraphOptionsTab extends
 				badGraphs.remove(gd);
 				selectedTableItem.dispose();
 				setSelectionControlsEnabled(false);
-				checkErrors(selectedRegex);
 				updateLaunchConfigurationDialog();
 			}
 		});
@@ -941,7 +937,6 @@ public class SystemTapScriptGraphOptionsTab extends
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(GRAPHS_VALID, true);
 		configuration.setAttribute(RUN_WITH_CHART, false);
 		configuration.setAttribute(NUMBER_OF_REGEXS, 1);
 		configuration.setAttribute(NUMBER_OF_COLUMNS + 0, 0);
@@ -1015,7 +1010,7 @@ public class SystemTapScriptGraphOptionsTab extends
 				setUpGraphTableItem(item, graphData, true);
 			}
 
-			updateRegexSelection(defaultSelectedRegex, true); // Handles all remaining updates.
+			updateRegexSelection(0, true); // Handles all remaining updates.
 			checkAllOtherErrors();
 
 		} catch (CoreException e) {
@@ -1028,7 +1023,6 @@ public class SystemTapScriptGraphOptionsTab extends
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(RUN_WITH_CHART, this.runWithChartCheckButton.getSelection());
-		configuration.setAttribute(GRAPHS_VALID, this.isValid(configuration));
 
 		int numberOfRegexs = getNumberOfRegexs();
 		for (int r = 0; r < numberOfRegexs; r++) {
@@ -1150,22 +1144,14 @@ public class SystemTapScriptGraphOptionsTab extends
 			if (i == selectedRegex) {
 				continue;
 			}
-			checkErrors(i);
-		}
-	}
 
-	/**
-	 * Checks the regular expression of the provided index for errors.
-	 * Sets the associated error message to contain relevant error information.
-	 * @param i The index of the regular expression to check for errors.
-	 */
-	private void checkErrors(int i) {
-		String error = findBadGraphs(i);
-		if (error == null) {
-			error = checkRegex(regularExpressionCombo.getItem(i));
-		}
+			String error = findBadGraphs(i);
+			if (error == null) {
+				error = checkRegex(regularExpressionCombo.getItem(i));
+			}
 
-		regexErrorMessages.set(i, error);
+			regexErrorMessages.set(i, error);
+		}
 	}
 
 	@Override
