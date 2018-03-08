@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.uistructures.StapSettingsDialog;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -25,12 +26,21 @@ import org.eclipse.ui.PlatformUI;
  * @author Ryan Morse
  * @see org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction
  */
-public class RunScriptOptionsAction extends RunScriptAction {
+public class RunScriptOptionsAction extends RunScriptAction implements IWorkbenchWindowActionDelegate {
 	public RunScriptOptionsAction() {
 		super();
 		LogManager.logDebug("initialized", this); //$NON-NLS-1$
 	}
-
+	
+	/**
+	 * The <code>buildScript</code> method in this class replaces the one in the superclass and calls
+	 * <code>buildOptionsScript</code> rather than the <code>buildStandardScript</code> method called
+	 * in the parent code.
+	 */
+	protected String[] buildScript() {
+		return buildOptionsScript();
+	}
+	
 	/**
 	 * This method executes the same code as the <code>buildStandardScript</code> with one change,
 	 * being that instead of calling the <code>getImportedTapsets</code> method from the parent class, it
@@ -46,7 +56,7 @@ public class RunScriptOptionsAction extends RunScriptAction {
 		getImportedTapsets(cmdList);
 		
 		if(isGuru())
-			cmdList.add("-g"); //$NON-NLS-1$
+			cmdList.add("-g");
 
 		getCommandLineOptions(cmdList);
 		
@@ -78,10 +88,10 @@ public class RunScriptOptionsAction extends RunScriptAction {
 			//Get rest of commandline options
 			for(i=0; i<cmdOptVals.length; i++) {
 				if(null != cmdOptVals[i] && cmdOptVals[i].trim().length() > 0) {
-					if("-v".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) { //$NON-NLS-1$
-						cmdList.add("-" + cmdOptVals[i]); //$NON-NLS-1$
-					} else if("-p NUM".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) { //$NON-NLS-1$
-						cmdList.add("-p" + cmdOptVals[i]); //$NON-NLS-1$
+					if("-v".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) {
+						cmdList.add("-" + cmdOptVals[i]);
+					} else if("-p NUM".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) {
+						cmdList.add("-p" + cmdOptVals[i]);
 					} else {
 						cmdList.add(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0].substring(0,2));
 

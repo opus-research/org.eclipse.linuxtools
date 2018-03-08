@@ -174,7 +174,7 @@ public class TestModelDataParse extends TestCase {
 		assertEquals("", parsedErrorImage.getName()); //$NON-NLS-1$
 	}
 	
-	public void testStringOutput() {
+	public void testStringOutput() throws Exception {
 		assertEquals(IMAGE_OUTPUT, parsedImage.toString());
 		assertEquals(IMAGE_OUTPUT_WITHTAB, parsedImage.toString("\t")); //$NON-NLS-1$
 	}

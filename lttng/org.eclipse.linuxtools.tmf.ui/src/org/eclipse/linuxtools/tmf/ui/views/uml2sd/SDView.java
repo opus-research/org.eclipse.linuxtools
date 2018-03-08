@@ -56,7 +56,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDCollapseP
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDExtendedActionBarProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPropertiesProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
@@ -755,7 +754,7 @@ public class SDView extends ViewPart {
      * @param resetPosition boolean Flag whether to reset the position or not.
      */
     protected void setFrame(Frame frame, boolean resetPosition) {
-        if (getSDWidget() == null) {
+        if (fSdWidget == null) {
             return;
         }
 
@@ -765,30 +764,27 @@ public class SDView extends ViewPart {
         }
 
         IUml2SDLoader loader = LoadersManager.getInstance().getCurrentLoader(getViewSite().getId(), this);
-        if (loader == null) {
-            return;
-        }
 
-        if (loader.getTitleString() != null) {
+        if ((loader != null) && (loader.getTitleString() != null)) {
             setContentDescription(loader.getTitleString());
         }
 
-        getSDWidget().setFrame(frame, resetPosition);
+        if (getSDWidget() != null) {
+            getSDWidget().setFrame(frame, resetPosition);
+        }
 
         if (fTimeCompressionBar != null) {
             fTimeCompressionBar.setFrame(frame);
         }
         updateCoolBar();
-        if (fTimeCompressionBar != null) {
-            if (!frame.hasTimeInfo()) {
-                Composite parent = fTimeCompressionBar.getParent();
-                fTimeCompressionBar.setVisible(false);
-                parent.layout(true);
-            } else {
-                Composite parent = fTimeCompressionBar.getParent();
-                fTimeCompressionBar.setVisible(true);
-                parent.layout(true);
-            }
+        if (!frame.hasTimeInfo()) {
+            Composite parent = fTimeCompressionBar.getParent();
+            fTimeCompressionBar.setVisible(false);
+            parent.layout(true);
+        } else {
+            Composite parent = fTimeCompressionBar.getParent();
+            fTimeCompressionBar.setVisible(true);
+            parent.layout(true);
         }
         IContributionItem shortKeysMenu = getViewSite().getActionBars().getMenuManager().find("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers");//$NON-NLS-1$
         MenuManager shortKeys = (MenuManager) shortKeysMenu;
@@ -839,8 +835,7 @@ public class SDView extends ViewPart {
         getSDWidget().getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
-                if (getSDWidget() == null || getSDWidget().isDisposed() ||
-                        ((fTimeCompressionBar != null) && fTimeCompressionBar.isDisposed())) {
+                if (getSDWidget() == null || getSDWidget().isDisposed()) {
                     return;
                 }
                 setFrame(frame);
@@ -1061,6 +1056,7 @@ public class SDView extends ViewPart {
      * (non-Javadoc)
      * @see org.eclipse.ui.part.WorkbenchPart#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         Object obj = super.getAdapter(adapter);

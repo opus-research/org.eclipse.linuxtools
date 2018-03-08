@@ -1,12 +1,13 @@
 /****************************************************************
- * Copyright (c) 2006-2013 IBM Corp.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors:
- *     IBM - initial API and implementation
+ * Licensed Material - Property of IBM
+ *
+ * ****-*** 
+ *
+ * (c) Copyright IBM Corp. 2006.  All rights reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication or
+ * disclosure restricted by GSA ADP Schedule Contract with
+ * IBM Corp.
  *
  ****************************************************************
  */
@@ -27,13 +28,21 @@ import org.swtchart.ISeries.SeriesType;
  */
 
 public class BarChartBuilder extends AbstractChartWithAxisBuilder {
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.barchartbuilder"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.barchartbuilder";
 
     public BarChartBuilder(Composite parent, int style, String title,IAdapter adapter) {
 		super(adapter, parent, style, title);
     }
     
-	@Override
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.ibm.examples.chart.widget.AbstractChartBuilder#buildChart()
+     */
+    protected void createChart() {
+		super.createChart();
+    }
+
 	protected ISeries createChartISeries(int i) {
 		IBarSeries series = (IBarSeries)chart.getSeriesSet().
 			createSeries(SeriesType.BAR, adapter.getLabels()[i+1]);
@@ -41,7 +50,6 @@ public class BarChartBuilder extends AbstractChartWithAxisBuilder {
 		return series;
 	}
 
-	@Override
 	public void updateDataSet() {
 		buildXSeries();
 	}

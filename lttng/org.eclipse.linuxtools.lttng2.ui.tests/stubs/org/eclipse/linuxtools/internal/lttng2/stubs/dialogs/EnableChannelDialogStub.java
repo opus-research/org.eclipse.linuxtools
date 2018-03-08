@@ -71,11 +71,6 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
         return fIsKernel;
     }
 
-    @Override
-    public void setHasKernel(boolean hasKernel) {
-        // Do nothing
-    }
-
     public void setChannelInfo(ChannelInfo info) {
         fChannelInfo = info;
     }

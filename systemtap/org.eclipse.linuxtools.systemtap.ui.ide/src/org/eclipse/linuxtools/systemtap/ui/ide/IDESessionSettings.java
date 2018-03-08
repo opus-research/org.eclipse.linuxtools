@@ -12,8 +12,6 @@
 package org.eclipse.linuxtools.systemtap.ui.ide;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * A simple class that contains information about the current session of the IDE, such as
@@ -23,46 +21,6 @@ import org.eclipse.ui.PlatformUI;
  */
 public class IDESessionSettings {
 	public static String tapsetLocation = "";
-	
-	/**
-	 * Use {@link IDESessionSettings#setActiveSTPEditor(STPEditor)} and
-	 * {@link IDESessionSettings#getActiveSTPEditor()} 
-	 */
-	private static STPEditor activeSTPEditor = null;
+	public static STPEditor activeSTPEditor = null;
 	public static String password = null;
-	
-	/**
-	 * Returns the most recent active {@link STPEditor} script editor if one was
-	 * set. If one was not set and there is only one {@link STPEditor} script editor
-	 * open then that one is returned. Otherwise returns null.
-	 * @return The most recent active {@link STPEditor}
-	 * @since 1.2
-	 */
-	public static STPEditor getActiveSTPEditor() {
-		if (activeSTPEditor == null){
-			// If the active editor is not set and there is only one
-			// stap script editor open set that to be the active editor.
-			IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-			int count = 0;
-			for(IEditorReference editor: editors){
-				if (editor.getId().equals(STPEditor.ID)){
-					activeSTPEditor = (STPEditor) editor.getEditor(true);
-					count++;
-				}
-			}
-			if (count > 1){
-				activeSTPEditor = null;
-			}
-		}
-		return activeSTPEditor;
-	}
-
-	/**
-	 * Sets the current active editor.
-	 * @param editor the active editor.
-	 * @since 1.2
-	 */
-	public static void setActiveSTPEditor (STPEditor editor){
-		activeSTPEditor = editor;
-	}
 }

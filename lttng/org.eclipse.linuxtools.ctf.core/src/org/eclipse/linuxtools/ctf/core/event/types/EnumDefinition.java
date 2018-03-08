@@ -12,11 +12,11 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF enum definition.
- *
+ * 
  * The definition of a enum point basic data type. It will take the data
  * from a trace and store it (and make it fit) as an integer and a string.
  *
@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class EnumDefinition extends SimpleDatatypeDefinition {
+public class EnumDefinition extends Definition {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -69,17 +69,11 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
         return value;
     }
 
-    @Override
-    public String getStringValue(){
-        return getValue();
-    }
-
     /**
      * Gets the value of the enum in string format so "Enum a{DAY="0", NIGHT="1"}; will return 0
      * @return the value of the enum.
      */
-    @Override
-    public Long getIntegerValue() {
+    public long getIntegerValue() {
         return integerValue.getValue();
     }
 

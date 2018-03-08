@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2012 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
@@ -23,8 +23,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
@@ -45,8 +44,6 @@ import org.osgi.framework.FrameworkUtil;
 /**
  *  Singleton class to facilitate the test cases. Creates UML2SD view and loader objects as well as provides
  *  utility methods for interacting with the loader/view.
- *
- *  @author Bernd Hufmann
  */
 public class Uml2SDTestFacility {
 
@@ -59,7 +56,7 @@ public class Uml2SDTestFacility {
     private SDView fSdView;
     private TmfTraceStub fTrace = null;
     private TmfUml2SDTestTrace    fParser = null;
-    private TmfExperiment fExperiment = null;
+    private TmfExperiment<TmfEvent> fExperiment = null;
 
     private boolean fIsInitialized = false;
 
@@ -72,9 +69,6 @@ public class Uml2SDTestFacility {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /**
-     * @return the singleton instance.
-     */
     public synchronized static Uml2SDTestFacility getInstance() {
         if (fInstance == null) {
             fInstance = new Uml2SDTestFacility();
@@ -127,7 +121,7 @@ public class Uml2SDTestFacility {
     }
 
 
-    private TmfTraceStub setupTrace(final ITmfEventParser parser) {
+    private TmfTraceStub setupTrace(final ITmfEventParser<TmfEvent> parser) {
 
         try {
             // Create test trace object
@@ -151,7 +145,6 @@ public class Uml2SDTestFacility {
      */
     public void dispose() {
         if (fIsInitialized) {
-            fTrace.broadcast(new TmfTraceClosedSignal(this, fExperiment));
             fExperiment.dispose();
 
             // Wait for all Eclipse jobs to finish
@@ -164,7 +157,7 @@ public class Uml2SDTestFacility {
 
     /**
      * Sleeps current thread or GUI thread for a given time.
-     * @param waitTimeMillis time in milliseconds to wait
+     * @param waitTimeMillis
      */
     public void delay(final long waitTimeMillis) {
         final Display display = Display.getCurrent();
@@ -225,7 +218,7 @@ public class Uml2SDTestFacility {
     /**
      * @return current experiment.
      */
-    public TmfExperiment getExperiment() {
+    public TmfExperiment<TmfEvent> getExperiment() {
         return fExperiment;
     }
 
@@ -275,7 +268,7 @@ public class Uml2SDTestFacility {
     }
 
     /**
-     * @see org.eclipse.linuxtools.tmf.ui.tests.views.uml2sd.loader.Uml2SDTestFacility#selectExperiment(boolean)
+     * @see org.eclipse.linuxtools.tmf.ui.tests.views.uml2sd.impl.selectExperiment(boolean)
      */
     public void selectExperiment() {
         this.selectExperiment(true);
@@ -285,6 +278,7 @@ public class Uml2SDTestFacility {
      * Selects the experiment.
      * @param wait true to wait for indexing to finish else false
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void selectExperiment(final boolean wait) {
         fParser = new TmfUml2SDTestTrace();
         fTrace = setupTrace(fParser);
@@ -294,8 +288,8 @@ public class Uml2SDTestFacility {
 
         final ITmfTrace traces[] = new ITmfTrace[1];
         traces[0] = fTrace;
-        fExperiment = new TmfExperiment(TmfEvent.class, "TestExperiment", traces); //$NON-NLS-1$
-        fTrace.broadcast(new TmfTraceSelectedSignal(this, fExperiment));
+        fExperiment = new TmfExperiment<TmfEvent>(TmfEvent.class, "TestExperiment", traces); //$NON-NLS-1$
+        fTrace.broadcast(new TmfExperimentSelectedSignal<TmfEvent>(this, fExperiment));
         if (wait) {
             while (fExperiment.getNbEvents() == 0) {
                 delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
@@ -309,7 +303,6 @@ public class Uml2SDTestFacility {
      * Disposes the experiment.
      */
     public void disposeExperiment() {
-        fTrace.broadcast(new TmfTraceClosedSignal(this, fExperiment));
         fExperiment.dispose();
         delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
     }

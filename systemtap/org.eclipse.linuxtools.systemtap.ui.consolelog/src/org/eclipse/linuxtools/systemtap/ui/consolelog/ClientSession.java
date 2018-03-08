@@ -3,10 +3,10 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.ErrorMessage;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
@@ -14,27 +14,29 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPref
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.DMRequest;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.DMResponse;
 
+
+
+
 /**
  * Singleton thread. Maintains the communication between the
  * data manager and the client (this).
- *
+ *  
  * @author patrickm
  *
  */
 public final class ClientSession extends Thread {
-
+	
 	private static ClientSession instance = null;
-
-	private int portnumber, clientID;
-	private boolean connected;
-	private String hostname;
-	private int scriptnumber;
-	private InputStream in;
-	private TreeMap<Integer, LinkedBlockingQueue<byte[]>> mbox;
+	private static int portnumber, clientID;
+	private static boolean connected;
+	private static String hostname;
+	private static int scriptnumber;
+	private static InputStream in;
+	private static TreeMap<Integer, LinkedBlockingQueue<byte[]>> mbox;
 
 	private ClientSession () {
 		// only happens once
-
+		
 		hostname = ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.HOST_NAME);
 		portnumber = ConsoleLogPlugin.getDefault().getPreferenceStore().getInt(ConsoleLogPreferenceConstants.PORT_NUMBER);
 		mbox = new TreeMap<Integer, LinkedBlockingQueue<byte[]>> ();
@@ -42,26 +44,26 @@ public final class ClientSession extends Thread {
 		scriptnumber = 15;
 		if (connected) this.start();
 	}
-
+	
 	/**
 	 * Send a request packet to the data manager. Synchronized, only
 	 * one request can be sent at a time.
-	 *
+	 * 
 	 * @param req	The filled in request packet to send over the socket.
 	 * @return	true if successfully sent, false otherwise.
 	 */
 	public synchronized boolean sendRequest (DMRequest req) {
-
+		
 		try {
 			// open perma-socket:
 			Socket tmp = new Socket(hostname, portnumber);
 			OutputStream out = tmp.getOutputStream();
-
+			
 			out.write(req.getData());
 			out.flush();
 			out.flush();
 			out.close();
-
+			
 	    	return true;
 
 		} catch (final UnknownHostException uhe) {
@@ -79,48 +81,48 @@ public final class ClientSession extends Thread {
 
 	/**
 	 * Read a response from the data manager and return the response packet.
-	 *
+	 * 
 	 * @return	A response packet. Possibly invalid/incomplete.
 	 */
 	public DMResponse recvResponse (int scriptnum) {
-
+		
 		if (!mbox.containsKey(scriptnum)) {
 			return null;
 		}
 		try {
 			DMResponse dm =  new DMResponse (mbox.get(scriptnum).take());
-
+		
 			return dm;
 		} catch (InterruptedException ie) {
 			return null;
 		}
-
+		
 	}
 
 	/**
 	 * Read size bytes from the socket and return the result as a String. The
 	 * size is most likely from DMResponse.packetsize .
-	 *
+	 * 
 	 * @param size	The number of bytes to read from the open socket.
 	 * @return	A String of size characters long, or null if there was an error.
 	 */
 	public byte[] recvData (int scriptnum, int size) {
 		if (!mbox.containsKey(scriptnum)) {
-
+	
 			return null;
 		}
-
+		
 		try {
 			// maybe check that the sizes match?
 			return mbox.get(scriptnum).take();
-
+		
 		} catch (InterruptedException ie) {
-//			subscription.interrupt() was probably called
+//			subscription.interrupt() was probably called 
 			System.err.println("Interruptedrecvdata");
 			return null;
 		}
 	}
-
+	
 	public boolean addSubscription (int scriptnum) {
 		if (mbox.containsKey(scriptnum))
 		{
@@ -129,13 +131,13 @@ public final class ClientSession extends Thread {
 		mbox.put(scriptnum, new LinkedBlockingQueue<byte[]>());
 		return true;
 	}
-
-	public boolean delSubscription (int scriptnum)
+	
+	public boolean delSubscription (int scriptnum) 
 	{
 		if (!mbox.containsKey(scriptnum))
 			return false;
-
-
+	
+		
 		mbox.get(scriptnum).clear();
 		mbox.remove(scriptnum);
 		return true;
@@ -149,36 +151,35 @@ public final class ClientSession extends Thread {
 		{
 			if(!isConnected())
 			{
-				instance.connected=instance.createConnection();
-		    	instance.scriptnumber = 15;
-		    	if (instance.connected) instance.start();
+				connected=instance.createConnection();
+		    	scriptnumber = 15;
+		    	if (connected) instance.start();
 			}
 		}
 		return instance;
 	}
-
+	
     public static int getNewScriptId()
     {
-      return instance.scriptnumber++;
+      return scriptnumber++;	
     }
-
+	
 	public static boolean isConnected () {
-		return instance.connected;
+		return connected;
 	}
-
+	
 	public int getcid () {
 		return clientID;
 	}
-
-	@Override
+	
 	public void run () {
-
+		
 		while (!Thread.interrupted()) {
-
+			
 			final byte[] headBuffer = new byte[DMResponse.packetsize];
 			final byte[] bodyBuffer;
 			DMResponse header;
-
+			
 			try {
 	//		    Boolean first = new Boolean(true);
 				in.read(headBuffer, 0, headBuffer.length);
@@ -193,7 +194,7 @@ public final class ClientSession extends Thread {
 							mbox.put(header.getscriptID (), new LinkedBlockingQueue<byte[]> ());
 						mbox.get(header.getscriptID()).put(header.tobytes());
 						mbox.get(header.getscriptID()).put(bodyBuffer);
-
+					
 					}
 					else
 					{
@@ -201,15 +202,15 @@ public final class ClientSession extends Thread {
 							mbox.put(header.getscriptID (), new LinkedBlockingQueue<byte[]> ());
 						mbox.get(header.getscriptID()).put(header.tobytes());
 						mbox.get(header.getscriptID()).put(bodyBuffer);
-
-					}
+				
+					}	
 				}
 		       else {
 					// either the header was not valid,
 					// or the scriptid has not been seen before..
 
 				}
-
+				
 			} catch (InterruptedException ie) {
 				// probably shutting down
 				System.err.println ("Interrupted: " + ie.getMessage());
@@ -219,18 +220,26 @@ public final class ClientSession extends Thread {
 				new ErrorMessage("I/O Error Check host!", "See stderr for more details").open();
 				System.err.println ("i/o error: " + ioe.getMessage());
 				return;
+			
+			} catch (Exception e) {
+				new ErrorMessage("Check if DMD is running", "See stderr for more details").open();
+				System.err.println ("Server terminated unexpectedly?," + e.getMessage());
+				return;
 			}
+			
+		
+			
 		} // while
 		this.destroyConnection();
-
+		
 	}
-
+	
 	/**
      * Grab hostname and port settings from the settings, attempt to open
      * socket, and finally attempt to open a connection to the data manager
      * and store a clientID. If anything fails the connection is left in an
      * unknown state (see stderr).
-     *
+     * 
      * @return	true if everything succeeded, false otherwise.
      */
 	public boolean createConnection () {
@@ -271,18 +280,18 @@ public final class ClientSession extends Thread {
 			clientID = respacket.getclientID();
 			return true;
 	}
-
+	
 	/**
      * Send a disconnection request to the data manager, and attempt to
      * close the open socket to the data manager. If anything fails the
      * connection is left in a unknown state (see stderr).
-     *
+     * 
      * @return	true if successfully destroyed, false otherwise
      */
 	public boolean destroyConnection () {
 
     	final DMRequest dcpacket = new DMRequest (DMRequest.DESTROY_CONN, 0, clientID, 0);
-
+    	
     	try {
     		sendRequest (dcpacket);
 	    	in.close();
@@ -293,5 +302,25 @@ public final class ClientSession extends Thread {
     		System.err.println("Close error: " + e.getMessage());
     		return false;
     	}
+    	
+// Old code that actually checks the response and whatnot,
+// removed because we can hang waiting for a response from
+// (for example) a recently deceased Data Manager 
+//    	if (!sendRequest (dcpacket))
+//    		rc = false;
+//    
+//    	final DMResponse respacket = recvResponse ();
+//    	
+//    	if (respacket.getreturnCode() != 0)
+//    		rc = false;
+//    	
+//    	try {
+//	    	in.close();
+//    	} catch (final IOException e) {
+//    		System.err.println("Close error: " + e.getMessage());
+//    		rc = false;
+//    	}
+//
+//    	return rc;
 	}
 }

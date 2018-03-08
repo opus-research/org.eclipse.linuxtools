@@ -15,16 +15,16 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import junit.framework.TestCase;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTimestampLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * Test suite for the TmfContext class.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("nls")
 public class TmfContextTest extends TestCase {
 
     // ------------------------------------------------------------------------
@@ -35,9 +35,9 @@ public class TmfContextTest extends TestCase {
     final Long aLong = 12345L;
     final TmfTimestamp aTimestamp = new TmfTimestamp();
 
-    final TmfStringLocation fLocation1 = new TmfStringLocation(aString);
-    final TmfLongLocation fLocation2 = new TmfLongLocation(aLong);
-    final TmfTimestampLocation fLocation3 = new TmfTimestampLocation(aTimestamp);
+    final TmfLocation<String> fLocation1 = new TmfLocation<String>(aString);
+    final TmfLocation<Long> fLocation2 = new TmfLocation<Long>(aLong);
+    final TmfLocation<ITmfTimestamp> fLocation3 = new TmfLocation<ITmfTimestamp>(aTimestamp);
 
     final long fRank1 = 1;
     final long fRank2 = 2;
@@ -133,7 +133,7 @@ public class TmfContextTest extends TestCase {
     // equals
     // ------------------------------------------------------------------------
 
-    public void testEqualsReflexivity() {
+    public void testEqualsReflexivity() throws Exception {
         assertTrue("equals", fContext1.equals(fContext1));
         assertTrue("equals", fContext2.equals(fContext2));
 
@@ -141,7 +141,7 @@ public class TmfContextTest extends TestCase {
         assertFalse("equals", fContext2.equals(fContext1));
     }
 
-    public void testEqualsSymmetry() {
+    public void testEqualsSymmetry() throws Exception {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(fContext2);
 
@@ -152,7 +152,7 @@ public class TmfContextTest extends TestCase {
         assertTrue("equals", fContext2.equals(context2));
     }
 
-    public void testEqualsTransivity() {
+    public void testEqualsTransivity() throws Exception {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(context1);
         final TmfContext context3 = new TmfContext(context2);
@@ -162,7 +162,7 @@ public class TmfContextTest extends TestCase {
         assertTrue("equals", context1.equals(context3));
     }
 
-    public void testEqualsNull() {
+    public void testEqualsNull() throws Exception {
         assertFalse("equals", fContext1.equals(null));
         assertFalse("equals", fContext2.equals(null));
     }
@@ -170,7 +170,7 @@ public class TmfContextTest extends TestCase {
     private static class MyContext extends TmfContext {
     }
 
-    public void testNonEquals() {
+    public void testNonEquals() throws Exception {
 
         // Different classes
         final MyContext myContext = new MyContext();
@@ -202,7 +202,7 @@ public class TmfContextTest extends TestCase {
     // hashCode
     // ------------------------------------------------------------------------
 
-    public void testHashCode() {
+    public void testHashCode() throws Exception {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(fContext2);
 

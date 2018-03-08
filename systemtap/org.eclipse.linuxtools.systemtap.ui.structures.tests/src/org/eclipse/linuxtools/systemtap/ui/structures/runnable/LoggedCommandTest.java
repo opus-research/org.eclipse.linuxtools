@@ -1,24 +1,24 @@
 package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.TestCase;
 
-public class LoggedCommandTest {
-
-	@Before
-	public void setUp() {
-		cmd = new LoggedCommand(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null);
+public class LoggedCommandTest extends TestCase {
+	public LoggedCommandTest(String name) {
+		super(name);
 	}
 
-	@Test
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		cmd = new LoggedCommand(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null, null);
+	}
+
 	public void testLoggedCommand() {
 		cmd.dispose();
 
-		cmd = new LoggedCommand(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null);
+		cmd = new LoggedCommand(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null, null);
 		cmd.start();
 		assertTrue(cmd.isRunning());
 		assertFalse(cmd.isDisposed());
@@ -27,7 +27,7 @@ public class LoggedCommandTest {
 		assertFalse(cmd.isDisposed());
 		cmd.dispose();
 
-		cmd = new LoggedCommand(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null);
+		cmd = new LoggedCommand(new String[] {"stap", "-v", "-p1", "-e", "probe nosuchfunc{}"}, null, null, 100);
 		cmd.start();
 		assertTrue(cmd.isRunning());
 		assertFalse(cmd.isDisposed());
@@ -36,26 +36,32 @@ public class LoggedCommandTest {
 		assertFalse(cmd.isDisposed());
 		cmd.dispose();
 	}
-
-	@Test
+	
+	public void testGetOutput() {
+		
+	}
+	
+	public void testSaveLog() {
+		
+	}
+	
 	public void testStop() {
 		cmd.start();
 		assertTrue(cmd.isRunning());
 		cmd.stop();
 		assertFalse(cmd.isRunning());
 	}
-
-	@Test
+	
 	public void testDispose() {
 		assertFalse(cmd.isDisposed());
 		cmd.dispose();
 		assertTrue(cmd.isDisposed());
 	}
-
-	@After
-	public void tearDown() {
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 		cmd.dispose();
 	}
-
+	
 	LoggedCommand cmd;
 }

@@ -69,6 +69,11 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		options.saveConfiguration(config);
+		try {
+			config.doSave();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void initializeFrom(ILaunchConfiguration config) {
@@ -97,6 +102,11 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		options = new LaunchOptions();
 		options.saveConfiguration(config);
+		try {
+			config.doSave();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override

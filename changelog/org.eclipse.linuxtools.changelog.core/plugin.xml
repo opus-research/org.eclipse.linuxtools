@@ -13,17 +13,17 @@
 <plugin>
 
     <extension-point id="parserContribution" 
-    	name="%extension-point.name" 
+    	name="Changelog Language Parser Contribution" 
     	schema="schema/parserContribution.exsd"/>
-    <extension-point id="formatterContribution" name="%extension-point.name.0" schema="schema/formatterContribution.exsd"/>
-    <extension-point id="editorContribution" name="%extension-point.name.1" schema="schema/editorContribution.exsd"/>
+    <extension-point id="formatterContribution" name="Changelog Format Contribution" schema="schema/formatterContribution.exsd"/>
+    <extension-point id="editorContribution" name="ChangeLog Editor Contribution" schema="schema/editorContribution.exsd"/>
   
     <extension
   		point="org.eclipse.ui.commands">
 		
 		<category
-			name="%category.name"
-			description="%category.description"
+			name="Changelog"
+			description="Changelog key bindings"
 			id="org.eclipse.linuxtools.changelog">
 		</category>
 
@@ -35,24 +35,24 @@
 		</command>
   <command
         categoryId="org.eclipse.linuxtools.changelog"
-        description="%command.description"
+        description="Prepares Changelog"
         id="org.eclipse.linuxtools.changelog.core.preparechangelog"
-        name="%command.name"/>
+        name="Prepare Changelog"/>
   <command
         categoryId="org.eclipse.linuxtools.changelog"
-        description="%command.description.0"
+        description="Copies latest changelog entry to clipboard"
         id="org.eclipse.linuxtools.changelog.core.prepareCommit"
-        name="%command.name.0"/>
+        name="Prepare Commit"/>
   <command
         categoryId="org.eclipse.linuxtools.changelog"
-        description="%command.description.1"
+        description="Formats ChangeLog"
         id="org.eclipse.linuxtools.changelog.core.formatChangeLog"
-        name="%command.name.1"/>
+        name="Format ChangeLog"/>
   <command
         categoryId="org.eclipse.linuxtools.changelog"
-        description="%command.description.2"
+        description="Prepares ChangeLog in an editor"
         id="org.eclipse.linuxtools.changelog.core.preparechangelog2"
-        name="%command.name.2">
+        name="Prepare Changelog In Editor">
   </command>
 	</extension>
 	
@@ -85,7 +85,7 @@
              filenames="ChangeLog"
              icon="icons/file_obj.gif"
              id="org.eclipse.linuxtools.changelog.core.editor6"
-             name="%editor.name"/>
+             name="ChangeLog Editor"/>
     </extension>
     <extension
           point="org.eclipse.linuxtools.changelog.core.editorContribution">
@@ -126,7 +126,7 @@
              sequence="Ctrl+Alt+C"/>
        <scheme
              id="org.eclipse.linuxtools.changelog.keyscheme.default"
-             name="%scheme.name"/>
+             name="default"/>
        <key
              commandId="org.eclipse.linuxtools.changelog.core.preparechangelog"
              contextId="org.eclipse.ui.contexts.window"
@@ -187,7 +187,7 @@
 	<extension 
 	point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
 <target id="org.eclipse.changelog.editor.target" 
-	name="%target.name">
+	name="Changelog Editor">
 <context type="org.eclipse.ui.texteditor.ITextEditor"/>
 </target>
 </extension>
@@ -199,7 +199,7 @@
     id="org.eclipse.linuxtools.changelog.GNUHyperlinkDetector"
     targetId="org.eclipse.changelog.editor.target"
     class="org.eclipse.linuxtools.internal.changelog.core.editors.GNUHyperlinkDetector"
-    name="%hyperlinkDetector.name">
+    name="Changelog Detector">
   </hyperlinkDetector>
 </extension>
 <extension point="org.eclipse.ui.menus">
@@ -214,70 +214,6 @@
    				</and>
         	</visibleWhen>
         </command>
-  </menuContribution>
-  <menuContribution
-        locationURI="menu:edit">
-     <command
-           commandId="org.eclipse.linuxtools.changelog.core.actions.KeyActionCommand"
-           style="push"
-           tooltip="%clEntry">
-     </command>
-  </menuContribution>
-  <menuContribution
-        locationURI="menu:project">
-     <command
-           commandId="org.eclipse.linuxtools.changelog.core.preparechangelog"
-           style="push"
-           tooltip="%prepChangeLog.tooltip">
-        <visibleWhen
-           checkEnabled="false">
-              <with variable="selection">
-                 <iterate operator="and" ifEmpty="false">
-	                <or>
-                       <adapt
-                             type="java.lang.Object">
-                       </adapt>
-                       	<adapt type="org.eclipse.core.resources.IResource">
-                        	  <test
-                               		property="org.eclipse.core.resources.projectNature"
-                               		value="org.eclipse.cdt.core.cnature"/>
-                       </adapt>
-                       <adapt type="org.eclipse.core.resources.IResource">
-                          <test
-                                property="org.eclipse.core.resources.projectNature"
-                                value="org.eclipse.jdt.core.javanature"/>
-                       </adapt>
-		            </or>
-	                <or>
-                       	<adapt type="org.eclipse.core.resources.IResource">
-	                    <test
-                           args="org.eclipse.team.core.repository"
-                           property="org.eclipse.core.resources.projectPersistentProperty"
-                           value="org.eclipse.team.svn.core.svnnature"/>
-                        </adapt>
-                       	<adapt type="org.eclipse.core.resources.IResource">
-	              		<test
-                   		   args="org.eclipse.team.core.repository"
-                           property="org.eclipse.core.resources.projectPersistentProperty"
-                           value="org.eclipse.team.cvs.core.cvsnature"/>
-                        </adapt>
-                       	<adapt type="org.eclipse.core.resources.IResource">
-	              		<test
-                           args="org.eclipse.team.core.repository"
-                           property="org.eclipse.core.resources.projectPersistentProperty"
-                           value="org.tigris.subversion.subclipse.core.svnnature"/>
-                        </adapt>
-                       	<adapt type="org.eclipse.core.resources.IResource">
-	              		<test
-                           args="org.eclipse.team.core.repository"
-                           property="org.eclipse.core.resources.projectPersistentProperty"
-                           value="org.eclipse.egit.core.GitProvider"/>
-                        </adapt>
-	           		</or>
-	           </iterate>
-	           </with>
-	        </visibleWhen>
-     </command>
   </menuContribution>
 </extension>
 </plugin>

@@ -12,11 +12,17 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -26,13 +32,13 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.systemtap.ui.editor.ColorManager;
-import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 public class STPEditor extends SimpleEditor {
 
@@ -42,24 +48,21 @@ public class STPEditor extends SimpleEditor {
 	private Annotation[] stpOldAnnotations;
 	private ProjectionAnnotationModel stpAnnotationModel;
 
-	public static final String ID="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor";
-
 	public STPEditor() {
 		super();
+		URL completionURL = null;
+	
+		completionURL = buildCompletionDataLocation("completion/stp_completion.properties");
+		STPMetadataSingleton completionDataStore = STPMetadataSingleton.getInstance();
+		
+		if (completionURL != null)
+			completionDataStore.build(completionURL);
+
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new STPConfiguration(colorManager,this));
 		setDocumentProvider(new STPDocumentProvider());
 	}
 
-	@Override
-	protected void doSetInput(IEditorInput input) throws CoreException {
-		if(input instanceof FileStoreEditorInput)
-			input= new PathEditorInput(new Path(((FileStoreEditorInput) input).getURI().getPath()));
-
-		super.doSetInput(input);
-	}
-
-	@Override
 	public void createPartControl(Composite parent)
 	{
 	    super.createPartControl(parent);
@@ -70,7 +73,6 @@ public class STPEditor extends SimpleEditor {
 	   stpAnnotationModel = viewer.getProjectionAnnotationModel();
 	}
 	
-	@Override
 	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
 		
 		ISourceViewer viewer = new ProjectionViewer(parent, ruler,
@@ -95,17 +97,24 @@ public class STPEditor extends SimpleEditor {
 		stpOldAnnotations = updatedAnnotations;
 	}
 	
+	protected void createActions() {
+		Action action = new ContentAssistAction(ResourceBundle.getBundle("org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.strings"), "ContentAssistProposal.", this); 
+		String id = ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
+		action.setActionDefinitionId(id);
+		setAction("ContentAssistProposal", action); 
+		markAsStateDependentAction("ContentAssistProposal", true);
+		super.createActions();
+	}
+	
 	public ISourceViewer getMySourceViewer() {
 		return this.getSourceViewer();
 	}
 	
-	@Override
 	public void dispose() {
 		colorManager.dispose();
 		super.dispose();
 	}
 
-	@Override
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 
 		super.editorContextMenuAboutToShow(menu);
@@ -116,4 +125,39 @@ public class STPEditor extends SimpleEditor {
 
 	}
 	
+	private URL buildCompletionDataLocation(String completionDataLocation) {
+		URL completionURLLocation = null; 
+		try {
+			completionURLLocation = getCompletionURL(completionDataLocation);			
+		} catch (IOException e) {
+			completionURLLocation = null;
+		}
+		
+		if (completionURLLocation == null) {
+			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, 
+					IStatus.OK, "Cannot locate plug-in location for System Tap completion metadata " +
+							"(completion/stp_completion.properties). Completions are not available.", null));
+			return null;
+		} 
+		
+		File completionFile = new File(completionURLLocation.getFile());
+		if ((completionFile == null) || (!completionFile.exists()) || (!completionFile.canRead())) {
+			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, 
+					IStatus.OK, "Cannot find System Tap completion metadata at  " +completionFile.getPath() + 
+					"Completions are not available.", null));
+					
+			return null;
+		}
+
+		return completionURLLocation;
+		
+	}
+	private URL getCompletionURL(String completionLocation) throws IOException {
+		URL fileURL = null;
+		URL location = IDEPlugin.getDefault().getBundle().getEntry(completionLocation);
+
+		if (location != null)
+			fileURL = FileLocator.toFileURL(location);		
+		return fileURL;
+	}
 }
