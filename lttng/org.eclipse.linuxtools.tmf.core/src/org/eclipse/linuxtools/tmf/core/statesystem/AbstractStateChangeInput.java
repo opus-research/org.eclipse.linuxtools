@@ -37,7 +37,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
+public abstract class AbstractStateChangeInput implements IStateChangeInput {
 
     private static final int DEFAULT_EVENTS_QUEUE_SIZE = 10000;
 
@@ -63,7 +63,7 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
      * @param id
      *            Name given to this state change input. Only used internally.
      */
-    public AbstractTmfStateProvider(ITmfTrace trace,
+    public AbstractStateChangeInput(ITmfTrace trace,
             Class<? extends ITmfEvent> eventType, String id) {
         this.trace = trace;
         this.eventType = eventType;
