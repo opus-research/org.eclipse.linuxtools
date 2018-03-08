@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -150,8 +153,8 @@ public class CovView extends AbstractSTDataView {
         });
     }
 
-    public static void setCovViewTitle(CovView view, String title, String binaryPath) {
-        String viewText = NLS.bind(Messages.CovView_view_title, new Object[] { title, binaryPath });
+    public static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
+        String viewText = NLS.bind(Messages.CovView_view_title, new Object[] { title, binaryPath, timestamp });
         view.label.setText(viewText);
         view.label.getParent().layout(true);
     }
@@ -197,7 +200,8 @@ public class CovView extends AbstractSTDataView {
             // generate model for view
             cvrgeMnger.fillGcovView();
             // load an Eclipse view
-            CovView cvrgeView = displayCovResults(cvrgeMnger);
+            String timestamp = DateFormat.getInstance().format(new Date(new File(gcda).lastModified()));
+            CovView cvrgeView = displayCovResults(cvrgeMnger, timestamp);
             return cvrgeView;
         } catch (InterruptedException e) {
             reportError(e);
@@ -227,7 +231,7 @@ public class CovView extends AbstractSTDataView {
      * Used by Test engine and OpenSerAction
      * @param cvrgeMnger
      */
-    public static CovView displayCovResults(CovManager cvrgeMnger) throws PartInitException {
+    public static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
         // load an Eclipse view
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
@@ -235,7 +239,7 @@ public class CovView extends AbstractSTDataView {
 
         // view title
         CovView.setCovViewTitle(cvrgeView, Integer.toString((int) cvrgeMnger.getNbrPgmRuns()),
-                cvrgeMnger.getBinaryPath());
+                cvrgeMnger.getBinaryPath(), timestamp);
 
         // load the controller
         cvrgeView.setInput(cvrgeMnger);
