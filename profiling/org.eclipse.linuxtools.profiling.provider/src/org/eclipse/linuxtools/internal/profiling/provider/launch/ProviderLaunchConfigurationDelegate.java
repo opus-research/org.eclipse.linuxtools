@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage;
-import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
@@ -32,19 +31,14 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 			if (config != null) {
 				// get provider id from configuration.
 				String providerId = config.getAttribute(
-						ProviderOptionsTab.PROVIDER_CONFIG_ATT, "");
-
-				// the provider attribute is only set when launching from the
-				// dialog menu, if it's not set then we are launching from a
-				// shortcut.
+						AbstractProviderPreferencesPage.PREFS_KEY, "");
 				if (providerId.equals("")) {
-					// acquire a provider id to run. 
 					providerId = getProviderIdToRun();
-					// get configuration shortcut associated with provider id.
-					ProfileLaunchShortcut shortcut= ProfileLaunchShortcut.getLaunchShortcutProviderFromId(providerId);
-					// set attributes related to the specific profiling shortcut configuration.
-					shortcut.setDefaultProfileLaunchShortcutAttributes(config);
 				}
+				// get configuration delegate associated with provider id.
+				ProfileLaunchShortcut shortcut= ProfileLaunchShortcut.getLaunchShortcutProviderFromId(providerId);
+				// set attributes related to the specific profiling shortcut configuration.
+				shortcut.setDefaultProfileLaunchShortcutAttributes(config);
 				// get delegate associated with provider id.
 				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
 
@@ -67,7 +61,7 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 		if (providerId.equals("")) {
 			providerId = ProfileLaunchConfigurationTabGroup
 					.getHighestProviderId(getProfilingType());
-			if (providerId == null) {
+			if (providerId.equals("")) {
 				// Get highest priority provider
 				providerId = ProfileLaunchShortcut
 						.getDefaultLaunchShortcutProviderId(getProfilingType());

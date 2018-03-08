@@ -11,7 +11,7 @@
 package org.eclipse.linuxtools.profiling.memory.launch;
 
 import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut;
-import org.eclipse.linuxtools.profiling.memory.MemoryProfileConstants;
+import org.eclipse.linuxtools.profiling.memory.Activator;
 
 /**
  * 
@@ -23,7 +23,7 @@ public class MemoryLaunchShortcut extends ProviderLaunchShortcut {
 	
 	@Override
 	protected String getLaunchConfigID() {
-		return MemoryProfileConstants.PLUGIN_CONFIG_ID;
+		return Activator.PLUGIN_CONFIG_ID;
 	}
 
 }
