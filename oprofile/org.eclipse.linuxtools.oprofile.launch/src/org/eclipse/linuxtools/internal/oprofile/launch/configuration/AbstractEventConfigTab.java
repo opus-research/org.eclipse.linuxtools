@@ -235,9 +235,10 @@ AbstractLaunchConfigurationTab {
 			}
 		}
 
-		if (getOprofileTimerMode() || counterSubTabs == null) {
+		if (getOprofileTimerMode()) {
 			return true;		//no options to check for validity
 		} else {
+
 			return validateEvents(config);
 		}
 	}
@@ -309,7 +310,7 @@ AbstractLaunchConfigurationTab {
 				return;
 			}
 		}
-		if (getOprofileTimerMode() || counterSubTabs == null) {
+		if (getOprofileTimerMode()) {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 		} else {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, defaultEventCheck.getSelection());
