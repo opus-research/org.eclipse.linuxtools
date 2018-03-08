@@ -124,6 +124,10 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
                 bits = (low << 32) | high;
             }
         } else {
+            ByteOrder byteOrder = input.getByteOrder();
+            if ( (this.declaration.getByteOrder() != null) && (this.declaration.getByteOrder() != input.getByteOrder()) ) {
+                input.setByteOrder(this.declaration.getByteOrder());
+            }
             bits = input.getInt(length, signed);
             bits = bits & 0x00000000FFFFFFFFL;
             /*
@@ -132,6 +136,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
              */
             if( (longNegBit == (bits & longNegBit)) && signed) {
                 bits |= 0xffffffff00000000L;
+            }
+            if (byteOrder != input.getByteOrder()) {
+                input.setByteOrder(byteOrder);
             }
         }
 
