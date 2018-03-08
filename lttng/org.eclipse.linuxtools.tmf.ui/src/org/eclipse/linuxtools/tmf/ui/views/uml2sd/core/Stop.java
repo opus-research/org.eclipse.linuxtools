@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,22 +42,18 @@ public class Stop extends GraphNode {
     /**
      * The owning lifeline on which the stop appears
      */
-    protected Lifeline fLifeline = null;
+    private Lifeline fLifeline = null;
     /**
      * This basically represents the time when the stop occurs on the owning Lifeline
      *
      * @see Lifeline Lifeline for more event occurence details
      */
-    protected int fEventOccurrence = 0;
+    private int fEventOccurrence = 0;
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
-     */
     @Override
     public int getX() {
         if (fLifeline == null) {
@@ -66,10 +62,6 @@ public class Stop extends GraphNode {
         return fLifeline.getX() + Metrics.getLifelineWidth() / 2 - Metrics.STOP_WIDTH / 2;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         if (fLifeline == null) {
@@ -78,10 +70,6 @@ public class Stop extends GraphNode {
         return fLifeline.getY() + fLifeline.getHeight() + (Metrics.getMessageFontHeigth() + Metrics.getMessagesSpacing()) * fEventOccurrence - Metrics.STOP_WIDTH / 2;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         if (fLifeline == null) {
@@ -90,10 +78,6 @@ public class Stop extends GraphNode {
         return Metrics.STOP_WIDTH;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         if (fLifeline == null) {
@@ -112,6 +96,26 @@ public class Stop extends GraphNode {
     }
 
     /**
+     * Get the lifeline on which the stop must be draw
+     *
+     * @return the the stop owing lifeline
+     * @since 2.0
+     */
+    public Lifeline getLifeline() {
+        return fLifeline;
+    }
+
+    /**
+     * Get the event occurrence when this stop appears
+     *
+     * @return the eventOccurence to assign to the stop
+     * @since 2.0
+     */
+    public int getEventOccurrence() {
+        return fEventOccurrence;
+    }
+
+    /**
      * Set the event occurrence when this stop appears
      *
      * @param occurrence the eventOccurence to assign to the stop
@@ -120,10 +124,6 @@ public class Stop extends GraphNode {
         fEventOccurrence = occurrence;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
 
@@ -155,19 +155,11 @@ public class Stop extends GraphNode {
         context.setLineWidth(lastWidth);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return STOP;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int x, int y) {
         return false;

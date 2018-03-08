@@ -10,14 +10,20 @@
  *   Marc Dumais - Initial implementation
  *   Francois Chouinard - Initial API and implementation
  *   Patrick Tasse - Updated for TMF 2.0
+ *   Matthew Khouzam - update validate
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.gdbtrace.core.trace;
 
+import java.io.File;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.internal.gdbtrace.core.Activator;
 import org.eclipse.linuxtools.internal.gdbtrace.core.GdbTraceCorePlugin;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -31,12 +37,14 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
- * GDB Tracepoint extension of TmfTrace.  This class implements the necessary
- * methods and functionalities so that a GDB tracepoint file can be used by
- * the TMF framework as a "tracer".
+ * GDB Tracepoint extension of TmfTrace. This class implements the necessary
+ * methods and functionalities so that a GDB tracepoint file can be used by the
+ * TMF framework as a "tracer".
  * <p>
+ *
  * @author Marc Dumais
  * @author Francois Chouinard
+ * @author Matthew Khouzam
  */
 public class GdbTrace extends TmfTrace implements ITmfEventParser {
 
@@ -73,8 +81,16 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
     }
 
     @Override
-    public boolean validate(IProject project, String path) {
-        return fileExists(path);
+    public IStatus validate(IProject project, String path) {
+        if (fileExists(path)) {
+            if ((new File(path)).isFile()) {
+                return Status.OK_STATUS;
+            }
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                    Messages.GdbTrace_GdbTracesMustBeAFile + ": " + //$NON-NLS-1$
+                            path + " " + Messages.GdbTrace_IsNotAFile); //$NON-NLS-1$
+        }
+        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.GdbTrace_FileNotFound + ": " + path); //$NON-NLS-1$
     }
 
     @Override
@@ -82,12 +98,12 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
         try {
             String tracedExecutable = resource.getPersistentProperty(EXEC_KEY);
             if (tracedExecutable == null) {
-                throw new TmfTraceException("Trace executable not set"); //$NON-NLS-1$
+                throw new TmfTraceException(Messages.GdbTrace_ExecutableNotSet);
             }
             fGdbTpRef = new DsfGdbAdaptor(this, GDB_EXECUTABLE, path, tracedExecutable);
             fNbFrames = fGdbTpRef.getNumberOfFrames();
         } catch (CoreException e) {
-            throw new TmfTraceException("Failed to initialize trace", e); //$NON-NLS-1$
+            throw new TmfTraceException(Messages.GdbTrace_FailedToInitializeTrace, e);
         }
 
         super.initTrace(resource, path, type);
@@ -104,15 +120,15 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
     /**
      * @return GDB-DSF session id
      */
-    public String getDsfSessionId () {
+    public String getDsfSessionId() {
         return fGdbTpRef.getSessionId();
     }
 
     /**
      * @return the number of frames in current tp session
      */
-    public long getNbFrames () {
-        fNbFrames =  fGdbTpRef.getNumberOfFrames();
+    public long getNbFrames() {
+        fNbFrames = fGdbTpRef.getNumberOfFrames();
         return fNbFrames;
     }
 
@@ -150,7 +166,8 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
         if (context.getRank() >= fNbFrames) {
             return null;
         }
-        // work-around to ensure that the select and parse of trace frame will be atomic
+        // work-around to ensure that the select and parse of trace frame will
+        // be atomic
         GdbTraceEvent event = fGdbTpRef.selectAndReadFrame(context.getRank());
         fLocation++;
         return event;
@@ -171,7 +188,9 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
 
     /**
      * Select a frame and update the visualization
-     * @param rank the rank
+     *
+     * @param rank
+     *            the rank
      */
     public void selectFrame(long rank) {
         fGdbTpRef.selectDataFrame(rank, true);

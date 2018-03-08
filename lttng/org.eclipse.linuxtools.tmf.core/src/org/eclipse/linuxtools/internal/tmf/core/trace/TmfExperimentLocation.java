@@ -62,9 +62,6 @@ public final class TmfExperimentLocation implements ITmfLocation {
     // Object
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.TmfLocation#toString()
-     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
@@ -74,34 +71,36 @@ public final class TmfExperimentLocation implements ITmfLocation {
         return result.toString();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.TmfLocation#hashCode()
-     */
     @Override
     public int hashCode() {
-        return super.hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fLocation != null) ? fLocation.hashCode() : 0);
+        return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.TmfLocation#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null) {
             return false;
         }
         if (getClass() != obj.getClass()) {
             return false;
         }
+        final TmfExperimentLocation other = (TmfExperimentLocation) obj;
+        if (fLocation == null) {
+            if (other.fLocation != null) {
+                return false;
+            }
+        } else if (!fLocation.equals(other.fLocation)) {
+            return false;
+        }
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationData()
-     */
     @Override
     public TmfLocationArray getLocationInfo() {
         return fLocation;

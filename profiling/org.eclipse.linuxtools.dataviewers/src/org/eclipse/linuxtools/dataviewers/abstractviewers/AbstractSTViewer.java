@@ -200,7 +200,7 @@ public abstract class AbstractSTViewer {
      * @param manager
      */
     protected void updateForNewHideShowManager(STDataViewersHideShowManager manager) {
-        manager.updateColumns(getColumns());
+        manager.updateColumns();
     }
 
     // //////////////////
@@ -286,7 +286,6 @@ public abstract class AbstractSTViewer {
     /**
      * Restores the vertical scrollbar position
      *
-     * @param settings
      * @return the position
      */
     public int restoreVerticalScrollBarPosition() {
@@ -310,7 +309,6 @@ public abstract class AbstractSTViewer {
     /**
      * Restores the horizontal scrollbar position
      *
-     * @param settings
      * @return the position
      */
     public int restoreHorizontalScrollBarPosition() {
@@ -334,7 +332,6 @@ public abstract class AbstractSTViewer {
     /**
      * Restore the order of the columns using the dialog settings
      *
-     * @param settings
      * @return column order
      */
     public int[] restoreColumnOrderSetting() {

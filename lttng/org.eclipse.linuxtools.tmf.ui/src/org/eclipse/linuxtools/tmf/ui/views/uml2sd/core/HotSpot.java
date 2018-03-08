@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,15 +38,15 @@ public class HotSpot extends GraphNode {
     /**
      * The execution occurrence the hot spot marker is for.
      */
-    protected BasicExecutionOccurrence fExecOcc = null;
+    private BasicExecutionOccurrence fExecOcc = null;
     /**
      * The occurrence number.
      */
-    protected int fOccurrence = 0;
+    private int fOccurrence = 0;
     /**
      * The marker image to display.
      */
-    protected IImage fImage = null;
+    private IImage fImage = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -56,7 +56,7 @@ public class HotSpot extends GraphNode {
      * Default constructor
      */
     public HotSpot() {
-        fPrefId = ISDPreferences.PREF_EXEC;
+        setColorPrefId(ISDPreferences.PREF_EXEC);
     }
 
     // ------------------------------------------------------------------------
@@ -72,10 +72,16 @@ public class HotSpot extends GraphNode {
         fImage = img;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
+    /**
+     * Returns the marker image.
+     *
+     * @return the image
+     * @since 2.0
      */
+    protected IImage getImage() {
+        return fImage;
+    }
+
     @Override
     public int getX() {
         if (fExecOcc != null) {
@@ -84,10 +90,6 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         if (fExecOcc != null){
@@ -96,10 +98,6 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         if (fExecOcc != null) {
@@ -108,10 +106,6 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         if (fExecOcc != null) {
@@ -157,10 +151,6 @@ public class HotSpot extends GraphNode {
         fOccurrence = occ;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
 
@@ -178,28 +168,16 @@ public class HotSpot extends GraphNode {
         context.drawImage(fImage, getX(), getY(), getWidth(), getHeight());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return GLYPH;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#isVisible(int, int, int, int)
-     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int xValue, int yValue) {
         int x = getX();

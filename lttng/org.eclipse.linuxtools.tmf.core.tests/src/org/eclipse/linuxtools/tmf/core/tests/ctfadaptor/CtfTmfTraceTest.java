@@ -21,6 +21,7 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocation;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
@@ -174,21 +175,12 @@ public class CtfTmfTraceTest {
     }
 
     /**
-     * Run the String[] getEnvNames() method test.
-     */
-    @Test
-    public void testGetEnvNames() {
-        String[] result = fixture.getEnvNames();
-        assertNotNull(result);
-    }
-
-    /**
-     * Run the String getEnvValue(String) method test.
+     * Run the String getEnvironment method test.
      */
     @Test
     public void testGetEnvValue() {
         String key = "tracer_name";
-        String result = fixture.getEnvValue(key);
+        String result = fixture.getTraceProperties().get(key);
         assertEquals("\"lttng-modules\"",result);
     }
 
@@ -227,7 +219,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetNbEnvVars() {
-        int result = fixture.getNbEnvVars();
+        int result = fixture.getTraceProperties().size();
         assertEquals(8, result);
     }
 
@@ -353,7 +345,7 @@ public class CtfTmfTraceTest {
     public void testValidate() {
         IProject project = null;
         String path = PATH;
-        boolean result = fixture.validate(project, path);
-        assertTrue(result);
+        IStatus result = fixture.validate(project, path);
+        assertTrue(result.isOK());
     }
 }
