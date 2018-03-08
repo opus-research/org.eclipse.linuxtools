@@ -125,6 +125,11 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	private ICompletionProposal[] getProbeVariableCompletions(IDocument document, int offset, String prefix){
 		String probe = getProbe(document, offset);
 		String[] completionData = stpMetadataSingleton.getProbeVariableCompletions(probe, prefix);
+
+		// Make sure there are completions available.
+		if(completionData[0].equals(STPMetadataSingleton.NO_MATCHES[0]))
+			return NO_COMPLETIONS;
+
 		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
 
 		int prefixLength = prefix.length();

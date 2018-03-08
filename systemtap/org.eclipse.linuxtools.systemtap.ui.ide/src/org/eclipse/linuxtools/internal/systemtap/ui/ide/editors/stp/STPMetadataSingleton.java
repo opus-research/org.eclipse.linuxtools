@@ -101,7 +101,11 @@ public class STPMetadataSingleton {
 			return NO_MATCHES;
 
 		// Get the completions.
-		return getMatchingChildren(node, prefix);
+		String[] matchingChildren = getMatchingChildren(node, prefix);
+		if(matchingChildren.length == 0)
+			return NO_MATCHES;
+
+		return matchingChildren;
 	}
 
 	private String[] getMatchingChildren(TreeNode node, String prefix) {
