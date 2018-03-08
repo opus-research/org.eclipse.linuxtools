@@ -348,7 +348,6 @@ public class LttngKernelTraceGenerator {
             fos = new FileOutputStream(metadataFile);
             fos.write(metadata.getBytes());
             fos.close();
-        } catch (FileNotFoundException e) {
         } catch (IOException e) {
         }
     }
@@ -373,7 +372,7 @@ public class LttngKernelTraceGenerator {
                 16 + // current_comm
                 4 +  // next_tid
                 4;   // next_prio
-        private ByteBuffer data;
+        private final ByteBuffer data;
 
         public EventWriter(ByteBuffer bb) {
             data = bb;
@@ -407,10 +406,11 @@ public class LttngKernelTraceGenerator {
     }
 
     private class PacketWriter {
-        ByteBuffer data;
-        public static final int SIZE = 4096;
+        private static final int SIZE = 4096;
         private static final int HEADER_SIZE = 64;
-        public static final int CONTENT_SIZE = SIZE - HEADER_SIZE;
+        private static final int CONTENT_SIZE = SIZE - HEADER_SIZE;
+
+        private final ByteBuffer data;
 
         public PacketWriter(ByteBuffer bb) {
             data = bb;
