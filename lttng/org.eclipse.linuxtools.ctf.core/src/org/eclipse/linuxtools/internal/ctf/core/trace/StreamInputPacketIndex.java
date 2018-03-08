@@ -131,9 +131,12 @@ public class StreamInputPacketIndex {
 
         for (;;) {
             /*
-             * Guess in the middle of min and max.
+             * Guess in the middle of min and max. The +1 is so that in case
+             * (min + 1 == max), we choose the packet at the subscript "max"
+             * instead of the one at "min". Otherwise, it would give an infinite
+             * loop.
              */
-            guessI = (max + min) / 2;
+            guessI = (max + min + 1) / 2;
             guessEntry = this.entries.get(guessI);
 
             /*
@@ -144,18 +147,36 @@ public class StreamInputPacketIndex {
                 break;
             }
 
-            if (timestamp <= guessEntry.getTimestampEnd()) {
+            if (timestamp < guessEntry.getTimestampBegin()) {
                 /*
-                 * If the timestamp is lower or equal to the end of the guess packet,
-                 * than the guess packet become the new inclusive max.
+                 * If the timestamp if before the begin timestamp, we know that
+                 * the packet to return is before the guess.
                  */
-                max = guessI;
-            } else {
+                max = guessI - 1;
+            } else if (timestamp > guessEntry.getTimestampBegin()) {
                 /*
-                 * If the timestamp is greater than the end of the guess packet, then
-                 * the new inclusive min is the packet after the guess packet.
+                 * If the timestamp is after the begin timestamp, we know that
+                 * the packet to return is after the guess or is the guess.
                  */
-                min = guessI + 1;
+                min = guessI;
+            } else if (timestamp == guessEntry.getTimestampBegin()) {
+                /*
+                 * If the timestamp is equal to the begin timestamp, we want to
+                 * return the first packetIndexEntry that have this timestamp.
+                 */
+                if (guessI > 0) {
+                    StreamInputPacketIndexEntry previousGuessEntry = this.entries.get(guessI - 1);
+                    while (guessI > 0 && guessEntry.getTimestampBegin() == previousGuessEntry.getTimestampBegin()) {
+                        guessEntry = previousGuessEntry;
+                        guessI--;
+                        if (guessI - 1 >= 0) {
+                            previousGuessEntry = this.entries.get(guessI - 1);
+                        }
+                    }
+                    min = guessI;
+                    max = guessI;
+                }
+
             }
         }
 
