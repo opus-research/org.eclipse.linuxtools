@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,19 +13,17 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.Collection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -150,9 +148,8 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param path the trace path
      *
      * @return true if trace is valid
-     * @since 2.0
      */
-    public IStatus validate(IProject project, String path);
+    public boolean validate(IProject project, String path);
 
     // ------------------------------------------------------------------------
     // Basic getters
@@ -185,41 +182,24 @@ public interface ITmfTrace extends ITmfDataProvider {
     public ITmfStatistics getStatistics();
 
     /**
-     * Return the map of state systems associated with this trace.
-     *
-     * This view should be read-only (implementations should use
-     * {@link Collections#unmodifiableMap}).
-     *
-     * @return The map of state systems
-     * @since 2.0
-     */
-    public Map<String, ITmfStateSystem> getStateSystems();
-
-    /**
-     * If a state system is not build by the trace itself, it's possible to
-     * register it if it comes from another source. It will then be accessible
-     * with {@link #getStateSystems} normally.
+     * Retrieve a state system that belongs to this trace
      *
      * @param id
-     *            The unique ID to assign to this state system. In case of
-     *            conflicting ID's, the new one will overwrite the previous one
-     *            (default Map behavior).
-     * @param ss
-     *            The already-built state system
+     *            The ID of the state system to retrieve.
+     * @return The state system that is associated with this trace and ID, or
+     *         'null' if such a match doesn't exist.
      * @since 2.0
      */
-    public void registerStateSystem(String id, ITmfStateSystem ss);
+    public ITmfStateSystem getStateSystem(String id);
 
     /**
-     * Index the trace. Depending on the trace type, this could be done at the
-     * constructor or initTrace phase too, so this could be implemented as a
-     * no-op.
+     * Return the list of existing state systems registered with this trace.
      *
-     * @param waitForCompletion
-     *            Should we block the caller until indexing is finished, or not.
+     * @return A Collection view of the available state systems. The collection
+     *         could be empty, but should not be null.
      * @since 2.0
      */
-    public void indexTrace(boolean waitForCompletion);
+    public Collection<String> listStateSystems();
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters
@@ -232,19 +212,16 @@ public interface ITmfTrace extends ITmfDataProvider {
 
     /**
      * @return the trace time range
-     * @since 2.0
      */
     public TmfTimeRange getTimeRange();
 
     /**
      * @return the timestamp of the first trace event
-     * @since 2.0
      */
     public ITmfTimestamp getStartTime();
 
     /**
      * @return the timestamp of the last trace event
-     * @since 2.0
      */
     public ITmfTimestamp getEndTime();
 
@@ -315,7 +292,6 @@ public interface ITmfTrace extends ITmfDataProvider {
      *
      * @param timestamp the timestamp of desired event
      * @return a context which can later be used to read the corresponding event
-     * @since 2.0
      */
     public ITmfContext seekEvent(ITmfTimestamp timestamp);
 
@@ -339,4 +315,20 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @since 2.0
      */
     public ITmfTimestamp getInitialRangeOffset();
+
+    /**
+     * Return the current selected time.
+     *
+     * @return the current time stamp
+     * @since 2.0
+     */
+    public ITmfTimestamp getCurrentTime();
+
+    /**
+     * Return the current selected range.
+     *
+     * @return the current time range
+     * @since 2.0
+     */
+    public TmfTimeRange getCurrentRange();
 }

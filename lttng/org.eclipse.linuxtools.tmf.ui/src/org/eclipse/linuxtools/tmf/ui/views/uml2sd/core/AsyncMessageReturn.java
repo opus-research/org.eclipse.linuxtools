@@ -1,15 +1,14 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
@@ -24,12 +23,12 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
  * <br>
  * WARNING: The association validity is not checked, it is not necessary to provide a valid association, not even needed
  * to set an association to drawn a message with a message return style.<br>
- *
- *
+ * 
+ * 
  * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage AsyncMessage for usage example
- * @version 1.0
+ * @version 1.0 
  * @author sveyrier
- *
+ * 
  */
 public class AsyncMessageReturn extends AsyncMessage {
 
@@ -67,13 +66,17 @@ public class AsyncMessageReturn extends AsyncMessage {
      * Set the associated message (the message it is the return).<br>
      * Setting the association will activate the navigation in the default sequence diagram implementation to the
      * message when the user right click on this message return.<br>
-     *
+     * 
      * @param parentMessage the message to associate
      */
     public void setMessage(AsyncMessage parentMessage) {
         fMessage = parentMessage;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -95,6 +98,10 @@ public class AsyncMessageReturn extends AsyncMessage {
         context.setLineStyle(oldStyle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return ASYNC_MESS_RET_TAG;

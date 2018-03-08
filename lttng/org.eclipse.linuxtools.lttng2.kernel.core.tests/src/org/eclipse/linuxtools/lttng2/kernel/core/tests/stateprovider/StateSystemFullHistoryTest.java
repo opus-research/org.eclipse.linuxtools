@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -14,17 +14,16 @@ package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,11 +46,11 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     public static void initialize() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            stateFile = File.createTempFile("test", ".ht");
-            stateFileBenchmark = File.createTempFile("test", ".ht.benchmark");
+            stateFile = File.createTempFile("test", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
+            stateFileBenchmark = File.createTempFile("test", ".ht.benchmark"); //$NON-NLS-1$ //$NON-NLS-2$
 
-            input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
-            ssq = TmfStateSystemFactory.newFullHistory(stateFile, input, true);
+            input = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+            ssq = StateSystemManager.loadStateHistory(stateFile, input, true);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (TmfTraceException e) {
@@ -69,37 +68,38 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     /**
      * Rebuild independently so we can benchmark it. Too bad JUnit doesn't allow
      * us to @Test the @BeforeClass...
+     *
+     * @throws TmfTraceException
+     *             Fails the test
      */
     @Test
-    public void testBuild() {
-        try {
-            ITmfStateProvider input2 = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
-            ITmfStateSystem ssb2 = TmfStateSystemFactory.newFullHistory(stateFileBenchmark, input2, true);
+    public void testBuild() throws TmfTraceException {
+        IStateChangeInput input2;
+        ITmfStateSystem ssb2;
 
-            assertEquals(startTime, ssb2.getStartTime());
-            assertEquals(endTime, ssb2.getCurrentEndTime());
+        input2 = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+        ssb2 = StateSystemManager.loadStateHistory(stateFileBenchmark, input2, true);
 
-        } catch (TmfTraceException e) {
-            fail();
-        }
+        assertEquals(startTime, ssb2.getStartTime());
+        assertEquals(endTime, ssb2.getCurrentEndTime());
     }
 
     /**
      * Test re-opening the existing file.
+     *
+     * @throws TmfTraceException
+     *             Fails the test
      */
     @Test
-    public void testOpenExistingStateFile() {
-        try {
-            /* 'newStateFile' should have already been created */
-            ITmfStateSystem ssb2 = TmfStateSystemFactory.newFullHistory(stateFile, null, true);
+    public void testOpenExistingStateFile() throws TmfTraceException {
+        ITmfStateSystem ssb2;
 
-            assertNotNull(ssb2);
-            assertEquals(startTime, ssb2.getStartTime());
-            assertEquals(endTime, ssb2.getCurrentEndTime());
+        /* 'newStateFile' should have already been created */
+        ssb2 = StateSystemManager.loadStateHistory(stateFile, null, true);
 
-         } catch (TmfTraceException e) {
-             fail();
-         }
+        assertNotNull(ssb2);
+        assertEquals(startTime, ssb2.getStartTime());
+        assertEquals(endTime, ssb2.getCurrentEndTime());
     }
 
 }

@@ -14,9 +14,8 @@ import java.util.List;
 
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField;
+import org.eclipse.linuxtools.dataviewers.charts.view.ChartView;
 import org.eclipse.linuxtools.dataviewers.piechart.PieChart;
-import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
-import org.eclipse.linuxtools.internal.dataviewers.charts.view.ChartView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -54,12 +53,13 @@ public class ChartFactory {
 
         ChartView view;
         try {
-            final Color WHITE = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE);
-            final Color BLACK = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK);
-            final Color GRAD = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+
+            final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
+            final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
+            final Color GRAD = new Color(Display.getDefault(), 225, 225, 225);
 
             view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(ChartView.VIEW_ID, String.valueOf(ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
+                    .showView(ChartView.VIEW_ID, "" + (ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
             PieChart chart = new PieChart(view.getParent(), SWT.NONE);
 
             chart.setBackground(WHITE);
@@ -99,7 +99,7 @@ public class ChartFactory {
 
             return chart;
         } catch (PartInitException e) {
-            Activator.getDefault().getLog().log(e.getStatus());
+            e.printStackTrace();
         }
         return null;
     }
@@ -122,12 +122,13 @@ public class ChartFactory {
             List<IChartField> valFields, String title, boolean horizontal) {
         ChartView view;
         try {
-            final Color WHITE = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE);
-            final Color BLACK = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK);
-            final Color GRAD = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+
+            final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
+            final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
+            final Color GRAD = new Color(Display.getDefault(), 225, 225, 225);
 
             view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(ChartView.VIEW_ID, String.valueOf(ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
+                    .showView(ChartView.VIEW_ID, "" + (ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
             Chart chart = new Chart(view.getParent(), SWT.NONE);
 
             chart.setBackground(WHITE);
@@ -186,7 +187,7 @@ public class ChartFactory {
 
             return chart;
         } catch (PartInitException e) {
-            Activator.getDefault().getLog().log(e.getStatus());
+            e.printStackTrace();
         }
         return null;
     }

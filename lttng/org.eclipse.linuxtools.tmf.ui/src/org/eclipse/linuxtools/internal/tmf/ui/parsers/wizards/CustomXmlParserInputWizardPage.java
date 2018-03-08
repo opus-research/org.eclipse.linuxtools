@@ -585,6 +585,11 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.jface.dialogs.DialogPage#dispose()
+     */
     @Override
     public void dispose() {
         if (fixedFont != null) {
@@ -617,6 +622,11 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         return getName(inputElement) + " : " + name; //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.jface.dialogs.DialogPage#setVisible(boolean)
+     */
     @Override
     public void setVisible(boolean visible) {
         if (visible) {

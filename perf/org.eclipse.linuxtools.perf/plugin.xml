@@ -25,23 +25,7 @@
             class="org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView"
             icon="icons/symbol.gif"
             id="org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"
-            name="Perf Source Disassembly">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.StatView"
-            icon="icons/symbol.gif"
-            id="org.eclipse.linuxtools.perf.ui.StatView"
-            name="Perf Statistics">
-      </view>
-      <view
-            allowMultiple="true"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.StatComparisonView"
-            icon="icons/symbol.gif"
-            id="org.eclipse.linuxtools.perf.ui.StatViewDiff"
-            name="Perf Statistics Comparison">
+            name="Source Disassembly">
       </view>
    </extension>
    <extension
@@ -112,7 +96,7 @@
             delegate="org.eclipse.linuxtools.internal.perf.remote.launch.PerfLaunchConfigDelegate"
             id="org.eclipse.linuxtools.perf.remote.launch.profile"
             modes="linuxtools"
-            name="Profile with Perf (Remote)"
+            name="Profile with Remote Perf"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator"
             sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
@@ -150,7 +134,7 @@
          point="org.eclipse.ui.editors">
       <editor
             default="true"
-            filenames="*.data, *.data.old"
+            filenames="perf.data, perf.data.old"
             id="org.eclipse.linuxtools.perf.editor"
             launcher="org.eclipse.linuxtools.internal.perf.launch.PerfOpenData"
             name="Perf Viewer">
@@ -169,63 +153,5 @@
             tabgroup="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigurationTabGroup"
             type="timing">
       </provider>
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.linuxtools.perf.ui.ProfileView">
-         <command
-               commandId="org.eclipse.linuxtools.perf.SaveData"
-               id="org.eclipse.linuxtools.perf.SaveCommand"
-               label="Save Current Session"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.linuxtools.perf.ui.StatView">
-         <command
-               commandId="org.eclipse.linuxtools.perf.SaveStatData"
-               id="org.eclipse.linuxtools.perf.SaveStatData"
-               label="Save Statistics"
-               style="push">
-         </command>
-         <command
-               commandId="org.eclipse.linuxtools.perf.StatDiff"
-               id="org.eclipse.linuxtools.perf.StatDiff"
-               label="Compare Statistics"
-               style="push">
-         </command>
-         <command
-               commandId="org.eclipse.linuxtools.perf.QuickStatDiff"
-               id="org.eclipse.linuxtools.perf.QuickStatDiff"
-               label="Compare Latest"
-               style="push">
-         </command>
-      </menuContribution>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveSessionHandler"
-            id="org.eclipse.linuxtools.perf.SaveData"
-            name="Save Current Session">
-      </command>
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveStatsHandler"
-            id="org.eclipse.linuxtools.perf.SaveStatData"
-            name="Save Statistics">
-      </command>
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfStatsComparisonHandler"
-            id="org.eclipse.linuxtools.perf.StatDiff"
-            name="Compare Statistics">
-      </command>
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfStatsQuickDiffHandler"
-            id="org.eclipse.linuxtools.perf.QuickStatDiff"
-            name="Compare Latest">
-      </command>
    </extension>   
 </plugin>

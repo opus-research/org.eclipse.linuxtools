@@ -15,13 +15,14 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.linuxtools.internal.systemtap.ui.dashboard.views.DashboardView;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphData;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
+
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView;
 
 /**
  * This action is responsible for stopping an active graph.  This is used when a module
@@ -35,7 +36,7 @@ public class StopGraphAction extends Action implements IViewActionDelegate {
 	public void init(IViewPart view) {
 		selectedItem = null;
 	}
-
+	
 	@Override
 	public void run(IAction act) {
 		run();
@@ -45,7 +46,7 @@ public class StopGraphAction extends Action implements IViewActionDelegate {
 	public void run() {
 		run(selectedItem);
 	}
-
+	
 	/**
 	 * This method retreives the graph information for the selected item and then
 	 * disposes of the graph from the display.
@@ -62,7 +63,7 @@ public class StopGraphAction extends Action implements IViewActionDelegate {
 		ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 		ambv.getViewer().refresh();
 	}
-
+	
 	/**
 	 * This method updates what item is currently selected.
 	 * @param action The action that started this method.
@@ -84,6 +85,6 @@ public class StopGraphAction extends Action implements IViewActionDelegate {
 		}
 		action.setEnabled(true);
 	}
-
+	
 	private GraphTreeNode selectedItem;
 }

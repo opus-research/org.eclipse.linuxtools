@@ -15,9 +15,9 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -36,12 +36,10 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	private ColorManager colorManager;
 	private STPEditor editor;
 	private DoubleClickStrategy doubleClickStrategy;
-	private STPCompletionProcessor processor;
 
 	public STPConfiguration(ColorManager colorManager, STPEditor editor) {
 		this.colorManager = colorManager;
 		this.editor = editor;
-		this.processor = new STPCompletionProcessor();
 	}
 
 	/* (non-Javadoc)
@@ -68,12 +66,12 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
 		assistant
 				.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+		IContentAssistProcessor processor = new STPCompletionProcessor();
 
 		assistant.setContentAssistProcessor(processor,IDocument.DEFAULT_CONTENT_TYPE);
 		assistant.setContentAssistProcessor(processor,STPPartitionScanner.STP_PROBE);
 
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
-
 		return assistant;
 	}
 
@@ -111,9 +109,8 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	 */
 	@Override
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer,String contentType) {
-		if (doubleClickStrategy == null) {
+		if (doubleClickStrategy == null)
 			doubleClickStrategy = new DoubleClickStrategy();
-		}
 		return doubleClickStrategy;
 	}
 
@@ -158,11 +155,6 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	public IAutoEditStrategy[] getAutoEditStrategies(
 			ISourceViewer sourceViewer, String contentType) {
 		return new IAutoEditStrategy[] {new STPAutoEditStrategy()};
-	}
-
-	@Override
-	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		return processor;
 	}
 
 }

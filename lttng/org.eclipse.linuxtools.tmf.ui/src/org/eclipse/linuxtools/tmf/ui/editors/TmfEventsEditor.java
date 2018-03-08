@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -158,7 +158,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                                 cacheSize = Math.min(cacheSize, trace.getCacheSize());
                                 traces[i] = trace;
                             }
-                            final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+                            final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize);
                             experiment.setBookmarksFile(fFile);
                             fTrace = experiment;
                             break;
@@ -526,6 +526,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     // ISelectionProvider
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+     */
     /**
      * @since 2.0
      */
@@ -534,6 +537,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
         fSelectionChangedListeners.add(listener);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
+     */
     /**
      * @since 2.0
      */
@@ -545,6 +551,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
         return fEventsTable.getSelection();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+     */
     /**
      * @since 2.0
      */
@@ -553,6 +562,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
         fSelectionChangedListeners.remove(listener);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
+     */
     /**
      * @since 2.0
      */
@@ -587,6 +599,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     // ISelectionChangedListener
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
+     */
     /**
      * @since 2.0
      */
@@ -599,6 +615,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     // IPartListener
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IPartListener#partActivated(org.eclipse.ui.IWorkbenchPart)
+     */
     /**
      * @since 2.0
      */
@@ -613,6 +633,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IPartListener#partBroughtToTop(org.eclipse.ui.IWorkbenchPart)
+     */
     /**
      * @since 2.0
      */
@@ -627,6 +651,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IPartListener#partClosed(org.eclipse.ui.IWorkbenchPart)
+     */
     /**
      * @since 2.0
      */
@@ -634,6 +662,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     public void partClosed(IWorkbenchPart part) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IPartListener#partDeactivated(org.eclipse.ui.IWorkbenchPart)
+     */
     /**
      * @since 2.0
      */
@@ -641,6 +673,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     public void partDeactivated(IWorkbenchPart part) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IPartListener#partOpened(org.eclipse.ui.IWorkbenchPart)
+     */
     /**
      * @since 2.0
      */

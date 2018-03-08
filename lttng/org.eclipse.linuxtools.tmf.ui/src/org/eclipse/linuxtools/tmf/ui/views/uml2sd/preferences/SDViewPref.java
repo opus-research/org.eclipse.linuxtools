@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences;
 
 import java.util.Arrays;
@@ -25,7 +26,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl.ColorImpl;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl.FontImpl;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
@@ -63,7 +64,7 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
     /**
      * A 2nd array of preference names
      */
-    private static final String[] FONT_LIST2 = { Messages.SequenceDiagram_Lifeline, Messages.SequenceDiagram_ExecutionOccurrence, Messages.SequenceDiagram_SyncMessage, Messages.SequenceDiagram_SyncMessageReturn, Messages.SequenceDiagram_AsyncMessage, Messages.SequenceDiagram_AsyncMessageReturn, Messages.SequenceDiagram_Frame, Messages.SequenceDiagram_LifelineHeader, Messages.SequenceDiagram_FrameTitle };
+    private static final String[] FONT_LIST2 = { SDMessages._88, SDMessages._89, SDMessages._90, SDMessages._91, SDMessages._92, SDMessages._93, SDMessages._94, SDMessages._95, SDMessages._96 };
     /**
      * Array of background color preference names
      */
@@ -238,6 +239,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return fHandle;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getForeGroundColor(java.lang.String)
+     */
     @Override
     public IColor getForeGroundColor(String prefName) {
         if ((fForeColorPref.get(prefName + FORE_COLOR_POSTFIX) != null) && (fForeColorPref.get(prefName + FORE_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -246,6 +251,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_BLACK);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getBackGroundColor(java.lang.String)
+     */
     @Override
     public IColor getBackGroundColor(String prefName) {
         if ((fBackColorPref.get(prefName + BACK_COLOR_POSTFIX) != null) && (fBackColorPref.get(prefName + BACK_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -254,6 +263,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getFontColor(java.lang.String)
+     */
     @Override
     public IColor getFontColor(String prefName) {
         if ((fTextColorPref.get(prefName + TEXT_COLOR_POSTFIX) != null) && (fTextColorPref.get(prefName + TEXT_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -262,6 +275,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_BLACK);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getForeGroundColorSelection()
+     */
     @Override
     public IColor getForeGroundColorSelection() {
         if (fNoFocusSelection) {
@@ -270,6 +287,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getBackGroundColorSelection()
+     */
     @Override
     public IColor getBackGroundColorSelection() {
         if (fNoFocusSelection) {
@@ -278,6 +299,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_LIST_SELECTION);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getFont(java.lang.String)
+     */
     @Override
     public IFont getFont(String prefName) {
         if (fFontPref.get(prefName) != null) {
@@ -323,11 +348,19 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return fPrefStore.getBoolean(PREF_EXCLUDE_EXTERNAL_TIME);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#useGradienColor()
+     */
     @Override
     public boolean useGradienColor() {
         return fPrefStore.getBoolean(PREF_USE_GRADIENT);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getTimeCompressionSelectionColor()
+     */
     @Override
     public IColor getTimeCompressionSelectionColor() {
         return fTimeCompressionSelectionColor;
@@ -399,6 +432,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         fPrefStore.removePropertyChangeListener(listener);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (!event.getProperty().equals("PREFOK")) { //$NON-NLS-1$

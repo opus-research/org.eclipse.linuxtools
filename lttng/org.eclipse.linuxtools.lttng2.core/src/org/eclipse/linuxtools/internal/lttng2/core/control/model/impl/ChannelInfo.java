@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -103,77 +103,137 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getOverwriteMode()
+     */
     @Override
     public boolean isOverwriteMode() {
         return fOverwriteMode;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setOverwriteMode(boolean)
+     */
     @Override
     public void setOverwriteMode(boolean mode) {
         fOverwriteMode = mode;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getSubBufferSize()
+     */
     @Override
     public long getSubBufferSize() {
         return fSubBufferSize;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setSubBufferSize(long)
+     */
     @Override
     public void setSubBufferSize(long bufferSize) {
         fSubBufferSize = bufferSize;
+
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getNumberOfSubBuffers()
+     */
     @Override
     public int getNumberOfSubBuffers() {
         return fNumberOfSubBuffers;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setNumberOfSubBuffers(int)
+     */
     @Override
     public void setNumberOfSubBuffers(int numberOfSubBuffers) {
         fNumberOfSubBuffers = numberOfSubBuffers;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getSwitchTimer()
+     */
     @Override
     public long getSwitchTimer() {
         return fSwitchTimer;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setSwitchTimer(long)
+     */
     @Override
     public void setSwitchTimer(long timer) {
         fSwitchTimer = timer;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getReadTimer()
+     */
     @Override
     public long getReadTimer() {
         return fReadTimer;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setReadTimer(long)
+     */
     @Override
     public void setReadTimer(long timer) {
         fReadTimer = timer;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getOutputType()
+     */
     @Override
     public String getOutputType() {
         return fOutputType;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setOutputType(java.lang.String)
+     */
     @Override
     public void setOutputType(String type) {
         fOutputType = type;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getState()
+     */
     @Override
     public TraceEnablement getState() {
         return fState;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setState(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceEnablement)
+     */
     @Override
     public void setState(TraceEnablement state) {
         fState = state;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setState(java.lang.String)
+     */
     @Override
     public void setState(String stateName) {
         fState = TraceEnablement.ENABLED;
@@ -184,30 +244,45 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#getEvents()
+     */
     @Override
     public IEventInfo[] getEvents() {
         return fEvents.toArray(new IEventInfo[fEvents.size()]);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#setEvents(java.util.List)
+     */
     @Override
     public void setEvents(List<IEventInfo> events) {
-        fEvents.clear();
         for (Iterator<IEventInfo> iterator = events.iterator(); iterator.hasNext();) {
             IEventInfo eventInfo = iterator.next();
             fEvents.add(eventInfo);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo#addEvent(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IEventInfo)
+     */
     @Override
     public void addEvent(IEventInfo channel) {
         fEvents.add(channel);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + fEvents.hashCode();
+        result = prime * result + ((fEvents == null) ? 0 : fEvents.hashCode());
         result = prime * result + fNumberOfSubBuffers;
         result = prime * result + ((fOutputType == null) ? 0 : fOutputType.hashCode());
         result = prime * result + (fOverwriteMode ? 1231 : 1237);
@@ -218,6 +293,10 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -230,7 +309,11 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
             return false;
         }
         ChannelInfo other = (ChannelInfo) obj;
-        if (!fEvents.equals(other.fEvents)) {
+        if (fEvents == null) {
+            if (other.fEvents != null) {
+                return false;
+            }
+        } else if (!fEvents.equals(other.fEvents)) {
             return false;
         }
         if (fNumberOfSubBuffers != other.fNumberOfSubBuffers) {
@@ -261,6 +344,10 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {
@@ -293,4 +380,6 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
             output.append(")]");
             return output.toString();
     }
+
+
 }

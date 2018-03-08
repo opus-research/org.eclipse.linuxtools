@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Alexandre Montplaisir - Initial API and implementation
+ * Contributors: Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -15,7 +14,7 @@ package org.eclipse.linuxtools.ctf.core.trace;
 /**
  * General exception that is thrown when there is a problem somewhere with the
  * CTF trace reader.
- *
+ * 
  * @version 1.0
  * @author Alexandre Montplaisir
  */
@@ -49,18 +48,4 @@ public class CTFReaderException extends Exception {
     public CTFReaderException(Exception e) {
         super(e);
     }
-
-    /**
-     * Constructor with an attached message and re-throw an exception into this type.
-     *
-     * @param message
-     *            The message attached to this exception
-     * @param exception
-     *            The previous Exception caught
-     * @since 2.0
-     */
-    public CTFReaderException(String message, Throwable exception) {
-        super(message, exception);
-    }
-
 }

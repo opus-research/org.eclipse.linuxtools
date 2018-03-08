@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -168,51 +167,91 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     // Accessors
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isTracepoints()
+     */
     @Override
     public boolean isTracepoints() {
         return fIsTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isAllTracePoints()
+     */
     @Override
     public boolean isAllTracePoints() {
         return fIsAllTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getEventNames()
+     */
     @Override
     public List<String> getEventNames() {
         return new ArrayList<String>(fSelectedEvents);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isWildcard()
+     */
     @Override
     public boolean isWildcard() {
         return fIsWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getWildcard()
+     */
     @Override
     public String getWildcard() {
         return fWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isLogLevel()
+     */
     @Override
     public boolean isLogLevel() {
         return fIsLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelType()
+     */
     @Override
     public LogLevelType getLogLevelType() {
         return fLogLevelType;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevel()
+     */
     @Override
     public TraceLogLevel getLogLevel() {
         return fLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelEventName()
+     */
     @Override
     public String getLogLevelEventName() {
         return fLogLevelEventName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getFilterExpression()
+     */
     @Override
     public String getFilterExpression() {
         return fFilterExpression;
@@ -244,10 +283,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     }
 
     /**
-     * Validates the UST composite input data.
-     *
-     * @return true if configured data is valid and can be retrieved.
-     */
+    * Validates the UST composite input data.
+    * @return true if configured data is valid and can be retrieved.
+    */
     public boolean isValid() {
 
         fIsTracepoints = fTracepointsActivateButton.getSelection();

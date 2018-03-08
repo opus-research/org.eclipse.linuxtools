@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -37,7 +37,7 @@ public class TmfStateStatisticsTest extends TmfStatisticsTest {
     public static void setUpClass() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            File htFile = File.createTempFile("stats-test", ".ht");
+            File htFile = File.createTempFile("stats-test", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
             htFile.deleteOnExit();
             CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
             backend = new TmfStateStatistics(trace, htFile);

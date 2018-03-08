@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,7 +17,7 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -137,6 +137,9 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
     // IWorkbenchPreferencePage
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+     */
     @Override
     public void init(IWorkbench workbench) {
     }
@@ -145,6 +148,9 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
     // PreferencePage
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createContents(Composite parent) {
 
@@ -212,6 +218,10 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         return fPage;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
+     */
     @Override
     protected void performDefaults() {
         fDateTimeFields.loadDefault();
@@ -225,6 +235,10 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         displayExample();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performApply()
+     */
     @Override
     protected void performApply() {
         fDateTimeFields.store();
@@ -237,6 +251,9 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         displayExample();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performOk()
+     */
     @Override
     public boolean performOk() {
         performApply();
@@ -247,10 +264,16 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
     // SelectionListener
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+     */
     @Override
     public void widgetSelected(SelectionEvent e) {
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+     */
     @Override
     public void widgetDefaultSelected(SelectionEvent e) {
     }
@@ -259,6 +282,9 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
     // IPropertyChangeListener
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         Object source = event.getSource();

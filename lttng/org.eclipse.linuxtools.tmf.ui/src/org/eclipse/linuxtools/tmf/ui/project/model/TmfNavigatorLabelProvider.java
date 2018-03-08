@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Add support for unknown trace type icon
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -43,7 +42,6 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
 
     private static final Image fFolderIcon = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     private static final String fTraceIconFile = "icons/elcl16/trace.gif"; //$NON-NLS-1$
-    private static final String fUnknownIconFile = "icons/elcl16/unknown_parser.gif"; //$NON-NLS-1$
     private static final String fExperimentIconFile = "icons/elcl16/experiment.gif"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
@@ -54,7 +52,6 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     private final Image fExperimentFolderIcon = fFolderIcon;
 
     private final Image fDefaultTraceIcon;
-    private final Image fUnknownTraceIcon;
     private final Image fExperimentIcon;
 
     // ------------------------------------------------------------------------
@@ -69,7 +66,6 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     public TmfNavigatorLabelProvider() {
         Bundle bundle = Activator.getDefault().getBundle();
         fDefaultTraceIcon = loadIcon(bundle, fTraceIconFile);
-        fUnknownTraceIcon = loadIcon(bundle, fUnknownIconFile);
         fExperimentIcon = loadIcon(bundle, fExperimentIconFile);
     }
 
@@ -89,18 +85,19 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     // ------------------------------------------------------------------------
     // ICommonLabelProvider
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider#getImage(java.lang.Object)
+     */
     @Override
     public Image getImage(Object element) {
 
         if (element instanceof TmfTraceElement) {
             TmfTraceElement trace = (TmfTraceElement) element;
+            String icon = null;
             try {
-                if (trace.getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE) == null) {
-                    return fUnknownTraceIcon;
-                }
                 String name = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEBUNDLE);
-                String icon = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEICON);
+                icon = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEICON);
                 if (name != null && icon != null) {
                     Bundle bundle = Platform.getBundle(name);
                     return loadIcon(bundle, icon);
@@ -125,6 +122,10 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
+     */
     @Override
     public String getText(Object element) {
 
@@ -151,36 +152,68 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)
+     */
     @Override
     public void addListener(ILabelProviderListener listener) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
+     */
     @Override
     public void dispose() {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang.Object, java.lang.String)
+     */
     @Override
     public boolean isLabelProperty(Object element, String property) {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse.jface.viewers.ILabelProviderListener)
+     */
     @Override
     public void removeListener(ILabelProviderListener listener) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.IMementoAware#restoreState(org.eclipse.ui.IMemento)
+     */
     @Override
     public void restoreState(IMemento aMemento) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.IMementoAware#saveState(org.eclipse.ui.IMemento)
+     */
     @Override
     public void saveState(IMemento aMemento) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.IDescriptionProvider#getDescription(java.lang.Object)
+     */
     @Override
     public String getDescription(Object anElement) {
         return getText(anElement);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.ICommonLabelProvider#init(org.eclipse.ui.navigator.ICommonContentExtensionSite)
+     */
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
     }

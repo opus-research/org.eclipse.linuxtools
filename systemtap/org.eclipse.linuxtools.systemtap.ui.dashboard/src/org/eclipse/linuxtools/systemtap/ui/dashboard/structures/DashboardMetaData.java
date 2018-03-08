@@ -17,10 +17,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.eclipse.linuxtools.systemtap.graphingapi.core.filters.IDataSetFilter;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.filter.AvailableFilterTypes;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetFactory;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.filter.AvailableFilterTypes;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.WorkbenchException;
@@ -33,17 +33,31 @@ import org.eclipse.ui.XMLMemento;
  * @author Ryan Morse
  */
 public class DashboardMetaData {
-
 	public DashboardMetaData(String file) {
+		this(new File(file));
+	}
+
+	public DashboardMetaData(File file) {
 		module = null;
-		metaFile = new File(file);
-		if(metaFile.exists()) {
+		metaFile = file;
+		if(file.exists())
 			readData();
-		}
 	}
 
 	public DashboardModule getModule() {
 		return module;
+	}
+
+	/**
+	 * This method checks to see if there is an available module for the specified kernel version.
+	 * @param kernelVersion String for the specific kernel to try to get a module for.
+	 * @return boolean representing whether or there is an existing module for the provided kernel
+	 */
+	public boolean isModuleAvailable(String kernelVersion) {
+		for(int i=0; i<module.kernelVersions.length; i++)
+			if(module.kernelVersions[i].equals(kernelVersion))
+				return true;
+		return false;
 	}
 
 	/**
@@ -52,11 +66,9 @@ public class DashboardMetaData {
 	 * @return File that represents the module for the requested kernel version.
 	 */
 	public File getKernelModule(String kernelVersion) {
-		for(int i=0; i<module.kernelVersions.length; i++) {
-			if(module.kernelVersions[i].equals(kernelVersion)) {
+		for(int i=0; i<module.kernelVersions.length; i++)
+			if(module.kernelVersions[i].equals(kernelVersion))
 				return module.kernelModules[i];
-			}
-		}
 		return null;
 	}
 
@@ -91,9 +103,8 @@ public class DashboardMetaData {
 			//Get the script
 			if ((module.location ==null) || (module.location.equalsIgnoreCase("local"))) //$NON-NLS-1$
 			{
-			if(!tempScriptFolder.exists()) {
+			if(!tempScriptFolder.exists())
 				tempScriptFolder.mkdirs();
-			}
 			temp = new File(metaFile.getParentFile() + data.getString(XMLdScript));
 			module.script = new File(tempScriptFolder.getAbsolutePath() + "/" + module.hashCode() + ".stp"); //$NON-NLS-1$ //$NON-NLS-2$
 			temp.renameTo(module.script);
@@ -104,9 +115,8 @@ public class DashboardMetaData {
 			IMemento[] children = data.getChild(XMLParsingExpressions).getChildren(XMLpColumn);
 			module.labels = new String[children.length];
 			int i;
-			for(i=0; i<children.length; i++) {
+			for(i=0; i<children.length; i++)
 				module.labels[i] = children[i].getString(XMLpName);
-			}
 
 			//Get the parser
 			module.parser = DataSetFactory.createParserXML(module.dataSetID, data.getChild(XMLParsingExpressions).getChild(XMLpParser));

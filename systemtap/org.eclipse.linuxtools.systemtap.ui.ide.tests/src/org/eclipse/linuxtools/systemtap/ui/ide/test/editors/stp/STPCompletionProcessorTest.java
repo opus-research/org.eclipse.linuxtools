@@ -15,6 +15,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.IOException;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
@@ -22,10 +24,10 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.systemtap.ui.tests.SystemtapTest;
+import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.junit.Test;
 
-public class STPCompletionProcessorTest extends SystemtapTest{
+public class STPCompletionProcessorTest {
 
 	private static String TEST_STP_SCRIPT = ""+
 			"\n"+
@@ -102,24 +104,11 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 
 	@Test
 	public void testProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled);
+		assumeTrue(stapInstalled());
 		String prefix = "probe ";
 		ICompletionProposal[] proposals = getCompletionsForPrefix(prefix);
 		assertTrue(proposalsContain(proposals, "syscall"));
 		assertTrue(!proposalsContain(proposals, "syscall.write"));
-	}
-
-	@Test
-	public void testMultiProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled);
-		String prefix = "probe begin,e";
-		ICompletionProposal[] proposals = getCompletionsForPrefix(prefix);
-		assertTrue(proposalsContain(proposals, "end"));
-		assertTrue(proposalsContain(proposals, "error"));
-
-		prefix = "probe myBegin = b";
-		proposals = getCompletionsForPrefix(prefix);
-		assertTrue(proposalsContain(proposals, "begin"));
 	}
 
 	@Test
@@ -137,7 +126,7 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 
 	@Test
 	public void testEndProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled);
+		assumeTrue(stapInstalled());
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
@@ -154,14 +143,14 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 				.computeCompletionProposals(testDocument,
 						offset);
 
-		assertTrue(proposalsContain(proposals, "addr"));
-		assertTrue(proposalsContain(proposals, "backtrace"));
-		assertTrue(proposalsContain(proposals, "cmdline_args"));
+		assertTrue(proposalsContain(proposals, "user_int16"));
+		assertTrue(proposalsContain(proposals, "user_int32"));
+		assertTrue(proposalsContain(proposals, "user_int64"));
 	}
 
 	@Test
 	public void testProbeVariableCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled);
+		assumeTrue(stapInstalled());
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
@@ -215,16 +204,26 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 		return proposals;
 	}
 
+	private boolean stapInstalled(){
+		try {
+			Process process = RuntimeProcessFactory.getFactory().exec(new String[]{"stap", "-V"}, null);
+			return (process != null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	@Test
 	public void testFunctionCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled);
+		assumeTrue(stapInstalled());
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
 		MockSTPEditor editor = new MockSTPEditor(testDocument);
 
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
-		String prefix = "probe syscall.write{addr}";
+		String prefix = "probe syscall.write{user_}";
 		testDocument.replace(offset, 0, prefix);
 		offset += prefix.length() - 1;
 
@@ -235,16 +234,15 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 				.computeCompletionProposals(testDocument,
 						offset);
 
-		assertTrue(proposalsContain(proposals, "addr"));
-		assertTrue(proposalsContain(proposals, "addr_from_rqst"));
-		assertTrue(proposalsContain(proposals, "addr_from_rqst_str"));
+		assertTrue(proposalsContain(proposals, "user_int16"));
+		assertTrue(proposalsContain(proposals, "user_int32"));
+		assertTrue(proposalsContain(proposals, "user_int64"));
 	}
 
 	private boolean proposalsContain(ICompletionProposal[] proposals, String proposal){
 		for (ICompletionProposal p : proposals) {
-			if (p.getDisplayString().contains(proposal)) {
+			if (p.getDisplayString().contains(proposal))
 				return true;
-			}
 		}
 		return false;
 	}

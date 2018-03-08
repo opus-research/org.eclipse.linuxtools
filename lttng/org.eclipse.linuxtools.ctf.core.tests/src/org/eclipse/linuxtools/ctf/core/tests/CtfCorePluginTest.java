@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -41,19 +41,19 @@ public class CtfCorePluginTest {
     @Test
     public void testCtfCorePluginId() {
         assertEquals(
-                "Plugin ID", "org.eclipse.linuxtools.ctf", Activator.PLUGIN_ID);
+                "Plugin ID", "org.eclipse.linuxtools.ctf", Activator.PLUGIN_ID); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
     public void testGetDefault() {
         Activator plugin = Activator.getDefault();
-        assertEquals("getDefault()", plugin, fPlugin);
+        assertEquals("getDefault()", plugin, fPlugin); //$NON-NLS-1$
     }
 
     @Test
     public void testLog() {
         try {
-            Activator.log("Some message");
+            Activator.getDefault().log("Some message"); //$NON-NLS-1$
         } catch (Exception e) {
             fail();
         }

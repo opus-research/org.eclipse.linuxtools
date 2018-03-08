@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.tests.views.uml2sd.loader;
  * Common constants for the TMF UML2SD test cases
  * @author Bernd Hufmann
  */
+@SuppressWarnings("nls")
 public interface IUml2SDTestConstants {
 
     /**

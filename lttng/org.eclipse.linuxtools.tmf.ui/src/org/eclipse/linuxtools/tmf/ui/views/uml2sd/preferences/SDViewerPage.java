@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences;
 
 import java.util.Iterator;
@@ -21,7 +22,7 @@ import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FontFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -106,6 +107,10 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createContents(Composite parent) {
         parent.setLayout(new GridLayout());
@@ -116,21 +121,21 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         page.setLayoutData(pageLayoutdata);
         page.setLayout(pageLayout);
 
-        fTooltip = new BooleanFieldEditor(ISDPreferences.PREF_TOOLTIP, Messages.SequenceDiagram_ShowTooltips, page);
+        fTooltip = new BooleanFieldEditor(ISDPreferences.PREF_TOOLTIP, SDMessages._97, page);
         fTooltip.setPreferenceStore(fPreferences.getPreferenceStore());
         fTooltip.load();
 
         // link font with zoom pref
-        fLink = new BooleanFieldEditor(ISDPreferences.PREF_LINK_FONT, Messages.SequenceDiagram_IncreaseFontSizeWhenZooming, page);
+        fLink = new BooleanFieldEditor(ISDPreferences.PREF_LINK_FONT, SDMessages._82, page);
         fLink.setPreferenceStore(fPreferences.getPreferenceStore());
         fLink.load();
 
-        fNoExternalTime = new BooleanFieldEditor(ISDPreferences.PREF_EXCLUDE_EXTERNAL_TIME, Messages.SequenceDiagram_ExcludeExternalTime, page);
+        fNoExternalTime = new BooleanFieldEditor(ISDPreferences.PREF_EXCLUDE_EXTERNAL_TIME, SDMessages._83, page);
         fNoExternalTime.setPreferenceStore(fPreferences.getPreferenceStore());
         fNoExternalTime.load();
 
         // use gradient color pref
-        fUseGrad = new BooleanFieldEditor(ISDPreferences.PREF_USE_GRADIENT, Messages.SequenceDiagram_UseGradientColor, page);
+        fUseGrad = new BooleanFieldEditor(ISDPreferences.PREF_USE_GRADIENT, SDMessages._84, page);
         fUseGrad.setPreferenceStore(fPreferences.getPreferenceStore());
         fUseGrad.load();
 
@@ -145,7 +150,7 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         prefPage.setLayout(prefPageLayout);
 
         // swimLane width pref
-        fLifelineWidth = new IntegerFieldEditor(ISDPreferences.PREF_LIFELINE_WIDTH, Messages.SequenceDiagram_LifelineWidth, prefPage);
+        fLifelineWidth = new IntegerFieldEditor(ISDPreferences.PREF_LIFELINE_WIDTH, SDMessages._80, prefPage);
         fLifelineWidth.setPreferenceStore(fPreferences.getPreferenceStore());
         fLifelineWidth.setValidRange(119, 500);
         fLifelineWidth.load();
@@ -175,20 +180,20 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         // font selector initialise for the lifeline font pref
         String[] fontList = SDViewPref.getFontList();
         fFont = new FontFieldEditor(fontList[0], "",//$NON-NLS-1$
-                Messages.SequenceDiagram_AaBbYyZz, fButtonArea);
+                SDMessages._81, fButtonArea);
         fFont.getPreviewControl().setSize(500, 500);
         fFont.setPreferenceStore(fPreferences.getPreferenceStore());
         fFont.load();
 
-        fBackGroundColor = new ColorFieldEditor(fontList[0] + SDViewPref.BACK_COLOR_POSTFIX, Messages.SequenceDiagram_Background, fButtonArea);
+        fBackGroundColor = new ColorFieldEditor(fontList[0] + SDViewPref.BACK_COLOR_POSTFIX, SDMessages._85, fButtonArea);
         fBackGroundColor.setPreferenceStore(fPreferences.getPreferenceStore());
         fBackGroundColor.load();
 
-        fLineColor = new ColorFieldEditor(fontList[0] + SDViewPref.FORE_COLOR_POSTFIX, Messages.SequenceDiagram_Lines, fButtonArea);
+        fLineColor = new ColorFieldEditor(fontList[0] + SDViewPref.FORE_COLOR_POSTFIX, SDMessages._86, fButtonArea);
         fLineColor.setPreferenceStore(fPreferences.getPreferenceStore());
         fLineColor.load();
 
-        fTextColor = new ColorFieldEditor(fontList[0] + SDViewPref.TEXT_COLOR_POSTFIX, Messages.SequenceDiagram_Text, fButtonArea);
+        fTextColor = new ColorFieldEditor(fontList[0] + SDViewPref.TEXT_COLOR_POSTFIX, SDMessages._87, fButtonArea);
         fTextColor.setPreferenceStore(fPreferences.getPreferenceStore());
         fTextColor.load();
         swapPref(true);
@@ -197,11 +202,19 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         return page;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+     */
     @Override
     public void init(IWorkbench workbench) {
         fPreferences = SDViewPref.getInstance();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performApply()
+     */
     @Override
     protected void performApply() {
         // Store the prefrences in the PreferenceStore
@@ -224,12 +237,20 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         swapPref(true);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performOk()
+     */
     @Override
     public boolean performOk() {
         performApply();
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
+     */
     @Override
     protected void performDefaults() {
         fLink.loadDefault();
@@ -300,6 +321,10 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         fTextColor.load();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+     */
     @Override
     public void widgetSelected(SelectionEvent e) {
         // Store the past set font preference or else the
@@ -422,6 +447,10 @@ public class SDViewerPage extends PreferencePage implements IWorkbenchPreference
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+     */
     @Override
     public void widgetDefaultSelected(SelectionEvent e) {
     }

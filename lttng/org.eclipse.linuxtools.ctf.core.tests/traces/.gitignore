@@ -1,6 +1,5 @@
 *.bz2
 *.tar
-/ctf-testsuite
 /kernel
 /trace2
 *.ht

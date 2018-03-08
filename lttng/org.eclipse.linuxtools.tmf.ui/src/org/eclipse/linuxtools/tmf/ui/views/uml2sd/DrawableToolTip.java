@@ -1,20 +1,21 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -212,7 +213,6 @@ public class DrawableToolTip implements PaintListener {
      * @param value the current in the scale
      * @param min the scale min
      * @param max the scale max
-     * @since 2.0
      */
     public void showToolTip(ITmfTimestamp value, ITmfTimestamp min, ITmfTimestamp max) {
         fMinMaxRange = new TmfTimeRange(min, max);
@@ -241,9 +241,13 @@ public class DrawableToolTip implements PaintListener {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
+     */
     @Override
     public void paintControl(PaintEvent event) {
-        fMessage = Messages.SequenceDiagram_Delta + " " +  fCurrentValue.toString(); //$NON-NLS-1$
+        fMessage = SDMessages._138 + " " +  fCurrentValue.toString(); //$NON-NLS-1$
         Point size = event.gc.textExtent(fMessage);
         if (size.x < fScaleLength) {
             size.x = fScaleLength;
@@ -282,11 +286,11 @@ public class DrawableToolTip implements PaintListener {
                 event.gc.fillRectangle(fHorMargin + i * step, fVertMargin + fTextScaleMargin + size.y - 5, step, 11);
             }
             if (i == 0) {
-                event.gc.drawText(Messages.SequenceDiagram_Min, fHorMargin, size.y + 2 * fVertMargin + fTextScaleMargin, true);
+                event.gc.drawText(SDMessages._56, fHorMargin, size.y + 2 * fVertMargin + fTextScaleMargin, true);
             }
             if (i == 0) {
-                int len = event.gc.textExtent(Messages.SequenceDiagram_Max).x;
-                event.gc.drawText(Messages.SequenceDiagram_Max, fHorMargin + fScaleLength - len + 1, size.y + 2 * fVertMargin + fTextScaleMargin, true);
+                int len = event.gc.textExtent(SDMessages._55).x;
+                event.gc.drawText(SDMessages._55, fHorMargin + fScaleLength - len + 1, size.y + 2 * fVertMargin + fTextScaleMargin, true);
             }
             int lineWidth = 10;
             if ((i == 0) || (i == 10)) {

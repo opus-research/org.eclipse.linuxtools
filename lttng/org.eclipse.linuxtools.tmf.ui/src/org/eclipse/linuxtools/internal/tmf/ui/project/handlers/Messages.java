@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Added drag and drop messages
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -42,17 +41,11 @@ public class Messages extends NLS {
     public static String DeleteExperimentHandler_Message;
     public static String DeleteExperimentHandler_Error;
 
-    public static String SelectTraceTypeHandler_ErrorSelectingTrace;
-
     public static String SelectTraceTypeHandler_Title;
-
-    public static String SelectTraceTypeHandler_TraceFailedValidation;
-
-    public static String SelectTraceTypeHandler_TracesFailedValidation;
     public static String SelectTraceTypeHandler_InvalidTraceType;
 
-    public static String DropAdapterAssistant_RenameTraceTitle;
-    public static String DropAdapterAssistant_RenameTraceMessage;
+    public static String ClearViewsHandler_message;
+    public static String ClearViewsHandler_title;
 
     static {
         // initialize resource bundle

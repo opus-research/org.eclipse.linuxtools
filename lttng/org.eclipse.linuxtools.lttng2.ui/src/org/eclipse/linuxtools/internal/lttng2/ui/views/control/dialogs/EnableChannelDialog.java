@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -144,12 +144,19 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateChannelDialog#getChannelInfo()
+     */
     @Override
     public IChannelInfo getChannelInfo() {
         return fChannelInfo;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateChannelDialog#setDomainComponent(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent)
+     */
     @Override
     public void setDomainComponent(TraceDomainComponent domain) {
         fDomain = domain;
@@ -160,11 +167,19 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateChannelDialog#isKernel()
+     */
     @Override
     public boolean isKernel() {
         return fIsKernel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableChannelDialog#setHasKernel(boolean)
+     */
     @Override
     public void setHasKernel(boolean hasKernel) {
         if (fDomain != null) {
@@ -179,7 +194,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -187,6 +205,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         newShell.setImage(Activator.getDefault().loadIcon(ENABLE_CHANNEL_ICON_FILE));
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
 
@@ -286,6 +308,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         return fDialogComposite;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.DETAILS_ID, "&Default", true); //$NON-NLS-1$
@@ -293,6 +319,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     protected void okPressed() {
         // Set channel information
@@ -325,6 +355,10 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
         super.okPressed();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#buttonPressed(int)
+     */
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.DETAILS_ID) {
@@ -337,7 +371,6 @@ public class EnableChannelDialog extends Dialog implements IEnableChannelDialog 
     // ------------------------------------------------------------------------
     // Helper methods
     // ------------------------------------------------------------------------
-
     /**
      * Sets default value depending on Kernel or UST
      */

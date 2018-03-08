@@ -1,14 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *     Alexandre Montplaisir - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -63,6 +62,11 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
  */
 public class CTFTrace implements IDefinitionScope {
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {
@@ -530,7 +534,7 @@ public class CTFTrace implements IDefinitionScope {
             fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
-            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int)fc.size(), 4096));
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, 4096);
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
             throw new CTFReaderException();
@@ -584,10 +588,6 @@ public class CTFTrace implements IDefinitionScope {
         } else {
             /* No packet header, we suppose there is only one stream */
             stream = streams.get(null);
-        }
-
-        if (stream == null) {
-            throw new CTFReaderException("Unexpected end of stream"); //$NON-NLS-1$
         }
 
         /* Create the stream input */
@@ -883,11 +883,7 @@ public class CTFTrace implements IDefinitionScope {
      * @since 1.2
      */
     public CTFCallsite getCallsite(String eventName) {
-        LinkedList<CTFCallsite> callsites = callsitesByName.get(eventName);
-        if (callsites != null) {
-            return callsites.getFirst();
-        }
-        return null;
+        return callsitesByName.get(eventName).getFirst();
     }
 
     /**

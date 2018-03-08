@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -27,8 +27,11 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -40,11 +43,9 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTimeListener;
@@ -59,6 +60,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorPart;
 
 /**
  * Main implementation for the LTTng 2.0 kernel Resource view
@@ -128,7 +130,7 @@ public class ResourcesView extends TmfView {
 
     private class TraceEntry implements ITimeGraphEntry {
         // The Trace
-        private final LttngKernelTrace fKernelTrace;
+        private final CtfKernelTrace fKernelTrace;
         // The start time
         private final long fTraceStartTime;
         // The end time
@@ -138,7 +140,7 @@ public class ResourcesView extends TmfView {
         // The name of entry
         private final String fName;
 
-        public TraceEntry(LttngKernelTrace trace, String name, long startTime, long endTime) {
+        public TraceEntry(CtfKernelTrace trace, String name, long startTime, long endTime) {
             fKernelTrace = trace;
             fChildren = new ArrayList<ResourcesEntry>();
             fName = name;
@@ -191,7 +193,7 @@ public class ResourcesView extends TmfView {
             return null;
         }
 
-        public LttngKernelTrace getTrace() {
+        public CtfKernelTrace getTrace() {
             return fKernelTrace;
         }
 
@@ -267,7 +269,7 @@ public class ResourcesView extends TmfView {
             }
             long resolution = Math.max(1, (fZoomEndTime - fZoomStartTime) / fDisplayWidth);
             for (TraceEntry traceEntry : fZoomEntryList) {
-                if (!traceEntry.fKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID).waitUntilBuilt()) {
+                if (!traceEntry.fKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID).waitUntilBuilt()) {
                     return;
                 }
                 for (ITimeGraphEntry child : traceEntry.getChildren()) {
@@ -309,6 +311,9 @@ public class ResourcesView extends TmfView {
     // ViewPart
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#createPartControl(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public void createPartControl(Composite parent) {
         fTimeGraphViewer = new TimeGraphViewer(parent, SWT.NONE);
@@ -341,12 +346,18 @@ public class ResourcesView extends TmfView {
         makeActions();
         contributeToActionBars();
 
-        ITmfTrace trace = getActiveTrace();
-        if (trace != null) {
-            traceSelected(new TmfTraceSelectedSignal(this, trace));
+        IEditorPart editor = getSite().getPage().getActiveEditor();
+        if (editor instanceof ITmfTraceEditor) {
+            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
+            if (trace != null) {
+                traceSelected(new TmfTraceSelectedSignal(this, trace));
+            }
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
     @Override
     public void setFocus() {
         fTimeGraphViewer.setFocus();
@@ -473,14 +484,21 @@ public class ResourcesView extends TmfView {
     private void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
+        ITmfTrace[] traces;
+        if (trace instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) trace;
+            traces = experiment.getTraces();
+        } else {
+            traces = new ITmfTrace[] { trace };
+        }
         ArrayList<TraceEntry> entryList = new ArrayList<TraceEntry>();
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        for (ITmfTrace aTrace : traces) {
             if (monitor.isCanceled()) {
                 return;
             }
-            if (aTrace instanceof LttngKernelTrace) {
-                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+            if (aTrace instanceof CtfKernelTrace) {
+                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) aTrace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
                     return;
                 }
@@ -529,8 +547,8 @@ public class ResourcesView extends TmfView {
             if (monitor.isCanceled()) {
                 return;
             }
-            LttngKernelTrace ctfKernelTrace = traceEntry.getTrace();
-            ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+            CtfKernelTrace ctfKernelTrace = traceEntry.getTrace();
+            ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
             long startTime = ssq.getStartTime();
             long endTime = ssq.getCurrentEndTime() + 1;
             long resolution = (endTime - startTime) / fDisplayWidth;
@@ -545,7 +563,7 @@ public class ResourcesView extends TmfView {
     private static List<ITimeEvent> getEventList(ResourcesEntry entry,
             long startTime, long endTime, long resolution, boolean includeNull,
             IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
         final long realStart = Math.max(startTime, ssq.getStartTime());
         final long realEnd = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (realEnd <= realStart) {
@@ -662,9 +680,9 @@ public class ResourcesView extends TmfView {
                     fTimeGraphViewer.setInput(entries);
                     fTimeGraphViewer.setTimeBounds(fStartTime, fEndTime);
 
-                    long timestamp = fTrace == null ? 0 : fTraceManager.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                    long startTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                    long endTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                    long timestamp = fTrace == null ? 0 : fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                    long startTime = fTrace == null ? 0 : fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                    long endTime = fTrace == null ? 0 : fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                     startTime = Math.max(startTime, fStartTime);
                     endTime = Math.min(endTime, fEndTime);
                     fTimeGraphViewer.setSelectedTime(timestamp, false);

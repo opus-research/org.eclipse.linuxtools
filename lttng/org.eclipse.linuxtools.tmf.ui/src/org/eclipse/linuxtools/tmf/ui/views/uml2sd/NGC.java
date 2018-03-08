@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
@@ -112,41 +113,73 @@ public class NGC implements IGC {
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setLineStyle(int)
+     */
     @Override
     public void setLineStyle(int style) {
         fContext.setLineStyle(style);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineStyle()
+     */
     @Override
     public int getLineStyle() {
         return fContext.getLineStyle();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getContentsX()
+     */
     @Override
     public int getContentsX() {
         return Math.round(fView.getContentsX() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getContentsY()
+     */
     @Override
     public int getContentsY() {
         return Math.round(fView.getContentsY() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getVisibleWidth()
+     */
     @Override
     public int getVisibleWidth() {
         return Math.round(fView.getVisibleWidth() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getVisibleHeight()
+     */
     @Override
     public int getVisibleHeight() {
         return Math.round(fView.getVisibleHeight() / fView.fZoomValue);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#contentsToViewX(int)
+     */
     @Override
     public int contentsToViewX(int x) {
         return fView.contentsToViewX(x);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#contentsToViewY(int)
+     */
     @Override
     public int contentsToViewY(int y) {
         return fView.contentsToViewY(y);
@@ -179,6 +212,10 @@ public class NGC implements IGC {
         return c;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawLine(int, int, int, int)
+     */
     @Override
     public void drawLine(int x1, int y1, int x2, int y2) {
         int localX1 = x1;
@@ -241,6 +278,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawRectangle(int, int, int, int)
+     */
     @Override
     public void drawRectangle(int x, int y, int width, int height) {
         int localX = x;
@@ -281,6 +322,10 @@ public class NGC implements IGC {
         fContext.drawRectangle(localX, localY, localWidth, localHeight);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawFocus(int, int, int, int)
+     */
     @Override
     public void drawFocus(int x, int y, int width, int height) {
         int localX = x;
@@ -315,6 +360,10 @@ public class NGC implements IGC {
         setForeground(fC);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillPolygon(int[])
+     */
     @Override
     public void fillPolygon(int[] points) {
         int len = (points.length / 2) * 2;
@@ -332,6 +381,10 @@ public class NGC implements IGC {
         fContext.fillPolygon(localPoint);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawPolygon(int[])
+     */
     @Override
     public void drawPolygon(int[] points) {
         int len = (points.length / 2) * 2;
@@ -349,6 +402,10 @@ public class NGC implements IGC {
         fContext.drawPolygon(localPoint);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillRectangle(int, int, int, int)
+     */
     @Override
     public void fillRectangle(int x, int y, int width, int height) {
         int localX = x;
@@ -386,8 +443,13 @@ public class NGC implements IGC {
             localHeight = fView.getVisibleHeight() + fVisibleScreenBounds - localY;
         }
         fContext.fillRectangle(localX, localY, localWidth, localHeight);
+
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillGradientRectangle(int, int, int, int, boolean)
+     */
     @Override
     public void fillGradientRectangle(int x, int y, int width, int height, boolean isVertical) {
         int localX = x;
@@ -432,11 +494,20 @@ public class NGC implements IGC {
         setForeground(tempColor);
     }
 
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#textExtent(java.lang.String)
+     */
     @Override
     public int textExtent(String name) {
         return fContext.textExtent(name).x;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawText(java.lang.String, int, int, boolean)
+     */
     @Override
     public void drawText(String string, int x, int y, boolean isTrans) {
         int localX = x;
@@ -451,6 +522,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawText(java.lang.String, int, int)
+     */
     @Override
     public void drawText(String string, int x, int y) {
         int localX = x;
@@ -465,6 +540,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#fillOval(int, int, int, int)
+     */
     @Override
     public void fillOval(int x, int y, int width, int height) {
         int localX = x;
@@ -479,6 +558,10 @@ public class NGC implements IGC {
         fContext.fillOval(fView.contentsToViewX(localX), fView.contentsToViewY(localY), localWidth, localHeight);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getBackground()
+     */
     @Override
     public IColor getBackground() {
         if ((fBackground != null) && (fBackground.getColor() instanceof Color) && (!((Color) (fBackground.getColor())).isDisposed())) {
@@ -487,6 +570,10 @@ public class NGC implements IGC {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getForeground()
+     */
     @Override
     public IColor getForeground() {
         if ((fForeground != null) && (fForeground.getColor() instanceof Color) && (!((Color) (fForeground.getColor())).isDisposed())) {
@@ -495,6 +582,10 @@ public class NGC implements IGC {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setBackground(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
+     */
     @Override
     public void setBackground(IColor color) {
         if (color == null) {
@@ -506,6 +597,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setForeground(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
+     */
     @Override
     public void setForeground(IColor color) {
         if (color == null) {
@@ -520,6 +615,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setGradientColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
+     */
     @Override
     public void setGradientColor(IColor color) {
         if (color == null) {
@@ -530,6 +629,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setLineWidth(int)
+     */
     @Override
     public void setLineWidth(int width) {
         if (fView.isPrinting()) {
@@ -540,6 +643,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineWidth()
+     */
     @Override
     public int getLineWidth() {
         return fContext.getLineWidth();
@@ -564,6 +671,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawTextTruncatedCentred(java.lang.String, int, int, int, int, boolean)
+     */
     @Override
     public void drawTextTruncatedCentred(String name, int xValue, int yValue, int width, int height, boolean trans) {
         int localX = xValue;
@@ -618,6 +729,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawTextTruncated(java.lang.String, int, int, int, int, boolean)
+     */
     @Override
     public void drawTextTruncated(String name, int xValue, int yValue, int width, int height, boolean trans) {
         int localX = xValue;
@@ -654,6 +769,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawImage(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage, int, int, int, int)
+     */
     @Override
     public void drawImage(IImage image, int xValue, int yValue, int maxWith, int maxHeight) {
         int localX = xValue;
@@ -705,6 +824,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#drawArc(int, int, int, int, int, int)
+     */
     @Override
     public void drawArc(int x, int y, int width, int height, int startAngle, int endAngle) {
         int localX = x;
@@ -722,6 +845,10 @@ public class NGC implements IGC {
         fContext.drawArc(fView.contentsToViewX(localX), fView.contentsToViewY(localY), localWidth, localHeight, startAngle, endAngle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setFont(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont)
+     */
     @Override
     public void setFont(IFont font) {
         if (font.getFont() != null && ((Font) font.getFont()).getFontData().length > 0) {
@@ -740,6 +867,10 @@ public class NGC implements IGC {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getFontHeight(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont)
+     */
     @Override
     public int getFontHeight(IFont font) {
         if (font.getFont() != null && (font.getFont() instanceof Font) && ((Font) font.getFont()).getFontData().length > 0) {
@@ -761,6 +892,10 @@ public class NGC implements IGC {
         return fContext.textExtent("lp").y; //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getFontWidth(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont)
+     */
     @Override
     public int getFontWidth(IFont font) {
         if ((font.getFont() != null) && (font.getFont() instanceof Font)) {
@@ -787,6 +922,10 @@ public class NGC implements IGC {
         fContext = null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getZoom()
+     */
     @Override
     public float getZoom() {
         if (fView != null) {
@@ -795,26 +934,46 @@ public class NGC implements IGC {
         return 1;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineDotStyle()
+     */
     @Override
     public int getLineDotStyle() {
         return SWT.LINE_DOT;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineDashStyle()
+     */
     @Override
     public int getLineDashStyle() {
         return SWT.LINE_DASH;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#getLineSolidStyle()
+     */
     @Override
     public int getLineSolidStyle() {
         return SWT.LINE_SOLID;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#createColor(int, int, int)
+     */
     @Override
     public IColor createColor(int r, int g, int b) {
         return new ColorImpl(Display.getDefault(), r, g, b);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC#setDrawTextWithFocusStyle(boolean)
+     */
     @Override
     public void setDrawTextWithFocusStyle(boolean focus) {
         fDrawWithFocus = focus;

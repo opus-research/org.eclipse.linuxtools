@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -47,7 +47,7 @@ public abstract class TmfStatisticsTest {
     private static final long t5 = 1332170682490949270L; /* following event here */
     private static final long t6 = 1332170682490949300L;
 
-    private static final String eventType = "lttng_statedump_process_state";
+    private static final String eventType = "lttng_statedump_process_state"; //$NON-NLS-1$
 
 
     // ------------------------------------------------------------------------

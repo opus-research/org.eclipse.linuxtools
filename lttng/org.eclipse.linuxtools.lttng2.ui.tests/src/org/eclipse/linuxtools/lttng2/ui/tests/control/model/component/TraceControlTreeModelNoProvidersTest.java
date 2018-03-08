@@ -48,6 +48,7 @@ import org.osgi.framework.FrameworkUtil;
  * Tracer Control can handle the case where no kernel provider and only UST
  * provider are available.
  */
+@SuppressWarnings("nls")
 public class TraceControlTreeModelNoProvidersTest {
 
     // ------------------------------------------------------------------------

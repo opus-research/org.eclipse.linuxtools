@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.ArrayList;
@@ -79,22 +80,37 @@ public class Lifeline extends GraphNode {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
+     */
     @Override
     public int getX() {
         return Metrics.FRAME_H_MARGIN + Metrics.LIFELINE_H_MAGIN + (fIndexInFrame - 1) * Metrics.swimmingLaneWidth();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
+     */
     @Override
     public int getY() {
         return 2 * Metrics.FRAME_NAME_H_MARGIN + Metrics.LIFELINE_VT_MAGIN / 2 + Metrics.getFrameFontHeigth() + Metrics.getLifelineHeaderFontHeigth() + Metrics.FRAME_V_MARGIN + 2 * Metrics.LIFELINE_HEARDER_TEXT_V_MARGIN;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
+     */
     @Override
     public int getWidth() {
         return Metrics.getLifelineWidth();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
+     */
     @Override
     public int getHeight() {
         // Set room for two text lines
@@ -267,6 +283,10 @@ public class Lifeline extends GraphNode {
         return new ArrayList<GraphNode>();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
+     */
     @Override
     public boolean contains(int xValue, int yValue) {
         int x = getX();
@@ -469,16 +489,28 @@ public class Lifeline extends GraphNode {
         context.setBackground(backupColor);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
         draw(context, getX(), getY());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return LIFELINE_TAG;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#positiveDistanceToPoint(int, int)
+     */
     @Override
     public boolean positiveDistanceToPoint(int x, int y) {
         if (getX() > x - Metrics.swimmingLaneWidth()) {
@@ -487,6 +519,10 @@ public class Lifeline extends GraphNode {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getNodeAt(int, int)
+     */
     @Override
     public GraphNode getNodeAt(int x, int y) {
         int vy = 0;

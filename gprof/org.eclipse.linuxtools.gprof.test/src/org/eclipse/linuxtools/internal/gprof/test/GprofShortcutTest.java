@@ -10,7 +10,6 @@
 *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.test;
 
-import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -92,11 +91,15 @@ public class GprofShortcutTest extends AbstractTest {
 	}
 
 	@Test
-	public void testShortCut() throws CModelException {
-		String id = ProviderFramework.getProviderIdToRun(wc, GPROF_CATEGORY);
-		assertTrue(id.equals(GPROF_PROVIDER_ID));
-		shortcut.launch(proj.getBinaryContainer().getBinaries()[0],
-				ILaunchManager.PROFILE_MODE);
+	public void testShortCut() {
+		try {
+			String id = ProviderFramework.getProviderIdToRun(wc, GPROF_CATEGORY);
+			assertTrue(id.equals(GPROF_PROVIDER_ID));
+			shortcut.launch(proj.getBinaryContainer().getBinaries()[0], ILaunchManager.PROFILE_MODE);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail ();
+		}
 	}
 
 }

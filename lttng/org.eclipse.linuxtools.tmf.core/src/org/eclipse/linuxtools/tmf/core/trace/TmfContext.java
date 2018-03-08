@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -82,29 +81,63 @@ public class TmfContext implements ITmfContext {
     }
 
     // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfContext clone() {
+        TmfContext clone = null;
+        try {
+            clone = (TmfContext) super.clone();
+            clone.fLocation = (fLocation != null) ? fLocation : null;
+            clone.fRank = fRank;
+        } catch (final CloneNotSupportedException e) {
+        }
+        return clone;
+    }
+
+    // ------------------------------------------------------------------------
     // ITmfContext
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getLocation()
+     */
     @Override
     public ITmfLocation getLocation() {
         return fLocation;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#setLocation(org.eclipse.linuxtools.tmf.core.trace.ITmfLocation)
+     */
     @Override
     public void setLocation(final ITmfLocation location) {
         fLocation = location;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getRank()
+     */
     @Override
     public long getRank() {
         return fRank;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#setRank(long)
+     */
     @Override
     public void setRank(final long rank) {
         fRank = rank;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#increaseRank()
+     */
     @Override
     public void increaseRank() {
         if (hasValidRank()) {
@@ -112,11 +145,17 @@ public class TmfContext implements ITmfContext {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#hasValidRank()
+     */
     @Override
     public boolean hasValidRank() {
         return fRank != UNKNOWN_RANK;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#dispose()
+     */
     @Override
     public void dispose() {
     }
@@ -125,6 +164,9 @@ public class TmfContext implements ITmfContext {
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -134,6 +176,9 @@ public class TmfContext implements ITmfContext {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -159,6 +204,9 @@ public class TmfContext implements ITmfContext {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {

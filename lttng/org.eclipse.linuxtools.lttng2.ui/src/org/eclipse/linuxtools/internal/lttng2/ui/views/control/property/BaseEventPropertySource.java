@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.property;
 
@@ -18,8 +17,8 @@ import java.util.List;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.BaseEventComponent;
-import org.eclipse.linuxtools.tmf.core.util.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 /**
  * <p>
@@ -89,21 +88,28 @@ public class BaseEventPropertySource extends BasePropertySource {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyDescriptors()
+     */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         List<IPropertyDescriptor> list = new ArrayList<IPropertyDescriptor> ();
-        list.add(new ReadOnlyTextPropertyDescriptor(BASE_EVENT_NAME_PROPERTY_ID, BASE_EVENT_NAME_PROPERTY_NAME));
-        list.add(new ReadOnlyTextPropertyDescriptor(BASE_EVENT_TYPE_PROPERTY_ID, BASE_EVENT_TYPE_PROPERTY_NAME));
+        list.add(new TextPropertyDescriptor(BASE_EVENT_NAME_PROPERTY_ID, BASE_EVENT_NAME_PROPERTY_NAME));
+        list.add(new TextPropertyDescriptor(BASE_EVENT_TYPE_PROPERTY_ID, BASE_EVENT_TYPE_PROPERTY_NAME));
         if (fBaseEvent.getLogLevel() != TraceLogLevel.LEVEL_UNKNOWN) {
-            list.add(new ReadOnlyTextPropertyDescriptor(BASE_EVENT_LOGLEVEL_PROPERTY_ID, BASE_EVENT_LOGLEVEL_PROPERTY_NAME));
+            list.add(new TextPropertyDescriptor(BASE_EVENT_LOGLEVEL_PROPERTY_ID, BASE_EVENT_LOGLEVEL_PROPERTY_NAME));
         }
         if (fBaseEvent.getFieldString() != null) {
-            list.add(new ReadOnlyTextPropertyDescriptor(BASE_EVENT_FIELDS_PROPERTY_ID, BASE_EVENT_FIELDS_PROPERTY_NAME));
+            list.add(new TextPropertyDescriptor(BASE_EVENT_FIELDS_PROPERTY_ID, BASE_EVENT_FIELDS_PROPERTY_NAME));
         }
         return list.toArray(new IPropertyDescriptor[list.size()]);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyValue(java.lang.Object)
+     */
     @Override
     public Object getPropertyValue(Object id) {
         if(BASE_EVENT_NAME_PROPERTY_ID.equals(id)) {

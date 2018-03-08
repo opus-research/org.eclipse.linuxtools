@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,8 +13,8 @@ package org.eclipse.linuxtools.internal.lttng2.ui.views.control.property;
 
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
-import org.eclipse.linuxtools.tmf.core.util.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 /**
  * <p>
@@ -84,16 +84,23 @@ public class TargetNodePropertySource extends BasePropertySource {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyDescriptors()
+     */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         return new IPropertyDescriptor[] {
-                new ReadOnlyTextPropertyDescriptor(TARGET_NODE_NAME_PROPERTY_ID, TARGET_NODE_NAME_PROPERTY_NAME),
-                new ReadOnlyTextPropertyDescriptor(TARGET_NODE_ADDRESS_PROPERTY_ID, TARGET_NODE_ADDRESS_PROPERTY_NAME),
-                new ReadOnlyTextPropertyDescriptor(TARGET_NODE_STATE_PROPERTY_ID, TARGET_NODE_STATE_PROPERTY_NAME),
-                new ReadOnlyTextPropertyDescriptor(TARGET_NODE_VERSION_PROPERTY_ID, TARGET_NODE_VERSION_PROPERTY_NAME)};
+                new TextPropertyDescriptor(TARGET_NODE_NAME_PROPERTY_ID, TARGET_NODE_NAME_PROPERTY_NAME),
+                new TextPropertyDescriptor(TARGET_NODE_ADDRESS_PROPERTY_ID, TARGET_NODE_ADDRESS_PROPERTY_NAME),
+                new TextPropertyDescriptor(TARGET_NODE_STATE_PROPERTY_ID, TARGET_NODE_STATE_PROPERTY_NAME),
+                new TextPropertyDescriptor(TARGET_NODE_VERSION_PROPERTY_ID, TARGET_NODE_VERSION_PROPERTY_NAME)};
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyValue(java.lang.Object)
+     */
     @Override
     public Object getPropertyValue(Object id) {
         if(TARGET_NODE_NAME_PROPERTY_ID.equals(id)) {

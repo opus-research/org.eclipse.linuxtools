@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,12 +9,11 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Patrick Tasse - Updated for location in checkpoint
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 
 /**
  * A basic implementation of ITmfCheckpoint. It simply maps an event timestamp
@@ -32,8 +31,8 @@ public class TmfCheckpoint implements ITmfCheckpoint {
     // Attributes
     // ------------------------------------------------------------------------
 
-    // The checkpoint location
-    private final ITmfLocation fLocation;
+    // The checkpoint context
+    private final ITmfContext fContext;
 
     // The checkpoint timestamp
     private final ITmfTimestamp fTimestamp;
@@ -46,12 +45,11 @@ public class TmfCheckpoint implements ITmfCheckpoint {
      * Full constructor
      *
      * @param timestamp the checkpoint timestamp
-     * @param location the corresponding trace location
-     * @since 2.0
+     * @param context the corresponding trace location
      */
-    public TmfCheckpoint(final ITmfTimestamp timestamp, final ITmfLocation location) {
+    public TmfCheckpoint(final ITmfTimestamp timestamp, final ITmfContext context) {
         fTimestamp = timestamp;
-        fLocation = location;
+        fContext = context;
     }
 
     /**
@@ -64,30 +62,47 @@ public class TmfCheckpoint implements ITmfCheckpoint {
             throw new IllegalArgumentException();
         }
         fTimestamp = other.fTimestamp;
-        fLocation = other.fLocation;
+        fContext = other.fContext;
     }
 
     // ------------------------------------------------------------------------
     // ITmfCheckpoint
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint#getTimestamp()
      */
     @Override
     public ITmfTimestamp getTimestamp() {
         return fTimestamp;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint#getLocation()
+     */
+    @Override
+    public ITmfContext getContext() {
+        return fContext;
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint#getLocation()
+     */
     @Override
     public ITmfLocation getLocation() {
-        return fLocation;
+        return fContext.getLocation();
     }
 
     // ------------------------------------------------------------------------
     // Comparable
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint#compareTo(org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint)
+     *
+     * Compares the checkpoints timestamp. If either is null, compares the
+     * trace checkpoints locations.
+     */
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public int compareTo(final ITmfCheckpoint other) {
@@ -100,17 +115,17 @@ public class TmfCheckpoint implements ITmfCheckpoint {
             // compare locations if timestamps are the same
         }
 
-        if ((fLocation == null) && (other.getLocation() == null)) {
+        if ((getContext() == null) && (other.getContext() == null)) {
             return 0;
         }
 
         // treat location of other as null location which is before any location
-        if ((fLocation != null) && (other.getLocation() == null)) {
+        if ((getContext() != null) && (other.getContext() == null)) {
             return 1;
         }
 
         // treat this as null location which is before any other locations
-        if ((fLocation == null) && (other.getLocation() != null)) {
+        if ((getContext() == null) && (other.getContext() != null)) {
             return -1;
         }
 
@@ -124,15 +139,21 @@ public class TmfCheckpoint implements ITmfCheckpoint {
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fLocation == null) ? 0 : fLocation.hashCode());
+        result = prime * result + ((fContext == null) ? 0 : fContext.hashCode());
         result = prime * result + ((fTimestamp == null) ? 0 : fTimestamp.hashCode());
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -145,11 +166,11 @@ public class TmfCheckpoint implements ITmfCheckpoint {
             return false;
         }
         final TmfCheckpoint other = (TmfCheckpoint) obj;
-        if (fLocation == null) {
-            if (other.fLocation != null) {
+        if (fContext == null) {
+            if (other.fContext != null) {
                 return false;
             }
-        } else if (!fLocation.equals(other.fLocation)) {
+        } else if (!fContext.equals(other.fContext)) {
             return false;
         }
         if (fTimestamp == null) {
@@ -162,10 +183,13 @@ public class TmfCheckpoint implements ITmfCheckpoint {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        return getClass().getSimpleName() + " [fLocation=" + fLocation + ", fTimestamp=" + fTimestamp + "]";
+        return "TmfCheckpoint [fContext=" + fContext + ", fTimestamp=" + fTimestamp + "]";
     }
 
 }

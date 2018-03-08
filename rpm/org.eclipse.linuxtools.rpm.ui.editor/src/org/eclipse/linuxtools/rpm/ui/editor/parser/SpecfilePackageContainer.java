@@ -18,12 +18,12 @@ import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 
 public class SpecfilePackageContainer extends SpecfileElement {
 	List<SpecfilePackage> packages;
-
+	
 	public SpecfilePackageContainer() {
 		super();
 		packages = new ArrayList<SpecfilePackage>();
 	}
-
+	
 	public SpecfilePackage[] getPackages() {
 		try {
 			Object [] objs = packages.toArray();
@@ -38,31 +38,28 @@ public class SpecfilePackageContainer extends SpecfileElement {
 		}
 		return new SpecfilePackage[0] ;
 	}
-
+	
 	void addPackage(SpecfilePackage subPackage) {
 		packages.add(subPackage);
 	}
-
+	
 	@Override
 	public int getLineStartPosition() {
-		if ((packages == null) || (packages.size() == 0)) {
+		if ((packages == null) || (packages.size() == 0))
 			return 0;
-		}
-
+		
 		int lowestStartLine = Integer.MAX_VALUE;
-
+		
 		for (SpecfilePackage subPackage: packages){
-			if (subPackage.getLineStartPosition() < lowestStartLine) {
+			if (subPackage.getLineStartPosition() < lowestStartLine)
 				lowestStartLine = subPackage.getLineStartPosition();
-			}
 		}
-
-		if (lowestStartLine == Integer.MAX_VALUE) {
+		
+		if (lowestStartLine == Integer.MAX_VALUE)
 			return 0;
-		}
 		return lowestStartLine;
 	}
-
+	
 	@Override
 	public int getLineEndPosition() {
 		if ((packages == null) || packages.isEmpty()) {
@@ -70,15 +67,14 @@ public class SpecfilePackageContainer extends SpecfileElement {
 		}
 
 		int highestEndLine = 0;
-
+		
 		for (SpecfilePackage subPackage: packages){
 			if (subPackage.getLineStartPosition() > highestEndLine)
 				highestEndLine = subPackage.getLineEndPosition();
 		}
 
-		if (highestEndLine < 0) {
+		if (highestEndLine < 0)
 			return 0;
-		}
 		return highestEndLine;
 	}
 
@@ -96,9 +92,8 @@ public class SpecfilePackageContainer extends SpecfileElement {
 	}
 
 	public boolean hasChildren() {
-		if (packages != null && packages.size() > 0) {
+		if (packages != null && packages.size() > 0)
 			return true;
-		}
 		return false;
 	}
 }

@@ -30,6 +30,7 @@ import org.junit.Test;
 /**
  * TmfStatisticsTreeRootFactory Test Case.
  */
+@SuppressWarnings("nls")
 public class TmfStatisticsTreeManagerTest {
 
     // ------------------------------------------------------------------------

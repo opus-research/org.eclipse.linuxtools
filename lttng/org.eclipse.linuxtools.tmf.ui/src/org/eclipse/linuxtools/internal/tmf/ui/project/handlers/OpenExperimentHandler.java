@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -89,7 +89,7 @@ public class OpenExperimentHandler extends AbstractHandler {
         }
 
         // We only enable opening from the Traces folder for now
-        return ((fExperiment != null) && (fExperiment.getTraces().size() > 0));
+        return (fExperiment != null);
     }
 
     // ------------------------------------------------------------------------
@@ -119,12 +119,6 @@ public class OpenExperimentHandler extends AbstractHandler {
                     displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
                     return;
                 }
-
-                /* Unlike traces, there is no instanceExperiment, so we call this function
-                 * here alone.  Maybe it would be better to do this on experiment's element
-                 * constructor?
-                 */
-                experimentElement.refreshSupplementaryFolder();
 
                 // Instantiate the experiment's traces
                 final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
@@ -173,7 +167,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                 }
 
                 // Create the experiment
-                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize);
                 experiment.setBookmarksFile(file);
 
                 final String editorId = commonEditorId;
