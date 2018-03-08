@@ -74,6 +74,7 @@ public class SaveSessionTest {
 
 		File data = handler.saveData(DATA_FILE_NAME);
 		assertNotNull(data);
+		assertTrue(!data.canWrite());
 		testFiles.add(data);
 
 	}
@@ -97,11 +98,12 @@ public class SaveSessionTest {
 
 		File stats = handler.saveData(DATA_FILE_NAME);
 		assertNotNull(stats);
+		assertTrue(!stats.canWrite());
 
 		testFiles.add(stats);
 	}
 
-	private class GenericSaveDataHandler extends AbstractSaveDataHandler {
+	private static class GenericSaveDataHandler extends AbstractSaveDataHandler {
 		@Override
 		public Object execute(ExecutionEvent event) {
 			return null;
@@ -123,14 +125,14 @@ public class SaveSessionTest {
 		}
 	}
 
-	private class PerfSaveSessionTestHandler extends PerfSaveSessionHandler {
+	private static class PerfSaveSessionTestHandler extends PerfSaveSessionHandler {
 		@Override
 		protected IPath getWorkingDir() {
 			return new Path(WORKING_DIR);
 		}
 	}
 
-	private class PerfSaveStatsTestHandler extends PerfSaveStatsHandler {
+	private static class PerfSaveStatsTestHandler extends PerfSaveStatsHandler {
 		@Override
 		protected IPath getWorkingDir() {
 			return new Path(WORKING_DIR);
