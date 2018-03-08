@@ -6,17 +6,15 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
+ *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse, Anithra P J
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.graphing;
-
-import java.io.File;
-
-import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
+package org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun;
 
 
-public final class GraphingConstants {
-	private static final String dataSetFileName = "/GraphSettings.xml";
-	public static final File DataSetMetaData = new File(SystemTapGUISettings.settingsFolder.getAbsolutePath() + dataSetFileName);
+/**
+ * The main plugin class to be used in the desktop.
+ */
+public class GraphicalRunPlugin {
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.systemtap.ui.graphicalrun"; //$NON-NLS-1$
 }
