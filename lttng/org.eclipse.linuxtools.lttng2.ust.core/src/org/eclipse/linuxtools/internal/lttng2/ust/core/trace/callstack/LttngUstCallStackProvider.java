@@ -122,7 +122,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
             return null;
         }
         Long address = (Long) event.getContent().getField(FIELD_ADDR).getValue();
-        return getFunctionNameFromAddress(address.longValue());
+        return Long.toHexString(address);
     }
 
     @Override
@@ -140,7 +140,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
             return CallStackStateProvider.UNDEFINED;
         }
         Long address = (Long) field.getValue();
-        return getFunctionNameFromAddress(address.longValue());
+        return Long.toHexString(address);
     }
 
     @Override
@@ -157,15 +157,4 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
         return new String(procName + '-' + vtid.toString());
     }
 
-    // ------------------------------------------------------------------------
-    // Internal helper methods
-    // ------------------------------------------------------------------------
-
-    private static String getFunctionNameFromAddress(long address) {
-        /*
-         * We do not support getting the real function name yet, just print the
-         * hex string.
-         */
-        return new String("0x" + Long.toHexString(address)); //$NON-NLS-1$
-    }
 }
