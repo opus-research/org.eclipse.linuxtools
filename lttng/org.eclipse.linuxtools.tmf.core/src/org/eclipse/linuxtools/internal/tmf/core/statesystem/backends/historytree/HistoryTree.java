@@ -35,52 +35,47 @@ class HistoryTree {
 
     private static final int HISTORY_FILE_MAGIC_NUMBER = 0x05FFA900;
 
-    /*
+    /**
      * File format version. Increment minor on backwards-compatible changes.
      * Increment major + set minor back to 0 when breaking compatibility.
      */
     private static final int MAJOR_VERSION = 3;
     private static final byte MINOR_VERSION = 0;
 
-    // ------------------------------------------------------------------------
-    // Tree-specific configuration
-    // ------------------------------------------------------------------------
-
-    /** Container for all the configuration constants */
+    /**
+     * Tree-specific configuration
+     */
+    /* Container for all the configuration constants */
     protected final HTConfig config;
 
-    /** Reader/writer object */
+    /* Reader/writer object */
     private final HT_IO treeIO;
 
-    // ------------------------------------------------------------------------
-    // Variable Fields (will change throughout the existance of the SHT)
-    // ------------------------------------------------------------------------
-
-    /** Latest timestamp found in the tree (at any given moment) */
+    /**
+     * Variable Fields (will change throughout the existance of the SHT)
+     */
+    /* Latest timestamp found in the tree (at any given moment) */
     private long treeEnd;
 
-    /** How many nodes exist in this tree, total */
+    /* How many nodes exist in this tree, total */
     private int nodeCount;
 
-    /** "Cache" to keep the active nodes in memory */
+    /* "Cache" to keep the active nodes in memory */
     protected Vector<CoreNode> latestBranch;
-
-    // ------------------------------------------------------------------------
-    // Constructors/"Destructors"
-    // ------------------------------------------------------------------------
 
     /**
      * Create a new State History from scratch, using a SHTConfig object for
      * configuration
+     *
+     * @param conf
+     * @throws IOException
      */
     private HistoryTree(HTConfig conf) throws IOException {
         /*
-         * Simple check to make sure we have enough place in the 0th block
+         * Simple assertion to make sure we have enough place in the 0th block
          * for the tree configuration
          */
-        if (conf.blockSize < getTreeHeaderSize()) {
-            throw new IllegalArgumentException();
-        }
+        assert (conf.blockSize >= getTreeHeaderSize());
 
         config = conf;
         treeEnd = conf.treeStart;
@@ -96,12 +91,11 @@ class HistoryTree {
     }
 
     /**
-     * "New State History" constructor, which doesn't use HTConfig but the
+     * "New State History" constructor, which doesn't use SHTConfig but the
      * individual values separately. Kept for now for backwards compatibility,
      * but you should definitely consider using SHTConfig instead (since its
      * contents can then change without directly affecting SHT's API).
      */
-    @Deprecated
     HistoryTree(File newStateFile, int blockSize, int maxChildren,
             long startTime) throws IOException {
         this(new HTConfig(newStateFile, blockSize, maxChildren, startTime));
@@ -270,9 +264,9 @@ class HistoryTree {
         return;
     }
 
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
+    /**
+     * @name Accessors
+     */
 
     long getTreeStart() {
         return config.treeStart;
@@ -289,10 +283,6 @@ class HistoryTree {
     HT_IO getTreeIO() {
         return treeIO;
     }
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
 
     /**
      * Rebuild the latestBranch "cache" object by reading the nodes from disk
