@@ -66,7 +66,6 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	 */
 	abstract protected Map<String, String> getProviders();
 
-	@Override
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
 		setControl(top);
@@ -157,7 +156,6 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 		}
 	}
 
-	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		if (providerCombo != null && !providerCombo.getText().isEmpty()) {
 			for (AbstractLaunchConfigurationTab tab : tabs) {
@@ -166,7 +164,6 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 		}
 	}
 
-	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		/**
 		 * First time the configuration is selected.
@@ -203,7 +200,6 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 		initialized.put(getProviderId(), true);
 	}
 
-	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		// make sure tabs are not null, and the tab's controls have been
 		// initialized.
@@ -374,7 +370,6 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	 *
 	 * @return String profiling name.
 	 */
-	@Override
 	public String getName() {
 		return name;
 	}
