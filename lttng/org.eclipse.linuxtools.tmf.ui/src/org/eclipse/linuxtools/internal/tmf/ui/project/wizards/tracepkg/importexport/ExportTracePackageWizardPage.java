@@ -40,6 +40,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFileElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -96,9 +97,19 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
         Object[] selectedElements = getSelection().toArray();
         fSelectedTraces = new ArrayList<TmfTraceElement>();
+        TmfProjectElement firstProject = null;
         for (Object selectedElement : selectedElements) {
             if (selectedElement instanceof TmfTraceElement) {
-                fSelectedTraces.add(((TmfTraceElement) selectedElement).getElementUnderTraceFolder());
+                TmfTraceElement tmfTraceElement = (TmfTraceElement) selectedElement;
+                TmfProjectElement project = tmfTraceElement.getProject();
+                // Only allow exporting traces under the same project, this prevents possible name clashes.
+                // Traces under the first encountered project in the selection are kept.
+                if (firstProject != null && !project.equals(firstProject)) {
+                    continue;
+                }
+
+                fSelectedTraces.add(tmfTraceElement.getElementUnderTraceFolder());
+                firstProject = project;
             }
         }
     }
@@ -299,8 +310,6 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
             List<TracePackageElement> children = new ArrayList<TracePackageElement>();
             TracePackageFilesElement filesElement = new TracePackageFilesElement(traceElement, tmfTraceElement.getResource());
             filesElement.setChecked(true);
-            // Always export the files
-            filesElement.setEnabled(false);
             children.add(filesElement);
 
             // Supplementary files
