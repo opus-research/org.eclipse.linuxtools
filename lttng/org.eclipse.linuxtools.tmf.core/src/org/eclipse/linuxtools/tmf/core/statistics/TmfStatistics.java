@@ -55,6 +55,14 @@ public class TmfStatistics  implements ITmfStatistics {
     private final ITmfStateSystem stats;
 
     /**
+     * Empty constructor. The resulting TmfStatistics object will not be usable,
+     * but it might be needed for sub-classes.
+     */
+    public TmfStatistics() {
+        stats = null;
+    }
+
+    /**
      * Constructor
      *
      * @param trace
@@ -220,14 +228,14 @@ public class TmfStatistics  implements ITmfStatistics {
         return map;
     }
 
-    private long checkStartTime(long start) {
+    protected long checkStartTime(long start) {
         if (start < stats.getStartTime()) {
             return stats.getStartTime();
         }
         return start;
     }
 
-    private long checkEndTime(long end) {
+    protected long checkEndTime(long end) {
         if (end > stats.getCurrentEndTime()) {
             return stats.getCurrentEndTime();
         }

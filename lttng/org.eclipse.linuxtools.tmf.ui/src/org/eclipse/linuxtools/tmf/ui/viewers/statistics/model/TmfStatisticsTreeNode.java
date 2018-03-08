@@ -16,14 +16,12 @@ package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
 
 import java.util.Collection;
 
-import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
-
 /**
  * A tree where nodes can be accessed efficiently using paths.
  *
  * It works like file systems. Each node is identified by a key. A path is an
- * array ({@link TmfFixedArray}) of String. The elements of the array represent
- * the path from the root to this node.
+ * array of String. The elements of the array represent the path from the root
+ * to this node.
  *
  * @version 2.0
  * @since 2.0
@@ -34,17 +32,17 @@ public class TmfStatisticsTreeNode {
     /**
      * Value of the node.
      */
-    protected TmfStatisticsValues fValue;
+    protected TmfStatisticsValues fValues;
 
     /**
      * Path of the node.
      */
-    protected TmfFixedArray<String> fPath;
+    protected String[] fPath;
 
     /**
      * Corresponding StatisticsData.
      */
-    protected AbsTmfStatisticsTree fNodes;
+    protected TmfStatisticsTree fNodes;
 
     /**
      * Constructor.
@@ -54,11 +52,10 @@ public class TmfStatisticsTreeNode {
      * @param nodes
      *            Corresponding StatisticsData.
      */
-    public TmfStatisticsTreeNode(final TmfFixedArray<String> path,
-            AbsTmfStatisticsTree nodes) {
+    public TmfStatisticsTreeNode(TmfStatisticsTree nodes, final String... path) {
         fPath = path;
         fNodes = nodes;
-        fValue = new TmfStatisticsValues();
+        fValues = new TmfStatisticsValues();
     }
 
     /**
@@ -70,10 +67,14 @@ public class TmfStatisticsTreeNode {
      *         exists with given key name
      */
     public boolean containsChild(String key) {
-        if (AbsTmfStatisticsTree.ROOT.equals(fPath)) {
-            return fNodes.get(new TmfFixedArray<String>(key)) != null;
+        if (TmfStatisticsTree.ROOT.equals(fPath)) {
+            return fNodes.get(key) != null;
         }
-        return (fNodes.get(fPath.append(key)) != null);
+
+        String[] childPath = new String[fPath.length + 1];
+        System.arraycopy(fPath, 0, childPath, 0, fPath.length);
+        childPath[fPath.length] = key;
+        return (fNodes.get(childPath) != null);
     }
 
     /**
@@ -100,7 +101,7 @@ public class TmfStatisticsTreeNode {
      * @return Key associated with this node.
      */
     public String getKey() {
-        return fPath.get(fPath.size() - 1);
+        return fPath[fPath.length - 1];
     }
 
     /**
@@ -126,7 +127,7 @@ public class TmfStatisticsTreeNode {
      *
      * @return The path of the node.
      */
-    public TmfFixedArray<String> getPath() {
+    public String[] getPath() {
         return fPath;
     }
 
@@ -135,8 +136,8 @@ public class TmfStatisticsTreeNode {
      *
      * @return Value associated with this node.
      */
-    public TmfStatisticsValues getValue() {
-        return fValue;
+    public TmfStatisticsValues getValues() {
+        return fValues;
     }
 
     /**
@@ -153,7 +154,7 @@ public class TmfStatisticsTreeNode {
      * no children.
      */
     public void reset() {
-        fValue = new TmfStatisticsValues();
+        fValues = new TmfStatisticsValues();
         fNodes.reset(fPath);
     }
 
@@ -166,7 +167,7 @@ public class TmfStatisticsTreeNode {
      * @since 2.0
      */
     public void resetGlobalValue() {
-        getValue().resetTotalCount();
+        getValues().resetTotalCount();
         fNodes.resetGlobalValue(fPath);
     }
 
@@ -179,7 +180,7 @@ public class TmfStatisticsTreeNode {
      * @since 2.0
      */
     public void resetTimeRangeValue() {
-        getValue().resetPartialCount();
+        getValues().resetPartialCount();
         fNodes.resetTimeRangeValue(fPath);
     }
 }

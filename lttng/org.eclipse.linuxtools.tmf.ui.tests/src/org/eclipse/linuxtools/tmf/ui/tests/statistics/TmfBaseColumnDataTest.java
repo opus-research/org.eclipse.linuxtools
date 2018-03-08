@@ -17,10 +17,9 @@ import junit.framework.TestCase;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -83,18 +82,18 @@ public class TmfBaseColumnDataTest extends TestCase {
                 TmfStatisticsTreeNode parent = node;
                 do {
                     parent = parent.getParent();
-                } while (parent != null && parent.getValue().getTotal() == 0);
+                } while (parent != null && parent.getValues().getTotal() == 0);
 
                 if (parent == null) {
                     return 0;
                 }
-                return (double) node.getValue().getTotal() / parent.getValue().getTotal();
+                return (double) node.getValues().getTotal() / parent.getValues().getTotal();
             }
         };
 
-        TmfBaseStatisticsTree baseData = new TmfBaseStatisticsTree();
+        TmfStatisticsTree baseData = new TmfStatisticsTree();
         fTraceName = "trace1";
-        fTreeNode = new TmfStatisticsTreeNode(new TmfFixedArray<String>(fTraceName), baseData);
+        fTreeNode = new TmfStatisticsTreeNode(baseData, fTraceName);
 
         fBaseColumnData = new TmfBaseColumnData(fHeader, fWidth, fAlignment, fToolTip, fLabelProvider, fComparator, fPercentageProvider);
     }
