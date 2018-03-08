@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -347,6 +348,15 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @Override
     public ITmfTimestamp getEndTime() {
         return fEndTime.clone();
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public IStateSystemQuerier getStateSystem() {
+        /* By default, no state system is used */
+        return null;
     }
 
     // ------------------------------------------------------------------------
