@@ -17,13 +17,18 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 /**
  * Test the {@link TmfStateSystemAnalysisModule} class
@@ -31,6 +36,10 @@ import org.junit.Test;
  * @author Geneviève Bastien
  */
 public class StateSystemAnalysisModuleTest {
+
+    /** Time-out tests after 20 seconds */
+    @Rule
+    public TestRule globalTimeout= new Timeout(20000);
 
     /** ID of the test state system analysis module */
     public static final String MODULE_SS = "org.eclipse.linuxtools.tmf.core.tests.analysis.sstest";
@@ -58,7 +67,8 @@ public class StateSystemAnalysisModuleTest {
      */
     @Test
     public void testSsModule() {
-        fTrace.openTrace();
+        TmfSignalManager.deregister(fTrace);
+        fTrace.traceOpened(new TmfTraceOpenedSignal(this, fTrace, null));
 
         TmfStateSystemAnalysisModule module = (TmfStateSystemAnalysisModule) fTrace.getAnalysisModule(MODULE_SS);
         ITmfStateSystem ss = null;

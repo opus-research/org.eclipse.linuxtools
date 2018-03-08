@@ -32,12 +32,13 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -52,13 +53,20 @@ import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestAnalysis;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 /**
  * Test suite for the TmfTrace class.
  */
 @SuppressWarnings("javadoc")
 public class TmfTraceTest {
+
+    /** Time-out tests after 20 seconds */
+    @Rule
+    public TestRule globalTimeout= new Timeout(20000);
 
     // ------------------------------------------------------------------------
     // Variables
@@ -67,7 +75,7 @@ public class TmfTraceTest {
     private static final TmfTestTrace TEST_TRACE = TmfTestTrace.A_TEST_10K;
     private static final long   DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
     private static final int    NB_EVENTS   = 10000;
-    private static TmfTraceStub fTrace      = null;
+    private TmfTraceStub fTrace      = null;
 
     private static int SCALE = -3;
 
@@ -77,35 +85,25 @@ public class TmfTraceTest {
 
     @Before
     public void setUp() {
-        fTrace = setupTrace(TEST_TRACE.getFullPath());
+        try {
+            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE.getFullPath()), null);
+            final File test = new File(FileLocator.toFileURL(location).toURI());
+            fTrace = new TmfTraceStub(test.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false, null);
+            TmfSignalManager.deregister(fTrace);
+            fTrace.indexTrace(true);
+        } catch (final TmfTraceException e) {
+            e.printStackTrace();
+        } catch (final URISyntaxException e) {
+            e.printStackTrace();
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @After
     public void tearDown() {
         fTrace.dispose();
         fTrace = null;
-    }
-
-    // ------------------------------------------------------------------------
-    // Helper functions
-    // ------------------------------------------------------------------------
-
-    private static TmfTraceStub setupTrace(final String path) {
-        if (fTrace == null) {
-            try {
-                final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
-                final File test = new File(FileLocator.toFileURL(location).toURI());
-                fTrace = new TmfTraceStub(test.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false, null);
-                fTrace.indexTrace(true);
-            } catch (final TmfTraceException e) {
-                e.printStackTrace();
-            } catch (final URISyntaxException e) {
-                e.printStackTrace();
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return fTrace;
     }
 
     // ------------------------------------------------------------------------
@@ -452,21 +450,14 @@ public class TmfTraceTest {
     @Test
     public void testGetModulesByClass() {
         /* There should not be any modules at this point */
-        TmfTraceStub trace = (TmfTraceStub) TmfTestTrace.E_TEST_10K.getTrace();
-        Map<String, IAnalysisModule> modules = trace.getAnalysisModules();
-        boolean modulesEmpty = modules.isEmpty();
+        Map<String, IAnalysisModule> modules = fTrace.getAnalysisModules();
+        assertTrue(modules.isEmpty());
 
-        /*
-         * Open the trace, the modules should be populated, then dispose of it
-         * before doing the asserts, to make sure it is not left in the trace
-         * manager if an asserts fails
-         */
-        trace.openTrace();
-        modules = trace.getAnalysisModules();
-        Map<String, TestAnalysis> testModules = trace.getAnalysisModules(TestAnalysis.class);
-        TmfTestTrace.A_TEST_10K.dispose();
+        /* Open the trace, the modules should be populated */
+        fTrace.traceOpened(new TmfTraceOpenedSignal(this, fTrace, null));
 
-        assertTrue(modulesEmpty);
+        modules = fTrace.getAnalysisModules();
+        Map<String, TestAnalysis> testModules = fTrace.getAnalysisModules(TestAnalysis.class);
         assertFalse(modules.isEmpty());
         assertFalse(testModules.isEmpty());
 
@@ -1168,7 +1159,7 @@ public class TmfTraceTest {
                 requestedEvents.add(event);
             }
         };
-        final ITmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
+        final ITmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
@@ -1197,7 +1188,7 @@ public class TmfTraceTest {
                 requestedEvents.add(event);
             }
         };
-        final ITmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
+        final ITmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
@@ -1227,7 +1218,7 @@ public class TmfTraceTest {
                 requestedEvents.add(event);
             }
         };
-        final ITmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
+        final ITmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
@@ -1258,7 +1249,7 @@ public class TmfTraceTest {
                 requestedEvents.add(event);
             }
         };
-        final ITmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
+        final ITmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
@@ -1279,17 +1270,18 @@ public class TmfTraceTest {
         final int nbEvents  = 1000;
         final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
-        final TmfDataRequest request = new TmfDataRequest(ITmfEvent.class,
+        final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
+                TmfTimeRange.ETERNITY,
                 startIndex,
                 nbEvents,
-                TmfDataRequest.ExecutionType.FOREGROUND) {
+                TmfEventRequest.ExecutionType.FOREGROUND) {
             @Override
             public void handleData(final ITmfEvent event) {
                 super.handleData(event);
                 requestedEvents.add(event);
             }
         };
-        final ITmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
+        final ITmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
@@ -1327,7 +1319,7 @@ public class TmfTraceTest {
                 }
             }
         };
-        final ITmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
+        final ITmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
