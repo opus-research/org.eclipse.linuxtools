@@ -11,6 +11,8 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 
+import java.util.Arrays;
+
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.SWT;
@@ -36,7 +38,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  */
 public class ErrorTableDisplay {
 	public ErrorTableDisplay(Composite parent, String[] titles) {
-		this.titles = titles;
+		this.titles = Arrays.copyOf(titles, titles.length);
 		createControl(parent);
 	}
 
@@ -52,9 +54,9 @@ public class ErrorTableDisplay {
 		table.addMouseListener(mouseListener);
 
 		TableColumn column;
-		for(int i = 0; i < titles.length; i++) {
+		for(String title: titles) {
 			column = new TableColumn(table, SWT.NONE);
-			column.setText(titles[i]);
+			column.setText(title);
 		}
 
 		updateColumns();
@@ -90,8 +92,9 @@ public class ErrorTableDisplay {
 			@Override
 			public void run() {
 				item = new TableItem(table, SWT.NULL);
-				for(int i=0; i<row.length; i++)
+				for(int i=0; i<row.length; i++) {
 					item.setText(i+1, row[i]);
+				}
 				item.setImage(img);
 				updateColumns();
 			}
@@ -105,9 +108,9 @@ public class ErrorTableDisplay {
 	 */
 	private void updateColumns() {
 		TableColumn[] columns = table.getColumns();
-		for (int i = 0; i < columns.length; i++) {
-			columns[i].pack();
-			columns[i].setMoveable(true);
+		for (TableColumn column: columns) {
+			column.pack();
+			column.setMoveable(true);
 		}
 	}
 
@@ -125,13 +128,16 @@ public class ErrorTableDisplay {
 			table = null;
 		}
 
-		if(titles != null)
-			for(int i=0; i<titles.length; i++)
+		if(titles != null) {
+			for(int i=0; i<titles.length; i++) {
 				titles[i] = null;
+			}
+		}
 		titles = null;
 
-		if(null != item)
+		if(null != item) {
 			item.dispose();
+		}
 		item = null;
 	}
 
@@ -150,8 +156,9 @@ public class ErrorTableDisplay {
 				if(location.indexOf(':') > 0) {
 					String[] pos = location.split(":"); //$NON-NLS-1$
 					line = Integer.parseInt(pos[0]);
-				} else
+				} else {
 					line = Integer.parseInt(location);
+				}
 
 				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				IEditorPart ed = page.getActiveEditor();

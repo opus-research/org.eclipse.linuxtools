@@ -22,6 +22,13 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ExportScriptDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ScriptDetails;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetWizard;
+import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.structures.ZipArchive;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.preferences.DashboardPreferenceConstants;
@@ -30,13 +37,6 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleFileFilter;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.ui.structures.ZipArchive;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewPart;
@@ -118,7 +118,6 @@ public class CreateModuleHandler extends AbstractHandler {
 				buildArchive(archiveName, new File(script), meta);
 				cleanupFiles(new String[] { archiveName, meta.getAbsolutePath() });
 				updateDashboard();
-				// }
 			}
 		}
 		return null;
@@ -285,9 +284,6 @@ public class CreateModuleHandler extends AbstractHandler {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 			IViewPart ivp = p.findView(DashboardModuleBrowserView.ID);
 			((DashboardModuleBrowserView) ivp).refresh();
-
-			// p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID,
-			// PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		} catch (WorkbenchException we) {
 		}
 	}
