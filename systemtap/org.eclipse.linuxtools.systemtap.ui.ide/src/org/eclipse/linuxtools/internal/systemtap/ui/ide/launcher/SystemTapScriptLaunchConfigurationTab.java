@@ -302,7 +302,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			}
 		}
 
-		if (pathString.endsWith(".stp")) { //$NON-NLS-1$
+		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX)) {
 			return pathString;
 		}
 

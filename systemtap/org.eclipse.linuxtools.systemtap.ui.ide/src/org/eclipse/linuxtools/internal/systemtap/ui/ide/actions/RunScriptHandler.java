@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
@@ -179,7 +180,7 @@ public class RunScriptHandler extends AbstractHandler {
 			}
 		}
 
-		return this.getFilePath().endsWith(".stp") //$NON-NLS-1$
+		return this.getFilePath().endsWith(SystemTapScriptTester.STP_SUFFIX)
 				&& isValidDirectory(this.getFilePath());
 	}
 
