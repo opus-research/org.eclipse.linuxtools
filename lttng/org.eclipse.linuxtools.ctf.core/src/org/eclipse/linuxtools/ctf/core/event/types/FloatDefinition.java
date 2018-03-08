@@ -88,6 +88,7 @@ public class FloatDefinition extends Definition {
     public void read(BitBuffer input) {
         int exp = declaration.getExponent();
         int mant = declaration.getMantissa();
+        alignRead(input, this.declaration);
         if ((exp + mant) == 32) {
             value = readRawFloat32(input, mant, exp);
         } else if ((exp + mant) == 64) {
@@ -120,7 +121,8 @@ public class FloatDefinition extends Definition {
 
         int exp = (int) ((rawValue >> (manBits)) & expMask) + 1;
         long man = (rawValue & manMask);
-        double expPow = Math.pow(2.0, exp - (1 << (expBits - 1)));
+        final int offsetExponent = exp - (1 << (expBits - 1));
+        double expPow = Math.pow(2.0, offsetExponent);
         double ret = man * 1.0f;
         ret /= manShift;
         ret += 1.0;
