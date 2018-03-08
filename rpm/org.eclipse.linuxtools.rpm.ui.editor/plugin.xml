@@ -277,58 +277,19 @@
    <extension
          point="org.eclipse.ui.menus">
          <menuContribution
-            locationURI="popup:org.eclipse.linuxtools.rpm.ui.popup">
+            locationURI="popup:#TextEditorContext?after=additions">
          <command
                commandId="rpmEditor.toggleComment.command"
                label="%command.label"
-               tooltip="%command.tooltip">
-               <visibleWhen>
-				  <iterate operator="or" ifEmpty="false">
-   					 <or>
-     					 <adapt type="org.eclipse.core.resources.IResource">
-         			        <test property="org.eclipse.core.resources.name" value="*.spec"/> 
-      					</adapt>
-    					<with variable="activeEditorId">
-	       					<equals value="org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor"/>
-      					</with>
-    				</or>
-   				</iterate>
-			</visibleWhen>
-               </command>
+               tooltip="%command.tooltip" />
          <command
                commandId="rpmEditor.organizePatches.command"
                label="%command.label.0"
-               tooltip="%command.tooltip.0">
-               <visibleWhen>
-				  <iterate operator="or" ifEmpty="false">
-   					 <or>
-     					 <adapt type="org.eclipse.core.resources.IResource">
-         			        <test property="org.eclipse.core.resources.name" value="*.spec"/> 
-      					</adapt>
-    					<with variable="activeEditorId">
-	       					<equals value="org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor"/>
-      					</with>
-    				</or>
-   				</iterate>
-			</visibleWhen>
-               </command>
+               tooltip="%command.tooltip.0" />
          <command
                commandId="rpmEditor.showOutline.command"
                label="%command.label.1"
-               tooltip="%command.tooltip.1">
-               <visibleWhen>
-				  <iterate operator="or" ifEmpty="false">
-   					 <or>
-     					 <adapt type="org.eclipse.core.resources.IResource">
-         			        <test property="org.eclipse.core.resources.name" value="*.spec"/> 
-      					</adapt>
-    					<with variable="activeEditorId">
-	       					<equals value="org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor"/>
-      					</with>
-    				</or>
-   				</iterate>
-			</visibleWhen>
-               </command>
+               tooltip="%command.tooltip.1" />
       </menuContribution>
    </extension>
    <!-- Compare support-->
