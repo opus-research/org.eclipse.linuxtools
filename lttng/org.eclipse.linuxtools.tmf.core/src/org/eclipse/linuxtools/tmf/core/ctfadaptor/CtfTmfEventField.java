@@ -281,11 +281,6 @@ final class CTFIntegerField extends CtfTmfEventField {
         return (Long) super.getValue();
     }
 
-    @Override
-    public String getFormattedValue() {
-        return formatNumber(getValue(), base);
-    }
-
     /**
      * Custom-format the integer values depending on their base.
      */
@@ -333,7 +328,6 @@ final class CTFStringField extends CtfTmfEventField {
 final class CTFIntegerArrayField extends CtfTmfEventField {
 
     private final int base;
-    private String formattedValue = null;
 
     /**
      * Constructor for CTFIntegerArrayField.
@@ -359,24 +353,17 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return (List<Long>) super.getValue();
     }
 
-    @Override
-    public String getFormattedValue() {
-        if (formattedValue == null) {
-            List<String> strings = new ArrayList<String>();
-            for (Long value : getValue()) {
-                strings.add(formatNumber(value, base));
-            }
-            formattedValue = strings.toString();
-        }
-        return formattedValue;
-    }
-
     /**
      * Custom-format the integer values depending on their base.
      */
     @Override
     public String toString() {
-        return getName() + '=' + getFormattedValue();
+        List<String> strings = new ArrayList<String>();
+
+        for (Long value : getValue() ) {
+            strings.add(formatNumber(value, base));
+        }
+        return getName() + '=' + strings.toString();
     }
 }
 
