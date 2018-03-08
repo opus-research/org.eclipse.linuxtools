@@ -138,8 +138,8 @@ public class CTFTrace implements IDefinitionScope {
      */
     private final Map<String, CTFClock> clocks = new HashMap<String, CTFClock>();
 
-    /** FileInputStreams to the streams */
-    private final List<FileInputStream> fileInputStreams = new LinkedList<FileInputStream>();
+    /** FileChannels to the streams */
+    private final List<FileChannel> streamFileChannels = new LinkedList<FileChannel>();
 
     /** Handlers for the metadata files */
     private final static FileFilter metadataFileFilter = new MetadataFileFilter();
@@ -240,21 +240,20 @@ public class CTFTrace implements IDefinitionScope {
         }
     }
 
-    /**
-     * Dispose the trace
-     * @since 2.0
-     */
-    public void dispose() {
-        for (FileInputStream fis : fileInputStreams) {
-            if (fis != null) {
+    @Override
+    protected void finalize() throws Throwable {
+        /* If this trace gets closed, release the descriptors to the streams */
+        for (FileChannel fc : streamFileChannels) {
+            if (fc != null) {
                 try {
-                    fis.close();
+                    fc.close();
                 } catch (IOException e) {
                     // do nothing it's ok, we tried to close it.
                 }
             }
         }
-        System.gc(); // Invoke GC to release MappedByteBuffer objects (Java bug JDK-4724038)
+        super.finalize();
+
     }
 
     // ------------------------------------------------------------------------
@@ -526,9 +525,8 @@ public class CTFTrace implements IDefinitionScope {
 
         try {
             /* Open the file and get the FileChannel */
-            FileInputStream fis = new FileInputStream(streamFile);
-            fileInputStreams.add(fis);
-            fc = fis.getChannel();
+            fc = new FileInputStream(streamFile).getChannel();
+            streamFileChannels.add(fc);
 
             /* Map one memory page of 4 kiB */
             byteBuffer = fc.map(MapMode.READ_ONLY, 0, 4096);
