@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat Inc. - Initial API and implementation.
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden;
 
 import java.util.ArrayList;
 
