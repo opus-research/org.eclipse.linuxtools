@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -44,7 +45,9 @@ import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptio
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileCounter;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiPlugin;
 import org.eclipse.linuxtools.internal.oprofile.ui.view.OprofileView;
+import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -89,18 +92,11 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		if (!preExec(options, daemonEvents, launch)) return;
 		Process process = null;
 		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			ArrayList<String> argArray = new ArrayList<String>(Arrays.asList(getProgramArgumentsArray( config )));
-			argArray.add(0, exePath.toOSString());
-			String[] arguments = new String[argArray.size()];
-			arguments = argArray.toArray(arguments);
+			String arguments[] = getProgramArgumentsArray( config );
+			IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(oprofileProject());
+			IPath workingDirPath = new Path(oprofileWorkingDirURI(config).getPath());
 			for(int i = 0; i < options.getExecutionsNumber(); i++){
-				try {
-					process = RuntimeProcessFactory.getFactory().exec(arguments, OprofileProject.getProject());
-				} catch (IOException e1) {
-					process.destroy();
-					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
-					throw new CoreException(status);
-				}
+				process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
 				DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
 				try{
 					process.waitFor();
