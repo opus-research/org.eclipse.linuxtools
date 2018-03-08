@@ -919,6 +919,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         return false;
     }
 
+    @SuppressWarnings("unused")
     private boolean importResources(String rootDirectory, Map<String, File> fileSystemObjects) {
 
         // Determine the sorted canonical list of items to import
