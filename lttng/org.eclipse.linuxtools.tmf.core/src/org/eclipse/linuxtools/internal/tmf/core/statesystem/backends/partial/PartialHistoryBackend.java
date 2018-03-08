@@ -30,9 +30,10 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -59,7 +60,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
      * A partial history needs the state input plugin to re-generate state
      * between checkpoints.
      */
-    private final IStateChangeInput partialInput;
+    private final ITmfStateProvider partialInput;
 
     /**
      * Fake state system that is used for partially rebuilding the states (when
@@ -98,13 +99,11 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
      *            Configuration parameter indicating how many trace events there
      *            should be between each checkpoint
      */
-    public PartialHistoryBackend(IStateChangeInput partialInput, PartialStateSystem pss,
+    public PartialHistoryBackend(ITmfStateProvider partialInput, PartialStateSystem pss,
             IStateHistoryBackend realBackend, long granularity) {
-        if (granularity <= 0 || partialInput == null || pss == null) {
+        if (granularity <= 0 || partialInput == null || pss == null ||
+                partialInput.getAssignedStateSystem() != pss) {
             throw new IllegalArgumentException();
-        }
-        if (partialInput.getAssignedStateSystem() != pss) {
-            throw new RuntimeException();
         }
 
         final long startTime = realBackend.getStartTime();
@@ -213,7 +212,13 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
 
         /* Send an event request to update the state system to the target time. */
         TmfTimeRange range = new TmfTimeRange(
-                new TmfTimestamp(checkpointTime, -9), new TmfTimestamp(t, -9));
+                /*
+                 * The state at the checkpoint already includes any state change
+                 * caused by the event(s) happening exactly at 'checkpointTime',
+                 * if any. We must not include those events in the query.
+                 */
+                new TmfTimestamp(checkpointTime + 1, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(t, ITmfTimestamp.NANOSECOND_SCALE));
         ITmfEventRequest request = new PartialStateSystemRequest(partialInput, range);
         partialInput.getTrace().sendRequest(request);
 
@@ -280,23 +285,24 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     private class CheckpointsRequest extends TmfEventRequest {
 
         /** The amount of events queried at a time through the requests */
-        private final static int chunkSize = 50000;
+        private static final int CHUNK_SIZE = 50000;
 
         private final ITmfTrace trace;
         private final Map<Long, Long> checkpts;
         private long eventCount;
         private long lastCheckpointAt;
 
-        public CheckpointsRequest(IStateChangeInput input, Map<Long, Long> checkpoints) {
+        public CheckpointsRequest(ITmfStateProvider input, Map<Long, Long> checkpoints) {
             super(input.getExpectedEventType(),
                     TmfTimeRange.ETERNITY,
                     TmfDataRequest.ALL_DATA,
-                    chunkSize,
+                    CHUNK_SIZE,
                     ITmfDataRequest.ExecutionType.BACKGROUND);
             checkpoints.clear();
             this.trace = input.getTrace();
             this.checkpts = checkpoints;
-            eventCount = lastCheckpointAt = 0;
+            eventCount = 0;
+            lastCheckpointAt = 0;
 
             /* Insert a checkpoint at the start of the trace */
             checkpoints.put(input.getStartTime(), 0L);
@@ -325,15 +331,15 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
 
     private class PartialStateSystemRequest extends TmfEventRequest {
 
-        private final static int chunkSize = 50000;
-        private final IStateChangeInput sci;
+        private static final int CHUNK_SIZE = 50000;
+        private final ITmfStateProvider sci;
         private final ITmfTrace trace;
 
-        PartialStateSystemRequest(IStateChangeInput sci, TmfTimeRange range) {
+        PartialStateSystemRequest(ITmfStateProvider sci, TmfTimeRange range) {
             super(sci.getExpectedEventType(),
                     range,
                     TmfDataRequest.ALL_DATA,
-                    chunkSize,
+                    CHUNK_SIZE,
                     ITmfDataRequest.ExecutionType.BACKGROUND);
             this.sci = sci;
             this.trace = sci.getTrace();
@@ -354,8 +360,8 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
              * all events have been handled by the state system before doing
              * queries on it.
              */
-            if (partialInput instanceof AbstractStateChangeInput) {
-                ((AbstractStateChangeInput) partialInput).waitForEmptyQueue();
+            if (partialInput instanceof AbstractTmfStateProvider) {
+                ((AbstractTmfStateProvider) partialInput).waitForEmptyQueue();
             }
             super.handleCompleted();
         }

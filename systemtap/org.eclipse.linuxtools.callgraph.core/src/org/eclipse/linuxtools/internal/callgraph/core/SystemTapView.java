@@ -30,11 +30,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -55,24 +50,14 @@ public abstract class SystemTapView extends ViewPart {
     private Action kill;
 
     protected String viewID;
-    @SuppressWarnings("unused")
-    private Action help_about;
-    private Action help_version;
-    protected Action save_file;
-    protected Action open_file;
-    protected Action open_default;
+    private Action helpVersion;
+    protected Action saveFile;
+    protected Action openFile;
+    protected Action openDefault;
     protected String sourcePath;
     protected IMenuManager file;
     private SystemTapParser parser;
 
-
-    /**
-     * The constructor.
-     *
-     * @return
-     */
-    public SystemTapView() {
-    }
 
     /**
      * This method will be called from GraphUIJob to load the view
@@ -222,14 +207,14 @@ public abstract class SystemTapView extends ViewPart {
         }
 
         if (createOpenAction()) {
-            file.add(open_file);
+            file.add(openFile);
         }
         if (createOpenDefaultAction()) {
-            file.add(open_default);
+            file.add(openDefault);
         }
 
         createSaveAction();
-        file.add(save_file);
+        file.add(saveFile);
     }
 
 
@@ -239,16 +224,16 @@ public abstract class SystemTapView extends ViewPart {
         menu.add(help);
         createHelpActions();
 
-        help.add(help_version);
+        help.add(helpVersion);
     }
 
 
     public void createHelpActions() {
-        help_version = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
+        helpVersion = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
             @Override
 			public void run() {
                 try {
-                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null);
+                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null); //$NON-NLS-1$
                     BufferedReader buf = new BufferedReader(
                             new InputStreamReader(pr.getErrorStream()));
                     String line = ""; //$NON-NLS-1$
@@ -274,68 +259,11 @@ public abstract class SystemTapView extends ViewPart {
                 }
             }
         };
-
-        help_about = new Action(Messages.getString("SystemTapView.AboutMenu")) { //$NON-NLS-1$
-            @Override
-			public void run() {
-                Display disp = Display.getCurrent();
-                if (disp == null){
-                    disp = Display.getDefault();
-                }
-
-
-                Shell sh = new Shell(disp, SWT.MIN | SWT.MAX);
-                sh.setSize(425, 540);
-                GridLayout gl = new GridLayout(1, true);
-                sh.setLayout(gl);
-
-                sh.setText(""); //$NON-NLS-1$
-
-                Image img = new Image(disp, PluginConstants.getPluginLocation()+"systemtap.png"); //$NON-NLS-1$
-                Composite cmp = new Composite(sh, sh.getStyle());
-                cmp.setLayout(gl);
-                GridData data = new GridData(415,100);
-                cmp.setLayoutData(data);
-                cmp.setBackgroundImage(img);
-
-                Composite c = new Composite(sh, sh.getStyle());
-                c.setLayout(gl);
-                GridData gd = new GridData(415,400);
-                c.setLayoutData(gd);
-                c.setLocation(0,300);
-                StyledText viewer = new StyledText(c, SWT.READ_ONLY | SWT.MULTI
-                        | SWT.V_SCROLL | SWT.WRAP | SWT.BORDER);
-
-                GridData viewerGD = new GridData(SWT.FILL, SWT.FILL, true, true);
-                viewer.setLayoutData(viewerGD);
-                Font font = new Font(sh.getDisplay(), "Monospace", 11, SWT.NORMAL); //$NON-NLS-1$
-                viewer.setFont(font);
-                viewer.setText(
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" +  //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" + //$NON-NLS-1$
-                         "" //$NON-NLS-1$
-                        );
-
-
-
-                sh.open();
-            }
-        };
     }
 
     protected void createSaveAction() {
         //Save callgraph.out
-        save_file = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
+        saveFile = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
             @Override
 			public void run(){
                 Shell sh = new Shell();
@@ -370,23 +298,6 @@ public abstract class SystemTapView extends ViewPart {
     }
 
 
-    public Action getKillButton() {
-        return kill;
-    }
-
-    public  Action getHelp_version() {
-        return help_version;
-    }
-
-    public  void setHelp_version(Action helpVersion) {
-        help_version = helpVersion;
-    }
-
-    public Action getSave_file() {
-        return save_file;
-    }
-
-
     /**
      * Implement this method to save data in whichever format your program
      * needs. Keep in mind that the filePath variable should contain the
@@ -395,52 +306,57 @@ public abstract class SystemTapView extends ViewPart {
      * @param sourcePath
      */
     public void saveData(String targetFile) {
-        try {
-            File file = new File(targetFile);
-            file.delete();
-            file.createNewFile();
+		try {
+			File file = new File(targetFile);
+			file.delete();
+			file.createNewFile();
 
-            File sFile = new File(sourcePath);
-            if (!sFile.exists()) {
-                return;
-            }
+			File sFile = new File(sourcePath);
+			if (!sFile.exists()) {
+				return;
+			}
 
-             FileChannel in = null;
-             FileChannel out = null;
+			FileInputStream fileIn = null;
+			FileOutputStream fileOut = null;
+			FileChannel channelIn = null;
+			FileChannel channelOut = null;
+			try {
+				fileIn = new FileInputStream(sFile);
+				fileOut = new FileOutputStream(file);
+				channelIn = fileIn.getChannel();
+				channelOut = fileOut.getChannel();
 
-             try {
-                  in = new FileInputStream(sFile).getChannel();
-                  out = new FileOutputStream(file).getChannel();
+				if (channelIn == null || channelOut == null) {
+					return;
+				}
 
-                  if (in == null || out == null) {
-                      return;
-                  }
+				long size = channelIn.size();
+				MappedByteBuffer buf = channelIn.map(
+						FileChannel.MapMode.READ_ONLY, 0, size);
 
-                  long size = in.size();
-                  MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, size);
+				channelOut.write(buf);
 
-                  out.write(buf);
-
-             } finally {
-                  if (in != null) {
-                      in.close();
-                  }
-                  if (out != null) {
-                      out.close();
-                  }
-             }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+			} finally {
+				if (channelIn != null) {
+					channelIn.close();
+				}
+				if (channelOut != null) {
+					channelOut.close();
+				}
+				if (fileIn != null) {
+					fileIn.close();
+				}
+				if (fileOut != null) {
+					fileOut.close();
+				}
+			}
+		} catch (IOException e) {
+			CallgraphCorePlugin.logException(e);
+		}
+	}
 
     public void setSourcePath(String file) {
         sourcePath = file;
     }
 
-    public Action getOpen_file() {
-        return open_file;
-    }
 }

@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public abstract class StateSystemTest {
     /** Number of nanoseconds in one second */
     private static final long NANOSECS_PER_SEC = 1000000000L;
 
-    protected static IStateChangeInput input;
+    protected static ITmfStateProvider input;
     protected static ITmfStateSystem ssq;
 
     /* Offset in the trace + start time of the trace */
@@ -145,8 +145,8 @@ public abstract class StateSystemTest {
     }
 
     /**
-     * Range query, but with a t2 far off the end of the trace.
-     * The result should still be valid.
+     * Range query, but with a t2 far off the end of the trace. The result
+     * should still be valid.
      */
     @Test
     public void testRangeQuery2() {
@@ -402,6 +402,24 @@ public abstract class StateSystemTest {
         } catch (TimeRangeException e) {
             fail();
         } catch (StateSystemDisposedException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testFirstIntervalIsConsidered() {
+        try {
+            List<ITmfStateInterval> list = ssq.queryFullState(1331668248014135800L);
+            ITmfStateInterval interval = list.get(233);
+            assertEquals(1331668247516664825L, interval.getStartTime());
+
+            int valueInt = interval.getStateValue().unboxInt();
+            assertEquals(1, valueInt);
+        } catch (TimeRangeException e) {
+            fail();
+        } catch (StateSystemDisposedException e) {
+            fail();
+        } catch (StateValueTypeException e) {
             fail();
         }
     }

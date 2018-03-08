@@ -48,23 +48,23 @@ public class Lifeline extends GraphNode {
     /**
      * The lifeline position in the containing frame
      */
-    protected int fIndexInFrame = 0;
+    private int fIndexInFrame = 0;
     /**
      * The frame where the lifeline is drawn
      */
-    protected Frame fFrame = null;
+    private Frame fFrame = null;
     /**
      * The current event occurrence created in the lifeline
      */
-    protected int fEventOccurrence = 0;
+    private int fEventOccurrence = 0;
     /**
      * The lifeline category.
      */
-    protected int fCategory = -1;
+    private int fCategory = -1;
     /**
      * Flag whether lifeline has time information available or not
      */
-    protected boolean fHasTimeInfo = false;
+    private boolean fHasTimeInfo = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -73,43 +73,28 @@ public class Lifeline extends GraphNode {
      * Default constructor
      */
     public Lifeline() {
-        fPrefId = ISDPreferences.PREF_LIFELINE;
+        setColorPrefId(ISDPreferences.PREF_LIFELINE);
     }
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
-     */
+
     @Override
     public int getX() {
         return Metrics.FRAME_H_MARGIN + Metrics.LIFELINE_H_MAGIN + (fIndexInFrame - 1) * Metrics.swimmingLaneWidth();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         return 2 * Metrics.FRAME_NAME_H_MARGIN + Metrics.LIFELINE_VT_MAGIN / 2 + Metrics.getFrameFontHeigth() + Metrics.getLifelineHeaderFontHeigth() + Metrics.FRAME_V_MARGIN + 2 * Metrics.LIFELINE_HEARDER_TEXT_V_MARGIN;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         return Metrics.getLifelineWidth();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         // Set room for two text lines
@@ -125,6 +110,16 @@ public class Lifeline extends GraphNode {
      */
     public void setCategory(int arrayIndex) {
         fCategory = arrayIndex;
+    }
+
+    /**
+     * Gets the lifeline category for this lifeline.
+     *
+     * @return arrayIndex the index of the category to use
+     * @since 2.0
+     */
+    public int getCategory() {
+        return fCategory;
     }
 
     /**
@@ -150,11 +145,11 @@ public class Lifeline extends GraphNode {
      * @return the first visible Execution Occurrence
      */
     public int getExecOccurrenceDrawIndex() {
-        if (!fHasChilden) {
+        if (!hasChildren()) {
             return 0;
         }
-        if (fIndexes.get(BasicExecutionOccurrence.EXEC_OCC_TAG) != null) {
-            return fIndexes.get(BasicExecutionOccurrence.EXEC_OCC_TAG).intValue();
+        if (getIndexes().get(BasicExecutionOccurrence.EXEC_OCC_TAG) != null) {
+            return getIndexes().get(BasicExecutionOccurrence.EXEC_OCC_TAG).intValue();
         }
         return 0;
     }
@@ -245,8 +240,8 @@ public class Lifeline extends GraphNode {
     public void addExecution(BasicExecutionOccurrence exec) {
         exec.setLifeline(this);
         addNode(exec);
-        if ((fFrame != null) && (fFrame.getMaxEventOccurrence() < exec.fEndEventOccurrence)) {
-            fFrame.setMaxEventOccurrence(exec.fEndEventOccurrence);
+        if ((fFrame != null) && (fFrame.getMaxEventOccurrence() < exec.getEndOccurrence())) {
+            fFrame.setMaxEventOccurrence(exec.getEndOccurrence());
         }
     }
 
@@ -276,16 +271,12 @@ public class Lifeline extends GraphNode {
      * @return the execution occurrence list
      */
     public List<GraphNode> getExecutions() {
-        if (fHasChilden) {
-            return fNodes.get(BasicExecutionOccurrence.EXEC_OCC_TAG);
+        if (hasChildren()) {
+            return getNodeMap().get(BasicExecutionOccurrence.EXEC_OCC_TAG);
         }
         return new ArrayList<GraphNode>();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int xValue, int yValue) {
         int x = getX();
@@ -488,28 +479,16 @@ public class Lifeline extends GraphNode {
         context.setBackground(backupColor);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         draw(context, getX(), getY());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return LIFELINE_TAG;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#positiveDistanceToPoint(int, int)
-     */
     @Override
     public boolean positiveDistanceToPoint(int x, int y) {
         if (getX() > x - Metrics.swimmingLaneWidth()) {
@@ -518,10 +497,6 @@ public class Lifeline extends GraphNode {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getNodeAt(int, int)
-     */
     @Override
     public GraphNode getNodeAt(int x, int y) {
         int vy = 0;

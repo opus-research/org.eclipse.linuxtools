@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Francois Chouinard - Simplified constructor, handle interval format change
+ *   Patrick Tasse - Update value handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -52,9 +53,6 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
         TmfSignalManager.register(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#dispose()
-     */
     @Override
     public void dispose() {
         TmfSignalManager.deregister(this);
@@ -64,10 +62,6 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
     // Operations
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#updateValue()
-     */
     @Override
     protected void updateValue() {
         if (getValue() == Long.MIN_VALUE) {
@@ -80,7 +74,11 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
             value = TmfTimestampFormat.getDefaulIntervalFormat().parseValue(string);
         } catch (ParseException e) {
         }
-        fParentView.updateTimeRange(value);
+        if (getValue() != value) {
+            fParentView.updateTimeRange(value);
+        } else {
+            setValue(value);
+        }
     }
 
     @Override

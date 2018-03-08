@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,16 +43,6 @@ public class SequenceDefinitionTest {
     private final static int seqLen = 15;
 
     /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(SequenceDefinitionTest.class);
-    }
-
-    /**
      * Perform pre-test initialization.
      * @throws CTFReaderException
      */
@@ -64,14 +53,14 @@ public class SequenceDefinitionTest {
 
         IntegerDeclaration id = new IntegerDeclaration(8, false, 8,
                 ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, null, 8);
-        String lengthName = "LengthName"; //$NON-NLS-1$
+        String lengthName = "LengthName";
         structDec = new StructDeclaration(0);
         structDec.addField(lengthName, id);
-        structDef = new StructDefinition(structDec, null, "x"); //$NON-NLS-1$
+        structDef = new StructDefinition(structDec, null, "x");
 
         structDef.lookupInteger(lengthName).setValue(seqLen);
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
-        fixture = new SequenceDefinition(sd, structDef, "TestX"); //$NON-NLS-1$
+        fixture = new SequenceDefinition(sd, structDef, "TestX");
         BitBuffer input = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(seqLen * 8));
         for (int i = 0; i < seqLen; i++) {
@@ -81,14 +70,6 @@ public class SequenceDefinitionTest {
         assert (fixture != null);
     }
 
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
     private static SequenceDefinition initNonString() throws CTFReaderException {
         StructDeclaration structDec;
         StructDefinition structDef;
@@ -96,14 +77,14 @@ public class SequenceDefinitionTest {
         int len = 32;
         IntegerDeclaration id = new IntegerDeclaration(len, false, len,
                 ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, null,8);
-        String lengthName = "LengthName"; //$NON-NLS-1$
+        String lengthName = "LengthName";
         structDec = new StructDeclaration(0);
         structDec.addField(lengthName, id);
-        structDef = new StructDefinition(structDec, null, "x"); //$NON-NLS-1$
+        structDef = new StructDefinition(structDec, null, "x");
 
         structDef.lookupInteger(lengthName).setValue(seqLen);
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
-        SequenceDefinition ret = new SequenceDefinition(sd, structDef, "TestX"); //$NON-NLS-1$
+        SequenceDefinition ret = new SequenceDefinition(sd, structDef, "TestX");
         BitBuffer input = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(seqLen * len));
         for (int i = 0; i < seqLen; i++) {

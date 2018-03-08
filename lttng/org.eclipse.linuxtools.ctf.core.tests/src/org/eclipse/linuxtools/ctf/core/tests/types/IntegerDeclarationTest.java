@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     Matthew Khouzam - Initial API and implementation
+ *     Marc-Andre Laperle - Add min/maximum for validation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.types;
@@ -14,11 +15,11 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.math.BigInteger;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,30 +35,12 @@ public class IntegerDeclarationTest {
     private IntegerDeclaration fixture;
 
     /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(IntegerDeclarationTest.class);
-    }
-
-    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-        fixture = new IntegerDeclaration(1, true, 1, ByteOrder.BIG_ENDIAN,
+        fixture = new IntegerDeclaration(1, false, 1, ByteOrder.BIG_ENDIAN,
                 Encoding.ASCII, null, 32);
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -67,7 +50,7 @@ public class IntegerDeclarationTest {
     @Test
     public void testIntegerDeclaration() {
         int len = 1;
-        boolean signed = true;
+        boolean signed = false;
         int base = 1;
         ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
         Encoding encoding = Encoding.ASCII;
@@ -78,11 +61,37 @@ public class IntegerDeclarationTest {
         assertNotNull(result);
         assertEquals(1, result.getBase());
         assertEquals(false, result.isCharacter());
-        String outputValue = "[declaration] integer["; //$NON-NLS-1$
+        String outputValue = "[declaration] integer[";
         assertEquals(outputValue,
                 result.toString().substring(0, outputValue.length()));
         assertEquals(1, result.getLength());
-        assertEquals(true, result.isSigned());
+        assertEquals(false, result.isSigned());
+    }
+
+    /**
+     * Test that IntegerDeclaration throws when constructing a signed 1 bit declaration
+     */
+    @Test(expected = java.lang.IllegalArgumentException.class)
+    public void testIntegerDeclarationIllegalArgSignedBit() {
+        int len = 1;
+        boolean signed = true;
+        int base = 1;
+        ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+        Encoding encoding = Encoding.ASCII;
+        new IntegerDeclaration(len, signed, base, byteOrder, encoding, null, 16);
+    }
+
+    /**
+     * Test that IntegerDeclaration throws when constructing a invalid length declaration
+     */
+    @Test(expected = java.lang.IllegalArgumentException.class)
+    public void testIntegerDeclarationIllegalArgBadLenght() {
+        int len = 0;
+        boolean signed = false;
+        int base = 1;
+        ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+        Encoding encoding = Encoding.ASCII;
+        new IntegerDeclaration(len, signed, base, byteOrder, encoding, null, 16);
     }
 
     /**
@@ -101,7 +110,7 @@ public class IntegerDeclarationTest {
     public void testGetByteOrder() {
         ByteOrder result = fixture.getByteOrder();
         assertNotNull(result);
-        assertEquals("BIG_ENDIAN", result.toString()); //$NON-NLS-1$
+        assertEquals("BIG_ENDIAN", result.toString());
     }
 
     /**
@@ -111,8 +120,8 @@ public class IntegerDeclarationTest {
     public void testGetEncoding() {
         Encoding result = fixture.getEncoding();
         assertNotNull(result);
-        assertEquals("ASCII", result.name()); //$NON-NLS-1$
-        assertEquals("ASCII", result.toString()); //$NON-NLS-1$
+        assertEquals("ASCII", result.name());
+        assertEquals("ASCII", result.toString());
         assertEquals(1, result.ordinal());
     }
 
@@ -151,7 +160,9 @@ public class IntegerDeclarationTest {
      */
     @Test
     public void testIsSigned_signed() {
-        boolean result = fixture.isSigned();
+        IntegerDeclaration fixtureSigned = new IntegerDeclaration(2, true,
+                1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
+        boolean result = fixtureSigned.isSigned();
         assertEquals(true, result);
     }
 
@@ -160,10 +171,7 @@ public class IntegerDeclarationTest {
      */
     @Test
     public void testIsSigned_unsigned() {
-        IntegerDeclaration fixture_unsigned = new IntegerDeclaration(1, false,
-                1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
-
-        boolean result = fixture_unsigned.isSigned();
+        boolean result = fixture.isSigned();
         assertEquals(false, result);
     }
 
@@ -175,6 +183,58 @@ public class IntegerDeclarationTest {
     public void testToString() {
         String result = fixture.toString();
         String trunc = result.substring(0, 22);
-        assertEquals("[declaration] integer[", trunc); //$NON-NLS-1$
+        assertEquals("[declaration] integer[", trunc);
+    }
+
+    /**
+     * Run the long getMaxValue() method test.
+     */
+    @Test
+    public void testMaxValue() {
+        assertEquals(BigInteger.ONE, fixture.getMaxValue());
+
+        IntegerDeclaration signed8bit = new IntegerDeclaration(8, true, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(127), signed8bit.getMaxValue());
+
+        IntegerDeclaration unsigned8bit = new IntegerDeclaration(8, false, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(255), unsigned8bit.getMaxValue());
+
+        IntegerDeclaration signed32bit = new IntegerDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(2147483647), signed32bit.getMaxValue());
+
+        IntegerDeclaration unsigned32bit = new IntegerDeclaration(32, false, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(4294967295l), unsigned32bit.getMaxValue());
+
+        IntegerDeclaration signed64bit = new IntegerDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(9223372036854775807L), signed64bit.getMaxValue());
+
+        IntegerDeclaration unsigned64bit = new IntegerDeclaration(64, false, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(2).pow(64).subtract(BigInteger.ONE), unsigned64bit.getMaxValue());
+    }
+
+    /**
+     * Run the long getMinValue() method test.
+     */
+    @Test
+    public void testMinValue() {
+        assertEquals(BigInteger.ZERO, fixture.getMinValue());
+
+        IntegerDeclaration signed8bit = new IntegerDeclaration(8, true, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(-128), signed8bit.getMinValue());
+
+        IntegerDeclaration unsigned8bit = new IntegerDeclaration(8, false, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.ZERO, unsigned8bit.getMinValue());
+
+        IntegerDeclaration signed32bit = new IntegerDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(-2147483648), signed32bit.getMinValue());
+
+        IntegerDeclaration unsigned32bit = new IntegerDeclaration(32, false, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.ZERO, unsigned32bit.getMinValue());
+
+        IntegerDeclaration signed64bit = new IntegerDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.valueOf(-9223372036854775808L), signed64bit.getMinValue());
+
+        IntegerDeclaration unsigned64bit = new IntegerDeclaration(64, false, 1, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 32);
+        assertEquals(BigInteger.ZERO, unsigned64bit.getMinValue());
     }
 }

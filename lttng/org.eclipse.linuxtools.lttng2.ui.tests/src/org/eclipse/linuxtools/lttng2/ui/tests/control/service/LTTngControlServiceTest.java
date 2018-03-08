@@ -83,6 +83,10 @@ public class LTTngControlServiceTest {
     private static final String SCEN_GET_UST_PROVIDER1 = "GetUstProvider1";
     private static final String SCEN_GET_UST_PROVIDER2 = "GetUstProvider2";
     private static final String SCEN_GET_UST_PROVIDER3 = "GetUstProvider3";
+    private static final String SCEN_LIST_WITH_NO_UST1 = "ListWithNoUst1";
+    private static final String SCEN_LIST_WITH_NO_UST2 = "ListWithNoUst2";
+    private static final String SCEN_LIST_WITH_NO_UST3 = "ListWithNoUst3";
+    private static final String SCEN_LIST_WITH_NO_UST_VERBOSE = "ListWithNoUstVerbose";
     private static final String SCEN_CREATE_SESSION1 = "CreateSession1";
     private static final String SCEN_CREATE_SESSION_WITH_PROMPT = "CreateSessionWithPrompt";
     private static final String SCEN_CREATE_SESSION_VARIANTS = "CreateSessionVariants";
@@ -610,6 +614,93 @@ public class LTTngControlServiceTest {
         }
     }
 
+
+    @Test
+    public void testGetKernelProviderNoUst1() {
+        try {
+            fShell.setScenario(SCEN_LIST_WITH_NO_UST1);
+            List<IUstProviderInfo> providerList = fService.getUstProvider(new NullProgressMonitor());
+
+            // Verify Provider info
+            assertNotNull(providerList);
+            assertEquals(0, providerList.size());
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
+
+    @Test
+    public void testGetKernelProviderNoUst2() {
+        try {
+            // Set version
+            ((LTTngControlService)fService).setVersion("2.1.0");
+
+            fShell.setScenario(SCEN_LIST_WITH_NO_UST2);
+            List<IUstProviderInfo> providerList = fService.getUstProvider(new NullProgressMonitor());
+
+            // Verify Provider info
+            assertNotNull(providerList);
+            assertEquals(0, providerList.size());
+
+            // Reset version
+            ((LTTngControlService)fService).setVersion("2.0.0");
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
+    @Test
+    public void testGetKernelProviderNoUst3() {
+        try {
+
+            // Set version
+            ((LTTngControlService)fService).setVersion("2.1.0");
+
+            fShell.setScenario(SCEN_LIST_WITH_NO_UST3);
+            List<IUstProviderInfo> providerList = fService.getUstProvider(new NullProgressMonitor());
+
+            // Verify provider info
+            assertNotNull(providerList);
+            assertEquals(0, providerList.size());
+
+            // Reset version
+            ((LTTngControlService)fService).setVersion("2.0.0");
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
+    @Test
+    public void testGetKernelProviderNoUstVerbose() {
+        try {
+            enableVerbose();
+
+            // Set version
+            ((LTTngControlService)fService).setVersion("2.1.0");
+
+            fShell.setScenario(SCEN_LIST_WITH_NO_UST_VERBOSE);
+            List<IUstProviderInfo> providerList = fService.getUstProvider(new NullProgressMonitor());
+
+            // Verify provider info
+            assertNotNull(providerList);
+            assertEquals(0, providerList.size());
+
+            // Reset version
+            ((LTTngControlService)fService).setVersion("2.0.0");
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        } finally {
+            disableVerbose();
+        }
+    }
+
+
+
     @Test
     public void testCreateSession() {
         try {
@@ -739,6 +830,8 @@ public class LTTngControlServiceTest {
             chanInfo.setReadTimer(100);
             chanInfo.setSwitchTimer(200);
             chanInfo.setNumberOfSubBuffers(2);
+            chanInfo.setMaxNumberTraceFiles(10);
+            chanInfo.setMaxSizeTraceFiles(0);
             fService.enableChannels(sessionName, list, true, chanInfo, new NullProgressMonitor());
 
             // Create/enable/configure 1 UST channel
@@ -751,6 +844,33 @@ public class LTTngControlServiceTest {
             chanInfo.setReadTimer(200);
             chanInfo.setSwitchTimer(100);
             chanInfo.setNumberOfSubBuffers(1);
+            chanInfo.setMaxNumberTraceFiles(20);
+            chanInfo.setMaxSizeTraceFiles(0);
+            fService.enableChannels(sessionName, list, false, chanInfo, new NullProgressMonitor());
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
+    @Test
+    public void testCreateChannelUIDBuffer() {
+        try {
+            String sessionName = "mysession2";
+            List<String> list = new ArrayList<String>();
+            String USTChannel = "ustChannel";
+            list.add(USTChannel);
+            fShell.setScenario(SCEN_CHANNEL_HANDLING);
+
+            ChannelInfo chanInfo = new ChannelInfo("");
+            chanInfo.setOverwriteMode(true);
+            chanInfo.setSubBufferSize(32768);
+            chanInfo.setReadTimer(200);
+            chanInfo.setSwitchTimer(100);
+            chanInfo.setNumberOfSubBuffers(1);
+            chanInfo.setMaxNumberTraceFiles(20);
+            chanInfo.setMaxSizeTraceFiles(0);
+            chanInfo.setBuffersUID(true);
             fService.enableChannels(sessionName, list, false, chanInfo, new NullProgressMonitor());
 
         } catch (ExecutionException e) {

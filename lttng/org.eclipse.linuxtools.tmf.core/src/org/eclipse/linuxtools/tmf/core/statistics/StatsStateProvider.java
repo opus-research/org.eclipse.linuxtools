@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Patrick Tasse - Fix javadoc
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statistics;
@@ -16,7 +17,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -26,22 +27,22 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * should work with any trace type for which we can use the state system.
  *
  * The resulting attribute tree will look like this:
- *
- * <root>
+ *<pre>
+ * (root)
  *   |-- total
  *   \-- event_types
- *        |-- <event name 1>
- *        |-- <event name 2>
- *        |-- <event name 3>
+ *        |-- (event name 1)
+ *        |-- (event name 2)
+ *        |-- (event name 3)
  *       ...
- *
- * And each <event name>'s value will be an integer, representing how many times
+ *</pre>
+ * And each (event name)'s value will be an integer, representing how many times
  * this particular event type has been seen in the trace so far.
  *
  * @author Alexandre Montplaisir
  * @version 1.0
  */
-class StatsStateProvider extends AbstractStateChangeInput {
+class StatsStateProvider extends AbstractTmfStateProvider {
 
     /**
      * Version number of this input handler. Please bump this if you modify the
@@ -51,7 +52,7 @@ class StatsStateProvider extends AbstractStateChangeInput {
 
     /**
      * Constructor
-    *
+     *
      * @param trace
      *            The trace for which we build this state system
      */

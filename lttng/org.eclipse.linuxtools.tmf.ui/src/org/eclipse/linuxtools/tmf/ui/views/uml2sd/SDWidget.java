@@ -40,7 +40,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDCollapseP
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.LoadersManager;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
@@ -93,159 +93,159 @@ public class SDWidget extends ScrollView implements SelectionListener,
     /**
      * The frame to display in the sequence diagram widget.
      */
-    protected Frame fFrame;
+    private Frame fFrame;
     /**
      * The overview image to display.
      */
-    protected Image fOverView = null;
+    private Image fOverView = null;
     /**
      * The zoom in menu item.
      */
-    protected MenuItem fZoomIn = null;
+    private MenuItem fZoomIn = null;
     /**
      * The zoom out menu item.
      */
-    protected MenuItem fZoomOut = null;
+    private MenuItem fZoomOut = null;
     /**
      * The sequence diagram selection provider.
      */
-    protected SDWidgetSelectionProvider fSelProvider = null;
+    private SDWidgetSelectionProvider fSelProvider = null;
     /**
      * The current zoom value.
      */
-    public float fZoomValue = 1;
+    private float fZoomValue = 1;
     /**
      * The current zoomInMode (true for zoom in).
      */
-    protected boolean fZoomInMode = false;
+    private boolean fZoomInMode = false;
     /**
      * The current zoomOutMode (true for zoom out).
      */
-    protected boolean fZoomOutMode = false;
+    private boolean fZoomOutMode = false;
     /**
      * The current list of selected graph nodes.
      */
-    protected List<GraphNode> fSelectedNodeList = null;
+    private List<GraphNode> fSelectedNodeList = null;
     /**
      * Flag whether ctrl button is selected or not.
      */
-    protected boolean fCtrlSelection = false;
+    private boolean fCtrlSelection = false;
     /**
      * A reference to the view site.
      */
-    protected ViewPart fSite = null;
+    private ViewPart fSite = null;
     /**
      * The current graph node (the last selected one).
      */
-    public GraphNode fCurrentGraphNode = null;
+    private GraphNode fCurrentGraphNode = null;
     /**
      * The first graph node in list (multiple selection).
      */
-    public GraphNode fListStart = null;
+    private GraphNode fListStart = null;
     /**
      * The previous graph node (multiple selection).
      */
-    public List<GraphNode> fPrevList = null;
+    private List<GraphNode> fPrevList = null;
     /**
      * The time compression bar.
      */
-    protected TimeCompressionBar fTimeBar = null;
+    private TimeCompressionBar fTimeBar = null;
     /**
      * The current diagram tool tip.
      */
-    protected DiagramToolTip fToolTip = null;
+    private DiagramToolTip fToolTip = null;
     /**
      * The accessible object reference of view control.
      */
-    protected Accessible fAccessible = null;
+    private Accessible fAccessible = null;
     /**
      * The current node for the tooltip to display.
      */
-    protected GraphNode fToolTipNode;
+    private GraphNode fToolTipNode;
     /**
      * The life line to drag and drop.
      */
-    protected Lifeline fDragAndDrop = null;
+    private Lifeline fDragAndDrop = null;
     /**
      * The number of focused widgets.
      */
-    protected int fFocusedWidget = -1;
+    private int fFocusedWidget = -1;
     /**
      * The printer zoom.
      */
-    protected float fPrinterZoom = 0;
+    private float fPrinterZoom = 0;
     /**
      * Y coordinate for printer.
      */
-    protected int fPrinterY = 0;
+    private int fPrinterY = 0;
     /**
      * X coordinate for printer.
      */
-    protected int fPrinterX = 0;
+    private int fPrinterX = 0;
     /**
      * Flag whether drag and drop is enabled or not.
      */
-    protected boolean fIsDragAndDrop = false;
+    private boolean fIsDragAndDrop = false;
     /**
      * The x coordinate for drag.
      */
-    protected int fDragX = 0;
+    private int fDragX = 0;
     /**
      * The y coordinate for drag.
      */
-    protected int fDragY = 0;
+    private int fDragY = 0;
     /**
      * The reorder mode.
      */
-    protected boolean fReorderMode = false;
+    private boolean fReorderMode = false;
     /**
      * The collapse caret image.
      */
-    protected Image fCollapaseCaretImg = null;
+    private Image fCollapaseCaretImg = null;
     /**
      * The arrow up caret image.
      */
-    protected Image fArrowUpCaretImg = null;
+    private Image fArrowUpCaretImg = null;
     /**
      * The current caret image.
      */
-    protected Image fCurrentCaretImage = null;
+    private Image fCurrentCaretImage = null;
     /**
      * A sequence diagramm collapse provider (for collapsing graph nodes)
      */
-    protected ISDCollapseProvider fCollapseProvider = null;
+    private ISDCollapseProvider fCollapseProvider = null;
     /**
      * The insertion caret.
      */
-    protected Caret fInsertionCartet = null;
+    private Caret fInsertionCartet = null;
     /**
      * The reorder list when in reorder mode.
      */
-    protected List<Lifeline[]> fReorderList = null;
+    private List<Lifeline[]> fReorderList = null;
     /**
      * Flag to specify whether in printing mode or not.
      */
-    protected boolean fIsPrinting = false;
+    private boolean fIsPrinting = false;
     /**
      * A printer reference.
      */
-    protected Printer fPrinter = null;
+    private Printer fPrinter = null;
     /**
      * Flag whether shift was selected or not.
      */
-    protected boolean fShiftSelection = false;
+    private boolean fShiftSelection = false;
     /**
      * The scroll tooltip.
      */
-    protected DiagramToolTip fScrollToolTip = null;
+    private DiagramToolTip fScrollToolTip = null;
     /**
      * Timer for auto_scroll feature
      */
-    protected AutoScroll fLocalAutoScroll = null;
+    private AutoScroll fLocalAutoScroll = null;
     /**
      * TimerTask for auto_scroll feature !=null when auto scroll is running
      */
-    protected Timer fLocalAutoScrollTimer = null;
+    private Timer fLocalAutoScrollTimer = null;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -276,10 +276,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         fAccessible = getViewControl().getAccessible();
 
         fAccessible.addAccessibleListener(new AccessibleAdapter() {
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleAdapter#getName(org.eclipse.swt.accessibility.AccessibleEvent)
-             */
             @Override
             public void getName(AccessibleEvent e) {
                 // Case toolTip
@@ -295,23 +291,23 @@ public class SDWidget extends ScrollView implements SelectionListener,
                 } else {
                     if (getFocusNode() != null) {
                         if (getFocusNode() instanceof Lifeline) {
-                            e.result = MessageFormat.format(SDMessages._1, new Object[] { String.valueOf(getFocusNode().getName()) });
+                            e.result = MessageFormat.format(Messages.SequenceDiagram_LifelineNode, new Object[] { String.valueOf(getFocusNode().getName()) });
                         }
                         if (getFocusNode() instanceof BaseMessage) {
                             BaseMessage mes = (BaseMessage) getFocusNode();
                             if ((mes.getStartLifeline() != null) && (mes.getEndLifeline() != null)) {
                                 e.result = MessageFormat.format(
-                                        SDMessages._2,
+                                        Messages.SequenceDiagram_MessageNode,
                                         new Object[] { String.valueOf(mes.getName()), String.valueOf(mes.getStartLifeline().getName()), Integer.valueOf(mes.getStartOccurrence()), String.valueOf(mes.getEndLifeline().getName()),
                                                 Integer.valueOf(mes.getEndOccurrence()) });
                             } else if ((mes.getStartLifeline() == null) && (mes.getEndLifeline() != null)) {
-                                e.result = MessageFormat.format(SDMessages._4, new Object[] { String.valueOf(mes.getName()), String.valueOf(mes.getEndLifeline().getName()), Integer.valueOf(mes.getEndOccurrence()) });
+                                e.result = MessageFormat.format(Messages.SequenceDiagram_FoundMessageNode, new Object[] { String.valueOf(mes.getName()), String.valueOf(mes.getEndLifeline().getName()), Integer.valueOf(mes.getEndOccurrence()) });
                             } else if ((mes.getStartLifeline() != null) && (mes.getEndLifeline() == null)) {
-                                e.result = MessageFormat.format(SDMessages._3, new Object[] { String.valueOf(mes.getName()), String.valueOf(mes.getStartLifeline().getName()), Integer.valueOf(mes.getStartOccurrence()) });
+                                e.result = MessageFormat.format(Messages.SequenceDiagram_LostMessageNode, new Object[] { String.valueOf(mes.getName()), String.valueOf(mes.getStartLifeline().getName()), Integer.valueOf(mes.getStartOccurrence()) });
                             }
                         } else if (getFocusNode() instanceof BasicExecutionOccurrence) {
                             BasicExecutionOccurrence exec = (BasicExecutionOccurrence) getFocusNode();
-                            e.result = MessageFormat.format(SDMessages._5,
+                            e.result = MessageFormat.format(Messages.SequenceDiagram_ExecutionOccurrenceWithParams,
                                     new Object[] { String.valueOf(exec.getName()), String.valueOf(exec.getLifeline().getName()), Integer.valueOf(exec.getStartOccurrence()), Integer.valueOf(exec.getEndOccurrence()) });
                         }
 
@@ -321,10 +317,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         });
 
         fAccessible.addAccessibleControlListener(new AccessibleControlAdapter() {
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getFocus(org.eclipse.swt.accessibility.AccessibleControlEvent)
-             */
             @Override
             public void getFocus(AccessibleControlEvent e) {
                 if (fFocusedWidget == -1) {
@@ -334,10 +326,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
                 }
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getRole(org.eclipse.swt.accessibility.AccessibleControlEvent)
-             */
             @Override
             public void getRole(AccessibleControlEvent e) {
                 switch (e.childID) {
@@ -355,10 +343,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
                 }
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.accessibility.AccessibleControlAdapter#getState(org.eclipse.swt.accessibility.AccessibleControlEvent)
-             */
             @Override
             public void getState(AccessibleControlEvent e) {
                 e.detail = ACC.STATE_FOCUSABLE;
@@ -386,10 +370,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
 
         getViewControl().addFocusListener(new FocusListener() {
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.FocusListener#focusGained(org.eclipse.swt.events.FocusEvent)
-             */
             @Override
             public void focusGained(FocusEvent e) {
                 SDViewPref.getInstance().setNoFocusSelection(false);
@@ -398,10 +378,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
                 redraw();
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.FocusListener#focusLost(org.eclipse.swt.events.FocusEvent)
-             */
             @Override
             public void focusLost(FocusEvent e) {
                 SDViewPref.getInstance().setNoFocusSelection(true);
@@ -413,6 +389,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+
     /**
      * Sets the time compression bar.
      *
@@ -509,7 +486,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
      * @param list of graph nodes
      */
     public void addSelection(List<GraphNode> list) {
-        // selectedNodeList.addAll(list);
         for (int i = 0; i < list.size(); i++) {
             if (!fSelectedNodeList.contains(list.get(i))) {
                 fSelectedNodeList.add(list.get(i));
@@ -600,13 +576,24 @@ public class SDWidget extends ScrollView implements SelectionListener,
      * Sets the zoom out mode.
      *
      * @param value
-     *            The mode value to set.
+     *          The mode value to set.
      */
     public void setZoomOutMode(boolean value) {
         if (value) {
             setZoomInMode(false);
         }
         fZoomOutMode = value;
+    }
+
+    /**
+     * Sets the current zoom value.
+     *
+     * @param zoomValue
+     *          The current zoom value
+     * @since 2.0
+     */
+    public void setZoomValue(float zoomValue) {
+        fZoomValue = zoomValue;
     }
 
     /**
@@ -677,6 +664,65 @@ public class SDWidget extends ScrollView implements SelectionListener,
      */
     public boolean isPrinting() {
         return fIsPrinting;
+    }
+
+    /**
+     * Returns the current graph node.
+     *
+     * @return the current graph node
+     * @since 2.0
+     */
+    public GraphNode getCurrentGraphNode() {
+        return fCurrentGraphNode;
+    }
+
+    /**
+     * Returns the current zoom value.
+     *
+     * @return the current zoom value
+     * @since 2.0
+     */
+    public float getZoomValue() {
+        return fZoomValue;
+    }
+
+    /**
+     * Gets the zoom in mode.
+     *
+     * @return the mode value to set.
+     * @since 2.0
+     */
+    public boolean getZoomInMode() {
+        return fZoomInMode;
+    }
+
+
+    /**
+     * Gets the zoom out mode.
+     *
+     * @return the mode value to set.
+     * @since 2.0
+     */
+    public boolean getZoomOutMode() {
+        return fZoomOutMode;
+    }
+
+    /**
+     * Returns if ctrl selection
+     * @return true if ctrl selection else false
+     * @since 2.0
+     */
+    public boolean isCtrlSelection() {
+        return fCtrlSelection;
+    }
+
+    /**
+     * Returns if shift selection
+     * @return true if shift Selection else false
+     * @since 2.0
+     */
+    public boolean isShiftSelection() {
+        return fCtrlSelection;
     }
 
     /**
@@ -875,7 +921,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         if (selectedNode instanceof BaseMessage) {
             node = fFrame.getNextLifelineMessage(((BaseMessage) selectedNode).getStartLifeline(), (BaseMessage) selectedNode);
         } else if (selectedNode instanceof Lifeline) {
-            // node = frame.getNextLifelineMessage((Lifeline)selectedNode,null);
             node = fFrame.getFirstExecution((Lifeline) selectedNode);
         } else if (selectedNode instanceof BasicExecutionOccurrence) {
             node = fFrame.getNextExecOccurrence((BasicExecutionOccurrence) selectedNode);
@@ -966,11 +1011,10 @@ public class SDWidget extends ScrollView implements SelectionListener,
 
         fPrinter = new Printer(data);
 
-        String jobName = MessageFormat.format(SDMessages._116, new Object[] { String.valueOf(fSite.getContentDescription()), String.valueOf(fFrame.getName()) });
+        String jobName = MessageFormat.format(Messages.SequenceDiagram_plus, new Object[] { String.valueOf(fSite.getContentDescription()), String.valueOf(fFrame.getName()) });
         fPrinter.startJob(jobName);
 
         GC gc = new GC(fPrinter);
-//        Frame.setUserPref(SDViewPref.getInstance());
 
         float lastZoom = fZoomValue;
 
@@ -1146,8 +1190,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         String currentPageNum = String.valueOf(pageNum);
         int ii = context.textExtent(currentPageNum);
         int jj = context.getCurrentFontHeight();
-        // context.setBackground(ColorImpl.getSystemColor(SWT.COLOR_BLACK));
-        // context.setForeground(ColorImpl.getSystemColor(SWT.COLOR_WHITE));
         fZoomValue = fPrinterZoom * lastZoom;
         context.drawText(currentPageNum, Math.round(fPrinterX + getVisibleWidth() / fPrinterZoom - ii / fPrinterZoom), Math.round(fPrinterY + getVisibleHeight() / fPrinterZoom - jj / fPrinterZoom), false);
         fIsPrinting = false;
@@ -1202,7 +1244,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
             postfix.append(" -> "); //$NON-NLS-1$
             postfix.append(fCurrentGraphNode.getName());
             postfix.append("\n"); //$NON-NLS-1$
-            postfix.append(SDMessages._138);
+            postfix.append(Messages.SequenceDiagram_Delta);
             postfix.append(" "); //$NON-NLS-1$
 
             //double delta = ((ITimeRange)toolTipNode).getLastTime()-((ITimeRange)currentGraphNode).getLastTime();
@@ -1354,10 +1396,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return dbuffer;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#keyPressedEvent(org.eclipse.swt.events.KeyEvent)
-     */
     @Override
     protected void keyPressedEvent(KeyEvent event) {
         if (!(isFocusControl() || getViewControl().isFocusControl())) {
@@ -1466,10 +1504,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#keyReleasedEvent(org.eclipse.swt.events.KeyEvent)
-     */
     @Override
     protected void keyReleasedEvent(KeyEvent event) {
         setFocus(-1);
@@ -1483,10 +1517,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         setFocus(1);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.swt.widgets.Control#isFocusControl()
-     */
     @Override
     public boolean isFocusControl() {
         Control[] child = getChildren();
@@ -1499,10 +1529,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#setContentsPos(int, int)
-     */
     @Override
     public boolean setContentsPos(int x, int y) {
         int localX = x;
@@ -1536,10 +1562,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return super.setContentsPos(localX, localY);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseHover(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseHover(MouseEvent event) {
         GraphNode graphNode = null;
@@ -1564,15 +1586,10 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseMoveEvent(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseMoveEvent(MouseEvent e) {
         fScrollToolTip.hideToolTip();
         fToolTip.hideToolTip();
-        // super.contentsMouseMoveEvent(e);
         if (!(isFocusControl() || getViewControl().isFocusControl())) {
             Control[] child = getParent().getChildren();
             for (int i = 0; i < child.length; i++) {
@@ -1686,10 +1703,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseUpEvent(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseUpEvent(MouseEvent event) {
         // Just in case the diagram highlight a time compression region
@@ -1738,10 +1751,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         super.contentsMouseUpEvent(event);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsMouseDownEvent(org.eclipse.swt.events.MouseEvent)
-     */
     @Override
     protected void contentsMouseDownEvent(MouseEvent event) {
         if (fCurrentGraphNode != null) {
@@ -1780,7 +1789,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
             }
             // redraw also resize the scrollView content
             redraw();
-        } else {// if (event.button ==1)
+        } else {
             GraphNode node = null;
             int x = Math.round(event.x / fZoomValue);
             int y = Math.round(event.y / fZoomValue);
@@ -1839,13 +1848,13 @@ public class SDWidget extends ScrollView implements SelectionListener,
             fDeltaY = dy;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.TimerTask#run()
-         */
         @Override
         public void run() {
-            Display.getDefault().asyncExec(new Runnable() {
+            Display display = Display.getDefault();
+            if ((display == null) || (display.isDisposed())) {
+                return;
+            }
+            display.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     if (fSdWidget.isDisposed()) {
@@ -1859,10 +1868,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#drawContents(org.eclipse.swt.graphics.GC, int, int, int, int)
-     */
     @Override
     protected void drawContents(GC gc, int clipx, int clipy, int clipw, int cliph) {
         if (fFrame == null) {
@@ -1871,7 +1876,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
             gc.dispose();
             return;
         }
-        // Frame.setUserPref(SDViewPref.getInstance());
         SDViewPref.getInstance();
 
         Rectangle area = getClientArea();
@@ -1901,18 +1905,10 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-     */
     @Override
     public void widgetDefaultSelected(SelectionEvent event) {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-     */
     @Override
     public void widgetSelected(SelectionEvent event) {
         if (event.widget == fZoomIn) {
@@ -1923,11 +1919,9 @@ public class SDWidget extends ScrollView implements SelectionListener,
         redraw();
     }
 
-    /*
-     * Called when property changed occurs in the preference page. "PREFOK" is fired when the user press the ok or apply button
-     *
-     * (non-Javadoc)
-     * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+    /**
+     * Called when property changed occurs in the preference page. "PREFOK" is
+     * fired when the user press the ok or apply button
      */
     @Override
     public void propertyChange(PropertyChangeEvent e) {
@@ -1946,10 +1940,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(org.eclipse.swt.events.DisposeEvent)
-     */
     @Override
     public void widgetDisposed(DisposeEvent e) {
         if (fOverView != null) {
@@ -1975,10 +1965,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#drawOverview(org.eclipse.swt.graphics.GC, org.eclipse.swt.graphics.Rectangle)
-     */
     @Override
     protected void drawOverview(GC gc, Rectangle r) {
         float oldzoom = fZoomValue;
@@ -2013,10 +1999,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         super.drawOverview(gc, r);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ITimeCompressionListener#deltaSelected(org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.Lifeline, int, int, org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor)
-     */
     @Override
     public void deltaSelected(Lifeline lifeline, int startEvent, int nbEvent, IColor color) {
         fFrame.highlightTimeCompression(lifeline, startEvent, nbEvent, color);
@@ -2028,10 +2010,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         update();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#getVisibleWidth()
-     */
     @Override
     public int getVisibleWidth() {
         if (fIsPrinting) {
@@ -2040,10 +2018,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return super.getVisibleWidth();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#getVisibleHeight()
-     */
     @Override
     public int getVisibleHeight() {
         if (fIsPrinting) {
@@ -2052,10 +2026,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return super.getVisibleHeight();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsToViewX(int)
-     */
     @Override
     public int contentsToViewX(int x) {
         if (fIsPrinting) {
@@ -2065,10 +2035,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return x - getContentsX();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#contentsToViewY(int)
-     */
     @Override
     public int contentsToViewY(int y) {
         if (fIsPrinting) {
@@ -2078,23 +2044,14 @@ public class SDWidget extends ScrollView implements SelectionListener,
         return y - getContentsY();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#getContentsX()
-     */
     @Override
     public int getContentsX() {
         if (fIsPrinting) {
             return Math.round(fPrinterX * fPrinterZoom);
         }
         return super.getContentsX();
-
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.ScrollView#getContentsY()
-     */
     @Override
     public int getContentsY() {
         if (fIsPrinting) {
@@ -2107,11 +2064,6 @@ public class SDWidget extends ScrollView implements SelectionListener,
      * Traverse Listener implementation.
      */
     protected static class LocalTraverseListener implements TraverseListener {
-
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt.events.TraverseEvent)
-         */
         @Override
         public void keyTraversed(TraverseEvent e) {
             if ((e.detail == SWT.TRAVERSE_TAB_NEXT) || (e.detail == SWT.TRAVERSE_TAB_PREVIOUS)) {

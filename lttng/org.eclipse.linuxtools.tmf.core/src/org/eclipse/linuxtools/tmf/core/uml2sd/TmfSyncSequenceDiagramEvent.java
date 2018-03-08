@@ -30,19 +30,19 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     /**
      * The start time of the sequence diagram event (i.e. time when signal was sent).
      */
-    final protected ITmfTimestamp fStartTime;
+    private final ITmfTimestamp fStartTime;
     /**
      * The name of the sender of the signal.
      */
-    final protected String fSender;
+    private final String fSender;
     /**
      * The name of the receiver of the signal.
      */
-    final protected String fReceiver;
+    private final String fReceiver;
     /**
      * The name of the signal
      */
-    final protected String fName;
+    private final String fName;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -76,28 +76,17 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getSender()
-     */
+
     @Override
     public String getSender() {
         return fSender;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getReceiver()
-     */
     @Override
     public String getReceiver() {
         return fReceiver;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getName()
-     */
     @Override
     public String getName() {
         return fName;

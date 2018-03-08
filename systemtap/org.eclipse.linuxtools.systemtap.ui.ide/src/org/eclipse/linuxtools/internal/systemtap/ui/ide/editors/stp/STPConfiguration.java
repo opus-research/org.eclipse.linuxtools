@@ -15,9 +15,9 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -36,10 +36,12 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	private ColorManager colorManager;
 	private STPEditor editor;
 	private DoubleClickStrategy doubleClickStrategy;
+	private STPCompletionProcessor processor;
 
 	public STPConfiguration(ColorManager colorManager, STPEditor editor) {
 		this.colorManager = colorManager;
 		this.editor = editor;
+		this.processor = new STPCompletionProcessor();
 	}
 
 	/* (non-Javadoc)
@@ -50,8 +52,7 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		return new String[] {
 				IDocument.DEFAULT_CONTENT_TYPE,
 				STPPartitionScanner.STP_COMMENT,
-				STPPartitionScanner.STP_STRING,
-				STPPartitionScanner.STP_PROBE};
+				STPPartitionScanner.STP_CONDITIONAL};
 	}
 
 	/* (non-Javadoc)
@@ -66,12 +67,12 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
 		assistant
 				.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-		IContentAssistProcessor processor = new STPCompletionProcessor();
 
 		assistant.setContentAssistProcessor(processor,IDocument.DEFAULT_CONTENT_TYPE);
-		assistant.setContentAssistProcessor(processor,STPPartitionScanner.STP_PROBE);
+		assistant.setContentAssistProcessor(processor,STPPartitionScanner.STP_CONDITIONAL);
 
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+
 		return assistant;
 	}
 
@@ -109,8 +110,9 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	 */
 	@Override
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer,String contentType) {
-		if (doubleClickStrategy == null)
+		if (doubleClickStrategy == null) {
 			doubleClickStrategy = new DoubleClickStrategy();
+		}
 		return doubleClickStrategy;
 	}
 
@@ -133,20 +135,8 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		reconciler.setRepairer(dr, STPPartitionScanner.STP_COMMENT);
 
 		dr = new DefaultDamagerRepairer(getSTPScanner());
-		reconciler.setDamager(dr, STPPartitionScanner.STP_STRING);
-		reconciler.setRepairer(dr, STPPartitionScanner.STP_STRING);
-
-		dr = new DefaultDamagerRepairer(getSTPScanner());
-		reconciler.setDamager(dr, STPPartitionScanner.STP_KEYWORD);
-		reconciler.setRepairer(dr, STPPartitionScanner.STP_KEYWORD);
-
-		dr = new DefaultDamagerRepairer(getSTPScanner());
 		reconciler.setDamager(dr, STPPartitionScanner.STP_CONDITIONAL);
 		reconciler.setRepairer(dr, STPPartitionScanner.STP_CONDITIONAL);
-
-		dr = new DefaultDamagerRepairer(getSTPScanner());
-		reconciler.setDamager(dr, STPPartitionScanner.STP_PROBE);
-		reconciler.setRepairer(dr, STPPartitionScanner.STP_PROBE);
 
 		return reconciler;
 	}
@@ -154,7 +144,18 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	@Override
 	public IAutoEditStrategy[] getAutoEditStrategies(
 			ISourceViewer sourceViewer, String contentType) {
-		return new IAutoEditStrategy[] {new STPAutoEditStrategy()};
+		return new IAutoEditStrategy[] {new STPAutoEditStrategy(STPPartitionScanner.STP_PARTITIONING, null)};
+	}
+
+	@Override
+	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+		return processor;
+	}
+
+	@Override
+	public String[] getDefaultPrefixes(ISourceViewer sourceViewer,
+			String contentType) {
+		return new String[] { "//", "" };  //$NON-NLS-1$//$NON-NLS-2$
 	}
 
 }

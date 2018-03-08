@@ -53,6 +53,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * The command execution parameter.
      */
@@ -62,10 +63,6 @@ public class AssignEventHandler extends BaseControlViewHandler {
     // Operations
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -128,10 +125,6 @@ public class AssignEventHandler extends BaseControlViewHandler {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
         ArrayList<BaseEventComponent> events = new ArrayList<BaseEventComponent>();
@@ -206,7 +199,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
     /**
      *  Class containing parameter for the command execution.
      */
-    final static private class Parameter {
+    private static final class Parameter {
 
         /**
          * The list of event components the command is to be executed on.
@@ -221,7 +214,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
         /**
          * Flag for indicating Kernel or UST.
          */
-        final private boolean fIsKernel;
+        private final boolean fIsKernel;
 
         /**
          * Constructor

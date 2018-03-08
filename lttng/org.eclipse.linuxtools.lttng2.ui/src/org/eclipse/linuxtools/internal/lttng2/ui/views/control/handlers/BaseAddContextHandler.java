@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -35,11 +35,12 @@ import org.eclipse.ui.progress.UIJob;
  *
  * @author Bernd Hufmann
  */
-abstract public class BaseAddContextHandler extends BaseControlViewHandler {
+public abstract class BaseAddContextHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * The command execution parameter.
      */
@@ -61,12 +62,8 @@ abstract public class BaseAddContextHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If something goes wrong
      */
-    abstract public void addContexts(CommandParameter param, List<String> contextNames, IProgressMonitor monitor) throws ExecutionException;
+    public abstract void addContexts(CommandParameter param, List<String> contextNames, IProgressMonitor monitor) throws ExecutionException;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 

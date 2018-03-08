@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -75,10 +75,7 @@ public class SelectTracesWizardPage extends WizardPage {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);
@@ -138,6 +135,7 @@ public class SelectTracesWizardPage extends WizardPage {
     public boolean performFinish() {
 
         IFolder experiment = fExperiment.getResource();
+        boolean changed = false;
 
         // Add the selected traces to the experiment
         Set<String> keys = fPreviousTraces.keySet();
@@ -148,6 +146,7 @@ public class SelectTracesWizardPage extends WizardPage {
                 fPreviousTraces.remove(name);
             } else {
                 fExperiment.addTrace(trace);
+                changed = true;
             }
         }
 
@@ -159,8 +158,12 @@ public class SelectTracesWizardPage extends WizardPage {
             } catch (CoreException e) {
                 Activator.getDefault().logError("Error selecting traces for experiment " + experiment.getName(), e); //$NON-NLS-1$
             }
+            changed = true;
         }
         fProject.refresh();
+        if (changed) {
+            fExperiment.closeEditors();
+        }
 
         return true;
     }

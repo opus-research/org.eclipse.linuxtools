@@ -82,10 +82,6 @@ public class TraceDomainComponent extends TraceControlComponent {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
-     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -136,6 +132,13 @@ public class TraceDomainComponent extends TraceControlComponent {
      */
     public TargetNodeComponent getTargetNode() {
         return ((TraceSessionComponent)getParent()).getTargetNode();
+    }
+
+    /**
+     * @return the buffer type
+     */
+    public String getBufferType(){
+        return fDomainInfo.getBufferType();
     }
 
     // ------------------------------------------------------------------------

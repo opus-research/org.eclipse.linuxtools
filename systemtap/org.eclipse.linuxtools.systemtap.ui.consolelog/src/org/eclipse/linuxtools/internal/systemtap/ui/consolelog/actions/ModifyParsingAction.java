@@ -15,18 +15,18 @@ import java.util.ArrayList;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.linuxtools.systemtap.structures.listeners.IGobblerListener;
+import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.ChartStreamDaemon;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
-import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.ChartStreamDaemon;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -65,7 +65,7 @@ public class ModifyParsingAction extends ConsoleAction {
 		IDataSet dataSet = wizard.getDataSet();
 
 		if(null != parser && null != dataSet) {
-			LoggedCommand cmd = console.getCommand();
+			Command cmd = console.getCommand();
 
 			ArrayList<IGobblerListener> listeners = cmd.getInputStreamListeners();
 			ChartStreamDaemon2 daemon = null;
@@ -83,8 +83,8 @@ public class ModifyParsingAction extends ConsoleAction {
 			} else
 				daemon.setParser(dataSet, parser);
 
-			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
-			GraphSelectorView graphSelector = ((GraphSelectorView)ivp);
+			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
+			GraphSelectorEditor graphSelector = ((GraphSelectorEditor)ivp);
 			String name = console.getName();
 			graphSelector.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
 		}

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -40,23 +40,23 @@ public class SDPrintDialog extends Dialog {
     /**
      * The sequence dialog widget reference.
      */
-    protected SDWidget fSdView;
+    private SDWidget fSdView;
     /**
      * Sequence dialog print dialog UI
      */
-    protected SDPrintDialogUI fDialogUI;
+    private SDPrintDialogUI fDialogUI;
     /**
      * Error message to display.
      */
-    protected String fErrorMessage = null;
+    private String fErrorMessage = null;
     /**
      * A message label.
      */
-    protected Label fMessageLabel = null;
+    private Label fMessageLabel = null;
     /**
      * Flag whether the page is complete or not
      */
-    protected boolean fIsPageComplete = true;
+    private boolean fIsPageComplete = true;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -78,13 +78,10 @@ public class SDPrintDialog extends Dialog {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     protected Control createDialogArea(Composite p) {
-        p.getShell().setText(SDMessages._114);
+        p.getShell().setText(Messages.SequenceDiagram_Print);
         Composite parent = (Composite) super.createDialogArea(p);
 
         fDialogUI.createDialogArea(parent);
@@ -98,10 +95,6 @@ public class SDPrintDialog extends Dialog {
         return parent;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
-     */
     @Override
     protected void okPressed() {
 
@@ -110,30 +103,18 @@ public class SDPrintDialog extends Dialog {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
 
         super.createButtonsForButtonBar(parent);
-        createButton(parent, IDialogConstants.CLIENT_ID, SDMessages._115, false);
+        createButton(parent, IDialogConstants.CLIENT_ID, Messages.SequenceDiagram_Printer, false);
 
         getButton(IDialogConstants.CLIENT_ID).addSelectionListener(new SelectionListener() {
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-             */
             @Override
             public void widgetSelected(SelectionEvent e) {
-
                 fDialogUI.printButtonSelected();
             }
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-             */
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
             }

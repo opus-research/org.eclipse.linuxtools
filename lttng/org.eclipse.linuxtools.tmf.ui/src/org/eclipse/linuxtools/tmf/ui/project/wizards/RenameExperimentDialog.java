@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
+ *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -43,18 +44,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.SelectionStatusDialog;
-import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Implementation of a dialog box to rename an experiment.
  * <p>
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -64,8 +61,8 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
     // Members
     // ------------------------------------------------------------------------
 
-	private final TmfExperimentElement fExperiment;
-	private Text fNewExperimentName;
+    private final TmfExperimentElement fExperiment;
+    private Text fNewExperimentName;
     private final IContainer fExperimentFolder;
     private final TmfProjectElement fProject;
 
@@ -75,8 +72,11 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
 
     /**
      * Constructor
-     * @param shell The parent shell
-     * @param experiment The experiment element rename
+     *
+     * @param shell
+     *            The parent shell
+     * @param experiment
+     *            The experiment element rename
      */
     public RenameExperimentDialog(Shell shell, TmfExperimentElement experiment) {
         super(shell);
@@ -91,10 +91,7 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -141,25 +138,25 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
         fNewExperimentName.addListener(SWT.Modify, new Listener() {
             @Override
             public void handleEvent(Event event) {
-            	validateNewExperimentName();
+                validateNewExperimentName();
             }
         });
     }
 
     private void validateNewExperimentName() {
 
-    	String name = fNewExperimentName.getText();
+        String name = fNewExperimentName.getText();
         IWorkspace workspace = fExperimentFolder.getWorkspace();
         IStatus nameStatus = workspace.validateName(name, IResource.FOLDER);
 
         if ("".equals(name)) { //$NON-NLS-1$
-        	updateStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, Messages.Dialog_EmptyNameError, null));
-        	return;
+            updateStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, Messages.Dialog_EmptyNameError, null));
+            return;
         }
 
         if (!nameStatus.isOK()) {
-        	updateStatus(nameStatus);
-        	return;
+            updateStatus(nameStatus);
+            return;
         }
 
         IPath path = new Path(name);
@@ -174,28 +171,17 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#computeResult()
-     */
+
     @Override
     protected void computeResult() {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#create()
-     */
     @Override
     public void create() {
         super.create();
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#okPressed()
-     */
     @Override
     protected void okPressed() {
         IFolder folder = renameExperiment(fNewExperimentName.getText());
@@ -212,10 +198,10 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
 
     private IFolder renameExperiment(final String newName) {
 
-    	IPath oldPath = fExperiment.getResource().getFullPath();
-    	final IPath newPath = oldPath.append("../" + newName); //$NON-NLS-1$
+        IPath oldPath = fExperiment.getResource().getFullPath();
+        final IPath newPath = oldPath.append("../" + newName); //$NON-NLS-1$
 
-    	WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
+        WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
             @Override
             public void execute(IProgressMonitor monitor) throws CoreException {
                 try {
@@ -224,18 +210,7 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
                         throw new OperationCanceledException();
                     }
                     // Close the experiment if open
-                    IFile file = fExperiment.getBookmarksFile();
-                    FileEditorInput input = new FileEditorInput(file);
-                    IWorkbench wb = PlatformUI.getWorkbench();
-                    for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
-                        for (IWorkbenchPage wbPage : wbWindow.getPages()) {
-                            for (IEditorReference editorReference : wbPage.getEditorReferences()) {
-                                if (editorReference.getEditorInput().equals(input)) {
-                                    wbPage.closeEditor(editorReference.getEditor(false), false);
-                                }
-                            }
-                        }
-                    }
+                    fExperiment.closeEditors();
 
                     IFolder folder = fExperiment.getResource();
                     IFile bookmarksFile = fExperiment.getBookmarksFile();
@@ -248,7 +223,7 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
                     }
 
                     fExperiment.renameSupplementaryFolder(newName);
-                	fExperiment.getResource().move(newPath, IResource.FORCE | IResource.SHALLOW, null);
+                    fExperiment.getResource().move(newPath, IResource.FORCE | IResource.SHALLOW, null);
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }

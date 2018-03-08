@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,26 +9,29 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Bernd Hufmann - Updated to use Tree with columns to be able to group traces
+ *   Alexandre Montplaisir - Display info for any ITmfTraceProperties trace
  *******************************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.environment;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import java.util.Map;
+
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IEditorPart;
 
 /**
- * Displays the CTF trace properties.
+ * Displays the trace's properties.
  *
  * @version 1.1
  * @author Matthew Khouzam
@@ -67,12 +70,9 @@ public class TmfEnvironmentView extends TmfView {
         nameCol.pack();
         valueCol.pack();
 
-        IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor instanceof ITmfTraceEditor) {
-            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
-            if (trace != null) {
-                traceSelected(new TmfTraceSelectedSignal(this, trace));
-            }
+        ITmfTrace trace = getActiveTrace();
+        if (trace != null) {
+            traceSelected(new TmfTraceSelectedSignal(this, trace));
         }
     }
 
@@ -82,23 +82,17 @@ public class TmfEnvironmentView extends TmfView {
             return;
         }
 
-        ITmfTrace[] traces;
-        if (fTrace instanceof TmfExperiment) {
-            TmfExperiment experiment = (TmfExperiment) fTrace;
-            traces = experiment.getTraces();
-        } else {
-            traces = new ITmfTrace[] { fTrace };
-        }
-
-        for (ITmfTrace trace : traces) {
-            if (trace instanceof CtfTmfTrace) {
+        for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
+            if (trace instanceof ITmfTraceProperties) {
                 TreeItem item = new TreeItem(fTree, SWT.NONE);
                 item.setText(0, trace.getName());
-                CtfTmfTrace ctfTrace = (CtfTmfTrace) trace;
-                for (String varName : ctfTrace.getEnvNames()) {
+
+                ITmfTraceProperties propTrace = (ITmfTraceProperties) trace;
+                Map <String, String> properties = propTrace.getTraceProperties();
+                for (Map.Entry<String, String> entry : properties.entrySet()) {
                     TreeItem subItem = new TreeItem(item, SWT.NONE);
-                    subItem.setText(0, varName);
-                    subItem.setText(1, ctfTrace.getEnvValue(varName));
+                    subItem.setText(0, entry.getKey()); // Variable name
+                    subItem.setText(1, entry.getValue()); // Variable value
                 }
             }
         }
@@ -113,13 +107,23 @@ public class TmfEnvironmentView extends TmfView {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         fTree.setFocus();
     }
+
+    /**
+     * Handler for the trace opened signal.
+     * @param signal
+     *            The incoming signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceOpened(TmfTraceOpenedSignal signal) {
+        fTrace = signal.getTrace();
+        updateTable();
+    }
+
 
     /**
      * Handler for the trace selected signal.

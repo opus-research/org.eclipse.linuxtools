@@ -27,9 +27,12 @@ import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.Provider
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
+import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
@@ -117,7 +120,7 @@ public class PreferencesTest extends AbstractTest{
 		shell.activate();
 
 		// Go to "Profiling Categories" preferences page.
-		SWTBotTreeItem treeItem = bot.tree().expandNode("C/C++").expandNode("Profiling Categories"); //$NON-NLS-1$ //$NON-NLS-2$
+		SWTBotTreeItem treeItem = bot.tree().expandNode("C/C++").expandNode("Profiling").expandNode("Categories"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		assertNotNull(treeItem);
 
 		// Select "Timing" category page.
@@ -160,7 +163,8 @@ public class PreferencesTest extends AbstractTest{
 		String subMenuItem = "3 Profile Timing"; //$NON-NLS-1$
 
 		// Click on "Profiling Tools -> 3 Profiling Timing" context menu to execute shortcut.
-		ContextMenuHelper.clickContextMenu(treeBot, menuItem, subMenuItem);
+		MenuItem menu = ContextMenuHelper.contextMenu(treeBot, menuItem, subMenuItem);
+		click(menu);
 
 		// Assert that the expected tool is running.
 		SWTBotShell profileShell = bot.shell("Successful profile launch").activate(); //$NON-NLS-1$
@@ -182,7 +186,7 @@ public class PreferencesTest extends AbstractTest{
 		shell.activate();
 
 		// Go to specified tree item in "Profiling Categories" preferences page.
-		SWTBotTreeItem treeItem = bot.tree().expandNode("C/C++").expandNode("Profiling Categories"); //$NON-NLS-1$ //$NON-NLS-2$
+		SWTBotTreeItem treeItem = bot.tree().expandNode("C/C++").expandNode("Profiling").expandNode("Categories"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		assertNotNull(treeItem);
 
 		treeItem.select(preferenceCategory);
@@ -234,6 +238,26 @@ public class PreferencesTest extends AbstractTest{
 
 				Button b = (Button) bot.widget(matcher); // the current selection
 				b.setSelection(false);
+			}
+		});
+	}
+
+	/**
+	 * Click specfied menu item.
+	 * 
+	 * @param menuItem
+	 *            menu item to click
+	 */
+	public static void click(final MenuItem menuItem) {
+		final Event event = new Event();
+		event.time = (int) System.currentTimeMillis();
+		event.widget = menuItem;
+		event.display = menuItem.getDisplay();
+		event.type = SWT.Selection;
+
+		UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
+			public void run() {
+				menuItem.notifyListeners(SWT.Selection, event);
 			}
 		});
 	}

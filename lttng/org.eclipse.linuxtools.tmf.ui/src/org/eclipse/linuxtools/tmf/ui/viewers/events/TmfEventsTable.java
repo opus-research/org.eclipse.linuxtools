@@ -46,6 +46,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -130,7 +131,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.ide.IDE;
@@ -228,6 +228,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private boolean fPackDone = false;
     private HeaderState fHeaderState = HeaderState.SEARCH;
     private long fSelectedRank = 0;
+    private ITmfTimestamp fSelectedBeginTimestamp = null;
+    private IStatusLineManager fStatusLineManager = null;
 
     // Filter data
     private long fFilterMatchCount;
@@ -314,7 +316,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fSashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         // Create a virtual table
-        final int style = SWT.H_SCROLL | SWT.V_SCROLL | SWT.SINGLE | SWT.FULL_SELECTION;
+        final int style = SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.FULL_SELECTION;
         fTable = new TmfVirtualTable(fSashForm, style);
 
         // Set the table layout
@@ -347,21 +349,44 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                final TableItem[] selection = fTable.getSelection();
-                if (selection.length > 0) {
-                    final TableItem selectedTableItem = selection[0];
-                    if (selectedTableItem != null) {
-                        if (selectedTableItem.getData(Key.RANK) instanceof Long) {
-                            fSelectedRank = (Long) selectedTableItem.getData(Key.RANK);
-                            fRawViewer.selectAndReveal((Long) selectedTableItem.getData(Key.RANK));
+                if (e.item == null) {
+                    return;
+                }
+                updateStatusLine(null);
+                if (fTable.getSelectionIndices().length > 0) {
+                    if (e.item.getData(Key.RANK) instanceof Long) {
+                        fSelectedRank = (Long) e.item.getData(Key.RANK);
+                        fRawViewer.selectAndReveal((Long) e.item.getData(Key.RANK));
+                    }
+                    if (e.item.getData(Key.TIMESTAMP) instanceof ITmfTimestamp) {
+                        final ITmfTimestamp ts = (ITmfTimestamp) e.item.getData(Key.TIMESTAMP);
+                        if (fTable.getSelectionIndices().length == 1) {
+                            fSelectedBeginTimestamp = ts;
                         }
-                        if (selectedTableItem.getData(Key.TIMESTAMP) instanceof TmfTimestamp) {
-                            final TmfTimestamp ts = (TmfTimestamp) selectedTableItem.getData(Key.TIMESTAMP);
-                            broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts));
+                        if (fSelectedBeginTimestamp != null) {
+                            if (fSelectedBeginTimestamp.compareTo(ts) <= 0) {
+                                broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, fSelectedBeginTimestamp, ts));
+                                if (fTable.getSelectionIndices().length == 2) {
+                                    updateStatusLine(ts.getDelta(fSelectedBeginTimestamp));
+                                }
+                            } else {
+                                broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts, fSelectedBeginTimestamp));
+                                if (fStatusLineManager != null) {
+                                    updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
+                                }
+                            }
+                        }
+                    } else {
+                        if (fTable.getSelectionIndices().length == 1) {
+                            fSelectedBeginTimestamp = null;
                         }
                     }
                 }
-                fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, getSelection()));
+                if (e.item.getData() != null) {
+                    fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, new StructuredSelection(e.item.getData())));
+                } else {
+                    fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, StructuredSelection.EMPTY));
+                }
             }
         });
 
@@ -520,6 +545,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     }
                     fTable.setSelection(index + 1); // +1 for header row
                     fSelectedRank = rank;
+                    updateStatusLine(null);
                 } else if (e.data instanceof ITmfLocation) {
                     // DOES NOT WORK: rank undefined in context from seekLocation()
                     // ITmfLocation<?> location = (ITmfLocation<?>) e.data;
@@ -585,7 +611,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             }
         };
 
-        final IAction openCallsiteAction = new Action(Messages.TmfEventsTable_OpenCallsiteActionText) {
+        final IAction openCallsiteAction = new Action(Messages.TmfEventsTable_OpenSourceCodeActionText) {
             @Override
             public void run() {
                 final TableItem items[] = fTable.getSelection();
@@ -626,8 +652,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                                 }
                             });
                             dialog.setInput(files);
-                            dialog.setTitle(Messages.TmfEventsTable_OpenCallsiteSelectFileDialogTitle);
-                            dialog.setMessage(Messages.TmfEventsTable_OpenCallsiteSelectFileDialogTitle + '\n' + cs.toString());
+                            dialog.setTitle(Messages.TmfEventsTable_OpenSourceCodeSelectFileDialogTitle);
+                            dialog.setMessage(Messages.TmfEventsTable_OpenSourceCodeSelectFileDialogTitle + '\n' + cs.toString());
                             dialog.open();
                             Object[] result = dialog.getResult();
                             if (result != null && result.length > 0) {
@@ -642,14 +668,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), marker);
                             marker.delete();
                         } else if (files.size() == 0){
-                            displayException(new FileNotFoundException('\'' + cs.toString() + '\'' + '\n' + Messages.TmfEventsTable_OpenCallsiteNotFound));
+                            displayException(new FileNotFoundException('\'' + cs.toString() + '\'' + '\n' + Messages.TmfEventsTable_OpenSourceCodeNotFound));
                         }
-                    } catch (PartInitException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
                     } catch (CoreException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        displayException(e);
                     }
                 }
             }
@@ -1088,6 +1110,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         } else if (fHeaderState == HeaderState.FILTER) {
                             fHeaderState = HeaderState.SEARCH;
                         }
+                        fTable.setSelection(0);
                         fTable.refresh();
                         return;
                     }
@@ -1366,6 +1389,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             fTable.setSelection(0);
         }
         fireFilterApplied(null);
+        updateStatusLine(null);
     }
 
     /**
@@ -1717,6 +1741,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     synchronized (fSearchSyncObj) {
                         fSearchThread = null;
                     }
+                    updateStatusLine(null);
                 }
             });
             return Status.OK_STATUS;
@@ -1787,11 +1812,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             final String reference = event.getReference();
             final String content = event.getContent().toString();
             fields = new TmfEventField[] {
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content)
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content, null)
             };
         }
         return fields;
@@ -1844,6 +1869,30 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 fRawViewer.setTrace(fTrace);
             }
         });
+    }
+
+    /**
+     * Assign the status line manager
+     *
+     * @param statusLineManager
+     *            The status line manager, or null to disable status line messages
+     * @since 2.1
+     */
+    public void setStatusLineManager(IStatusLineManager statusLineManager) {
+        if (fStatusLineManager != null && statusLineManager == null) {
+            fStatusLineManager.setMessage(""); //$NON-NLS-1$
+        }
+        fStatusLineManager = statusLineManager;
+    }
+
+    private void updateStatusLine(ITmfTimestamp delta) {
+        if (fStatusLineManager != null) {
+            if (delta != null) {
+                fStatusLineManager.setMessage("\u0394: " + delta); //$NON-NLS-1$
+            } else {
+                fStatusLineManager.setMessage(null);
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -1901,9 +1950,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // ISelectionProvider
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
     /**
      * @since 2.0
      */
@@ -1912,9 +1958,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         selectionChangedListeners.add(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
-     */
     /**
      * @since 2.0
      */
@@ -1932,9 +1975,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         return new StructuredSelection(list);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
     /**
      * @since 2.0
      */
@@ -1943,9 +1983,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         selectionChangedListeners.remove(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
-     */
     /**
      * @since 2.0
      */
@@ -2102,6 +2139,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             }
             fSelectedRank = rank;
             fTable.setSelection(index + 1); // +1 for header row
+            updateStatusLine(null);
         }
     }
 
@@ -2109,11 +2147,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // Listeners
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.ui.views.colors.IColorSettingsListener#colorSettingsChanged(org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting[])
-     */
     @Override
     public void colorSettingsChanged(final ColorSetting[] colorSettings) {
         fTable.refresh();
@@ -2144,6 +2177,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         if ((fPendingGotoRank != -1) && ((fPendingGotoRank + 1) < fTable.getItemCount())) { // +1 for header row
                             fTable.setSelection((int) fPendingGotoRank + 1); // +1 for header row
                             fPendingGotoRank = -1;
+                            updateStatusLine(null);
                         }
                     } else {
                         startFilterThread();
@@ -2171,7 +2205,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             // the method fTrace.getRank() from interfering and delaying ongoing requests.
             final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
 
-                TmfTimestamp ts = new TmfTimestamp(signal.getCurrentTime());
+                TmfTimestamp ts = new TmfTimestamp(signal.getBeginTime());
 
                 @Override
                 public void handleData(final ITmfEvent event) {
@@ -2217,6 +2251,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             }
                             fTable.setSelection(index + 1); // +1 for header row
                             fRawViewer.selectAndReveal(rank);
+                            updateStatusLine(null);
                         }
                     });
                 }

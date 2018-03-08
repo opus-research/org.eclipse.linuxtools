@@ -31,11 +31,11 @@ public class ColorImpl implements IColor {
     /**
      * The color object.
      */
-    protected Color fColor = null;
+    private final Color fColor;
     /**
      * Flag to indicate that this object is managing the resource.
      */
-    protected boolean fManageColor = true;
+    private boolean fManageColor = true;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -77,19 +77,11 @@ public class ColorImpl implements IColor {
         return new ColorImpl(Display.getDefault().getSystemColor(color));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor#getColor()
-     */
     @Override
     public Object getColor() {
         return fColor;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor#dispose()
-     */
     @Override
     public void dispose() {
         if ((fColor != null) && (fManageColor)) {

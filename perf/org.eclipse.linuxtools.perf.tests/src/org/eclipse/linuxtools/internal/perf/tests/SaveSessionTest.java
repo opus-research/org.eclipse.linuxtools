@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -21,10 +27,10 @@ import org.eclipse.linuxtools.internal.perf.StatData;
 import org.eclipse.linuxtools.internal.perf.handlers.AbstractSaveDataHandler;
 import org.eclipse.linuxtools.internal.perf.handlers.PerfSaveSessionHandler;
 import org.eclipse.linuxtools.internal.perf.handlers.PerfSaveStatsHandler;
+import org.junit.After;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class SaveSessionTest extends TestCase {
+public class SaveSessionTest {
 	private static final String WORKING_DIR = "resources/"; //$NON-NLS-1$
 	private static final String DATA_FILE_PATH = "/mock/data/path"; //$NON-NLS-1$
 	private static final String PERF_DATA_FILE_PATH = "resources/perf.data"; //$NON-NLS-1$
@@ -33,13 +39,16 @@ public class SaveSessionTest extends TestCase {
 	private static final String DATA_FILE_EXT = "ext"; //$NON-NLS-1$
 	private ArrayList<File> testFiles = new ArrayList<File>();
 
-	@Override
-	protected void tearDown(){
+	@After
+	public void tearDown(){
 		for (File file : testFiles) {
-			file.delete();
+			if(!file.delete()){
+				fail();
+			}
 		}
 	}
 
+	@Test
 	public void testGenericHandler() {
 		GenericSaveDataHandler handler = new GenericSaveDataHandler();
 		assertTrue(handler.canSave(new File(DATA_FILE_PATH)));
@@ -52,7 +61,7 @@ public class SaveSessionTest extends TestCase {
 		assertTrue(handler.isEnabled());
 		assertTrue(handler.isHandled());
 	}
-
+	@Test
 	public void testPerfSaveSessionHandler() {
 		PerfSaveSessionTestHandler handler = new PerfSaveSessionTestHandler();
 
@@ -70,7 +79,7 @@ public class SaveSessionTest extends TestCase {
 	}
 
 	// mock handlers
-
+	@Test
 	public void testPerfSaveStatsHandler() {
 		PerfSaveStatsTestHandler handler = new PerfSaveStatsTestHandler();
 
@@ -78,7 +87,7 @@ public class SaveSessionTest extends TestCase {
 		assertFalse(handler.verifyData());
 
 		PerfPlugin.getDefault().setStatData(
-				new StatData("title", "prog", new String[] {}, 1, null) { //$NON-NLS-1$ //$NON-NLS-2$
+				new StatData("title", null, "prog", new String[] {}, 1, null) { //$NON-NLS-1$ //$NON-NLS-2$
 					@Override
 					public String getPerfData() {
 						return PERF_STATS_FILE_PATH;

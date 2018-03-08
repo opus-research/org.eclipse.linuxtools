@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
  * The Attribute Tree is the /proc-like filesystem used to organize attributes.
@@ -28,10 +31,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
  * @author alexmont
  *
  */
-public class AttributeTree {
+public final class AttributeTree {
 
     /* "Magic number" for attribute tree files or file sections */
-    private final static int ATTRIB_TREE_MAGIC_NUMBER = 0x06EC3671;
+    private static final int ATTRIB_TREE_MAGIC_NUMBER = 0x06EC3671;
 
     private final StateSystem ss;
     private final List<Attribute> attributeList;
@@ -284,7 +287,26 @@ public class AttributeTree {
                 }
                 prevNode = nextNode;
             }
-            return attributeList.size() - 1;
+            /*
+             * Insert an initial null value for this attribute in the state
+             * system (in case the state provider doesn't set one).
+             */
+            final int newAttrib = attributeList.size() - 1;
+            try {
+                ss.modifyAttribute(ss.getStartTime(), TmfStateValue.nullValue(), newAttrib);
+            } catch (TimeRangeException e) {
+                /* Should not happen, we're inserting at ss's start time */
+                throw new IllegalStateException(e);
+            } catch (AttributeNotFoundException e) {
+                /* Should not happen, we just created this attribute! */
+                throw new IllegalStateException(e);
+            } catch (StateValueTypeException e) {
+                /* Should not happen, there is no existing state value, and the
+                 * one we insert is a null value anyway. */
+                throw new IllegalStateException(e);
+            }
+
+            return newAttrib;
         }
         /*
          * The attribute was already existing, return the quark of that
@@ -294,7 +316,7 @@ public class AttributeTree {
     }
 
     int getSubAttributesCount(int quark) {
-        return attributeList.get(quark).getSubAttributesList().size();
+        return attributeList.get(quark).getSubAttributes().size();
     }
 
     /**
@@ -330,7 +352,7 @@ public class AttributeTree {
 
     private void addSubAttributes(List<Integer> list, Attribute curAttribute,
             boolean recursive) {
-        for (Attribute childNode : curAttribute.getSubAttributesList()) {
+        for (Attribute childNode : curAttribute.getSubAttributes()) {
             list.add(childNode.getQuark());
             if (recursive) {
                 addSubAttributes(list, childNode, true);

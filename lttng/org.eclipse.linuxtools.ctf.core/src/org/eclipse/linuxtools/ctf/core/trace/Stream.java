@@ -14,10 +14,12 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
 /**
@@ -53,7 +55,7 @@ public class Stream {
     /**
      * Maps event ids to events
      */
-    private HashMap<Long, IEventDeclaration> events = new HashMap<Long, IEventDeclaration>();
+    private Map<Long, IEventDeclaration> events = new HashMap<Long, IEventDeclaration>();
 
     /**
      * The inputs associated to this stream
@@ -196,7 +198,7 @@ public class Stream {
      *
      * @return all the event declarations for this stream, using the id as a key for the hashmap.
      */
-    public HashMap<Long, IEventDeclaration> getEvents() {
+    public Map<Long, IEventDeclaration> getEvents() {
         return events;
     }
 
@@ -242,9 +244,12 @@ public class Stream {
         if (events.get(event.getId()) != null) {
             throw new ParseException("Event id already exists"); //$NON-NLS-1$
         }
-
-        /* Put the event in the map */
-        events.put(event.getId(), event);
+        if (event.getId() == null) {
+            events.put(EventDeclaration.UNSET_EVENT_ID, event);
+        } else {
+            /* Put the event in the map */
+            events.put(event.getId(), event);
+        }
     }
 
     /**
@@ -257,10 +262,6 @@ public class Stream {
         inputs.add(input);
     }
 
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return "Stream [id=" + id + ", packetContextDecl=" + packetContextDecl //$NON-NLS-1$ //$NON-NLS-2$

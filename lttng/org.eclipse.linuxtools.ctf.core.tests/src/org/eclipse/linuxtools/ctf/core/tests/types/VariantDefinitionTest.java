@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -35,7 +36,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,50 +46,36 @@ import org.junit.Test;
  * @author ematkho
  * @version $Revision: 1.0 $
  */
-@SuppressWarnings("javadoc")
 public class VariantDefinitionTest {
 
     private VariantDefinition fixture;
 
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(VariantDefinitionTest.class);
-    }
     StructDefinition structDefinition;
-    private static final String TEST_STRUCT_ID = "testStruct"; //$NON-NLS-1$
+    private static final String TEST_STRUCT_ID = "testStruct";
 
-    private static final String ENUM_7 = "g"; //$NON-NLS-1$
-    private static final String ENUM_6 = "f"; //$NON-NLS-1$
-    private static final String ENUM_5 = "e"; //$NON-NLS-1$
-    private static final String ENUM_4 = "d"; //$NON-NLS-1$
-    private static final String ENUM_3 = "c"; //$NON-NLS-1$
-    private static final String ENUM_2 = "b"; //$NON-NLS-1$
-    private static final String ENUM_1 = "a"; //$NON-NLS-1$
+    private static final String ENUM_7 = "g";
+    private static final String ENUM_6 = "f";
+    private static final String ENUM_5 = "e";
+    private static final String ENUM_4 = "d";
+    private static final String ENUM_3 = "c";
+    private static final String ENUM_2 = "b";
+    private static final String ENUM_1 = "a";
 
-    private static final String TAG_ID = "a"; //$NON-NLS-1$
+    private static final String TAG_ID = "a";
 
-//    private static final String INT_ID = "_id"; //$NON-NLS-1$
-//
-//    private static final String STRING_ID = "_args"; //$NON-NLS-1$
-//
-//    private static final String ENUM_ID = "_enumArgs"; //$NON-NLS-1$
-//
-//    private static final String SEQUENCE_ID = "_seq"; //$NON-NLS-1$
+//    private static final String INT_ID = "_id";
+//    private static final String STRING_ID = "_args";
+//    private static final String ENUM_ID = "_enumArgs";
+//    private static final String SEQUENCE_ID = "_seq";
 
-    private static final String LENGTH_SEQ = "_len"; //$NON-NLS-1$
-    private static final String VAR_FIELD_NAME = "var"; //$NON-NLS-1$
+    private static final String LENGTH_SEQ = "_len";
+    private static final String VAR_FIELD_NAME = "var";
     private static final String ENUM_8 = null;
+
     /**
      * Perform pre-test initialization.
      *
      * Not sure it needs to be that complicated, oh well...
-     *
-     * @throws CTFReaderException
      */
     @Before
     public void setUp() {
@@ -132,29 +118,19 @@ public class VariantDefinitionTest {
     }
 
     /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
-    /**
      * Run the VariantDefinition(VariantDeclaration,DefinitionScope,String)
-     *
-     * @throws CTFReaderException
      */
     @Test
     public void testVariantDefinition() {
         VariantDeclaration declaration = new VariantDeclaration();
-        declaration.setTag(""); //$NON-NLS-1$
+        declaration.setTag("");
         VariantDeclaration variantDeclaration = new VariantDeclaration();
-        variantDeclaration.setTag(""); //$NON-NLS-1$
+        variantDeclaration.setTag("");
         VariantDefinition variantDefinition = new VariantDefinition(
-                variantDeclaration, structDefinition, ""); //$NON-NLS-1$
+                variantDeclaration, structDefinition, "");
         IDefinitionScope definitionScope = new StructDefinition(
-                new StructDeclaration(1L), variantDefinition, ""); //$NON-NLS-1$
-        String fieldName = ""; //$NON-NLS-1$
+                new StructDeclaration(1L), variantDefinition, "");
+        String fieldName = "";
 
         VariantDefinition result = new VariantDefinition(declaration,
                 definitionScope, fieldName);
@@ -197,7 +173,7 @@ public class VariantDefinitionTest {
      */
     @Test
     public void testGetDefinitions() {
-        HashMap<String, Definition> result = fixture.getDefinitions();
+        Map<String, Definition> result = fixture.getDefinitions();
         assertNotNull(result);
     }
 
@@ -319,8 +295,6 @@ public class VariantDefinitionTest {
 
     /**
      * Run the void setTagDefinition(EnumDefinition) method test.
-     *
-     * @throws CTFReaderException
      */
     @Test
     public void testSetTagDefinition(){
@@ -328,14 +302,14 @@ public class VariantDefinitionTest {
         VariantDefinition vDef;
         StructDefinition structDef;
         EnumDefinition tagDefinition;
-        String fName = ""; //$NON-NLS-1$
+        String fName = "";
 
         vDecl = new VariantDeclaration();
         vDecl.setTag(fName);
         vDef = new VariantDefinition(vDecl, structDefinition, fName);
         structDef = new StructDefinition(new StructDeclaration(1L), vDef, fName);
         tagDefinition = new EnumDefinition(new EnumDeclaration(
-                new IntegerDeclaration(1, true, 1, ByteOrder.BIG_ENDIAN,
+                new IntegerDeclaration(1, false, 1, ByteOrder.BIG_ENDIAN,
                         Encoding.ASCII, fName, 8)), structDef, fName);
 
         fixture.setTagDefinition(tagDefinition);
@@ -347,10 +321,10 @@ public class VariantDefinitionTest {
     @Test
     public void testToString() {
         String result = fixture.toString();
-        assertEquals("{ null = null }", result); //$NON-NLS-1$
+        assertEquals("{ null = null }", result);
 
         fixture.setCurrentField(ENUM_2);
         result = fixture.toString();
-        assertEquals("{ b = 0 }", result); //$NON-NLS-1$
+        assertEquals("{ b = 0 }", result);
     }
 }

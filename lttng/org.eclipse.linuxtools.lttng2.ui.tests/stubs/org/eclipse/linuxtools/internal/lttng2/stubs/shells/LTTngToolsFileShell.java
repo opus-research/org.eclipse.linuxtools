@@ -40,8 +40,6 @@ public class LTTngToolsFileShell extends TestCommandShell {
     private final static String INPUT_KEY = "<COMMAND_INPUT>";
     private final static String INPUT_END_KEY = "</COMMAND_INPUT>";
     private final static String RESULT_KEY = "<COMMAND_RESULT>";
-    @SuppressWarnings("unused")
-    private final static String RESULT_END_KEY = "</COMMAND_RESULT>";
     private final static String OUTPUT_KEY = "<COMMAND_OUTPUT>";
     private final static String OUTPUT_END_KEY = "</COMMAND_OUTPUT>";
     private final static String COMMENT_KEY = "#.*";
@@ -226,10 +224,6 @@ public class LTTngToolsFileShell extends TestCommandShell {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.lttng.stubs.service.shells.TestCommandShell#executeCommand(java.lang.String, org.eclipse.core.runtime.IProgressMonitor, boolean)
-     */
     @Override
    public synchronized ICommandResult executeCommand(String command, IProgressMonitor monitor, boolean checkReturnValue) throws ExecutionException {
         Map<String, ICommandResult> commands = fScenarioMap.get(fScenario);
@@ -264,6 +258,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
     // ------------------------------------------------------------------------
     // Helper methods
     // ------------------------------------------------------------------------
+
     private static boolean isComment(String line) {
         if (line == null) {
             throw new RuntimeException("line is null");

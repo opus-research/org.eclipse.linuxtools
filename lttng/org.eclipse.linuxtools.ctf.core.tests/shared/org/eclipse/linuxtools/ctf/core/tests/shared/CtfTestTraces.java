@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
  *
  * @author alexmont
  */
-@SuppressWarnings("nls")
 public abstract class CtfTestTraces {
 
     /*
@@ -30,7 +29,8 @@ public abstract class CtfTestTraces {
      */
     private static final String[] testTracePaths = {
         "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel",
-        "../org.eclipse.linuxtools.ctf.core.tests/traces/trace2"
+        "../org.eclipse.linuxtools.ctf.core.tests/traces/trace2",
+        "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"
     };
 
     private static CTFTrace[] testTraces = new CTFTrace[testTracePaths.length];

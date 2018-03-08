@@ -56,18 +56,6 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
     // Attributes
     // ------------------------------------------------------------------------
     /**
-     * The dialog composite.
-     */
-    private Composite fDialogComposite = null;
-    /**
-     * The Group for the session combo box.
-     */
-    private Group fSessionsGroup = null;
-    /**
-     * The Group for the channel combo box.
-     */
-    private Group fChannelsGroup = null;
-    /**
      * The session combo box.
      */
     private CCombo fSessionsCombo = null;
@@ -119,45 +107,27 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableEventsDialog#getSession()
-     */
+
     @Override
     public TraceSessionComponent getSession() {
         return fSessions[fSessionIndex];
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableEventsDialog#getChannel()
-     */
     @Override
     public TraceChannelComponent getChannel() {
         return fChannel;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IGetEventInfoDialog#setIsKernel(boolean)
-     */
     @Override
     public void setIsKernel(boolean isKernel) {
         fIsKernel = isKernel;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IGetEventInfoDialog#setSessions(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent[])
-     */
     @Override
     public void setSessions(TraceSessionComponent[] sessions) {
         fSessions = Arrays.copyOf(sessions, sessions.length);
     }
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IGetEventInfoDialog#getFilterExpression()
-     */
+
     @Override
     public String getFilterExpression() {
        return fFilterExpression;
@@ -166,10 +136,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
-     */
+
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -177,27 +144,23 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
         newShell.setImage(Activator.getDefault().loadIcon(TARGET_NEW_CONNECTION_ICON_FILE));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(Composite parent) {
 
         // Main dialog panel
-        fDialogComposite = new Composite(parent, SWT.NONE);
+        Composite dialogComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        fDialogComposite.setLayout(layout);
-        fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        dialogComposite.setLayout(layout);
+        dialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        fSessionsGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        fSessionsGroup.setText(Messages.TraceControl_EnableEventsSessionGroupName);
+        Group sessionsGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
+        sessionsGroup.setText(Messages.TraceControl_EnableEventsSessionGroupName);
         layout = new GridLayout(1, true);
-        fSessionsGroup.setLayout(layout);
+        sessionsGroup.setLayout(layout);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        fSessionsGroup.setLayoutData(data);
+        sessionsGroup.setLayoutData(data);
 
-        fSessionsCombo = new CCombo(fSessionsGroup, SWT.READ_ONLY);
+        fSessionsCombo = new CCombo(sessionsGroup, SWT.READ_ONLY);
         fSessionsCombo.setToolTipText(Messages.TraceControl_EnableEventsSessionsTooltip);
         fSessionsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -209,14 +172,14 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
         fSessionsCombo.setItems(items);
         fSessionsCombo.setEnabled(fSessions.length > 0);
 
-        fChannelsGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        fChannelsGroup.setText(Messages.TraceControl_EnableEventsChannelGroupName);
+        Group channelsGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
+        channelsGroup.setText(Messages.TraceControl_EnableEventsChannelGroupName);
         layout = new GridLayout(1, true);
-        fChannelsGroup.setLayout(layout);
+        channelsGroup.setLayout(layout);
         data = new GridData(GridData.FILL_HORIZONTAL);
-        fChannelsGroup.setLayoutData(data);
+        channelsGroup.setLayoutData(data);
 
-        fChannelsCombo = new CCombo(fChannelsGroup, SWT.READ_ONLY);
+        fChannelsCombo = new CCombo(channelsGroup, SWT.READ_ONLY);
         fChannelsCombo.setToolTipText(Messages.TraceControl_EnableEventsChannelsTooltip);
         fChannelsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fChannelsCombo.setEnabled(false);
@@ -261,7 +224,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
 
         // take first session to test whether events filtering is supported or not
         if (fSessions[0].isEventFilteringSupported() && !fIsKernel) {
-            Group filterMainGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+            Group filterMainGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
             filterMainGroup.setText(Messages.TraceControl_EnableEventsFilterGroupName);
             layout = new GridLayout(2, false);
             filterMainGroup.setLayout(layout);
@@ -276,23 +239,15 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
 
         getShell().setMinimumSize(new Point(300, 200));
 
-        return fDialogComposite;
+        return dialogComposite;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
         createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
-     */
     @Override
     protected void okPressed() {
 

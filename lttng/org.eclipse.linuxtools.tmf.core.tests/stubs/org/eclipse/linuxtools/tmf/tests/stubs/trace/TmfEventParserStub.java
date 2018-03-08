@@ -76,6 +76,10 @@ public class TmfEventParserStub implements ITmfEventParser {
 
         // Highly inefficient...
         final RandomAccessFile stream = ((TmfTraceStub) fEventStream).getStream();
+        if (stream == null) {
+            return null;
+        }
+
         //       	String name = eventStream.getName();
         //       	name = name.substring(name.lastIndexOf('/') + 1);
 
@@ -106,7 +110,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 }
                 content.append("]");
 
-                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString());
+                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
                 final ITmfEvent event = new TmfEvent(fEventStream,
                         new TmfTimestamp(ts, -3, 0),     // millisecs
                         source, fTypes[typeIndex], root, reference.toString());

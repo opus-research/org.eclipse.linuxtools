@@ -20,11 +20,9 @@ import java.nio.ByteOrder;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
-import org.junit.After;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.junit.Before;
 import org.junit.Test;
-
-
 
 /**
  * The class <code>IntegerDefinitionTest</code> contains tests for the class
@@ -35,39 +33,20 @@ import org.junit.Test;
  */
 @SuppressWarnings("javadoc")
 public class FloatDefinitionTest {
+
     private FloatDefinition fixture;
     private FloatDefinition singleFixture;
     private FloatDefinition doubleFixture; //all the way.
     private FloatDeclaration parent;
-    private static final String fieldName = "float"; //$NON-NLS-1$
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(IntegerDefinitionTest.class);
-    }
+    private static final String fieldName = "float";
 
     /**
-     * Perform pre-test initialization. We know the structDef won't be null (or
-     * else the tests will fail), so we can safely suppress the warning.
-     *
-     * @throws CTFReaderException
+     * Perform pre-test initialization.
      */
     @Before
     public void setUp(){
         testFloat248();
         testFloat5311();
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     @Test
@@ -88,27 +67,25 @@ public class FloatDefinitionTest {
 
     @Test
     public void testFloat32Bit(){
-        for(int i = 1; i < 31 ; i++)
-        {
+        for(int i = 1; i < 31 ; i++) {
             parent = new FloatDeclaration(i, 32-i, ByteOrder.nativeOrder(), 0);
             fixture = parent.createDefinition(null, fieldName);
             assertNotNull(fixture);
             fixture.setValue(2.0);
-            assertTrue(fixture.toString().contains("2")); //$NON-NLS-1$
+            assertTrue(fixture.toString().contains("2"));
         }
     }
 
     @Test
     public void testFloat64Bit(){
-        for(int i = 1; i < 63 ; i++)
-        {
+        for(int i = 1; i < 63 ; i++) {
             parent = new FloatDeclaration(i, 64-i, ByteOrder.nativeOrder(), 0);
             fixture = parent.createDefinition(null, fieldName);
             assertNotNull(fixture);
             BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
             fixture.read(input);
             fixture.setValue(2.0);
-            assertTrue(fixture.toString().contains("2")); //$NON-NLS-1$
+            assertTrue(fixture.toString().contains("2"));
         }
     }
 
@@ -122,6 +99,7 @@ public class FloatDefinitionTest {
 
         assertEquals(Double.NaN ,fixture.getValue(),0.1);
     }
+
     /**
      * Run the IntegerDeclaration getDeclaration() method test.
      */
@@ -150,7 +128,6 @@ public class FloatDefinitionTest {
         singleFixture.setValue(2.0);
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
         singleFixture.read(input);
-
     }
 
     /**

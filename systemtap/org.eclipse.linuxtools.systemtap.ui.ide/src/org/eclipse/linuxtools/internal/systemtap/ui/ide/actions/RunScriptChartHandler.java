@@ -11,20 +11,17 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
-import org.eclipse.jface.wizard.WizardDialog;
+import java.util.LinkedList;
+
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPerspective;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
-import org.eclipse.linuxtools.systemtap.ui.ide.actions.Messages;
-import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
@@ -36,47 +33,33 @@ import org.eclipse.ui.WorkbenchException;
  */
 public class RunScriptChartHandler extends RunScriptHandler {
 
-	public RunScriptChartHandler() {
+	private IDataSet dataSet;
+	private IDataSetParser parser;
+	private LinkedList<GraphData> graphs;
+
+	public RunScriptChartHandler(IDataSetParser parser, IDataSet dataSet, LinkedList<GraphData> graphs) {
 		super();
+		this.parser = parser;
+		this.dataSet = dataSet;
+		this.graphs = graphs;
 	}
 
 	@Override
 	protected void scriptConsoleInitialized(ScriptConsole console){
-		getChartingOptions();
 		console.getCommand().addInputStreamListener(new ChartStreamDaemon2(console, dataSet, parser));
 		try {
-			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(GraphingPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-			IViewPart ivp = p.showView(GraphSelectorView.ID);
+			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			GraphSelectorEditor ivp = (GraphSelectorEditor)p.openEditor(new GraphSelectorEditorInput(), GraphSelectorEditor.ID);
+
 			String name = console.getName();
-			((GraphSelectorView)ivp).createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
+			ivp.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
+
+			for (GraphData graph : graphs) {
+				ivp.getActiveDisplaySet().addGraph(graph);
+			}
 		} catch(WorkbenchException we) {
 			ExceptionErrorDialog.openError(Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective, we);
 		}
 	}
-
-	/**
-	 * This method is used to prompt the user for the parsing expression to be used in generating
-	 * the <code>DataSet</code> from the scripts output.
-	 */
-	protected void getChartingOptions() {
-		DataSetWizard wizard = new DataSetWizard(GraphingConstants.DataSetMetaData, getFilePath());
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		wizard.init(workbench, null);
-		WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
-		dialog.create();
-		dialog.open();
-		parser = wizard.getParser();
-
-		dataSet = wizard.getDataSet();
-
-		if(null == parser || null == dataSet)
-		{
-			continueRun = false;
-		}
-		wizard.dispose();
-	}
-
-	private IDataSet dataSet = null;
-	private IDataSetParser parser = null;
 
 }

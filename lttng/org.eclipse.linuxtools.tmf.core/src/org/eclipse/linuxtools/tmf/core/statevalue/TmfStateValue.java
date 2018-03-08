@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -43,16 +43,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
      */
     protected abstract Object getValue();
 
-    /**
-     * Specify how to "serialize" this value when writing it to a file.
-     * Alternatively you can return "null" here if you do not need a byte-array
-     * indirection (the getValue will get written as-in instead of the offset in
-     * the file block)
-     *
-     * @return The state value in byte array form
-     */
-    public abstract byte[] toByteArray();
-
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -87,16 +77,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
         return this.getValue().hashCode();
     }
 
-    /**
-     * Return the max size that a variable-length state value can have when
-     * serialized.
-     *
-     * @return The maximum size in bytes
-     */
-    public static int getStateValueMaxSize() {
-        return Byte.MAX_VALUE;
-    }
-
     /*
      * Since all "null state values" are the same, we only need one copy in
      * memory.
@@ -108,7 +88,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *
      * @return A null value
      */
-    public final static TmfStateValue nullValue() {
+    public static final TmfStateValue nullValue() {
         return nullValue;
     }
 

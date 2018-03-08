@@ -15,12 +15,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpExec;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView;
-import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -39,7 +41,7 @@ import org.eclipse.ui.console.IOConsole;
  */
 public class ScriptConsole extends IOConsole {
 
-	private LoggedCommand cmd;
+	private Command cmd;
 	private Runnable stopCommand;
 	private String moduleName;
 
@@ -106,9 +108,9 @@ public class ScriptConsole extends IOConsole {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		ScriptConsole console;
 
-		for(int i=0; i<ic.length; i++) {
-			if (ic[i] instanceof ScriptConsole){
-				console = (ScriptConsole)ic[i];
+		for(IConsole con : ic) {
+			if (con instanceof ScriptConsole){
+				console = (ScriptConsole)con;
 				if(console.isRunning()){
 					return true;
 				}
@@ -125,9 +127,9 @@ public class ScriptConsole extends IOConsole {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		ScriptConsole console;
 
-		for(int i=0; i<ic.length; i++) {
-			if (ic[i] instanceof ScriptConsole){
-				console = (ScriptConsole)ic[i];
+		for(IConsole con : ic) {
+			if (con instanceof ScriptConsole){
+				console = (ScriptConsole)con;
 				if(console.isRunning()){
 					console.stop();
 				}
@@ -155,8 +157,9 @@ public class ScriptConsole extends IOConsole {
 	protected void createErrorDaemon(IErrorParser parser) {
 		ErrorView errorView = null;
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ErrorView.ID);
-		if(null != ivp && ivp instanceof ErrorView)
+		if(ivp instanceof ErrorView) {
 			errorView = ((ErrorView)ivp);
+		}
 		errorDaemon = new ErrorStreamDaemon(this, errorView, parser);
 	}
 
@@ -173,7 +176,11 @@ public class ScriptConsole extends IOConsole {
 			@Override
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
-				stop.start();
+				try {
+					stop.start();
+				} catch (CoreException e) {
+				  // Failed to start the 'stop' process. Ignore.
+				}
 			}
 		};
 	    this.run(cmd, errorParser);
@@ -188,28 +195,34 @@ public class ScriptConsole extends IOConsole {
 	 * @since 2.0
 	 */
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
-		cmd = new LoggedCommand(command, envVars);
+		cmd = new Command(command, envVars);
 		this.stopCommand = new Runnable() {
 			@Override
 			public void run() {
 				try {
 					RuntimeProcessFactory.getFactory().exec(getStopString(), null, null);
 				} catch (IOException e) {
-					e.printStackTrace();
+					ExceptionErrorDialog.openError(Localization.getString("ScriptConsole.ErrorKillingStap"), e); //$NON-NLS-1$
 				}
 			}
 		};
 		this.run(cmd, errorParser);
 	}
 
-	private void run(LoggedCommand cmd, IErrorParser errorParser){
+	private void run(Command cmd, IErrorParser errorParser){
 		createConsoleDaemon();
-		if (errorParser != null)
+		if (errorParser != null) {
 			createErrorDaemon(errorParser);
-	    if (errorDaemon != null)
+		}
+	    if (errorDaemon != null) {
 	    	cmd.addErrorStreamListener(errorDaemon);
+	    }
         cmd.addInputStreamListener(consoleDaemon);
-        cmd.start();
+        try {
+			cmd.start();
+		} catch (CoreException e) {
+			ExceptionErrorDialog.openError(e.getMessage(), e);
+		}
         activate();
         notifyConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
@@ -257,13 +270,16 @@ public class ScriptConsole extends IOConsole {
 	 * @param file The new file to save the output to.
 	 */
 	public void saveStream(File file) {
-		if (isRunning())
-			if (!cmd.saveLog(file))
+		if (isRunning()) {
+			if (!cmd.saveLog(file)) {
 				MessageDialog
 						.openWarning(
 								PlatformUI.getWorkbench()
 										.getActiveWorkbenchWindow().getShell(),
 								Localization.getString("ScriptConsole.Problem"), Localization.getString("ScriptConsole.ErrorSavingLog")); //$NON-NLS-1$//$NON-NLS-2$
+
+			}
+		}
 	}
 
 	/**
@@ -271,7 +287,7 @@ public class ScriptConsole extends IOConsole {
 	 * @return The <code>LoggedCommand</code> that is running in this console.
 	 * @since 2.0
 	 */
-	public LoggedCommand getCommand() {
+	public Command getCommand() {
 		return cmd;
 	}
 
@@ -292,11 +308,11 @@ public class ScriptConsole extends IOConsole {
 		if(this.moduleName == null){
 			moduleName = this.getName();
 			int lastSlash = moduleName.lastIndexOf('/')+1;
-			if (lastSlash < 0){
+			if (lastSlash < 0) {
 				lastSlash = 0;
 			}
 			int lastDot = moduleName.indexOf(".stp"); //$NON-NLS-1$
-			if (lastDot > 0){
+			if (lastDot > 0) {
 				moduleName = moduleName.substring(lastSlash, lastDot);
 			}
 		}
@@ -312,14 +328,17 @@ public class ScriptConsole extends IOConsole {
 	@Override
 	public void dispose() {
 		if(!isDisposed()) {
-			if(null != cmd)
+			if(null != cmd) {
 				cmd.dispose();
+			}
 			cmd = null;
-			if(null != errorDaemon)
+			if(null != errorDaemon) {
 				errorDaemon.dispose();
+			}
 			errorDaemon = null;
-			if(null != consoleDaemon)
+			if(null != consoleDaemon) {
 				consoleDaemon.dispose();
+			}
 			consoleDaemon = null;
 		}
 	}
@@ -331,7 +350,8 @@ public class ScriptConsole extends IOConsole {
 	@Override
 	public void setName(String name) {
 		super.setName(name);
-		if(null != ConsolePlugin.getDefault())
+		if(null != ConsolePlugin.getDefault()) {
 			ConsolePlugin.getDefault().getConsoleManager().refresh(this);
+		}
 	}
 }

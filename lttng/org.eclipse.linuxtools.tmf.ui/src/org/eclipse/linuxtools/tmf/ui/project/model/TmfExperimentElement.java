@@ -9,6 +9,7 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Geneviève Bastien - Copied code to add/remove traces in this class
+ *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -31,15 +32,16 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
-import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 /**
  * Implementation of TMF Experiment Model Element.
@@ -61,9 +63,9 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     private static final String sfLocation = "location"; //$NON-NLS-1$
     private static final String sfFolderSuffix = "_exp"; //$NON-NLS-1$
 
-    private static final TextPropertyDescriptor sfNameDescriptor = new TextPropertyDescriptor(sfName, sfName);
-    private static final TextPropertyDescriptor sfPathDescriptor = new TextPropertyDescriptor(sfPath, sfPath);
-    private static final TextPropertyDescriptor sfLocationDescriptor = new TextPropertyDescriptor(sfLocation,
+    private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
+    private static final ReadOnlyTextPropertyDescriptor sfPathDescriptor = new ReadOnlyTextPropertyDescriptor(sfPath, sfPath);
+    private static final ReadOnlyTextPropertyDescriptor sfLocationDescriptor = new ReadOnlyTextPropertyDescriptor(sfLocation,
             sfLocation);
 
     private static final IPropertyDescriptor[] sfDescriptors = { sfNameDescriptor, sfPathDescriptor,
@@ -95,19 +97,11 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     // TmfProjectModelElement
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#getResource()
-     */
     @Override
     public IFolder getResource() {
         return (IFolder) fResource;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getProject()
-     */
     @Override
     public TmfProjectElement getProject() {
         return (TmfProjectElement) getParent().getParent();
@@ -116,6 +110,7 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+
     /**
      * Returns a list of TmfTraceElements contained in this experiment.
      * @return a list of TmfTraceElements
@@ -186,18 +181,7 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     public void removeTrace(TmfTraceElement trace) throws CoreException {
 
         // Close the experiment if open
-        IFile file = getBookmarksFile();
-        FileEditorInput input = new FileEditorInput(file);
-        IWorkbench wb = PlatformUI.getWorkbench();
-        for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
-            for (IWorkbenchPage wbPage : wbWindow.getPages()) {
-                for (IEditorReference editorReference : wbPage.getEditorReferences()) {
-                    if (editorReference.getEditorInput().equals(input)) {
-                        wbPage.closeEditor(editorReference.getEditor(false), false);
-                    }
-                }
-            }
-        }
+        closeEditors();
 
         /* Finally, remove the trace from experiment*/
         removeChild(trace);
@@ -251,28 +235,16 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     // IPropertySource2
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource#getEditableValue()
-     */
     @Override
     public Object getEditableValue() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
-     */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang.Object)
-     */
     @Override
     public Object getPropertyValue(Object id) {
 
@@ -291,35 +263,19 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource#resetPropertyValue(java.lang.Object)
-     */
     @Override
     public void resetPropertyValue(Object id) {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource#setPropertyValue(java.lang.Object, java.lang.Object)
-     */
     @Override
     public void setPropertyValue(Object id, Object value) {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource2#isPropertyResettable(java.lang.Object)
-     */
     @Override
     public boolean isPropertyResettable(Object id) {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.views.properties.IPropertySource2#isPropertySet(java.lang.Object)
-     */
     @Override
     public boolean isPropertySet(Object id) {
         return false;
@@ -334,4 +290,26 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
         return sfFolderSuffix;
     }
 
+    /**
+     * Close open editors associated with this experiment.
+     * @since 2.0
+     */
+    public void closeEditors() {
+        IFile file = getBookmarksFile();
+        FileEditorInput input = new FileEditorInput(file);
+        IWorkbench wb = PlatformUI.getWorkbench();
+        for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+            for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                    try {
+                        if (editorReference.getEditorInput().equals(input)) {
+                            wbPage.closeEditor(editorReference.getEditor(false), false);
+                        }
+                    } catch (PartInitException e) {
+                        Activator.getDefault().logError("Error closing editor for experiment " + getName(), e); //$NON-NLS-1$
+                    }
+                }
+            }
+        }
+    }
 }
