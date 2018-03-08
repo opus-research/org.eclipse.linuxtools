@@ -155,9 +155,13 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
+                monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                 while (!monitor.isCanceled()) {
                     try {
                         Thread.sleep(100);
+                        setName("Indexing " + fTrace.getName() + " (" + fTrace.getNbEvents() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        // setName doesn't refresh the UI, setTaskName does
+                        monitor.setTaskName(""); //$NON-NLS-1$
                     } catch (final InterruptedException e) {
                         return Status.OK_STATUS;
                     }
