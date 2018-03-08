@@ -14,10 +14,12 @@
 package org.eclipse.linuxtools.tmf.core.statistics;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -27,7 +29,8 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * should work with any trace type for which we can use the state system.
  *
  * The resulting attribute tree will look like this:
- *<pre>
+ *
+ * <pre>
  * (root)
  *   |-- total
  *   \-- event_types
@@ -35,7 +38,8 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  *        |-- (event name 2)
  *        |-- (event name 3)
  *       ...
- *</pre>
+ * </pre>
+ *
  * And each (event name)'s value will be an integer, representing how many times
  * this particular event type has been seen in the trace so far.
  *
@@ -57,7 +61,7 @@ class StatsStateProvider extends AbstractTmfStateProvider {
      *            The trace for which we build this state system
      */
     public StatsStateProvider(ITmfTrace trace) {
-        super(trace, ITmfEvent.class ,"TMF Statistics"); //$NON-NLS-1$
+        super(trace, ITmfEvent.class, "TMF Statistics"); //$NON-NLS-1$
     }
 
     @Override
@@ -74,29 +78,41 @@ class StatsStateProvider extends AbstractTmfStateProvider {
     protected void eventHandle(ITmfEvent event) {
         int quark;
 
-        /* Since this can be used for any trace types, normalize all the
-         * timestamp values to nanoseconds. */
+        /*
+         * Since this can be used for any trace types, normalize all the
+         * timestamp values to nanoseconds.
+         */
         final long ts = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
         final String eventName = event.getType().getName();
 
         try {
 
-            /* Total number of events */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
-            ss.incrementAttribute(ts, quark);
+            if (event instanceof TmfLostEvent) {
+                quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
+                addValueToAttribute(ts, quark, ((Long) event.getContent().getField("Lost events").getValue()).intValue()); //$NON-NLS-1$
 
-            /* Number of events of each type, globally */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
-            ss.incrementAttribute(ts, quark);
+                quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+                addValueToAttribute(ts, quark, ((Long) event.getContent().getField("Lost events").getValue()).intValue()); //$NON-NLS-1$
+            } else {
+                /* Total number of events */
+                quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
+                ss.incrementAttribute(ts, quark);
 
-//            /* Number of events per CPU */
-//            quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
-//            ss.incrementAttribute(ts, quark);
-//
-//            /* Number of events per process */
-//            quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
-//            ss.incrementAttribute(ts, quark);
+                /* Number of events of each type, globally */
+                quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+                ss.incrementAttribute(ts, quark);
+
+                // /* Number of events per CPU */
+                // quark = ss.getQuarkRelativeAndAdd(currentCPUNode,
+                // Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
+                // ss.incrementAttribute(ts, quark);
+                //
+                // /* Number of events per process */
+                // quark = ss.getQuarkRelativeAndAdd(currentThreadNode,
+                // Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
+                // ss.incrementAttribute(ts, quark);
+            }
 
         } catch (StateValueTypeException e) {
             e.printStackTrace();
@@ -105,5 +121,17 @@ class StatsStateProvider extends AbstractTmfStateProvider {
         } catch (AttributeNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void addValueToAttribute(long t, int attributeQuark, int toAdd)
+            throws StateValueTypeException, TimeRangeException,
+            AttributeNotFoundException {
+        int prevValue = ss.queryOngoingState(attributeQuark).unboxInt();
+        if (prevValue == -1) {
+            /* if the attribute was previously null, start counting at 0 */
+            prevValue = 0;
+        }
+        ss.modifyAttribute(t, TmfStateValue.newValueInt(prevValue + toAdd),
+                attributeQuark);
     }
 }
