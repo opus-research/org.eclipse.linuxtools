@@ -1263,6 +1263,29 @@ trace.
 For an example, you can look at StatsStateProvider in the TMF tree, or at the
 small example below.
 
+==== AbstractTmfMipmapStateProvider ====
+
+AbstractTmfMipmapStateProvider is an abstract provider that allows to add
+features to a specific attribute into the tree. It extends
+AbstractTmfStateProvider.
+If a provider want to add mipmap attributes to its tree, it must extend
+AbstractTmfMipmapStateProvider and call computeMipmapAttribute() in the event
+handler. Then the structure of the tree will be :
+
+<pre>
+|- ParentNode
+|    |- AttributeNode
+|    |   |- mipmapFeatureNameNbLevel
+|    |   |   |- mipmapFeatureName1
+|    |   |   |- mipmapFeatureName2
+|    |   |   |- mipmapFeatureName3
+|    |   |   |   ...
+|   ...
+</pre>
+
+the state system explorer view will show: <br>
+[[Image:images/mipmapSSE.png]]<br>
+
 ==== TmfStateSystemFactory ====
 
 Once you have defined your state provider, you need to tell your trace type to
