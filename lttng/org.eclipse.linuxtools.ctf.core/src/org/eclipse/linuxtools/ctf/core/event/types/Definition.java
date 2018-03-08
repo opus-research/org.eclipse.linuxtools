@@ -17,8 +17,8 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 /**
  * A CTF definiton
  *
- * A definition is like an object of a declaration class. It fills the
- * declaration with values. <br>
+ * A definition is like an object of a declaration class. It fills the declaration
+ * with values. <br>
  * An example: <br>
  * int i = 0; <br>
  * <b>int</b> is the declaration.<br>
@@ -40,6 +40,9 @@ public abstract class Definition {
     /** The complete path of this field */
     private final String path;
 
+    /**
+     *
+     */
     private final IDefinitionScope definitionScope;
 
     // ------------------------------------------------------------------------
@@ -126,28 +129,6 @@ public abstract class Definition {
      * @since 2.0
      */
     public abstract void read(BitBuffer input);
-
-    /**
-     * Offset the buffer position wrt the current alignment.
-     *
-     * @param input
-     *            The bitbuffer that is being read
-     * @param alignmentMask
-     *            Mask of the alignment, so for an alignment 2^n it is 2^n-1
-     * @since 2.2
-     */
-    protected static void alignRead(BitBuffer input, long alignmentMask) {
-        /*
-         * The alignment is a power of 2
-         */
-        int pos = input.position();
-        if ((pos & alignmentMask) == 0) {
-            return;
-        }
-        pos = (int) ((pos + alignmentMask) & ~alignmentMask);
-
-        input.position(pos);
-    }
 
     @Override
     public String toString() {

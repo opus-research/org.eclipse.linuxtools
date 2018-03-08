@@ -30,7 +30,6 @@ public class FloatDefinition extends Definition {
 
     private final FloatDeclaration declaration;
     private double value;
-    private final long alignmentMask;
 
     // ------------------------------------------------------------------------
     // Contructors
@@ -50,7 +49,6 @@ public class FloatDefinition extends Definition {
             IDefinitionScope definitionScope, String fieldName) {
         super(definitionScope, fieldName);
         this.declaration = declaration;
-        this.alignmentMask = declaration.getAlignment() - 1;
     }
 
     // ------------------------------------------------------------------------
@@ -89,7 +87,10 @@ public class FloatDefinition extends Definition {
     @Override
     public void read(BitBuffer input) {
         /* Offset the buffer position wrt the current alignment */
-        alignRead(input, alignmentMask);
+        int align = (int) declaration.getAlignment();
+        int pos = input.position() + ((align - (input.position() % align)) % align);
+        input.position(pos);
+
         final int exp = declaration.getExponent();
         final int mant = declaration.getMantissa();
 
@@ -125,8 +126,7 @@ public class FloatDefinition extends Definition {
 
         int exp = (int) ((rawValue >> (manBits)) & expMask) + 1;
         long man = (rawValue & manMask);
-        final int offsetExponent = exp - (1 << (expBits - 1));
-        double expPow = Math.pow(2.0, offsetExponent);
+        double expPow = Math.pow(2.0, exp - (1 << (expBits - 1)));
         double ret = man * 1.0f;
         ret /= manShift;
         ret += 1.0;

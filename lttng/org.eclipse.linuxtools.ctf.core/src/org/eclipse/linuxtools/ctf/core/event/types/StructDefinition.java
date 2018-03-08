@@ -38,7 +38,6 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     private final StructDeclaration declaration;
     private final Map<String, Definition> definitions = new LinkedHashMap<String, Definition>();
-    private final long alignmentMask;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -59,7 +58,6 @@ public class StructDefinition extends Definition implements IDefinitionScope {
         super(definitionScope, structFieldName);
 
         this.declaration = declaration;
-        this.alignmentMask = declaration.getAlignment() - 1;
 
         for (String fName : declaration.getFieldsList()) {
             IDeclaration fieldDecl = declaration.getFields().get(fName);
@@ -93,7 +91,10 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     @Override
     public void read(BitBuffer input) {
-        alignRead(input, this.alignmentMask);
+        final int align = (int) declaration.getAlignment();
+        int pos = input.position()
+                + ((align - (input.position() % align)) % align);
+        input.position(pos);
         final List<String> fieldList = declaration.getFieldsList();
         for (String fName : fieldList) {
             Definition def = definitions.get(fName);
