@@ -563,8 +563,8 @@ public final class TmfTraceType {
     }
 
     /**
-     * Is the trace type id a custom (user-defined) trace type. These are the traces
-     * like : text and xml defined by the custom trace wizard.
+     * Is the trace type id a custom (user-defined) trace type. These are the
+     * traces like : text and xml defined by the custom trace wizard.
      *
      * @param traceTypeId
      *            the trace type id
@@ -604,6 +604,10 @@ public final class TmfTraceType {
         return traceTypeId;
     }
 
+    TraceTypeHelper selectTraceType(String path, Shell shell) throws TmfTraceImportException {
+        return selectTraceType(path, shell, null);
+    }
+
     /**
      * Select a trace file for
      *
@@ -618,7 +622,7 @@ public final class TmfTraceType {
      *             if the traces don't match or there are errors in the trace
      *             file
      */
-    TraceTypeHelper selectTraceType(String path, Shell shell) throws TmfTraceImportException {
+    TraceTypeHelper selectTraceType(String path, Shell shell, String traceTypeHint) throws TmfTraceImportException {
         List<TraceTypeHelper> validCandidates = new ArrayList<TraceTypeHelper>();
         getCustomTraceTypes();
         final Set<String> traceTypes = fTraceTypes.keySet();
@@ -628,23 +632,29 @@ public final class TmfTraceType {
             }
         }
 
-        TraceTypeHelper traceTypeToSet;
+        TraceTypeHelper traceTypeToSet = null;
         if (validCandidates.isEmpty()) {
             final String errorMsg = Messages.TmfOpenTraceHelper_NoTraceTypeMatch + path;
             throw new TmfTraceImportException(errorMsg);
         } else if (validCandidates.size() != 1) {
             List<TraceTypeHelper> reducedCandidates = reduce(validCandidates);
-            if (reducedCandidates.size() == 0) {
-                throw new TmfTraceImportException(Messages.TmfOpenTraceHelper_ReduceError);
-            } else if (reducedCandidates.size() == 1) {
-                traceTypeToSet = reducedCandidates.get(0);
-            } else {
-                if (shell == null) {
-                    return null;
+            for (TraceTypeHelper tth : reducedCandidates) {
+                if (tth.getCanonicalName().equals(traceTypeHint)) {
+                    traceTypeToSet = tth;
                 }
-                traceTypeToSet = getTraceTypeToSet(reducedCandidates, shell);
             }
-
+            if (traceTypeToSet == null) {
+                if (reducedCandidates.size() == 0) {
+                    throw new TmfTraceImportException(Messages.TmfOpenTraceHelper_ReduceError);
+                } else if (reducedCandidates.size() == 1) {
+                    traceTypeToSet = reducedCandidates.get(0);
+                } else {
+                    if (shell == null) {
+                        return null;
+                    }
+                    traceTypeToSet = getTraceTypeToSet(reducedCandidates, shell);
+                }
+            }
         } else {
             traceTypeToSet = validCandidates.get(0);
         }

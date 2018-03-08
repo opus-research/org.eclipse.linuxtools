@@ -195,7 +195,8 @@ class LttngKernelTraceGenerator {
                 fPath.mkdir();
             }else{
                 // the ctf parser doesn't recurse, so we don't need to.
-                for( File child : fPath.listFiles()){
+                final File[] listFiles = fPath.listFiles();
+                for( File child : listFiles){
                     child.delete();
                 }
             }

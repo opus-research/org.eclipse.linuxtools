@@ -49,7 +49,11 @@ public class CtfTraceGenerator {
      * @return the path
      */
     public static String getPath() {
-        return PATH;
+        final File file = new File(PATH);
+        if( !file.exists() ){
+            generateLttngKernelTrace();
+        }
+        return file.getAbsolutePath();
     }
 
     /**
