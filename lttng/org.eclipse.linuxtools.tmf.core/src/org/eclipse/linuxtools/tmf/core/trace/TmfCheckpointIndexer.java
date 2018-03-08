@@ -23,13 +23,13 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.tmf.core.Messages;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * A simple indexer that manages the trace index as an array of trace
@@ -130,8 +130,15 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     // ITmfTraceIndexer - buildIndex
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
+    /* (non-Javadoc)
+     *
+     * The index is a list of contexts that point to events at regular interval
+     * (rank-wise) in the trace. After it is built, the index can be used to
+     * quickly access any event by rank or timestamp (using seekIndex()).
+     *
+     * The index is built simply by reading the trace
+     *
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#buildIndex(long, org.eclipse.linuxtools.tmf.core.event.TmfTimeRange, boolean)
      */
     @Override
     public void buildIndex(final long offset, final TmfTimeRange range, final boolean waitForCompletion) {
@@ -227,8 +234,8 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     // ITmfTraceIndexer - updateIndex
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#updateIndex(org.eclipse.linuxtools.tmf.core.trace.ITmfContext, org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp)
      */
     @Override
     public synchronized void updateIndex(final ITmfContext context, final ITmfTimestamp timestamp) {
@@ -246,8 +253,8 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     // ITmfTraceIndexer - seekIndex
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer#seekIndex(org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp)
      */
     @Override
     public synchronized ITmfContext seekIndex(final ITmfTimestamp timestamp) {
