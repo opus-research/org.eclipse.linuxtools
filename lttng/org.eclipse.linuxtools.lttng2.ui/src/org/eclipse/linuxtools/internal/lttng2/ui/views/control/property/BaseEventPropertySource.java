@@ -46,10 +46,6 @@ public class BaseEventPropertySource extends BasePropertySource {
      */
     public static final String BASE_EVENT_LOGLEVEL_PROPERTY_ID = "base.event.loglevel"; //$NON-NLS-1$
     /**
-     * The base event 'fields' property ID.
-     */
-    public static final String BASE_EVENT_FIELDS_PROPERTY_ID = "base.event.fields"; //$NON-NLS-1$
-    /**
      *  The base event 'name' property name.
      */
     public static final String BASE_EVENT_NAME_PROPERTY_NAME = Messages.TraceControl_EventNamePropertyName;
@@ -61,10 +57,6 @@ public class BaseEventPropertySource extends BasePropertySource {
      * The base event 'log level' property name.
      */
     public static final String BASE_EVENT_LOGLEVEL_PROPERTY_NAME = Messages.TraceControl_LogLevelPropertyName;
-    /**
-     * The base event 'fields' property name.
-     */
-    public static final String BASE_EVENT_FIELDS_PROPERTY_NAME = Messages.TraceControl_FieldsPropertyName;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -100,9 +92,6 @@ public class BaseEventPropertySource extends BasePropertySource {
         if (fBaseEvent.getLogLevel() != TraceLogLevel.LEVEL_UNKNOWN) {
             list.add(new TextPropertyDescriptor(BASE_EVENT_LOGLEVEL_PROPERTY_ID, BASE_EVENT_LOGLEVEL_PROPERTY_NAME));
         }
-        if (fBaseEvent.getFieldString() != null) {
-            list.add(new TextPropertyDescriptor(BASE_EVENT_FIELDS_PROPERTY_ID, BASE_EVENT_FIELDS_PROPERTY_NAME));
-        }
         return list.toArray(new IPropertyDescriptor[list.size()]);
     }
 
@@ -120,9 +109,6 @@ public class BaseEventPropertySource extends BasePropertySource {
         }
         if (BASE_EVENT_LOGLEVEL_PROPERTY_ID.equals(id)) {
             return fBaseEvent.getLogLevel().name();
-        }
-        if (BASE_EVENT_FIELDS_PROPERTY_ID.equals(id)) {
-            return fBaseEvent.getFieldString();
         }
         return null;
     }
