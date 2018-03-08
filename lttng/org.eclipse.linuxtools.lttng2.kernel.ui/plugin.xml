@@ -30,6 +30,15 @@
             name="%resources.view.name"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.lttng2.ui.views.category"
+            class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.cpu.CpuUsageView"
+            icon="icons/eview16/cpu.gif"
+            id="org.eclipse.linuxtools.lttng2.kernel.ui.views.cpu"
+            name="CPU Usage"
+            restorable="false">
+      </view>
    </extension>
    <extension
          point="org.eclipse.linuxtools.tmf.ui.tracetype">
