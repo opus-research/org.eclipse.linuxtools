@@ -223,8 +223,7 @@ public class TmfCoalescedDataRequest<T extends ITmfEvent> extends TmfDataRequest
 	    	    if (!request.isCompleted()) {
                     if (request.getDataType().isInstance(data)) {
                         long start = request.getIndex();
-                        long end = start + request.getNbRequested() - 1;
-                        if (index >= start && index < end) {
+                        if (index >= start) {
                             request.handleData(data);
                         }
                     }
