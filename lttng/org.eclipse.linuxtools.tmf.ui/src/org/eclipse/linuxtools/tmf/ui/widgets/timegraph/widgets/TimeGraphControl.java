@@ -1638,7 +1638,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                 redraw();
                 fireSelectionChanged();
             }
-        } else if (3 == e.button) {
+        } else if (3 == e.button && _timeEventMenuListeners.isEmpty()) {
             if (_timeProvider.getTime0() == _timeProvider.getTime1() || getCtrlSize().x - _timeProvider.getNameSpace() <= 0) {
                 return;
             }
