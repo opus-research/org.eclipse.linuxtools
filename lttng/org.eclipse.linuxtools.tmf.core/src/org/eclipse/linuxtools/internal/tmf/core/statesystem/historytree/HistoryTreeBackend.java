@@ -132,7 +132,13 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     @Override
+    public void dispose() {
+        treeIO.closeFile();
+    }
+
+    @Override
     public void removeFiles() {
+        /* This will dispose them first underneath */
         treeIO.deleteFile();
     }
 

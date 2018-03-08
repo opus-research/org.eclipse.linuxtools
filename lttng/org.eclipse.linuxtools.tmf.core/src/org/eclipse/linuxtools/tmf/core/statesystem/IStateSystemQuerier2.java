@@ -58,4 +58,10 @@ public interface IStateSystemQuerier2 extends IStateSystemQuerier {
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2, long resolution, IProgressMonitor monitor) throws TimeRangeException,
             AttributeNotFoundException;
+
+    /**
+     * Tell the query object we are done querying it, so it can flush its memory
+     * and/or close the files it has opened.
+     */
+    public void dispose();
 }
