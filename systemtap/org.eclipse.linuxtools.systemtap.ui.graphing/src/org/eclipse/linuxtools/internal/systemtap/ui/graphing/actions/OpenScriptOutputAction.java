@@ -81,11 +81,10 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 				IDataEntry output;
 				while(true) {
 					output = parser.parse(sb);
-					if(null != output) {
+					if(null != output)
 						dataSet.setData(output);
-					} else {
+					else
 						break;
-					}
 				}
 
 				try {
