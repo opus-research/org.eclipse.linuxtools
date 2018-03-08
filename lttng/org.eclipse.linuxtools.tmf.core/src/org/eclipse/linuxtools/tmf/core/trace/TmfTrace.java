@@ -339,14 +339,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ITmfTrace - Basic getters
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ITmfTrace[] getTraces() {
-        return new ITmfTrace[] { this };
-    }
-
     /* (non-Javadoc)
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getEventType()
      */
@@ -415,6 +407,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
         return Collections.unmodifiableMap(fStateSystems);
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public final void registerStateSystem(String id, ITmfStateSystem ss) {
+        fStateSystems.put(id, ss);
     }
 
     // ------------------------------------------------------------------------
@@ -716,41 +716,40 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
-        ITmfTrace trace = null;
-        for (ITmfTrace expTrace : signal.getTrace().getTraces()) {
-            if (expTrace == this) {
-                trace = expTrace;
-                break;
+        ITmfTrace trace = signal.getTrace();
+        if (signal.getTrace() instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
+            for (ITmfTrace expTrace : experiment.getTraces()) {
+                if (expTrace == this) {
+                    trace = expTrace;
+                    break;
+                }
             }
         }
-
-        if (trace == null) {
-            /* This signal is not for us */
-            return;
-        }
-
-        /*
-         * The signal is for this trace, or for an experiment containing
-         * this trace.
-         */
-        try {
-            buildStatistics();
-            buildStateSystem();
-        } catch (TmfTraceException e) {
-            e.printStackTrace();
-        }
-
-        /* Refresh the project, so it can pick up new files that got created. */
-        try {
-            if (fResource != null) {
-                fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+        if (trace == this) {
+            /* the signal is for this trace or for an experiment containing this trace */
+            try {
+                buildStatistics();
+            } catch (TmfTraceException e) {
+                e.printStackTrace();
             }
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
+            try {
+                buildStateSystem();
+            } catch (TmfTraceException e) {
+                e.printStackTrace();
+            }
 
+            /* Refresh the project, so it can pick up new files that got created. */
+            try {
+                if (fResource != null) {
+                    fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                }
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
         if (signal.getTrace() == this) {
-            /* Additionally, the signal is directly for this trace or experiment. */
+            /* the signal is for this trace or experiment */
             if (getNbEvents() == 0) {
                 return;
             }

@@ -1442,7 +1442,6 @@ public class TmfTraceTest {
     // ------------------------------------------------------------------------
 
     @Test
-    @SuppressWarnings("null")
     public void testCurrentTimeValues() throws TmfTraceException {
 
         TmfTraceStub trace = null;
