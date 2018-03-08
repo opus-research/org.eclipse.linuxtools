@@ -88,9 +88,7 @@ public class RPMProject {
 		try {
 			specsFolder.accept(specVisitor);
 			List<IResource> installedSpecs = specVisitor.getSpecFiles();
-			if(installedSpecs.size() > 0){
-				file = installedSpecs.get(0);
-			}
+			file = installedSpecs.get(0);
 		} catch (CoreException e) {
 			// ignore, failed to find .spec file.
 		}

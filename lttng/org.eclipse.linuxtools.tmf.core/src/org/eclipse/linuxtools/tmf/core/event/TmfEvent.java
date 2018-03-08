@@ -14,7 +14,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -65,7 +64,6 @@ public class TmfEvent implements ITmfEvent {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
-     * @since 2.0
 
      */
     public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
@@ -84,7 +82,6 @@ public class TmfEvent implements ITmfEvent {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
-     * @since 2.0
      */
     public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
@@ -130,9 +127,6 @@ public class TmfEvent implements ITmfEvent {
         return fRank;
     }
 
-    /**
-     * @since 2.0
-     */
     @Override
     public ITmfTimestamp getTimestamp() {
         return fTimestamp;

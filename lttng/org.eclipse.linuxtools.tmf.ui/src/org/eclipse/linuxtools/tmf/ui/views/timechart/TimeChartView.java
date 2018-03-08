@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2011, 2012, 2013 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -25,6 +25,9 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventFilterAppliedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventSearchAppliedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
@@ -34,9 +37,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
@@ -55,8 +55,12 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphViewer;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -90,6 +94,30 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
     private ITimeGraphPresentationProvider fPresentationProvider;
 
     /**
+     * TimeChartViewer extends TimeGraphViewer to use a TimeGraphControl that overrides drawState
+     * to inhibit drawing of filtered-out events.
+     */
+    private class TimeChartViewer extends TimeGraphViewer {
+
+        public TimeChartViewer(Composite parent, int style) {
+            super(parent, style);
+        }
+
+        @Override
+        protected TimeGraphControl createTimeGraphControl(Composite parent, TimeGraphColorScheme colorScheme) {
+            return new TimeGraphControl(parent, colorScheme) {
+                @Override
+                protected void drawState(TimeGraphColorScheme colors, ITimeEvent event, Rectangle rect, GC gc, boolean selected, boolean timeSelected) {
+                    if (! ((TimeChartEvent) event).isVisible()) {
+                        return;
+                    }
+                    super.drawState(colors, event, rect, gc, selected, timeSelected);
+                }
+            };
+        }
+    }
+
+    /**
      * Default constructor
      */
     public TimeChartView() {
@@ -99,7 +127,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
 
     @Override
     public void createPartControl(Composite parent) {
-        fViewer = new TimeGraphViewer(parent, SWT.NONE);
+        fViewer = new TimeChartViewer(parent, SWT.NONE);
         fPresentationProvider = new TimeChartAnalysisProvider();
         fViewer.setTimeGraphProvider(fPresentationProvider);
         fViewer.setTimeFormat(TimeFormat.CALENDAR);
@@ -584,6 +612,9 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
+        if (fTimeAnalysisEntries == null) {
+            return;
+        }
         final ITmfTrace trace = signal.getTrace();
         final IFile bookmarksFile = signal.getBookmarksFile();
         TimeChartAnalysisEntry timeAnalysisEntry = null;
@@ -612,6 +643,9 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceClosed(TmfTraceClosedSignal signal) {
+        if (fTimeAnalysisEntries == null) {
+            return;
+        }
         final ITmfTrace trace = signal.getTrace();
         for (int i = 0; i < fTimeAnalysisEntries.size(); i++) {
             if (fTimeAnalysisEntries.get(i).getTrace().equals(trace)) {
@@ -640,7 +674,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceSelected(TmfTraceSelectedSignal signal) {
-        if (signal.getSource() != this) {
+        if (signal.getSource() != this && fTimeAnalysisEntries != null) {
             ITmfTrace trace = signal.getTrace();
             for (int i = 0; i < fTimeAnalysisEntries.size(); i++) {
                 if (fTimeAnalysisEntries.get(i).getTrace().equals(trace)) {
@@ -660,6 +694,9 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      */
     @TmfSignalHandler
     public void traceUpdated(TmfTraceUpdatedSignal signal) {
+        if (fTimeAnalysisEntries == null) {
+            return;
+        }
         final ITmfTrace trace = signal.getTrace();
         for (int i = 0; i < fTimeAnalysisEntries.size(); i++) {
             TimeChartAnalysisEntry timeAnalysisEntry = fTimeAnalysisEntries.get(i);
