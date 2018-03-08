@@ -24,6 +24,7 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 
 /**
@@ -36,9 +37,20 @@ import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 public class CtfKernelTrace extends CtfTmfTrace {
 
     /**
+     * State system ID
+     * @since 2.0
+     */
+    public final static String stateID = "lttng-kernel"; //$NON-NLS-1$
+
+    /**
      * The file name of the History Tree
      */
     public final static String HISTORY_TREE_FILE_NAME = "stateHistory.ht"; //$NON-NLS-1$
+
+    /**
+     * Direct reference to the kernel state system of this trace
+     */
+    private IStateSystemQuerier kernelStateSystem = null;
 
     /**
      * Default constructor
@@ -70,6 +82,8 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
     @Override
     protected void buildStateSystem() throws TmfTraceException {
+        super.buildStateSystem();
+
         /* Set up the path to the history tree file we'll use */
         IResource resource = this.getResource();
         String supplDirectory = null;
@@ -84,6 +98,17 @@ public class CtfKernelTrace extends CtfTmfTrace {
         final File htFile = new File(supplDirectory + File.separator + HISTORY_TREE_FILE_NAME);
         final IStateChangeInput htInput = new CtfKernelStateInput(this);
 
-        this.ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
+        kernelStateSystem = StateSystemManager.loadStateHistory(htFile, htInput, false);
+        stateSystems.put(stateID, kernelStateSystem);
+
+    }
+
+    /**
+     * @return A direct reference to the kernel state system. Using this saves a
+     *         hashmap lookup over doing .getStateSystem(stateID).
+     * @since 2.0
+     */
+    public IStateSystemQuerier getKernelStateSystem() {
+        return kernelStateSystem;
     }
 }

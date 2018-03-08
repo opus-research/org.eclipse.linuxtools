@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -199,6 +200,17 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return the streaming interval in ms (0 if not a streaming trace)
      */
     public long getStreamingInterval();
+
+    /**
+     * Get a state system that is assigned to this trace
+     *
+     * @param id
+     *            The ID of the statesystem you want to retrieve
+     * @return The state system that matches the ID, or null if this trace does
+     *         not have the requested state backend.
+     * @since 2.0
+     */
+    public IStateSystemQuerier getStateSystem(String id);
 
     // ------------------------------------------------------------------------
     // Trace positioning getters
