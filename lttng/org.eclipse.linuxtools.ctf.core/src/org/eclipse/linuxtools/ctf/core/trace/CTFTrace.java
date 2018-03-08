@@ -22,6 +22,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
+import org.eclipse.linuxtools.ctf.core.event.Callsite;
 import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -153,6 +155,11 @@ public class CTFTrace implements IDefinitionScope {
     private final HashMap<StreamInput,HashMap<Long, EventDefinition>> eventDefs;
     /** map of all the indexes */
     private final HashMap<StreamInput, StreamInputPacketIndex> indexes;
+
+    /** Callsite helpers */
+    private HashMap<String, LinkedList<Callsite>> callsitesByName = new HashMap<String, LinkedList<Callsite>>();
+    /** Callsite helpers */
+    private LinkedList<Callsite> callsitesByIP = new LinkedList<Callsite>();
 
 
 
@@ -742,6 +749,91 @@ public class CTFTrace implements IDefinitionScope {
             eventDecs.put(id, value);
         }
         return value;
+    }
+
+    /**
+     * Adds a callsite
+     *
+     * @param eventName
+     *            the event name of the callsite
+     * @param funcName
+     *            the name of the callsite function
+     * @param ip
+     *            the ip of the callsite
+     * @param fileName
+     *            the filename of the callsite
+     * @param lineNumber
+     *            the line number of the callsite
+     */
+    public void addCallsite(String eventName, String funcName, long ip,
+            String fileName, long lineNumber) {
+        final Callsite cs = new Callsite(eventName, funcName, ip, fileName,
+                lineNumber);
+        LinkedList<Callsite> csl = callsitesByName.get(eventName);
+        if (csl == null) {
+            csl = new LinkedList<Callsite>();
+            callsitesByName.put(eventName, csl);
+        }
+        int pos = Collections.binarySearch(csl, cs);
+        csl.add(pos + 1, cs);
+        pos = Collections.binarySearch(callsitesByIP, cs);
+        callsitesByIP.add(pos + 1, cs);
+    }
+
+    /**
+     * Gets the list of callsites associated to an event name. O(1)
+     *
+     * @param eventName
+     *            the event name
+     * @return the callsite list, can be null
+     * @since 1.2
+     */
+    public List<Callsite> getCallsiteCandidates(String eventName) {
+        return callsitesByName.get(eventName);
+    }
+
+    /**
+     * The I'm feeling lucky of getCallsiteCandidates O(1)
+     *
+     * @param eventName
+     *            the event name
+     * @return the first callsite that has that event name
+     * @since 1.2
+     */
+    public Callsite getCallsite(String eventName) {
+        return callsitesByName.get(eventName).getFirst();
+    }
+
+    /**
+     * Gets a callsite from the instruction pointer O(log(n))
+     *
+     * @param ip
+     *            the instruction pointer to lookup
+     * @return the callsite just before that IP in the list
+     * @throws IndexOutOfBoundsException
+     *             if the IP is out of bounds
+     * @since 1.2
+     */
+    public Callsite getCallsite(Long ip) throws IndexOutOfBoundsException {
+        Callsite cs = new Callsite(null, null, ip, null, 0L);
+        int pos = Collections.binarySearch(callsitesByIP, cs);
+        return callsitesByIP.get(pos + 1);
+    }
+
+    /**
+     * Gets a callsite using the event name and instruction pointer O(log(n))
+     *
+     * @param eventName
+     *            the name of the event
+     * @param ip
+     *            the instruction pointer
+     * @return the closest matching callsite
+     */
+    public Callsite getCallsite(String eventName, long ip) {
+        LinkedList<Callsite> candidates = callsitesByName.get(eventName);
+        final Callsite dummyCs = new Callsite(null, null, ip, null, (long) -1);
+        final int pos = Collections.binarySearch(candidates, dummyCs);
+        return candidates.get(pos);
     }
 
 }
