@@ -21,6 +21,10 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.forms.widgets.ColumnLayout;
 
+/**
+ * @deprecated See {@link SelectGraphAndSeriesWizardPage}
+ */
+@Deprecated
 public class SelectGraphWizardPage extends WizardPage implements Listener {
 	public SelectGraphWizardPage() {
 		super("selectGraph"); //$NON-NLS-1$

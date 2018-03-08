@@ -30,7 +30,10 @@ import org.eclipse.ui.forms.widgets.ColumnLayout;
 
 
 
-
+/**
+ * @deprecated See {@link SelectGraphAndSeriesWizardPage}
+ */
+@Deprecated
 public class SelectSeriesWizardPage extends WizardPage {
 	public SelectSeriesWizardPage() {
 		super("selectSeries"); //$NON-NLS-1$

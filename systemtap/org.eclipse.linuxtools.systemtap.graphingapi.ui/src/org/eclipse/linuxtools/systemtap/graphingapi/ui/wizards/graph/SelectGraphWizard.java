@@ -20,7 +20,10 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
 
-
+/**
+ * @deprecated See {@link SelectGraphAndSeriesWizard}
+ */
+@Deprecated
 public class SelectGraphWizard extends Wizard implements INewWizard {
 	public SelectGraphWizard(IDataSet data, GraphData gdata) {
 		model = new GraphModel(data);

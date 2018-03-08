@@ -24,9 +24,16 @@ public class Messages extends NLS {
 	public static String PerfSaveStat_error_msg;
 	public static String PerfSaveSession_failure_title;
 	public static String PerfSaveSession_failure_msg;
+	public static String PerfStatDiffMenuAction_diff_text;
+	public static String PerfStatDiffMenuAction_new_tooltip;
+	public static String PerfStatDiffMenuAction_new_text;
+	public static String PerfStatDiffMenuAction_old_tooltip;
+	public static String PerfStatDiffMenuAction_old_text;
+	public static String PerfStatDiffMenuAction_stats_tooltip;
 	public static String PerfResourceLeak_title;
 	public static String PerfResourceLeak_msg;
 
+	public static String MsgProxyError;
 	public static String MsgClearSelection;
 	public static String MsgSelectionDiff;
 	public static String MsgSelectFiles;
@@ -40,9 +47,10 @@ public class Messages extends NLS {
 	public static String MsgConfirm_msg;
 	public static String ContentDescription_0;
 
-	public static String  PerfEditorLauncher_stat_title;
+	public static String PerfEditorLauncher_stat_title;
 	public static String PerfEditorLauncher_file_dne_error;
 	public static String PerfEditorLauncher_file_read_error;
+	public static String StatComparisonData_temp_files_error;
 
 	static {
 		// initialize resource bundle

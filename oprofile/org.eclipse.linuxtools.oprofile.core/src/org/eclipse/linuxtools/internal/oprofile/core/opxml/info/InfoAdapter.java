@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
+import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -103,11 +104,15 @@ public class InfoAdapter extends AbstractDataAdapter{
 				createDOM(null);
 			}else{
 				Process p = RuntimeProcessFactory.getFactory().exec("ophelp -X", Oprofile.OprofileProject.getProject());
-				InputStream is = p.getInputStream();
-				createDOM(is);
+				if (p != null) {
+					InputStream is = p.getInputStream();
+					createDOM(is);
+				} else {
+					createDOM(null);
+				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			createDOM(null);
 		}
 	}
 
@@ -330,6 +335,16 @@ public class InfoAdapter extends AbstractDataAdapter{
 		 * hard-coded in a list. This method may not be entirely correct,
 		 * although much simpler.
 		 */
+
+		/*
+		 * Returning 1 for operf since it multiplexes the events through the counters
+		 * and it is not possible to read data from opcontrol /dev dir if the opcontrol
+		 * module was not initialized.
+		 * TODO: Make possible to select more than one event in a tab.
+		 */
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
+			return 1;
+		}
 		try {
 			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 		} catch (CoreException e) {
