@@ -26,36 +26,6 @@ public class Messages extends NLS {
     /** The RCP title. */
     public static String ApplicationWorkbenchWindowAdvisor_WindowTitle;
 
-    /** Malformed command */
-    public static String CliParser_MalformedCommand;
-
-    /** Unkown command */
-    public static String CliParser_UnknownCommand;
-
-    /** Select trace type title */
-    public static String OpenDirHandler_SelectTraceType;
-
-    /** Error opening a trace */
-    public static String OpenTraceHelper_ErrorOpeningTrace;
-
-    /** Could not link trace */
-    public static String OpenTraceHelper_LinkFailed;
-
-    /** Open Error */
-    public static String OpenTraceHelper_OpenError;
-
-    /** Open Error */
-    public static String OpenTraceHelper_OpenTraceError;
-
-    /** Select trace file */
-    public static String OpenFileHandler_SelectTraceFile;
-
-    /** No --open trace specified */
-    public static String TextDump_NoOpenTrace;
-
-    /** Not trace type matching */
-    public static String TextDump_NoTypeMatch;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

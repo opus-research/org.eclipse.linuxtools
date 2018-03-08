@@ -15,9 +15,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.ui.ide,
  org.eclipse.update.configurator;bundle-version="3.3.200",
- org.eclipse.equinox.p2.ui.sdk;bundle-version="1.0.300",
- org.eclipse.core.commands,
- org.eclipse.ui.workbench
+ org.eclipse.equinox.p2.ui.sdk;bundle-version="1.0.300"
 Export-Package: org.eclipse.linuxtools.internal.tracing.rcp.ui;x-internal:=true,
- org.eclipse.linuxtools.internal.tracing.rcp.ui.commands;x-internal:=true,
  org.eclipse.linuxtools.internal.tracing.rcp.ui.messages;x-internal:=true

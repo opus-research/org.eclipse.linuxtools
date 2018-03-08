@@ -53,7 +53,7 @@
             id="org.eclipse.linuxtools.tmf.ui.views.colors"
             name="%colors.view.name"
             restorable="true">
-      </view>
+      </view> 
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.ui.views.category"

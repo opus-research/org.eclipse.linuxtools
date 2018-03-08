@@ -11,15 +11,8 @@
  **********************************************************************/
 package org.eclipse.linuxtools.internal.tracing.rcp.ui;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tracing.rcp.ui.commands.OpenTraceHelper;
 import org.eclipse.linuxtools.internal.tracing.rcp.ui.messages.Messages;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -41,30 +34,31 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     // ------------------------------------------------------------------------
     @SuppressWarnings("nls")
     private static final String[] UNWANTED_ACTION_SET = {
-            "org.eclipse.search.searchActionSet",
-            "org.eclipse.rse.core.search.searchActionSet",
-            "org.eclipse.debug.ui.launchActionSet",
-            "org.eclipse.debug.ui.debugActionSet",
-            "org.eclipse.debug.ui.breakpointActionSet",
-            "org.eclipse.team.ui",
-            "org.eclipse.ui.externaltools.ExternalToolsSet",
-            // "org.eclipse.update.ui.softwareUpdates",
-            // "org.eclipse.ui.edit.text.actionSet.navigation",
-            // "org.eclipse.ui.actionSet.keyBindings",
-            // "org.eclipse.ui.edit.text.actionSet.navigation",
-            "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
-            // "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
-            // "org.eclipse.ui.NavigateActionSet",
-            // "org.eclipse.jdt.ui.JavaActionSet",
-            // "org.eclipse.jdt.ui.A_OpenActionSet",
-            // "org.eclipse.jdt.ui.text.java.actionSet.presentation",
-            // "org.eclipse.jdt.ui.JavaElementCreationActionSet",
-            // "org.eclipse.jdt.ui.CodingActionSet",
-            // "org.eclipse.jdt.ui.SearchActionSet",
-            // "org.eclipse.jdt.debug.ui.JDTDebugActionSet",
-            "org.eclipse.ui.edit.text.actionSet.openExternalFile",
-            // "org.eclipse.debug.ui.profileActionSet"
+        "org.eclipse.search.searchActionSet",
+        "org.eclipse.rse.core.search.searchActionSet",
+        "org.eclipse.debug.ui.launchActionSet",
+        "org.eclipse.debug.ui.debugActionSet",
+        "org.eclipse.debug.ui.breakpointActionSet",
+        "org.eclipse.team.ui",
+        "org.eclipse.ui.externaltools.ExternalToolsSet",
+//        "org.eclipse.update.ui.softwareUpdates",
+//        "org.eclipse.ui.edit.text.actionSet.navigation",
+//        "org.eclipse.ui.actionSet.keyBindings",
+//        "org.eclipse.ui.edit.text.actionSet.navigation",
+        "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
+//        "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
+//        "org.eclipse.ui.NavigateActionSet",
+//        "org.eclipse.jdt.ui.JavaActionSet",
+//        "org.eclipse.jdt.ui.A_OpenActionSet",
+//        "org.eclipse.jdt.ui.text.java.actionSet.presentation",
+//        "org.eclipse.jdt.ui.JavaElementCreationActionSet",
+//        "org.eclipse.jdt.ui.CodingActionSet",
+//        "org.eclipse.jdt.ui.SearchActionSet",
+//        "org.eclipse.jdt.debug.ui.JDTDebugActionSet",
+        "org.eclipse.ui.edit.text.actionSet.openExternalFile",
+//        "org.eclipse.debug.ui.profileActionSet"
     };
+
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -72,9 +66,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
     /**
      * Standard constructor
-     *
      * @param configurer
-     *            - the workbench window configurer
+     *              - the workbench window configurer
      */
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         super(configurer);
@@ -100,31 +93,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     @Override
     public void postWindowCreate() {
         super.postWindowOpen();
-        if (TracingRcpPlugin.getDefault() != null && TracingRcpPlugin.getDefault().getWorkbench() != null && TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow() != null) {
-            TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(new PerspectiveListener());
-            createDefaultProject();
-            hideActionSets();
-            openTraceIfNecessary();
-        }
-
-    }
-
-    private static void openTraceIfNecessary() {
-        String traceToOpen = TracingRcpPlugin.getDefault().getCli().getArgument(CliParser.OPEN_FILE_LOCATION);
-        if (traceToOpen != null) {
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            final IWorkspaceRoot root = workspace.getRoot();
-            IProject project = root.getProject(Messages.ApplicationWorkbenchWindowAdvisor_DefaultProjectName);
-            final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-            ncp.getChildren(project); // force the model to be populated
-            OpenTraceHelper oth = new OpenTraceHelper();
-            try {
-                oth.open(traceToOpen, TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getShell());
-            } catch (CoreException e) {
-                TracingRcpPlugin.getDefault().logError(e.getMessage());
-            }
-
-        }
+        TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(new PerspectiveListener());
+        createDefaultProject();
+        hideActionSets();
     }
 
     // ------------------------------------------------------------------------
@@ -148,14 +119,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     }
 
     /**
-     * A perspective listener implementation
-     *
-     * @author Bernd Hufmann
+     *  A perspective listener implementation
+     *  @author Bernd Hufmann
      */
     public class PerspectiveListener implements IPerspectiveListener {
 
         /**
-         * Default Constructor
+         *  Default Constructor
          */
         public PerspectiveListener() {
         }

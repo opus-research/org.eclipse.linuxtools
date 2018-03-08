@@ -11,11 +11,7 @@
  **********************************************************************/
 package org.eclipse.linuxtools.internal.tracing.rcp.ui;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.internal.tracing.rcp.ui.commands.TextDump;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -40,7 +36,6 @@ public class TracingRcpPlugin extends AbstractUIPlugin {
 
     // The shared instance
     private static TracingRcpPlugin fPlugin;
-    private static CliParser cli;
 
     // ------------------------------------------------------------------------
     // Constructor(s)
@@ -70,79 +65,22 @@ public class TracingRcpPlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         fPlugin = this;
-        String args[] = Platform.getCommandLineArgs();
-        cli = null;
-        try {
-            cli = new CliParser(args);
-            if (null != cli.getArgument(CliParser.NO_UI)) {
-                TextDump.babelTrace(cli.getArgument(CliParser.OPEN_FILE_LOCATION));
-                stop(context);
-            }
-        } catch (CliException e) {
-            logError(e.getMessage());
         }
-    }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         fPlugin = null;
         super.stop(context);
-    }
+}
 
     /**
-     * Gets the command line parser
+     * Returns an image descriptor for the image file at the given
+     * plug-in relative path
      *
-     * @return the command line parser
-     */
-    public CliParser getCli() {
-        return cli;
-    }
-
-    /**
-     * Returns an image descriptor for the image file at the given plug-in
-     * relative path
-     *
-     * @param path
-     *            the path
+     * @param path the path
      * @return the image descriptor
      */
     public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
-
-    /**
-     * Log an error
-     *
-     * @param message
-     *            the error message to log
-     */
-    public void logError(String message) {
-        getDefault().getLog()
-                .log(new Status(IStatus.ERROR, PLUGIN_ID, message));
-    }
-
-    /**
-     * Log an error
-     *
-     * @param message
-     *            the error message to log
-     * @param e
-     *            the exception to log
-     */
-    public void logError(String message, Exception e) {
-        getDefault().getLog().log(
-                new Status(IStatus.WARNING, PLUGIN_ID, message, e));
-    }
-
-    /**
-     * Log a warning
-     *
-     * @param message
-     *            the warning message to log
-     */
-    public void logWarning(String message) {
-        getDefault().getLog().log(
-                new Status(IStatus.WARNING, PLUGIN_ID, message));
-    }
-
 }
