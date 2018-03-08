@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 
 /**
@@ -38,8 +38,8 @@ public class TmfProviderManager {
 	// Keeps track of the providers for each event type
 	// ------------------------------------------------------------------------
 
-	private static Map<Class<? extends ITmfEvent>, List<TmfEventProvider>> fProviders =
-		   new HashMap<Class<? extends ITmfEvent>, List<TmfEventProvider>>();
+	private static Map<Class<? extends ITmfEvent>, List<TmfDataProvider>> fProviders =
+		   new HashMap<Class<? extends ITmfEvent>, List<TmfDataProvider>>();
 
 	/**
 	 * Registers [provider] as a provider of [eventType]
@@ -47,9 +47,9 @@ public class TmfProviderManager {
 	 * @param eventType The event type
 	 * @param provider The data provider
 	 */
-	public static <T extends ITmfEvent> void register(Class<T> eventType, TmfEventProvider provider) {
+	public static <T extends ITmfEvent> void register(Class<T> eventType, TmfDataProvider provider) {
 		if (fProviders.get(eventType) == null) {
-            fProviders.put(eventType, new ArrayList<TmfEventProvider>());
+            fProviders.put(eventType, new ArrayList<TmfDataProvider>());
         }
 		fProviders.get(eventType).add(provider);
 	}
@@ -60,8 +60,8 @@ public class TmfProviderManager {
 	 * @param eventType The event type
 	 * @param provider The data provider
 	 */
-	public static <T extends ITmfEvent> void deregister(Class<T> eventType, TmfEventProvider provider) {
-		List<TmfEventProvider> list = fProviders.get(eventType);
+	public static <T extends ITmfEvent> void deregister(Class<T> eventType, TmfDataProvider provider) {
+		List<TmfDataProvider> list = fProviders.get(eventType);
 		if (list != null) {
 			list.remove(provider);
 			if (list.size() == 0) {
@@ -76,12 +76,12 @@ public class TmfProviderManager {
 	 * @param eventType The event type
 	 * @return the list of components that provide [eventType]
 	 */
-	public static TmfEventProvider[] getProviders(Class<? extends ITmfEvent> eventType) {
-		List<TmfEventProvider> list = fProviders.get(eventType);
+	public static TmfDataProvider[] getProviders(Class<? extends ITmfEvent> eventType) {
+		List<TmfDataProvider> list = fProviders.get(eventType);
 		if (list == null) {
-            list = new ArrayList<TmfEventProvider>();
+            list = new ArrayList<TmfDataProvider>();
         }
-		TmfEventProvider[] result = new TmfEventProvider[list.size()];
+		TmfDataProvider[] result = new TmfDataProvider[list.size()];
 		return list.toArray(result);
 	}
 
@@ -92,20 +92,20 @@ public class TmfProviderManager {
 	 * @param providerType The data provider
      * @return the list of components of type [providerType] that provide [eventType]
 	 */
-	public static TmfEventProvider[] getProviders(Class<? extends ITmfEvent> eventType, Class<? extends TmfEventProvider> providerType) {
+	public static TmfDataProvider[] getProviders(Class<? extends ITmfEvent> eventType, Class<? extends TmfDataProvider> providerType) {
 		if (providerType == null) {
 			return getProviders(eventType);
 		}
-		TmfEventProvider[] list = getProviders(eventType);
-		List<TmfEventProvider> result = new ArrayList<TmfEventProvider>();
+		TmfDataProvider[] list = getProviders(eventType);
+		List<TmfDataProvider> result = new ArrayList<TmfDataProvider>();
 		if (list != null) {
-			for (TmfEventProvider provider : list) {
+			for (TmfDataProvider provider : list) {
 				if (provider.getClass() == providerType) {
 					result.add(provider);
 				}
 			}
 		}
-		TmfEventProvider[] array = new TmfEventProvider[result.size()];
+		TmfDataProvider[] array = new TmfDataProvider[result.size()];
 		return result.toArray(array);
 	}
 
