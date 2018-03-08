@@ -24,10 +24,10 @@ public class UpdateManager {
 		updateListeners = new ArrayList<IUpdateListener>();
 		stopped = false;
 		disposed = false;
-		timer = new Timer("Update Manager", true);
+		timer = new Timer("Update Manager", true); //$NON-NLS-1$
 		timer.scheduleAtFixedRate(new Notify(), delay, delay);
 	}
-	
+
 	/**
 	 * Terminates the timer and removes all update listeners.
 	 */
@@ -36,10 +36,10 @@ public class UpdateManager {
 			stopped = true;
 			timer.cancel();
 			for(int i=0; i<updateListeners.size(); i++)
-				removeUpdateListener((IUpdateListener)updateListeners.get(i));
+				removeUpdateListener(updateListeners.get(i));
 		}
 	}
-	
+
 	public void addUpdateListener(IUpdateListener l) {
 		if(!updateListeners.contains(l))
 			updateListeners.add(l);
@@ -48,11 +48,11 @@ public class UpdateManager {
 		if(updateListeners.contains(l))
 			updateListeners.remove(l);
 	}
-	
+
 	public boolean isRunning() {
 		return !stopped;
 	}
-	
+
 	public void dispose() {
 		if(!disposed) {
 			disposed = true;
@@ -61,22 +61,20 @@ public class UpdateManager {
 			updateListeners = null;
 		}
 	}
-	
+
 	/**
 	 * Handle any events that are timed to occur.
 	 */
 	private class Notify extends TimerTask {
+		@Override
 		public void run() {
-			try{
 			if(!stopped) {
 				for(int i = 0; i < updateListeners.size(); i++)
-					((IUpdateListener)(updateListeners.get(i))).handleUpdateEvent();
+					(updateListeners.get(i)).handleUpdateEvent();
 			}
-			}catch(Exception e) {;}
 		}
-			
 	}
-	
+
 	private Timer timer;
 	private ArrayList<IUpdateListener> updateListeners;
 	private boolean stopped;

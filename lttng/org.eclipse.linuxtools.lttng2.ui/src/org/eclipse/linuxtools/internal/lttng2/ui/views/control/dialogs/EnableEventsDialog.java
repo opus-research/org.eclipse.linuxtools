@@ -334,8 +334,20 @@ public class EnableEventsDialog extends Dialog implements IEnableEventsDialog  {
         if (fDomain != null) {
             fIsKernel = fDomain.isKernel();
         } else {
-            fIsKernel = true;
+            fIsKernel = fProviderGroup != null ? fProviderGroup.hasKernelProvider() : true;
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getFilterExpression()
+     */
+    @Override
+    public String getFilterExpression() {
+        if (!fIsKernel) {
+            return fUstComposite.getFilterExpression();
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------------
@@ -380,7 +392,7 @@ public class EnableEventsDialog extends Dialog implements IEnableEventsDialog  {
         fUstButton.setText(Messages.TraceControl_UstDisplayName);
         fUstButton.setSelection(!fIsKernel);
 
-        if (fDomain != null) {
+        if ((fDomain != null) || ((fProviderGroup != null) && (!fProviderGroup.hasKernelProvider()))) {
             fKernelButton.setEnabled(false);
             fUstButton.setEnabled(false);
         }

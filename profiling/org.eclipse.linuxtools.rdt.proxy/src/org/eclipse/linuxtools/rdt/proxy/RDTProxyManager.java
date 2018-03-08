@@ -25,6 +25,8 @@ import org.eclipse.ptp.remote.core.PTPRemoteCorePlugin;
 
 public class RDTProxyManager implements IRemoteProxyManager {
 
+	public final static String SYNC_NATURE = "org.eclipse.ptp.rdt.sync.core.remoteSyncNature"; //$NON-NLS-1$
+	
 	@Override
 	public IRemoteFileProxy getFileProxy(URI uri) throws CoreException {
 		return new RDTFileProxy(uri);
@@ -36,19 +38,17 @@ public class RDTProxyManager implements IRemoteProxyManager {
 	}
 
 	@Override
-	public IRemoteCommandLauncher getLauncher(URI uri)
-			throws CoreException {
+	public IRemoteCommandLauncher getLauncher(URI uri) {
 		return new RDTCommandLauncher(uri);
 	}
 
 	@Override
-	public IRemoteCommandLauncher getLauncher(IProject project)
-			throws CoreException {
+	public IRemoteCommandLauncher getLauncher(IProject project) {
 		return new RDTCommandLauncher(project);
 	}
 
 	@Override
-	public String getOS(URI uri) throws CoreException {
+	public String getOS(URI uri) {
 		IRemoteServices services = PTPRemoteCorePlugin.getDefault().getRemoteServices(uri);
 		IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
 		String os = connection.getProperty(IRemoteConnection.OS_NAME_PROPERTY);
@@ -59,7 +59,7 @@ public class RDTProxyManager implements IRemoteProxyManager {
 	}
 
 	@Override
-	public String getOS(IProject project) throws CoreException {
+	public String getOS(IProject project) {
 		URI uri = project.getLocationURI();
 		return getOS(uri);
 	}

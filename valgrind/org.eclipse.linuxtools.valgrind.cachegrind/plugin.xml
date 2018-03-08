@@ -17,5 +17,19 @@
             definitionId="org.eclipse.linuxtools.valgrind.launch.cachegrind">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.linuxtools.profiling.launch.launchProvider">
+      <provider
+            delegate="org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchConfigurationDelegate"
+            description="%cachegrindLaunchConfiguration.description.0"
+            id="org.eclipse.linuxtools.profiling.provider.valgrind.cachegrind"
+            information="%cachegrindLaunchConfiguration.information.0"
+            name="%cachegrindLaunchConfiguration.name.0"
+            priority="2"
+            shortcut="org.eclipse.linuxtools.internal.valgrind.cachegrind.CachegrindLaunchShortcut"
+            tabgroup="org.eclipse.linuxtools.internal.valgrind.cachegrind.CachegrindLaunchConfigurationTabGroup"
+            type="timing">
+      </provider>
+   </extension>   
 
 </plugin>

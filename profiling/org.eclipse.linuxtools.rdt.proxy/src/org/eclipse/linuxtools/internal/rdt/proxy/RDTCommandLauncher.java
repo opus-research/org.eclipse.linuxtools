@@ -21,13 +21,15 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.rdt.proxy.Activator;
+import org.eclipse.linuxtools.rdt.proxy.RDTProxyManager;
 import org.eclipse.ptp.remote.core.IRemoteConnection;
 import org.eclipse.ptp.remote.core.IRemoteFileManager;
 import org.eclipse.ptp.remote.core.IRemoteProcess;
 import org.eclipse.ptp.remote.core.IRemoteProcessBuilder;
+import org.eclipse.ptp.remote.core.IRemoteResource;
 import org.eclipse.ptp.remote.core.IRemoteServices;
 import org.eclipse.ptp.remote.core.PTPRemoteCorePlugin;
 import org.eclipse.ptp.remote.core.RemoteProcessAdapter;
@@ -64,7 +66,16 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 	public RDTCommandLauncher(IProject project) {
 		fProcess = null;
 		fShowCommand = false;
-		uri = project.getLocationURI();
+		try {
+			if (project.hasNature(RDTProxyManager.SYNC_NATURE)) {
+				IRemoteResource remoteRes = (IRemoteResource)project.getAdapter(IRemoteResource.class);
+				uri = remoteRes.getActiveLocationURI();
+			} else{
+				uri = project.getLocationURI();
+			}
+		} catch (CoreException e) {
+			uri = project.getLocationURI();
+		}
 		lineSeparator = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
@@ -128,7 +139,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 	 * @see org.eclipse.cdt.core.IRemoteCommandLauncher#execute(IPath, String[], String[], IPath, IProgressMonitor)
 	 */
 	@Override
-	public Process execute(IPath commandPath, String[] args, String[] env, IPath changeToDirectory, IProgressMonitor monitor) throws CoreException {
+	public Process execute(IPath commandPath, String[] args, String[] env, IPath changeToDirectory, IProgressMonitor monitor) {
 		try {
 			// add platform specific arguments (shell invocation)
 			fCommandArgs = constructCommandArray(commandPath.toOSString(), args);
@@ -154,7 +165,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 						envMap.put(tokens[0], tokens[1]);
 						break;
 					default:
-						Activator.log(Status.WARNING, Messages.RDTCommandLauncher_malformed_env_var_string + s);
+						Activator.log(IStatus.WARNING, Messages.RDTCommandLauncher_malformed_env_var_string + s);
 				}
 			}
 

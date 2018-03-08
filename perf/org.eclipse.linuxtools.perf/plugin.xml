@@ -33,7 +33,7 @@
             icon="icons/symbol.gif"
             id="org.eclipse.linuxtools.perf.launch.profileshortcut"
             label="Profile with Perf"
-            modes="profile">
+            modes="linuxtools">
          <contextualLaunch>
             <enablement>
                <with
@@ -78,7 +78,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate"
             id="org.eclipse.linuxtools.perf.launch.profile"
-            modes="profile"
+            modes="linuxtools"
             name="Profile with Perf"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator"
@@ -87,7 +87,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.perf.remote.launch.PerfLaunchConfigDelegate"
             id="org.eclipse.linuxtools.perf.remote.launch.profile"
-            modes="profile"
+            modes="linuxtools"
             name="Profile with Remote Perf"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator"
@@ -136,11 +136,14 @@
          point="org.eclipse.linuxtools.profiling.launch.launchProvider">
       <provider
             delegate="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate"
+            description="%perfLaunchConfiguration.description"
             id="org.eclipse.linuxtools.perf.provider"
+            information="%perfLaunchConfiguration.information"
+            name="%perfLaunchConfiguration.name.0"
             priority="1"
             shortcut="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchShortcut"
             tabgroup="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigurationTabGroup"
-            type="snapshot">
+            type="timing">
       </provider>
    </extension>   
 </plugin>

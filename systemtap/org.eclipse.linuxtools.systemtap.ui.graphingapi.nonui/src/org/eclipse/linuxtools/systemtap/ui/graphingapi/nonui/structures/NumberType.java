@@ -23,16 +23,16 @@ public final class NumberType {
 	 */
 	public static Number getNumber(Number orig, double num) {
 		if(orig instanceof Long)
-			return new Long((long)num);
+			return Long.valueOf((long)num);
 		else if(orig instanceof Double)
-			return new Double(num);
+			return Double.valueOf(num);
 		else if(orig instanceof Float)
-			return new Float((float)num);
+			return Float.valueOf((float)num);
 		else if(orig instanceof Byte)
-			return new Byte((byte)num);
+			return Byte.valueOf((byte)num);
 		else if(orig instanceof Short)
-			return new Short((short)num);
-		return new Integer((int)num);
+			return Short.valueOf((short)num);
+		return Integer.valueOf((int)num);
 	}
 	
 	/**
@@ -63,7 +63,7 @@ public final class NumberType {
 		try {
 			n = cleanObj2Num(o);
 		} catch(NumberFormatException e ) {
-			n = new Long(0);
+			n = Long.valueOf(0);
 		}
 		return n;
 	}
@@ -76,7 +76,7 @@ public final class NumberType {
 	 * 
 	 * @return The Number array cleaned.
 	 */
-	public static Number[] cleanObj2Num(Object[] o) throws NumberFormatException {
+	public static Number[] cleanObj2Num(Object[] o) {
 		Number[] arr = new Number[o.length];
 		for(int i = 0; i < o.length; i++)
 			arr[i] = cleanObj2Num(o[i]);
@@ -92,14 +92,14 @@ public final class NumberType {
 	 * 
 	 * @return The Number object cleaned.
 	 */
-	public static Number cleanObj2Num(Object o) throws NumberFormatException {
+	public static Number cleanObj2Num(Object o) {
 		if(o instanceof Number)
 			return (Number)o;
 		else {
 			if(o.toString().contains("."))
-				return new Double(Double.parseDouble(o.toString()));
+				return Double.valueOf(o.toString());
 			else
-				return new Long(Long.parseLong(o.toString()));
+				return Long.valueOf(o.toString());
 		}
 	}
 }

@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.ssh.proxy;
 
-import org.eclipse.linuxtools.internal.ssh.proxy.Messages;
+import java.text.MessageFormat;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -26,10 +26,20 @@ import org.eclipse.swt.widgets.Text;
 public class SSHPasswordDialog extends Dialog {
 	private String password;
 	private Text passwordField;
-	public SSHPasswordDialog(Shell parent) {
+	private String user, host;
+	public SSHPasswordDialog(Shell parent, String user, String host) {
 		super(parent);
+		this.user = user;
+		this.host = host;
 	}
 
+	@Override
+	protected void configureShell(Shell shell) {
+		super.configureShell(shell);
+		shell.setText(Messages.SSHPasswordDialog_Title);
+	}
+
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite comp = (Composite) super.createDialogArea(parent);
 		
@@ -40,7 +50,15 @@ public class SSHPasswordDialog extends Dialog {
 		}
 		((GridLayout)layout).numColumns = 2;
 
+		Label passwordTitle= new Label(comp, SWT.RIGHT);
 		Label passwordLabel = new Label(comp, SWT.RIGHT);
+		GridData gridData = new GridData(GridData.VERTICAL_ALIGN_END);
+		gridData.horizontalSpan = 2;
+		gridData.horizontalAlignment = GridData.FILL;
+		passwordTitle.setLayoutData(gridData);
+		if (host != null && user != null)
+			passwordTitle.setText(MessageFormat.format(Messages.SSHPasswordDialog_Password_Title, user, host));
+
 		passwordLabel.setText(Messages.SSHPasswordDialog_Password);
 
 		passwordField = new Text(comp, SWT.SINGLE | SWT.PASSWORD);
@@ -50,10 +68,10 @@ public class SSHPasswordDialog extends Dialog {
 	}
 
 
-	protected void buttonPressed(int buttonId) {
-		if (buttonId == Dialog.OK)
-			this.password = passwordField.getText();
-		super.buttonPressed(buttonId);
+	@Override
+	protected void okPressed() {
+		this.password = passwordField.getText();
+		super.okPressed();
 	}
 
 	public String getPassword() {

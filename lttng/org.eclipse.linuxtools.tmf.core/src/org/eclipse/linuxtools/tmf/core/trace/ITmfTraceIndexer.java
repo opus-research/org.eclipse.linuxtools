@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
  * @see ITmfTrace
  * @see ITmfEvent
  */
-public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
+public interface ITmfTraceIndexer {
 
     /**
      * Start an asynchronous index building job and waits for the job completion

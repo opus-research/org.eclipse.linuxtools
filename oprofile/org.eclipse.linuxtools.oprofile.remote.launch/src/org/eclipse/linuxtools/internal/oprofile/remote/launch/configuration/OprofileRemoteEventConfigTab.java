@@ -3,7 +3,6 @@ package org.eclipse.linuxtools.internal.oprofile.remote.launch.configuration;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider;
-import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider2;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileCounter;
@@ -25,14 +24,12 @@ public class OprofileRemoteEventConfigTab extends OprofileEventConfigTab  {
 	public OprofileRemoteEventConfigTab(){
 	}
 
+	@Override
 	protected boolean hasPermissions(IProject project){
 		try{
 			if (this.hasPermissions == null){
 				IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
-				if (provider instanceof IOpcontrolProvider2)
-					this.hasPermissions = ((IOpcontrolProvider2)provider).hasPermissions(project);
-				else
-					this.hasPermissions = true;
+				this.hasPermissions = provider.hasPermissions(project);
 			}
 		} catch(OpcontrolException e){
 			return false;
@@ -41,6 +38,7 @@ public class OprofileRemoteEventConfigTab extends OprofileEventConfigTab  {
 
 	}
 
+	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 		// Force re-check of permissions every time the view is initialized
 		this.hasPermissions = null;

@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
@@ -31,8 +32,8 @@ import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings({ "nls" })
-public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSyntheticEventStub> {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfSyntheticEventProviderStub extends TmfEventProvider {
 
     public static final int BLOCK_SIZE = 100;
     public static final int NB_EVENTS  = 1000;
@@ -41,31 +42,31 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
         super("TmfSyntheticEventProviderStub", TmfSyntheticEventStub.class);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public ITmfContext armRequest(final ITmfDataRequest<TmfSyntheticEventStub> request) {
+    public ITmfContext armRequest(final ITmfDataRequest request) {
 
         // Get the TmfSyntheticEventStub provider
-        final ITmfDataProvider<TmfEvent>[] eventProviders = (ITmfDataProvider<TmfEvent>[]) TmfProviderManager.getProviders(TmfEvent.class, TmfEventProviderStub.class);
-        final ITmfDataProvider<TmfEvent> provider = eventProviders[0];
+        final ITmfDataProvider[] eventProviders = TmfProviderManager.getProviders(TmfEvent.class, TmfEventProviderStub.class);
+        final ITmfDataProvider provider = eventProviders[0];
 
         // make sure we have the right type of request
-        if (!(request instanceof ITmfEventRequest<?>)) {
+        if (!(request instanceof ITmfEventRequest)) {
             request.cancel();
             return null;
         }
 
-        final TmfEventRequest<TmfSyntheticEventStub> eventRequest = (TmfEventRequest<TmfSyntheticEventStub>) request;
+        final TmfEventRequest eventRequest = (TmfEventRequest) request;
         final TmfTimeRange range = eventRequest.getRange();
-        final TmfEventRequest<TmfEvent> subRequest =
-                new TmfEventRequest<TmfEvent>(TmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
+        final TmfEventRequest subRequest =
+                new TmfEventRequest(TmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
             @Override
-            public void handleData(final TmfEvent event) {
+            public void handleData(final ITmfEvent event) {
                 super.handleData(event);
-                if (event != null)
+                if (event != null) {
                     handleIncomingData(event);
-                else
+                } else {
                     request.done();
+                }
             }
         };
         provider.sendRequest(subRequest);
@@ -75,7 +76,7 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
     }
 
     // Queue 2 synthetic events per base event
-    private void handleIncomingData(final TmfEvent e) {
+    private void handleIncomingData(final ITmfEvent e) {
         queueResult(new TmfSyntheticEventStub(e));
         queueResult(new TmfSyntheticEventStub(e));
     }
@@ -86,9 +87,10 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
     public TmfSyntheticEventStub getNext(final ITmfContext context) {
         TmfSyntheticEventStub data = null;
         try {
-            data = fDataQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-            if (data == null)
+            data = (TmfSyntheticEventStub) fDataQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+            if (data == null) {
                 throw new InterruptedException();
+            }
         }
         catch (final InterruptedException e) {
         }
@@ -99,8 +101,9 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSynthetic
         boolean ok = false;
         try {
             ok = fDataQueue.offer(data, TIMEOUT, TimeUnit.MILLISECONDS);
-            if (!ok)
+            if (!ok) {
                 throw new InterruptedException();
+            }
         }
         catch (final InterruptedException e) {
         }

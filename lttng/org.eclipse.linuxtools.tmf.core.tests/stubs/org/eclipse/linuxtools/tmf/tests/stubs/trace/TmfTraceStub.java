@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
@@ -29,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
@@ -37,8 +38,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-@SuppressWarnings("nls")
-public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<TmfEvent> {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -53,14 +54,12 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     // The synchronization lock
     private final ReentrantLock fLock = new ReentrantLock();
 
+    private ITmfTimestamp fInitialRangeOffset = null;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /**
-     * @param path
-     * @throws FileNotFoundException
-     */
     public TmfTraceStub() {
         super();
         setParser(new TmfEventParserStub(this));
@@ -103,7 +102,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @param cacheSize
      * @throws FileNotFoundException
      */
-    public TmfTraceStub(final String path, final int cacheSize, final ITmfTraceIndexer<?> indexer) throws TmfTraceException {
+    public TmfTraceStub(final String path, final int cacheSize, final ITmfTraceIndexer indexer) throws TmfTraceException {
         this(path, cacheSize, false, null, indexer);
     }
 
@@ -159,7 +158,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion,
-            final ITmfEventParser<TmfEvent> parser, final ITmfTraceIndexer<?> indexer) throws TmfTraceException {
+            final ITmfEventParser parser, final ITmfTraceIndexer indexer) throws TmfTraceException {
         super(null, TmfEvent.class, path, cacheSize, 0, indexer);
         try {
             fTrace = new RandomAccessFile(path, "r");
@@ -187,7 +186,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public void initTrace(final IResource resource, final String path, final Class<TmfEvent> type) throws TmfTraceException {
+    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         try {
             fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
@@ -198,7 +197,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public void initialize(final IResource resource, final String path, final Class<TmfEvent> type) throws TmfTraceException {
+    public void initialize(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         super.initialize(resource, path, type);
     }
 
@@ -210,13 +209,24 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
         return fTrace;
     }
 
+    public void setInitialRangeOffset(ITmfTimestamp initOffset) {
+        fInitialRangeOffset = initOffset;
+    }
+
+    @Override
+    public ITmfTimestamp getInitialRangeOffset() {
+        if (fInitialRangeOffset != null) {
+            return fInitialRangeOffset;
+        }
+        return super.getInitialRangeOffset();
+    }
+
     // ------------------------------------------------------------------------
     // Operators
     // ------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
-    public TmfContext seekEvent(final ITmfLocation<?> location) {
+    public TmfContext seekEvent(final ITmfLocation location) {
         try {
             fLock.lock();
             try {
@@ -226,7 +236,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
                     long loc  = 0;
                     long rank = 0;
                     if (location != null) {
-                        loc = ((TmfLocation<Long>) location).getLocation();
+                        loc = (Long) location.getLocationInfo();
                         rank = ITmfContext.UNKNOWN_RANK;
                     }
                     if (loc != fTrace.getFilePointer()) {
@@ -255,7 +265,7 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
         fLock.lock();
         try {
             if (fTrace != null) {
-                final ITmfLocation<?> location = new TmfLocation<Long>(Long.valueOf((long) (ratio * fTrace.length())));
+                final ITmfLocation location = new TmfLongLocation(Long.valueOf(Math.round(ratio * fTrace.length())));
                 final TmfContext context = seekEvent(location);
                 context.setRank(ITmfContext.UNKNOWN_RANK);
                 return context;
@@ -270,12 +280,14 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public double getLocationRatio(ITmfLocation<?> location) {
+    public double getLocationRatio(ITmfLocation location) {
         fLock.lock();
         try {
-            if (fTrace != null)
-                if (location.getLocation() instanceof Long)
-                    return (double) ((Long) location.getLocation()) / fTrace.length();
+            if (fTrace != null) {
+                if (location.getLocationInfo() instanceof Long) {
+                    return (double) ((Long) location.getLocationInfo()) / fTrace.length();
+                }
+            }
         } catch (final IOException e) {
             e.printStackTrace();
         } finally {
@@ -285,11 +297,12 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public TmfLocation<Long> getCurrentLocation() {
+    public ITmfLocation getCurrentLocation() {
         fLock.lock();
         try {
-            if (fTrace != null)
-                return new TmfLocation<Long>(fTrace.getFilePointer());
+            if (fTrace != null) {
+                return new TmfLongLocation(fTrace.getFilePointer());
+            }
         } catch (final IOException e) {
             e.printStackTrace();
         } finally {
@@ -299,12 +312,12 @@ public class TmfTraceStub extends TmfTrace<TmfEvent> implements ITmfEventParser<
     }
 
     @Override
-    public TmfEvent parseEvent(final ITmfContext context) {
+    public ITmfEvent parseEvent(final ITmfContext context) {
         fLock.lock();
         try {
             // parseNextEvent will update the context
             if (fTrace != null && getParser() != null && context != null) {
-                final TmfEvent event = getParser().parseEvent(context.clone());
+                final ITmfEvent event = getParser().parseEvent(context.clone());
                 return event;
             }
         } finally {

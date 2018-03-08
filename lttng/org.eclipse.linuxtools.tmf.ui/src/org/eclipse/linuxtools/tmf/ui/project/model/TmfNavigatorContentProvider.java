@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Bernd Hufmann - Implement getParent()
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -55,6 +56,34 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
      */
     @Override
     public Object getParent(Object element) {
+        if (element instanceof IProject) {
+            IProject project = (IProject) element;
+            return project.getParent();
+        }
+
+        if (element instanceof TmfTraceFolder) {
+            TmfTraceFolder folder = (TmfTraceFolder) element;
+            // Return the corresponding IProject as parent because from CNF point of view the IProject is the parent.
+            // The IProject is needed e.g. for link with Editor to work correctly.
+            return folder.getParent().getResource();
+        }
+
+        if (element instanceof TmfTraceElement) {
+            TmfTraceElement traceElement = (TmfTraceElement) element;
+            return traceElement.getParent();
+        }
+
+        if (element instanceof TmfExperimentFolder) {
+            TmfExperimentFolder folder = (TmfExperimentFolder) element;
+            // Return the corresponding IProject as parent because from CNF point of view the IProject is the parent.
+            // The IProject is needed e.g. for link with Editor to work correctly.
+            return folder.getParent().getResource();
+        }
+
+        if (element instanceof TmfExperimentElement) {
+            TmfExperimentElement expElement = (TmfExperimentElement) element;
+            return expElement.getParent();
+        }
         return null;
     }
 
@@ -345,7 +374,6 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
      * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedChildren(java.lang.Object, java.util.Set)
      */
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void getPipelinedChildren(Object parent, Set currentChildren) {
         customizeTmfElements(getChildren(parent), currentChildren);
     }
@@ -355,7 +383,6 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
      * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedElements(java.lang.Object, java.util.Set)
      */
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void getPipelinedElements(Object input, Set currentElements) {
         customizeTmfElements(getElements(input), currentElements);
     }

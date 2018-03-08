@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -25,15 +25,14 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * <b><u>TmfEventParserStub</u></b>
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings("nls")
-public class TmfEventParserStub implements ITmfEventParser<TmfEvent> {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfEventParserStub implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -41,13 +40,13 @@ public class TmfEventParserStub implements ITmfEventParser<TmfEvent> {
 
     private static final int NB_TYPES = 10;
     private final TmfEventType[] fTypes;
-    private ITmfTrace<TmfEvent> fEventStream;
+    private final ITmfTrace fEventStream;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    public TmfEventParserStub(final ITmfTrace<TmfEvent> eventStream) {
+    public TmfEventParserStub(final ITmfTrace eventStream) {
         fEventStream = eventStream;
         fTypes = new TmfEventType[NB_TYPES];
         for (int i = 0; i < NB_TYPES; i++) {
@@ -68,11 +67,11 @@ public class TmfEventParserStub implements ITmfEventParser<TmfEvent> {
 
     static final String typePrefix = "Type-";
     @Override
-    @SuppressWarnings("unchecked")
     public TmfEvent parseEvent(final ITmfContext context) {
 
-        if (! (fEventStream instanceof TmfTraceStub))
+        if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
+        }
 
         // Highly inefficient...
         final RandomAccessFile stream = ((TmfTraceStub) fEventStream).getStream();
@@ -83,7 +82,7 @@ public class TmfEventParserStub implements ITmfEventParser<TmfEvent> {
 
         long location = 0;
         if (context != null && context.getLocation() != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
+            location = (Long) context.getLocation().getLocationInfo();
             try {
                 stream.seek(location);
 
@@ -93,14 +92,17 @@ public class TmfEventParserStub implements ITmfEventParser<TmfEvent> {
                 final Integer reference  = stream.readInt();
                 final int typeIndex  = Integer.parseInt(type.substring(typePrefix.length()));
                 final String[] fields = new String[typeIndex];
-                for (int i = 0; i < typeIndex; i++)
+                for (int i = 0; i < typeIndex; i++) {
                     fields[i] = stream.readUTF();
+                }
 
                 final StringBuffer content = new StringBuffer("[");
-                if (typeIndex > 0)
+                if (typeIndex > 0) {
                     content.append(fields[0]);
-                for (int i = 1; i < typeIndex; i++)
+                }
+                for (int i = 1; i < typeIndex; i++) {
                     content.append(", ").append(fields[i]);
+                }
                 content.append("]");
 
                 final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString());
