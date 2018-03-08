@@ -222,13 +222,8 @@ public abstract class TmfEventRequest extends TmfDataRequest implements ITmfEven
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        String name = getClass().getName();
-        int dot = name.lastIndexOf('.');
-        if (dot >= 0) {
-            name = name.substring(dot + 1);
-        }
-        return "[" + name + "(" + getRequestId() + "," + getDataType().getSimpleName() + "," + getExecType()
-                + "," + getRange() + "," + getIndex() + "," + getNbRequested() + "," + getBlockSize() + ")]";
+		return "[TmfEventRequest(" + getRequestId() + "," + getDataType().getSimpleName()
+			+ "," + getRange() + "," + getIndex() + "," + getNbRequested() + "," + getBlockSize() + ")]";
     }
 
 }
