@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * A state value containing a long integer (8 bytes).
  *
@@ -20,10 +22,10 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
  */
 final class LongStateValue extends TmfStateValue {
 
-    private final long valueLong;
+    private final long value;
 
     public LongStateValue(long valueAsLong) {
-        this.valueLong = valueAsLong;
+        this.value = valueAsLong;
     }
 
     @Override
@@ -35,14 +37,31 @@ final class LongStateValue extends TmfStateValue {
     public boolean isNull() {
         return false;
     }
-
     @Override
-    public Long getValue() {
-        return valueLong;
+    public boolean equals(@Nullable Object object) {
+        if (!(object instanceof LongStateValue)) {
+            return false;
+        }
+        LongStateValue other = (LongStateValue) object;
+        return (this.value == other.value);
     }
 
     @Override
-    public String toString() {
-        return String.format("%3d", valueLong); //$NON-NLS-1$
+    public int hashCode() {
+        return ((int) value) ^ ((int) (value >>> 32));
+    }
+
+    @Override
+    public @Nullable String toString() {
+        return String.format("%3d", value); //$NON-NLS-1$
+    }
+
+    // ------------------------------------------------------------------------
+    // Unboxing methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public long unboxLong() {
+        return value;
     }
 }
