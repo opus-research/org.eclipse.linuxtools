@@ -451,15 +451,13 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return fCurrentRange;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getInitialRangeOffset()
-     */
     /**
+     * Returns the initial range offset
+     *
+     * @return the initial range offset
      * @since 2.0
      */
-    @Override
-    public ITmfTimestamp getInitialRangeOffset() {
+    protected TmfTimestamp getInitialRangeOffset() {
         final long DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
         return new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
     }
