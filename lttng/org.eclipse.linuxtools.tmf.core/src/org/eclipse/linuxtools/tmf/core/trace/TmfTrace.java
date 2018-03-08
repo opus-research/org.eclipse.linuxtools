@@ -759,7 +759,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             Activator.log(status);
         }
 
-        refreshResource();
+        /* Refresh the project, so it can pick up new files that got created. */
+        try {
+            if (fResource != null) {
+                fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
 
         if (signal.getTrace() == this) {
             /* Additionally, the signal is directly for this trace. */
@@ -785,19 +792,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                 }
             }.start();
             return;
-        }
-    }
-
-    /**
-     * Refresh the project, so it can pick up new files that got created.
-     */
-    public void refreshResource() {
-        try {
-            if (fResource != null) {
-                fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-            }
-        } catch (CoreException e) {
-            Activator.logError("Error refreshing resources", e); //$NON-NLS-1$
         }
     }
 
