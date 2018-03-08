@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandSh
  */
 public class TestCommandShell implements ICommandShell {
 
-    /** If the shell is connected */
     protected boolean fIsConnected = false;
 
     @Override
