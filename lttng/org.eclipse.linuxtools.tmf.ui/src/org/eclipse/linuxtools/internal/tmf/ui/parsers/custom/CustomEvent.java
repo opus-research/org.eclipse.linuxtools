@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
@@ -42,6 +44,15 @@ public class CustomEvent extends TmfEvent {
 
     /** Empty message */
     protected static final String NO_MESSAGE = ""; //$NON-NLS-1$
+
+    /** Replacement for the super-class' timestamp field */
+    private ITmfTimestamp customEventTimestamp;
+
+    /** Replacement for the super-class' content field */
+    private ITmfEventField customEventContent;
+
+    /** Replacement for the super-class' type field */
+    private ITmfEventType customEventType;
 
     /** The trace to which this event belongs */
     protected CustomTraceDefinition fDefinition;
@@ -100,13 +111,65 @@ public class CustomEvent extends TmfEvent {
         fData = new HashMap<String, String>();
     }
 
+    // ------------------------------------------------------------------------
+    // Overridden getters
+    // ------------------------------------------------------------------------
+
     @Override
     public ITmfTimestamp getTimestamp() {
         if (fData != null) {
             processData();
         }
-        return super.getTimestamp();
+        return customEventTimestamp;
     }
+
+    @Override
+    public ITmfEventField getContent() {
+        return customEventContent;
+    }
+
+    @Override
+    public ITmfEventType getType() {
+        return customEventType;
+    }
+
+    // ------------------------------------------------------------------------
+    // Setters
+    // ------------------------------------------------------------------------
+
+    /**
+     * Set this event's timestamp
+     *
+     * @param timestamp
+     *            The new timestamp
+     */
+    protected void setTimestamp(ITmfTimestamp timestamp) {
+        customEventTimestamp = timestamp;
+    }
+
+    /**
+     * Set this event's content
+     *
+     * @param content
+     *            The new content
+     */
+    protected void setContent(ITmfEventField content) {
+        customEventContent = content;
+    }
+
+    /**
+     * Set this event's type
+     *
+     * @param type
+     *            The new type
+     */
+    protected void setType(ITmfEventType type) {
+        customEventType = type;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other operations
+    // ------------------------------------------------------------------------
 
     /**
      * @return The event fields
