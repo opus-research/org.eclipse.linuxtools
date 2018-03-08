@@ -81,25 +81,6 @@ public class TmfContext implements ITmfContext {
     }
 
     // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public TmfContext clone() {
-        TmfContext clone = null;
-        try {
-            clone = (TmfContext) super.clone();
-            clone.fLocation = (fLocation != null) ? fLocation : null;
-            clone.fRank = fRank;
-        } catch (final CloneNotSupportedException e) {
-        }
-        return clone;
-    }
-
-    // ------------------------------------------------------------------------
     // ITmfContext
     // ------------------------------------------------------------------------
 
