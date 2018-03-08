@@ -29,14 +29,17 @@ import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
  * @author Mathieu Denis
  */
 public class TmfStatisticsTreeNode {
+
     /**
      * Value of the node.
      */
     protected TmfStatistics fValue;
+
     /**
      * Path of the node.
      */
     protected TmfFixedArray<String> fPath;
+
     /**
      * Corresponding StatisticsData.
      */
@@ -50,8 +53,7 @@ public class TmfStatisticsTreeNode {
      * @param nodes
      *            Corresponding StatisticsData.
      */
-    public TmfStatisticsTreeNode(final TmfFixedArray<String> path,
-            AbsTmfStatisticsTree nodes) {
+    public TmfStatisticsTreeNode(final TmfFixedArray<String> path, AbsTmfStatisticsTree nodes) {
         fPath = path;
         fNodes = nodes;
         fValue = new TmfStatistics();
@@ -151,13 +153,5 @@ public class TmfStatisticsTreeNode {
     public void reset() {
         fValue = new TmfStatistics();
         fNodes.reset(fPath);
-    }
-
-    /**
-     * Reset the number of events in the time range.
-     */
-    public void resetTimeRangeValue() {
-        getValue().nbEventsInTimeRange = 0;
-        fNodes.resetTimeRangeValue(fPath);
     }
 }

@@ -32,6 +32,9 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnDataPro
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
 
+/**
+ * TmfBaseColumnDataProvider test cases.
+ */
 @SuppressWarnings("nls")
 public class TmfBaseColumnDataProviderTest extends TestCase {
 
@@ -83,6 +86,10 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     // Housekeeping
     // ------------------------------------------------------------------------
 
+    /**
+     * Constructor
+     * @param name trace name to set
+     */
     public TmfBaseColumnDataProviderTest(final String name) {
         super(name);
 
@@ -115,7 +122,9 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     // ------------------------------------------------------------------------
     // Get Column Data
     // ------------------------------------------------------------------------
-
+    /**
+     * Method with test cases.
+     */
     public void testGetColumnData() {
         List<TmfBaseColumnData> columnsData = provider.getColumnData();
         assertNotNull("getColumnData", columnsData);

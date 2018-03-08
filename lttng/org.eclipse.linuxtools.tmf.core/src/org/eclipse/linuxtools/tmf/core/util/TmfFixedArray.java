@@ -21,7 +21,7 @@ import java.util.RandomAccess;
 
 /**
  * Allow to create a List object that contain an already existing array. Works
- * like {@link java.util.Arrays#asList} but offers more functions :
+ * like {@link java.util.Arrays#asList} but contains more functions :
  * <ul>
  * <li>{@link #hashCode()}</li>
  * <li>{@link #equals(Object)}</li>
@@ -49,10 +49,8 @@ public final class TmfFixedArray<T> extends AbstractList<T> implements RandomAcc
      * @return A new array consisting of the elements specified.
      */
     private static <E> E[] copyOf(final E[] array, int newLength) {
-        E[] result = (E[]) Array.newInstance(
-                array.getClass().getComponentType(), newLength); // Is it useful
-                                                                 // to use
-                                                                 // newInstance?
+        // FIXME Is it useful to use newInstance?
+        E[] result = (E[]) Array.newInstance(array.getClass().getComponentType(), newLength);
         System.arraycopy(array, 0, result, 0, Math.min(array.length, newLength));
         return result;
     }

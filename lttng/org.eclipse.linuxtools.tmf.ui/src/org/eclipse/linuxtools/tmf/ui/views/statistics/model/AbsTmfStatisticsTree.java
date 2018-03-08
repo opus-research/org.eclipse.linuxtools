@@ -33,16 +33,17 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
 public abstract class AbsTmfStatisticsTree {
 
     /**
-     * String builder used to merge string with more efficacy.
+     * String builder used to merge string with more efficiency.
      */
     protected static final StringBuilder fBuilder = new StringBuilder();
+
     /**
      * Identification of the root.
      */
     public static final TmfFixedArray<String> ROOT = new TmfFixedArray<String>("root"); //$NON-NLS-1$
 
     /**
-     * Function to merge many string with more efficacy.
+     * Function to merge many string with more efficiency.
      *
      * @param strings
      *            Strings to merge.
@@ -57,10 +58,11 @@ public abstract class AbsTmfStatisticsTree {
     }
 
     /**
-     * Define what child a node can have. The management and usage of this map
-     * is done by subclass. HashSet are always faster than TreeSet.
+     * Define what children a node can have. The management and usage of this map
+     * is done by subclasses. HashSet are always faster than TreeSet for String keys.
      */
     protected Map<String, Set<String>> fKeys;
+
     /**
      * The nodes in the tree.
      */
@@ -150,7 +152,7 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Increase any kind of counter.
      *
-     * This method must be implemented by subclass.
+     * This method must be implemented by subclasses.
      *
      * @param event
      *            Current event.
@@ -164,7 +166,7 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Register an event.
      *
-     * This method must be implemented by subclass.
+     * This method must be implemented by subclasses.
      *
      * @param event
      *            Current event.
@@ -172,18 +174,6 @@ public abstract class AbsTmfStatisticsTree {
      *            Extra information to pass along with the event.
      */
     public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
-
-    /**
-     * Register an event within a time range.
-     *
-     * This method must be implemented by subclass.
-     *
-     * @param event
-     *            Current event.
-     * @param extraInfo
-     *            Extra information to pass along with the event.
-     */
-    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo);
 
     /**
      * Register that a new node was created.
@@ -208,21 +198,6 @@ public abstract class AbsTmfStatisticsTree {
         for (TmfStatisticsTreeNode node : getAllChildren(path)) {
             reset(node.getPath());
             fNodes.remove(node.getPath());
-        }
-    }
-
-    /**
-     * Reset the time range value of a node.
-     *
-     * Work recursively.
-     *
-     * @param path
-     *            Path to the node.
-     */
-    public void resetTimeRangeValue(final TmfFixedArray<String> path) {
-        for (TmfStatisticsTreeNode node : getChildren(path)) {
-            resetTimeRangeValue(node.getPath());
-            node.resetTimeRangeValue();
         }
     }
 }

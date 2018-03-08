@@ -39,14 +39,6 @@ public class Messages extends NLS {
      */
     public static String TmfStatisticsView_NbEventsTip;
     /**
-     * Partial number of events column.
-     */
-    public static String TmfStatisticsView_NbEventsTimeRangeColumn;
-    /**
-     * Partial number of events column tool tip.
-     */
-    public static String TmfStatisticsView_NbEventsTimeRangeTip;
-    /**
      * String for unknown trace name.
      */
     public static String TmfStatisticsView_UnknownTraceName;

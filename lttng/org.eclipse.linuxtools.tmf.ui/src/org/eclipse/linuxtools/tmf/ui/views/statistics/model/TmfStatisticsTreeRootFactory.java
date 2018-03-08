@@ -28,17 +28,10 @@ import java.util.Map;
  */
 public class TmfStatisticsTreeRootFactory {
 
-    // -----------------------------------------------------------------------
-    // Data
-    // -----------------------------------------------------------------------
     /**
      * Contains the experiment name as the key and the traces data
      */
     private static final Map<String, AbsTmfStatisticsTree> fTreeInstances = new HashMap<String, AbsTmfStatisticsTree>();
-
-    // -----------------------------------------------------------------------
-    // Methods
-    // -----------------------------------------------------------------------
 
     /**
      * Provide a statisticsTree instance per trace

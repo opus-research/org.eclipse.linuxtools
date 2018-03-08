@@ -46,6 +46,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
      * It differentiate a category of a value by being appended to a value.
      */
     protected static final String NODE = "z"; //$NON-NLS-1$
+
     /**
      * Root node key.
      */
@@ -79,6 +80,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsData#getChildren(org.eclipse.linuxtools.tmf.util.TmfFixedArray)
      */
     @Override
@@ -116,6 +118,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsData#getAllChildren(org.eclipse.linuxtools.tmf.util.TmfFixedArray)
      */
     @Override
@@ -190,6 +193,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsData#increase(org.eclipse.linuxtools.tmf.event.TmfEvent, org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfEventInfo, int)
      */
     @Override
@@ -199,6 +203,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /*
      * (non-Javadoc)
+     *
      * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsData#registerEvent(org.eclipse.linuxtools.tmf.event.TmfEvent, org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfEventInfo)
      */
     @Override
@@ -216,25 +221,8 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree#registerEventInTimeRange(org.eclipse.linuxtools.tmf.core.event.ITmfEvent, org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo)
-     */
-    @Override
-    public void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo) {
-        TmfFixedArray<String>[] paths = getNormalPaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
-        }
-
-        paths = getTypePaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsData#registerName
-     * (org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfFixedArray)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree#registerName(org.eclipse.linuxtools.tmf.core.util.TmfFixedArray)
      */
     @Override
     protected void registerName(TmfFixedArray<String> path) {

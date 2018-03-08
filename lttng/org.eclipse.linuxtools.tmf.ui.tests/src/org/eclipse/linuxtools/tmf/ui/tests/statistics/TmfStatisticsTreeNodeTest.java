@@ -31,6 +31,9 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
 
+/**
+ * TmfStatisticsTreeNode Test Cases.
+ */
 @SuppressWarnings("nls")
 public class TmfStatisticsTreeNodeTest extends TestCase {
 
@@ -79,7 +82,7 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
 
     /**
      * @param name
-     *            of the test
+     *            Test name
      */
     public TmfStatisticsTreeNodeTest(final String name) {
         super(name);
@@ -111,6 +114,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // ContainsChild
     // ------------------------------------------------------------------------
 
+    /**
+     * Test checking for child.
+     */
     public void testContainsChild() {
         TmfStatisticsTreeNode rootNode  = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode = fStatsData.get(new TmfFixedArray<String>(fTestName));
@@ -134,6 +140,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of children.
+     */
     public void testGetChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.get(AbsTmfStatisticsTree.ROOT).getChildren();
@@ -174,6 +183,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetAllChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of all children.
+     */
     public void testGetAllChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.get(AbsTmfStatisticsTree.ROOT).getAllChildren();
@@ -219,6 +231,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetNbChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of number of children.
+     */
     public void testGetNbChildren() {
         TmfStatisticsTreeNode rootNode    = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode   = fStatsData.get(new TmfFixedArray<String>(fTestName));
@@ -235,6 +250,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // HasChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test checking for children.
+     */
     public void testHasChildren() {
         TmfStatisticsTreeNode rootNode    = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode   = fStatsData.get(new TmfFixedArray<String>(fTestName));
@@ -251,6 +269,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetParent
     // ------------------------------------------------------------------------
 
+    /**
+     * Test geting oft parent.
+     */
     public void testGetParent() {
         TmfStatisticsTreeNode rootNode = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode parentNode = rootNode.getParent();
@@ -288,6 +309,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetKey
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of key.
+     */
     public void testGetKey() {
         TmfStatisticsTreeNode rootNode    = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode   = fStatsData.get(new TmfFixedArray<String>(fTestName));
@@ -304,6 +328,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetPath
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of path to node.
+     */
     public void testGetPath() {
         TmfStatisticsTreeNode rootNode    = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode   = fStatsData.get(new TmfFixedArray<String>(fTestName));
@@ -320,6 +347,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // GetValue
     // ------------------------------------------------------------------------
 
+    /**
+     * Test gettomg statistic value.
+     */
     public void testGetValue() {
         TmfStatisticsTreeNode rootNode     = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode    = fStatsData.get(new TmfFixedArray<String>(fTestName));
@@ -338,6 +368,9 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
     // Reset
     // ------------------------------------------------------------------------
 
+    /**
+     * Test reset of tree.
+     */
     public void testReset() {
         TmfStatisticsTreeNode rootNode    = fStatsData.get(AbsTmfStatisticsTree.ROOT);
         TmfStatisticsTreeNode traceNode   = fStatsData.get(new TmfFixedArray<String>(fTestName));

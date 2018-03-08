@@ -21,11 +21,14 @@ import org.eclipse.osgi.util.NLS;
  * @author Mathieu Denis
  */
 public class Messages extends NLS {
+
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.views.statistics.model.messages"; //$NON-NLS-1$
+
     /**
      * CPU statistic name.
      */
     public static String TmfStatisticsData_CPUs;
+
     /**
      * Event type statistic name.
      */

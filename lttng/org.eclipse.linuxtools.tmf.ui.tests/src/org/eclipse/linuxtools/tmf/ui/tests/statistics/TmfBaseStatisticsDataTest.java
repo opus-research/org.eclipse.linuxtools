@@ -31,6 +31,9 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
 
+/**
+ * TmfBaseStatistics Test Cases.
+ */
 @SuppressWarnings("nls")
 public class TmfBaseStatisticsDataTest extends TestCase {
 
@@ -78,7 +81,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
 
     /**
      * @param name
-     *            of the test
+     *            Test name
      */
     public TmfBaseStatisticsDataTest(final String name) {
         super(name);
@@ -110,6 +113,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of children.
+     */
     public void testGetChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.getChildren(AbsTmfStatisticsTree.ROOT);
@@ -150,6 +156,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetAllChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of all children.
+     */
     public void testGetAllChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.getAllChildren(AbsTmfStatisticsTree.ROOT);
@@ -195,6 +204,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // RegisterEvent
     // ------------------------------------------------------------------------
 
+    /**
+     * Test registering of events.
+     */
     public void testRegisterEvent() {
         TmfStatisticsTreeNode trace = fStatsData.get(new TmfFixedArray<String>(fTestName));
         assertEquals("registerEvent", 3, trace.getValue().nbEvents);
@@ -213,6 +225,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // Get a node
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getter.
+     */
     public void testGet() {
         TmfStatisticsTreeNode traceRoot = fStatsData.get(new TmfFixedArray<String>(fTestName));
         assertNotNull("get", traceRoot);
@@ -225,6 +240,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetOrCreate
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting or creating of node entries.
+     */
     public void testGetOrCreate() {
         TmfFixedArray<String> newEventType = new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, "Fancy Type");
         TmfStatisticsTreeNode newEventTypeNode;
@@ -251,6 +269,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetParent
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of parent node.
+     */
     public void testGetParent() {
         TmfStatisticsTreeNode parentNode = fStatsData.getParent(AbsTmfStatisticsTree.ROOT);
         assertNull("getParent", parentNode);
@@ -277,6 +298,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // Reset
     // ------------------------------------------------------------------------
 
+    /**
+     * Test reset method
+     */
     public void testReset() {
         fStatsData.reset(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes));
 

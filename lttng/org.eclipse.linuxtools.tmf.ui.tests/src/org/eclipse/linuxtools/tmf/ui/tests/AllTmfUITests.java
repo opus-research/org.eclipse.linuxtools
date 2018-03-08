@@ -24,6 +24,9 @@ import junit.framework.TestSuite;
  */
 public class AllTmfUITests {
 
+    /**
+     * @return the TMF UI test suite
+     */
     public static Test suite() {
         TestSuite suite = new TestSuite(AllTmfUITests.class.getName());
         // $JUnit-BEGIN$

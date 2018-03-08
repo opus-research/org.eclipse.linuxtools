@@ -23,6 +23,7 @@ import java.util.List;
  * @author Mathieu Denis
  */
 public interface ITmfColumnDataProvider {
+
     /**
      * Return a list of the column created for the view
      *

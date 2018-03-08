@@ -15,11 +15,17 @@ package org.eclipse.linuxtools.tmf.ui.tests.statistics;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-@SuppressWarnings("nls")
+
+/**
+ * Test suite for statistic tests.
+ */
 public class AllTests {
 
+    /**
+     * @return the test suite
+     */
     public static Test suite() {
-        TestSuite suite = new TestSuite(AllTests.class.getName()); //$NON-NLS-1$);
+        TestSuite suite = new TestSuite(AllTests.class.getName());
         // $JUnit-BEGIN$
         suite.addTestSuite(TmfBaseColumnDataProviderTest.class);
         suite.addTestSuite(TmfBaseColumnDataTest.class);
