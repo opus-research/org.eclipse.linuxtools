@@ -37,12 +37,12 @@ public class SDWidgetSelectionProvider implements ISelectionProvider {
     /**
      * The listener list
      */
-    private List<ISelectionChangedListener> fListenerList = null;
+    protected List<ISelectionChangedListener> fListenerList = null;
 
     /**
      * The current selection
      */
-    private ISelection fCurrentSelection = null;
+    protected ISelection fCurrentSelection = null;
 
     // ------------------------------------------------------------------------
     // Constructor
