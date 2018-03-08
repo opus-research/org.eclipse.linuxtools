@@ -1,6 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2014 Intel Corporation, Ericsson
- *
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +9,7 @@
  *   Intel Corporation - Initial API and implementation
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
- *   Geneviève Bastien - Added methods to save a time range selection
- *   Patrick Tasse - Refactoring, support for range selection
+ *   Patrick Tasse - Refactoring
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -29,35 +27,12 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 public interface ITimeDataProvider {
 
     /**
-     * Updates the selection begin and end time and notifies any registered
-     * listeners about the new time range (if necessary)
+     * @return The selected time
      *
-     * @param beginTime the selection begin time
-     * @param endTime the selection end time
-     * @since 3.0
+     * @deprecated As of 2.1, replaced by {@link ITimeDataProvider2#getSelectionBegin()} and {@link ITimeDataProvider2#getSelectionEnd()}
      */
-    void setSelectionRangeNotify(long beginTime, long endTime);
-
-    /**
-     * Updates the selection begin and end time
-     *
-     * @param beginTime the selection begin time
-     * @param endTime the selection end time
-     * @since 3.0
-     */
-    void setSelectionRange(long beginTime, long endTime);
-
-    /**
-     * @return The begin time of the current selection
-     * @since 3.0
-     */
-    long getSelectionBegin();
-
-    /**
-     * @return The end time of the current selection
-     * @since 3.0
-     */
-    long getSelectionEnd();
+    @Deprecated
+    long getSelectedTime();
 
     /**
      * @return The beginning time

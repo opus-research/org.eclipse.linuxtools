@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -141,7 +141,7 @@ public class UstProviderInfoTest {
     public void testSetEvents_1() {
         UstProviderInfo fixture = new UstProviderInfo("test");
         fixture.setPid(2468);
-        List<IBaseEventInfo> events = new LinkedList<>();
+        List<IBaseEventInfo> events = new LinkedList<IBaseEventInfo>();
         events.add(fEventInfo1);
         events.add(fEventInfo2);
         fixture.setEvents(events);

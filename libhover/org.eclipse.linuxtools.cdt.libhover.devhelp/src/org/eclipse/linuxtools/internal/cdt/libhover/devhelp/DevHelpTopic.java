@@ -46,7 +46,7 @@ public class DevHelpTopic implements ITopic {
 	DevHelpTopic(String name) {
 		this.name = name;
 		xpath = XPathFactory.newInstance().newXPath();
-		subTopics = new ArrayList<>();
+		subTopics = new ArrayList<ITopic>();
 		label = name;
 		init();
 	}
@@ -55,38 +55,38 @@ public class DevHelpTopic implements ITopic {
 		IPreferenceStore ps = DevHelpPlugin.getDefault().getPreferenceStore();
 		IPath devhelpLocation = new Path(
 				ps.getString(PreferenceConstants.DEVHELP_DIRECTORY)).append(
-				name).append(name + ".devhelp2"); //$NON-NLS-1$
+				name).append(name + ".devhelp2");
 		File devhelpFile = devhelpLocation.toFile();
 		if (devhelpFile.exists()) {
 			DocumentBuilderFactory docfactory = DocumentBuilderFactory
 					.newInstance();
 			docfactory.setValidating(false);
 			try {
-				docfactory.setFeature("http://xml.org/sax/features/namespaces", //$NON-NLS-1$
+				docfactory.setFeature("http://xml.org/sax/features/namespaces",
 						false);
-				docfactory.setFeature("http://xml.org/sax/features/validation", //$NON-NLS-1$
+				docfactory.setFeature("http://xml.org/sax/features/validation",
 						false);
 				docfactory
 						.setFeature(
-								"http://apache.org/xml/features/nonvalidating/load-dtd-grammar", //$NON-NLS-1$
+								"http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
 								false);
 				docfactory
 						.setFeature(
-								"http://apache.org/xml/features/nonvalidating/load-external-dtd", //$NON-NLS-1$
+								"http://apache.org/xml/features/nonvalidating/load-external-dtd",
 								false);
 
 				DocumentBuilder docbuilder = docfactory.newDocumentBuilder();
 				Document docroot = docbuilder.parse(devhelpLocation.toFile());
 
 				// set label
-				label = xpathEval("/book/@title", docroot); //$NON-NLS-1$
-				if (label.isEmpty()) {
+				label = xpathEval("/book/@title", docroot);
+				if (label.equals("")) {
 					label = name;
 				}
-				link = xpathEval("/book/@link", docroot); //$NON-NLS-1$
+				link = xpathEval("/book/@link", docroot);
 
 				// set subtopics
-				NodeList nodes = xpathEvalNodes("/book/chapters/sub", docroot); //$NON-NLS-1$
+				NodeList nodes = xpathEvalNodes("/book/chapters/sub", docroot);
 				for (int i = 0; i < nodes.getLength(); i++) {
 					Node node = nodes.item(i);
 					subTopics.add(new SimpleTopic(name, node));
@@ -102,7 +102,7 @@ public class DevHelpTopic implements ITopic {
 	}
 
 	private String xpathEval(String path, Document docroot) {
-		String result = ""; //$NON-NLS-1$
+		String result = "";
 		try {
 			result = xpath.evaluate(path, docroot);
 		} catch (XPathExpressionException e) {
@@ -134,7 +134,7 @@ public class DevHelpTopic implements ITopic {
 
 	@Override
 	public String getHref() {
-		return "/" + DevHelpPlugin.PLUGIN_ID + "/" + name + "/"+link; //$NON-NLS-1$  //$NON-NLS-2$ //$NON-NLS-3$
+		return "/" + DevHelpPlugin.PLUGIN_ID + "/" + name + "/"+link; // $NON-NLS-1$ //$NON-NLS-2$" //$NON-NLS-3$
 
 	}
 

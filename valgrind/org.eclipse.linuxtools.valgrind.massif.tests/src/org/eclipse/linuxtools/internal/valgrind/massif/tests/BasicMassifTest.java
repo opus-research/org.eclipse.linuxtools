@@ -23,8 +23,10 @@ import org.junit.Test;
 
 public class BasicMassifTest extends AbstractMassifTest {
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("alloctest"); //$NON-NLS-1$
 	}
 

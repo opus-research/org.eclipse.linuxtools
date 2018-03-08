@@ -11,21 +11,21 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
-import java.io.File;
-
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.systemtap.structures.FunctionNodeData;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
-import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.OpenFileAction;
+import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -59,43 +59,46 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 			return;
 		TreeDefinitionNode t = (TreeDefinitionNode)o;
 		String filename = t.getDefinition();
-		File file = new File(filename);
-		OpenFileAction open = new OpenFileAction();
-		open.run(file);
-		if (open.isSuccessful()) {
-			IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		Path p = new Path(filename);
+
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		PathEditorInput input = new PathEditorInput(p, window);
+		try {
+			IEditorPart editorPart = window.getActivePage().openEditor(input, STPEditor.ID);
 			STPEditor editor = (STPEditor)editorPart;
 			int line;
 
-			if (!(t.getData() instanceof FunctionNodeData))
+			if(t.getData().toString().startsWith("probe")) //$NON-NLS-1$
 				line = probeFind(t, editor);
 			else
 				line = functionFind(t, editor);
 
 			editor.jumpToLocation(++line, 0);
+		} catch (PartInitException e) {
+			ExceptionErrorDialog.openError(Messages.TempFileAction_errorDialogTitle, e);
 		}
 	}
 
 	/**
-	 * Tries to find the line of code that corresponds to the provided
+	 * Tries to find the line of code that corrisponds to the provided
 	 * function node within the file open in the provided editor.
 	 * @param t The tree node that we want to look up
 	 * @param editor The STPEditor with the file we are searching in
 	 * @return int representing the line where the node is defined
 	 */
 	private int functionFind(TreeDefinitionNode t, STPEditor editor) {
-		int line = editor.find(t.getData().toString());
-		if(line < 0) {
-			line = editor.findRegex("(?<!\\w)function " + t.toString()); //$NON-NLS-1$
-			if(line < 0) {
-				line = editor.find(t.toString());
-			}
-		}
+		String func = t.toString();
+		func = func.substring(0, func.indexOf('('));
+
+		int line = editor.find("function " + func); //$NON-NLS-1$
+
+		if(line < 0)
+			line = editor.find(func);
 		return Math.max(line, 0);
 	}
 
 	/**
-	 * Tries to find the line of code that corresponds to the provided
+	 * Tries to find the line of code that corrisponds to the provided
 	 * probe node within the file open in the provided editor.
 	 * @param t The tree node that we want to look up
 	 * @param editor The STPEditor with the file we are searching in

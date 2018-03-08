@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -40,6 +40,7 @@ public class CtfAntlrException extends CTFReaderException {
     private String fActualName = ""; //$NON-NLS-1$
     private int fActualValue = -1;
 
+
     /**
      * Re-throw the exception but read its data
      *
@@ -58,23 +59,11 @@ public class CtfAntlrException extends CTFReaderException {
      * @param e
      *            the previous recognition exception (Antlr specific)
      */
-    public CtfAntlrException(MismatchedTokenException e) {
+    public CtfAntlrException(MismatchedTokenException e){
         super(e);
         this.fErrorLine = e.line;
         this.fFile = "metadata"; //$NON-NLS-1$ // we're in CTF, the only thing using antlr is metadata
         parseMismatchedException(e);
-    }
-
-    /**
-     * Re-throw the exception but read its data
-     *
-     * @param e
-     *            the previous rewrite exception (Antlr specific)
-     */
-    public CtfAntlrException(Exception e) {
-        super(e);
-        this.fErrorLine = -1;
-        this.fFile = "metadata"; //$NON-NLS-1$ // we're in CTF, the only thing using antlr is metadata
     }
 
     private void parseMismatchedException(MismatchedTokenException m) {

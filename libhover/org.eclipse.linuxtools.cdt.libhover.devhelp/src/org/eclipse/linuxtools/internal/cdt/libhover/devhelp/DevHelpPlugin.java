@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.cdt.libhover.devhelp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -33,7 +34,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
- * The activator class controls the plug-in life cycle.
+ * The activator class controls the plug-in life cycle
  */
 public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
 
@@ -119,12 +120,16 @@ public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
 				File ldir = new File(location.toOSString());
 				ldir.mkdir();
 				location = location.append("devhelp.libhover"); //$NON-NLS-1$
-				try (FileOutputStream f = new FileOutputStream(
+				FileOutputStream f = new FileOutputStream(
 						location.toOSString());
-						ObjectOutputStream out = new ObjectOutputStream(f)) {
-					out.writeObject(hover);
-				}
+				ObjectOutputStream out = new ObjectOutputStream(f);
+				out.writeObject(hover);
+				out.close();
 				monitor.done();
+			} catch (FileNotFoundException e) {
+				monitor.done();
+				return new Status(IStatus.ERROR, DevHelpPlugin.PLUGIN_ID,
+						e.getLocalizedMessage(), e);
 			} catch (IOException e) {
 				monitor.done();
 				return new Status(IStatus.ERROR, DevHelpPlugin.PLUGIN_ID,

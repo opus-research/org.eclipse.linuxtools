@@ -52,7 +52,7 @@ public class DevHelpToc implements IToc {
 	@Override
 	public ITopic[] getTopics() {
 		try {
-			ArrayList<ITopic> topics = new ArrayList<>();
+			ArrayList<ITopic> topics = new ArrayList<ITopic>();
 			IPreferenceStore ps = DevHelpPlugin.getDefault()
 					.getPreferenceStore();
 			IPath devhelpLocation = new Path(
@@ -71,7 +71,7 @@ public class DevHelpToc implements IToc {
 			for (IFileStore file: files) {
 				String name = file.fetchInfo().getName();
 				if (fs.getStore(
-						devhelpLocation.append(name).append(name + ".devhelp2")) //$NON-NLS-1$
+						devhelpLocation.append(name).append(name + ".devhelp2"))
 						.fetchInfo().exists()) {
 					ITopic topic = new DevHelpTopic(name);
 					topics.add(topic);

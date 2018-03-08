@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.KernelBrowserView;
-import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -131,7 +131,7 @@ public class KernelSourceAction extends Action implements ISelectionListener, ID
 							IDESessionSettings.setActiveSTPEditor((STPEditor)editor);
 						wb.getActiveWorkbenchWindow().getActivePage().openEditor(input, CDT_EDITOR_ID);
 					} catch (PartInitException e) {
-						ExceptionErrorDialog.openError(Messages.ScriptRunAction_errorDialogTitle, e);
+						ExceptionErrorDialog.openError(Messages.TempFileAction_errorDialogTitle, e);
 					}
 
 				}

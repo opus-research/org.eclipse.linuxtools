@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -459,7 +459,7 @@ public class BaseEventInfoTest {
         IFieldInfo field2 =  new FieldInfo("stringfield");
         field2.setFieldType("string");
 
-        List<IFieldInfo> fields = new LinkedList<>();
+        List<IFieldInfo> fields = new LinkedList<IFieldInfo>();
         fields.add(field1);
         fields.add(field2);
         info.setFields(fields);

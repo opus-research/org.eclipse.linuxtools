@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -120,7 +120,8 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             already assigned to this attribute.
      */
     void modifyAttribute(long t, ITmfStateValue value, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+            throws TimeRangeException, AttributeNotFoundException,
+            StateValueTypeException;
 
     /**
      * Increment attribute method. Reads the current value of a given integer
@@ -140,7 +141,8 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the quark is invalid
      */
     void incrementAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+            throws StateValueTypeException, TimeRangeException,
+            AttributeNotFoundException;
 
     /**
      * "Push" helper method. This uses the given integer attribute as a stack:
@@ -165,7 +167,8 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             of integer type.
      */
     void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+            throws TimeRangeException, AttributeNotFoundException,
+            StateValueTypeException;
 
     /**
      * Antagonist of the pushAttribute(), pops the top-most attribute on the
@@ -189,7 +192,8 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @since 2.0
      */
     ITmfStateValue popAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+            throws AttributeNotFoundException, TimeRangeException,
+            StateValueTypeException;
 
     /**
      * Remove attribute method. Similar to the above modify- methods, with value
@@ -206,7 +210,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the quark is invalid
      */
     void removeAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException;
+            throws TimeRangeException, AttributeNotFoundException;
 
     /**
      * Method to close off the History Provider. This happens for example when
@@ -224,5 +228,5 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             it's earlier than the latest time) and the backend doesn't
      *             know how to handle it.
      */
-    void closeHistory(long endTime);
+    void closeHistory(long endTime) throws TimeRangeException;
 }

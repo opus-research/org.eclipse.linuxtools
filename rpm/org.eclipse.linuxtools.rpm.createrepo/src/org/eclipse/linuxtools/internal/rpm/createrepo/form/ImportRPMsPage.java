@@ -14,29 +14,19 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoUtils;
-import org.eclipse.linuxtools.internal.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.eclipse.linuxtools.internal.rpm.createrepo.dnd.ImportRPMDropListener;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
+import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.FileTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -48,8 +38,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -67,7 +55,7 @@ import org.eclipse.ui.menus.IMenuService;
  * file system or the workspace. The RPMs imported will be the
  * RPMs used when executing the createrepo command.
  */
-public class ImportRPMsPage extends FormPage implements IResourceChangeListener {
+public class ImportRPMsPage extends FormPage {
 
 	private CreaterepoProject project;
 
@@ -89,28 +77,6 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 	public ImportRPMsPage(FormEditor editor, CreaterepoProject project) {
 		super(editor, Messages.ImportRPMsPage_title, Messages.ImportRPMsPage_title);
 		this.project = project;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.forms.editor.FormPage#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
-	 */
-	@Override
-	public void init(IEditorSite site, IEditorInput input) {
-		super.init(site, input);
-		// add the resource change listener
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.forms.editor.FormPage#dispose()
-	 */
-	@Override
-	public void dispose() {
-		// remove the resource change listener
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		super.dispose();
 	}
 
 	/*
@@ -152,11 +118,8 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 		layout = new GridLayout(2, false);
 		layout.marginWidth = 1; layout.marginHeight = 7;
 		sectionClient.setLayout(layout);
-		TreeViewer viewer = new TreeViewer(sectionClient, SWT.BORDER | SWT.MULTI | SWT.HORIZONTAL
+		tree = toolkit.createTree(sectionClient, SWT.BORDER | SWT.MULTI | SWT.HORIZONTAL
 				| SWT.VERTICAL | SWT.LEFT_TO_RIGHT | SWT.SMOOTH);
-		viewer.addDropSupport(DND.DROP_COPY, new Transfer[] {FileTransfer.getInstance()},
-				new ImportRPMDropListener(viewer, project));
-		tree = viewer.getTree();
 		tree.setLayoutData(expandComposite());
 
 		buttonList = toolkit.createComposite(sectionClient);
@@ -203,7 +166,7 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 	 * @param toolkit The form toolkit used in creating a button.
 	 * @return The button created.
 	 */
-	private static Button createPushButton(Composite parent, String buttonText, FormToolkit toolkit) {
+	private Button createPushButton(Composite parent, String buttonText, FormToolkit toolkit) {
 		Button button = toolkit.createButton(parent, buttonText, SWT.PUSH | SWT.FLAT
 				| SWT.CENTER | SWT.LEFT_TO_RIGHT);
 		button.setFont(parent.getFont());
@@ -281,24 +244,25 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 		public void widgetSelected(SelectionEvent e) {
 			IWorkbench workbench = PlatformUI.getWorkbench();
 			Shell shell = workbench.getModalDialogShellProvider().getShell();
-			FileDialog fileDialog = new FileDialog(shell, SWT.MULTI);
+			FileDialog fileDialog = new FileDialog(shell, SWT.SINGLE);
 			fileDialog.setFilterExtensions(EXTENSION_FILTERS);
 			if (fileDialog.open() != null) {
-				String[] files = fileDialog.getFileNames();
-				if (files.length > 0) {
-					String directoryPath = fileDialog.getFilterPath();
-					for (String file : files) {
-						File externalFile = new File(directoryPath, file);
-						try {
-							project.importRPM(externalFile);
-						} catch (CoreException e1) {
-							Activator.logError(Messages.ImportButtonListener_error, e1);
-						}
-					}
+				File externalFile = new File(fileDialog.getFilterPath(), fileDialog.getFileName());
+				try {
+					project.importRPM(externalFile);
 					refreshTree();
+				} catch (CoreException e1) {
+					Activator.logError(Messages.ImportButtonListener_error, e1);
 				}
 			}
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 	/**
@@ -326,6 +290,13 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 				Activator.logError(Messages.RemoveButtonListener_error, e1);
 			}
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 
 		/**
          * Delete the resource if the tree item has the same name as it.
@@ -358,97 +329,24 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 						monitor.beginTask(Messages.CreaterepoProject_executeCreaterepo, IProgressMonitor.UNKNOWN);
 						MessageConsoleStream os = CreaterepoUtils.findConsole(Messages.CreaterepoProject_consoleName)
 								.newMessageStream();
-						return project.createrepo(os);
-					} catch (CoreException e) {
-						Activator.logError(Messages.Createrepo_errorExecuting, e);
+						String message = "Createrepo functionality to be implemented when clicking this button"; //$NON-NLS-1$
+						os.print(message);
+						return new Status(IStatus.OK, Activator.PLUGIN_ID, message);
 					} finally {
 						monitor.done();
 					}
-					return null;
 				}
 			};
 			executeCreaterepo.setUser(true);
 			executeCreaterepo.schedule();
 		}
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
-	 */
-	@Override
-	public void resourceChanged(IResourceChangeEvent event) {
-		// might have to place the delete/close events to RepoMetadataFormEditor to
-		// occur for all the pages
-		switch (event.getType()) {
-		case IResourceChangeEvent.POST_CHANGE:
-			try {
-				IPath projectPath = project.getContentFolder().getFullPath();
-				IResourceDelta delta = event.getDelta().findMember(projectPath);
-				// delta is only null when nothing changed within the project's
-				// content folder
-				if (delta != null) {
-					delta.accept(new CreaterepoDeltaVisitor());
-				}
-			} catch (CoreException e) {
-				Activator.logError(Messages.ImportRPMsPage_errorResourceChanged, e);
-			}
-			break;
-		}
-	}
-
-	/**
-	 * Class to control what to do if something happens in the workspace.
-	 */
-	class CreaterepoDeltaVisitor implements IResourceDeltaVisitor {
 		/*
 		 * (non-Javadoc)
-		 * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
 		 */
 		@Override
-		public boolean visit(IResourceDelta delta) {
-			// exit if the project is being removed or closed
-			if (delta.getKind() == IResourceDelta.REMOVED ||
-					(delta.getFlags() | delta.getKind()) == (IResourceDelta.OPEN | IResourceDelta.CHANGED)) {
-				return false;
-			}
-			// get the files that were removed/added and exit if nothing was removed/added
-			IResourceDelta[] removedFiles = delta.getAffectedChildren(IResourceDelta.REMOVED);
-			IResourceDelta[] addedFiles = delta.getAffectedChildren(IResourceDelta.ADDED);
-			if (removedFiles.length <= 0 && addedFiles.length == 0) {
-				return false;
-			}
-			// check if at least 1 of the files removed is an RPM and break out if so
-			boolean rpmsDeleted = false;
-			for (IResourceDelta resourceDelta : removedFiles) {
-				String extension = resourceDelta.getResource().getFileExtension();
-				if (extension != null && extension.equals(ICreaterepoConstants.RPM_FILE_EXTENSION)) {
-					rpmsDeleted = true;
-					break;
-				}
-			}
-			// check if at least 1 of the files added is an RPM and break out if so
-			boolean rpmsAdded = false;
-			for (IResourceDelta resourceDelta : addedFiles) {
-				String extension = resourceDelta.getResource().getFileExtension();
-				if (extension != null && extension.equals(ICreaterepoConstants.RPM_FILE_EXTENSION)) {
-					rpmsAdded = true;
-					break;
-				}
-			}
-			// exit if none of the removed/added files is an RPM; no need to update list
-			if (!rpmsDeleted && !rpmsAdded) {
-				return false;
-			}
-			// deals with updating the UI of the page
-			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					refreshTree();
-				}
-			});
-			return false;
-		}
+		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 }

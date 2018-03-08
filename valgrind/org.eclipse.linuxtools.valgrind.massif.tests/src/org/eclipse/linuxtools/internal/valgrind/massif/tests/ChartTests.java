@@ -47,8 +47,10 @@ import org.swtchart.Chart;
 import org.swtchart.ILineSeries;
 
 public class ChartTests extends AbstractMassifTest {
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("alloctest"); //$NON-NLS-1$
 	}
 

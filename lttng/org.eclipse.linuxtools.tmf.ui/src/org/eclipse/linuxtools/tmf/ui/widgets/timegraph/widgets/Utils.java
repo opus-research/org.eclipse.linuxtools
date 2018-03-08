@@ -463,22 +463,16 @@ public class Utils {
     }
 
     /**
-     * Gets the {@link ITimeEvent} at the given time from the given
-     * {@link ITimeGraphEntry}.
+     * N means: <list> <li>-1: Previous Event</li> <li>0: Current Event</li> <li>
+     * 1: Next Event</li> <li>2: Previous Event when located in a non Event Area
+     * </list>
      *
      * @param entry
-     *            a {@link ITimeGraphEntry}
      * @param time
-     *            a timestamp
      * @param n
-     *            this parameter means: <list> <li>-1: Previous Event</li> <li>
-     *            0: Current Event</li> <li>
-     *            1: Next Event</li> <li>2: Previous Event when located in a non
-     *            Event Area </list>
-     * @return a {@link ITimeEvent}, or <code>null</code>.
-     * @since 3.0
+     * @return
      */
-    public static ITimeEvent findEvent(ITimeGraphEntry entry, long time, int n) {
+    static ITimeEvent findEvent(ITimeGraphEntry entry, long time, int n) {
         if (null == entry || ! entry.hasTimeEvents()) {
             return null;
         }

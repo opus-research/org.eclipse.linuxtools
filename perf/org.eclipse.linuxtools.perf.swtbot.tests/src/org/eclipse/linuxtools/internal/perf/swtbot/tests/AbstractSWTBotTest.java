@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.internal.perf.swtbot.tests;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
-import static org.eclipse.swtbot.swt.finder.waits.Conditions.waitForWidget;
-import static org.eclipse.swtbot.swt.finder.waits.Conditions.widgetIsEnabled;
 
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -23,21 +21,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
-import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,44 +43,6 @@ import org.osgi.framework.FrameworkUtil;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class AbstractSWTBotTest extends AbstractTest {
 	private static final String PROJ_NAME = "fibTest";
-	private static SWTBotView projectExplorer;
-
-	private static class NodeAvailableAndSelect extends DefaultCondition {
-
-		private SWTBotTree tree;
-		private String parent;
-		private String node;
-
-		/**
-		 * Wait for a tree node (with a known parent) to become visible, and select it
-		 * when it does. Note that this wait condition should only be used after having
-		 * made an attempt to reveal the node.
-		 * @param tree The SWTBotTree that contains the node to select.
-		 * @param parent The text of the parent node that contains the node to select.
-		 * @param node The text of the node to select.
-		 */
-		NodeAvailableAndSelect(SWTBotTree tree, String parent, String node){
-			this.tree = tree;
-			this.node = node;
-			this.parent = parent;
-		}
-
-		@Override
-		public boolean test() {
-			try {
-				SWTBotTreeItem parentNode = tree.getTreeItem(parent);
-				parentNode.getNode(node).select();
-				return true;
-			} catch (WidgetNotFoundException e) {
-				return false;
-			}
-		}
-
-		@Override
-		public String getFailureMessage() {
-			return "Timed out waiting for " + node; //$NON-NLS-1$
-		}
-	}
 
 	@BeforeClass
 	public static void setUpWorkbench() throws Exception {
@@ -117,8 +72,7 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
 		windowsMenu.menu("Preferences").click();
 		SWTBotShell shell = bot.shell("Preferences");
 		shell.activate();
-		bot.text().setText("Workspace");
-		bot.waitUntil(new NodeAvailableAndSelect(bot.tree(), "General", "Workspace"));
+		bot.tree().expandNode("General").select("Workspace");
 		SWTBotCheckBox buildAuto = bot.checkBox("Build automatically");
 		if (buildAuto != null && buildAuto.isChecked()) {
 			buildAuto.click();
@@ -127,13 +81,6 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
 		bot.button("Apply").click();
 		bot.button("OK").click();
 		bot.waitUntil(shellCloses(shell));
-
-		projectExplorer = bot.viewByTitle("Project Explorer");
-	}
-
-	@AfterClass
-	public static void resetExplorerState() {
-		exitProjectFolder(new SWTWorkbenchBot());
 	}
 
 	@Test
@@ -148,12 +95,14 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()),
 				PROJ_NAME);
 
-		enterProjectFolder(bot);
+		// Focus on project explorer view.
+		bot.viewByTitle("Project Explorer").bot();
+		bot.activeShell();
+		SWTBotTree treeBot = bot.tree();
+		treeBot.setFocus();
 
 		// Select project binary.
-		SWTBotTree treeBot = projectExplorer.bot().tree();
-		treeBot.contextMenu("Refresh").click();
-		treeBot.expandNode("Binaries").getNode(0).select();
+		treeBot.expandNode(PROJ_NAME).expandNode("Binaries").getNode(0).select();
 
 		// Launch configuration strings
 		String menuItem = "Profiling Tools";
@@ -186,7 +135,6 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
 			openStubView();
 		}
 
-		exitProjectFolder(bot);
 		testPerfView();
 	}
 
@@ -195,42 +143,21 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
 	 * @param The name of a tree item to select
 	 * @param The name of a second tree item to select
 	 */
-	public void compareWithEachOther (String first, String second) {
+	public void compareWithEachOther (String first, String second ) {
 		SWTWorkbenchBot bot = new SWTWorkbenchBot();
-		enterProjectFolder(bot);
+		// Focus on project explorer view.
+		bot.viewByTitle("Project Explorer").bot();
+		bot.activeShell();
+		SWTBotTree treeBot = bot.tree();
+		treeBot.setFocus();
 
 		// Refresh and Select
-		SWTBotTree treeBot = projectExplorer.bot().tree();
-		treeBot.contextMenu("Refresh").click();
-		treeBot.select(new String [] {first, second});
+		SWTBotTreeItem proj = treeBot.expandNode(PROJ_NAME);
+		proj.contextMenu("Refresh").click();
+		proj.select(new String [] {first, second});
 
 		// Workaround for context menu on multiple selections
 		click(ContextMenuHelper.contextMenu(treeBot, "Compare With", "Each Other"));
-		exitProjectFolder(bot);
-	}
-
-	/**
-	 * Enter the project folder so as to avoid expanding trees later
-	 */
-	private static SWTBotView enterProjectFolder(SWTWorkbenchBot bot) {
-		projectExplorer.bot().tree().select(PROJ_NAME).
-			contextMenu("Go Into").click();
-		bot.waitUntil(waitForWidget(WidgetMatcherFactory.withText(
-				PROJ_NAME), projectExplorer.getWidget()));
-		return projectExplorer;
-	}
-
-	/**
-	 * Exit from the project tree.
-	 */
-	private static void exitProjectFolder(SWTWorkbenchBot bot) {
-		try {
-			SWTBotToolbarButton forwardButton = projectExplorer.toolbarPushButton("Forward");
-			projectExplorer.toolbarPushButton("Back to Workspace").click();
-			bot.waitUntil(widgetIsEnabled(forwardButton));
-		} catch (WidgetNotFoundException e) {
-			// Already exited from project folder
-		}
 	}
 
 	/**

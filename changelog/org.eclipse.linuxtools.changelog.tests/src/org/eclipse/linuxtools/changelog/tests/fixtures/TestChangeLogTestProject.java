@@ -88,11 +88,11 @@ public class TestChangeLogTestProject {
 		assertTrue(createdFile instanceof IFile);
 
 		// Content should be "some content"
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(createdFile.getLocation().toFile())))) {
-			String actualContent = br.readLine();
-			assertEquals(fileContent, actualContent);
-		}
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				new FileInputStream(createdFile.getLocation().toFile())));
+		String actualContent = br.readLine();
+		br.close();
+		assertEquals(fileContent, actualContent);
 		
 		// this should throw an IllegalStateException
 		boolean exceptionTrown = false;
@@ -125,7 +125,7 @@ public class TestChangeLogTestProject {
 	@Test
 	public void canAddCNature() throws Exception {
 		IProject cProject = this.project.getTestProject();
-		assertFalse(CoreModel.hasCNature(cProject));
+		assertTrue(!CoreModel.hasCNature(cProject));
 		// Add C nature
 		this.project.addCNature();
 		cProject = this.project.getTestProject();
@@ -140,7 +140,7 @@ public class TestChangeLogTestProject {
 	@Test
 	public void canAddCCNature() throws Exception {
 		IProject ccProject = this.project.getTestProject();
-		assertFalse(CoreModel.hasCCNature(ccProject));
+		assertTrue(!CoreModel.hasCCNature(ccProject));
 		// Add C++ nature
 		this.project.addCCNature();
 		ccProject = this.project.getTestProject();

@@ -94,7 +94,7 @@ public class TestModelDataPreParse {
 		}
 
 		rootList = new Element [] {expectedRoot, actualRoot};
-		valueList = new ArrayList<> ();
+		valueList = new ArrayList<ArrayList<String>> ();
 
 		for (int i = 0; i < rootList.length; i++){
 			valueList.add(new ArrayList<String>());

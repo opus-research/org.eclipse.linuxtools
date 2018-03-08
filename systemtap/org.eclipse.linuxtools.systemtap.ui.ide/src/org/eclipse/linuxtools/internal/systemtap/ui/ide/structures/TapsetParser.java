@@ -11,9 +11,9 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -21,7 +21,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.linuxtools.systemtap.structures.process.SystemtapProcessFactory;
 import org.eclipse.linuxtools.systemtap.structures.runnable.StringStreamGobbler;
@@ -52,11 +52,10 @@ public abstract class TapsetParser extends Job {
 	private String[] tapsets;
 	protected boolean cancelRequested;
 
-	protected TapsetParser(String jobTitle) {
+	protected TapsetParser(String[] tapsets, String jobTitle) {
 		super(jobTitle);
-		this.tapsets = IDEPlugin.getDefault().getPreferenceStore()
-				.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
-		listeners = new ArrayList<>();
+		this.tapsets = Arrays.copyOf(tapsets, tapsets.length);
+		listeners = new ArrayList<IUpdateListener>();
 		cancelRequested = false;
 	}
 
@@ -99,37 +98,38 @@ public abstract class TapsetParser extends Job {
 	 * Runs the stap with the given options and returns the output generated
 	 * @param options String[] of any optional parameters to pass to stap
 	 * @param probe String containing the script to run stap on
-	 * @param getErrors Set this to <code>true</code> if the script's error
-	 * stream contents should be returned instead of its standard output
+	 * @since 1.2
 	 */
-	protected String runStap(String[] options, String probe, boolean getErrors) {
+	protected String runStap(String[] options, String probe) {
 		String[] args = null;
 
 		int size = 2;	//start at 2 for stap, script, options will be added in later
-		if (tapsets.length > 0 && tapsets[0].trim().length() > 0) {
+		if (null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
 			size += tapsets.length<<1;
 		}
-		if (options.length > 0 && options[0].trim().length() > 0) {
+		if (null != options && options.length > 0 && options[0].trim().length() > 0) {
 			size += options.length;
 		}
 
 		args = new String[size];
 		args[0] = "stap"; //$NON-NLS-1$
 		args[size-1] = probe;
+		args[size-2] = ""; //$NON-NLS-1$
 
 		//Add extra tapset directories
-		if(tapsets.length > 0 && tapsets[0].trim().length() > 0) {
+		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
 			for(int i=0; i<tapsets.length; i++) {
-				args[1+(i<<1)] = "-I"; //$NON-NLS-1$
-				args[2+(i<<1)] = tapsets[i];
+				args[2+(i<<1)] = "-I"; //$NON-NLS-1$
+				args[3+(i<<1)] = tapsets[i];
 			}
 		}
 		if(null != options && options.length > 0 && options[0].trim().length() > 0) {
 			for(int i=0; i<options.length; i++) {
-				args[size-1-options.length+i] = options[i];
+				args[args.length-options.length-1+i] = options[i];
 			}
 		}
 
+		String output = null;
 		try {
 			if (IDEPlugin.getDefault().getPreferenceStore().getBoolean(IDEPreferenceConstants.P_REMOTE_PROBES)) {
 				StringOutputStream str = new StringOutputStream();
@@ -145,29 +145,18 @@ public abstract class TapsetParser extends Job {
 					displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
 				}
 
-				return (!getErrors ? str : strErr).toString();
+				output = str.toString();
 			} else {
 				Process process = SystemtapProcessFactory.exec(args, null);
 				if(process == null){
 					displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
-					return null;
+					return output;
 				}
 
 				StringStreamGobbler gobbler = new StringStreamGobbler(process.getInputStream());
-				StringStreamGobbler egobbler = null;
 				gobbler.start();
-				if (getErrors) {
-					egobbler = new StringStreamGobbler(process.getErrorStream());
-					egobbler.start();
-				}
 				process.waitFor();
-				gobbler.stop();
-				if (egobbler == null) {
-					return gobbler.getOutput().toString();
-				} else {
-					egobbler.stop();
-					return egobbler.getOutput().toString();
-				}
+				output = gobbler.getOutput().toString();
 			}
 
 		} catch (JSchException e) {
@@ -179,7 +168,7 @@ public abstract class TapsetParser extends Job {
 			e.printStackTrace();
 		}
 
-		return null;
+		return output;
 	}
 
 	private void displayError(final String title, final String error){

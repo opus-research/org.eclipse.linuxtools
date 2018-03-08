@@ -22,8 +22,10 @@ import org.junit.Test;
 
 public class BasicMemcheckTest extends AbstractMemcheckTest {
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
 	}
 

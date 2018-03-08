@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,7 +19,6 @@ import java.util.List;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -113,7 +112,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
     /**
      * List of traces to import
      */
-    private final List<ImportFileInfo> fTraces = new ArrayList<>();
+    private final List<ImportFileInfo> fTraces = new ArrayList<ImportFileInfo>();
     /**
      * Selection index in project combo box.
      */
@@ -145,7 +144,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
     @Override
     public List<ImportFileInfo> getTracePathes() {
-        List<ImportFileInfo> retList = new ArrayList<>();
+        List<ImportFileInfo> retList = new ArrayList<ImportFileInfo>();
         retList.addAll(fTraces);
         return retList;
     }
@@ -260,14 +259,11 @@ public class ImportDialog extends Dialog implements IImportDialog {
                     traceName.insert(0, '-');
 
                     String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
-                    path = getUnifiedPath(path);
-                    String parentPath = getUnifiedPath(parent.getAbsolutePath());
 
-                    while (!parentPath.equals(path)) {
+                    while (!parent.getAbsolutePath().equals(path)) {
                         traceName.insert(0, parent.getName());
                         traceName.insert(0, '-');
                         parent = parent.getParentRemoteFile();
-                        parentPath = getUnifiedPath(parent.getAbsolutePath());
                     }
                     traceName.insert(0, parent.getName());
 
@@ -414,8 +410,8 @@ public class ImportDialog extends Dialog implements IImportDialog {
         projectGroup.setLayout(layout);
         projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        fProjects = new ArrayList<>();
-        List<String> projectNames = new ArrayList<>();
+        fProjects = new ArrayList<IProject>();
+        List<String> projectNames = new ArrayList<String>();
 
         for (IProject project : TraceUtils.getOpenedTmfProjects()) {
             fProjects.add(project);
@@ -457,10 +453,5 @@ public class ImportDialog extends Dialog implements IImportDialog {
         if (okButton != null) {
             okButton.setEnabled(checked.length > 0);
         }
-    }
-
-    private static String getUnifiedPath(String path) {
-        // Use Path class to remove unnecessary slashes
-        return new Path(path).removeTrailingSeparator().toString();
     }
  }

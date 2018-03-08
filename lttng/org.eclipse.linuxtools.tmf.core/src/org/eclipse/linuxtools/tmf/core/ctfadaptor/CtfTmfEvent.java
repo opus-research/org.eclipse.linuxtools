@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -18,7 +18,6 @@ import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfCustomAttributes;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
@@ -29,8 +28,8 @@ import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
- * A wrapper class around CTF's Event Definition/Declaration that maps all types
- * of Declaration to native Java types.
+ * A wrapper class around CTF's Event Definition/Declaration that maps all
+ * types of Declaration to native Java types.
  *
  * @version 1.0
  * @author Alexandre Montplaisir
@@ -50,9 +49,9 @@ public class CtfTmfEvent extends TmfEvent
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final int fSourceCPU;
-    private final long fTypeId;
-    private final String fEventName;
+    private final int sourceCPU;
+    private final long typeId;
+    private final String eventName;
     private final IEventDeclaration fDeclaration;
 
     // ------------------------------------------------------------------------
@@ -75,10 +74,9 @@ public class CtfTmfEvent extends TmfEvent
         );
 
         fDeclaration = declaration;
-        fSourceCPU = cpu;
-        fTypeId = declaration.getId();
-        fEventName = declaration.getName();
-
+        sourceCPU = cpu;
+        typeId = declaration.getId();
+        eventName = declaration.getName();
     }
 
     /**
@@ -97,10 +95,10 @@ public class CtfTmfEvent extends TmfEvent
                 null,
                 new TmfEventField("", null, new CtfTmfEventField[0]), //$NON-NLS-1$
                 NO_STREAM);
-        fSourceCPU = -1;
-        fTypeId = -1;
-        fEventName = EMPTY_CTF_EVENT_NAME;
-        fDeclaration = null;
+        this.sourceCPU = -1;
+        this.typeId = -1;
+        this.eventName = EMPTY_CTF_EVENT_NAME;
+        this.fDeclaration = null;
     }
 
     // ------------------------------------------------------------------------
@@ -113,7 +111,7 @@ public class CtfTmfEvent extends TmfEvent
      * @return The cpu id for a given source. In lttng it's from CPUINFO
      */
     public int getCPU() {
-        return fSourceCPU;
+        return this.sourceCPU;
     }
 
     /**
@@ -125,24 +123,30 @@ public class CtfTmfEvent extends TmfEvent
      * @return The event ID
      */
     public long getID() {
-        return fTypeId;
+        return this.typeId;
+    }
+
+    /**
+     * Gets the name of a current event.
+     *
+     * @return The event name
+     */
+    public String getEventName() {
+        return eventName;
     }
 
     @Override
     public CtfTmfTrace getTrace() {
-        /*
-         * Should be of the right type, since we take a CtfTmfTrace at the
-         * constructor
-         */
+        /* Should be of the right type, since we take a CtfTmfTrace at the constructor */
         return (CtfTmfTrace) super.getTrace();
     }
 
     @Override
     public ITmfEventType getType() {
-        CtfTmfEventType ctfTmfEventType = CtfTmfEventType.get(fEventName);
+        CtfTmfEventType ctfTmfEventType = CtfTmfEventType.get(eventName);
         if (ctfTmfEventType == null) {
             /* Should only return null the first time */
-            ctfTmfEventType = new CtfTmfEventType(fEventName, getContent());
+            ctfTmfEventType = new CtfTmfEventType(this.getEventName(), this.getContent());
         }
         return ctfTmfEventType;
     }
@@ -153,7 +157,7 @@ public class CtfTmfEvent extends TmfEvent
     @Override
     public Set<String> listCustomAttributes() {
         if (fDeclaration == null) {
-            return new HashSet<>();
+            return new HashSet<String>();
         }
         return fDeclaration.getCustomAttributes();
     }
@@ -178,24 +182,18 @@ public class CtfTmfEvent extends TmfEvent
     @Override
     public CtfTmfCallsite getCallsite() {
         CTFCallsite callsite = null;
-        CtfTmfTrace trace = getTrace();
-        if (trace == null) {
-            return null;
-        }
-        CTFTrace ctfTrace = trace.getCTFTrace();
-        /* Should not happen, but it is a good check */
-        if (ctfTrace == null) {
+        if (getTrace() == null) {
             return null;
         }
         if (getContent() != null) {
             ITmfEventField ipField = getContent().getField(CtfConstants.CONTEXT_FIELD_PREFIX + CtfConstants.IP_KEY);
             if (ipField != null && ipField.getValue() instanceof Long) {
                 long ip = (Long) ipField.getValue();
-                callsite = ctfTrace.getCallsite(fEventName, ip);
+                callsite = getTrace().getCTFTrace().getCallsite(eventName, ip);
             }
         }
         if (callsite == null) {
-            callsite = ctfTrace.getCallsite(fEventName);
+            callsite = getTrace().getCTFTrace().getCallsite(eventName);
         }
         if (callsite != null) {
             return new CtfTmfCallsite(callsite);

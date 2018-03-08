@@ -40,8 +40,10 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 	private ValgrindOptionsTab tab;
 	private CachegrindToolPage dynamicTab;
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
 
 		config = createConfiguration(proj.getProject());

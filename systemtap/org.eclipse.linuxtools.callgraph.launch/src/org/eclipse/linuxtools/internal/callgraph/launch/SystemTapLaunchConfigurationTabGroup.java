@@ -35,7 +35,7 @@ public class SystemTapLaunchConfigurationTabGroup extends ProfileLaunchConfigura
 
 	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
-		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<>();
+		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
 
 		tabs.addAll(Arrays.asList(getProfileTabs()));
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2014 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,33 +9,25 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Added supplementary files/folder handling
- *   Patrick Tasse - Refactor resource change listener
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.navigator.CommonNavigator;
-import org.eclipse.ui.navigator.CommonViewer;
 
 /**
  * The implementation of the base TMF project model element. It provides default implementation
@@ -44,7 +36,7 @@ import org.eclipse.ui.navigator.CommonViewer;
  * @version 1.0
  * @author Francois Chouinard
  */
-public abstract class TmfProjectModelElement implements ITmfProjectModelElement {
+public abstract class TmfProjectModelElement implements ITmfProjectModelElement, IResourceChangeListener {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -84,9 +76,14 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement 
         fName = name;
         fResource = resource;
         fPath = resource.getFullPath();
-        fLocation = new File(resource.getLocationURI()).toURI();
+        fLocation = resource.getLocationURI();
         fParent = parent;
-        fChildren = new CopyOnWriteArrayList<>();
+        fChildren = new ArrayList<ITmfProjectModelElement>();
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+    }
+
+    private void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
     }
 
     // ------------------------------------------------------------------------
@@ -136,39 +133,26 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement 
     @Override
     public void removeChild(ITmfProjectModelElement child) {
         fChildren.remove(child);
+        if (child instanceof TmfProjectModelElement) {
+            ((TmfProjectModelElement) child).dispose();
+        }
+        refresh();
     }
 
     @Override
     public void refresh() {
-        // make sure the model is updated in the current thread
-        refreshChildren();
+        // Do nothing by default: sub-classes override this on an "as-needed"
+        // basis.
+    }
 
-        Display.getDefault().asyncExec(new Runnable(){
-            @Override
-            public void run() {
-                IWorkbench wb = PlatformUI.getWorkbench();
-                IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
-                if (wbWindow == null) {
-                    return;
-                }
-                IWorkbenchPage activePage = wbWindow.getActivePage();
-                if (activePage == null) {
-                    return;
-                }
+    // ------------------------------------------------------------------------
+    // IResourceChangeListener
+    // ------------------------------------------------------------------------
 
-                for (IViewReference viewReference : activePage.getViewReferences()) {
-                    IViewPart viewPart = viewReference.getView(false);
-                    if (viewPart instanceof CommonNavigator) {
-                        CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
-                        Object element = TmfProjectModelElement.this;
-                        if (element instanceof TmfProjectElement) {
-                            // for the project element the viewer uses the IProject resource
-                            element = getResource();
-                        }
-                        commonViewer.refresh(element);
-                    }
-                }
-            }});
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        // Do nothing by default: sub-classes override this on an "as-needed"
+        // basis.
     }
 
     // ------------------------------------------------------------------------
@@ -196,19 +180,6 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement 
         }
         TmfProjectModelElement element = (TmfProjectModelElement) other;
         return element.fPath.equals(fPath);
-    }
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
-
-    /**
-     * Refresh the children of this model element, adding new children and
-     * removing dangling children as necessary. The remaining children should
-     * also refresh their own children sub-tree.
-     */
-    void refreshChildren() {
-        // Sub-classes may override this method as needed
     }
 
     /**

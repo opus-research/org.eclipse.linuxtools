@@ -14,31 +14,33 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit.ParserCallback;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.xerces.parsers.AbstractSAXParser;
-import org.apache.xerces.xni.Augmentations;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLString;
-import org.cyberneko.html.HTMLConfiguration;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.cdt.libhover.FunctionInfo;
 import org.eclipse.linuxtools.cdt.libhover.LibHoverInfo;
 import org.eclipse.linuxtools.internal.cdt.libhover.devhelp.preferences.LibHoverMessages;
@@ -54,7 +56,7 @@ public class ParseDevHelp {
 	
 	private final static String PARSING_MSG = "Libhover.Devhelp.Parsing.msg"; //$NON-NLS-1$
 	private final static String PARSING_FMT_MSG = "Libhover.Devhelp.Parsing.fmt.msg"; //$NON-NLS-1$
-	private static class HTMLSaxParser extends AbstractSAXParser {
+	private static class Parser extends ParserCallback {
 		
 		private String func;
 		private boolean begin;
@@ -67,71 +69,71 @@ public class ParseDevHelp {
 		private String returnValue;
 		private String funcName;
 		private String rowTag;
-		private StringBuilder prototype = new StringBuilder();
-		private StringBuilder description = new StringBuilder();
+		private String prototype = ""; //$NON-NLS-1$
+		private String description = ""; //$NON-NLS-1$
 		private int divCounter;
 		private int rowItemCount;
 		
-		public HTMLSaxParser(String func,  String funcName) {
-			super(new HTMLConfiguration());
+		public Parser(String func,  String funcName) {
 			this.func = func;
 			this.funcName = funcName.trim();
-			if (this.funcName.endsWith("()")) { //$NON-NLS-1$
+			if (this.funcName.endsWith("()")) //$NON-NLS-1$
 				this.funcName = this.funcName.replaceAll("\\(\\)", "").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-			}
 		}
-
+		
 		@Override
-		public void startElement(QName name, XMLAttributes a, Augmentations aug) {
-			if ("A".equals(name.rawname)) { //$NON-NLS-1$
-				String fname = a.getValue("name"); //$NON-NLS-1$
-				if (func.equals(fname)) {
+		public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+			if (t == HTML.Tag.A) {
+				String name = (String)(a.getAttribute(HTML.Attribute.NAME));
+				if (func.equals(name)) {
 					begin = true;
 				}
 			}
 			if (begin) {
-				if ("DIV".equals(name.rawname)) { //$NON-NLS-1$
+				if (t == HTML.Tag.DIV) {
 					++divCounter;
 				}
 				if (!descStart) {
-					if ("SPAN".equals(name.rawname)) { //$NON-NLS-1$
-						String type = a.getValue("class"); //$NON-NLS-1$
+					if (t == HTML.Tag.SPAN) {
+						String type = (String)a.getAttribute(HTML.Attribute.CLASS);
 						if (returnValue == null && type != null && 
 								type.equals("returnvalue")) { //$NON-NLS-1$
 							returnType = true;
 						}
-					} else if ("PRE".equals(name.rawname)) { //$NON-NLS-1$
-						String type = a.getValue("class"); //$NON-NLS-1$
-						if (type != null && type.equals("programlisting")) { //$NON-NLS-1$
+					}
+					if (t == HTML.Tag.PRE) {
+						String type = (String)a.getAttribute(HTML.Attribute.CLASS);
+						if (type != null && type.equals("programlisting")) //$NON-NLS-1$
 							returnType = true;
-						}
 					}
 				}
 				if (protoStart) {
-					if ("P".equals(name.rawname)) { //$NON-NLS-1$
+					if (t == HTML.Tag.P) {
 						protoStart = false;
 						descStart = true;;
- 						description.append("<p>"); //$NON-NLS-1$
+ 						description += "<p>"; //$NON-NLS-1$
 					}
 				} else	if (descStart) {
-					if ("P".equals(name.rawname)) { //$NON-NLS-1$
-						description.append("<p>"); //$NON-NLS-1$
-					} else if ("TABLE".equals(name.rawname)) { //$NON-NLS-1$
-						description.append("<dl>"); //$NON-NLS-1$
-					} else if ("TR".equals(name.rawname)) { //$NON-NLS-1$
+					if (t == HTML.Tag.P) {
+						description += "<p>"; //$NON-NLS-1$
+					}
+					else if (t == HTML.Tag.TABLE) {
+						description += "<dl>"; //$NON-NLS-1$
+					}
+					else if (t == HTML.Tag.TR) {
 						rowItemCount = 0;
-					} else if ("TD".equals(name.rawname)) { //$NON-NLS-1$
-						String type = a.getValue("class"); //$NON-NLS-1$
+					}
+					else if (t == HTML.Tag.TD) {
+						String type = (String)a.getAttribute(HTML.Attribute.CLASS);
 						if (type != null && type.equals("listing_lines")) { //$NON-NLS-1$
 							rowIgnore = true;
 						} else {
 							rowIgnore = false;
-							if (rowItemCount++ == 0) {
+							if (rowItemCount++ == 0)
 								rowTag = "<dt>"; //$NON-NLS-1$
-							} else {
+							else
 								rowTag = "<dd>"; //$NON-NLS-1$
-							}
-							description.append(rowTag);
+							description += rowTag;
 						}
 					}
 				}
@@ -139,42 +141,48 @@ public class ParseDevHelp {
 		}
 		
 	    @Override
-	    public void endElement(QName name, Augmentations aug) {
+		public void handleEndTag(HTML.Tag t, int pos) {
 	    	if (begin) {
-	    		if ("DIV".equals(name.rawname)) { //$NON-NLS-1$
+	    		if (t == HTML.Tag.DIV) {
 	    			--divCounter;
 //	    			System.out.println("divCounter is " + divCounter);
 	    			if (divCounter <= 0) {
 	    				begin = false;
+	    				try {
+							flush();
+						} catch (BadLocationException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 	    			}
 	    		}
 	    		if (descStart) {
-					if ("P".equals(name.rawname)) {//$NON-NLS-1$
-						description.append("</p>"); //$NON-NLS-1$
-					} else if ("TABLE".equals(name.rawname)) { //$NON-NLS-1$
-						description.append("</dl>"); //$NON-NLS-1$
-					} else if ("TR".equals(name.rawname)) { //$NON-NLS-1$
-						rowItemCount = 0;
-					} else if ("TD".equals(name.rawname)) { //$NON-NLS-1$
-						if (!rowIgnore) {
-							if (rowTag != null && rowTag.equals("<dt>")) {//$NON-NLS-1$
-								description.append("</dt>"); //$NON-NLS-1$
-							} else {
-								description.append("</dd>"); //$NON-NLS-1$
-							}
-						}
-						rowIgnore = false;
-					}
+	    			if (t == HTML.Tag.P)
+ 	    				description += "</p>"; //$NON-NLS-1$
+	    			else if (t == HTML.Tag.TABLE)
+	    				description += "</dl>"; //$NON-NLS-1$
+	    			else if (t == HTML.Tag.TR) {
+	    				rowItemCount = 0;
+	    			}
+	    			else if (t == HTML.Tag.TD) {
+	    				if (!rowIgnore) {
+	    					if (rowTag != null && rowTag.equals("<dt>")) //$NON-NLS-1$
+	    						description += "</dt>"; //$NON-NLS-1$
+	    					else
+	    						description += "</dd>"; //$NON-NLS-1$
+	    				}
+	    				rowIgnore = false;
+	    			}
 	    		}
 	    	}
 	    }
 
 	    @Override
-	    public void characters(XMLString data, Augmentations aug) {
+		public void handleText(char[] data, int pos) {
 	    	if (begin) {
 	    		if (returnType) {
 	    			returnValue = ""; //$NON-NLS-1$
-	    			String tmp = data.toString().trim();
+	    			String tmp = String.valueOf(data).trim();
 	    			boolean completed = false;
 	    			if (tmp.endsWith(");")) { //$NON-NLS-1$
 	    				completed = true;
@@ -197,8 +205,8 @@ public class ParseDevHelp {
 	    							parmStart = true;
 	    							protoStart = false;
 	    						}
-	    						prototype.append(separator).append(jtoken);
-	    						separator = " "; //$NON-NLS-1$
+	    						prototype += separator + jtoken;
+	    						separator = " ";
 	    					}
 	    					if (parmStart && completed) {
 	    						parmStart = false;
@@ -208,23 +216,24 @@ public class ParseDevHelp {
 	    				}
 	    			}
 	    			returnType = false;
-	    		} else if (protoStart) {
-	    			String temp = data.toString().trim();
+	    		}
+	    		else if (protoStart) {
+	    			String temp = String.valueOf(data).trim();
 	    			boolean completed = false;
 	    			if (temp.endsWith(");")) { //$NON-NLS-1$
 	    				completed = true;
 	    				temp = temp.substring(0, temp.length() - 2);
 	    			}
-	    			String separator = " "; //$NON-NLS-1$
-	    			while (temp.startsWith("*") || temp.startsWith("const")) { //$NON-NLS-1$ //$NON-NLS-2$
-	    				if (temp.charAt(0) == '*') {
+	    			String separator = " ";
+	    			while (temp.startsWith("*") || temp.startsWith("const")) { //$NON-NLS-1$
+	    				if (temp.charAt(0) == '*') { //$NON-NLS-1$
 	    					returnValue += separator + "*"; //$NON-NLS-1$
 	    					temp = temp.substring(1).trim();
 	    					separator = ""; //$NON-NLS-1$
 	    				} else {
 	    					returnValue += "const"; //$NON-NLS-1$
 	    					temp = temp.substring(5).trim();
-	    					separator = " "; //$NON-NLS-1$
+	    					separator = " ";
 	    				}
 	    			}
 	    			int index = temp.lastIndexOf('(');
@@ -232,7 +241,7 @@ public class ParseDevHelp {
 	    			if (index2 < index) {
 	    				if (index + 1 < temp.length()) {
 	    					temp = temp.substring(index + 1).trim();
-	    					prototype.append(temp);
+	    					prototype += temp;
 	    				}
 	    				parmStart = true;
 	    				protoStart = false;
@@ -241,75 +250,64 @@ public class ParseDevHelp {
 	    				parmStart = false;
 	    				descStart = true;
 	    			}
-	    		} else if (parmStart) {
-	    			String parmData = data.toString().trim();
+	    		}
+	    		else if (parmStart) {
+	    			String parmData = String.valueOf(data).trim();
 	    			int index = parmData.indexOf(')');
 	    			if (index >= 0) {
 	    				parmStart = false;
 	    				descStart = true;
 	    				parmData = parmData.substring(0, index);
 	    			}
-	    			if (prototype.length() == 0) {
-	    			   if (!parmData.equals(",") && !parmData.isEmpty()) { //$NON-NLS-1$
-	    				   parmData = " " + parmData; //$NON-NLS-1$
-	    			   }
+	    			if (!prototype.equals("")) {
+	    			   if (!parmData.equals(",") && !parmData.equals(""))
+	    				   parmData = " " + parmData;
 	    			}
-	    			prototype.append(parmData);
-	    		} else if (descStart) {
-	    			if (!rowIgnore) {
-	    				description.append(String.valueOf(data));
-	    			}
+	    			prototype += parmData;
+	    		}
+	    		else if (descStart) {
+	    			if (!rowIgnore)
+	    				description += String.valueOf(data);
 	    		}
 	    	}
+
 	    }
 	    
-	    private FunctionInfo getFunctionInfo() {
+	    public FunctionInfo getFunctionInfo() {
 	    	if (!valid || returnValue == null ||
-	    			returnValue.startsWith("#") || //$NON-NLS-1$
-	    			returnValue.startsWith("typedef ")) { //$NON-NLS-1$
+	    			returnValue.startsWith("#") ||
+	    			returnValue.startsWith("typedef "))
 	    		return null;
-	    	}
 	    	FunctionInfo info = new FunctionInfo(funcName);
 	    	info.setReturnType(returnValue);
-	    	info.setPrototype(prototype.toString());
-	    	info.setDescription(description.toString());
+	    	info.setPrototype(prototype);
+	    	info.setDescription(description);
 	    	return info;
 	    }
 	    
-	    private String getFuncName() {
+	    public String getFuncName() {
 	    	return funcName;
 	    }
 	    
 	    @Override
 		public String toString() {
-	    	return "funcName: <" + funcName + "> returnType: <" + returnValue + //$NON-NLS-1$ //$NON-NLS-2$
-	    	"> prototype: <" + prototype + "> description: " + description; //$NON-NLS-1$ //$NON-NLS-2$
+	    	return "funcName: <" + funcName + "> returnType: <" + returnValue +
+	    	"> prototype: <" + prototype + "> description: " + description;
 	    }
+
+	    @Override
+		public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+	    	
+	    }
+
+
 	}
 	
 	public static class DevHelpParser {
 		
-		private static final class NullEntityResolver implements EntityResolver {
-			@Override
-			public InputSource resolveEntity(String publicId, String systemId) {
-				return new InputSource(new StringReader("")); //$NON-NLS-1$
-			}
-		}
-
-		private static final class FilenameComparator implements
-				Comparator<IFileStore> {
-			@Override
-			public int compare(IFileStore arg0, IFileStore arg1) {
-				return (arg0.getName().compareToIgnoreCase(arg1.getName()));
-			}
-		}
-
 		private String dirName;
 		private LibHoverInfo libhover;
 		private boolean debug;
-		private FilenameComparator filenameComparator = new FilenameComparator();
-		private NullEntityResolver entityResolver = new NullEntityResolver();
-		private DocumentBuilderFactory factory;
 		
 		public DevHelpParser(String dirName) {
 			this(dirName, false);
@@ -319,8 +317,6 @@ public class ParseDevHelp {
 			this.dirName = dirName;
 			this.libhover = new LibHoverInfo();
 			this.debug = debug;
-			factory = DocumentBuilderFactory.newInstance();
-			factory.setValidating(false);
 		}
 
 		public LibHoverInfo getLibHoverInfo() {
@@ -334,27 +330,30 @@ public class ParseDevHelp {
 				IFileStore htmlDir = fs.getStore(dirPath);
 				IFileStore[] files = htmlDir.childStores(EFS.NONE, null);
 				monitor.beginTask(LibHoverMessages.getString(PARSING_MSG), files.length);
-				Arrays.sort(files, filenameComparator);
+				Arrays.sort(files, new Comparator<IFileStore>() {
+					@Override
+					public int compare(IFileStore arg0, IFileStore arg1) {
+						return (arg0.getName().compareToIgnoreCase(arg1.getName()));
+					}
+				});
    				for (int i = 0; i < files.length; ++i) {
 					IFileStore file = files[i];
 					String name = file.fetchInfo().getName();
-					if (monitor.isCanceled()) {
+					if (monitor.isCanceled())
 						return null;
-					}
 					monitor.setTaskName(LibHoverMessages.getFormattedString(PARSING_FMT_MSG, 
 							new String[]{name}));
-					File f = new File(dirPath.append(name).append(name + ".devhelp2").toOSString()); //$NON-NLS-1$
-					if (f.exists()) {
-						parse(f.getAbsolutePath(),
+					File f = new File(dirPath.append(name).append(name + ".devhelp2").toOSString());
+					if (f.exists())
+						parse(dirPath.append(name).append(name + ".devhelp2").toOSString(), //$NON-NLS-1$ 
 								monitor);
-					} else {
-						parse(dirPath.append(name)
-								.append(name + ".devhelp").toOSString(), //$NON-NLS-1$ 
+					else
+						parse(dirPath.append(name).append(name + ".devhelp").toOSString(), //$NON-NLS-1$ 
 								monitor);
-					}
 					monitor.worked(1);
    				}
 			} catch (CoreException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return libhover;
@@ -368,72 +367,78 @@ public class ParseDevHelp {
 					String nameString = name.getNodeValue();
 					nameString = nameString.replaceAll("\\(.*\\);+", "").trim(); //$NON-NLS-1$ //$NON-NLS-2$
 					if (nameString.contains("::") || nameString.startsWith("enum ") //$NON-NLS-1$ //$NON-NLS-2$
-							|| nameString.contains("\"")) { //$NON-NLS-1$
+							|| nameString.contains("\"")) //$NON-NLS-1$
 						return;
-					}
-					InputStream reader = new FileInputStream(path.removeLastSegments(1).toOSString()
+					Reader reader = new FileReader(path.removeLastSegments(1).toOSString()
 							+ "/" + linkParts[0]); //$NON-NLS-1$
-					HTMLSaxParser parser = new HTMLSaxParser(linkParts[1], nameString);
-					parser.parse(new InputSource(reader));
-					FunctionInfo finfo = parser.getFunctionInfo();
+					Parser callback = new Parser(linkParts[1], nameString);
+					new ParserDelegator().parse(reader, callback, true);
+					FunctionInfo finfo = callback.getFunctionInfo();
 					if (finfo != null) {
-						if (debug) {
-							System.out.println(parser.toString());
-						}
-						libhover.functions.put(parser.getFuncName(), parser.getFunctionInfo());
+						if (debug)
+							System.out.println(callback.toString());
+						libhover.functions.put(callback.getFuncName(), callback.getFunctionInfo());
 					}
+				} catch (FileNotFoundException e1) {
+					// ignore
 				} catch (IOException e) {
 					// ignore
-				} catch (SAXException e) {
-					e.printStackTrace();
 				}
 			}
 		}
 
-		private void parse(String fileName, IProgressMonitor monitor) {
+		public void parse(String fileName, IProgressMonitor monitor) {
 			try {
 				Path path = new Path(fileName);
 				File f = new File(fileName);
 				FileInputStream stream = new FileInputStream(f);
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				factory.setValidating(false);
 				DocumentBuilder builder = factory.newDocumentBuilder();
-				builder.setEntityResolver(entityResolver);
+				builder.setEntityResolver(new EntityResolver()
+		        {
+		            @Override
+					public InputSource resolveEntity(String publicId, String systemId)
+		                throws SAXException, IOException
+		            {
+		                return new InputSource(new StringReader("")); //$NON-NLS-1$
+		            }
+		        });
 				Document doc = builder.parse(stream);
 				NodeList bookNodes = doc.getElementsByTagName("book"); //$NON-NLS-1$
 				for (int x = 0; x < bookNodes.getLength(); ++x) {
 					Node n = bookNodes.item(x);
 					NamedNodeMap m = n.getAttributes();
 					Node language = m.getNamedItem("language"); //$NON-NLS-1$
-					if (language != null && !language.getNodeValue().equals("c")) { //$NON-NLS-1$
+					if (language != null && !language.getNodeValue().equals("c"))
 						return;
-					}
 				}
-				if (path.getFileExtension().equals("devhelp")) { //$NON-NLS-1$
-					NodeList nl = doc.getElementsByTagName("function"); // $NON-NLS-1$ //$NON-NLS-1$
-					for (int i = 0; i < nl.getLength(); ++i) {
-						if (monitor.isCanceled()) {
-							return;
-						}
-						Node n = nl.item(i);
-						NamedNodeMap m = n.getAttributes();
-						Node name = m.getNamedItem("name"); // $NON-NLS-1$ //$NON-NLS-1$
-						Node link = m.getNamedItem("link"); // $NON-NLS-1$ //$NON-NLS-1$
-						if (link != null) {
-							parseLink(link, name, path, libhover);
-						}
-					}
-				} else if (path.getFileExtension().equals("devhelp2")) { //$NON-NLS-1$
-					NodeList nl = doc.getElementsByTagName("keyword"); // $NON-NLS-1$ //$NON-NLS-1$
+				if (path.lastSegment().endsWith("devhelp")) {
+					NodeList nl = doc.getElementsByTagName("function"); // $NON-NLS-1$
 					for (int i = 0; i < nl.getLength(); ++i) {
 						if (monitor.isCanceled())
 							return;
 						Node n = nl.item(i);
 						NamedNodeMap m = n.getAttributes();
-						Node type = m.getNamedItem("type"); // $NON-NLS-1$ //$NON-NLS-1$
+						Node name = m.getNamedItem("name"); // $NON-NLS-1$
+						Node link = m.getNamedItem("link"); // $NON-NLS-1$
+						if (link != null) {
+							parseLink(link, name, path, libhover);
+						}
+					}
+				} else if (path.lastSegment().endsWith("devhelp2")) {
+					NodeList nl = doc.getElementsByTagName("keyword"); // $NON-NLS-1$
+					for (int i = 0; i < nl.getLength(); ++i) {
+						if (monitor.isCanceled())
+							return;
+						Node n = nl.item(i);
+						NamedNodeMap m = n.getAttributes();
+						Node type = m.getNamedItem("type"); // $NON-NLS-1$
 						if (type != null) {
 							String typeName = type.getNodeValue();
 							if (typeName.equals("function")) { //$NON-NLS-1$
-								Node name = m.getNamedItem("name"); // $NON-NLS-1$ //$NON-NLS-1$
-								Node link = m.getNamedItem("link"); // $NON-NLS-1$ //$NON-NLS-1$
+								Node name = m.getNamedItem("name"); // $NON-NLS-1$
+								Node link = m.getNamedItem("link"); // $NON-NLS-1$
 								if (link != null) {
 									parseLink(link, name, path, libhover);
 								}
@@ -443,25 +448,42 @@ public class ParseDevHelp {
 				}
 			} catch (FileNotFoundException e1) {
 				// ignore
-			} catch (ParserConfigurationException|SAXException|IOException e) {
+			} catch (ParserConfigurationException e) {
+				e.printStackTrace();
+			} catch (SAXException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
+	public static class UpdateDevhelp extends Job {
+
+		public UpdateDevhelp(String name) {
+			super(name);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			return null;
+		}
+	}
+	
 	public static void main(String[] args) {
-		long startParse = System.currentTimeMillis();
-		String devhelpHtmlDirectory = "/usr/share/gtk-doc/html"; //$NON-NLS-1$
-		DevHelpParser p = new DevHelpParser(devhelpHtmlDirectory, false);
+		
+		String devhelpHtmlDirectory = args[0];
+		DevHelpParser p = new DevHelpParser(devhelpHtmlDirectory, true);
 		File dir = new File(devhelpHtmlDirectory);
-		for (File f : dir.listFiles()) {
+		File[] files = dir.listFiles();
+		for (int i = 0; i < files.length; ++i) {
+			File f = files[i];
 			String name = f.getName();
 			p.parse(f.getAbsolutePath() + "/" + name + ".devhelp2",  //$NON-NLS-1$ //$NON-NLS-2$
 					new NullProgressMonitor());
 		}
-		long endParse = System.currentTimeMillis();
-		System.out.println("Parse Complete:"+(endParse-startParse)); //$NON-NLS-1$
-		long startSerialize = System.currentTimeMillis();
 		LibHoverInfo hover = p.getLibHoverInfo();
 		try {
 			// Now, output the LibHoverInfo for caching later
@@ -470,16 +492,15 @@ public class ParseDevHelp {
 			File ldir = new File(location.toOSString());
 			ldir.mkdir();
 			location = location.append("devhelp.libhover"); //$NON-NLS-1$
-			try (FileOutputStream f = new FileOutputStream(
-					location.toOSString());
-					ObjectOutputStream out = new ObjectOutputStream(f)) {
-				out.writeObject(hover);
-			}
+			FileOutputStream f = new FileOutputStream(location.toOSString());
+			ObjectOutputStream out = new ObjectOutputStream(f);
+			out.writeObject(hover);
+			out.close();
 		} catch(Exception e) {
+			e.printStackTrace();
 		}
-		long endSerialize = System.currentTimeMillis();
 		
-		System.out.println("Parse Complete:"+(endSerialize-startSerialize)); //$NON-NLS-1$
+		System.out.println("Parse Complete"); //$NON-NLS-1$
 
 	}
 

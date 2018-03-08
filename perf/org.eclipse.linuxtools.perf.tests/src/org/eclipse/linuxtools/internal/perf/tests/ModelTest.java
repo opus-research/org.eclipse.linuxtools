@@ -67,7 +67,7 @@ public class ModelTest extends AbstractTest {
 
 		Class<?>[] klassList = new Class<?>[] { PMSymbol.class, PMFile.class,
 				PMDso.class, PMCommand.class, PMEvent.class };
-		stack = new Stack<>();
+		stack = new Stack<Class<?>>();
 		stack.addAll(Arrays.asList(klassList));
 	}
 
@@ -232,8 +232,13 @@ public class ModelTest extends AbstractTest {
 		checkCommadLabels(cmdLabels, cmd);
 	}
 	@Test
-	public void testParseEventList() throws FileNotFoundException {
-		BufferedReader input = new BufferedReader(new FileReader("resources/simple-perf-event-list"));
+	public void testParseEventList() {
+		BufferedReader input = null;
+		try {
+			input = new BufferedReader(new FileReader("resources/simple-perf-event-list"));
+		} catch (FileNotFoundException e) {
+			fail();
+		}
 
 		HashMap<String, ArrayList<String>> eventList = PerfCore.parseEventList(input);
 		for(String key : eventList.keySet()){
@@ -258,9 +263,15 @@ public class ModelTest extends AbstractTest {
 		}
 	}
 	@Test
-	public void testParseAnnotation() throws FileNotFoundException {
-		BufferedReader input = new BufferedReader(new FileReader(
+	public void testParseAnnotation() {
+		BufferedReader input = null;
+
+		try {
+			input = new BufferedReader(new FileReader(
 					"resources/perf-annotation-data"));
+		} catch (FileNotFoundException e) {
+			fail();
+		}
 
 		// Set up arguments for the annotation parser.
 		IPath workingDir = Path.fromOSString("/working/directory/");
@@ -285,7 +296,7 @@ public class ModelTest extends AbstractTest {
 		String expectedFilePath = "/home/user/workspace/fibonacci/Debug/../src/fibonacci.cpp";
 
 		assertTrue(expectedDsoPath.equals(dso.getPath()));
-		assertEquals(dso.getChildren().length, 2);
+		assertTrue(dso.getChildren().length == 2);
 
 		for (TreeParent dsoChild : dso.getChildren()) {
 			String filePath = ((PMFile) dsoChild).getPath();
@@ -295,18 +306,18 @@ public class ModelTest extends AbstractTest {
 			} else {
 				assertTrue(expectedFilePath.equals(filePath));
 				assertTrue(dsoChild.hasChildren());
-				assertEquals(dsoChild.getChildren().length, 1);
+				assertTrue(dsoChild.getChildren().length == 1);
 
 				TreeParent curSym = dsoChild.getChildren()[0];
 				assertTrue(curSym.hasChildren());
-				assertEquals(curSym.getChildren().length, 5);
+				assertTrue(curSym.getChildren().length == 5);
 
 				float percentCount = 0;
 				for (TreeParent symChild : curSym.getChildren()) {
 					percentCount += symChild.getPercent();
 				}
 
-				assertEquals(Math.ceil(percentCount), 100.0, 0.0);
+				assertTrue(Math.ceil(percentCount) == 100.0);
 
 			}
 		}
@@ -334,11 +345,10 @@ public class ModelTest extends AbstractTest {
 	public void testRecordString() throws CoreException {
 		ILaunchConfigurationWorkingCopy tempConfig = config.copy("test-config");
 		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, true);
-		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime_Priority, 2);
 		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, true);
 		tempConfig.setAttribute(PerfPlugin.ATTR_Multiplex, true);
 
-		ArrayList<String> selectedEvents = new ArrayList<>();
+		ArrayList<String> selectedEvents = new ArrayList<String>();
 		selectedEvents.add("cpu-cycles");
 		selectedEvents.add("cache-misses");
 		selectedEvents.add("cpu-clock");
@@ -350,7 +360,7 @@ public class ModelTest extends AbstractTest {
 		assertNotNull(recordString);
 
 		String[] expectedString = { PerfPlugin.PERF_COMMAND, "record", "-f",
-				"-r", "2", "-v", "-M", "-e", "cpu-cycles", "-e", "cache-misses",
+				"-r", "-v", "-M", "-e", "cpu-cycles", "-e", "cache-misses",
 				"-e", "cpu-clock" };
 		assertArrayEquals(expectedString, recordString);
 	}
@@ -408,7 +418,7 @@ public class ModelTest extends AbstractTest {
 				// tp.getClass() instanceof klass
 				assertTrue(klass.isAssignableFrom(tp.getClass()));
 				// each sibling needs its own stack
-				Stack<Class<?>> newStack = new Stack<>();
+				Stack<Class<?>> newStack = new Stack<Class<?>>();
 				newStack.addAll(Arrays.asList(stack.toArray(new Class<?> [] {})));
 				checkChildrenStructure(tp, newStack);
 			}
@@ -484,7 +494,7 @@ public class ModelTest extends AbstractTest {
 	 * @param cmd root of tree model
 	 */
 	private void checkCommadLabels(String[] cmdLabels, TreeParent cmd) {
-		List<String> cmdList = new ArrayList<>(Arrays.asList(cmdLabels));
+		List<String> cmdList = new ArrayList<String>(Arrays.asList(cmdLabels));
 
 		for (TreeParent dso : cmd.getChildren()) {
 			assertTrue(cmdList.get(0).equals(dso.getName()));

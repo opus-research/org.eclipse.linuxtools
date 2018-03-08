@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -54,7 +54,7 @@ public class ColorSettingsManager {
 	private static ColorSetting[] fColorSettings = ColorSettingsXML.load(COLOR_SETTINGS_PATH_NAME);
 
 	// The listener list
-	private static List<IColorSettingsListener> fListeners = new ArrayList<>();
+	private static List<IColorSettingsListener> fListeners = new ArrayList<IColorSettingsListener>();
 
 	/**
 	 * Returns an array of color settings.

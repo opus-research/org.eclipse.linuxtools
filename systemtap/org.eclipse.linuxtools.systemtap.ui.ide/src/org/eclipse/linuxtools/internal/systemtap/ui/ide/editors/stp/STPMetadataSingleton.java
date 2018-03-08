@@ -30,7 +30,7 @@ public class STPMetadataSingleton {
 
 	private static STPMetadataSingleton instance = null;
 
-	private STPMetadataSingleton() {
+	protected STPMetadataSingleton() {
 		TapsetLibrary.init();
 	}
 
@@ -118,7 +118,7 @@ public class STPMetadataSingleton {
 	}
 
 	private String[] getMatchingChildren(TreeNode node, String prefix) {
-		ArrayList<String> matches = new ArrayList<>();
+		ArrayList<String> matches = new ArrayList<String>();
 
 		int n = node.getChildCount();
 		for (int i = 0; i < n; i++) {

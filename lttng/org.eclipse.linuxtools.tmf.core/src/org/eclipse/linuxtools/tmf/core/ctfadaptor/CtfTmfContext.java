@@ -14,7 +14,7 @@
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
 /**
  * Lightweight Context for CtfTmf traces. Should only use 3 references, 1 ref to
@@ -30,8 +30,8 @@ public class CtfTmfContext implements ITmfContext {
     // Fields
     // -------------------------------------------
 
-    private CtfLocation fCurLocation;
-    private long fCurRank;
+    private CtfLocation curLocation;
+    private long curRank;
 
     private final CtfTmfTrace fTrace;
 
@@ -48,7 +48,7 @@ public class CtfTmfContext implements ITmfContext {
      */
     public CtfTmfContext(CtfTmfTrace ctfTmfTrace) {
         fTrace = ctfTmfTrace;
-        fCurLocation = new CtfLocation(new CtfLocationInfo(0, 0));
+        curLocation = new CtfLocation(new CtfLocationInfo(0, 0));
     }
 
     // -------------------------------------------
@@ -57,43 +57,37 @@ public class CtfTmfContext implements ITmfContext {
 
     @Override
     public long getRank() {
-        return fCurRank;
+        return curRank;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation getLocation() {
-        return fCurLocation;
+        return curLocation;
     }
 
     @Override
     public boolean hasValidRank() {
-        return fCurRank != CtfLocation.INVALID_LOCATION.getTimestamp();
+        return curRank != CtfLocation.INVALID_LOCATION.getTimestamp();
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void setLocation(ITmfLocation location) {
-        fCurLocation = (CtfLocation) location;
-        if (fCurLocation != null) {
-            getIterator().seek(fCurLocation.getLocationInfo());
+        curLocation = (CtfLocation) location;
+        if (curLocation != null) {
+            getIterator().seek(curLocation.getLocationInfo());
         }
     }
 
     @Override
     public void setRank(long rank) {
-        fCurRank = rank;
+        curRank = rank;
 
     }
 
     @Override
     public void increaseRank() {
         if (hasValidRank()) {
-            fCurRank++;
+            curRank++;
         }
     }
 
@@ -125,19 +119,19 @@ public class CtfTmfContext implements ITmfContext {
      * @return success or not
      */
     public synchronized boolean advance() {
-        final CtfLocationInfo curLocationData = fCurLocation.getLocationInfo();
+        final CtfLocationInfo curLocationData = this.curLocation.getLocationInfo();
         boolean retVal = getIterator().advance();
         CtfTmfEvent currentEvent = getIterator().getCurrentEvent();
 
         if (currentEvent != null) {
             final long timestampValue = currentEvent.getTimestamp().getValue();
             if (curLocationData.getTimestamp() == timestampValue) {
-                fCurLocation = new CtfLocation(timestampValue, curLocationData.getIndex() + 1);
+                curLocation = new CtfLocation(timestampValue, curLocationData.getIndex() + 1);
             } else {
-                fCurLocation = new CtfLocation(timestampValue, 0L);
+                curLocation = new CtfLocation(timestampValue, 0L);
             }
         } else {
-            fCurLocation = new CtfLocation(CtfLocation.INVALID_LOCATION);
+            curLocation = new CtfLocation(CtfLocation.INVALID_LOCATION);
         }
 
         return retVal;
@@ -156,7 +150,7 @@ public class CtfTmfContext implements ITmfContext {
      * @return success or not
      */
     public synchronized boolean seek(final long timestamp) {
-        fCurLocation = new CtfLocation(timestamp, 0);
+        curLocation = new CtfLocation(timestamp, 0);
         return getIterator().seek(timestamp);
     }
 
@@ -169,7 +163,7 @@ public class CtfTmfContext implements ITmfContext {
      * @since 2.0
      */
     public synchronized boolean seek(final CtfLocationInfo location) {
-        fCurLocation = new CtfLocation(location);
+        curLocation = new CtfLocation(location);
         return getIterator().seek(location);
     }
 

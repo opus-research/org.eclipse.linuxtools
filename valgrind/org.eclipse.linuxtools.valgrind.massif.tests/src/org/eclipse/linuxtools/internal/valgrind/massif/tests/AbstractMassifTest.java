@@ -11,8 +11,7 @@
 package org.eclipse.linuxtools.internal.valgrind.massif.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -39,32 +38,46 @@ public abstract class AbstractMassifTest extends AbstractValgrindTest {
 		return MassifPlugin.TOOL_ID;
 	}
 
-    protected void checkFile(IProject proj, MassifHeapTreeNode node) {
-        IEditorPart editor = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        IEditorInput input = editor.getEditorInput();
-        assertTrue(input instanceof IFileEditorInput);
-        IFileEditorInput fileInput = (IFileEditorInput) input;
-        IResource expectedResource = proj.findMember(node.getFilename());
-        assertNotNull(expectedResource);
-        File expectedFile = expectedResource.getLocation().toFile();
-        File actualFile = fileInput.getFile().getLocation().toFile();
-        assertEquals(expectedFile, actualFile);
-    }
+	protected void checkFile(IProject proj, MassifHeapTreeNode node) {
+		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorInput input = editor.getEditorInput();
+		if (input instanceof IFileEditorInput) {
+			IFileEditorInput fileInput = (IFileEditorInput) input;
+			IResource expectedResource = proj.findMember(node.getFilename());
+			if (expectedResource != null) {
+				File expectedFile = expectedResource.getLocation().toFile();
+				File actualFile = fileInput.getFile().getLocation().toFile();
+				assertEquals(expectedFile, actualFile);
+			}
+			else {
+				fail();
+			}
+		}
+		else {
+			fail();
+		}
+	}
 
-    protected void checkLine(MassifHeapTreeNode node) {
-        IEditorPart editor = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        assertTrue(editor instanceof ITextEditor);
-        ITextEditor textEditor = (ITextEditor) editor;
+	protected void checkLine(MassifHeapTreeNode node) {
+		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editor instanceof ITextEditor) {
+			ITextEditor textEditor = (ITextEditor) editor;
 
-        ISelection selection = textEditor.getSelectionProvider().getSelection();
-        assertTrue(selection instanceof TextSelection);
-        TextSelection textSelection = (TextSelection) selection;
-        int line = textSelection.getStartLine() + 1; // zero-indexed
+			ISelection selection = textEditor.getSelectionProvider().getSelection();
+			if (selection instanceof TextSelection) {
+				TextSelection textSelection = (TextSelection) selection;
+				int line = textSelection.getStartLine() + 1; // zero-indexed
 
-        assertEquals(node.getLine(), line);
-    }
+				assertEquals(node.getLine(), line);
+			}
+			else {
+				fail();
+			}
+		}
+		else {
+			fail();
+		}
+	}
 
 	/**
 	 * Check snapshots contain the expected used bytes.

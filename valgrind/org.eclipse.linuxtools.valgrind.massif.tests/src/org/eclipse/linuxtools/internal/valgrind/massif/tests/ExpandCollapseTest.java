@@ -32,8 +32,10 @@ public class ExpandCollapseTest extends AbstractMassifTest {
 	protected TreeViewer viewer;
 	protected Menu contextMenu;
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("alloctest"); //$NON-NLS-1$
 	}
 

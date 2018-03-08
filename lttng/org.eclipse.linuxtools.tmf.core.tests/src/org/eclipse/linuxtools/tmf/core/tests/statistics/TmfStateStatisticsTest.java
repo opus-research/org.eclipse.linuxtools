@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,19 +12,15 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.statistics;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.fail;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import java.io.File;
+import java.io.IOException;
+
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatisticsEventTypesModule;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatisticsTotalsModule;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
@@ -34,51 +30,34 @@ import org.junit.BeforeClass;
  */
 public class TmfStateStatisticsTest extends TmfStatisticsTest {
 
-    private ITmfTrace fTrace;
+    private static File htFileTotals;
+    private static File htFileTypes;
 
     /**
-     * Class setup
+     * Set up the fixture (build the state history, etc.) once for all tests.
      */
     @BeforeClass
     public static void setUpClass() {
         assumeTrue(testTrace.exists());
-    }
-
-    /**
-     * Test setup
-     */
-    @Before
-    public void setUp() {
-        fTrace = testTrace.getTrace();
-
-        /* Prepare the two analysis-backed state systems */
-        TmfStatisticsTotalsModule totalsMod = new TmfStatisticsTotalsModule();
-        TmfStatisticsEventTypesModule eventTypesMod = new TmfStatisticsEventTypesModule();
         try {
-            totalsMod.setTrace(fTrace);
-            eventTypesMod.setTrace(fTrace);
-        } catch (TmfAnalysisException e) {
+            htFileTotals = File.createTempFile("stats-test-totals", ".ht");
+            htFileTypes = File.createTempFile("stats-test-types", ".ht");
+
+            backend = new TmfStateStatistics(testTrace.getTrace(), htFileTotals, htFileTypes);
+
+        } catch (TmfTraceException e) {
+            fail();
+        } catch (IOException e) {
             fail();
         }
-
-        totalsMod.schedule();
-        eventTypesMod.schedule();
-        assertTrue(totalsMod.waitForCompletion());
-        assertTrue(eventTypesMod.waitForCompletion());
-
-        ITmfStateSystem totalsSS = totalsMod.getStateSystem();
-        ITmfStateSystem eventTypesSS = eventTypesMod.getStateSystem();
-        assertNotNull(totalsSS);
-        assertNotNull(eventTypesSS);
-
-        backend = new TmfStateStatistics(totalsSS, eventTypesSS);
     }
 
     /**
-     * Test cleanup
+     * Class cleanup
      */
-    @After
-    public void tearDown() {
-        fTrace.dispose();
+    @AfterClass
+    public static void tearDownClass() {
+        htFileTotals.delete();
+        htFileTypes.delete();
     }
 }

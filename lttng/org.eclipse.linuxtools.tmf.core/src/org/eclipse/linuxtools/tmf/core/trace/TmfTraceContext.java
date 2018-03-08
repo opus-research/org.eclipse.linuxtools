@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -14,7 +14,6 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -32,31 +31,27 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 final class TmfTraceContext {
 
     static final TmfTraceContext NULL_CONTEXT =
-            new TmfTraceContext(TmfTimestamp.BIG_CRUNCH, TmfTimestamp.BIG_CRUNCH, TmfTimeRange.NULL_RANGE, null);
+            new TmfTraceContext(TmfTimestamp.BIG_CRUNCH, TmfTimestamp.BIG_CRUNCH, TmfTimeRange.NULL_RANGE);
 
     private final TmfTimeRange fSelection;
     private final TmfTimeRange fWindowRange;
-    private final IFile fEditorFile;
     private final ITmfFilter fFilter;
 
-    public TmfTraceContext(ITmfTimestamp beginTs, ITmfTimestamp endTs, TmfTimeRange tr, IFile editorFile) {
+    public TmfTraceContext(ITmfTimestamp beginTs, ITmfTimestamp endTs, TmfTimeRange tr) {
         fSelection = new TmfTimeRange(beginTs, endTs);
         fWindowRange = tr;
-        fEditorFile = editorFile;
         fFilter = null;
     }
 
     public TmfTraceContext(TmfTraceContext prevCtx, ITmfTimestamp beginTs, ITmfTimestamp endTs) {
         fSelection = new TmfTimeRange(beginTs, endTs);
         fWindowRange = prevCtx.fWindowRange;
-        fEditorFile = prevCtx.fEditorFile;
         fFilter = prevCtx.fFilter;
     }
 
     public TmfTraceContext(TmfTraceContext prevCtx, TmfTimeRange tr) {
         fSelection = prevCtx.fSelection;
         fWindowRange = tr;
-        fEditorFile = prevCtx.fEditorFile;
         fFilter = prevCtx.fFilter;
     }
 
@@ -70,7 +65,6 @@ final class TmfTraceContext {
     public TmfTraceContext(TmfTraceContext prevCtx, ITmfFilter filter) {
         fSelection = prevCtx.fSelection;
         fWindowRange = prevCtx.fWindowRange;
-        fEditorFile = prevCtx.fEditorFile;
         fFilter = filter;
     }
 
@@ -84,10 +78,6 @@ final class TmfTraceContext {
 
     public TmfTimeRange getWindowRange() {
         return fWindowRange;
-    }
-
-    public IFile getEditorFile() {
-        return fEditorFile;
     }
 
     /**

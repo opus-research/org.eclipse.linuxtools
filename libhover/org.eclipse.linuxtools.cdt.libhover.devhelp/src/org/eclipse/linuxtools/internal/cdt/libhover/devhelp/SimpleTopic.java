@@ -35,12 +35,12 @@ public class SimpleTopic implements ITopic {
 		this.bookName = bookName;
 		this.node = node;
 		xpath = XPathFactory.newInstance().newXPath();
-		subTopics = new ArrayList<>();
+		subTopics = new ArrayList<ITopic>();
 		initSubtopics();
 	}
 
 	private void initSubtopics() {
-		NodeList nodes = xpathEvalNodes("sub", node); //$NON-NLS-1$
+		NodeList nodes = xpathEvalNodes("sub", node);
 		if (nodes != null) {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				Node innerNode = nodes.item(i);
@@ -73,23 +73,23 @@ public class SimpleTopic implements ITopic {
 
 	@Override
 	public String getHref() {
-		String link = ""; //$NON-NLS-1$
+		String link = "";
 		try {
-			link = xpath.evaluate("@link", node); //$NON-NLS-1$
+			link = xpath.evaluate("@link", node);
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
-		return "/" + DevHelpPlugin.PLUGIN_ID + "/" + bookName + "/" + link; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		return "/" + DevHelpPlugin.PLUGIN_ID + "/" + bookName + "/" + link;
 	}
 
 	@Override
 	public String getLabel() {
 		try {
-			return xpath.evaluate("@name", node); //$NON-NLS-1$
+			return xpath.evaluate("@name", node);
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
-		return ""; //$NON-NLS-1$
+		return "";
 	}
 
 	@Override

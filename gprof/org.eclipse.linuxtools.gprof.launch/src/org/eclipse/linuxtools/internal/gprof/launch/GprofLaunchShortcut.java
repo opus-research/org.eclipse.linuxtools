@@ -21,7 +21,6 @@ public class GprofLaunchShortcut extends ProfileLaunchShortcut {
 	@Override
 	protected void setDefaultProfileAttributes(
 			ILaunchConfigurationWorkingCopy wc) {
-		//nothing to do
 	}
 
 	/**

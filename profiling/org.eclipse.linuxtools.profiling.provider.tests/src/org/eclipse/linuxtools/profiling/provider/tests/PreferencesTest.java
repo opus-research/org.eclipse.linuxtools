@@ -137,7 +137,7 @@ public class PreferencesTest extends AbstractTest{
 		// Assert specified tool to select is what we expect and select it.
 		SWTBotRadio stubRadio = bot.radio(STUB_LABEL);
 		assertNotNull(stubRadio);
-		assertEquals(STUB_TOOLTIP,stubRadio.getToolTipText());
+		assertTrue(STUB_TOOLTIP.equals(stubRadio.getToolTipText()));
 		stubRadio.click();
 
 		bot.button("Apply").click(); //$NON-NLS-1$
@@ -206,7 +206,7 @@ public class PreferencesTest extends AbstractTest{
 		// Assert default radio is as expected.
 		SWTBotRadio defaultRadio = bot.radio(defaultToolLabel);
 		assertNotNull(defaultRadio);
-		assertEquals(defaultToolInfo, defaultRadio.getToolTipText());
+		assertTrue(defaultToolInfo.equals(defaultRadio.getToolTipText()));
 
 		bot.button("Apply").click(); //$NON-NLS-1$
 		bot.button("OK").click(); //$NON-NLS-1$

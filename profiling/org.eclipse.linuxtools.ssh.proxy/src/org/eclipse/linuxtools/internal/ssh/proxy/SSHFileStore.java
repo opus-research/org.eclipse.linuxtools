@@ -31,6 +31,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
+import org.eclipse.linuxtools.ssh.proxy.Activator;
+
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
@@ -66,7 +68,7 @@ public class SSHFileStore extends FileStore {
 			monitor.worked(25);
 			Vector<?> v = channel.ls(uri.getPath());
 			monitor.worked(50);
-			LinkedList<String> childs = new LinkedList<>();
+			LinkedList<String> childs = new LinkedList<String>();
 
 			boolean isDir = false;
 			for (int i=0; i < v.size(); i++) {
@@ -100,7 +102,7 @@ public class SSHFileStore extends FileStore {
 			monitor.worked(25);
 			Vector<?> v = channel.ls(uri.getPath());
 			monitor.worked(50);
-			LinkedList<IFileInfo> childs = new LinkedList<>();
+			LinkedList<IFileInfo> childs = new LinkedList<IFileInfo>();
 
 			boolean isDir = false;
 			for (int i=0; i < v.size(); i++) {
@@ -142,7 +144,7 @@ public class SSHFileStore extends FileStore {
 			monitor.worked(25);
 			Vector<?> v = channel.ls(uri.getPath());
 			monitor.worked(50);
-			LinkedList<IFileStore> childs = new LinkedList<>();
+			LinkedList<IFileStore> childs = new LinkedList<IFileStore>();
 
 			boolean isDir = false;
 			for (int i=0; i < v.size(); i++) {

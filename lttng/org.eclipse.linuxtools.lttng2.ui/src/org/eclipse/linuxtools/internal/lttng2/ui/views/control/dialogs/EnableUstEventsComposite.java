@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -180,7 +180,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
     @Override
     public List<String> getEventNames() {
-        return new ArrayList<>(fSelectedEvents);
+        return new ArrayList<String>(fSelectedEvents);
     }
 
     @Override
@@ -256,10 +256,10 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
         // initialize tracepoint fields
         fIsAllTracepoints = false;
-        fSelectedEvents = new ArrayList<>();
+        fSelectedEvents = new ArrayList<String>();
         if (fIsTracepoints) {
             fIsAllTracepoints = fTracepointsViewer.getChecked(fProviderGroup);
-            Set<String> set = new HashSet<>();
+            Set<String> set = new HashSet<String>();
             Object[] checkedElements = fTracepointsViewer.getCheckedElements();
             for (int i = 0; i < checkedElements.length; i++) {
                 ITraceControlComponent component = (ITraceControlComponent)checkedElements[i];

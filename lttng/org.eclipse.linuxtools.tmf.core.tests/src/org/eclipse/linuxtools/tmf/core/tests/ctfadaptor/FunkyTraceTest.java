@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -24,12 +24,9 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 /**
  * More advanced CTF tests using "funky_trace", a trace generated with the
@@ -40,10 +37,6 @@ import org.junit.rules.Timeout;
  */
 public class FunkyTraceTest {
 
-    /** Time-out tests after 20 seconds */
-    @Rule
-    public TestRule globalTimeout= new Timeout(20000);
-
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -51,7 +44,7 @@ public class FunkyTraceTest {
     private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.FUNKY_TRACE;
     private static final double DELTA = 0.0000001;
 
-    private CtfTmfTrace fTrace;
+    private static CtfTmfTrace fTrace;
 
     // ------------------------------------------------------------------------
     // Setup
@@ -60,8 +53,8 @@ public class FunkyTraceTest {
     /**
      * Test setup
      */
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setupClass() {
         assumeTrue(testTrace.exists());
         fTrace = testTrace.getTrace();
         fTrace.indexTrace(true);
@@ -70,11 +63,9 @@ public class FunkyTraceTest {
     /**
      * Clean-up
      */
-    @After
-    public void tearDown() {
-        if (fTrace != null) {
-            fTrace.dispose();
-        }
+    @AfterClass
+    public static void tearDownClass() {
+        fTrace.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -87,7 +78,7 @@ public class FunkyTraceTest {
     @Test
     public void testFirstEvent() {
         CtfTmfEvent event = getEvent(0);
-        assertEquals("Simple Event", event.getType().getName());
+        assertEquals("Simple Event", event.getEventName());
         assertEquals(1234567, event.getTimestamp().getValue());
         assertEquals(42, ((Long) event.getContent().getField("integer_field").getValue()).intValue());
         assertEquals(3.1415, ((Double) event.getContent().getField("float_field").getValue()).doubleValue(), DELTA);
@@ -99,7 +90,7 @@ public class FunkyTraceTest {
     @Test
     public void testSecondEvent() {
         CtfTmfEvent event = getEvent(1);
-        assertEquals("Spammy_Event", event.getType().getName());
+        assertEquals("Spammy_Event", event.getEventName());
         assertEquals(1234568, event.getTimestamp().getValue());
         assertEquals(0, ((Long) event.getContent().getField("field_1").getValue()).intValue());
         assertEquals("This is a test", event.getContent().getField("a_string").getValue());
@@ -111,7 +102,7 @@ public class FunkyTraceTest {
     @Test
     public void testSecondToLastEvent() {
         CtfTmfEvent event = getEvent(100000);
-        assertEquals("Spammy_Event", event.getType().getName());
+        assertEquals("Spammy_Event", event.getEventName());
         assertEquals(1334567, event.getTimestamp().getValue());
         assertEquals(99999, ((Long) event.getContent().getField("field_1").getValue()).intValue());
         assertEquals("This is a test", event.getContent().getField("a_string").getValue());
@@ -140,7 +131,7 @@ public class FunkyTraceTest {
          */
 
         CtfTmfEvent event = getEvent(100001);
-        assertEquals("Complex Test Event", event.getType().getName());
+        assertEquals("Complex Test Event", event.getEventName());
         assertEquals(1334568, event.getTimestamp().getValue());
         assertEquals(0xddf00d, ((Long) event.getContent().getField("uint_35").getValue()).intValue());
         assertEquals(-12345, ((Long) event.getContent().getField("int_16").getValue()).intValue());
@@ -195,6 +186,7 @@ public class FunkyTraceTest {
             super(CtfTmfEvent.class,
                     TmfTimeRange.ETERNITY,
                     index,
+                    1,
                     1,
                     ExecutionType.FOREGROUND);
         }
