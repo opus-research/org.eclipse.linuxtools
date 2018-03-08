@@ -119,8 +119,14 @@ public class GraphCanvas extends Canvas {
 	 */
 	public synchronized void repaint() {
 		getDisplay().syncExec(new Runnable() {
+			boolean stop = false;
 			public void run() {
-				redraw();
+				if(stop) return;
+				try {
+					redraw();
+				} catch (Exception e) {
+					stop = true;
+				}
 			}
 		});
 	}

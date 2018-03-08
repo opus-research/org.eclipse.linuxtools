@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2008 Phil Muldoon <pkmuldoon@picobot.org>.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Phil Muldoon <pkmuldoon@picobot.org> - initial API and implementation.
+ *    Phil Muldoon <pkmuldoon@picobot.org> - initial API and implementation. 
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
@@ -35,14 +35,14 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	private static final String FUNCTION_KEYWORD = "function "; //$NON-NLS-1$
 
 	private static final String[][] GLOBAL_KEYWORDS = {
-			{ GLOBAL_KEYWORD, Messages.STPCompletionProcessor_global },
+			{ GLOBAL_KEYWORD, Messages.STPCompletionProcessor_global }, 
 			{ PROBE_KEYWORD, Messages.STPCompletionProcessor_probe },
 			{ FUNCTION_KEYWORD, Messages.STPCompletionProcessor_function } };
 
 	private STPMetadataSingleton stpMetadataSingleton;
 
 	public STPCompletionProcessor(){
-		this.stpMetadataSingleton = STPMetadataSingleton.getInstance();
+		this.stpMetadataSingleton = STPMetadataSingleton.getInstance(); 
 	}
 
 	/* (non-Javadoc)
@@ -56,7 +56,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	public ICompletionProposal[] computeCompletionProposals(IDocument document, int offset){
 
 		ITypedRegion partition = null;
-
+		
 		try {
 			partition = document.getPartition(offset);
 		} catch (BadLocationException e1) {
@@ -83,112 +83,13 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		if (partition.getType() == IDocument.DEFAULT_CONTENT_TYPE ){
 			return getGlobalKeywordCompletion(prefix, offset);
 		}
-
-		// If inside a probe return probe variable completions.
-		if (partition.getType() == STPPartitionScanner.STP_PROBE){
-			return getProbeVariableCompletions(document, offset, prefix);
-		}
-
+		
 		return NO_COMPLETIONS;
 	}
 
-	private ICompletionProposal[] getProbeVariableCompletions(IDocument document, int offset, String prefix){
-		String probe = getProbe(document, offset);
-		String[] completionData = stpMetadataSingleton.getProbeVariableCompletions(probe, prefix);
-		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
-
-
-		// return buildCompletionList(offset, prefix.length(), completionData);
-		int prefixLength = prefix.length();
-		for (int i = 0; i < completionData.length; i++){
-			int endIndex = completionData[i].indexOf(':');
-			result[i] = new CompletionProposal(
-							completionData[i].substring(prefixLength, endIndex),
-							offset,
-							0,
-							endIndex - prefixLength,
-							null,
-							completionData[i],
-							null,
-							null);
-		}
-		return result;
-	}
-
-	/**
-	 * Returns the full name of the probe surrounding the given
-	 * offset. This function assumes that the given offset is inside
-	 * of a {@link STPPartitionScanner#STP_PROBE} section.
-	 * @param document
-	 * @param offset
-	 * @return the probe name
-	 */
-	private String getProbe(IDocument document, int offset){
-		String probePoint = null;
-
-		try {
-			ITypedRegion partition = document.getPartition(offset);
-			String probe = document.get(partition.getOffset(), partition.getLength());
-
-			// make sure that we are inside a probe
-			if (probe.startsWith(PROBE_KEYWORD)){
-				probePoint = probe.substring(PROBE_KEYWORD.length(), probe.indexOf('{'));
-				probePoint = probePoint.trim();
-			}
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
-
-		return probePoint;
-	}
-
 	private ICompletionProposal[] getProbeCompletionList(String prefix, int offset){
-		prefix = canonicalizePrefix(prefix);
 		String[] completionData = stpMetadataSingleton.getCompletionResults(prefix);
 		return buildCompletionList(offset, prefix.length(), completionData);
-	}
-
-	/**
-	 * Returns a standardized version of the given prefix so that completion matching
-	 * can be performed.
-	 * For example for process("/some/long/path") this returns process("PATH");
-	 * @param prefix
-	 * @return
-	 */
-	private String canonicalizePrefix(String prefix) {
-
-		if (prefix.isEmpty())
-			return ""; //$NON-NLS-1$
-
-		if(prefix.matches("process\\(\".*\"\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("process\\(\".*\"\\)", "process\\(\"PATH\"\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		if(prefix.matches("process\\(\\d*\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("process\\(\\d*\\)", "process\\(PID\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		if(prefix.matches("procfs\\(\".*\"\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("procfs\\(\".*\"\\)", "procfs\\(\"PATH\"\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		if(prefix.matches(".*function\\(\".*\"\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("function\\(\".*\"\\)", "function\\(\"PATTERN\"\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		if(prefix.matches(".*module\\(\".*\"\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("module\\(\".*\"\\)", "module\\(\"MPATTERN\"\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		if(prefix.matches("jiffies\\(\\d*\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("jiffies\\(\\d*\\)", "jiffies\\(N\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		if(prefix.matches("randomize\\(\\d*\\).*")){ //$NON-NLS-1$
-			prefix = prefix.replaceAll("randomize\\(\\d*\\)", "randomize\\(M\\)"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
-		return prefix;
 	}
 
 	private ICompletionProposal[] buildCompletionList(int offset, int prefixLength,String[] completionData){
@@ -196,15 +97,16 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
 		for (int i = 0; i < completionData.length; i++)
 			result[i] = new CompletionProposal(
-							completionData[i].substring(prefixLength),
+							completionData[i].substring(prefixLength), 
 							offset,
 							0,
 							completionData[i].length() - prefixLength,
-							null,
+							null, 
 							completionData[i],
 							null,
 							null);
 		return result;
+		
 	}
 
 	private ICompletionProposal[] getGlobalKeywordCompletion(String prefix, int offset) {
@@ -246,13 +148,13 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	}
 
 	/**
-	 *
+	 * 
 	 * Return the word the user wants to submit for completion proposals.
-	 *
+	 * 
 	 * @param doc - document to insert completion.
 	 * @param offset - offset of where completion hint was first generated.
 	 * @return - word to generate completion proposals.
-	 *
+	 * 
 	 * @throws BadLocationException
 	 */
 	private String getPrefix(IDocument doc, int offset)
@@ -260,27 +162,12 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 
 		for (int n = offset - 1; n >= 0; n--) {
 			char c = doc.getChar(n);
-			if (isDelimiter(c)) {
+			if ((Character.isSpaceChar(c)) || (c == '\n') || (c == '\0')) {
 				String word = doc.get(n + 1, offset - n - 1);
 				return word;
 			}
 		}
 		return ""; //$NON-NLS-1$
-	}
-
-	private boolean isDelimiter(char c) {
-		if (Character.isSpaceChar(c))
-			return true;
-
-		switch (c) {
-		case '\n':
-		case '\0':
-		case ',':
-		case '{':
-		case '}':
-			return true;
-		}
-		return false;
 	}
 
 	/* (non-Javadoc)
