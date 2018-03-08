@@ -67,7 +67,7 @@ abstract public class ChangeEventStateHandler extends BaseControlViewHandler {
      * @param channel - channel of events to be enabled
      * @param eventNames - list event names
      * @param monitor - a progress monitor
-     * @throws ExecutionException If the command fails
+     * @throws ExecutionException
      */
     abstract protected void changeState(TraceChannelComponent channel, List<String> eventNames, IProgressMonitor monitor) throws ExecutionException;
 

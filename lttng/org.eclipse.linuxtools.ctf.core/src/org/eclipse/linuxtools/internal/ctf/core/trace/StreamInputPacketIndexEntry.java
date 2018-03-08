@@ -203,7 +203,7 @@ public class StreamInputPacketIndexEntry {
     }
 
     /**
-     * @return the lostEvents in this packet
+     * @return the lostEvents
      */
     public long getLostEvents() {
         return lostEvents;
@@ -220,7 +220,7 @@ public class StreamInputPacketIndexEntry {
      * Add an attribute to this index entry
      *
      * @param field
-     *            The name of the attribute
+     *            The name of the atrribute
      * @param value
      *            The value to insert
      */
