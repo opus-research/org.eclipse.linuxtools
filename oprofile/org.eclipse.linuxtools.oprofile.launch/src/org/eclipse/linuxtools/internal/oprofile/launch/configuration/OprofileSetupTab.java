@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation
- *    Kent Sebastian <ksebasti@redhat.com> - 
+ *    Kent Sebastian <ksebasti@redhat.com> -
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
@@ -61,6 +61,9 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 
 	private IRemoteFileProxy proxy;
 
+	protected Label kernelLabel;
+
+	@Override
 	public String getName() {
 		return OprofileLaunchMessages.getString("tab.global.name"); //$NON-NLS-1$
 	}
@@ -71,20 +74,34 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		return b;
 	}
 
+	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		options.saveConfiguration(config);
 	}
 
+	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 		options.loadConfiguration(config);
 		try {
-			if (config.getType().getIdentifier().equals("org.eclipse.linuxtools.oprofile.launch.oprofile.manual")) { //$NON-NLS-1$ 
+			if (config.getType().getIdentifier().equals("org.eclipse.linuxtools.oprofile.launch.oprofile.manual")) { //$NON-NLS-1$
 				controlCombo.setEnabled(false);
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
 		controlCombo.setText(options.getOprofileComboText());
+
+		if(controlCombo.getText().equals(OprofileProject.OPERF_BINARY)) {
+			checkSeparateLibrary.setEnabled(false);
+			checkSeparateKernel.setEnabled(false);
+			kernelImageFileText.setEnabled(false);
+			kernelLabel.setEnabled(false);
+		} else {
+			checkSeparateLibrary.setEnabled(true);
+			checkSeparateKernel.setEnabled(true);
+			kernelImageFileText.setEnabled(true);
+			kernelLabel.setEnabled(true);
+		}
 		kernelImageFileText.setText(options.getKernelImageFile());
 		executionsSpinner.setSelection(options.getExecutionsNumber());
 
@@ -102,6 +119,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
+	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		options = new LaunchOptions();
 		options.saveConfiguration(config);
@@ -112,6 +130,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		return OprofileLaunchPlugin.getImageDescriptor(OprofileLaunchPlugin.ICON_GLOBAL_TAB).createImage();
 	}
 
+	@Override
 	public void createControl(Composite parent) {
 		options = new LaunchOptions();
 
@@ -143,26 +162,40 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		controlCombo.setItems(new String[]{OprofileProject.OPERF_BINARY, OprofileProject.OPCONTROL_BINARY});
 		controlCombo.select(0);
 		controlCombo.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent mev) {
 				OprofileProject.setProfilingBinary(controlCombo.getText());
 				options.setOprofileComboText(controlCombo.getText());
-				updateLaunchConfigurationDialog();	
+				if(controlCombo.getText().equals(OprofileProject.OPERF_BINARY)) {
+					checkSeparateLibrary.setEnabled(false);
+					checkSeparateKernel.setEnabled(false);
+					kernelImageFileText.setEnabled(false);
+					kernelLabel.setEnabled(false);
+				} else {
+					checkSeparateLibrary.setEnabled(true);
+					checkSeparateKernel.setEnabled(true);
+					kernelImageFileText.setEnabled(true);
+					kernelLabel.setEnabled(true);
+				}
+				updateLaunchConfigurationDialog();
 			}
 		});
 		data = new GridData();
 		data.horizontalSpan = 2;
 		controlCombo.setLayoutData(data);
 
-		Label l = new Label(p, SWT.NONE);
-		l.setText(OprofileLaunchMessages.getString("tab.global.kernelImage.label.text")); //$NON-NLS-1$
+		kernelLabel = new Label(p, SWT.NONE);
+		kernelLabel.setText(OprofileLaunchMessages.getString("tab.global.kernelImage.label.text")); //$NON-NLS-1$
+		kernelLabel.setEnabled(false);
 		data = new GridData();
 		data.horizontalSpan = 2;
-		l.setLayoutData(data);
+		kernelLabel.setLayoutData(data);
 
 		kernelImageFileText = new Text(p, SWT.SINGLE | SWT.BORDER);
 		data = new GridData(GridData.FILL_HORIZONTAL);
 		kernelImageFileText.setLayoutData(data);
 		kernelImageFileText.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent mev) {
 				handleKernelImageFileTextModify(kernelImageFileText);
 			};
@@ -198,11 +231,12 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		GridLayout gridLayout = new GridLayout(2, false);
 		executionsComposite.setLayout(gridLayout);
 		Label executionsLabel = new Label(executionsComposite, SWT.LEFT);
-		executionsLabel.setText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.text")); //$NON-NLS-1
+		executionsLabel.setText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.text")); //$NON-NLS-1$
 		executionsLabel.setToolTipText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.tooltip")); //$NON-NLS-1$
 		executionsSpinner = new Spinner(executionsComposite, SWT.BORDER);
 		executionsSpinner.setMinimum(1);
 		executionsSpinner.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent e) {
 				options.setExecutionsNumber(executionsSpinner.getSelection());
 				updateLaunchConfigurationDialog();
@@ -226,7 +260,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		return b;
 	}
 
-	//sets the proper separation mask for sample separation 
+	//sets the proper separation mask for sample separation
 	private void handleCheckSelected(Button button) {
 		int oldSeparate = options.getSeparateSamples();
 		int newSeparate = oldSeparate;		//initalize
