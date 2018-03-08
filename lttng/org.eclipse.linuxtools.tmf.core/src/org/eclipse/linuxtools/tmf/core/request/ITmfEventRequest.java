@@ -27,10 +27,9 @@ public interface ITmfEventRequest {
     // Constants
     // ------------------------------------------------------------------------
 
-    /** The request count for all the events */
-    static final int ALL_DATA = Integer.MAX_VALUE;
-
-    /** The request execution type/priority */
+    /**
+     * The request execution type/priority
+     */
     enum ExecutionType {
         /**
          * Backgroung, long-running, lower priority request
