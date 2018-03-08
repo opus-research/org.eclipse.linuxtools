@@ -1757,6 +1757,7 @@ interface TestValues {
         1331668259054285979L,
     };
 
+    @SuppressWarnings("nls")
     static final ITmfStateValue[] values = {
         TmfStateValue.nullValue(),
         TmfStateValue.nullValue(),
