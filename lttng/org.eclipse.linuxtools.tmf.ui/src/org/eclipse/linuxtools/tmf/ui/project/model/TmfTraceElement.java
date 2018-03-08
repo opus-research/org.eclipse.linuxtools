@@ -717,8 +717,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
-        IResource resource = signal.getTrace().getResource();
-        if ((resource == null) || !resource.equals(getResource())) {
+        if (!signal.getTrace().getResource().equals(getResource())) {
             return;
         }
 
