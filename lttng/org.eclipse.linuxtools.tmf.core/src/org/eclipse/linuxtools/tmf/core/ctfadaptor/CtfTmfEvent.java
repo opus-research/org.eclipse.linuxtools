@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
+import org.eclipse.linuxtools.ctf.core.event.Callsite;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
@@ -138,28 +138,28 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
             while(it.hasNext()) {
                 Entry<String, Definition> entry = it.next();
                 /* This is to get the instruction pointer if available */
-                if (entry.getKey().equals("_ip") && //$NON-NLS-1$
-                        (entry.getValue() instanceof IntegerDefinition)) {
+                if (entry.getKey().equals("_ip")) { //$NON-NLS-1$
                     ip = ((IntegerDefinition) entry.getValue()).getValue();
                 }
                 /* Prefix field name to */
                 curContextName = CONTEXT_FIELD_PREFIX + entry.getKey();
                 curContextDef = entry.getValue();
-                curContext = CtfTmfEventField.parseField(curContextDef, curContextName);
+                curContext = CtfTmfEventField.parseField(curContextDef,
+                        curContextName);
                 fields.add(curContext);
             }
         }
         /* Add callsite */
         final String name = eventDef.getDeclaration().getName();
-        List<CTFCallsite> eventList = fTrace.getCTFTrace().getCallsiteCandidates(name);
+        List<Callsite> eventList = this.fTrace.getCTFTrace().getCallsiteCandidates(name);
         if (eventList != null) {
             final String callsite = "callsite"; //$NON-NLS-1$
             if (eventList.size() == 1 || ip == -1) {
-                CTFCallsite cs = eventList.get(0);
+                Callsite cs = eventList.get(0);
                 fields.add(new CTFStringField(cs.toString(), callsite));
             } else {
                 fields.add(new CTFStringField(
-                        fTrace.getCTFTrace().getCallsite(name, ip).toString(),
+                        this.fTrace.getCTFTrace().getCallsite(name, ip).toString(),
                         callsite));
             }
         }

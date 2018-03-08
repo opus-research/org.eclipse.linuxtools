@@ -28,15 +28,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 
-import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
+import org.eclipse.linuxtools.ctf.core.event.Callsite;
 import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -159,9 +157,9 @@ public class CTFTrace implements IDefinitionScope {
     private final HashMap<StreamInput, StreamInputPacketIndex> indexes;
 
     /** Callsite helpers */
-    private HashMap<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
+    private HashMap<String, LinkedList<Callsite>> callsitesByName = new HashMap<String, LinkedList<Callsite>>();
     /** Callsite helpers */
-    private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
+    private LinkedList<Callsite> callsitesByIP = new LinkedList<Callsite>();
 
 
 
@@ -769,25 +767,17 @@ public class CTFTrace implements IDefinitionScope {
      */
     public void addCallsite(String eventName, String funcName, long ip,
             String fileName, long lineNumber) {
-        final CTFCallsite cs = new CTFCallsite(eventName, funcName, ip,
-                fileName, lineNumber);
-        LinkedList<CTFCallsite> csl = callsitesByName.get(eventName);
+        final Callsite cs = new Callsite(eventName, funcName, ip, fileName,
+                lineNumber);
+        LinkedList<Callsite> csl = callsitesByName.get(eventName);
         if (csl == null) {
-            csl = new LinkedList<CTFCallsite>();
+            csl = new LinkedList<Callsite>();
             callsitesByName.put(eventName, csl);
         }
-
-        ListIterator<CTFCallsite> iter = csl.listIterator();
-        int index = 0;
-        for (; index < csl.size(); index++) {
-            if (iter.next().compareTo(cs) < 0) {
-                break;
-            }
-        }
-
-        csl.add(index, cs);
-
-        callsitesByIP.add(cs);
+        int pos = Collections.binarySearch(csl, cs);
+        csl.add(pos + 1, cs);
+        pos = Collections.binarySearch(callsitesByIP, cs);
+        callsitesByIP.add(pos + 1, cs);
     }
 
     /**
@@ -795,15 +785,11 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @param eventName
      *            the event name
-     * @return the callsite list can be empty
+     * @return the callsite list, can be null
      * @since 1.2
      */
-    public List<CTFCallsite> getCallsiteCandidates(String eventName) {
-        LinkedList<CTFCallsite> retVal = callsitesByName.get(eventName);
-        if( retVal == null ) {
-            retVal = new LinkedList<CTFCallsite>();
-        }
-        return retVal;
+    public List<Callsite> getCallsiteCandidates(String eventName) {
+        return callsitesByName.get(eventName);
     }
 
     /**
@@ -811,10 +797,10 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @param eventName
      *            the event name
-     * @return the first callsite that has that event name, can be null
+     * @return the first callsite that has that event name
      * @since 1.2
      */
-    public CTFCallsite getCallsite(String eventName) {
+    public Callsite getCallsite(String eventName) {
         return callsitesByName.get(eventName).getFirst();
     }
 
@@ -823,13 +809,15 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @param ip
      *            the instruction pointer to lookup
-     * @return the callsite just before that IP in the list remember the IP is
-     *         backwards on X86, can be null if no callsite is before the IP.
+     * @return the callsite just before that IP in the list
+     * @throws IndexOutOfBoundsException
+     *             if the IP is out of bounds
      * @since 1.2
      */
-    public CTFCallsite getCallsite(long ip) {
-        CTFCallsite cs = new CTFCallsite(null, null, ip, null, 0L);
-        return callsitesByIP.ceiling(cs);
+    public Callsite getCallsite(Long ip) throws IndexOutOfBoundsException {
+        Callsite cs = new Callsite(null, null, ip, null, 0L);
+        int pos = Collections.binarySearch(callsitesByIP, cs);
+        return callsitesByIP.get(pos + 1);
     }
 
     /**
@@ -839,15 +827,12 @@ public class CTFTrace implements IDefinitionScope {
      *            the name of the event
      * @param ip
      *            the instruction pointer
-     * @return the closest matching callsite, can be null
+     * @return the closest matching callsite
      */
-    public CTFCallsite getCallsite(String eventName, long ip) {
-        final LinkedList<CTFCallsite> candidates = callsitesByName.get(eventName);
-        final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
-        final int pos = Collections.binarySearch(candidates, dummyCs)+1;
-        if( pos >= candidates.size()) {
-            return null;
-        }
+    public Callsite getCallsite(String eventName, long ip) {
+        LinkedList<Callsite> candidates = callsitesByName.get(eventName);
+        final Callsite dummyCs = new Callsite(null, null, ip, null, (long) -1);
+        final int pos = Collections.binarySearch(candidates, dummyCs);
         return candidates.get(pos);
     }
 
