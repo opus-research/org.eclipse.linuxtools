@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   jean-Christian Kouame - Initial API and implementation
+ *   jean-Christian Kouamé - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.statevalue;
@@ -220,54 +220,62 @@ public class TmfStateValueTest {
 
     /**
      * Test adding a long state value to an integer state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddLongToInt() {
-        try {
-            VALUE2.add(VALUE8);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddLongToInt() throws StateValueTypeException {
+        VALUE2.add(VALUE8);
     }
 
     /**
      * Test adding a string state value to an integer state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddStringToInt() {
-        try {
-            VALUE2.add(VALUE1);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddStringToInt() throws StateValueTypeException {
+        VALUE2.add(VALUE1);
     }
 
     /**
      * Test adding a null state value to an integer state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddNullToInt() {
-        try {
-            VALUE2.add(VALUE3);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddNullToInt() throws StateValueTypeException {
+        VALUE2.add(VALUE3);
     }
 
     /**
      * Test adding an integer state value to a long state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddIntToLong() {
-        try {
-            VALUE8.add(VALUE2);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddIntToLong() throws StateValueTypeException {
+        VALUE8.add(VALUE2);
     }
 
     /**
@@ -287,132 +295,152 @@ public class TmfStateValueTest {
 
     /**
      * Test adding a string state value to a long state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddStringToLong() {
-        try {
-            VALUE8.add(VALUE1);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddStringToLong() throws StateValueTypeException {
+        VALUE8.add(VALUE1);
     }
 
     /**
      * Test adding a null state value to a long state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddNullToLong() {
-        try {
-            VALUE8.add(VALUE7);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddNullToLong() throws StateValueTypeException {
+        VALUE8.add(VALUE7);
     }
 
     /**
      * Test adding an integer state value to a string state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddIntToString() {
-        try {
-            VALUE1.add(VALUE2);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddIntToString() throws StateValueTypeException {
+        VALUE1.add(VALUE2);
     }
 
     /**
      * Test adding a long state value to a string state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddLongToString() {
-        try {
-            VALUE1.add(VALUE8);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddLongToString() throws StateValueTypeException {
+        VALUE1.add(VALUE8);
     }
 
     /**
      * Test adding a string state value to a string state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddStringToString() {
-        try {
-            VALUE1.add(VALUE4);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddStringToString() throws StateValueTypeException {
+        VALUE1.add(VALUE4);
     }
 
     /**
      * Test adding a null state value to a string state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddNullToString() {
-        try {
-            VALUE1.add(VALUE7);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddNullToString() throws StateValueTypeException {
+        VALUE1.add(VALUE7);
     }
 
     /**
      * Test adding an integer state value to a null state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddIntToNull() {
-        try {
-            VALUE3.add(VALUE2);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddIntToNull() throws StateValueTypeException {
+        VALUE3.add(VALUE2);
     }
 
     /**
      * Test adding a long state value to a null state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddLongToNull() {
-        try {
-            VALUE3.add(VALUE8);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddLongToNull() throws StateValueTypeException {
+        VALUE3.add(VALUE8);
     }
 
     /**
      * Test adding a string state value to a null state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddStringToNull() {
-        try {
-            VALUE3.add(VALUE1);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddStringToNull() throws StateValueTypeException {
+        VALUE3.add(VALUE1);
     }
 
     /**
      * Test adding a null state value to a null state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testAddNullToNull() {
-        try {
-            VALUE3.add(VALUE7);
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testAddNullToNull() throws StateValueTypeException {
+        VALUE3.add(VALUE7);
     }
 
     /**
@@ -445,27 +473,31 @@ public class TmfStateValueTest {
 
     /**
      * Test increment a string state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testIncrementString() {
-        try {
-            VALUE1.increment();
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testIncrementString() throws StateValueTypeException {
+        VALUE1.increment();
     }
 
     /**
      * Test increment a null state value
+     *
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
      */
-    @Test
-    public void testIncrementNull() {
-        try {
-            VALUE3.increment();
-            fail();
-        } catch (StateValueTypeException e) {
-            assertTrue(true);
-        }
+    @Test(expected = StateValueTypeException.class)
+    public void testIncrementNull() throws StateValueTypeException {
+        VALUE3.increment();
     }
 }

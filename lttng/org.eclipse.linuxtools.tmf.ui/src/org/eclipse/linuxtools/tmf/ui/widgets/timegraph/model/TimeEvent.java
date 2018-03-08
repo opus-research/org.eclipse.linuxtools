@@ -13,13 +13,15 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 
+import org.eclipse.linuxtools.tmf.core.util.Pair;
+
 /**
  * Generic TimeEvent implementation
  *
  * @version 1.0
  * @author Patrick Tasse
  */
-public class TimeEvent implements ITimeEvent {
+public class TimeEvent implements ITimeEvent2 {
 
     /** TimeGraphEntry matching this time event */
     protected ITimeGraphEntry fEntry;
@@ -63,7 +65,7 @@ public class TimeEvent implements ITimeEvent {
      *            The duration of this event
      * @param value
      *            The status assigned to the event
-     * @since 3.0
+     * @since 2.1
      */
     public TimeEvent(ITimeGraphEntry entry, long time, long duration,
             int value) {
@@ -77,7 +79,7 @@ public class TimeEvent implements ITimeEvent {
      * Get this event's status
      *
      * @return The integer matching this status
-     * @since 3.0
+     * @since 2.1
      */
     public int getValue() {
         return fValue;
@@ -87,7 +89,7 @@ public class TimeEvent implements ITimeEvent {
      * Return whether an event has a value
      *
      * @return true if the event has a value
-     * @since 3.0
+     * @since 2.1
      */
     public boolean hasValue() {
         return (fValue != NOVALUE);
@@ -106,6 +108,27 @@ public class TimeEvent implements ITimeEvent {
     @Override
     public long getDuration() {
         return fDuration;
+    }
+
+    /**
+     * Split an event in two at the specified time. If the time is smaller or
+     * equal to the event's start, the first split event is null. If the time is
+     * greater or equal to the event's end, the second split event is null.
+     * <p>
+     * Subclasses should re-implement this method
+     *
+     * @since 2.1
+     */
+    @Override
+    public Pair<ITimeEvent, ITimeEvent> split(long time) {
+        Pair<ITimeEvent, ITimeEvent> pair = new Pair<ITimeEvent, ITimeEvent>();
+        if (time > fTime) {
+            pair.setFirst(new TimeEvent(fEntry, fTime, Math.min(fDuration, time - fTime), fValue));
+        }
+        if (time < fTime + fDuration) {
+            pair.setSecond(new TimeEvent(fEntry, Math.max(fTime, time), fDuration - Math.max(0, time - fTime), fValue));
+        }
+        return pair;
     }
 
     @Override

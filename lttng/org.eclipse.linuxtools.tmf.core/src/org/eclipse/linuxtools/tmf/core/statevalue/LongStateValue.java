@@ -61,15 +61,15 @@ final class LongStateValue extends TmfStateValue {
     }
 
     @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) throws StateValueTypeException {
-        if (stateValue.getType() == Type.NULL) {
+    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
+        if (val.getType() == Type.NULL) {
             throw new StateValueTypeException();
         }
-        return TmfStateValue.newValueLong(this.unboxLong() + stateValue.unboxLong());
+        return TmfStateValue.newValueLong(valueLong + val.unboxLong());
     }
 
     @Override
     public ITmfStateValue increment() throws StateValueTypeException {
-        return TmfStateValue.newValueLong(this.unboxLong() + 1);
+        return TmfStateValue.newValueLong(valueLong + 1);
     }
 }

@@ -363,7 +363,9 @@ public class TmfVirtualTable extends Composite {
             return;
         }
         int selectedRow = indexOf(item);
-        if (event.button != 2) {
+        if (event.button == 1 || (event.button == 3 &&
+                (selectedRow < Math.min(fSelectedBeginRank, fSelectedEventRank) ||
+                        selectedRow > Math.max(fSelectedBeginRank, fSelectedEventRank)))) {
             if (selectedRow >= 0) {
                 fSelectedEventRank = selectedRow;
             } else {
@@ -1022,7 +1024,7 @@ public class TmfVirtualTable extends Composite {
      * recently selected. The array is empty if no items are selected.
      * <p>
      * @return the array of indices of the selected items
-     * @since 3.0
+     * @since 2.1
      */
     public int[] getSelectionIndices() {
         if (fSelectedEventRank < 0 || fSelectedBeginRank < 0) {

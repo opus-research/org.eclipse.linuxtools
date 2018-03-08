@@ -61,16 +61,15 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) throws StateValueTypeException {
-        if (stateValue.getType() == Type.NULL) {
+    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
+        if (val.getType() == Type.NULL) {
             throw new StateValueTypeException();
         }
-        return TmfStateValue.newValueInt(this.unboxInt() + stateValue.unboxInt());
-
+        return TmfStateValue.newValueInt(valueInt + val.unboxInt());
     }
 
     @Override
     public ITmfStateValue increment() throws StateValueTypeException {
-        return TmfStateValue.newValueInt(this.unboxInt() + 1);
+        return TmfStateValue.newValueInt(valueInt + 1);
     }
 }

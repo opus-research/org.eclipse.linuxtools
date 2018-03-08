@@ -8,8 +8,8 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API
- *   Jean-Christian Kouamé - make state values comparable
- *   Jean-Christian kouame - add the add operation and the increment operation
+ *   Jean-Christian Kouamé - make state values comparable;
+ *                           add the add operation and the increment operation
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statevalue;

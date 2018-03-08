@@ -62,7 +62,7 @@ final class StringStateValue extends TmfStateValue {
     }
 
     @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) throws StateValueTypeException {
+    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
         throw new StateValueTypeException();
     }
 
