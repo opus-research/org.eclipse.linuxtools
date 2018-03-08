@@ -76,6 +76,8 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
         return declaration;
     }
 
+
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -93,9 +95,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     @Override
     public void read(BitBuffer input) {
         final long longNegBit = 0x0000000080000000L;
-        /* Offset the buffer position wrt the current alignment */
-        alignRead(input, this.declaration);
-
+        int align = (int) declaration.getAlignment();
+        int pos = input.position() + ((align - (input.position() % align)) % align);
+        input.position(pos);
         boolean signed = declaration.isSigned();
         int length = declaration.getLength();
         long bits = 0;
