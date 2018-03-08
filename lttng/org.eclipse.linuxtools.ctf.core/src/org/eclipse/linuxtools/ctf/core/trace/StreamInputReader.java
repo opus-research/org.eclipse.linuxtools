@@ -80,14 +80,6 @@ public class StreamInputReader {
         goToNextPacket();
     }
 
-    /**
-     * Dispose the StreamInputReader
-     * @since 2.0
-     */
-    public void dispose() {
-        packetReader.dispose();
-    }
-
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------

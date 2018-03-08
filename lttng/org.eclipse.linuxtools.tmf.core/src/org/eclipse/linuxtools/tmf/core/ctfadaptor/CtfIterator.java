@@ -203,7 +203,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      */
     @Override
     public void dispose() {
-        super.dispose();
+        // FIXME add dispose() stuff to CTFTrace and call it here...
+
     }
 
     /**
