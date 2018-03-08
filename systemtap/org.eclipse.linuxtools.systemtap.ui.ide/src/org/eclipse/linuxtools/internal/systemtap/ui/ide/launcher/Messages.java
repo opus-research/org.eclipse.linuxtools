@@ -17,10 +17,8 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.messages"; //$NON-NLS-1$
 
-	public static String ParsingWizardPage_Title;
-	public static String ParsingWizardPage_Delimiter;
-	public static String ParsingWizardPage_NumberOfColumns;
-	public static String ParsingWizardPage_RegularExpression;
+	public static String SystemTapScriptGraphOptionsTab_selectedRegexLabel;
+	public static String SystemTapScriptGraphOptionsTab_selectedRegexTooltip;
 
 	public static String SystemTapScriptGraphOptionsTab_0;
 	public static String SystemTapScriptGraphOptionsTab_1;
@@ -40,16 +38,28 @@ public class Messages extends NLS {
 	public static String SystemTapScriptGraphOptionsTab_EditGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_EditGraphButtonToolTip;
 
+	public static String SystemTapScriptGraphOptionsTab_columnTitle;
 	public static String SystemTapScriptGraphOptionsTab_extractedValueLabel;
 	public static String SystemTapScriptGraphOptionsTab_RemoveGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_RemoveGraphButtonToolTip;
 	public static String SystemTapScriptGraphOptionsTab_graphsTitle;
 
+	public static String SystemTapScriptGraphOptionsTab_regexLabel;
 	public static String SystemTapScriptGraphOptionsTab_regexTooltip;
+	public static String SystemTapScriptGraphOptionsTab_regexNoName;
+	public static String SystemTapScriptGraphOptionsTab_regexDuplicateName;
 
 	public static String SystemTapScriptGraphOptionsTab_sampleOutputLabel;
 
 	public static String SystemTapScriptGraphOptionsTab_sampleOutputTooltip;
+
+	public static String SystemTapScriptGraphOptionsTab_setRegexTitleAdd;
+	public static String SystemTapScriptGraphOptionsTab_setRegexTitleEdit;
+	public static String SystemTapScriptGraphOptionsTab_setRegexTitleDelete;
+	public static String SystemTapScriptGraphOptionsTab_setRegexTitleMessage;
+	public static String SystemTapScriptGraphOptionsTab_setRegexTitleDuplicate;
+	public static String SystemTapScriptGraphOptionsTab_setRegexTitleAskdelete;
+	public static String SystemTapScriptGraphOptionsTab_defaultRegexTitleBase;
 
 	public static String SystemTapScriptLaunchConfigurationTab_0;
 	public static String SystemTapScriptLaunchConfigurationTab_1;
