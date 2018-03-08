@@ -17,7 +17,8 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -232,8 +233,8 @@ class StateSystemBuildRequest extends TmfEventRequest {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
                 0,
-                TmfEventRequest.ALL_DATA,
-                ITmfEventRequest.ExecutionType.BACKGROUND);
+                TmfDataRequest.ALL_DATA,
+                ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
         this.trace = sci.getTrace();

@@ -18,9 +18,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.tmf.core.Messages;
 import org.eclipse.linuxtools.internal.tmf.core.trace.indexer.TmfMemoryIndex;
-import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -86,7 +88,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
      * @param trace the trace to index
      */
     public TmfCheckpointIndexer(final ITmfTrace trace) {
-        this(trace, TmfEventProvider.DEFAULT_BLOCK_SIZE);
+        this(trace, TmfDataProvider.DEFAULT_BLOCK_SIZE);
     }
 
     /**
@@ -184,8 +186,8 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         // Build a background request for all the trace data. The index is
         // updated as we go by readNextEvent().
         fIndexingRequest = new TmfEventRequest(ITmfEvent.class,
-                range, offset, TmfEventRequest.ALL_DATA,
-                ITmfEventRequest.ExecutionType.BACKGROUND) {
+                range, offset, TmfDataRequest.ALL_DATA,
+                ITmfDataRequest.ExecutionType.BACKGROUND) {
             @Override
             public void handleData(final ITmfEvent event) {
                 super.handleData(event);
