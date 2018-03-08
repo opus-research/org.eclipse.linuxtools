@@ -102,7 +102,7 @@ public class CtfTmfTraceTest {
     public void testParseEvent() {
         ITmfContext ctx = fixture.seekEvent(0);
         fixture.getNext(ctx);
-        CtfTmfEvent event = fixture.parseEvent(ctx);
+        CtfTmfEvent event = (CtfTmfEvent) fixture.parseEvent(ctx);
         assertNotNull(event);
     }
 
@@ -239,7 +239,7 @@ public class CtfTmfTraceTest {
     @Test
     public void testGetNext() {
         ITmfContext context = fixture.seekEvent(0);
-        CtfTmfEvent result = fixture.getNext(context);
+        CtfTmfEvent result = (CtfTmfEvent) fixture.getNext(context);
         assertNotNull(result);
     }
 
@@ -294,7 +294,7 @@ public class CtfTmfTraceTest {
     @Test
     public void testReadNextEvent() {
         ITmfContext context = fixture.seekEvent(0);
-        CtfTmfEvent result = fixture.getNext(context);
+        CtfTmfEvent result = (CtfTmfEvent) fixture.getNext(context);
         assertNotNull(result);
     }
 

@@ -14,9 +14,10 @@ package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor.headless;
 
 import java.util.Vector;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfContext;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
 /**
@@ -29,7 +30,8 @@ public class Benchmark {
     /**
      * Run the benchmark.
      *
-     * @param args The command-line arguments
+     * @param args
+     *            The command-line arguments
      */
     public static void main(final String[] args) {
         final String TRACE_PATH = "testfiles/kernel";
@@ -49,7 +51,7 @@ public class Benchmark {
             try {
                 trace.initTrace(null, TRACE_PATH, CtfTmfEvent.class);
             } catch (final TmfTraceException e) {
-                loops = NUM_LOOPS +1;
+                loops = NUM_LOOPS + 1;
                 break;
             }
 
@@ -58,18 +60,20 @@ public class Benchmark {
                 final CtfTmfContext traceReader = (CtfTmfContext) trace.seekEvent(0);
 
                 start = System.nanoTime();
-                CtfTmfEvent current = traceReader.getCurrentEvent();
+                ITmfEvent current = traceReader.getCurrentEvent();
                 while (current != null) {
                     nbEvent++;
                     if (USE_TEXT) {
-
-                        System.out.println("Event " + nbEvent + " Time "
-                                + current.getTimestamp().toString() + " type " + current.getEventName()
-                                + " on CPU " + current.getSource() + " " + current.getContent().toString());
+                        if (current instanceof CtfTmfEvent) {
+                            CtfTmfEvent currentEvent = (CtfTmfEvent) current;
+                            System.out.println("Event " + nbEvent + " Time "
+                                    + current.getTimestamp().toString() + " type " + currentEvent.getEventName()
+                                    + " on CPU " + current.getSource() + " " + current.getContent().toString());
+                        }
                     }
                     // advance the trace to the next event.
                     boolean hasMore = traceReader.advance();
-                    if( hasMore ){
+                    if (hasMore) {
                         // you can know the trace has more events.
                     }
                     current = traceReader.getCurrentEvent();

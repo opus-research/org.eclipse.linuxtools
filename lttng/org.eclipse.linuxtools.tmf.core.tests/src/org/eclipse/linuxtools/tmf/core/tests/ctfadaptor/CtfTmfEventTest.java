@@ -65,7 +65,7 @@ public class CtfTmfEventTest {
         CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
         CtfIterator tr = new CtfIterator(trace);
         tr.advance();
-        fixture = tr.getCurrentEvent();
+        fixture = (CtfTmfEvent) tr.getCurrentEvent();
     }
 
     /**

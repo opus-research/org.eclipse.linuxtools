@@ -52,11 +52,13 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
      *            the event type
      * @param reference
      *            the event reference
+     * @param content
+     *             the content of the lost events. (number of events and such)
      * @param timeRange
      *            the 'problematic' time range
      * @param nbLostEvents
      *            the number of lost events in the time range
-     * @since 2.0
+     * @since 3.0
      */
     public TmfLostEvent(final ITmfTrace trace,
             final long rank,
@@ -64,9 +66,10 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
             final String source,
             final ITmfEventType type,
             final String reference,
+            final ITmfEventField content,
             final TmfTimeRange timeRange,
             final long nbLostEvents) {
-        super(trace, rank, timestamp, source, type, null, reference);
+        super(trace, rank, timestamp, source, type, content, reference);
         fTimeRange = timeRange;
         fNbLostEvents = nbLostEvents;
     }
@@ -131,6 +134,12 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     public String toString() {
         return getClass().getSimpleName() + " [Event=" + super.toString() +
                 ", fTimeRange=" + fTimeRange + ", fNbLostEvents=" + fNbLostEvents + "]";
+    }
+
+    @Override
+    public ITmfEventField getContent() {
+
+        return super.getContent();
     }
 
 }

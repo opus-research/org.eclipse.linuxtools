@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
@@ -112,8 +113,9 @@ public class CtfTmfContext implements ITmfContext {
      * Gets the current event. Wrapper to help CtfTmfTrace
      *
      * @return The event or null
+     * @since 3.0
      */
-    public synchronized CtfTmfEvent getCurrentEvent() {
+    public synchronized ITmfEvent getCurrentEvent() {
         return getIterator().getCurrentEvent();
     }
 
@@ -125,10 +127,10 @@ public class CtfTmfContext implements ITmfContext {
     public synchronized boolean advance() {
         final CtfLocationInfo curLocationData = this.curLocation.getLocationInfo();
         boolean retVal = getIterator().advance();
-        CtfTmfEvent currentEvent = getIterator().getCurrentEvent();
+        ITmfEvent event = getIterator().getCurrentEvent();
 
-        if (currentEvent != null) {
-            final long timestampValue = currentEvent.getTimestamp().getValue();
+        if (event != null) {
+            final long timestampValue = event.getTimestamp().getValue();
             if (curLocationData.getTimestamp() == timestampValue) {
                 curLocation = new CtfLocation(timestampValue, curLocationData.getIndex() + 1);
             } else {

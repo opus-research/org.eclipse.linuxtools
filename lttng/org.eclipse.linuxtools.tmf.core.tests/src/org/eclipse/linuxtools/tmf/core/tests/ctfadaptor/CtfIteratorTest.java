@@ -174,7 +174,7 @@ public class CtfIteratorTest {
      */
     @Test
     public void testGetCurrentEvent() {
-        CtfTmfEvent result = fixture.getCurrentEvent();
+        CtfTmfEvent result = (CtfTmfEvent) fixture.getCurrentEvent();
         assertNotNull(result);
     }
 

@@ -16,11 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.linuxtools.ctf.core.CTFStrings;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.event.TmfLostEvent;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -49,14 +56,15 @@ public final class CtfTmfEventFactory {
      * @param originTrace
      *            The trace from which this event originates
      * @return The newly-built CtfTmfEvent
+     * @since 3.0
      */
-    public static CtfTmfEvent createEvent(EventDefinition eventDef,
+    public static ITmfEvent createEvent(EventDefinition eventDef,
             String fileName, CtfTmfTrace originTrace) {
 
         /* Prepare what to pass to CtfTmfEvent's constructor */
         long ts = eventDef.getTimestamp();
         CtfTmfTimestamp timestamp = new CtfTmfTimestamp(
-                    originTrace.getCTFTrace().timestampCyclesToNanos(ts));
+                originTrace.getCTFTrace().timestampCyclesToNanos(ts));
 
         int sourceCPU = eventDef.getCPU();
 
@@ -64,6 +72,18 @@ public final class CtfTmfEventFactory {
                 ITmfEventField.ROOT_FIELD_ID, null, parseFields(eventDef));
 
         String reference = fileName == null ? CtfTmfEvent.NO_STREAM : fileName;
+
+        final String LOST_EVENT = "Lost event";//$NON-NLS-1$
+        if (eventDef.getDeclaration().getName().equals(LOST_EVENT)) {
+            IntegerDefinition nbLostEvents = (IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_FIELD);
+            IntegerDefinition duration = (IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_DURATION);
+            CtfTmfTimestamp timestampEnd = new CtfTmfTimestamp(
+                    originTrace.getCTFTrace().timestampCyclesToNanos(ts) + duration.getValue());
+            TmfEventType et = new TmfEventType(LOST_EVENT, LOST_EVENT, content);
+            ITmfLostEvent lostEvent = new TmfLostEvent(originTrace, ITmfContext.UNKNOWN_RANK, timestamp, "", et, "", content, new TmfTimeRange(timestamp, timestampEnd), nbLostEvents.getValue()); //$NON-NLS-1$ //$NON-NLS-2$
+
+            return lostEvent;
+        }
 
         /* Construct and return the object */
         CtfTmfEvent event = new CtfTmfEvent(
@@ -74,7 +94,7 @@ public final class CtfTmfEventFactory {
                 reference,
                 sourceCPU,
                 eventDef.getDeclaration()
-        );
+                );
         return event;
     }
 
