@@ -8,6 +8,7 @@
  *
  * Contributors:
  *     Alexandre Montplaisir - Initial API and implementation
+ *     Bernd Hufmann - Updated for new source lookup interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -19,6 +20,7 @@ import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
+import org.eclipse.linuxtools.tmf.core.event.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventPropertySource;
@@ -33,7 +35,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public final class CtfTmfEvent extends TmfEvent {
+public final class CtfTmfEvent extends TmfEvent implements ITmfSourceLookup {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -179,11 +181,12 @@ public final class CtfTmfEvent extends TmfEvent {
     }
 
     /**
-     * Get the callsite for this event.
+     * Get the call site for this event.
      *
-     * @return the callsite information, or null if there is none
+     * @return the call site information, or null if there is none
      * @since 2.0
      */
+    @Override
     public CtfTmfCallsite getCallsite() {
         CTFCallsite callsite = null;
         if (getTrace() == null) {
@@ -203,6 +206,14 @@ public final class CtfTmfEvent extends TmfEvent {
             return new CtfTmfCallsite(callsite);
         }
         return null;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public String getModelUri() {
+        return getCustomAttribute(CtfConstants.MODEL_URI_KEY);
     }
 
     /**

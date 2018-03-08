@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Bernd Hufmann - Added call site and model URI properties
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
@@ -32,11 +33,13 @@ public class TmfEventPropertySource implements IPropertySource {
     private static final String ID_TYPE = "event_type"; //$NON-NLS-1$
     private static final String ID_REFERENCE = "event_reference"; //$NON-NLS-1$
     private static final String ID_CONTENT = "event_content"; //$NON-NLS-1$
+    private static final String ID_SOURCE_LOOKUP = "event_lookup"; //$NON-NLS-1$
     private static final String NAME_TIMESTAMP = "Timestamp"; //$NON-NLS-1$
     private static final String NAME_SOURCE = "Source"; //$NON-NLS-1$
     private static final String NAME_TYPE = "Type"; //$NON-NLS-1$
     private static final String NAME_REFERENCE = "Reference"; //$NON-NLS-1$
     private static final String NAME_CONTENT = "Content"; //$NON-NLS-1$
+    private static final String NAME_SOURCE_LOOKUP = "Source Lookup"; //$NON-NLS-1$
 
     private ITmfEvent fEvent;
 
@@ -140,6 +143,83 @@ public class TmfEventPropertySource implements IPropertySource {
         }
     }
 
+    private class SourceLookupPropertySource implements IPropertySource {
+
+        private static final String ID_FILE_NAME = "callsite_file"; //$NON-NLS-1$
+        private static final String ID_FUNCTION_NAME = "callsite_function"; //$NON-NLS-1$
+        private static final String ID_LINE_NUMBER = "callsite_line"; //$NON-NLS-1$
+        private static final String ID_MODEL_URI = "model_uri"; //$NON-NLS-1$
+
+        private static final String NAME_FILE_NAME = "file"; //$NON-NLS-1$
+        private static final String NAME_FUNCTION_NAME = "function"; //$NON-NLS-1$
+        private static final String NAME_LINE_NUMBER = "line"; //$NON-NLS-1$
+        private static final String NAME_MODEL_URI = "model URI"; //$NON-NLS-1$
+
+        final private ITmfSourceLookup fSourceLookup;
+
+        public SourceLookupPropertySource(ITmfSourceLookup lookup) {
+            fSourceLookup = lookup;
+        }
+
+        @Override
+        public Object getEditableValue() {
+            StringBuilder builder = new StringBuilder();
+            if (fSourceLookup.getCallsite() != null) {
+                builder.append("Callsite: ").append(fSourceLookup.getCallsite().toString()); //$NON-NLS-1$
+                if (fSourceLookup.getModelUri() != null) {
+                    builder.append(System.getProperty("line.separator")); //$NON-NLS-1$
+                }
+            }
+
+            if (fSourceLookup.getModelUri() != null) {
+                builder.append("Model URI: ").append(fSourceLookup.getModelUri()); //$NON-NLS-1$
+            }
+            return builder.toString();
+        }
+
+        @Override
+        public IPropertyDescriptor[] getPropertyDescriptors() {
+            List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+            if (fSourceLookup.getCallsite() != null) {
+                descriptors.add(new PropertyDescriptor(ID_FILE_NAME, NAME_FILE_NAME));
+                descriptors.add(new PropertyDescriptor(ID_FUNCTION_NAME, NAME_FUNCTION_NAME));
+                descriptors.add(new PropertyDescriptor(ID_LINE_NUMBER, NAME_LINE_NUMBER));
+            }
+            if (fSourceLookup.getModelUri() != null) {
+                descriptors.add(new PropertyDescriptor(ID_MODEL_URI, NAME_MODEL_URI));
+            }
+            return descriptors.toArray(new IPropertyDescriptor[0]);
+        }
+
+        @Override
+        public Object getPropertyValue(Object id) {
+            if  (id.equals(ID_FILE_NAME) && fSourceLookup.getCallsite().getFileName() != null) {
+                return fSourceLookup.getCallsite().getFileName();
+            } else if (id.equals(ID_FUNCTION_NAME) && fSourceLookup.getCallsite().getFunctionName() != null) {
+                return fSourceLookup.getCallsite().getFunctionName();
+            } else if (id.equals(ID_LINE_NUMBER)) {
+                return Long.valueOf(fSourceLookup.getCallsite().getLineNumber());
+            } else if (id.equals(ID_MODEL_URI)) {
+                return fSourceLookup.getModelUri();
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isPropertySet(Object id) {
+            return false;
+        }
+
+        @Override
+        public void resetPropertyValue(Object id) {
+
+        }
+
+        @Override
+        public void setPropertyValue(Object id, Object value) {
+        }
+    }
+
     /**
      * Default constructor
      *
@@ -157,13 +237,17 @@ public class TmfEventPropertySource implements IPropertySource {
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        IPropertyDescriptor[] descriptors = new IPropertyDescriptor[5];
-        descriptors[0] = new PropertyDescriptor(ID_TIMESTAMP, NAME_TIMESTAMP);
-        descriptors[1] = new PropertyDescriptor(ID_SOURCE, NAME_SOURCE);
-        descriptors[2] = new PropertyDescriptor(ID_TYPE, NAME_TYPE);
-        descriptors[3] = new PropertyDescriptor(ID_REFERENCE, NAME_REFERENCE);
-        descriptors[4] = new PropertyDescriptor(ID_CONTENT, NAME_CONTENT);
-        return descriptors;
+        List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+        descriptors.add(new PropertyDescriptor(ID_TIMESTAMP, NAME_TIMESTAMP));
+        descriptors.add(new PropertyDescriptor(ID_SOURCE, NAME_SOURCE));
+        descriptors.add(new PropertyDescriptor(ID_TYPE, NAME_TYPE));
+        descriptors.add(new PropertyDescriptor(ID_REFERENCE, NAME_REFERENCE));
+        if ((fEvent instanceof ITmfSourceLookup) &&
+                ((((ITmfSourceLookup)fEvent).getCallsite() != null) || (((ITmfSourceLookup)fEvent).getModelUri() != null))) {
+            descriptors.add(new PropertyDescriptor(ID_SOURCE_LOOKUP, NAME_SOURCE_LOOKUP));
+        }
+        descriptors.add(new PropertyDescriptor(ID_CONTENT, NAME_CONTENT));
+        return descriptors.toArray(new IPropertyDescriptor[0]);
     }
 
     @Override
@@ -176,6 +260,8 @@ public class TmfEventPropertySource implements IPropertySource {
             return fEvent.getType().toString();
         } else if (id.equals(ID_REFERENCE) && fEvent.getReference() != null) {
             return fEvent.getReference().toString();
+        } else if (id.equals(ID_SOURCE_LOOKUP) && (fEvent instanceof ITmfSourceLookup)) {
+            return new SourceLookupPropertySource(((ITmfSourceLookup)fEvent));
         } else if (id.equals(ID_CONTENT) && fEvent.getContent() != null) {
             return new ContentPropertySource(fEvent.getContent());
         }

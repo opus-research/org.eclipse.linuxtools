@@ -12,6 +12,7 @@
  *   Francois Chouinard - Replaced Table by TmfVirtualTable
  *   Patrick Tasse - Filter implementation (inspired by www.eclipse.org/mat)
  *   Ansgar Radermacher - Support navigation to model URIs (Bug 396956)
+ *   Bernd Hufmann - Updated call site and model URI implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.events;
@@ -67,11 +68,10 @@ import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfConstants;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfCallsite;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfCallsite;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
@@ -594,9 +594,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 final TableItem item = items[0];
 
                 final Object data = item.getData();
-                if (data instanceof CtfTmfEvent) {
-                    CtfTmfEvent event = (CtfTmfEvent) data;
-                    CtfTmfCallsite cs = event.getCallsite();
+                if (data instanceof ITmfSourceLookup) {
+                    ITmfSourceLookup event = (ITmfSourceLookup) data;
+                    ITmfCallsite cs = event.getCallsite();
                     if (cs == null || cs.getFileName() == null) {
                         return;
                     }
@@ -665,8 +665,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 final TableItem item = items[0];
 
                 final Object eventData = item.getData();
-                if (eventData instanceof CtfTmfEvent) {
-                    String modelURI = ((CtfTmfEvent) eventData).getCustomAttribute(CtfConstants.MODEL_URI_KEY);
+                if (eventData instanceof ITmfSourceLookup) {
+                    String modelURI = ((ITmfSourceLookup) eventData).getModelUri();
 
                     if (modelURI != null) {
                         IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -792,17 +792,19 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
                 if (item != null) {
                     final Object data = item.getData();
-                    if (data instanceof CtfTmfEvent) {
-                        Separator separator = null;
-                        CtfTmfEvent event = (CtfTmfEvent) data;
+                    Separator separator = null;
+                    if (data instanceof ITmfSourceLookup) {
+                        ITmfSourceLookup event = (ITmfSourceLookup) data;
                         if (event.getCallsite() != null) {
                             tablePopupMenu.add(openCallsiteAction);
                             separator = new Separator();
                         }
-                        if (event.listCustomAttributes().contains(CtfConstants.MODEL_URI_KEY)) {
+
+                        if (event.getModelUri() != null) {
                             tablePopupMenu.add(openModelAction);
                             separator = new Separator();
                         }
+
                         if (separator != null) {
                             tablePopupMenu.add(separator);
                         }

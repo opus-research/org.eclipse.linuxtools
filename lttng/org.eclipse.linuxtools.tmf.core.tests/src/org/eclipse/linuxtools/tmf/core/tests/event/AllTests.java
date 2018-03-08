@@ -22,6 +22,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+    TmfCallsiteTest.class,
     TmfEventFieldTest.class,
     TmfEventTest.class,
     TmfEventTypeManagerTest.class,
