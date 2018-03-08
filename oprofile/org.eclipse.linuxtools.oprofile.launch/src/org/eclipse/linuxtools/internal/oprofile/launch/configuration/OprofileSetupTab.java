@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -49,6 +48,9 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 	
 	protected Button checkSeparateLibrary;
 	protected Button checkSeparateKernel;
+	//maybe these later
+//	protected Button _checkSeparateThread;
+//	protected Button _checkSeparateCpu;
 
 	protected LaunchOptions options = null;
 
@@ -61,6 +63,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public boolean isValid(ILaunchConfiguration config) {
 		boolean b = options.isValid();
+		// System.out.println("SetupTab isValid = " + b);
 		return b;
 	}
 
@@ -84,6 +87,10 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 				checkSeparateLibrary.setSelection(true);
 			if ((separate & OprofileDaemonOptions.SEPARATE_KERNEL) != 0)
 				checkSeparateKernel.setSelection(true);
+//			if ((separate & OprofileDaemonOptions.SEPARATE_THREAD) != 0)
+//				_checkSeparateThread.setSelection(true);
+//			if ((separate & OprofileDaemonOptions.SEPARATE_CPU) != 0)
+//				_checkSeparateCpu.setSelection(true);
 		}
 	}
 
@@ -157,6 +164,8 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 
 		checkSeparateLibrary = myCreateCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateLibrary.text")); //$NON-NLS-1$
 		checkSeparateKernel = myCreateCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateKernel.text")); //$NON-NLS-1$
+//		_checkSeparateThread = _createCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateThread.text")); //$NON-NLS-1$
+//		_checkSeparateCpu = _createCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateCpu.text")); //$NON-NLS-1$
 	}
 
 	// convenience method to create radio buttons with the given label
@@ -190,6 +199,18 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 			} else {
 				newSeparate = oldSeparate & ~OprofileDaemonOptions.SEPARATE_KERNEL;
 			}
+//		} else if (button == _checkSeparateThread) {
+//			if (button.getSelection()) {
+//				newSeparate = oldSeparate | OprofileDaemonOptions.SEPARATE_THREAD;
+//			} else {
+//				newSeparate = oldSeparate & ~OprofileDaemonOptions.SEPARATE_THREAD;
+//			}
+//		} else if (button == _checkSeparateCpu) {
+//			if (button.getSelection()) {
+//				newSeparate = oldSeparate | OprofileDaemonOptions.SEPARATE_CPU;
+//			} else {
+//				newSeparate = oldSeparate & ~OprofileDaemonOptions.SEPARATE_CPU;
+//			}
 		}
 		
 		options.setSeparateSamples(newSeparate);
@@ -204,7 +225,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 
 		if (filename.length() > 0) {
 			try {
-				proxy = RemoteProxyManager.getInstance().getFileProxy(getOprofileProject());
+				proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
@@ -231,7 +252,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 	// Displays a file dialog to allow the user to select the kernel image file
 	private void showFileDialog(Shell shell) {
 		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(getOprofileProject());
+			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -265,13 +286,5 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 				kernelImageFileText.setText(newKernel);
 			}
 		}
-	}
-
-	/**
-	 * Get project to profile
-	 * @return IProject project to profile
-	 */
-	protected IProject getOprofileProject(){
-		return Oprofile.OprofileProject.getProject();
 	}
 }
