@@ -40,7 +40,10 @@ public class AddContextOnDomainHandler extends BaseAddContextHandler {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseAddContextHandler#addContexts(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter, java.util.List, org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
     public void addContexts(CommandParameter param, List<String> contextNames, IProgressMonitor monitor) throws ExecutionException {
         if (param instanceof DomainCommandParameter) {
@@ -49,6 +52,10 @@ public class AddContextOnDomainHandler extends BaseAddContextHandler {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
 

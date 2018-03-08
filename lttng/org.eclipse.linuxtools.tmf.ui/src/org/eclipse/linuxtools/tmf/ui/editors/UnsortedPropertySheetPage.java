@@ -26,6 +26,9 @@ import org.eclipse.ui.views.properties.PropertySheetSorter;
  */
 public class UnsortedPropertySheetPage extends PropertySheetPage {
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.views.properties.PropertySheetPage#createControl(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);

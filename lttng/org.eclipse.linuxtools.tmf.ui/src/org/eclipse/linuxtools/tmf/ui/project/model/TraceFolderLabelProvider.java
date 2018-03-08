@@ -26,11 +26,19 @@ import org.eclipse.swt.graphics.Image;
  */
 public class TraceFolderLabelProvider extends LabelProvider implements ITableLabelProvider {
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
+     */
     @Override
     public Image getColumnImage(Object element, int columnIndex) {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
+     */
     @Override
     public String getColumnText(Object element, int columnIndex) {
         if (element instanceof TmfTraceElement) {

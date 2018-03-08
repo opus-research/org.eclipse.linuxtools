@@ -156,7 +156,10 @@ public class Zoom extends Action {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     public void run() {
 

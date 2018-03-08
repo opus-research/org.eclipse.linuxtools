@@ -58,11 +58,19 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // TmfProjectModelElement
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#getResource()
+     */
     @Override
     public IProject getResource() {
         return (IProject) fResource;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#addChild(org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement)
+     */
     @Override
     public void addChild(ITmfProjectModelElement child) {
         super.addChild(child);
@@ -79,7 +87,6 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
     /**
      * Returns the containing trace folder element.
      * @return the TMF trace folder element.
@@ -100,6 +107,10 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // TmfProjectElement
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#refresh()
+     */
     @Override
     public void refresh() {
         Display.getDefault().asyncExec(new Runnable(){
@@ -125,6 +136,10 @@ public class TmfProjectElement extends TmfProjectModelElement {
             }});
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
+     */
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
@@ -132,6 +147,10 @@ public class TmfProjectElement extends TmfProjectModelElement {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement#getProject()
+     */
     @Override
     public TmfProjectElement getProject() {
         return this;

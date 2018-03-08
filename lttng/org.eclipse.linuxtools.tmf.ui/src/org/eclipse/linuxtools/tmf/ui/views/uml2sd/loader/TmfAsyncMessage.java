@@ -28,7 +28,6 @@ public class TmfAsyncMessage extends AsyncMessage implements ITmfAsyncSequenceDi
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * A asynchronous sequence diagram event implementation
      */
@@ -37,7 +36,6 @@ public class TmfAsyncMessage extends AsyncMessage implements ITmfAsyncSequenceDi
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Standard constructor
      *
@@ -56,11 +54,19 @@ public class TmfAsyncMessage extends AsyncMessage implements ITmfAsyncSequenceDi
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getSender()
+     */
     @Override
     public String getSender() {
         return fSdEvent.getSender();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getReceiver()
+     */
     @Override
     public String getReceiver() {
         return fSdEvent.getReceiver();

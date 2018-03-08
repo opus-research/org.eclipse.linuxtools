@@ -27,11 +27,19 @@ public class Uml2SDTestSetup extends TestSetup {
         super(test);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see junit.extensions.TestSetup#setUp()
+     */
     @Override
     protected void setUp() throws Exception {
         Uml2SDTestFacility.getInstance().init();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see junit.extensions.TestSetup#tearDown()
+     */
     @Override
     protected void tearDown() throws Exception {
         Uml2SDTestFacility.getInstance().dispose();

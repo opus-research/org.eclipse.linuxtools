@@ -57,6 +57,10 @@ public class ChannelCommandParameter extends CommandParameter {
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
     @Override
     public ChannelCommandParameter clone() {
         ChannelCommandParameter clone = (ChannelCommandParameter) super.clone();

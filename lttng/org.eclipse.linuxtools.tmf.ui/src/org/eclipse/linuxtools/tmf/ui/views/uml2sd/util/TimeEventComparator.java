@@ -38,6 +38,10 @@ public class TimeEventComparator implements Comparator<SDTimeEvent>, Serializabl
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+     */
     @Override
     public int compare(SDTimeEvent arg0, SDTimeEvent arg1) {
         SDTimeEvent t1 = arg0;

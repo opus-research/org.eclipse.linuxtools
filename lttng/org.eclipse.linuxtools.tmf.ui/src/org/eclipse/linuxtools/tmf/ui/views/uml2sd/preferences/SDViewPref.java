@@ -238,6 +238,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return fHandle;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getForeGroundColor(java.lang.String)
+     */
     @Override
     public IColor getForeGroundColor(String prefName) {
         if ((fForeColorPref.get(prefName + FORE_COLOR_POSTFIX) != null) && (fForeColorPref.get(prefName + FORE_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -246,6 +250,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_BLACK);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getBackGroundColor(java.lang.String)
+     */
     @Override
     public IColor getBackGroundColor(String prefName) {
         if ((fBackColorPref.get(prefName + BACK_COLOR_POSTFIX) != null) && (fBackColorPref.get(prefName + BACK_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -254,6 +262,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_WHITE);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getFontColor(java.lang.String)
+     */
     @Override
     public IColor getFontColor(String prefName) {
         if ((fTextColorPref.get(prefName + TEXT_COLOR_POSTFIX) != null) && (fTextColorPref.get(prefName + TEXT_COLOR_POSTFIX) instanceof ColorImpl)) {
@@ -262,6 +274,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_BLACK);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getForeGroundColorSelection()
+     */
     @Override
     public IColor getForeGroundColorSelection() {
         if (fNoFocusSelection) {
@@ -270,6 +286,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getBackGroundColorSelection()
+     */
     @Override
     public IColor getBackGroundColorSelection() {
         if (fNoFocusSelection) {
@@ -278,6 +298,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return ColorImpl.getSystemColor(SWT.COLOR_LIST_SELECTION);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getFont(java.lang.String)
+     */
     @Override
     public IFont getFont(String prefName) {
         if (fFontPref.get(prefName) != null) {
@@ -323,11 +347,19 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         return fPrefStore.getBoolean(PREF_EXCLUDE_EXTERNAL_TIME);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#useGradienColor()
+     */
     @Override
     public boolean useGradienColor() {
         return fPrefStore.getBoolean(PREF_USE_GRADIENT);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.ISDPreferences#getTimeCompressionSelectionColor()
+     */
     @Override
     public IColor getTimeCompressionSelectionColor() {
         return fTimeCompressionSelectionColor;
@@ -399,6 +431,10 @@ public class SDViewPref implements ISDPreferences, IPropertyChangeListener {
         fPrefStore.removePropertyChangeListener(listener);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (!event.getProperty().equals("PREFOK")) { //$NON-NLS-1$

@@ -462,11 +462,19 @@ public class TabContents extends Composite {
      * @version 1.0
      */
     protected class GraphNodeTypeListener implements SelectionListener {
+        /*
+         * (non-Javadoc)
+         * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+         */
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {
             // Nothing to do
         }
 
+        /*
+         * (non-Javadoc)
+         * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+         */
         @Override
         public void widgetSelected(SelectionEvent e) {
             updateOkButton();
@@ -479,6 +487,11 @@ public class TabContents extends Composite {
      * @version 1.0
      */
     protected class ExpressionListener implements ModifyListener {
+
+        /*
+         * (non-Javadoc)
+         * @see org.eclipse.swt.events.ModifyListener#modifyText(org.eclipse.swt.events.ModifyEvent)
+         */
         @Override
         public void modifyText(ModifyEvent e) {
             updateOkButton();

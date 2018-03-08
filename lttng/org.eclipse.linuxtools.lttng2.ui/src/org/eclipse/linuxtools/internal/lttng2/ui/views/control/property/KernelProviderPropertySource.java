@@ -28,7 +28,6 @@ public class KernelProviderPropertySource extends BasePropertySource {
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
-
     /**
      * The kernel provider 'name' property ID.
      */
@@ -41,7 +40,6 @@ public class KernelProviderPropertySource extends BasePropertySource {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The kernel provider component which this property source is for.
      */
@@ -50,7 +48,6 @@ public class KernelProviderPropertySource extends BasePropertySource {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructor
      * @param component - the kernel provider component
@@ -62,13 +59,20 @@ public class KernelProviderPropertySource extends BasePropertySource {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyDescriptors()
+     */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         return new IPropertyDescriptor[] {
                 new ReadOnlyTextPropertyDescriptor(KERNEL_PROVIDER_NAME_PROPERTY_ID, KERNEL_PROVIDER_NAME_PROPERTY_NAME)};
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyValue(java.lang.Object)
+     */
     @Override
     public Object getPropertyValue(Object id) {
         if(KERNEL_PROVIDER_NAME_PROPERTY_ID.equals(id)) {

@@ -75,6 +75,9 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
     // Operations
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.Histogram#clear()
+     */
     @Override
     public void clear() {
         fRangeStartTime = 0L;
@@ -109,6 +112,9 @@ public class FullTraceHistogram extends Histogram implements MouseMoveListener {
         fDataModel.complete();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.Histogram#updateTimeRange(long, long)
+     */
     @Override
     public void updateTimeRange(long startTime, long endTime) {
         ((HistogramView) fParentView).updateTimeRange(startTime, endTime);

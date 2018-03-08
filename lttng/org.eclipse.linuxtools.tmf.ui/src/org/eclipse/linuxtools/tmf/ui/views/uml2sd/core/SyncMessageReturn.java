@@ -84,6 +84,10 @@ public class SyncMessageReturn extends SyncMessage {
         return fMessage;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -105,6 +109,10 @@ public class SyncMessageReturn extends SyncMessage {
         context.setLineStyle(oldStyle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return SYNC_MESS_RET_TAG;

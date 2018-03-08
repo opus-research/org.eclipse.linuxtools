@@ -52,6 +52,10 @@ public class CtfEnumPair extends Pair<String, Long> {
         return getSecond();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.util.Pair#toString()
+     */
     @Override
     public String toString() {
         return getFirst();

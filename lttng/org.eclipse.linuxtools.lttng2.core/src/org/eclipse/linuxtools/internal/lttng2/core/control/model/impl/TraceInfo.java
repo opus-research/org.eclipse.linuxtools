@@ -59,17 +59,28 @@ public class TraceInfo implements ITraceInfo {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceInfo#getName()
+     */
     @Override
     public String getName() {
         return fName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceInfo#setName(java.lang.String)
+     */
     @Override
     public void setName(String name) {
         fName = name;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -78,6 +89,10 @@ public class TraceInfo implements ITraceInfo {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -99,7 +114,10 @@ public class TraceInfo implements ITraceInfo {
         }
         return true;
     }
-
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {

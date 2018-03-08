@@ -109,36 +109,64 @@ public class TmfBaseColumnData implements ITmfStatisticsColumnData {
         fPercentageProvider = p;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getHeader()
+     */
     @Override
     public String getHeader() {
         return fHeader;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getWidth()
+     */
     @Override
     public int getWidth() {
         return fWidth;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getAlignment()
+     */
     @Override
     public int getAlignment() {
         return fAlignment;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getTooltip()
+     */
     @Override
     public String getTooltip() {
         return fTooltip;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getLabelProvider()
+     */
     @Override
     public ColumnLabelProvider getLabelProvider() {
         return fLabelProvider;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getComparator()
+     */
     @Override
     public ViewerComparator getComparator() {
         return fComparator;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfStatisticsColumnData#getPercentageProvider()
+     */
     @Override
     public ITmfColumnPercentageProvider getPercentageProvider() {
         return fPercentageProvider;

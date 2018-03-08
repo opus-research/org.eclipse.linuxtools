@@ -71,6 +71,11 @@ public class TmfViewerFolder extends Composite {
         initFolder();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.swt.widgets.Widget#dispose()
+     */
     @Override
     public void dispose() {
         super.dispose();

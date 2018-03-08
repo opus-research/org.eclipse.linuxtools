@@ -41,6 +41,11 @@ public class PerspectiveFactory implements IPerspectiveFactory {
     private static final String PROPERTIES_VIEW_ID = IPageLayout.ID_PROP_SHEET;
     private static final String BOOKMARKS_VIEW_ID = IPageLayout.ID_BOOKMARKS;
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.ui.IPerspectiveFactory#createInitialLayout(org.eclipse.ui.IPageLayout)
+     */
     @Override
     public void createInitialLayout(IPageLayout layout) {
 

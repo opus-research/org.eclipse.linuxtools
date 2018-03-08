@@ -38,7 +38,6 @@ public class SDWidgetSelectionProvider implements ISelectionProvider {
      * The listener list
      */
     protected List<ISelectionChangedListener> fListenerList = null;
-
     /**
      * The current selection
      */
@@ -47,7 +46,6 @@ public class SDWidgetSelectionProvider implements ISelectionProvider {
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-
     /**
      * Standard constructor
      */
@@ -59,6 +57,10 @@ public class SDWidgetSelectionProvider implements ISelectionProvider {
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+     */
     @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener) {
         if (!fListenerList.contains(listener)) {
@@ -66,11 +68,19 @@ public class SDWidgetSelectionProvider implements ISelectionProvider {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+     */
     @Override
     public void removeSelectionChangedListener(ISelectionChangedListener listener) {
         fListenerList.remove(listener);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
+     */
     @Override
     public void setSelection(ISelection selection) {
         fCurrentSelection = selection;
@@ -80,6 +90,10 @@ public class SDWidgetSelectionProvider implements ISelectionProvider {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
+     */
     @Override
     public ISelection getSelection() {
         return fCurrentSelection;

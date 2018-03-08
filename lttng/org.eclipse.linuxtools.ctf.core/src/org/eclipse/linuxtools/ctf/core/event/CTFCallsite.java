@@ -143,6 +143,12 @@ public class CTFCallsite implements Comparable<CTFCallsite> {
         return 0;
     }
 
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return FileName + "/" + FunctionName + ":" + LineNumber; //$NON-NLS-1$ //$NON-NLS-2$

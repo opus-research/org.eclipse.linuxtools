@@ -66,7 +66,10 @@ public class PrevPage extends Action {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     public void run() {
         if ((fView == null) || (fView.getSDWidget()) == null) {

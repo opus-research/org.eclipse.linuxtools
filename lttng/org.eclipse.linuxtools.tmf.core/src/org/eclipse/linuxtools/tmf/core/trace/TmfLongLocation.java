@@ -38,6 +38,9 @@ public final class TmfLongLocation extends TmfLocation {
         super(other.getLocationInfo());
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationInfo()
+     */
     @Override
     public Long getLocationInfo() {
         return (Long) super.getLocationInfo();

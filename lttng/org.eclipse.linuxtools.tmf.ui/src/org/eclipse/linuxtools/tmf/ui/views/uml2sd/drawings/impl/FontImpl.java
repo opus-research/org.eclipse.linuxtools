@@ -65,7 +65,6 @@ public class FontImpl implements IFont {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
     /**
      * Returns a font implementation based system font.
      *
@@ -75,11 +74,19 @@ public class FontImpl implements IFont {
         return new FontImpl(Display.getDefault().getSystemFont());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont#getFont()
+     */
     @Override
     public Object getFont() {
         return fFont;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont#dispose()
+     */
     @Override
     public void dispose() {
         if (fFont != null) {

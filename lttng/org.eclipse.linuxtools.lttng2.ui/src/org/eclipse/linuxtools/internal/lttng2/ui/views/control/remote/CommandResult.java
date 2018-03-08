@@ -57,22 +57,37 @@ public class CommandResult implements ICommandResult {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandResult#getResult()
+     */
     @Override
     public int getResult() {
         return fResult;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandResult#setResult(int)
+     */
     @Override
     public void setResult(int result) {
         fResult = result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandResult#getOutput()
+     */
     @Override
     public String[] getOutput() {
         return Arrays.copyOf(fOutput, fOutput.length);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandResult#setOutput(java.lang.String[])
+     */
     @Override
     public void setOutput(String[] output) {
         fOutput = new String[0];

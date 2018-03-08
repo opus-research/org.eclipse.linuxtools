@@ -101,6 +101,9 @@ public class TmfEnvironmentView extends TmfView {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
     @Override
     public void setFocus() {
         fTree.setFocus();

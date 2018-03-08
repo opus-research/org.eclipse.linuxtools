@@ -28,6 +28,9 @@ public class TmfClearExperimentSignal extends TmfSignal {
         super(source);
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {

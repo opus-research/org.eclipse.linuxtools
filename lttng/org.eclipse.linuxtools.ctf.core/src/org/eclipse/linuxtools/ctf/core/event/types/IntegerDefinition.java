@@ -82,11 +82,17 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     // Operations
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition#getLongValue()
+     */
     @Override
     public Long getIntegerValue() {
         return getValue();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition#getStringValue()
+     */
     @Override
     public String getStringValue() {
         return this.toString();

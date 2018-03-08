@@ -33,7 +33,6 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * Set the red, green and blue value of the optional color to be used for filling the execution occurrence.
      */
@@ -66,7 +65,10 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setLifeline(org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.Lifeline)
+     */
     @Override
     public void setLifeline(Lifeline theLifeline) {
         super.setLifeline(theLifeline);
@@ -168,11 +170,19 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         return fEndTime;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
+     */
     @Override
     public boolean hasTimeInfo() {
         return fHasTimeInfo;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
         super.draw(context);
@@ -188,6 +198,10 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setUnselectedFillColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     protected IColor setUnselectedFillColor(IGC context) {
         ISDPreferences pref = SDViewPref.getInstance();
@@ -205,6 +219,10 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         return super.setUnselectedFillColor(context);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setUnselectedStrokeColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     protected IColor setUnselectedStrokeColor(IGC context) {
         if (fStrokeRGB != null) {

@@ -78,7 +78,10 @@ public class SDPrintDialog extends Dialog {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite p) {
         p.getShell().setText(SDMessages._114);
@@ -95,6 +98,10 @@ public class SDPrintDialog extends Dialog {
         return parent;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     protected void okPressed() {
 
@@ -103,6 +110,10 @@ public class SDPrintDialog extends Dialog {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
 
@@ -110,11 +121,19 @@ public class SDPrintDialog extends Dialog {
         createButton(parent, IDialogConstants.CLIENT_ID, SDMessages._115, false);
 
         getButton(IDialogConstants.CLIENT_ID).addSelectionListener(new SelectionListener() {
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetSelected(SelectionEvent e) {
+
                 fDialogUI.printButtonSelected();
             }
-
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
             }

@@ -36,7 +36,6 @@ public class ShowNodeStart extends Action {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The sequence diagram view reference
      */
@@ -45,7 +44,6 @@ public class ShowNodeStart extends Action {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Default constructor
      */
@@ -56,13 +54,12 @@ public class ShowNodeStart extends Action {
     /**
      * Constructor
      *
-     * @param view
-     *            The sequence diagram view reference
+     * @param view The sequence diagram view reference
      */
     public ShowNodeStart(IViewPart view) {
         super();
         if (view instanceof SDView) {
-            fView = (SDView) view;
+            fView = (SDView)view;
         }
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_NODE_START));
     }
@@ -70,8 +67,11 @@ public class ShowNodeStart extends Action {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
-    @Override
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
+   @Override
     @SuppressWarnings("rawtypes")
     public void run() {
         if (fView == null) {
@@ -101,13 +101,12 @@ public class ShowNodeStart extends Action {
         }
     }
 
-    /**
-     * Sets the active SD view.
-     *
-     * @param view
-     *            The SD view.
-     */
-    public void setView(SDView view) {
-        fView = view;
-    }
+   /**
+    * Sets the active SD view.
+    *
+    * @param view The SD view.
+    */
+  public void setView(SDView view) {
+       fView = view;
+   }
 }

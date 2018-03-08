@@ -51,6 +51,10 @@ public class DeleteAction extends Action {
         this.selectionProvider = selectionProvider;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
         ISelection selection = selectionProvider.getSelection();
@@ -74,6 +78,10 @@ public class DeleteAction extends Action {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     public void run() {
         try {
