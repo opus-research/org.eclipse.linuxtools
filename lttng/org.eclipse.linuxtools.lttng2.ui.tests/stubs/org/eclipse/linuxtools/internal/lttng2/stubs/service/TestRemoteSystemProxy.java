@@ -101,4 +101,13 @@ public class TestRemoteSystemProxy implements IRemoteSystemProxy {
             fShell.setScenario(fScenario);
         }
     }
+
+    @Override
+    public int getPort() {
+        return IRemoteSystemProxy.INVALID_PORT_NUMBER;
+    }
+
+    @Override
+    public void setPort(int port) {
+    }
 }

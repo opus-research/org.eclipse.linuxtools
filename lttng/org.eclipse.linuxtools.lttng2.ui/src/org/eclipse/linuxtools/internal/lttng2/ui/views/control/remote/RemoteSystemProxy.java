@@ -141,8 +141,32 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#connect(org.eclipse.rse.core.model.IRSECallback)
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy#getConnectorServicePort()
+     */
+    @Override
+    public int getPort() {
+        if (getShellServiceSubSystem() != null) {
+            return getShellServiceSubSystem().getConnectorService().getPort();
+        }
+        return IRemoteSystemProxy.INVALID_PORT_NUMBER;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy#setConnectorServicePort(int)
+     */
+    @Override
+    public void setPort(int port) {
+        if ((getShellServiceSubSystem() != null) && (port > 0)) {
+            getShellServiceSubSystem().getConnectorService().setPort(port);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy#connect(org.eclipse.rse.core.model.IRSECallback)
      */
     @Override
     public void connect(IRSECallback callback) throws ExecutionException {
