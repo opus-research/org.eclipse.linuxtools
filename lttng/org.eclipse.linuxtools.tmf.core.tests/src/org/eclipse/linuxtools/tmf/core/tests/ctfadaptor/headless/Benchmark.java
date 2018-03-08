@@ -14,8 +14,8 @@ package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor.headless;
 
 import java.util.Vector;
 
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfIterator;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfLightweightContext;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
@@ -32,7 +32,7 @@ public class Benchmark {
      * @param args The command-line arguments
      */
     public static void main(final String[] args) {
-        final String TRACE_PATH = "/home/ematkho/lttng-traces/ddompe-trace-2012-07-05"; //$NON-NLS-1$
+        final String TRACE_PATH = "testfiles/kernel"; //$NON-NLS-1$
         final int NUM_LOOPS = 100;
 
         // Change this to enable text output
@@ -60,7 +60,7 @@ public class Benchmark {
 
             start = System.nanoTime();
             if (nbEvent != -1) {
-                final CtfTmfLightweightContext traceReader = (CtfTmfLightweightContext) trace.seekEvent(0);
+                final CtfIterator traceReader = (CtfIterator) trace.seekEvent(0);
 
                 start = System.nanoTime();
                 CtfTmfEvent current = traceReader.getCurrentEvent();
@@ -68,14 +68,11 @@ public class Benchmark {
                     nbEvent++;
                     if (USE_TEXT) {
 
-                        System.out.println("Event " + nbEvent + " Time " //$NON-NLS-1$ //$NON-NLS-2$
+                        System.out.println("Event " + traceReader.getRank() + " Time " //$NON-NLS-1$ //$NON-NLS-2$
                                 + current.getTimestamp().toString() + " type " + current.getEventName() //$NON-NLS-1$
                                 + " on CPU " + current.getSource() + " " + current.getContent().toString()) ; //$NON-NLS-1$ //$NON-NLS-2$
                     }
-                    if(nbEvent == 30) {
-                        new Object();
-                    }
-                    boolean hasMore = traceReader.advance();
+                    traceReader.advance();
                     current = traceReader.getCurrentEvent();
                 }
             }
