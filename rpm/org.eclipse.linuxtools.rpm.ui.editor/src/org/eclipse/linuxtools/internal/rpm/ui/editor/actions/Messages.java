@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Red Hat, Inc.
+ * Copyright (c) 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,13 +22,10 @@ public final class Messages extends NLS {
 	public static String DownloadSources_cannotConnectToURL;
 
 	// SpecfileEditorPrepareSourcesActionDelegate
-	public static String PrepareSources_error;
 	public static String PrepareSources_downloadSourcesMalformedURL;
 	public static String PrepareSources_downloadCancelled;
 	public static String PrepareSources_downloadConnectionFail;
 	public static String PrepareSources_coreException;
-	public static String PrepareSources_prepareSources;
-	public static String PrepareSources_consoleName;
 
 	// RPMHandlerUtils
 	public static String RPMHandlerUtils_cannotCreateRPMProject;

@@ -33,17 +33,11 @@ public class ValgrindCommand {
 
 	public String whichVersion(IProject project) throws IOException {
 		StringBuffer out = new StringBuffer();
-		String version = "";
 		Process p = RuntimeProcessFactory.getFactory().exec(new String[] { VALGRIND_CMD, CommandLineConstants.OPT_VERSION }, project);
-		try {
-			readIntoBuffer(out, p);
-			version = out.toString().trim();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return version;
+		readIntoBuffer(out, p);
+		return out.toString().trim();
 	}
-
+	
 	public void execute(String[] commandArray, Object env, File wd, String exeFile, boolean usePty, IProject project) throws IOException {
 		args = commandArray;
 		try {
@@ -84,9 +78,6 @@ public class ValgrindCommand {
 	protected void readIntoBuffer(StringBuffer out, Process p) throws IOException {
 		boolean success;
 		InputStream in, err, input;
-		if (p  == null ) {
-			throw new IOException("Null Process object: unabled to read input into buffer");
-		}
 		try {
 			//We need to get the inputs before calling waitFor
 			input = p.getInputStream();

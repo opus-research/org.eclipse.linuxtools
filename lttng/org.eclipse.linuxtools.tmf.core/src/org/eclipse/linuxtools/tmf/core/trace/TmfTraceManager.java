@@ -116,7 +116,7 @@ public final class TmfTraceManager {
      * @return the current window time range
      */
     public synchronized TmfTimeRange getCurrentRange() {
-        return getCurrentTraceContext().getWindowRange();
+        return getCurrentTraceContext().getTimerange();
     }
 
     /**
@@ -313,7 +313,7 @@ public final class TmfTraceManager {
 
             /* Determine the new time range */
             TmfTimeRange targetTr = signal.getCurrentRange().getIntersection(validTr);
-            TmfTimeRange newTr = (targetTr == null ? curCtx.getWindowRange() : targetTr);
+            TmfTimeRange newTr = (targetTr == null ? curCtx.getTimerange() : targetTr);
 
             /* Update the values */
             TmfTraceContext newCtx = new TmfTraceContext(curCtx, newTr);
@@ -374,18 +374,12 @@ public final class TmfTraceManager {
     }
 
     /**
-     * Get a temporary directory based on a trace's name. We will create the
-     * directory if it doesn't exist, so that it's ready to be used.
+     * Get a temporary directory based on a trace's name
      */
     private static String getTemporaryDir(ITmfTrace trace) {
-        String pathName = System.getProperty("java.io.tmpdir") + //$NON-NLS-1$
+        return System.getProperty("java.io.tmpdir") + //$NON-NLS-1$
             File.separator +
             trace.getName() +
             File.separator;
-        File dir = new File(pathName);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        return pathName;
     }
 }

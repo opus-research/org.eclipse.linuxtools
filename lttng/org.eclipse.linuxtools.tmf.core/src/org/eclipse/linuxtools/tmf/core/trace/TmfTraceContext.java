@@ -31,40 +31,44 @@ final class TmfTraceContext {
     static final TmfTraceContext NULL_CONTEXT =
             new TmfTraceContext(TmfTimestamp.BIG_CRUNCH, TmfTimestamp.BIG_CRUNCH, TmfTimeRange.NULL_RANGE);
 
-    private final TmfTimeRange fSelection;
-    private final TmfTimeRange fWindowRange;
+    private final ITmfTimestamp fSelectionBegin;
+    private final ITmfTimestamp fSelectionEnd;
+    private final TmfTimeRange fTimerange;
 
     public TmfTraceContext(ITmfTimestamp beginTs, ITmfTimestamp endTs, TmfTimeRange tr) {
-        fSelection = new TmfTimeRange(beginTs, endTs);
-        fWindowRange = tr;
+        fSelectionBegin = beginTs;
+        fSelectionEnd = endTs;
+        fTimerange = tr;
     }
 
     public TmfTraceContext(TmfTraceContext prevCtx, ITmfTimestamp beginTs, ITmfTimestamp endTs) {
-        fSelection = new TmfTimeRange(beginTs, endTs);
-        fWindowRange = prevCtx.fWindowRange;
+        fSelectionBegin = beginTs;
+        fSelectionEnd = endTs;
+        fTimerange = prevCtx.fTimerange;
     }
 
     public TmfTraceContext(TmfTraceContext prevCtx, TmfTimeRange tr) {
-        fSelection = prevCtx.fSelection;
-        fWindowRange = tr;
+        fSelectionBegin = prevCtx.fSelectionBegin;
+        fSelectionEnd = prevCtx.fSelectionEnd;
+        fTimerange = tr;
     }
 
     public ITmfTimestamp getSelectionBegin() {
-        return fSelection.getStartTime();
+        return fSelectionBegin;
     }
 
     public ITmfTimestamp getSelectionEnd() {
-        return fSelection.getEndTime();
+        return fSelectionEnd;
     }
 
-    public TmfTimeRange getWindowRange() {
-        return fWindowRange;
+    public TmfTimeRange getTimerange() {
+        return fTimerange;
     }
 
     public boolean isValid() {
-        if (fSelection.getStartTime().compareTo(TmfTimestamp.ZERO) <= 0 ||
-                fSelection.getEndTime().compareTo(TmfTimestamp.ZERO) <= 0 ||
-                fWindowRange.getEndTime().compareTo(fWindowRange.getStartTime()) <= 0) {
+        if (fSelectionBegin.compareTo(TmfTimestamp.ZERO) <= 0 ||
+                fSelectionEnd.compareTo(TmfTimestamp.ZERO) <= 0 ||
+                fTimerange.getEndTime().compareTo(fTimerange.getStartTime()) <= 0) {
             return false;
         }
         return true;
@@ -72,7 +76,8 @@ final class TmfTraceContext {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[fSelection=" + fSelection + //$NON-NLS-1$
-                ", fWindowRange=" + fWindowRange + ']'; //$NON-NLS-1$
+        return getClass().getSimpleName() + "[fSelectionBegin=" + fSelectionBegin.toString() + //$NON-NLS-1$
+                ", fSelectionEnd=" + fSelectionEnd.toString() + //$NON-NLS-1$
+                ", fTimerange=" + fTimerange + ']'; //$NON-NLS-1$
     }
 }
