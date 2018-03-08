@@ -104,6 +104,13 @@ public class CTFTraceReader {
     }
 
     /**
+     * Private constructor for null readers
+     */
+    protected CTFTraceReader(){
+        trace = null;
+    }
+
+    /**
      * Copy constructor
      *
      * @return The new CTFTraceReader
