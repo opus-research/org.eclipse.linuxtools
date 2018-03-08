@@ -19,20 +19,20 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeRootFactory;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfTreeContentProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -46,7 +46,7 @@ import org.eclipse.swt.widgets.Listener;
  * @version 2.0
  * @since 2.0
  */
-public class TmfStatisticsViewer extends TmfComponent {
+public class TmfStatisticsViewer extends TmfViewer implements ITmfStatisticsViewer {
 
     /**
      * Refresh frequency
@@ -59,7 +59,7 @@ public class TmfStatisticsViewer extends TmfComponent {
     protected TreeViewer fTreeViewer;
 
     /**
-     * View instance counter (for multiple statistic views)
+     * View instance counter (for multiple statistics views)
      */
     private static int fCountInstance = 0;
 
@@ -69,23 +69,68 @@ public class TmfStatisticsViewer extends TmfComponent {
     private int fInstanceNb;
 
     /**
+     * The statistics tree linked to this viewer
+     */
+    private AbsTmfStatisticsTree fStatisticsData;
+
+    /**
+     * The trace that is displayed by this viewer
+     */
+    private ITmfTrace fTrace;
+
+    /**
      * Object to store the cursor while waiting for the experiment to load
      */
     private Cursor fWaitCursor = null;
 
     /**
-     * Default constructor
+     * Empty constructor. To be used in conjunction with
+     * {@link TmfStatisticsViewer#init(Composite, String, ITmfTrace)}
+     */
+    public TmfStatisticsViewer() {
+        super();
+    }
+
+    /**
+     * Create a basic statistics viewer. To be used in conjunction with
+     * {@link TmfStatisticsViewer#init(Composite, String, ITmfTrace)}
      *
      * @param parent
-     *            The parent of this viewer
+     *            The parent composite that will hold the viewer
+     * @param viewerName
+     *            The name that will be assigned to this viewer
+     * @param trace
+     *            The trace that is displayed by this viewer
+     * @see TmfComponent
      */
-    public TmfStatisticsViewer(Composite parent) {
+    public TmfStatisticsViewer(Composite parent, String viewerName, ITmfTrace trace) {
+        init(parent, viewerName, trace);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#init(org.eclipse.swt.widgets.Composite, java.lang.String, org.eclipse.linuxtools.tmf.core.trace.ITmfTrace)
+     */
+    @Override
+    public void init(Composite parent, String viewerName, ITmfTrace trace) {
+        super.init(parent, viewerName);
         // Increment a counter to make sure the tree ID is unique.
         fCountInstance++;
         fInstanceNb = fCountInstance;
+        fTrace = trace;
 
+        initContent(parent);
+    }
+
+    /**
+     * Initialize the content that will be drawn in this viewer
+     *
+     * @param parent
+     *            The parent of the control to create
+     */
+    protected void initContent(Composite parent) {
         final List<TmfBaseColumnData> columnDataList = getColumnDataProvider().getColumnData();
-        parent.setLayout(new FillLayout());
 
         fTreeViewer = new TreeViewer(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         fTreeViewer.setContentProvider(new TmfTreeContentProvider());
@@ -164,10 +209,12 @@ public class TmfStatisticsViewer extends TmfComponent {
         fTreeViewer.getTree().setSortDirection(SWT.DOWN);
     }
 
-    /**
-     * Refreshes this viewer completely with information freshly obtained from
-     * this viewer's model.
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#refresh()
      */
+    @Override
     public void refresh() {
         fTreeViewer.refresh();
     }
@@ -179,13 +226,10 @@ public class TmfStatisticsViewer extends TmfComponent {
      */
     @Override
     public void dispose() {
+        super.dispose();
         if (fWaitCursor != null) {
             fWaitCursor.dispose();
         }
-        fTreeViewer.getControl().dispose();
-        super.dispose();
-        // clean the model
-        TmfStatisticsTreeRootFactory.removeAll();
     }
 
     /**
@@ -195,63 +239,97 @@ public class TmfStatisticsViewer extends TmfComponent {
         fTreeViewer.getTree().setFocus();
     }
 
-    /**
-     * Sets or clears the input for this viewer.
+    /*
+     * (non-Javadoc)
      *
-     * @param input
-     *            The input of this viewer, or <code>null</code> if none
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#setInput(org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode)
      */
+    @Override
     public void setInput(TmfStatisticsTreeNode input) {
         fTreeViewer.setInput(input);
     }
 
     /**
-     * Returns the quantity of data to retrieve before a refresh of the view is
-     * performed
+     * This method can be overridden to change the representation of the data in
+     * the columns.
      *
-     * @return the quantity of data to retrieve before a refresh of the view is
-     *         performed.
+     * @return an object implementing ITmfBaseColumnDataProvider.
      */
-    public long getInputChangedRefresh() {
-        return STATS_INPUT_CHANGED_REFRESH;
+    protected ITmfColumnDataProvider getColumnDataProvider() {
+        return new TmfBaseColumnDataProvider();
     }
 
-    /**
-     * This method can be overridden to implement another way to represent the
-     * statistics data and to retrieve the information for display.
-     *
-     * @return a TmfStatisticsData object.
-     */
-    public AbsTmfStatisticsTree getStatisticData() {
-        return new TmfBaseStatisticsTree();
-    }
-
-    /**
-     * Get the input of the viewer
-     *
-     * @return an object representing the input of the statistics viewer
-     */
-    public Object getInput() {
-        return fTreeViewer.getInput();
-    }
-
-    /**
+    /*
      * Returns the primary control associated with this viewer.
      *
      * @return the SWT control which displays this viewer's content
      */
+    @Override
     public Control getControl() {
         return fTreeViewer.getControl();
     }
 
-    /**
-     * When the experiment is loading the cursor will be different so the user
-     * know the processing is not finished yet.
+    /*
+     * (non-Javadoc)
      *
-     * @param waitInd
-     *            Indicates if we need to show the waiting cursor, or the
-     *            default one
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#getInput()
      */
+    @Override
+    public Object getInput() {
+        return fTreeViewer.getInput();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#getInputChangedRefresh()
+     */
+    @Override
+    public long getInputChangedRefresh() {
+        return STATS_INPUT_CHANGED_REFRESH;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#getStatisticData()
+     */
+    @Override
+    public AbsTmfStatisticsTree getStatisticData() {
+        if (fStatisticsData == null) {
+            fStatisticsData = new TmfBaseStatisticsTree();
+        }
+        return fStatisticsData;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#getTrace()
+     */
+    @Override
+    public ITmfTrace getTrace() {
+        return fTrace;
+    }
+
+    /**
+     * Constructs the ID based on the experiment name and the instance number
+     *
+     * @param name
+     *            The name of the trace to show in the view
+     * @return a view ID
+     */
+    @Override
+    public String getTreeID(String name) {
+        return name + fInstanceNb;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer#waitCursor(boolean)
+     */
+    @Override
     public void waitCursor(final boolean waitInd) {
         if ((fTreeViewer == null) || (fTreeViewer.getTree().isDisposed())) {
             return;
@@ -276,26 +354,5 @@ public class TmfStatisticsViewer extends TmfComponent {
                 }
             }
         });
-    }
-
-    /**
-     * Constructs the ID based on the experiment name and the instance number
-     *
-     * @param name
-     *            The name of the trace to show in the view
-     * @return a view ID
-     */
-    public String getTreeID(String name) {
-        return name + fInstanceNb;
-    }
-
-    /**
-     * This method can be overridden to change the representation of the data in
-     * the columns.
-     *
-     * @return an object implementing ITmfBaseColumnDataProvider.
-     */
-    protected ITmfColumnDataProvider getColumnDataProvider() {
-        return new TmfBaseColumnDataProvider();
     }
 }
