@@ -120,12 +120,6 @@ public class OpenExperimentHandler extends AbstractHandler {
                     return;
                 }
 
-                /* Unlike traces, there is no instanceExperiment, so we call this function
-                 * here alone.  Maybe it would be better to do this on experiment's element
-                 * constructor?
-                 */
-                experimentElement.refreshSupplementaryFolder();
-
                 // Instantiate the experiment's traces
                 final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
                 final int nbTraces = traceEntries.size();
@@ -173,7 +167,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                 }
 
                 // Create the experiment
-                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize);
                 experiment.setBookmarksFile(file);
 
                 final String editorId = commonEditorId;

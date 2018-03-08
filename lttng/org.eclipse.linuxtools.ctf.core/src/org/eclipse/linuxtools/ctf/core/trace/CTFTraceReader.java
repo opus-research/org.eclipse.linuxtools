@@ -418,7 +418,9 @@ public class CTFTraceReader {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + (int) (startTime ^ (startTime >>> 32));
-        result = (prime * result) + streamInputReaders.hashCode();
+        result = (prime * result)
+                + ((streamInputReaders == null) ? 0 : streamInputReaders
+                        .hashCode());
         result = (prime * result) + ((trace == null) ? 0 : trace.hashCode());
         return result;
     }
@@ -435,7 +437,11 @@ public class CTFTraceReader {
             return false;
         }
         CTFTraceReader other = (CTFTraceReader) obj;
-        if (!streamInputReaders.equals(other.streamInputReaders)) {
+        if (streamInputReaders == null) {
+            if (other.streamInputReaders != null) {
+                return false;
+            }
+        } else if (!streamInputReaders.equals(other.streamInputReaders)) {
             return false;
         }
         if (trace == null) {

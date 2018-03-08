@@ -38,7 +38,6 @@ public class ChartStreamDaemon implements IGobblerListener {
 			data.setData(e);
 	}
 
-	@Override
 	public void handleDataEvent(String line) {
 		outputData.append(line);
 		this.pushData();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,32 +9,50 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Event Model
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.junit.Test;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 
 /**
  * Test suite for the TmfTimeRange class.
  */
-@SuppressWarnings({"nls", "javadoc"})
-public class TmfTimeRangeTest {
+@SuppressWarnings("nls")
+public class TmfTimeRangeTest extends TestCase {
+
+    // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    /**
+     * @param name the test name
+     */
+    public TmfTimeRangeTest(final String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testConstructor() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -44,7 +62,9 @@ public class TmfTimeRangeTest {
         assertEquals("endTime", ts2, range.getEndTime());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testBadConstructor() {
         try {
             new TmfTimeRange(TmfTimestamp.BIG_BANG, null);
@@ -61,7 +81,9 @@ public class TmfTimeRangeTest {
         }
     }
 
-    @Test
+    /**
+     *
+     */
     public void testOpenRange1() {
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, ts2);
@@ -70,7 +92,9 @@ public class TmfTimeRangeTest {
         assertEquals("endTime", ts2, range.getEndTime());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testOpenRange2() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final TmfTimeRange range = new TmfTimeRange(ts1, TmfTimestamp.BIG_CRUNCH);
@@ -79,7 +103,9 @@ public class TmfTimeRangeTest {
         assertEquals("endTime", TmfTimestamp.BIG_CRUNCH, range.getEndTime());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testOpenRange3() {
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
 
@@ -87,7 +113,9 @@ public class TmfTimeRangeTest {
         assertEquals("endTime", TmfTimestamp.BIG_CRUNCH, range.getEndTime());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testCopyConstructor() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -104,7 +132,9 @@ public class TmfTimeRangeTest {
         assertEquals("endTime", TmfTimestamp.BIG_CRUNCH, range3.getEndTime());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testCopyConstructor2() {
         try {
             new TmfTimeRange(null);
@@ -118,7 +148,9 @@ public class TmfTimeRangeTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testHashCode() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -137,7 +169,9 @@ public class TmfTimeRangeTest {
     // equals
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsReflexivity() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -151,7 +185,9 @@ public class TmfTimeRangeTest {
         assertTrue("equals", !range2.equals(range1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsSymmetry() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -168,7 +204,9 @@ public class TmfTimeRangeTest {
         assertTrue("equals", range2b.equals(range2a));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsTransivity() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -181,7 +219,9 @@ public class TmfTimeRangeTest {
         assertTrue("equals", range1a.equals(range1c));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsNull() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -190,7 +230,9 @@ public class TmfTimeRangeTest {
         assertTrue("equals", !range1.equals(null));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsBadType() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -199,7 +241,9 @@ public class TmfTimeRangeTest {
         assertTrue("equals", !range1.equals(ts1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualStartTime() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -213,7 +257,9 @@ public class TmfTimeRangeTest {
         assertTrue("equals", !range1.equals(range3));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsEndTime() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -231,7 +277,9 @@ public class TmfTimeRangeTest {
     // toString
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testToString() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -245,7 +293,9 @@ public class TmfTimeRangeTest {
     // contains
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testContainsTimestamp() {
         final ITmfTimestamp ts1 = new TmfTimestamp(12345);
         final ITmfTimestamp ts2 = new TmfTimestamp(12350);
@@ -261,7 +311,9 @@ public class TmfTimeRangeTest {
         assertTrue("contains (zero)", range.contains(TmfTimestamp.ZERO));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testContainsRange() {
         final ITmfTimestamp ts1 = new TmfTimestamp(10);
         final ITmfTimestamp ts2 = new TmfTimestamp(20);
@@ -315,7 +367,9 @@ public class TmfTimeRangeTest {
     // getIntersection
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testGetIntersection() {
 
         final ITmfTimestamp ts1a = new TmfTimestamp(1000);
