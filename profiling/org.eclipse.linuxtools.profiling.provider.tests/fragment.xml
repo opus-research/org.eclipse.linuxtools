@@ -7,7 +7,7 @@
       <shortcut
             id="org.eclipse.linuxtools.profiling.stub"
             label="Profile As Stub"
-            modes="profile">
+            modes="linuxtools">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchShortcut">
                <parameter 
                      name="type"
@@ -59,7 +59,7 @@
             class="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchShortcut"
             id="org.eclipse.linuxtools.profiling.stubby"
             label="Profile As Stubby"
-            modes="profile">
+            modes="linuxtools">
          <contextualLaunch>
             <enablement>
                <with
@@ -124,7 +124,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.stub.launchConfigurationType"
-            modes="profile"
+            modes="linuxtools"
             name="Profile As Stub"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator">
@@ -132,7 +132,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.stubby.launchConfigurationType"
-            modes="profile"
+            modes="linuxtools"
             name="Profile As Stubby"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator">
@@ -179,6 +179,17 @@
             shortcut="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchShortcut"
             tabgroup="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchConfigurationTabGroup"
             type="stub">
+      </provider>
+            <provider
+                  delegate="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyTimingLaunchConfigurationDelegate"
+                  description="description test"
+                  id="org.eclipse.linuxtools.profiling.provider.stubby.timing"
+                  information="tooltip test"
+                  name="Test Tool"
+                  priority="1"
+                  shortcut="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchShortcut"
+                  tabgroup="org.eclipse.linuxtools.profiling.provider.tests.stubby.StubbyLaunchConfigurationTabGroup"
+                  type="timing">
       </provider>
    </extension>
 
