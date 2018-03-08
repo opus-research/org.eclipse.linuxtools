@@ -28,8 +28,12 @@ public class RemoteEnvProxyManager extends RemoteProxyManager implements IRemote
 	public Map<String, String> getEnv(IProject project) throws CoreException {
 		String scheme = mapping.getSchemeFromNature(project);
 		if (scheme!=null) {
-			IRemoteEnvProxyManager manager = (IRemoteEnvProxyManager) getRemoteManager(scheme);
-			return manager.getEnv(project);
+			IRemoteProxyManager manager = getRemoteManager(scheme);
+			IRemoteEnvProxyManager envManager;
+			if (manager instanceof IRemoteEnvProxyManager) {
+				envManager = (IRemoteEnvProxyManager) manager; 
+				return envManager.getEnv(project);
+			}
 		}
 		URI projectURI = project.getLocationURI();
 		return getEnv(projectURI);
@@ -38,8 +42,12 @@ public class RemoteEnvProxyManager extends RemoteProxyManager implements IRemote
 	public Map<String, String> getEnv(URI uri) throws CoreException {
 		String scheme = uri.getScheme();
 		if (scheme != null && !scheme.equals(LOCALSCHEME)){
-			IRemoteEnvProxyManager manager = (IRemoteEnvProxyManager) getRemoteManager(scheme);
-			return manager.getEnv(uri);
+			IRemoteProxyManager manager = getRemoteManager(scheme);
+			IRemoteEnvProxyManager envManager;
+			if (manager instanceof IRemoteEnvProxyManager) {
+				envManager = (IRemoteEnvProxyManager) manager;
+				return envManager.getEnv(uri);
+			}
 		}
 		return System.getenv();
 	}

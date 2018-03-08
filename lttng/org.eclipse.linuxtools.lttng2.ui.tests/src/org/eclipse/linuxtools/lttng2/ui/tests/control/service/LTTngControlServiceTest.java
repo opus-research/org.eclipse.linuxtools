@@ -41,7 +41,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceSessionState;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.stubs.service.CommandShellFactory;
 import org.eclipse.linuxtools.internal.lttng2.stubs.shells.LTTngToolsFileShell;
@@ -814,7 +813,7 @@ public class LTTngControlServiceTest {
     @Test
     public void testCreateChannel() {
         try {
-            ((LTTngControlService)fService).setVersion("2.2.0");
+
             String sessionName = "mysession2";
             List<String> list = new ArrayList<String>();
             String kernelChannel0 = "mychannel0";
@@ -848,7 +847,6 @@ public class LTTngControlServiceTest {
             chanInfo.setMaxNumberTraceFiles(20);
             chanInfo.setMaxSizeTraceFiles(0);
             fService.enableChannels(sessionName, list, false, chanInfo, new NullProgressMonitor());
-            ((LTTngControlService)fService).setVersion("2.0.0");
 
         } catch (ExecutionException e) {
             fail(e.toString());
@@ -858,7 +856,6 @@ public class LTTngControlServiceTest {
     @Test
     public void testCreateChannelUIDBuffer() {
         try {
-            ((LTTngControlService)fService).setVersion("2.2.0");
             String sessionName = "mysession2";
             List<String> list = new ArrayList<String>();
             String USTChannel = "ustChannel";
@@ -873,38 +870,8 @@ public class LTTngControlServiceTest {
             chanInfo.setNumberOfSubBuffers(1);
             chanInfo.setMaxNumberTraceFiles(20);
             chanInfo.setMaxSizeTraceFiles(0);
-            chanInfo.setBufferType(BufferType.BUFFER_PER_UID);
+            chanInfo.setBuffersUID(true);
             fService.enableChannels(sessionName, list, false, chanInfo, new NullProgressMonitor());
-            ((LTTngControlService)fService).setVersion("2.0.0");
-
-        } catch (ExecutionException e) {
-            fail(e.toString());
-        }
-    }
-
-    @Test
-    public void testCreateChannelPIDBuffer() {
-        try {
-            ((LTTngControlService)fService).setVersion("2.2.0");
-            String sessionName = "mysession2";
-            List<String> list = new ArrayList<String>();
-            String USTChannel = "ustChannel";
-            list.add(USTChannel);
-            fShell.setScenario(SCEN_CHANNEL_HANDLING);
-
-
-            ChannelInfo chanInfo = new ChannelInfo("");
-            chanInfo.setOverwriteMode(true);
-            chanInfo.setSubBufferSize(-1);
-            chanInfo.setReadTimer(-1);
-            chanInfo.setSwitchTimer(-1);
-            chanInfo.setNumberOfSubBuffers(-1);
-            chanInfo.setMaxNumberTraceFiles(-1);
-            chanInfo.setMaxSizeTraceFiles(-1);
-            chanInfo.setBufferType(BufferType.BUFFER_PER_PID);
-
-            fService.enableChannels(sessionName, list, false, chanInfo, new NullProgressMonitor());
-            ((LTTngControlService)fService).setVersion("2.0.0");
 
         } catch (ExecutionException e) {
             fail(e.toString());
