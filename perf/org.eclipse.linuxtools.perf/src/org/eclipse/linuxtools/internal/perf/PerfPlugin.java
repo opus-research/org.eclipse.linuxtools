@@ -14,6 +14,7 @@
  *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.perf;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -44,7 +45,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
 	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
 	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
-	public static final String REPORT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.ReportViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -103,6 +103,8 @@ public class PerfPlugin extends AbstractUIPlugin {
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
+	public static final String PERF_DEFAULT_STAT= "perf.stat";
+	public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
 	
@@ -130,9 +132,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Current stat comparison data
 	private StatComparisonData statDiffData;
 
-	// Current report comparison data
-	private ReportComparisonData reportDiffData;
-
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
@@ -153,12 +152,23 @@ public class PerfPlugin extends AbstractUIPlugin {
 		return statDiffData;
 	}
 
-	public ReportComparisonData getReportDiffData(){
-		return reportDiffData;
-	}
-
 	public IPath getWorkingDir(){
 		return curWorkingDir;
+	}
+
+	/**
+	 * Get perf file with specified name under the current profiled project.
+	 *
+	 * @param fileName file name.
+	 * @return File corresponding to given file or null if no working directory
+	 *         has been set.
+	 */
+	public File getPerfFile(String fileName) {
+		if (curWorkingDir != null) {
+			IPath curStatPath = curWorkingDir.append(fileName);
+			return curStatPath.toFile();
+		}
+		return null;
 	}
 
 	/**
@@ -192,10 +202,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public void setStatDiffData(StatComparisonData diffData){
 		this.statDiffData = diffData;
-	}
-
-	public void setReportDiffData(ReportComparisonData diffData){
-		this.reportDiffData = diffData;
 	}
 
 	public void setWorkingDir(IPath workingDir){
