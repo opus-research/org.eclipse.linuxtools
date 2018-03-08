@@ -14,9 +14,6 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -104,16 +101,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // The current selected range
     private TmfTimeRange fCurrentRange = TmfTimeRange.NULL_RANGE;
-
-    /**
-     * The collection of state systems that are registered with this trace. Each
-     * sub-class can decide to add its (one or many) state system to this map
-     * during their {@link #buildStateSystem()}.
-     *
-     * @since 2.0
-     */
-    protected final Map<String, ITmfStateSystem> fStateSystems =
-            new HashMap<String, ITmfStateSystem>();
 
     // ------------------------------------------------------------------------
     // Construction
@@ -306,7 +293,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     protected void buildStateSystem() throws TmfTraceException {
         /*
          * Nothing is done in the base implementation, please specify
-         * how/if to register a new state system in derived classes.
+         * how/if to build a state system in derived classes.
          */
         return;
     }
@@ -325,12 +312,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         if (fStatistics != null) {
             fStatistics.dispose();
         }
-
-        /* Clean up the state systems */
-        for (ITmfStateSystem ss : fStateSystems.values()) {
-            ss.dispose();
-        }
-
         super.dispose();
     }
 
@@ -404,16 +385,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     @Override
-    public final ITmfStateSystem getStateSystem(String id) {
-        return fStateSystems.get(id);
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public final Collection<String> listStateSystems() {
-        return fStateSystems.keySet();
+    public ITmfStateSystem getStateSystem() {
+        /*
+         * By default, no state system is used. Sub-classes can specify their
+         * own behaviour.
+         */
+        return null;
     }
 
     // ------------------------------------------------------------------------

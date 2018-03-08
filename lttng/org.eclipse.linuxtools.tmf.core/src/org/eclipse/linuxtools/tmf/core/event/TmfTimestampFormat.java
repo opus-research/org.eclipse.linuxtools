@@ -345,7 +345,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @param value the timestamp value to format (in ns)
      * @return the formatted timestamp
      */
-    public String format(long value) {
+    public synchronized String format(long value) {
 
         // Split the timestamp value into its sub-components
         long sec = value / 1000000000;            // seconds
@@ -414,7 +414,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @return the parsed value
      * @throws ParseException if the string has an invalid format
      */
-    public long parseValue(final String string, final long ref) throws ParseException {
+    public synchronized long parseValue(final String string, final long ref) throws ParseException {
 
         // Trivial case
         if (string == null || string.length() == 0) {
@@ -500,25 +500,23 @@ public class TmfTimestampFormat extends SimpleDateFormat {
         if (seconds == -1) {
             Date baseDate = super.parse(sb.toString());
 
-            Calendar refTime = Calendar.getInstance(TimeZone.getTimeZone("UTC")); //$NON-NLS-1$
+            Calendar refTime = Calendar.getInstance(getTimeZone());
             refTime.setTimeInMillis(ref / 1000000);
-            Calendar newTime = Calendar.getInstance(TimeZone.getTimeZone("UTC")); //$NON-NLS-1$
+            Calendar newTime = Calendar.getInstance(getTimeZone());
             newTime.setTimeInMillis(baseDate.getTime());
 
-            int[] fields = new int[] { Calendar.YEAR, Calendar.DAY_OF_YEAR, Calendar.MONTH, Calendar.DATE, Calendar.HOUR, Calendar.MINUTE, Calendar.SECOND };
+            int[] fields = new int[] { Calendar.YEAR, Calendar.MONTH, Calendar.DATE, Calendar.HOUR_OF_DAY, Calendar.MINUTE, Calendar.SECOND };
             for (int field : fields) {
                 int value = newTime.get(field);
                 // Do some adjustments...
                 if (field == Calendar.YEAR) {
                     value -= 1970;
-                } else if (field == Calendar.DATE || field == Calendar.DAY_OF_YEAR) {
+                } else if (field == Calendar.DATE) {
                     value -= 1;
                 }
                 // ... and fill-in the empty fields
                 if (value == 0) {
                     newTime.set(field, refTime.get(field));
-                } else if (field == Calendar.DAY_OF_YEAR) {
-                    newTime.set(field, value);
                 } else {
                     break; // Get out as soon as we have a significant value
                 }
