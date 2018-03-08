@@ -59,4 +59,9 @@ public class TimeEvent implements ITimeEvent {
     public long getDuration() {
         return fDuration;
     }
+
+    @Override
+    public String toString() {
+        return "TimeEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
 }
