@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010, 2012 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 /**
  * Test suite for the TmfLocation class.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("nls")
 public class TmfLocationTest extends TestCase {
 
     // ------------------------------------------------------------------------
@@ -116,7 +116,7 @@ public class TmfLocationTest extends TestCase {
         }
     }
 
-    private static class MyCloneableClass implements Cloneable, Comparable<MyCloneableClass> {
+    public static class MyCloneableClass implements Cloneable, Comparable<MyCloneableClass> {
         private String fName;
 
         public MyCloneableClass(String name) {
@@ -154,23 +154,18 @@ public class TmfLocationTest extends TestCase {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) {
+            if (this == obj)
                 return true;
-            }
-            if (obj == null) {
+            if (obj == null)
                 return false;
-            }
-            if (!(obj instanceof MyCloneableClass)) {
+            if (!(obj instanceof MyCloneableClass))
                 return false;
-            }
             MyCloneableClass other = (MyCloneableClass) obj;
             if (fName == null) {
-                if (other.fName != null) {
+                if (other.fName != null)
                     return false;
-                }
-            } else if (!fName.equals(other.fName)) {
+            } else if (!fName.equals(other.fName))
                 return false;
-            }
             return true;
         }
     }
@@ -189,7 +184,7 @@ public class TmfLocationTest extends TestCase {
         }
     }
 
-    private static class MyUnCloneableClass implements Comparable<MyUnCloneableClass> {
+    public static class MyUnCloneableClass implements Comparable<MyUnCloneableClass> {
         private String fName;
 
         public MyUnCloneableClass(String name) {
@@ -221,23 +216,18 @@ public class TmfLocationTest extends TestCase {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) {
+            if (this == obj)
                 return true;
-            }
-            if (obj == null) {
+            if (obj == null)
                 return false;
-            }
-            if (!(obj instanceof MyUnCloneableClass)) {
+            if (!(obj instanceof MyUnCloneableClass))
                 return false;
-            }
             MyUnCloneableClass other = (MyUnCloneableClass) obj;
             if (fName == null) {
-                if (other.fName != null) {
+                if (other.fName != null)
                     return false;
-                }
-            } else if (!fName.equals(other.fName)) {
+            } else if (!fName.equals(other.fName))
                 return false;
-            }
             return true;
         }
     }
@@ -256,7 +246,7 @@ public class TmfLocationTest extends TestCase {
     // hashCode
     // ------------------------------------------------------------------------
 
-    public void testHashCode() {
+    public void testHashCode() throws Exception {
         TmfLocation<String> location1 = new TmfLocation<String>((String) null);
         TmfLocation<String> location2 = new TmfLocation<String>(aString);
         TmfLocation<Long> location3 = new TmfLocation<Long>(aLong);
@@ -279,23 +269,23 @@ public class TmfLocationTest extends TestCase {
         }
     }
 
-    public void testEqualsWrongTypes() {
+    public void testEqualsWrongTypes() throws Exception {
         TmfLocation<String> location1 = new TmfLocation<String>(aString);
         TmfLocation2 location2 = new TmfLocation2(aString);
-
+        
         assertFalse("equals", location1.equals(location2));
         assertFalse("equals", location2.equals(location1));
     }
 
-    public void testEqualsWithNulls() {
+    public void testEqualsWithNulls() throws Exception {
         TmfLocation<String> location1 = new TmfLocation<String>(aString);
         TmfLocation<String> location2 = new TmfLocation<String>((String) null);
-
+        
         assertFalse("equals", location1.equals(location2));
         assertFalse("equals", location2.equals(location1));
     }
 
-    public void testEqualsReflexivity() {
+    public void testEqualsReflexivity() throws Exception {
         assertTrue("equals", fLocation2.equals(fLocation2));
         assertTrue("equals", fLocation3.equals(fLocation3));
 
@@ -303,7 +293,7 @@ public class TmfLocationTest extends TestCase {
         assertTrue("equals", !fLocation3.equals(fLocation2));
     }
 
-    public void testEqualsSymmetry() {
+    public void testEqualsSymmetry() throws Exception {
         TmfLocation<String> location2 = new TmfLocation<String>(aString);
         TmfLocation<Long> location3 = new TmfLocation<Long>(aLong);
 
@@ -314,7 +304,7 @@ public class TmfLocationTest extends TestCase {
         assertTrue("equals", fLocation3.equals(location3));
     }
 
-    public void testEqualsTransivity() {
+    public void testEqualsTransivity() throws Exception {
         TmfLocation<String> location1 = new TmfLocation<String>(aString);
         TmfLocation<String> location2 = new TmfLocation<String>(aString);
         TmfLocation<String> location3 = new TmfLocation<String>(aString);
@@ -324,7 +314,7 @@ public class TmfLocationTest extends TestCase {
         assertTrue("equals", location3.equals(location1));
     }
 
-    public void testEqualsNull() {
+    public void testEqualsNull() throws Exception {
         assertTrue("equals", !fLocation2.equals(null));
         assertTrue("equals", !fLocation2.equals(null));
     }
@@ -333,7 +323,6 @@ public class TmfLocationTest extends TestCase {
     // toString
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("hiding")
     public void testToString() {
         String aString = "some location";
         Long aLong = 12345L;

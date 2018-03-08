@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot;
 
-import java.util.HashMap;
-import java.util.Set;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -36,17 +33,14 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 	AbstractLaunchConfigurationTab[] tabs;
 	ILaunchConfiguration initial;
 	String providerId = "";
-	HashMap<String, String> comboItems;
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
 		setControl(top);
 		top.setLayout(new GridLayout(1, true));
 		providerCombo = new Combo(top, SWT.READ_ONLY);
-		comboItems = ProfileLaunchConfigurationTabGroup
-				.getTabGroupNamesForType("snapshot");
-		Set<String> providerNames = comboItems.keySet();
-		providerCombo.setItems(providerNames.toArray(new String[0]));
+		providerCombo.setItems(ProfileLaunchConfigurationTabGroup
+				.getTabGroupIdsForType("snapshot"));
 
 		final CTabFolder tabgroup = new CTabFolder(top, SWT.NONE);
 
@@ -58,7 +52,7 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 					item.dispose();
 				}
 
-				providerId = comboItems.get(providerCombo.getText());
+				providerId = providerCombo.getText();
 				// get the tabs associated with the selected ID
 				tabs = ProfileLaunchConfigurationTabGroup
 						.getTabGroupProviderFromId(providerId)
@@ -66,7 +60,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 
 				// create the tab item, and load the specified tab inside
 				for (ILaunchConfigurationTab tab : tabs) {
-					tab.setLaunchConfigurationDialog(getLaunchConfigurationDialog());
 					CTabItem item = new CTabItem(tabgroup, SWT.NONE);
 					item.setText(tab.getName());
 					item.setImage(tab.getImage());
