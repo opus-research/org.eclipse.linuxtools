@@ -14,8 +14,6 @@ package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider;
 
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterCriteria;
-
 /**
  * Interface for providing a filter provider.
  *
@@ -38,6 +36,6 @@ public interface ISDFilterProvider extends ISDGraphNodeSupporter {
      * @param filters user selection made in the dialog box
      * @return true if the filter applied
      */
-    boolean filter(List<FilterCriteria> filters);
+    boolean filter(List<?> filters);
 
 }

@@ -11,7 +11,6 @@
  *   Bernd Hufmann - Updated signal handling
  *   Geneviève Bastien - Move code to provide base classes for time graph view
  *   Marc-Andre Laperle - Add time zone preference
- *   Geneviève Bastien - Add event links between entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.timegraph;
@@ -34,6 +33,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
@@ -42,7 +42,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
@@ -54,7 +53,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProv
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphRangeUpdateEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphSelectionEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
@@ -275,7 +273,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
      *            the trace to add
      * @param list
      *            The list of time graph entries
-     * @since 2.1
      */
     protected void putEntryList(ITmfTrace trace, List<TimeGraphEntry> list) {
         synchronized(fEntryListMap) {
@@ -449,10 +446,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 }
                 zoom(entry, fMonitor);
             }
-            /* Refresh the arrows when zooming */
-            List<ILinkEvent> events = getLinkList(fZoomStartTime, fZoomEndTime, fResolution, fMonitor);
-            fTimeGraphCombo.setLinks(events);
-            redraw();
         }
 
         private void zoom(TimeGraphEntry entry, IProgressMonitor monitor) {
@@ -530,7 +523,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
             public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
                 final long startTime = event.getStartTime();
                 final long endTime = event.getEndTime();
-                TmfTimeRange range = new TmfTimeRange(new TmfNanoTimestamp(startTime), new TmfNanoTimestamp(endTime));
+                TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
                 broadcast(new TmfRangeSynchSignal(AbstractTimeGraphView.this, range));
                 if (fZoomThread != null) {
                     fZoomThread.cancel();
@@ -542,8 +535,8 @@ public abstract class AbstractTimeGraphView extends TmfView {
         fTimeGraphCombo.getTimeGraphViewer().addTimeListener(new ITimeGraphTimeListener() {
             @Override
             public void timeSelected(TimeGraphTimeEvent event) {
-                TmfNanoTimestamp startTime = new TmfNanoTimestamp(event.getBeginTime());
-                TmfNanoTimestamp endTime = new TmfNanoTimestamp(event.getEndTime());
+                CtfTmfTimestamp startTime = new CtfTmfTimestamp(event.getBeginTime());
+                CtfTmfTimestamp endTime = new CtfTmfTimestamp(event.getEndTime());
                 broadcast(new TmfTimeSynchSignal(AbstractTimeGraphView.this, startTime, endTime));
             }
         });
@@ -701,7 +694,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
 
     /**
      * @param signal the format of the timestamps was updated.
-     * @since 2.1
      */
     @TmfSignalHandler
     public void updateTimeFormat( final TmfTimestampFormatUpdateSignal signal){
@@ -770,27 +762,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
     protected abstract List<ITimeEvent> getEventList(TimeGraphEntry entry,
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor);
-
-    /**
-     * Gets the list of links (displayed as arrows) for a trace in a given
-     * timerange.  Default implementation returns an empty list.
-     *
-     * @param startTime
-     *            Start of the time range
-     * @param endTime
-     *            End of the time range
-     * @param resolution
-     *            The resolution
-     * @param monitor
-     *            The progress monitor object
-     * @return The list of link events
-     * @since 2.1
-     */
-    protected List<ILinkEvent> getLinkList(long startTime, long endTime,
-            long resolution, IProgressMonitor monitor) {
-        return new ArrayList<ILinkEvent>();
-    }
-
 
     /**
      * Refresh the display
