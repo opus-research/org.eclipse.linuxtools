@@ -9,11 +9,14 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Added support for pre-emption
+ *   Simon Delisle - Added scheduler for requests
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.request;
 
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +35,13 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 public class TmfRequestExecutor implements Executor {
 
     // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+
+    private static final long REQUEST_TIME = 400;
+    private static final int FOREGROUND_SLOT = 4;
+
+    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
@@ -40,12 +50,16 @@ public class TmfRequestExecutor implements Executor {
     private final String fExecutorName;
 
     // The request queues
-    private final Queue<TmfEventThread> fHighPriorityTasks = new ArrayBlockingQueue<TmfEventThread>(100);
-    private final Queue<TmfEventThread> fLowPriorityTasks = new ArrayBlockingQueue<TmfEventThread>(100);
+    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
+    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
 
     // The tasks
     private TmfEventThread fActiveTask;
-    private TmfEventThread fSuspendedTask;
+
+    private final Timer fTimer = new Timer();
+    private TimerTask fTimerTask;
+
+    private int fForegroundCycle = 0;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -60,6 +74,10 @@ public class TmfRequestExecutor implements Executor {
         if (TmfCoreTracer.isComponentTraced()) {
             TmfCoreTracer.trace(fExecutor + " created"); //$NON-NLS-1$
         }
+
+        // Initialize the timer for the schedSwitch
+        fTimerTask = new SchedSwitch();
+        fTimer.schedule(fTimerTask, 0, REQUEST_TIME);
     }
 
     /**
@@ -82,7 +100,7 @@ public class TmfRequestExecutor implements Executor {
      */
     @Deprecated
     public synchronized int getNbPendingRequests() {
-        return fHighPriorityTasks.size() + fLowPriorityTasks.size();
+        return fForegroundTasks.size() + fBackgroundTasks.size();
     }
 
     /**
@@ -127,14 +145,24 @@ public class TmfRequestExecutor implements Executor {
 
         // Add the thread to the appropriate queue
         ExecutionType priority = thread.getExecType();
-        (priority == ExecutionType.FOREGROUND ? fHighPriorityTasks : fLowPriorityTasks).offer(wrapper);
 
-        // Schedule or preempt as appropriate
-        if (fActiveTask == null) {
-            scheduleNext();
-        } else if (priority == ExecutionType.FOREGROUND && priority != fActiveTask.getExecType()) {
-            fActiveTask.getThread().suspend();
-            fSuspendedTask = fActiveTask;
+        if (priority == ExecutionType.FOREGROUND) {
+            fForegroundTasks.add(wrapper);
+        } else {
+            fBackgroundTasks.add(wrapper);
+        }
+    }
+
+    /**
+     * Timer task to trigger scheduleNext()
+     */
+    private class SchedSwitch extends TimerTask {
+
+        SchedSwitch() {
+        }
+
+        @Override
+        public void run() {
             scheduleNext();
         }
     }
@@ -144,14 +172,29 @@ public class TmfRequestExecutor implements Executor {
      */
     protected synchronized void scheduleNext() {
         if (!isShutdown()) {
-            if ((fActiveTask = fHighPriorityTasks.poll()) != null) {
-                fExecutor.execute(fActiveTask);
-            } else if (fSuspendedTask != null) {
-                fActiveTask = fSuspendedTask;
-                fSuspendedTask = null;
-                fActiveTask.getThread().resume();
-            } else if ((fActiveTask = fLowPriorityTasks.poll()) != null) {
-                fExecutor.execute(fActiveTask);
+            if (fActiveTask == null) {
+                schedule();
+            } else if (fActiveTask.getExecType() == ExecutionType.FOREGROUND) {
+                if (fActiveTask.getThread().isCompleted()) {
+                    schedule();
+                } else {
+                    if (!isAlone()) {
+                        fActiveTask.getThread().suspend();
+                        fForegroundTasks.add(fActiveTask);
+                        schedule();
+                    }
+                }
+
+            } else if (fActiveTask.getExecType() == ExecutionType.BACKGROUND) {
+                if (fActiveTask.getThread().isCompleted()) {
+                    schedule();
+                } else {
+                    if (!isAlone()) {
+                        fActiveTask.getThread().suspend();
+                        fBackgroundTasks.add(fActiveTask);
+                        schedule();
+                    }
+                }
             }
         }
     }
@@ -164,7 +207,10 @@ public class TmfRequestExecutor implements Executor {
             fActiveTask.cancel();
         }
 
-        while ((fActiveTask = fHighPriorityTasks.poll()) != null) {
+        while ((fActiveTask = fForegroundTasks.poll()) != null) {
+            fActiveTask.cancel();
+        }
+        while ((fActiveTask = fBackgroundTasks.poll()) != null) {
             fActiveTask.cancel();
         }
 
@@ -172,6 +218,69 @@ public class TmfRequestExecutor implements Executor {
         if (TmfCoreTracer.isComponentTraced()) {
             TmfCoreTracer.trace(fExecutor + " terminated"); //$NON-NLS-1$
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Helper methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Determine which type of request (foreground or background) we schedule
+     * next
+     */
+    private void schedule() {
+        if (!fForegroundTasks.isEmpty()) {
+            scheduleNextForeground();
+        } else {
+            scheduleNextBackground();
+        }
+    }
+
+    /**
+     * Schedule the next foreground request
+     */
+    private void scheduleNextForeground() {
+        if (fForegroundCycle < FOREGROUND_SLOT || fBackgroundTasks.isEmpty()) {
+            ++fForegroundCycle;
+            fActiveTask = fForegroundTasks.poll();
+            executefActiveTask();
+        } else {
+            fActiveTask = null;
+            scheduleNextBackground();
+        }
+    }
+
+    /**
+     * Schedule the next background request
+     */
+    private void scheduleNextBackground() {
+        fForegroundCycle = 0;
+        if (!fBackgroundTasks.isEmpty()) {
+            fActiveTask = fBackgroundTasks.poll();
+            executefActiveTask();
+        }
+    }
+
+    /**
+     * Execute or resume the active task
+     */
+    private void executefActiveTask() {
+        if (fActiveTask.getThread().isPaused()) {
+            fActiveTask.getThread().resume();
+        } else {
+            fExecutor.execute(fActiveTask);
+        }
+
+    }
+
+    /**
+     * Check if current task is alone
+     */
+    private boolean isAlone() {
+        if (fForegroundTasks.isEmpty() && fBackgroundTasks.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------------
