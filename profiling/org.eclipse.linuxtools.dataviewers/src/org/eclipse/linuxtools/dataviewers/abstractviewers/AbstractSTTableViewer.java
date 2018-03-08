@@ -55,7 +55,7 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 	 * @param parent - the parent Composite
 	 * @param style - the table style
 	 * @return a TableViewer
-	 * @since 5.0
+	 * @since 4.1
 	 */
 	@Override
 	protected TableViewer createViewer(Composite parent, int style) {
@@ -161,7 +161,7 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 	/**
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getColumns()
-     * @since 5.0
+     * @since 4.1
 	 */
 	@Override
 	public TableColumn[] getColumns() {

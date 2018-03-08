@@ -57,8 +57,9 @@ import org.eclipse.swt.widgets.Shell;
  * @version 1.0
  */
 public class ScrollView extends Composite {
+
     // ------------------------------------------------------------------------
-    // Constants
+    // Attributes
     // ------------------------------------------------------------------------
 
     /**
@@ -81,16 +82,6 @@ public class ScrollView extends Composite {
      * Bit mask for visible horizontal scroll bar
      */
     public static final int HBAR = 0x02;
-
-    private static final int DEFAULT_H_SCROLL_INCREMENT = 10;
-    private static final int DEFAULT_V_SCROLL_INCREMENT = 10;
-    private static final int DEFAULT_AUTO_SCROLL_PERIOD = 75;
-    private static final int DEFAULT_OVERVIEW_SIZE = 100;
-
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-
     /**
      * Value of the contents height property.
      */
@@ -118,11 +109,11 @@ public class ScrollView extends Composite {
     /**
      * Increment for the horizontal scroll bar.
      */
-    private int fHorScrollbarIncrement = DEFAULT_H_SCROLL_INCREMENT;
+    private int fHorScrollbarIncrement = 10;
     /**
      * Increment for the vertical scroll bar.
      */
-    private int fVertScrollbarIncrement = DEFAULT_V_SCROLL_INCREMENT;
+    private int fVertScrollbarIncrement = 10;
     /**
      * Flag whether auto scroll is enabled or not.
      */
@@ -130,7 +121,7 @@ public class ScrollView extends Composite {
     /**
      * Value of the auto scroll period.
      */
-    private int fAutoScrollPeriod = DEFAULT_AUTO_SCROLL_PERIOD;
+    private int fAutoScrollPeriod = 75;
     /**
      * The local paint listener reference.
      */
@@ -171,7 +162,7 @@ public class ScrollView extends Composite {
     /**
      * Size of overview widget.
      */
-    private int fOverviewSize = DEFAULT_OVERVIEW_SIZE; // default size for overview
+    private int fOverviewSize = 100; // default size for overview
     /**
      * Timer for auto_scroll feature
      */
@@ -868,16 +859,10 @@ public class ScrollView extends Composite {
 
         @Override
         public void run() {
-            final Display display = Display.getDefault();
-            if ((display == null) || display.isDisposed()) {
-                return;
-            }
-            display.asyncExec(new Runnable() {
+            Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    if (!scrollView.isDisposed()) {
-                        scrollView.scrollBy(deltaX, deltaY);
-                    }
+                    scrollView.scrollBy(deltaX, deltaY);
                 }
             });
         }
@@ -1621,10 +1606,10 @@ public class ScrollView extends Composite {
      */
     protected class SVLayout extends Layout {
 
-        private static final int DEFAULT_X = 250;
-        private static final int DEFAULT_Y = 250;
-        private static final int MAX_SEEK = 10;
-        private static final int MIN_SEEK = 0;
+        private final static int DEFAULT_X = 250;
+        private final static int DEFAULT_Y = 250;
+        private final static int MAX_SEEK = 10;
+        private final static int MIN_SEEK = 0;
 
         /**
          * The seek value
@@ -1729,7 +1714,7 @@ public class ScrollView extends Composite {
     /** Support for click-and-see overview shell on this ScrollView */
     protected class Overview {
 
-        private static final  int REFRESH_FREQ = 4;
+        private final static int REFRESH_FREQ = 4;
 
         /**
          *  factor for X from real and overview sizes, for mouse move speed.
