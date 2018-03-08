@@ -653,7 +653,6 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
                     break;
                 }
             }
-            fViewer.setSelectedTime(trace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue(), false);
         }
     }
 
