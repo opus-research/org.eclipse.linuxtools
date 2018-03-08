@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.internal.valgrind.massif.tests;
 
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.internal.valgrind.massif.MassifSnapshot;
-import org.eclipse.linuxtools.internal.valgrind.massif.MassifSnapshot.SnapshotType;
 import org.eclipse.linuxtools.internal.valgrind.massif.MassifViewPart;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
 
@@ -35,9 +33,6 @@ public class BasicMassifTest extends AbstractMassifTest {
 		doLaunch(config, "testNumSnapshots"); //$NON-NLS-1$
 		
 		MassifViewPart view = (MassifViewPart) ValgrindUIPlugin.getDefault().getView().getDynamicView();
-		MassifSnapshot[] snapshots = view.getSnapshots();
-		assertEquals(14, snapshots.length);
-		checkSnapshots(snapshots , 40, 16);
+		assertEquals(14, view.getSnapshots().length);
 	}
 }
-

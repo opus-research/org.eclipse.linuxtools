@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -77,7 +77,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             int status = ((ControlFlowEvent) event).getStatus();
             return getMatchingState(status).ordinal();
         }
-        return TRANSPARENT;
+        return State.UNKNOWN.ordinal();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             int status = ((ControlFlowEvent) event).getStatus();
             return getMatchingState(status).toString();
         }
-        return Messages.ControlFlowView_multipleStates;
+        return State.UNKNOWN.toString();
     }
 
     private static State getMatchingState(int status) {
