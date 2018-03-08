@@ -76,12 +76,16 @@ public class EventIdCache {
 			EventIdCache eventIdCache = cacheMap.get(project.getLocationURI().getHost());
 			if (eventIdCache == null) {
 				cacheMap.put(project.getLocationURI().getHost(), newCache);
+			} else {
+				return eventIdCache;
 			}
 		} else {
 			// If no project associated we should launch locally
 			EventIdCache eventIdCache = cacheMap.get(LOCAL);
 			if (eventIdCache == null) {
 				cacheMap.put(LOCAL, newCache);
+			} else {
+				return eventIdCache;
 			}
 		}
 
@@ -126,6 +130,10 @@ public class EventIdCache {
 	 * Read the XML from ophelp
 	 */
 	private void readXML(EventIdCache eventId) {
+		if (eventId.eventRoot != null) {
+			return;
+		}
+
 		try {
 			Process p = RuntimeProcessFactory.getFactory().exec(OPHELP + " " + "-X", Oprofile.OprofileProject.getProject());
 
@@ -249,5 +257,9 @@ public class EventIdCache {
 			}
 		}
 		return unitMaskType;
+	}
+
+	public void setCacheDoc(Element oldRoot) {
+		eventRoot = oldRoot;
 	}
 }

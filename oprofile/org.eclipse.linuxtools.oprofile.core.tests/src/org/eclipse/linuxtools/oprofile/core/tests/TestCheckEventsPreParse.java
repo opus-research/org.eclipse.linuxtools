@@ -25,12 +25,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.checkevent.CheckEventAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.info.InfoAdapter;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Document;
@@ -48,11 +49,11 @@ public class TestCheckEventsPreParse {
 	private static final String REL_PATH_TO_CHECKEVENT_BAD_COUNTER = "resources/test_check-event_invalid_counter.xml";
 	private static final String REL_PATH_TO_CHECKEVENT_BAD_UMASK = "resources/test_check-event_invalid_umask.xml";
 	private static final String REL_PATH_TO_CHECKEVENT_OK = "resources/test_check-event_ok.xml";
+	private static final String REL_PATH_TO_INFO_PRE_PARSE_RAW = "resources/test_info_pre_parse_raw.xml";
 
 	// the values are checked for validity in the order they
 	// appear here (ctr, event, umask)
 	private String ctr;
-	private String event;
 	private String umask;
 	private CheckEventAdapter cea;
 
@@ -61,6 +62,15 @@ public class TestCheckEventsPreParse {
 	 */
 	@Before
 	public void setUp (){
+		String devOprofileAbsFilePath = null;
+		Path devOprofilePath = new Path("resources/dev/oprofile/");
+		URL devOprofileURL = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), devOprofilePath , null);
+		try {
+			devOprofileAbsFilePath = FileLocator.toFileURL(devOprofileURL).getFile();
+		} catch (IOException e) {
+			fail("Failed to convert the resource file's path.");
+		}
+		InfoAdapter.setOprofileDir(devOprofileAbsFilePath);
 
 		File devFile = new File(InfoAdapter.DEV_OPROFILE + "0");
 		if (devFile.exists()){
@@ -133,23 +143,38 @@ public class TestCheckEventsPreParse {
 		}
 	}
 
-	@Test @Ignore
+	@Test
 	public void testBadCounter () {
 		ctr = "999";
 		assertValidity(REL_PATH_TO_CHECKEVENT_BAD_COUNTER);
 	}
-	@Test @Ignore
+	@Test
 	public void testBadUnitMask (){
 		umask = "999";
 		assertValidity(REL_PATH_TO_CHECKEVENT_BAD_UMASK);
 	}
-	@Test @Ignore
+	@Test
 	public void testOk (){
 		assertValidity(REL_PATH_TO_CHECKEVENT_OK);
 	}
 
 	public void assertValidity (String path){
-		cea = new CheckEventAdapter(ctr, event, umask);
+		IFileStore fileStore = null;
+		String infoAbsFilePath = null;
+
+		Path infoFilePath = new Path(REL_PATH_TO_INFO_PRE_PARSE_RAW);
+		URL infoFileURL = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), infoFilePath, null);
+		try {
+			infoAbsFilePath = FileLocator.toFileURL(infoFileURL).getFile();
+			fileStore = EFS.getLocalFileSystem().getStore(new Path(infoAbsFilePath));
+		} catch (IOException e) {
+			fail("Failed to convert the resource file's path.");
+		}
+
+		InfoAdapter ia = new InfoAdapter(fileStore);
+		ia.process();
+
+		cea = new CheckEventAdapter(ctr, "CPU_CLK_UNHALTED", umask);
 		cea.process();
 		Document actualDocument = cea.getDocument();
 		Element actualRoot = (Element) actualDocument.getElementsByTagName(CheckEventAdapter.CHECK_EVENTS).item(0);
