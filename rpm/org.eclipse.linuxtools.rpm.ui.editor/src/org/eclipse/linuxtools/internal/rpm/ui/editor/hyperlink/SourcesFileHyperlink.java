@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -60,7 +61,7 @@ public class SourcesFileHyperlink implements IHyperlink {
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
 	public String getHyperlinkText() {
-		return Messages.SourcesFileHyperlink_0 + ' ' + fileName;
+		return NLS.bind(Messages.SourcesFileHyperlink_0, fileName);
 	}
 
 	/**
@@ -94,5 +95,4 @@ public class SourcesFileHyperlink implements IHyperlink {
 			SpecfileLog.logError(e);
 		}
 	}
-
 }
