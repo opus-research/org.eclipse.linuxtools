@@ -472,6 +472,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
+    public int getOngoingStateInfoSize() {
+        return transState.getOngoingStateInfoSize();
+    }
+
+    @Override
     public long getOngoingStartTime(int attribute)
             throws AttributeNotFoundException {
         return transState.getOngoingStartTime(attribute);
