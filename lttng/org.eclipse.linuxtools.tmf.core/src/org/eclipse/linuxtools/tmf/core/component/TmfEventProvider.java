@@ -186,7 +186,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfDataP
      *
      * @return The type of ITmfEvent
      */
-    public Class<?> getType() {
+    public Class<? extends ITmfEvent> getType() {
         return fType;
     }
 
