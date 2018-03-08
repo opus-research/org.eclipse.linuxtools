@@ -105,6 +105,11 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_Information;
     /**
+     * Add message "Adding"
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_add;
+    /**
      *  The title of the select traces wizard.
      */
     public static String SelectTracesWizard_WindowTitle;
