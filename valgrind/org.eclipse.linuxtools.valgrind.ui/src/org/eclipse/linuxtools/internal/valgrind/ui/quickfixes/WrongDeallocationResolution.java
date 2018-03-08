@@ -134,7 +134,7 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 			int childNodeLength = childNode.getFileLocation().getNodeLength();
 			int childNodeOffset = childNode.getFileLocation().getNodeOffset();
 			String childContent = document.get(childNodeOffset, childNodeLength);
-			String newChild = "(".concat(childContent).concat(")");  //$NON-NLS-2$
+			String newChild = "(".concat(childContent).concat(")");   //$NON-NLS-1$//$NON-NLS-2$
 			// Skewed 1 char to left to remove space before parentheses
 			document.replace(childNodeOffset - 1, childNodeLength + 1, newChild);
 		}
@@ -161,7 +161,7 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 				allocMessage = getStackBottom(getNestedStack(wrongDeallocMessage));
 			}
 		}
-		if(allocMessage != null && allocMessage instanceof ValgrindStackFrame){
+		if(allocMessage instanceof ValgrindStackFrame){
 			allocLine = ((ValgrindStackFrame)allocMessage).getLine() - 1;
 			allocOffset = document.getLineOffset(allocLine);
 			allocLength = document.getLineLength(allocLine);
@@ -179,7 +179,7 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 		int nodeLength = node.getFileLocation().getNodeLength();
 		int nodeOffset = node.getFileLocation().getNodeOffset();
 		String content = document.get(nodeOffset, nodeLength);
-		String newContent = content.replace("[","").replace("]",""); //$NON-NLS-4$
+		String newContent = content.replace("[","").replace("]","");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$
 		document.replace(nodeOffset, nodeLength, newContent);
 	}
 
