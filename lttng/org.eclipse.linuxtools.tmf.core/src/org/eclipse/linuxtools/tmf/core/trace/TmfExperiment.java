@@ -176,6 +176,12 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         return Status.OK_STATUS;
     }
 
+    @Override
+    protected void buildStateSystem() {
+        /* No custom state systems for basic experiments */
+        return;
+    }
+
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
