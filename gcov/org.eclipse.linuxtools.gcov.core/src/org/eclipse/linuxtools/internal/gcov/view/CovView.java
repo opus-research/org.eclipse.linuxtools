@@ -38,7 +38,6 @@ import org.eclipse.linuxtools.internal.gcov.action.SwitchContentProviderAction;
 import org.eclipse.linuxtools.internal.gcov.parser.CovManager;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.OpenSourceFileAction;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -157,8 +156,8 @@ public class CovView extends AbstractSTDataView {
 
 	public static void setCovViewTitle(CovView view, String title,
 			String binaryPath) {
-		String viewText = NLS.bind(Messages.CovView_view_title, new Object[]{title, binaryPath});
-		view.label.setText(viewText);
+		view.label.setText(" \n program runs = " + title
+				+ " \n program file : " + binaryPath + "\n ");
 		view.label.getParent().layout(true);
 	}
 
@@ -216,17 +215,18 @@ public class CovView extends AbstractSTDataView {
 		return null;
 	}
 
-	private static void reportError(Exception ex) {
-		final String message = NLS.bind(Messages.CovView_error_message, ex.getMessage());
+	private static void reportError(Exception _) {
+		final String message = "An error has occured when parsing "
+				+ "the coverage data files :\n" + _.getMessage();
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-					IStatus.ERROR, message, ex);
+					IStatus.ERROR, message, _);
 
 			Activator.getDefault().getLog().log(status);
 			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 				@Override
 				public void run() {
 					Shell s = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-					MessageDialog.openError(s, Messages.CovView_parsing_error, message);
+					MessageDialog.openError(s, "Gcov Parsing Error", message);
 				}
 			});
 	}

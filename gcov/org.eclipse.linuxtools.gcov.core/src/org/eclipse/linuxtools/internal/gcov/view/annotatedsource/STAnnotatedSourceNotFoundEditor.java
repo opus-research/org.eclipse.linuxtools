@@ -25,7 +25,7 @@ import org.eclipse.ui.IEditorInput;
 public class STAnnotatedSourceNotFoundEditor extends
 		STCSourceNotFoundEditor {
 	
-	public static final String ID = "org.eclipse.linuxtools.gcov.view.annotatedsource.STAnnotatedSourceNotFoundEditor"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.gcov.view.annotatedsource.STAnnotatedSourceNotFoundEditor";
 
 	public STAnnotatedSourceNotFoundEditor() {
 		
