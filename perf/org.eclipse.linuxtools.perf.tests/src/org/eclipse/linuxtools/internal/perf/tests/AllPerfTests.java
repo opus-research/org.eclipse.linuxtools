@@ -10,8 +10,6 @@
 *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import org.eclipse.linuxtools.profiling.tests.AbstractRemoteTest;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -37,8 +35,6 @@ public class AllPerfTests {
 
 		if (RUN_PERF) {
 			suite.addTestSuite(LaunchTest.class);
-			if (!(AbstractRemoteTest.USERNAME.equals("")))
-				suite.addTestSuite(LaunchRemoteTest.class);
 		}
 
 		return suite;

@@ -7,13 +7,4 @@ Require-Bundle: org.junit;bundle-version="4.8.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Fragment-Host: org.eclipse.linuxtools.perf
-Require-Bundle: org.eclipse.core.runtime,
- org.junit,
- org.eclipse.ptp.remote.core,
- org.eclipse.core.filesystem,
- org.eclipse.ptp.remotetools.core,
- org.eclipse.ptp.remote.remotetools.core,
- org.eclipse.ptp.remotetools.environment.core,
- org.eclipse.ptp.remotetools.environment.generichost,
- org.eclipse.linuxtools.rdt.proxy
 Import-Package: org.eclipse.linuxtools.profiling.tests
