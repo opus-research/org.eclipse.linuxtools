@@ -62,7 +62,7 @@
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
   </profile> 
-	
+
 </profiles>
 
   <modules>
@@ -117,19 +117,6 @@
                             <ws>win32</ws>
                             <arch>x86_64</arch>
                         </environment>
-<!--                        
-                        <environment>
-                            <os>macosx</os>
-                            <ws>carbon</ws>
-                            <arch>x86</arch>
-                        </environment>
--->                        
-
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>x86</arch>
-                        </environment>
                         <environment>
                             <os>macosx</os>
                             <ws>cocoa</ws>
@@ -145,20 +132,6 @@
                             <ws>gtk</ws>
                             <arch>sparc</arch>
                         </environment>
-<!--
-                        <environment>
-                            <os>aix</os>
-                            <ws>motif</ws>
-                            <arch>ppc</arch>
-                        </environment>
--->
-<!--
-                        <environment>
-                            <os>hpux</os>
-                            <ws>motif</ws>
-                            <arch>ia64_32</arch>
-                        </environment>
--->
                         <environment>
                             <os>linux</os>
                             <ws>gtk</ws>

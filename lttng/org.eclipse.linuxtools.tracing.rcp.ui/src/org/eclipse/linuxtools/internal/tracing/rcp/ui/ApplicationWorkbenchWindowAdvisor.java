@@ -39,7 +39,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         "org.eclipse.debug.ui.launchActionSet",
         "org.eclipse.debug.ui.debugActionSet",
         "org.eclipse.debug.ui.breakpointActionSet",
-        "org.eclipse.team.ui", //$NON-NLS-1$
+        "org.eclipse.team.ui",
         "org.eclipse.ui.externaltools.ExternalToolsSet",
 //        "org.eclipse.update.ui.softwareUpdates",
 //        "org.eclipse.ui.edit.text.actionSet.navigation",

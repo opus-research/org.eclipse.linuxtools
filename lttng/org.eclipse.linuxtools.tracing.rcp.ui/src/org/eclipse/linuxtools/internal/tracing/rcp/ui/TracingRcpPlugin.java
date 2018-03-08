@@ -30,11 +30,6 @@ public class TracingRcpPlugin extends AbstractUIPlugin {
      */
     public static final String PLUGIN_ID = "org.eclipse.linuxtools.tracing.rcp.ui"; //$NON-NLS-1$
 
-    /**
-     * The default workspace name
-     */
-    public static final String WORKSPACE_NAME = ".traceViewer"; //$NON-NLS-1$
-
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -61,15 +56,6 @@ public class TracingRcpPlugin extends AbstractUIPlugin {
      */
     public static TracingRcpPlugin getDefault() {
         return fPlugin;
-    }
-
-    /**
-     * Gets the tracing workspace root directory
-     *
-     * @return the tracing workspace root directory
-     */
-    public static String getWorkspaceRoot() {
-        return System.getProperty("user.home"); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
