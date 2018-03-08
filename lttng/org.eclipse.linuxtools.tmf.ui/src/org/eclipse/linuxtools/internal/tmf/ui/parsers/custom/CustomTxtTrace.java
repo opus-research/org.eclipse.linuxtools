@@ -395,10 +395,4 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser {
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID ,Messages.CustomTrace_FileNotFound + ": " + path); //$NON-NLS-1$
     }
-
-    @Override
-    protected void buildStateSystem() {
-        /* No custom state systems for text traces */
-        return;
-    }
 }

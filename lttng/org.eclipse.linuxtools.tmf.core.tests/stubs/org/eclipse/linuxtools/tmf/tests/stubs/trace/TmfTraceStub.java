@@ -51,6 +51,9 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     // The actual stream
     private RandomAccessFile fTrace;
 
+//    // The associated event parser
+//    private ITmfEventParser<TmfEvent> fParser;
+
     // The synchronization lock
     private final ReentrantLock fLock = new ReentrantLock();
 
@@ -369,11 +372,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
             return Status.OK_STATUS;
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
-    }
-
-    @Override
-    protected void buildStateSystem() {
-        return;
     }
 
 }

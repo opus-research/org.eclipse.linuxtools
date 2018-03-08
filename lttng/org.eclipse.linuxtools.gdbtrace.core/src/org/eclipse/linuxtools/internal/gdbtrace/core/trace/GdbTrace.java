@@ -195,10 +195,4 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
     public void selectFrame(long rank) {
         fGdbTpRef.selectDataFrame(rank, true);
     }
-
-    @Override
-    protected void buildStateSystem() {
-        /* No custom state systems for GDB traces */
-        return;
-    }
 }

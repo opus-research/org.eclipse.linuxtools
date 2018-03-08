@@ -19,7 +19,6 @@ import java.io.RandomAccessFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.resources.IProject;
@@ -497,11 +496,5 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
             return Status.OK_STATUS;
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CustomTrace_FileNotFound + ": " + path); //$NON-NLS-1$
-    }
-
-    @Override
-    protected void buildStateSystem() {
-        /* No custom state systems for XML traces */
-        return;
     }
 }

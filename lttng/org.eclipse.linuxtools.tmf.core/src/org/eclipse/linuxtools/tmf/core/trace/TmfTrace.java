@@ -262,11 +262,21 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     /**
      * Build the state system(s) associated with this trace type.
      *
+     * Suppressing the warning, because the 'throws' will usually happen in
+     * sub-classes.
+     *
      * @throws TmfTraceException
      *             If there is a problem during the build
      * @since 2.0
      */
-    protected abstract void buildStateSystem() throws TmfTraceException;
+    @SuppressWarnings("unused")
+    protected void buildStateSystem() throws TmfTraceException {
+        /*
+         * Nothing is done in the base implementation, please specify
+         * how/if to register a new state system in derived classes.
+         */
+        return;
+    }
 
     /**
      * Clears the trace
@@ -398,6 +408,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     public ITmfTimestamp getInitialRangeOffset() {
         final long DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
         return new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public String getHostId() {
+        return this.getName();
     }
 
     // ------------------------------------------------------------------------
