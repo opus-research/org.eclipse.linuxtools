@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -30,8 +31,8 @@ import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpointIndex;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfEmptyTraceStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
@@ -86,7 +87,7 @@ public class TmfCheckpointIndexTest2 {
         public TestIndexer(EmptyTestTrace testTrace) {
             super(testTrace, BLOCK_SIZE);
         }
-        public ITmfCheckpointIndex getCheckpoints() {
+        public List<ITmfCheckpoint> getCheckpoints() {
             return getTraceIndex();
         }
     }
@@ -152,7 +153,7 @@ public class TmfCheckpointIndexTest2 {
         assertEquals("getStartTime",   1,          fTrace.getStartTime().getValue());
         assertEquals("getEndTime",     102,        fTrace.getEndTime().getValue());
 
-        ITmfCheckpointIndex checkpoints = fTrace.getIndexer().getCheckpoints();
+        List<ITmfCheckpoint> checkpoints = fTrace.getIndexer().getCheckpoints();
         assertTrue("Checkpoints exist",  checkpoints != null);
         assertEquals("Checkpoints size", NB_EVENTS / BLOCK_SIZE + 1, checkpoints.size());
 
