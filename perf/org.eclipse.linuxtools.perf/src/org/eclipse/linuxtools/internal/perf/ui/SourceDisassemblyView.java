@@ -17,30 +17,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 
 /**
  * A ViewPart to display the output from perf's source disassembly.
  */
-public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarget{
+public class SourceDisassemblyView extends ViewPart {
 
 	private static final Color RED = new Color(Display.getDefault(), 150, 0, 0);
 	private static final Color ORANGE = new Color(Display.getDefault(), 150, 100, 0);
@@ -49,6 +44,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 	private static String CODE = "\\s+:\\s+.*"; //$NON-NLS-1$
 	private StyledText text;
 	private static int SECONDARY_ID = 0;
+
 	public SourceDisassemblyView() {
 	}
 
@@ -63,7 +59,6 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		if (data != null) {
 			setStyledText(data.getPerfData());
 			setContentDescription(data.getTitle());
-			setupFindDialog();
 		}
 	}
 
@@ -122,78 +117,6 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 				}
 			}
 		});
-	}
-
-	/**
-	 * Create find dialog and set is as a toolbar action.
-	 */
-	public void setupFindDialog() {
-		FindReplaceAction findAction = new FindReplaceAction(
-				Platform.getResourceBundle(PerfPlugin.getDefault().getBundle()),
-				null, text.getShell(), this);
-		findAction.setImageDescriptor(PerfPlugin
-				.getImageDescriptor("icons/search.gif"));//$NON-NLS-1$
-		findAction.setToolTipText(PerfPlugin.STRINGS_SearchSourceDisassembly);
-		IActionBars bars = getViewSite().getActionBars();
-		bars.getToolBarManager().add(findAction);
-	}
-
-	@Override
-	public boolean canPerformFind() {
-		return text != null && !"".equals(text.getText());
-	}
-
-	@Override
-	public int findAndSelect(int widgetOffset, String findString,
-			boolean searchForward, boolean caseSensitive, boolean wholeWord) {
-
-		// index of matched word
-		int matchIndex = 0;
-		String searchString = text.getText();
-
-		// offset is -1 when doing a wrapped search
-		if (widgetOffset < 0) {
-			widgetOffset = searchForward ? 0 : searchString.length();
-		}
-
-		if (!caseSensitive) {
-			searchString = searchString.toLowerCase();
-			findString = findString.toLowerCase();
-		}
-
-		if (searchForward) {
-			matchIndex = searchString.indexOf(findString, widgetOffset);
-		} else {
-			// backward search
-			matchIndex = searchString.lastIndexOf(findString, widgetOffset);
-		}
-
-		// only select when a match has been found
-		if (matchIndex != -1) {
-			text.setSelection(matchIndex, matchIndex + findString.length());
-		}
-		return matchIndex;
-	}
-
-	@Override
-	public Point getSelection() {
-		Point selection = text.getSelection();
-		// selection point consists of starting point x and lenght y - x.
-		return new Point(selection.x, selection.y - selection.x);
-	}
-
-	@Override
-	public String getSelectionText() {
-		return text.getSelectionText();
-	}
-
-	@Override
-	public boolean isEditable() {
-		return false;
-	}
-
-	@Override
-	public void replaceSelection(String text) {
 	}
 
 }
