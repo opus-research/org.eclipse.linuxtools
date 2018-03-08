@@ -12,6 +12,9 @@
 
 package org.eclipse.linuxtools.tmf.ui.properties;
 
+import java.util.TimeZone;
+
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
@@ -92,6 +95,13 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         { ". (period)",      TmfTimePreferences.DELIMITER_PERIOD    }, //$NON-NLS-1$
     };
 
+    // Time zones
+    private static final String[] timeZones = new String[]{"GMT-12","GMT-11","GMT-10","GMT-9:30","GMT-9","GMT-7","GMT-6","GMT-5","GMT-4", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
+            "GMT-3:30","GMT-3","GMT-2","GMT-1", "GMT" , "GMT+1" ,"GMT+2","GMT+3","GMT+3:30","GMT+4","GMT+4:30", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
+            "GMT+5","GMT+5:30","GMT+6","GMT+7","GMT+8","GMT+9","GMT+9:30","GMT+10","GMT+10:30","GMT+11","GMT+11:30","GMT+12","GMT+13:00","GMT+14:00" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$
+            };
+
+
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -106,6 +116,9 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
     private Text fPatternDisplay;
     private Text fExampleDisplay;
     private String fTimePattern;
+
+    // Timezone section
+    private ComboFieldEditor fCombo;
 
     // Date/Time format section
     private RadioGroupFieldEditor fDateTimeFields;
@@ -160,6 +173,7 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         fPage.setLayoutData(new GridData(
                 GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_VERTICAL | GridData.VERTICAL_ALIGN_FILL));
 
+
         // Example section
         fExampleSection = new Composite(fPage, SWT.NONE);
         fExampleSection.setLayout(new GridLayout(2, false));
@@ -175,9 +189,32 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         fExampleDisplay = new Text(fExampleSection, SWT.BORDER | SWT.READ_ONLY);
         fExampleDisplay.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+
+
         Label separator = new Label(fPage, SWT.SEPARATOR | SWT.HORIZONTAL | SWT.SHADOW_NONE);
         separator.setLayoutData(
                 new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL));
+        // Time Zones
+        String [][] timeZoneIntervals = new String[timeZones.length][2];
+        for(int i = 0; i < timeZones.length; i++){
+            TimeZone tz = null;
+            try{
+                 tz = TimeZone.getTimeZone(timeZones[i]);
+                 timeZoneIntervals[i][0] = tz.getDisplayName();
+                 if(tz.equals(TimeZone.getDefault())){
+                     timeZoneIntervals[i][0] += " (local)"; //$NON-NLS-1$
+                 }
+                 timeZoneIntervals[i][1] = tz.getID();
+            }
+            catch( NullPointerException e){
+                System.out.println("TimeZone " +timeZones[i]+ " does not exist."); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+
+        fCombo = new ComboFieldEditor(TmfTimePreferences.TIME_ZONE, "Time Zone", timeZoneIntervals, fPage); //$NON-NLS-1$
+        fCombo.setPreferenceStore(fPreferenceStore);
+        fCombo.load();
+        fCombo.setPropertyChangeListener(this);
 
         // Date and Time section
         fDateTimeFields = new RadioGroupFieldEditor(
@@ -228,6 +265,7 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         fDateFieldDelim.loadDefault();
         fTimeFieldDelim.loadDefault();
         fSSecFieldDelim.loadDefault();
+        fCombo.loadDefault();
 
         fTimePreference.setDefaults();
         fTimePattern = TmfTimePreferences.getTimePattern();
@@ -245,8 +283,9 @@ public class TmfTimestampFormatPage extends PreferencePage implements IWorkbench
         fDateFieldDelim.store();
         fTimeFieldDelim.store();
         fSSecFieldDelim.store();
+        fCombo.store();
 
-        TmfTimePreferences.setTimePattern(fTimePattern);
+        TmfTimePreferences.setTimePattern(fTimePattern, TmfTimePreferences.getTimeZoneString() );
         displayExample();
     }
 
