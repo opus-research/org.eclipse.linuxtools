@@ -68,8 +68,7 @@ public class AddContextOnEventHandler extends BaseAddContextHandler {
                     // Add only if corresponding TraceSessionComponents is inactive and not destroyed
                     TraceEventComponent tmpEvent = (TraceEventComponent) element;
                     session = tmpEvent.getSession();
-                    if(session.getTargetNode().isContextOnEventSupported() &&
-                            (session.getSessionState() == TraceSessionState.INACTIVE) && !session.isDestroyed()) {
+                    if(session.getSessionState() == TraceSessionState.INACTIVE && !session.isDestroyed()) {
                         event = tmpEvent;
                     }
                 }
