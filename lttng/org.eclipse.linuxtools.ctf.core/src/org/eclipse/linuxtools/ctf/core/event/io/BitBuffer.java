@@ -22,7 +22,6 @@ import java.nio.ByteOrder;
  * <b><u>BitBuffer</u></b>
  * <p>
  * A bitwise buffer capable of accessing fields with bit offsets.
- *
  * @since 2.0
  */
 public final class BitBuffer {
@@ -102,29 +101,6 @@ public final class BitBuffer {
     }
 
     /**
-     * Relative <i>get</i> method for reading 64-bit integer.
-     *
-     * Reads next eight bytes from the current bit position according to current
-     * byte order.
-     *
-     * @return The long value read from the buffer
-     */
-    public long getLong() {
-        /* safe fall-back for non-aligned longs */
-        long a = getInt();
-        long b = getInt();
-
-        /* Cast the signed-extended int into a unsigned int. */
-        a &= 0xFFFFFFFFL;
-        b &= 0xFFFFFFFFL;
-
-        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
-            return (a << 32) | b;
-        }
-        return (b << 32) | a;
-    }
-
-    /**
      * Relative <i>get</i> method for reading integer of <i>length</i> bits.
      *
      * Reads <i>length</i> bits starting at the current position. The result is
@@ -143,9 +119,6 @@ public final class BitBuffer {
         if (length == 0) {
             return 0;
         }
-        if (!canRead(length)) {
-            throw new BufferOverflowException();
-        }
 
         /* Validate that the buffer has enough bits. */
         if (!canRead(length)) {
@@ -156,8 +129,8 @@ public final class BitBuffer {
         int val = 0;
         boolean gotIt = false;
 
-        // Fall back to fast ByteBuffer reader if we want to read byte-aligned
-        // bytes
+        /* Try a fast read when the position is byte-aligned by using the */
+        /* native methods of ByteBuffer. */
         if (this.pos % BitBuffer.BIT_CHAR == 0) {
             switch (length) {
             case BitBuffer.BIT_CHAR:
