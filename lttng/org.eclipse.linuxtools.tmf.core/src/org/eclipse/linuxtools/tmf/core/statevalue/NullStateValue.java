@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 /**
  * A state value that contains no particular value. It is sometimes needed over
  * a "null" reference, since we avoid NPE's this way.
@@ -45,18 +43,27 @@ final class NullStateValue extends TmfStateValue {
         return "nullValue"; //$NON-NLS-1$
     }
 
+    // ------------------------------------------------------------------------
+    // Unboxing methods. Null values can be unboxed into any type.
+    // ------------------------------------------------------------------------
+
     @Override
-    public int compareTo(ITmfStateValue value) {
-        return 0;
+    public int unboxInt() {
+        return -1;
     }
 
     @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) throws StateValueTypeException {
-        throw new StateValueTypeException();
+    public long unboxLong() {
+        return -1;
     }
 
     @Override
-    public ITmfStateValue increment() throws StateValueTypeException {
-        throw new StateValueTypeException();
+    public double unboxDouble() {
+        return Double.NaN;
+    }
+
+    @Override
+    public String unboxStr() {
+        return "nullValue"; //$NON-NLS-1$
     }
 }
