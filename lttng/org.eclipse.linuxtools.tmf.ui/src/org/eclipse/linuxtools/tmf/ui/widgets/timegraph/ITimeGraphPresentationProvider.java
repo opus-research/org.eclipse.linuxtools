@@ -163,4 +163,13 @@ public interface ITimeGraphPresentationProvider {
      */
     Map<String, String> getEventHoverToolTipInfo(ITimeEvent event, long hoverTime);
 
+    /**
+     * Check whether time and duration should be displayed in tooltip (after items from
+     * {@link #getEventHoverToolTipInfo(ITimeEvent)}).
+     *
+     * @return <code>true</code> if times and duration should be displayed on tooltip, <code>false</code> otherwise.
+     */
+    public boolean displayTimesInTooltip();
+
+
 }
