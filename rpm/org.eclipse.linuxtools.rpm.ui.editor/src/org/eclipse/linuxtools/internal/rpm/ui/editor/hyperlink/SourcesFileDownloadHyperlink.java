@@ -60,7 +60,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_1, fileName);
+		return Messages.SourcesFileHyperlink_1 + ' ' + fileName;
 	}
 
 	/**

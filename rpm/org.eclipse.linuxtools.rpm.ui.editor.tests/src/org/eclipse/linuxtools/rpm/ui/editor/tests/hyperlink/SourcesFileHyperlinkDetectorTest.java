@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -31,10 +31,7 @@ public class SourcesFileHyperlinkDetectorTest extends FileTestCase {
 	@Before
 	public void init() throws CoreException {
 		super.setUp();
-		String testText = "Source0: test.zip\n"
-				+ "Patch0: test.patch\n"
-				+ "Source1: www.example.com/test.zip\n"
-				+ "Source2: http://www.example.com/test.zip\n";
+		String testText = "Source0: test.zip\nPatch0: test.patch\n";
 		newFile(testText);
 	}
 
@@ -48,49 +45,17 @@ public class SourcesFileHyperlinkDetectorTest extends FileTestCase {
 		editor.doRevertToSaved();
 		SourcesFileHyperlinkDetector elementDetector = new SourcesFileHyperlinkDetector();
 		elementDetector.setEditor(editor);
-		// test source0 element
+		// test source element
 		IRegion region = new Region(10, 0);
 		IHyperlink[] returned = elementDetector.detectHyperlinks(
 				editor.getSpecfileSourceViewer(), region, false);
-		// because test.zip does not exist, and is not a valid url
-		// it should not have hyperlinks
-		assertNull(returned);
-	}
-
-	@Test
-	public void testDetectHyperlinksInvalidURL() throws PartInitException {
-		IEditorPart openEditor = IDE.openEditor(PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage(), testFile,
-				"org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor");
-
-		editor = (SpecfileEditor) openEditor;
-		editor.doRevertToSaved();
-		SourcesFileHyperlinkDetector elementDetector = new SourcesFileHyperlinkDetector();
-		elementDetector.setEditor(editor);
-		// test source1 element
-		IRegion region = new Region(47, 0);
-		IHyperlink[] returned = elementDetector.detectHyperlinks(
-				editor.getSpecfileSourceViewer(), region, false);
-		// because the protocol is missing, it should not show any hyperlinks
-		assertNull(returned);
-	}
-
-	@Test
-	public void testDetectHyperlinksValidURL() throws PartInitException {
-		IEditorPart openEditor = IDE.openEditor(PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage(), testFile,
-				"org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor");
-
-		editor = (SpecfileEditor) openEditor;
-		editor.doRevertToSaved();
-		SourcesFileHyperlinkDetector elementDetector = new SourcesFileHyperlinkDetector();
-		elementDetector.setEditor(editor);
-		// test source2 element
-		IRegion region = new Region(82, 0);
-		IHyperlink[] returned = elementDetector.detectHyperlinks(
-				editor.getSpecfileSourceViewer(), region, false);
-		// 2 = Open URL using browser + Download from URL
 		assertEquals(2, returned.length);
+
+		// test empty
+		region = new Region(4, 0);
+		returned = elementDetector.detectHyperlinks(
+				editor.getSpecfileSourceViewer(), region, false);
+		assertNull(returned);
 	}
 
 	@Test
