@@ -232,8 +232,6 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
         while (listIterator.hasNext()) {
             String field = listIterator.next();
-            builder.append(field);
-            builder.append(" = "); //$NON-NLS-1$
             builder.append(lookupDefinition(field).toString());
             n++;
             if (n != size) {

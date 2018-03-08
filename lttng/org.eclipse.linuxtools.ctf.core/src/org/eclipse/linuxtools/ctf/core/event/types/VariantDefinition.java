@@ -267,21 +267,4 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
                 : null);
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("{ "); //$NON-NLS-1$
-        builder.append(getCurrentFieldName());
-        builder.append(" = "); //$NON-NLS-1$
-        Definition currentFieldDefinition = getCurrentField();
-        if (currentFieldDefinition != null) {
-            builder.append(getCurrentField().toString());
-        } else {
-            builder.append("?"); //$NON-NLS-1$
-        }
-        builder.append(" }"); //$NON-NLS-1$
-
-        return builder.toString();
-    }
 }
