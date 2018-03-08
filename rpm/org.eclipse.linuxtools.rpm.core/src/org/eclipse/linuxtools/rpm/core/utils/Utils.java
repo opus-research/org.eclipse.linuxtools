@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.SequenceInputStream;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.core.resources.IProject;
@@ -66,10 +65,8 @@ public class Utils {
 			String... command) throws IOException {
 		Process child = RuntimeProcessFactory.getFactory().exec(command, project);
 
-		final BufferedInputStream in = new BufferedInputStream(
-				new SequenceInputStream(child.getInputStream(),
-						child.getErrorStream()));
-
+		final BufferedInputStream in = new BufferedInputStream(child
+				.getInputStream());
 		Job readinJob = new Job("") { //$NON-NLS-1$
 
 			@Override
@@ -164,6 +161,8 @@ public class Utils {
 		FileChannel outChannel = new FileOutputStream(out).getChannel();
 		try {
 			inChannel.transferTo(0, inChannel.size(), outChannel);
+		} catch (IOException e) {
+			throw e;
 		} finally {
 			if (inChannel != null)
 				inChannel.close();
