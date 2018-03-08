@@ -68,6 +68,11 @@ public class TapsetParser implements Runnable {
 		disposed = false;
 		functions = new TreeNode("", false);
 		probes = new TreeNode("", false);
+
+		String s = readPass1(null);
+		s = addStaticProbes(s);
+		parseProbes(s);
+		sortTrees();
 	}
 
 	/**
@@ -88,7 +93,6 @@ public class TapsetParser implements Runnable {
 	public synchronized void stop() {
 		stopped = true;
 		try {
-			this.thread.interrupt();
 			this.thread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -144,11 +148,6 @@ public class TapsetParser implements Runnable {
 	 * know that they can update.
 	 */
 	public void run() {
-		String s = readPass1(null);
-		s = addStaticProbes(s);
-		parseProbes(s);
-		sortTrees();
-
 		runPass2Functions();
 		fireUpdateEvent();	//Inform listeners that a new batch of functions has variable info
 		successfulFinish = true;
