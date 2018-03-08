@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -27,13 +26,12 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.After;
 import org.junit.Before;
@@ -48,8 +46,7 @@ import org.junit.Test;
  */
 public class CtfTmfTraceTest {
 
-    private static final int TRACE_INDEX = 0;
-    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
+    private static final String PATH = TestParams.getPath();
 
     private CtfTmfTrace fixture;
 
@@ -61,7 +58,6 @@ public class CtfTmfTraceTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
         fixture = new CtfTmfTrace();
         fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
     }
@@ -71,9 +67,7 @@ public class CtfTmfTraceTest {
      */
     @After
     public void tearDown() {
-        if (fixture != null) {
-            fixture.dispose();
-        }
+        fixture.dispose();
     }
 
     /**
@@ -187,9 +181,9 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetEnvValue() {
-        String key = "tracer_name";
+        String key = "tracer_name"; //$NON-NLS-1$
         String result = fixture.getEnvValue(key);
-        assertEquals("\"lttng-modules\"",result);
+        assertEquals("\"lttng-modules\"",result); //$NON-NLS-1$
     }
 
     /**

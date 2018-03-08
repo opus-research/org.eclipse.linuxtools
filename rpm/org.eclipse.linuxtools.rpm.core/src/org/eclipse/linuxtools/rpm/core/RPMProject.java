@@ -88,9 +88,7 @@ public class RPMProject {
 		try {
 			specsFolder.accept(specVisitor);
 			List<IResource> installedSpecs = specVisitor.getSpecFiles();
-			if(installedSpecs.size() > 0){
-				file = installedSpecs.get(0);
-			}
+			file = installedSpecs.get(0);
 		} catch (CoreException e) {
 			// ignore, failed to find .spec file.
 		}
@@ -110,11 +108,11 @@ public class RPMProject {
 		try {
 			srpmFile.create(new FileInputStream(externalFile), false, null);
 		} catch (FileNotFoundException e) {
-			String throwMessage = Messages
+			String throw_message = Messages
 					.getString("RPMCore.Error_trying_to_copy__") + //$NON-NLS-1$
 					rpmConfig.getSpecsFolder().getLocation().toOSString();
 			IStatus error = new Status(IStatus.ERROR, IRPMConstants.ERROR, 1,
-					throwMessage, e);
+					throw_message, null);
 			throw new CoreException(error);
 		}
 

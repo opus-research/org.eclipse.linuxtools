@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfEventType class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class TmfEventTypeTest {
 
     // ------------------------------------------------------------------------
@@ -141,6 +141,33 @@ public class TmfEventTypeTest {
             fail("TmfEventType: null argument");
         } catch (final IllegalArgumentException e) {
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // clone
+    // ------------------------------------------------------------------------
+
+    @Test
+    public void testClone() {
+        final ITmfEventType clone = fType1.clone();
+
+        assertTrue("clone", fType1.clone().equals(fType1));
+        assertTrue("clone", clone.clone().equals(clone));
+
+        assertEquals("clone", clone, fType1);
+        assertEquals("clone", fType1, clone);
+    }
+
+    @Test
+    public void testClone2() {
+        final ITmfEventType type = new TmfEventType();
+        final ITmfEventType clone = type.clone();
+
+        assertTrue("clone", type.clone().equals(type));
+        assertTrue("clone", clone.clone().equals(clone));
+
+        assertEquals("clone", clone, type);
+        assertEquals("clone", type, clone);
     }
 
     // ------------------------------------------------------------------------

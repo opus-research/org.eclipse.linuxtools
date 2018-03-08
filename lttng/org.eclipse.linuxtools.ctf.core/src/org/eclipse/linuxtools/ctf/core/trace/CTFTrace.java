@@ -883,11 +883,7 @@ public class CTFTrace implements IDefinitionScope {
      * @since 1.2
      */
     public CTFCallsite getCallsite(String eventName) {
-        LinkedList<CTFCallsite> callsites = callsitesByName.get(eventName);
-        if (callsites != null) {
-            return callsites.getFirst();
-        }
-        return null;
+        return callsitesByName.get(eventName).getFirst();
     }
 
     /**

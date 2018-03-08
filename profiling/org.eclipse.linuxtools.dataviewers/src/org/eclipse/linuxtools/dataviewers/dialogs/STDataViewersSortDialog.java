@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * This dialog is used to choose how the data is sorted in the viewer
- *
+ * 
  */
 public class STDataViewersSortDialog extends TrayDialog {
 
@@ -52,7 +52,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Create a new instance of the receiver.
-     *
+     * 
      * @param parentShell
      * @param sorter
      */
@@ -65,8 +65,7 @@ public class STDataViewersSortDialog extends TrayDialog {
     /*
      * (non-Javadoc) Method declared on Window.
      */
-    @Override
-	protected void configureShell(Shell newShell) {
+    protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(STDataViewersMessages.sortDialog_title);
     }
@@ -74,8 +73,7 @@ public class STDataViewersSortDialog extends TrayDialog {
     /*
      * (non-Javadoc) Method declared on Dialog.
      */
-    @Override
-	protected Control createDialogArea(Composite parent) {
+    protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         if (sorter == null) {
             return composite;
@@ -94,7 +92,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Create the proirities area.
-     *
+     * 
      * @param parent
      */
     private void createPrioritiesArea(Composite parent) {
@@ -127,24 +125,21 @@ public class STDataViewersSortDialog extends TrayDialog {
             ascendingButtons[i] = new Button(directionGroup, SWT.RADIO);
             ascendingButtons[i].setText(getAscendingText(i));
             ascendingButtons[i].addSelectionListener(new SelectionAdapter() {
-                @Override
-				public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(SelectionEvent e) {
                     markDirty();
                 }
             });
             descendingButtons[i] = new Button(directionGroup, SWT.RADIO);
             descendingButtons[i].setText(getDescendingText(i));
             descendingButtons[i].addSelectionListener(new SelectionAdapter() {
-                @Override
-				public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(SelectionEvent e) {
                     markDirty();
                 }
             });
 
             if (i < priorityCombos.length - 1) {
                 priorityCombos[i].addSelectionListener(new SelectionAdapter() {
-                    @Override
-					public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(SelectionEvent e) {
                         List<String> allItems = new ArrayList<String>(Arrays.asList(priorityCombos[index].getItems()));
                         computeSelectionItems(index, allItems);
                         markDirty();
@@ -178,8 +173,7 @@ public class STDataViewersSortDialog extends TrayDialog {
                 });
             } else {
                 priorityCombos[i].addSelectionListener(new SelectionAdapter() {
-                    @Override
-					public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(SelectionEvent e) {
                         markDirty();
                     }
                 });
@@ -193,7 +187,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Get the descending label for the Descending field at i. Use the index to determine the mnemonic.
-     *
+     * 
      * @param index
      * @return String
      */
@@ -213,7 +207,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Get the ascending label for the Ascending field at i. Use the index to determine the mnemonic.
-     *
+     * 
      * @param index
      * @return String
      */
@@ -233,7 +227,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Create the restore defaults button.
-     *
+     * 
      * @param parent
      */
     private void createRestoreDefaultsButton(Composite parent) {
@@ -241,8 +235,7 @@ public class STDataViewersSortDialog extends TrayDialog {
         defaultsButton.setText(STDataViewersMessages.restoreDefaults_text);
         setButtonSize(defaultsButton, new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
         defaultsButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 restoreDefaults();
                 markDirty();
             }
@@ -294,8 +287,7 @@ public class STDataViewersSortDialog extends TrayDialog {
         return super.open();
     }
 
-    @Override
-	protected void okPressed() {
+    protected void okPressed() {
         if (isDirty()) {
             outerfor: for (int i = priorityCombos.length - 1; i >= 0; i--) {
                 Combo combo = priorityCombos[i];
@@ -337,7 +329,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Set the layout data of the button to a GridData with appropriate heights and widths.
-     *
+     * 
      * @param button
      */
     private void setButtonSize(Button button, GridData buttonData) {
@@ -349,7 +341,7 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     /**
      * Return the sorter for the receiver.
-     *
+     * 
      * @return TableSorter
      */
     public STDataViewersComparator getSorter() {

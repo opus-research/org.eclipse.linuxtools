@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.ctf.core.tests.event;
 
 import static org.junit.Assert.assertEquals;
@@ -17,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Arrays;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -28,7 +19,23 @@ import org.junit.Test;
  */
 
 public class CTFCallsiteTest {
+    /**
+     * Perform pre-test initialization.
+     */
+    @Before
+    public void setUp() {
+        // add additional set up code here
+    }
 
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
+    }
+
+    @SuppressWarnings("nls")
     private static CTFCallsite GenerateCS(long ip){
         return new CTFCallsite("event name", "func name", ip, "file.java", 1);
     }
@@ -74,6 +81,16 @@ public class CTFCallsiteTest {
     @Test
     public void toStringTest(){
         CTFCallsite cs = GenerateCS(0x01);
-        assertEquals("file.java/func name:1", cs.toString());
+        assertEquals("file.java/func name:1", cs.toString()); //$NON-NLS-1$
+    }
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CTFCallsiteTest.class);
     }
 }

@@ -17,16 +17,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampDelta;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 import org.junit.Test;
 
 /**
  * Test suite for the TmfTimestampDelta class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class TmfTimestampDeltaTest {
 
     // ------------------------------------------------------------------------

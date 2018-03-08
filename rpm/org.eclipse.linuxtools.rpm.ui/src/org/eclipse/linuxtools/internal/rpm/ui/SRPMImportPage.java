@@ -19,7 +19,6 @@ import java.net.URL;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -126,11 +125,11 @@ public class SRPMImportPage extends WizardPage {
 			public void handleEvent(Event event) {
 				FileDialog srpmBrowseDialog = new FileDialog(getContainer()
 						.getShell(), SWT.OPEN);
-				String selectedSRPMName = srpmBrowseDialog.open();
-				if (selectedSRPMName != null) {
-					File testSRPMfilename = new File(selectedSRPMName);
+				String selectedSRPM_name = srpmBrowseDialog.open();
+				if (selectedSRPM_name != null) {
+					File testSRPMfilename = new File(selectedSRPM_name);
 					if (testSRPMfilename.isFile()) {
-						sourceSRPM.setText(selectedSRPMName);
+						sourceSRPM.setText(selectedSRPM_name);
 					}
 				}
 			}
@@ -207,9 +206,9 @@ public class SRPMImportPage extends WizardPage {
 	 * @return boolean
 	 */
 	public boolean finish() {
+		IProject detailedProject = getNewProject();
 		SRPMImportOperation srpmImportOp = null;
 		try {
-			IProject detailedProject = getNewProject();
 			String srpmName = sourceSRPM.getText();
 			if (srpmName.startsWith("http://")) { //$NON-NLS-1$
 				URL sourceRPMURL = new URL(srpmName);
@@ -228,9 +227,6 @@ public class SRPMImportPage extends WizardPage {
 			setErrorMessage(e.toString());
 			return false;
 		} catch (MalformedURLException e) {
-			setErrorMessage(e.toString());
-			return false;
-		} catch (CoreException e) {
 			setErrorMessage(e.toString());
 			return false;
 		}
@@ -253,9 +249,8 @@ public class SRPMImportPage extends WizardPage {
 
 	/**
 	 * Creates a new project.
-	 * @throws CoreException If project creation failed.
 	 */
-	private IProject getNewProject() throws CoreException {
+	private IProject getNewProject() {
 		IPath path = detailsPanel.getLocationPath();
 		RPMProjectCreator projectCreator = new RPMProjectCreator(
 				detailsPanel.getSelectedLayout());

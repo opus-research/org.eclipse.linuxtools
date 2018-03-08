@@ -85,7 +85,7 @@ public class STDataViewersCSVExporter {
 
     /*
      * It creates a new instance of exporter
-     *
+     * 
      * @param stViewer
      */
     public STDataViewersCSVExporter(AbstractSTViewer stViewer) {
@@ -409,8 +409,7 @@ public class STDataViewersCSVExporter {
 
     private void collectViewerParameters() {
         Display.getDefault().syncExec(new Runnable() {
-            @Override
-			public void run() {
+            public void run() {
                 // getting columns with the right order
                 Item[] unOrdColumns = stViewer.getColumns();
                 Item[] columns = new Item[unOrdColumns.length];
@@ -648,8 +647,7 @@ public class STDataViewersCSVExporter {
             this.fieldsMap = fieldsMap;
         }
 
-        @Override
-		protected ISTDataViewersField getField(Item column) {
+        protected ISTDataViewersField getField(Item column) {
             return fieldsMap.get(column);
         }
 

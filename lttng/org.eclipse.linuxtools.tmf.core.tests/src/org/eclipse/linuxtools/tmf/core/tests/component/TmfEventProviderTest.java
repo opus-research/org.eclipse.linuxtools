@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,11 +21,11 @@ import java.util.Vector;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.tests.stubs.component.TmfEventProviderStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.component.TmfSyntheticEventProviderStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
@@ -37,6 +37,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfEventProvider class.
  */
+@SuppressWarnings("nls")
 public class TmfEventProviderTest {
 
     private TmfEventProviderStub fEventProvider;

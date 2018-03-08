@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson.
+ * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2010, 2011, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
+ *
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -115,7 +116,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     private final Cursor _dragCursor3;
     private final Cursor _WaitCursor;
     private final List<ViewerFilter> _filters = new ArrayList<ViewerFilter>();
-    private MenuDetectEvent fPendingMenuDetectEvent = null;
 
     // Vertical formatting formatting for the state control view
     private final boolean _visibleVerticalScroll = true;
@@ -1144,7 +1144,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         if (DRAG_SPLIT_LINE == _dragState) {
             gc.setForeground(_colors.getColor(TimeGraphColorScheme.BLACK));
             gc.drawLine(bounds.x + nameSpace, bounds.y, bounds.x + nameSpace, bounds.y + bounds.height - 1);
-        } else if (DRAG_ZOOM == _dragState && Math.max(_dragX, _dragX0) > nameSpace && _dragX != _dragX0) {
+        } else if (DRAG_ZOOM == _dragState && Math.max(_dragX, _dragX0) > nameSpace) {
             gc.setForeground(_colors.getColor(TimeGraphColorScheme.TOOL_FOREGROUND));
             gc.drawLine(_dragX0, bounds.y, _dragX0, bounds.y + bounds.height - 1);
             gc.drawLine(_dragX, bounds.y, _dragX, bounds.y + bounds.height - 1);
@@ -1253,11 +1253,11 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                         gc.drawPoint(stateRect.x, stateRect.y - 2);
                         stateRect.x += 1;
                     }
-                }
-                boolean timeSelected = selectedTime >= event.getTime() && selectedTime < event.getTime() + event.getDuration();
-                if (drawState(_colors, event, stateRect, gc, selected, timeSelected)) {
+                } else {
                     lastX = x;
                 }
+                boolean timeSelected = selectedTime >= event.getTime() && selectedTime < event.getTime() + event.getDuration();
+                drawState(_colors, event, stateRect, gc, selected, timeSelected);
             }
         }
         fTimeGraphProvider.postDrawEntry(entry, rect, gc);
@@ -1379,30 +1379,17 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *            highlighted)
      * @param timeSelected
      *            Is the timestamp currently selected
-     * @return true if the state was drawn
-     * @since 2.0
      */
-    protected boolean drawState(TimeGraphColorScheme colors, ITimeEvent event,
+    protected void drawState(TimeGraphColorScheme colors, ITimeEvent event,
             Rectangle rect, GC gc, boolean selected, boolean timeSelected) {
 
         int colorIdx = fTimeGraphProvider.getStateTableIndex(event);
-        if (colorIdx < 0 && colorIdx != ITimeGraphPresentationProvider.TRANSPARENT) {
-            return false;
+        if (colorIdx < 0) {
+            return;
         }
         boolean visible = rect.width == 0 ? false : true;
 
         if (visible) {
-            if (colorIdx == ITimeGraphPresentationProvider.TRANSPARENT) {
-                // Only draw the top and bottom borders
-                gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-                gc.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
-                gc.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width - 1, rect.y + rect.height - 1);
-                if (rect.width == 1) {
-                    gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-                    gc.drawPoint(rect.x, rect.y - 2);
-                }
-                return false;
-            }
             Color stateColor = null;
             if (colorIdx < fEventColorMap.length) {
                 stateColor = fEventColorMap[colorIdx];
@@ -1423,15 +1410,38 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             // draw bounds
             if (!reallySelected) {
                 // Draw the top and bottom borders i.e. no side borders
+                // top
                 gc.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
+                // bottom
                 gc.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width - 1, rect.y + rect.height - 1);
             }
         } else {
             gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
             gc.drawPoint(rect.x, rect.y - 2);
+            /*
+            // selected rectangle area is not visible but can be represented
+            // with a broken vertical line of specified width.
+            int width = 1;
+            rect.width = width;
+            gc.setForeground(stateColor);
+            int s = gc.getLineStyle();
+            int w = gc.getLineWidth();
+            gc.setLineStyle(SWT.LINE_DOT);
+            gc.setLineWidth(width);
+            // Trace.debug("Rectangle not visible, drawing vertical line with: "
+            // + rect.x + "," + rect.y + "," + rect.x + "," + rect.y
+            // + rect.height);
+            gc.drawLine(rect.x, rect.y, rect.x, rect.y + rect.height - 1);
+            gc.setLineStyle(s);
+            gc.setLineWidth(w);
+            if (!timeSelected) {
+                gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+                gc.drawPoint(rect.x, rect.y);
+                gc.drawPoint(rect.x, rect.y + rect.height - 1);
+            }
+            */
         }
         fTimeGraphProvider.postDrawEvent(event, rect, gc);
-        return visible;
     }
 
     /**
@@ -1739,9 +1749,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
 
     @Override
     public void mouseUp(MouseEvent e) {
-        if (fPendingMenuDetectEvent != null && e.button == 3) {
-            menuDetected(fPendingMenuDetectEvent);
-        }
         if (DRAG_NONE != _dragState) {
             setCapture(false);
             if (e.button == 1 && DRAG_TRACE_ITEM == _dragState) {
@@ -2144,24 +2151,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     public void menuDetected(MenuDetectEvent e) {
         if (null == _timeProvider) {
             return;
-        }
-        if (e.detail == SWT.MENU_MOUSE) {
-            if (fPendingMenuDetectEvent == null) {
-                /* Feature in Linux. The MenuDetectEvent is received before mouseDown.
-                 * Store the event and trigger it later just before handling mouseUp.
-                 * This allows for the method to detect if mouse is used to drag zoom.
-                 */
-                fPendingMenuDetectEvent = e;
-                return;
-            }
-            fPendingMenuDetectEvent = null;
-            if (_dragState != DRAG_ZOOM || _dragX != _dragX0) {
-                return;
-            }
-        } else {
-            if (_dragState != DRAG_NONE) {
-                return;
-            }
         }
         Point p = toControl(e.x, e.y);
         int idx = getItemIndexAtY(p.y);

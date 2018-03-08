@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -22,15 +22,15 @@ package org.eclipse.linuxtools.tmf.core.event;
  * @see ITmfEvent
  * @see ITmfEventField
  */
-public class TmfEventType implements ITmfEventType {
+public class TmfEventType implements ITmfEventType, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final String fContext;
-    private final String fTypeId;
-    private final ITmfEventField fRootField;
+    private String fContext;
+    private String fTypeId;
+    private ITmfEventField fRootField;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -118,6 +118,27 @@ public class TmfEventType implements ITmfEventType {
     @Override
     public String getFieldName(final int index) {
         return (fRootField != null) ? fRootField.getFieldName(index) : null;
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfEventType clone() {
+        TmfEventType clone = null;
+        try {
+            clone = (TmfEventType) super.clone();
+            clone.fContext = fContext;
+            clone.fTypeId = fTypeId;
+            clone.fRootField = fRootField;
+        }
+        catch (final CloneNotSupportedException e) {
+        }
+        return clone;
     }
 
     // ------------------------------------------------------------------------

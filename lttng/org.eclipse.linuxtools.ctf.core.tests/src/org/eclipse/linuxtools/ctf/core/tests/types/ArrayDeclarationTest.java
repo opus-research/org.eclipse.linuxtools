@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
@@ -19,13 +8,14 @@ import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * The class <code>ArrayDeclarationTest</code> contains tests for the class
  * <code>{@link ArrayDeclaration}</code>.
- *
+ * 
  * @author ematkho
  * @version $Revision: 1.0 $
  */
@@ -34,11 +24,29 @@ public class ArrayDeclarationTest {
     private ArrayDeclaration fixture;
 
     /**
+     * Launch the test.
+     * 
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(ArrayDeclarationTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new ArrayDeclaration(1, new StringDeclaration());
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -51,7 +59,7 @@ public class ArrayDeclarationTest {
         ArrayDeclaration result = new ArrayDeclaration(length, elemType);
 
         assertNotNull(result);
-        String left = "[declaration] array[";
+        String left = "[declaration] array["; //$NON-NLS-1$
         String right = result.toString().substring(0, left.length());
         assertEquals(left, right);
         assertEquals(1, result.getLength());
@@ -63,7 +71,7 @@ public class ArrayDeclarationTest {
      */
     @Test
     public void testCreateDefinition() {
-        String fieldName = "";
+        String fieldName = ""; //$NON-NLS-1$
         IDefinitionScope definitionScope = null;
         ArrayDefinition result;
         result = fixture.createDefinition(definitionScope, fieldName);
@@ -95,7 +103,7 @@ public class ArrayDeclarationTest {
     @Test
     public void testToString() {
         String result = fixture.toString();
-        String left = "[declaration] array[";
+        String left = "[declaration] array["; //$NON-NLS-1$
         String right = result.substring(0, left.length());
 
         assertEquals(left, right);
