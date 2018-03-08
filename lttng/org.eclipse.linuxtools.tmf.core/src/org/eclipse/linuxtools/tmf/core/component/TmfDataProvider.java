@@ -350,9 +350,8 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      *
      * @param request
      *            The request
-     * @return An application specific context; null if request can't be
+     * @return Sn application specific context; null if request can't be
      *         serviced
-     * @since 2.0
      */
     public abstract ITmfContext armRequest(ITmfDataRequest request);
 
