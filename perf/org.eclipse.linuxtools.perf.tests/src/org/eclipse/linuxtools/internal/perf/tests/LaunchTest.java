@@ -10,8 +10,6 @@
 *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -28,9 +26,6 @@ import org.eclipse.linuxtools.internal.perf.launch.PerfEventsTab;
 import org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate;
 import org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 public class LaunchTest extends AbstractTest {
@@ -40,8 +35,9 @@ public class LaunchTest extends AbstractTest {
 	protected ILaunch launch;
 	protected ILaunchConfigurationWorkingCopy wc;
 
-	@Before
+	@Override
 	protected void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
 		config = createConfiguration(proj.getProject());
 
@@ -51,10 +47,11 @@ public class LaunchTest extends AbstractTest {
 		setProfileAttributes(wc);
 	}
 
-	@After
-	protected void tearDown() throws CoreException {
+	@Override
+	protected void tearDown() throws Exception {
 		deleteProject(proj);
 		wc.delete();
+		super.tearDown();
 	}
 
 	@Override
@@ -72,17 +69,16 @@ public class LaunchTest extends AbstractTest {
 		optionsTab.setDefaults(wc);
 	}
 
-	@Test
 	public void testDefaultRun () {
 		if (PerfCore.checkPerfInPath()) {
 			try {
 				delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
 			} catch (CoreException e) {
-				fail(e.getMessage());
+				fail();
 			}
 		}
 	}
-	@Test
+
 	public void testClockEventRun () {
 		if (PerfCore.checkPerfInPath()) {
 			try {
@@ -92,7 +88,7 @@ public class LaunchTest extends AbstractTest {
 				wc.setAttribute(PerfPlugin.ATTR_SelectedEvents, list);
 				delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
 			} catch (CoreException e) {
-				fail(e.getMessage());
+				fail();
 			}
 		}
 	}
