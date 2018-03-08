@@ -43,7 +43,7 @@
   </licenses>
 
   <modules>
-<!--    <module>org.eclipse.linuxtools.releng-site</module> -->
+    <module>org.eclipse.linuxtools.releng-site</module>
     <module>org.eclipse.linuxtools.license-feature</module>
   </modules>
 
