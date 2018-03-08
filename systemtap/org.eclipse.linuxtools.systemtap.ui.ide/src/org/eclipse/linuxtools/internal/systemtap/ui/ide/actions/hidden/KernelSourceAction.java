@@ -16,14 +16,12 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.c.CEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.KernelBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
@@ -112,14 +110,9 @@ public class KernelSourceAction extends Action implements ISelectionListener, IW
 	 * @return	The ID for the editor that handles the requested file type.
 	 */
 	private String getEditorId(IFileStore fs) {
-		IEditorDescriptor editor = null;
 		IWorkbench workbench= window.getWorkbench();
 		IEditorRegistry editorRegistry= workbench.getEditorRegistry();
-		editor = editorRegistry.findEditor(CEditor.ID);
-		if (editor == null)
-			editor = editorRegistry.getDefaultEditor(fs.getName());
-
-		return editor.getId();
+		return editorRegistry.getDefaultEditor(fs.getName()).getId();
 	}
 	
 	/**

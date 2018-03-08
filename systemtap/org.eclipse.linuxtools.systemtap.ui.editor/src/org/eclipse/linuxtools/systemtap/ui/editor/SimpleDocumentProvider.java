@@ -78,11 +78,9 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 			// return empty document and save later
 			return true;
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			return false;
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", "Incorrect URL", e)); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", "Error reading file", e)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		
 		try {
