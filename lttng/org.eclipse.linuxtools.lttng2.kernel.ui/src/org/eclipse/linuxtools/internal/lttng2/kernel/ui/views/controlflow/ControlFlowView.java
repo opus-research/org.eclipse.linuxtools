@@ -48,6 +48,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphSelectionListener;
@@ -504,7 +505,14 @@ public class ControlFlowView extends TmfView {
         final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
         int thread = -1;
-        for (ITmfTrace trace : fTrace.getTraces()) {
+        ITmfTrace[] traces;
+        if (fTrace instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) fTrace;
+            traces = experiment.getTraces();
+        } else {
+            traces = new ITmfTrace[] { fTrace };
+        }
+        for (ITmfTrace trace : traces) {
             if (thread > 0) {
                 break;
             }
@@ -601,8 +609,15 @@ public class ControlFlowView extends TmfView {
     private void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
+        ITmfTrace[] traces;
+        if (trace instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) trace;
+            traces = experiment.getTraces();
+        } else {
+            traces = new ITmfTrace[] { trace };
+        }
         ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace aTrace : trace.getTraces()) {
+        for (ITmfTrace aTrace : traces) {
             if (monitor.isCanceled()) {
                 return;
             }
