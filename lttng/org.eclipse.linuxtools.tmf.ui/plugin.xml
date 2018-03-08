@@ -376,6 +376,32 @@
                </with>
             </visibleWhen>
          </command>
+         <menu
+               icon="icons/elcl16/open_as.gif"
+               label="%command.openas"
+               mnemonic="%command.openas.mnemonic"
+               tooltip="%command.openas.description">
+            <dynamic
+                  class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OpenAsContributionItem"
+                  id="org.eclipse.linuxtools.tmf.ui.command.openas.dynamic">
+            </dynamic>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </menu>
          <command
                commandId="org.eclipse.ui.edit.copy"
                disabledIcon="icons/dtool16/copy_edit.gif"
@@ -716,6 +742,27 @@
       </command>
       <command
             categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.openas.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.openas"
+            name="%command.openas">
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.bundle"
+               name="%commands.trace.select_trace_type.bundle"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.type"
+               name="%commands.trace.select_trace_type.type"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"
+               name="%commands.trace.select_trace_type.icon"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
             id="org.eclipse.linuxtools.tmf.ui.command.delete_suppl_files"
             name="%command.delete_suppl_files">
       </command>
@@ -1012,6 +1059,19 @@
       <handler
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTraceTypeHandler"
             commandId="org.eclipse.linuxtools.tmf.ui.command.select_trace_type">
+         <activeWhen>
+            <iterate
+                  ifEmpty="false"
+                  operator="and">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+               </instanceof>
+            </iterate>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OpenTraceAsHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.openas">
          <activeWhen>
             <iterate
                   ifEmpty="false"
