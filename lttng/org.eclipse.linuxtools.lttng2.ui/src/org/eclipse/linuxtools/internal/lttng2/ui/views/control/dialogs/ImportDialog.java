@@ -25,16 +25,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy;
 import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
@@ -50,7 +47,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
@@ -91,10 +87,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
      * The overwrite button
      */
     private Button fOverwriteButton;
-    /**
-     * The button to open import wizard for import locally.
-     */
-    private Button fImportLocallyButton;
     /**
      * List of available LTTng 2.0 projects
      */
@@ -187,19 +179,91 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fDialogComposite.setLayout(layout);
         fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+        contextGroup.setText(Messages.TraceControl_ImportDialogTracesGroupName);
+        layout = new GridLayout(1, true);
+        contextGroup.setLayout(layout);
+        contextGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        IRemoteSystemProxy proxy = fSession.getTargetNode().getRemoteSystemProxy();
+
+        IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
+
         try {
-            if (fSession.isStreamedTrace()) {
-                createLocalComposite();
-            } else {
-                createRemoteComposite();
+            IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSession.getSessionPath(), new NullProgressMonitor());
+
+            fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER);
+            GridData data = new GridData(GridData.FILL_BOTH);
+            Tree tree = fFolderViewer.getTree();
+            tree.setLayoutData(data);
+            tree.setFont(parent.getFont());
+            tree.setToolTipText(Messages.TraceControl_ImportDialogTracesTooltip);
+
+            fFolderViewer.setContentProvider(new FolderContentProvider());
+            fFolderViewer.setLabelProvider(new WorkbenchLabelProvider());
+
+            fFolderViewer.addCheckStateListener(new ICheckStateListener() {
+                @Override
+                public void checkStateChanged(CheckStateChangedEvent event) {
+                    Object elem = event.getElement();
+                    if (elem instanceof IRemoteFile) {
+                        IRemoteFile element = (IRemoteFile) elem;
+                        if (!element.isDirectory()) {
+                            // A trick to keep selection of a file in sync with the directory
+                            boolean p = fFolderViewer.getChecked((element.getParentRemoteFile()));
+                            fFolderViewer.setChecked(element, p);
+                            return;
+                        }
+                        fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
+                        if (!event.getChecked()) {
+                            fFolderViewer.setChecked(element.getParentRemoteFile(), false);
+                        }
+                    }
+                }
+            });
+            fFolderViewer.setInput(remoteFolder);
+
+            Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+            projectGroup.setText(Messages.TraceControl_ImportDialogProjectsGroupName);
+            layout = new GridLayout(1, true);
+            projectGroup.setLayout(layout);
+            projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            fProjects = new ArrayList<IProject>();
+            List<String> projectNames = new ArrayList<String>();
+            for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+                try {
+                    if (project.isOpen() && project.hasNature(TmfProjectNature.ID)) {
+                        fProjects.add(project);
+                        projectNames.add(project.getName());
+                    }
+                } catch (CoreException e) {
+                    createErrorComposite(parent, e.fillInStackTrace());
+                    return fDialogComposite;
+                }
             }
-        } catch (CoreException e) {
-            createErrorComposite(parent, e.fillInStackTrace());
-            return fDialogComposite;
+
+            fCombo = new CCombo(projectGroup, SWT.READ_ONLY);
+            fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
+            fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
+            fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
+
+            Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+            layout = new GridLayout(1, true);
+            overrideGroup.setLayout(layout);
+            overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
+            fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
+
+            getShell().setMinimumSize(new Point(500, 400));
+
+
         } catch (SystemMessageException e) {
             createErrorComposite(parent, e.fillInStackTrace());
             return fDialogComposite;
         }
+
         return fDialogComposite;
     }
 
@@ -210,10 +274,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        fImportLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
-        if (fSession.isStreamedTrace()) {
-            fImportLocallyButton.setText("&Next..."); //$NON-NLS-1$
-        }
+        createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
     /*
@@ -223,7 +284,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
     @Override
     protected void okPressed() {
         if (!fIsError) {
-
             // Validate input data
             fTraces.clear();
 
@@ -233,20 +293,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_ImportDialogTitle,
                         Messages.TraceControl_ImportDialogNoProjectSelectedError);
-                return;
-            }
-
-            if (fSession.isStreamedTrace()) {
-                // For streaming use standard import wizard from TMF because exact location
-                // is not available (lttng backend limitation)
-                IProject project = fProjects.get(fCombo.getSelectionIndex());
-                ImportTraceWizard wizard = new ImportTraceWizard();
-                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(project));
-                WizardDialog dialog = new WizardDialog(getShell(), wizard);
-                if (dialog.open() == Window.OK) {
-                    super.okPressed();
-                }
-                super.cancelPressed();
                 return;
             }
 
@@ -354,110 +400,5 @@ public class ImportDialog extends Dialog implements IImportDialog {
         errorText.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
-    private void createRemoteComposite() throws CoreException, SystemMessageException{
-        Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        contextGroup.setText(Messages.TraceControl_ImportDialogTracesGroupName);
-        GridLayout layout = new GridLayout(1, true);
-        contextGroup.setLayout(layout);
-        contextGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        IRemoteSystemProxy proxy = fSession.getTargetNode().getRemoteSystemProxy();
-
-        IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
-
-        IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSession.getSessionPath(), new NullProgressMonitor());
-
-        fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER);
-        GridData data = new GridData(GridData.FILL_BOTH);
-        Tree tree = fFolderViewer.getTree();
-        tree.setLayoutData(data);
-        tree.setFont(fDialogComposite.getFont());
-        tree.setToolTipText(Messages.TraceControl_ImportDialogTracesTooltip);
-
-        fFolderViewer.setContentProvider(new FolderContentProvider());
-        fFolderViewer.setLabelProvider(new WorkbenchLabelProvider());
-
-        fFolderViewer.addCheckStateListener(new ICheckStateListener() {
-            @Override
-            public void checkStateChanged(CheckStateChangedEvent event) {
-                Object elem = event.getElement();
-                if (elem instanceof IRemoteFile) {
-                    IRemoteFile element = (IRemoteFile) elem;
-                    if (!element.isDirectory()) {
-                        // A trick to keep selection of a file in sync with the directory
-                        boolean p = fFolderViewer.getChecked((element.getParentRemoteFile()));
-                        fFolderViewer.setChecked(element, p);
-                        return;
-                    }
-                    fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
-                    if (!event.getChecked()) {
-                        fFolderViewer.setChecked(element.getParentRemoteFile(), false);
-                    }
-                }
-            }
-        });
-        fFolderViewer.setInput(remoteFolder);
-
-        Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        projectGroup.setText(Messages.TraceControl_ImportDialogProjectsGroupName);
-        layout = new GridLayout(1, true);
-        projectGroup.setLayout(layout);
-        projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        fProjects = new ArrayList<IProject>();
-        List<String> projectNames = new ArrayList<String>();
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (project.isOpen() && project.hasNature(TmfProjectNature.ID)) {
-                fProjects.add(project);
-                projectNames.add(project.getName());
-            }
-        }
-
-        fCombo = new CCombo(projectGroup, SWT.READ_ONLY);
-        fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
-        fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
-        fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
-
-        Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        layout = new GridLayout(1, true);
-        overrideGroup.setLayout(layout);
-        overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
-        fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
-        getShell().setMinimumSize(new Point(500, 400));
-    }
-
-    private void createLocalComposite() throws CoreException {
-
-        Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        projectGroup.setText(Messages.TraceControl_ImportDialogProjectsGroupName);
-        GridLayout layout = new GridLayout(1, true);
-        projectGroup.setLayout(layout);
-        projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        fProjects = new ArrayList<IProject>();
-        List<String> projectNames = new ArrayList<String>();
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (project.isOpen() && project.hasNature(TmfProjectNature.ID)) {
-                fProjects.add(project);
-                projectNames.add(project.getName());
-            }
-        }
-
-        fCombo = new CCombo(projectGroup, SWT.READ_ONLY);
-        fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
-        fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
-        fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
-
-//        Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-//        layout = new GridLayout(1, true);
-//        overrideGroup.setLayout(layout);
-//        overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//
-//        fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
-//        fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
-
-        getShell().setMinimumSize(new Point(500, 50));
-    }
  }

@@ -44,10 +44,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
      * The domains information of this session.
      */
     private final List<IDomainInfo> fDomains = new ArrayList<IDomainInfo>();
-    /**
-     * Flag to indicate whether trace is streamed over network or not.
-     */
-    private boolean fIsStreamedTrace = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -150,25 +146,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
             IDomainInfo domainInfo = iterator.next();
             fDomains.add(domainInfo);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo#isStreamedTrace()
-     */
-    @Override
-    public boolean isStreamedTrace() {
-        return fIsStreamedTrace;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo#setIsStreamedTrace(boolean)
-     */
-
-    @Override
-    public void setStreamedTrace(boolean isStreamedTrace) {
-        fIsStreamedTrace = isStreamedTrace;
     }
 
     // ------------------------------------------------------------------------
