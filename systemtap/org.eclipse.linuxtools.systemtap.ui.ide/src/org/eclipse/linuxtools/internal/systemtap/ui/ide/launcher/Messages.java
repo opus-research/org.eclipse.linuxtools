@@ -43,8 +43,6 @@ public class Messages extends NLS {
 	public static String SystemTapScriptLaunchConfigurationTab_9;
 	public static String SystemTapScriptLaunchConfigurationTab_10;
 	public static String SystemTapScriptLaunchConfigurationTab_11;
-
-	public static String SystemTapScriptLaunchConfigurationTab_errorInitializingTab;
 	public static String SystemTapScriptLaunchConfigurationTab_options;
 	public static String SystemTapScriptLaunchConfigurationTab_runWithChart;
 	public static String SystemTapScriptLaunchShortcut_couldNotFindConfig;
