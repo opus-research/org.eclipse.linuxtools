@@ -230,8 +230,6 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 	
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Initializing eventsTab from previous config.");
-		
 		IProject project = getProject(config);
 
 		try {
@@ -315,7 +313,6 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy wconfig) {
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Saving eventsTab values.");
 		//Store default event checkbox
 		wconfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, _chkDefaultEvent.getSelection());
 		
@@ -327,8 +324,12 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 					selectedEvents.add(x.getText());				
 			}
 		}
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Selected events:" + selectedEvents.toString());
-		wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, selectedEvents);
+
+		if (selectedEvents.size() == 0) {
+			wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, (String) null);
+		} else {
+			wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, selectedEvents);
+		}
 		
 		//Flag for multiple events
 		if ((_chkDefaultEvent.getSelection() == false) && (selectedEvents.size() >= 1)) {
@@ -364,30 +365,15 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		}
 		if (rawhwe.size() == 0) { rawhwe = null; } //to match with default value.
 		wconfig.setAttribute(PerfPlugin.ATTR_RawHwEvents, rawhwe);
-		
-		try {
-			if (this.canSave())
-				wconfig.doSave();
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy wconfig) {
-		//if (PerfPlugin.DEBUG_ON) System.out.println("Initializing eventsTab from default values.");
 		wconfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, PerfPlugin.ATTR_DefaultEvent_default);
+		wconfig.setAttribute(PerfPlugin.ATTR_MultipleEvents, PerfPlugin.ATTR_MultipleEvents_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, PerfPlugin.ATTR_SelectedEvents_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_HwBreakpointEvents, PerfPlugin.ATTR_HwBreakpointEvents_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_RawHwEvents, PerfPlugin.ATTR_RawHwEvents_default);
-		try {
-			if (this.canSave())
-				wconfig.doSave();
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	protected IProject getProject(ILaunchConfiguration config){

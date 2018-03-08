@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfClearExperimentSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
@@ -139,6 +140,15 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
             fTraces = null;
         }
         super.dispose();
+    }
+
+    /**
+     * @param signal the clear view signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void handleClearExperimentSignal(TmfClearExperimentSignal signal) {
+        dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -268,7 +278,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#seekEvent(org.eclipse.linuxtools.tmf.core.trace.ITmfLocation)
      */
     @Override
-    public synchronized ITmfContext seekEvent(final ITmfLocation<?> location) {
+    public synchronized ITmfContext seekEvent(final ITmfLocation location) {
         // Validate the location
         if (location != null && !(location instanceof TmfExperimentLocation)) {
             return null; // Throw an exception?
@@ -278,24 +288,30 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
             return null;
         }
 
-        // Instantiate the location
-        final TmfExperimentLocation expLocation = (location == null)
-                ? new TmfExperimentLocation(new TmfLocationArray(new ITmfLocation<?>[fTraces.length]))
-                : (TmfExperimentLocation) location.clone();
-
         // Create and populate the context's traces contexts
         final TmfExperimentContext context = new TmfExperimentContext(new ITmfContext[fTraces.length]);
+        ITmfLocation[] expLocations = new ITmfLocation[fTraces.length];
+        if (location != null) {
+            TmfExperimentLocation locations = (TmfExperimentLocation) location;
+            int index = 0;
+            ITmfLocation l = locations.getLocationInfo().getLocation(index);
+            while (index < expLocations.length && l != null) {
+                expLocations[index] = l;
+                l = locations.getLocationInfo().getLocation(++index);
+            }
+        }
 
+        // Position the traces
         for (int i = 0; i < fTraces.length; i++) {
             // Get the relevant trace attributes
-            final ITmfLocation<?> trcLocation = expLocation.getLocationData().getLocations()[i];
+            final ITmfLocation trcLocation = expLocations[i];
             context.getContexts()[i] = fTraces[i].seekEvent(trcLocation);
-            expLocation.getLocationData().getLocations()[i] = context.getContexts()[i].getLocation().clone();
+            expLocations[i] = context.getContexts()[i].getLocation();
             context.getEvents()[i] = fTraces[i].getNext(context.getContexts()[i]);
         }
 
         // Finalize context
-        context.setLocation(expLocation);
+        context.setLocation(new TmfExperimentLocation(new TmfLocationArray(expLocations)));
         context.setLastTrace(TmfExperimentContext.NO_TRACE);
         context.setRank((location == null) ? 0 : ITmfContext.UNKNOWN_RANK);
 
@@ -320,7 +336,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getLocationRatio(org.eclipse.linuxtools.tmf.core.trace.ITmfLocation)
      */
     @Override
-    public double getLocationRatio(final ITmfLocation<?> location) {
+    public double getLocationRatio(final ITmfLocation location) {
         if (location instanceof TmfExperimentLocation) {
             return (double) seekEvent(location).getRank() / getNbEvents();
         }
@@ -331,8 +347,8 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentLocation()
      */
     @Override
-    public ITmfLocation<?> getCurrentLocation() {
-        ITmfLocation<?>[] locations = new ITmfLocation<?>[fTraces.length];
+    public ITmfLocation getCurrentLocation() {
+        ITmfLocation[] locations = new ITmfLocation[fTraces.length];
         for (int i = 0; i < fTraces.length; i++) {
             locations[i] = fTraces[i].getCurrentLocation();
         }
@@ -402,10 +418,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
                 expContext.setLastTrace(trace);
                 final ITmfContext traceContext = expContext.getContexts()[trace];
 
-                TmfExperimentLocation location = (TmfExperimentLocation) expContext.getLocation();
-                if (location != null) {
-                    location.getLocationData().getLocations()[trace] = traceContext.getLocation().clone();
-                }
+                expContext.setLocation(new TmfExperimentLocation(
+                        (TmfExperimentLocation) expContext.getLocation(),
+                        trace, traceContext.getLocation()));
 
                 fExperimentContext = expContext.clone();
                 processEvent(event);

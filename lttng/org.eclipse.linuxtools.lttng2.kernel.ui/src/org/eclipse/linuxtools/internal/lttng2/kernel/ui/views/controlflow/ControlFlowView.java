@@ -37,6 +37,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
@@ -278,7 +279,7 @@ public class ControlFlowView extends TmfView {
         public void run() {
             ArrayList<ControlFlowEntry> entryList = null;
             synchronized (fEntryListSyncObj) {
-                entryList = fEntryList;
+                entryList = (ArrayList<ControlFlowEntry>) fEntryList.clone();
             }
             if (entryList == null) {
                 return;
@@ -426,6 +427,25 @@ public class ControlFlowView extends TmfView {
     }
 
     /**
+     * Experiment is disposed: clear the data structures and the view
+     *
+     * @param signal the signal received
+     */
+    @TmfSignalHandler
+    public void experimentDisposed(final TmfExperimentDisposedSignal signal) {
+        if (signal.getExperiment().equals(fSelectedExperiment)) {
+            fSelectedExperiment = null;
+            fStartTime = 0;
+            fEndTime = 0;
+            fZoomThread.cancel();
+            synchronized(fEntryListSyncObj) {
+                fEntryList.clear();
+            }
+            refresh(INITIAL_WINDOW_OFFSET);
+        }
+    }
+
+    /**
      * Handler for the synch signal
      *
      * @param signal
@@ -445,7 +465,7 @@ public class ControlFlowView extends TmfView {
             }
             if (trace instanceof CtfKernelTrace) {
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
-                IStateSystemQuerier ssq = ctfKernelTrace.getKernelStateSystem();
+                IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();
                 if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);  //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
@@ -563,7 +583,7 @@ public class ControlFlowView extends TmfView {
             if (trace instanceof CtfKernelTrace) {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
-                IStateSystemQuerier ssq = ctfKernelTrace.getKernelStateSystem();
+                IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();
                 long start = ssq.getStartTime();
                 long end = ssq.getCurrentEndTime() + 1;
                 fStartTime = Math.min(fStartTime, start);
@@ -653,7 +673,7 @@ public class ControlFlowView extends TmfView {
     }
 
     private void buildStatusEvents(ControlFlowEntry entry) {
-        IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
+        IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
         long resolution = Math.max(1, (end - start) / fDisplayWidth);
@@ -673,7 +693,7 @@ public class ControlFlowView extends TmfView {
         if (endTime <= startTime) {
             return null;
         }
-        IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
+        IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
         List<ITimeEvent> eventList = null;
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
