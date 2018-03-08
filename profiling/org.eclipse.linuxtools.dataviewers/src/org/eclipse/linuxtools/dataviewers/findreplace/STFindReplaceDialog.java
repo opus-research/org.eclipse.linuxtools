@@ -71,8 +71,7 @@ class STFindReplaceDialog extends Dialog {
         /*
          * @see ShellListener#shellActivated(ShellEvent)
          */
-        @Override
-		public void shellActivated(ShellEvent e) {
+        public void shellActivated(ShellEvent e) {
             fActiveShell = (Shell) e.widget;
             updateButtonState();
 
@@ -84,8 +83,7 @@ class STFindReplaceDialog extends Dialog {
         /*
          * @see ShellListener#shellDeactivated(ShellEvent)
          */
-        @Override
-		public void shellDeactivated(ShellEvent e) {
+        public void shellDeactivated(ShellEvent e) {
             fGiveFocusToFindField = false;
 
             storeSettings();
@@ -101,7 +99,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Modify listener to update the search result in case of incremental search.
-     *
+     * 
      * @since 2.0
      */
     private class FindModifyListener implements ModifyListener {
@@ -109,8 +107,7 @@ class STFindReplaceDialog extends Dialog {
         /*
          * @see ModifyListener#modifyText(ModifyEvent)
          */
-        @Override
-		public void modifyText(ModifyEvent e) {
+        public void modifyText(ModifyEvent e) {
             if (isIncrementalSearch() && !isRegExSearchAvailableAndChecked()) {
                 if (fFindField.getText().equals("") && fTarget != null) { //$NON-NLS-1$
                     // empty selection at base location
@@ -141,13 +138,13 @@ class STFindReplaceDialog extends Dialog {
     private boolean fWrapInit, fCaseInit, fWholeWordInit, fForwardInit, fGlobalInit, fIncrementalInit;
     /**
      * Tells whether an initial find operation is needed before the replace operation.
-     *
+     * 
      * @since 3.0
      */
     private boolean fNeedsInitialFindBeforeReplace;
     /**
      * Initial value for telling whether the search string is a regular expression.
-     *
+     * 
      * @since 3.0
      */
     boolean fIsRegExInit;
@@ -169,7 +166,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Checkbox for selecting whether the search string is a regular expression.
-     *
+     * 
      * @since 3.0
      */
     private Button fIsRegExCheckBox;
@@ -179,7 +176,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Find and replace command adapters.
-     *
+     * 
      * @since 3.3
      */
     private ContentAssistCommandAdapter fContentAssistFindField, fContentAssistReplaceField;
@@ -190,27 +187,27 @@ class STFindReplaceDialog extends Dialog {
     /**
      * Tells whether the target supports regular expressions. <code>true</code> if the target supports regular
      * expressions
-     *
+     * 
      * @since 3.0
      */
     private boolean fIsTargetSupportingRegEx;
     /**
      * Tells whether fUseSelectedLines radio is checked.
-     *
+     * 
      * @since 3.0
      */
     private boolean fUseSelectedLines;
     /**
      * <code>true</code> if the find field should receive focus the next time the dialog is activated,
      * <code>false</code> otherwise.
-     *
+     * 
      * @since 3.0
      */
     private boolean fGiveFocusToFindField = true;
 
     /**
      * Creates a new dialog with the given shell as parent.
-     *
+     * 
      * @param parentShell
      *            the parent shell
      */
@@ -240,17 +237,16 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns this dialog's parent shell.
-     *
+     * 
      * @return the dialog's parent shell
      */
-    @Override
-	public Shell getParentShell() {
+    public Shell getParentShell() {
         return super.getParentShell();
     }
 
     /**
      * Returns <code>true</code> if control can be used.
-     *
+     * 
      * @param control
      *            the control to be checked
      * @return <code>true</code> if control can be used
@@ -262,8 +258,7 @@ class STFindReplaceDialog extends Dialog {
     /*
      * @see org.eclipse.jface.window.Window#create()
      */
-    @Override
-	public void create() {
+    public void create() {
 
         super.create();
 
@@ -292,7 +287,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Create the button section of the find/replace dialog.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the button section
@@ -306,8 +301,7 @@ class STFindReplaceDialog extends Dialog {
 
         fFindNextButton = makeButton(panel, EditorMessages.FindReplace_FindNextButton_label, 102, true,
                 new SelectionAdapter() {
-                    @Override
-					public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(SelectionEvent e) {
                         if (isIncrementalSearch() && !isRegExSearchAvailableAndChecked())
                             initIncrementalBaseLocation();
 
@@ -320,15 +314,35 @@ class STFindReplaceDialog extends Dialog {
         setGridData(fFindNextButton, SWT.FILL, true, SWT.FILL, false);
 
         fReplaceFindButton = makeButton(panel, EditorMessages.FindReplace_ReplaceFindButton_label, 103, false,
-                new SelectionAdapter(){});
+                new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e) {
+                        /*
+                         * if (fNeedsInitialFindBeforeReplace) performSearch(); if (performReplaceSelection())
+                         * performSearch(); updateFindAndReplaceHistory(); fReplaceFindButton.setFocus();
+                         */
+                    }
+                });
         setGridData(fReplaceFindButton, SWT.FILL, false, SWT.FILL, false);
 
         fReplaceSelectionButton = makeButton(panel, EditorMessages.FindReplace_ReplaceSelectionButton_label, 104,
-                false, new SelectionAdapter() {});
+                false, new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e) {
+                        /*
+                         * if (fNeedsInitialFindBeforeReplace) performSearch(); performReplaceSelection();
+                         * updateFindAndReplaceHistory(); fFindNextButton.setFocus();
+                         */
+                    }
+                });
         setGridData(fReplaceSelectionButton, SWT.FILL, false, SWT.FILL, false);
 
         fReplaceAllButton = makeButton(panel, EditorMessages.FindReplace_ReplaceAllButton_label, 105, false,
-                new SelectionAdapter() {});
+                new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e) {
+                        /*
+                         * performReplaceAll(); updateFindAndReplaceHistory(); fFindNextButton.setFocus();
+                         */
+                    }
+                });
         setGridData(fReplaceAllButton, SWT.FILL, true, SWT.FILL, false);
 
         // Make the all the buttons the same size as the Remove Selection button.
@@ -339,7 +353,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates the options configuration section of the find replace dialog.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the options configuration section
@@ -368,8 +382,7 @@ class STFindReplaceDialog extends Dialog {
     /*
      * @see org.eclipse.jface.window.Window#createContents(org.eclipse.swt.widgets.Composite)
      */
-    @Override
-	protected Control createContents(Composite parent) {
+    protected Control createContents(Composite parent) {
 
         Composite panel = new Composite(parent, SWT.NULL);
         GridLayout layout = new GridLayout();
@@ -404,7 +417,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates the direction defining part of the options defining section of the find replace dialog.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the direction defining part
@@ -423,12 +436,14 @@ class STFindReplaceDialog extends Dialog {
         group.setLayout(groupLayout);
         group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        SelectionListener selectionListener = new SelectionAdapter() {
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+        SelectionListener selectionListener = new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
                 calcolateIndex(fForwardRadioButton.getSelection());
                 if (isIncrementalSearch() && !isRegExSearchAvailableAndChecked())
                     initIncrementalBaseLocation();
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         };
 
@@ -451,7 +466,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates the scope defining part of the find replace dialog.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the scope defining part
@@ -475,13 +490,15 @@ class STFindReplaceDialog extends Dialog {
         fGlobalRadioButton.setText(EditorMessages.FindReplace_GlobalRadioButton_label);
         setGridData(fGlobalRadioButton, SWT.LEFT, false, SWT.CENTER, false);
         fGlobalRadioButton.setSelection(fGlobalInit);
-        fGlobalRadioButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+        fGlobalRadioButton.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
                 if (!fGlobalRadioButton.getSelection() || !fUseSelectedLines)
                     return;
                 fUseSelectedLines = false;
                 useSelectedLines(false);
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
 
@@ -490,13 +507,15 @@ class STFindReplaceDialog extends Dialog {
         setGridData(fSelectedRangeRadioButton, SWT.LEFT, false, SWT.CENTER, false);
         fSelectedRangeRadioButton.setSelection(!fGlobalInit);
         fUseSelectedLines = !fGlobalInit;
-        fSelectedRangeRadioButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+        fSelectedRangeRadioButton.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
                 if (!fSelectedRangeRadioButton.getSelection() || fUseSelectedLines)
                     return;
                 fUseSelectedLines = true;
                 useSelectedLines(true);
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
 
@@ -505,7 +524,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Tells the dialog to perform searches only in the scope given by the actually selected lines.
-     *
+     * 
      * @param selectedLines
      *            <code>true</code> if selected lines should be used
      * @since 2.0
@@ -523,7 +542,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates the panel where the user specifies the text to search for and the optional replacement text.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the input panel
@@ -531,8 +550,7 @@ class STFindReplaceDialog extends Dialog {
     private Composite createInputPanel(Composite parent) {
 
         ModifyListener listener = new ModifyListener() {
-            @Override
-			public void modifyText(ModifyEvent e) {
+            public void modifyText(ModifyEvent e) {
                 updateButtonState();
             }
         };
@@ -574,7 +592,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates the functional options part of the options defining section of the find replace dialog.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the options group
@@ -595,10 +613,12 @@ class STFindReplaceDialog extends Dialog {
         group.setLayout(groupLayout);
         group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        SelectionListener selectionListener = new SelectionAdapter() {
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+        SelectionListener selectionListener = new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
                 storeSettings();
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         };
 
@@ -624,13 +644,15 @@ class STFindReplaceDialog extends Dialog {
         fIncrementalCheckBox.setText(EditorMessages.FindReplace_IncrementalCheckBox_label);
         setGridData(fIncrementalCheckBox, SWT.LEFT, false, SWT.CENTER, false);
         fIncrementalCheckBox.setSelection(fIncrementalInit);
-        fIncrementalCheckBox.addSelectionListener(new SelectionAdapter() {
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+        fIncrementalCheckBox.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
                 if (isIncrementalSearch() && !isRegExSearch())
                     initIncrementalBaseLocation();
 
                 storeSettings();
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
 
@@ -645,8 +667,7 @@ class STFindReplaceDialog extends Dialog {
             /*
              * @see org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse.swt.events.SelectionEvent)
              */
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 boolean newState = fIsRegExCheckBox.getSelection();
                 fIncrementalCheckBox.setEnabled(!newState);
                 updateButtonState();
@@ -660,8 +681,7 @@ class STFindReplaceDialog extends Dialog {
             /*
              * @see org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse.swt.events.SelectionEvent)
              */
-            @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 updateButtonState();
             }
         });
@@ -671,7 +691,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates the status and close section of the dialog.
-     *
+     * 
      * @param parent
      *            the parent composite
      * @return the status and close button
@@ -698,8 +718,7 @@ class STFindReplaceDialog extends Dialog {
     /*
      * @see Dialog#buttonPressed
      */
-    @Override
-	protected void buttonPressed(int buttonID) {
+    protected void buttonPressed(int buttonID) {
         if (buttonID == 101)
             close();
     }
@@ -709,7 +728,7 @@ class STFindReplaceDialog extends Dialog {
     /**
      * Returns the position of the specified search string, or <code>-1</code> if the string can not be found when
      * searching using the given options.
-     *
+     * 
      * @param findString
      *            the string to search for
      * @param startPosition
@@ -764,7 +783,7 @@ class STFindReplaceDialog extends Dialog {
     /**
      * Searches for a string starting at the given offset and using the specified search directives. If a string has
      * been found it is selected and its start offset is returned.
-     *
+     * 
      * @param offset
      *            the offset at which searching starts
      * @param findString
@@ -793,7 +812,7 @@ class STFindReplaceDialog extends Dialog {
      * <code>replaceString</code> is a regex replace pattern which will get expanded if the underlying target supports
      * it. Returns the region of the inserted text; note that the returned selection covers the expanded pattern in case
      * of regex replace.
-     *
+     * 
      * @param replaceString
      *            the replace string (or a regex pattern)
      * @param regExReplace
@@ -807,7 +826,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns whether the specified search string can be found using the given options.
-     *
+     * 
      * @param findString
      *            the string to search for
      * @param forwardSearch
@@ -823,7 +842,7 @@ class STFindReplaceDialog extends Dialog {
      * @param regExSearch
      *            if <code>true</code> findString represents a regular expression
      * @return <code>true</code> if the search string can be found using the given options
-     *
+     * 
      * @since 3.0
      */
     private boolean findNext(String findString, boolean forwardSearch, boolean caseSensitive, boolean wrapSearch,
@@ -889,7 +908,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns the dialog's boundaries.
-     *
+     * 
      * @return the dialog's boundaries
      */
     private Rectangle getDialogBoundaries() {
@@ -900,7 +919,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns the dialog's history.
-     *
+     * 
      * @return the dialog's history
      */
     private List<String> getFindHistory() {
@@ -911,7 +930,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves the string to search for from the appropriate text input field and returns it.
-     *
+     * 
      * @return the search string
      */
     private String getFindString() {
@@ -923,7 +942,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns the dialog's replace history.
-     *
+     * 
      * @return the dialog's replace history
      */
     private List<String> getReplaceHistory() {
@@ -932,7 +951,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves the replacement string from the appropriate text input field and returns it.
-     *
+     * 
      * @return the replacement string
      */
     private String getReplaceString() {
@@ -946,7 +965,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns the actual selection of the find replace target.
-     *
+     * 
      * @return the selection of the target
      */
     private String getSelectionString() {
@@ -964,8 +983,7 @@ class STFindReplaceDialog extends Dialog {
     /**
      * @see org.eclipse.jface.window.Window#close()
      */
-    @Override
-	public boolean close() {
+    public boolean close() {
         handleDialogClose();
         return super.close();
     }
@@ -998,7 +1016,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Writes the current selection to the dialog settings.
-     *
+     * 
      * @since 3.0
      */
     private void writeSelection() {
@@ -1014,7 +1032,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Stores the current state in the dialog settings.
-     *
+     * 
      * @since 2.0
      */
     private void storeSettings() {
@@ -1048,7 +1066,7 @@ class STFindReplaceDialog extends Dialog {
             } else {
                 if ("".equals(fFindField.getText())) { //$NON-NLS-1$
                     if (fFindHistory.size() > 0)
-                        fFindField.setText(fFindHistory.get(0));
+                        fFindField.setText((String) fFindHistory.get(0));
                     else
                         fFindField.setText(""); //$NON-NLS-1$
                 }
@@ -1060,7 +1078,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Initializes the anchor used as starting point for incremental searching.
-     *
+     * 
      * @since 2.0
      */
     private void initIncrementalBaseLocation() {
@@ -1076,7 +1094,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves and returns the option case sensitivity from the appropriate check box.
-     *
+     * 
      * @return <code>true</code> if case sensitive
      */
     private boolean isCaseSensitiveSearch() {
@@ -1088,7 +1106,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves and returns the regEx option from the appropriate check box.
-     *
+     * 
      * @return <code>true</code> if case sensitive
      * @since 3.0
      */
@@ -1101,7 +1119,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * If the target supports regular expressions search retrieves and returns regEx option from appropriate check box.
-     *
+     * 
      * @return <code>true</code> if regEx is available and checked
      * @since 3.0
      */
@@ -1114,7 +1132,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves and returns the option search direction from the appropriate check box.
-     *
+     * 
      * @return <code>true</code> if searching forward
      */
     private boolean isForwardSearch() {
@@ -1126,7 +1144,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves and returns the option search whole words from the appropriate check box.
-     *
+     * 
      * @return <code>true</code> if searching for whole words
      */
     private boolean isWholeWordSetting() {
@@ -1140,7 +1158,7 @@ class STFindReplaceDialog extends Dialog {
      * Returns <code>true</code> if searching should be restricted to entire words, <code>false</code> if not. This is
      * the case if the respective checkbox is turned on, regex is off, and the checkbox is enabled, i.e. the current
      * find string is an entire word.
-     *
+     * 
      * @return <code>true</code> if the search is restricted to whole words
      */
     private boolean isWholeWordSearch() {
@@ -1150,7 +1168,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves and returns the option wrap search from the appropriate check box.
-     *
+     * 
      * @return <code>true</code> if wrapping while searching
      */
     private boolean isWrapSearch() {
@@ -1162,7 +1180,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Retrieves and returns the option incremental search from the appropriate check box.
-     *
+     * 
      * @return <code>true</code> if incremental search
      * @since 2.0
      */
@@ -1175,7 +1193,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Creates a button.
-     *
+     * 
      * @param parent
      *            the parent control
      * @param label
@@ -1196,7 +1214,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns the status line manager of the active editor or <code>null</code> if there is no such editor.
-     *
+     * 
      * @return the status line manager of the active editor
      */
     private IEditorStatusLine getStatusLineManager() {
@@ -1217,7 +1235,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Sets the given status message in the status line.
-     *
+     * 
      * @param error
      *            <code>true</code> if it is an error
      * @param message
@@ -1241,7 +1259,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Sets the given error message in the status line.
-     *
+     * 
      * @param message
      *            the message
      */
@@ -1251,7 +1269,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Sets the given message in the status line.
-     *
+     * 
      * @param message
      *            the message
      */
@@ -1268,7 +1286,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Locates the user's findString in the text of the target.
-     *
+     * 
      * @param mustInitIncrementalBaseLocation
      *            <code>true</code> if base location must be initialized
      * @since 3.0
@@ -1311,7 +1329,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Attaches the given layout specification to the <code>component</code>.
-     *
+     * 
      * @param component
      *            the component
      * @param horizontalAlignment
@@ -1341,7 +1359,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Adds enough space in the control's layout data margin for the content assist decoration.
-     *
+     * 
      * @param control
      *            the control that needs a margin
      * @since 3.3
@@ -1365,7 +1383,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Updates the enabled state of the buttons.
-     *
+     * 
      * @param disableReplace
      *            <code>true</code> if replace button must be disabled
      * @since 3.0
@@ -1387,7 +1405,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Tests whether each character in the given string is a letter.
-     *
+     * 
      * @param str
      * @return <code>true</code> if the given string is a word
      * @since 3.0
@@ -1405,7 +1423,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Updates the given combo with the given content.
-     *
+     * 
      * @param combo
      *            combo to be updated
      * @param content
@@ -1433,7 +1451,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Updates the combo with the history.
-     *
+     * 
      * @param combo
      *            to be updated
      * @param history
@@ -1454,7 +1472,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns whether the target is editable.
-     *
+     * 
      * @return <code>true</code> if target is editable
      */
     private boolean isEditable() {
@@ -1464,7 +1482,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Updates this dialog because of a different target.
-     *
+     * 
      * @param target
      *            the new target
      * @param isTargetEditable
@@ -1524,12 +1542,11 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Sets the parent shell of this dialog to be the given shell.
-     *
+     * 
      * @param shell
      *            the new parent shell
      */
-    @Override
-	public void setParentShell(Shell shell) {
+    public void setParentShell(Shell shell) {
         if (shell != fParentShell) {
 
             if (fParentShell != null)
@@ -1546,7 +1563,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Returns the dialog settings object used to share state between several find/replace dialogs.
-     *
+     * 
      * @return the dialog settings to be used
      */
     private IDialogSettings getDialogSettings() {
@@ -1559,11 +1576,10 @@ class STFindReplaceDialog extends Dialog {
 
     /*
      * @see org.eclipse.jface.dialogs.Dialog#getDialogBoundsSettings()
-     *
+     * 
      * @since 3.2
      */
-    @Override
-	protected IDialogSettings getDialogBoundsSettings() {
+    protected IDialogSettings getDialogBoundsSettings() {
         String sectionName = getClass().getName() + "_dialogBounds"; //$NON-NLS-1$
         IDialogSettings settings = STDataViewersActivator.getDefault().getDialogSettings();
         IDialogSettings section = settings.getSection(sectionName);
@@ -1574,11 +1590,10 @@ class STFindReplaceDialog extends Dialog {
 
     /*
      * @see org.eclipse.jface.dialogs.Dialog#getDialogBoundsStrategy()
-     *
+     * 
      * @since 3.2
      */
-    @Override
-	protected int getDialogBoundsStrategy() {
+    protected int getDialogBoundsStrategy() {
         return DIALOG_PERSISTLOCATION | DIALOG_PERSISTSIZE;
     }
 
@@ -1638,7 +1653,7 @@ class STFindReplaceDialog extends Dialog {
 
     /**
      * Writes the given history into the given dialog store.
-     *
+     * 
      * @param history
      *            the history
      * @param settings
