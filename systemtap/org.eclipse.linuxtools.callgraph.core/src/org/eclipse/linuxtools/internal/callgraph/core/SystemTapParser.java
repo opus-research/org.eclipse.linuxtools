@@ -314,8 +314,10 @@ public abstract class SystemTapParser extends Job {
 	/**
 	 * Set whether or not this parser runs in real time. If viewID has already
 	 * been set, this will also attempt to open the view.
+	 * 
+	 * @throws InterruptedException
 	 */
-	public void setRealTime(boolean val) {
+	public void setRealTime(boolean val) throws InterruptedException {
 		realTime = val;
 
 	}
@@ -324,8 +326,10 @@ public abstract class SystemTapParser extends Job {
 	 * Set the viewID to use for this parser -- see the callgraph.core view
 	 * extension point. If realTime is set to true, this will also attempt to
 	 * open the view.
+	 * 
+	 * @throws InterruptedException
 	 */
-	public void setViewID(String value) {
+	public void setViewID(String value) throws InterruptedException {
 		viewID = value;
 	}
 	

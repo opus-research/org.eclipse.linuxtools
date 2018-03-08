@@ -34,7 +34,6 @@ public class SystemTapTextView extends SystemTapView {
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
-	@Override
 	public void setFocus() {
 		if (viewer != null && !viewer.isDisposed())
 			viewer.setFocus();

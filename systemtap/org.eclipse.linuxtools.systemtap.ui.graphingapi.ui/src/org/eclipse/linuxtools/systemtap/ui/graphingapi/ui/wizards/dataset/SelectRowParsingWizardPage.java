@@ -34,7 +34,6 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		setTitle(Localization.getString("SelectRowParsingWizardPage.SelectRowDataSetParsing"));
 	}
 	
-	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 
@@ -44,7 +43,6 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		setControl(comp);
 	}
 
-	@Override
 	protected boolean readParsingExpression() {
 		if(null == wizard.metaFile && !wizard.openFile())
 			return false;
@@ -96,7 +94,6 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		return true;
 	}
 	
-	@Override
 	protected void copyExisting(IMemento oldMeta, IMemento newMeta) {
 		IMemento[] children = oldMeta.getChildren(IDataSetParser.XMLColumn);
 		IMemento child;
@@ -112,7 +109,6 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		}
 	}
 	
-	@Override
 	public boolean checkComplete() {
 		if(super.checkComplete()) {
 			try {
@@ -126,7 +122,6 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		return false;
 	}
 	
-	@Override
 	public void dispose() {
 		super.dispose();
 	}

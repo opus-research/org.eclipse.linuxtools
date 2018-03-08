@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.dialog.OpenGCDialog;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
@@ -44,7 +43,6 @@ import org.eclipse.ui.PlatformUI;
  */
 public class OpenGCAction implements IEditorLauncher {
 
-	@Override
 	public void open(IPath file) {
 		Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
 		String extension = file.getFileExtension();
@@ -80,7 +78,7 @@ public class OpenGCAction implements IEditorLauncher {
 
 		String s = getDefaultBinary(file);
 		OpenGCDialog d = new OpenGCDialog(shell, s, file);
-		if (d.open() != Window.OK) {
+		if (d.open() != OpenGCDialog.OK) {
 			return;
 		}
 		String binaryPath = d.getBinaryFile();
@@ -151,7 +149,7 @@ public class OpenGCAction implements IEditorLauncher {
 			}
 		} catch (FileNotFoundException e) {
 			Status status = new Status(
-					IStatus.WARNING,
+					Status.WARNING,
 					Activator.PLUGIN_ID,
 					IStatus.WARNING,
 					e.getMessage(),
@@ -160,7 +158,7 @@ public class OpenGCAction implements IEditorLauncher {
 			Activator.getDefault().getLog().log(status);
 		} catch (IOException e) {
 			Status status = new Status(
-					IStatus.ERROR,
+					Status.ERROR,
 					Activator.PLUGIN_ID,
 					IStatus.ERROR,
 					e.getMessage(),

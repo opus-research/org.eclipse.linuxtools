@@ -45,7 +45,6 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 	
 
 	
-	@Override
 	public void launch(IEditorPart ed, String mode) {
 		resourceToSearchFor = ed.getTitle();
 		searchForResource = true;
@@ -55,7 +54,6 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 		super.launch(ed, mode);
 	}
 	
-	@Override
 	public void launch(IBinary bin, String mode) {
 		launch(bin, mode, null);
 	}
@@ -128,8 +126,9 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 	 * 
 	 * @param bw
 	 * @return
+	 * @throws IOException
 	 */
-	public String writeFunctionListToScript(String resourceToSearchFor) {
+	public String writeFunctionListToScript(String resourceToSearchFor) throws IOException {
 		String toWrite = getFunctionsFromBinary(bin, resourceToSearchFor);
 		
 		if (toWrite == null || toWrite.length() < 1) {

@@ -22,7 +22,6 @@ public class ZipArchiveTest extends TestCase {
 		super(name);
 	}
 
-	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		
@@ -66,7 +65,6 @@ public class ZipArchiveTest extends TestCase {
 		assertTrue(new File(b.getAbsolutePath() + "a.zip").exists());
 	}
 	
-	@Override
 	protected void tearDown() throws Exception {
 		new File("/tmp/test/").deleteOnExit();
 		super.tearDown();

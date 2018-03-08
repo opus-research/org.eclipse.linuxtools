@@ -68,7 +68,6 @@ public class Aggregator {
 			final String finalErrorMessage = errorMessage;
 			PlatformUI.getWorkbench().getDisplay().asyncExec(
 					new Runnable() {
-						@Override
 						public void run() {
 							MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Gprof error", finalErrorMessage);
 						}
@@ -88,7 +87,6 @@ public class Aggregator {
 			this.p = p;
 		}
 		
-		@Override
 		public void run() {
 			try {
 				LineNumberReader lnr = new LineNumberReader(new InputStreamReader(p.getErrorStream()));

@@ -29,7 +29,6 @@ public class GraphPreferencePage extends FieldEditorPreferencePage implements IW
 		setDescription(Localization.getString("GraphPreferencePage.GraphDisplayPreferences"));
 	}
 	
-	@Override
 	public void createFieldEditors() {
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES, 
@@ -68,7 +67,6 @@ public class GraphPreferencePage extends FieldEditorPreferencePage implements IW
 
 	public void init(IWorkbench workbench) {}
 	
-	@Override
 	public void dispose() {
 		super.dispose();
 	}

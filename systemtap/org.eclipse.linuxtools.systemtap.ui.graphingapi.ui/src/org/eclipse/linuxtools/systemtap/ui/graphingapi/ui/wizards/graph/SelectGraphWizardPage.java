@@ -87,12 +87,10 @@ public class SelectGraphWizardPage extends WizardPage implements Listener {
 		}
 	}
 	
-	@Override
 	public IWizardPage getNextPage() {    		
 		return wizard.selectSeriesPage;
 	}
 
-	@Override
 	public boolean canFlipToNextPage() {
 		return wizard.model.isGraphSet();
 	}
@@ -105,7 +103,6 @@ public class SelectGraphWizardPage extends WizardPage implements Listener {
 				GraphFactory.isKeyOptional(model.getGraphID(), model.getDataSet()));
 	}
 	
-	@Override
 	public void dispose() {
 		super.dispose();
 		if(null != btnGraphs)
