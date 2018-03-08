@@ -236,15 +236,15 @@ public class TmfEventsCache {
         final int index = current * fCache.length;
 
         class DataRequest extends TmfDataRequest {
-            ITmfFilter requestFilter;
-            int requestRank;
-            int requestIndex;
+            ITmfFilter fFilter;
+            int fRank;
+            int fIndex;
 
-            DataRequest(Class<? extends ITmfEvent> dataType, ITmfFilter reqFilter, int start, int nbRequested) {
+            DataRequest(Class<? extends ITmfEvent> dataType, ITmfFilter filter, int start, int nbRequested) {
                 super(dataType, start, nbRequested);
-                requestFilter = reqFilter;
-                requestRank = start;
-                requestIndex = index;
+                fFilter = filter;
+                fRank = start;
+                fIndex = index;
             }
 
             @Override
@@ -253,18 +253,18 @@ public class TmfEventsCache {
                 if (isCancelled()) {
                     return;
                 }
-                if (requestRank >= rank) {
+                if (fRank >= rank) {
                     cancel();
                     return;
                 }
-                requestRank++;
-                if (requestFilter.matches(event)) {
-                    requestIndex++;
+                fRank++;
+                if (fFilter.matches(event)) {
+                    fIndex++;
                 }
             }
 
             public int getFilteredIndex() {
-                return requestIndex;
+                return fIndex;
             }
         }
 
