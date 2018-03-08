@@ -8,7 +8,7 @@
  *     Sami Wagiaalla
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
+package org.eclipse.linuxtools.systemtap.ui.ide.launcher;
 
 import java.util.AbstractList;
 
@@ -17,11 +17,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
-public class SystemTapScriptTester extends PropertyTester {
+public class SystemtapScriptTester extends PropertyTester {
 
 	public static final String STP_SUFFIX = ".stp";
 
-	public SystemTapScriptTester() {
+	public SystemtapScriptTester() {
 		// TODO Auto-generated constructor stub
 	}
 
