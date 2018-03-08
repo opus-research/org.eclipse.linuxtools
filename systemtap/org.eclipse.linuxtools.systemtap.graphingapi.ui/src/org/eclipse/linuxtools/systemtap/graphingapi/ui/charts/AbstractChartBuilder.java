@@ -76,6 +76,9 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 
 	/**
 	 * Constructs one chart builder and associate it to one data set.
+	 *
+	 * @param dataSet
+	 *            data set
 	 */
 
 	public AbstractChartBuilder(IAdapter adapter, Composite parent, int style, String title) {
