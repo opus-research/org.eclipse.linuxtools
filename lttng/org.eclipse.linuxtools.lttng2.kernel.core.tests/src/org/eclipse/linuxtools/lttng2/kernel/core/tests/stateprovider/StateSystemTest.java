@@ -55,6 +55,7 @@ public abstract class StateSystemTest {
 
     /* Offset in the trace + start time of the trace */
     static final long interestingTimestamp1 = 18670067372290L + 1331649577946812237L;
+    static final long interestingTimestamp2 = 1331668248014135800L;
 
     @Test
     public void testFullQuery1() {
@@ -155,7 +156,10 @@ public abstract class StateSystemTest {
         try {
             int quark = ssq.getQuarkAbsolute(Attributes.RESOURCES, Attributes.IRQS, "1");
             long ts1 = ssq.getStartTime(); /* start of the trace */
-            long ts2 = startTime + 20L * NANOSECS_PER_SEC; /* invalid, but ignored */
+            long ts2 = startTime + 20L * NANOSECS_PER_SEC; /*
+                                                            * invalid, but
+                                                            * ignored
+                                                            */
 
             intervals = ssq.queryHistoryRange(quark, ts1, ts2);
 
@@ -408,12 +412,15 @@ public abstract class StateSystemTest {
 
     @Test
     public void testFirstIntervalIsConsidered() {
+        List<ITmfStateInterval> list;
+        ITmfStateInterval interval;
+        int quark = 233, valueInt;
         try {
-            List<ITmfStateInterval> list = ssq.queryFullState(1331668248014135800L);
-            ITmfStateInterval interval = list.get(233);
+            list = ssq.queryFullState(interestingTimestamp2);
+            interval = list.get(quark);
             assertEquals(1331668247516664825L, interval.getStartTime());
-
-            int valueInt = interval.getStateValue().unboxInt();
+            assertEquals(1331668248014135818L, interval.getEndTime());
+            valueInt = interval.getStateValue().unboxInt();
             assertEquals(1, valueInt);
         } catch (TimeRangeException e) {
             fail();

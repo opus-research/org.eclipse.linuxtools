@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.handlers;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -21,7 +23,6 @@ import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.linuxtools.internal.perf.BaseDataManipulator;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.swt.widgets.Display;
 
@@ -29,17 +30,17 @@ import org.eclipse.swt.widgets.Display;
  * Class for handling general tasks handled by session saving commands:
  * File name creation and validation, command enablement, data file verification.
  */
-public abstract class AbstractSaveDataHandler extends BaseDataManipulator implements IHandler {
+public abstract class AbstractSaveDataHandler implements IHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) {
 		InputDialog dialog = new InputDialog(Display.getCurrent()
 				.getActiveShell(), Messages.PerfSaveSession_title,
-				Messages.PerfSaveSession_msg, "", new IInputValidator() { //$NON-NLS-1$
+				Messages.PerfSaveSession_msg, "", new IInputValidator() {
 
 					@Override
 					public String isValid(String newText) {
-						if ("".equals(newText)) { //$NON-NLS-1$
+						if ("".equals(newText)) {
 							return Messages.PerfSaveSession_invalid_filename_msg;
 						}
 						return null;
@@ -108,6 +109,23 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
 		String errorMsg = MessageFormat.format(pattern, new Object[] { arg });
 		MessageDialog.openError(Display.getCurrent().getActiveShell(), title,
 				errorMsg);
+	}
+
+	/**
+	 * Close specified resource
+	 *
+	 * @param resrc resource to close
+	 * @param resrcName resource name
+	 */
+	public void closeResource(Closeable resrc, String resrcName) {
+		if (resrc != null) {
+			try {
+				resrc.close();
+			} catch (IOException e) {
+				openErroDialog(Messages.PerfResourceLeak_title,
+						Messages.PerfResourceLeak_msg, resrcName);
+			}
+		}
 	}
 
 	/**
