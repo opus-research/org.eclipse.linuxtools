@@ -31,11 +31,14 @@ public class FieldName extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getValue(Object obj) {
-		TreeElement e = (TreeElement) obj;
-		String nm = e.getName();
-		nm = nm.substring(nm.lastIndexOf('/')+1);
-		nm = nm.substring(nm.lastIndexOf('\\')+1);
-		return nm;
+	    if (obj instanceof TreeElement) {
+	        TreeElement e = (TreeElement) obj;
+	        String nm = e.getName();
+	        nm = nm.substring(nm.lastIndexOf('/')+1);
+	        nm = nm.substring(nm.lastIndexOf('\\')+1);
+	        return nm;
+	    }
+	    return "";
 	}
 
 	/* 
@@ -44,9 +47,12 @@ public class FieldName extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getToolTipText(Object element) {
-		TreeElement elem = (TreeElement) element;
-		String s = elem.getName();
-		return s;
+        if (element instanceof TreeElement) {
+            TreeElement elem = (TreeElement) element;
+            String s = elem.getName();
+            return s;
+        }
+        return "";
 	}
 
 	/* 
