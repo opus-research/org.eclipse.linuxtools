@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -71,7 +69,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private static final int MAX_NAME_WIDTH = 1000;
     private static final int DEFAULT_HEIGHT = 22;
     private static final long RECENTERING_MARGIN_FACTOR = 50;
-    private static final String HIDE_ARROWS_KEY = "hide.arrows"; //$NON-NLS-1$
 
     private long fMinTimeInterval;
     private ITimeGraphEntry fSelectedEntry;
@@ -101,8 +98,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private List<ITimeGraphTimeListener> fTimeListeners = new ArrayList<ITimeGraphTimeListener>();
     private List<ITimeGraphRangeListener> fRangeListeners = new ArrayList<ITimeGraphRangeListener>();
 
-    // Time format, using Epoch reference, Relative time format(default) or
-    // Number
+    // Time format, using Epoch reference, Relative time format(default) or Number
     private TimeFormat fTimeFormat = TimeFormat.RELATIVE;
     private int fBorderWidth = 0;
     private int fTimeScaleHeight = DEFAULT_HEIGHT;
@@ -115,9 +111,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private Action fPreviousItemAction;
     private Action fZoomInAction;
     private Action fZoomOutAction;
-    private Action fHideArrowsAction;
-    private Action fFollowArrowFwdAction;
-    private Action fFollowArrowBwdAction;
 
     /**
      * Standard constructor
@@ -134,8 +127,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     /**
      * Sets the timegraph provider used by this timegraph viewer.
      *
-     * @param timeGraphProvider
-     *            the timegraph provider
+     * @param timeGraphProvider the timegraph provider
      */
     public void setTimeGraphProvider(ITimeGraphPresentationProvider timeGraphProvider) {
         fTimeGraphProvider = timeGraphProvider;
@@ -145,12 +137,10 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * Sets or clears the input for this time graph viewer. The input array
-     * should only contain top-level elements.
+     * Sets or clears the input for this time graph viewer.
+     * The input array should only contain top-level elements.
      *
-     * @param input
-     *            The input of this time graph viewer, or <code>null</code> if
-     *            none
+     * @param input The input of this time graph viewer, or <code>null</code> if none
      */
     public void setInput(ITimeGraphEntry[] input) {
         ITimeGraphEntry[] realInput = input;
@@ -992,8 +982,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param tf
-     *            the {@link TimeFormat} used to display timestamps
+     * @param tf the {@link TimeFormat} used to display timestamps
      * @since 2.0
      */
     public void setTimeFormat(TimeFormat tf) {
@@ -1018,7 +1007,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     public void setBorderWidth(int borderWidth) {
         if (borderWidth > -1) {
             this.fBorderWidth = borderWidth;
-            GridLayout gl = (GridLayout) fDataViewer.getLayout();
+            GridLayout gl = (GridLayout)fDataViewer.getLayout();
             gl.marginHeight = borderWidth;
         }
     }
@@ -1084,8 +1073,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     /**
      * Set the width for the name column
      *
-     * @param width
-     *            The width
+     * @param width The width
      */
     public void setNameWidthPref(int width) {
         fNameWidthPref = width;
@@ -1138,8 +1126,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     /**
      * Return the x coordinate corresponding to a time
      *
-     * @param time
-     *            the time
+     * @param time the time
      * @return the x coordinate corresponding to the time
      *
      * @since 2.0
@@ -1151,8 +1138,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     /**
      * Return the time corresponding to an x coordinate
      *
-     * @param x
-     *            the x coordinate
+     * @param x the x coordinate
      * @return the time corresponding to the x coordinate
      *
      * @since 2.0
@@ -1459,104 +1445,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         return fZoomOutAction;
     }
 
-    /**
-     * Get the hide arrows action
-     *
-     * @param dialogSettings
-     *            The dialog settings section where the state should be stored,
-     *            or null
-     *
-     * @return The Action object
-     *
-     * @since 2.1
-     */
-    public Action getHideArrowsAction(final IDialogSettings dialogSettings) {
-        if (fHideArrowsAction == null) {
-            fHideArrowsAction = new Action(Messages.TmfTimeGraphViewer_HideArrowsActionNameText, IAction.AS_CHECK_BOX) {
-                @Override
-                public void run() {
-                    boolean hideArrows = fHideArrowsAction.isChecked();
-                    fTimeGraphCtrl.hideArrows(hideArrows);
-                    refresh();
-                    if (dialogSettings != null) {
-                        dialogSettings.put(HIDE_ARROWS_KEY, hideArrows);
-                    }
-                    if (fFollowArrowFwdAction != null) {
-                        fFollowArrowFwdAction.setEnabled(!hideArrows);
-                    }
-                    if (fFollowArrowBwdAction != null) {
-                        fFollowArrowBwdAction.setEnabled(!hideArrows);
-                    }
-                }
-            };
-            fHideArrowsAction.setToolTipText(Messages.TmfTimeGraphViewer_HideArrowsActionToolTipText);
-            fHideArrowsAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_HIDE_ARROWS));
-            if (dialogSettings != null) {
-                boolean hideArrows = dialogSettings.getBoolean(HIDE_ARROWS_KEY);
-                fTimeGraphCtrl.hideArrows(hideArrows);
-                fHideArrowsAction.setChecked(hideArrows);
-                if (fFollowArrowFwdAction != null) {
-                    fFollowArrowFwdAction.setEnabled(!hideArrows);
-                }
-                if (fFollowArrowBwdAction != null) {
-                    fFollowArrowBwdAction.setEnabled(!hideArrows);
-                }
-            }
-        }
-        return fHideArrowsAction;
-    }
-
-    /**
-     * Get the follow arrow forward action.
-     *
-     * @return The Action object
-     *
-     * @since 2.1
-     */
-    public Action getFollowArrowFwdAction() {
-        if (fFollowArrowFwdAction == null) {
-            fFollowArrowFwdAction = new Action() {
-                @Override
-                public void run() {
-                    fTimeGraphCtrl.followArrowFwd();
-                    adjustVerticalScrollBar();
-                }
-            };
-            fFollowArrowFwdAction.setText(Messages.TmfTimeGraphViewer_FollowArrowForwardActionNameText);
-            fFollowArrowFwdAction.setToolTipText(Messages.TmfTimeGraphViewer_FollowArrowForwardActionToolTipText);
-            fFollowArrowFwdAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FOLLOW_ARROW_FORWARD));
-            if (fHideArrowsAction != null) {
-                fFollowArrowFwdAction.setEnabled(!fHideArrowsAction.isChecked());
-            }
-        }
-        return fFollowArrowFwdAction;
-    }
-
-    /**
-     * Get the follow arrow backward action.
-     *
-     * @return The Action object
-     *
-     * @since 2.1
-     */
-    public Action getFollowArrowBwdAction() {
-        if (fFollowArrowBwdAction == null) {
-            fFollowArrowBwdAction = new Action() {
-                @Override
-                public void run() {
-                    fTimeGraphCtrl.followArrowBwd();
-                    adjustVerticalScrollBar();
-                }
-            };
-            fFollowArrowBwdAction.setText(Messages.TmfTimeGraphViewer_FollowArrowBackwardActionNameText);
-            fFollowArrowBwdAction.setToolTipText(Messages.TmfTimeGraphViewer_FollowArrowBackwardActionToolTipText);
-            fFollowArrowBwdAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FOLLOW_ARROW_BACKWARD));
-            if (fHideArrowsAction != null) {
-                fFollowArrowBwdAction.setEnabled(!fHideArrowsAction.isChecked());
-            }
-        }
-        return fFollowArrowBwdAction;
-    }
 
     private void adjustVerticalScrollBar() {
         int topIndex = fTimeGraphCtrl.getTopIndex();
@@ -1576,8 +1464,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param listener
-     *            a {@link MenuDetectListener}
+     * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#addTimeGraphEntryMenuListener(org.eclipse.swt.events.MenuDetectListener)
      * @since 1.2
      */
@@ -1586,8 +1473,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param listener
-     *            a {@link MenuDetectListener}
+     * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#removeTimeGraphEntryMenuListener(org.eclipse.swt.events.MenuDetectListener)
      * @since 1.2
      */
@@ -1596,8 +1482,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param listener
-     *            a {@link MenuDetectListener}
+     * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#addTimeEventMenuListener(org.eclipse.swt.events.MenuDetectListener)
      * @since 1.2
      */
@@ -1606,8 +1491,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param listener
-     *            a {@link MenuDetectListener}
+     * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#removeTimeEventMenuListener(org.eclipse.swt.events.MenuDetectListener)
      * @since 1.2
      */
@@ -1616,8 +1500,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param filter
-     *            The filter object to be attached to the view
+     * @param filter The filter object to be attached to the view
      * @since 2.0
      */
     public void addFilter(ViewerFilter filter) {
@@ -1626,8 +1509,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @param filter
-     *            The filter object to be attached to the view
+     * @param filter The filter object to be attached to the view
      * @since 2.0
      */
     public void removeFilter(ViewerFilter filter) {
