@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,11 +12,15 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.statistics;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.io.IOException;
 
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 
 /**
@@ -31,10 +35,12 @@ public class TmfStateStatisticsTest extends TmfStatisticsTest {
      */
     @BeforeClass
     public static void setUpClass() {
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            File htFile = File.createTempFile("stats-test", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
+            File htFile = File.createTempFile("stats-test", ".ht");
             htFile.deleteOnExit();
-            backend = new TmfStateStatistics(TestParams.createTrace(), htFile);
+            CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
+            backend = new TmfStateStatistics(trace, htFile);
         } catch (TmfTraceException e) {
             e.printStackTrace();
         } catch (IOException e) {

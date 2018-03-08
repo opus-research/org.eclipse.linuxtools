@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2011 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -94,6 +95,12 @@ public class DeleteExperimentHandler extends AbstractHandler {
                                     }
                                 }
                             }
+                        }
+
+                        IPath path = resource.getLocation();
+                        if (path != null) {
+                            // Delete supplementary files
+                            experiment.deleteSupplementaryFolder();
                         }
 
                         // Finally, delete the experiment

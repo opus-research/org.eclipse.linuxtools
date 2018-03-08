@@ -18,27 +18,23 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.GraphingPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.preferences.GraphingPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts.AbstractChartBuilder;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.datadisplay.DataGrid;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets.GraphComposite;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetFactory;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.graph.GraphFactory;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.graph.SelectGraphWizard;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
-import org.eclipse.linuxtools.systemtap.ui.structures.UpdateManager;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.ITabListener;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartBuilder;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.datadisplay.DataGrid;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphComposite;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.GraphFactory;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.SelectGraphWizard;
+import org.eclipse.linuxtools.systemtap.structures.UpdateManager;
+import org.eclipse.linuxtools.systemtap.structures.listeners.ITabListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
-import org.eclipse.swt.custom.CTabFolder2Listener;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -47,6 +43,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 
 
@@ -57,30 +54,22 @@ import org.eclipse.ui.PlatformUI;
  */
 public class GraphDisplaySet {
 	public GraphDisplaySet(Composite parent, IDataSet data) {
-		LogManager.logDebug("Start GraphSelectorView:", this); //$NON-NLS-1$
-		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 		IPreferenceStore p = GraphingPlugin.getDefault().getPreferenceStore();
 		int delay = p.getInt(GraphingPreferenceConstants.P_GRAPH_UPDATE_DELAY);
 
 		dataSet = data;
-	//	if(null != cmd) {
-			updater = new UpdateManager(delay);
-	//	}
+		updater = new UpdateManager(delay);
 		createPartControl(parent);
-		
+
 		builders = new ArrayList<AbstractChartBuilder>();
-	//	graphs = new ArrayList();
 		tabListeners = new ArrayList<ITabListener>();
-		LogManager.logDebug("End GraphSelectorView:", this); //$NON-NLS-1$
 	}
-	
+
 	/**
 	 * This method creates the framework for what will be displayed by this dialog box.
 	 * @param parent The composite that will contain all the elements from this dialog
 	 */
 	public void createPartControl(Composite parent) {
-		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
-
 		parent.setLayout(new FormLayout());
 		FormData data1 = new FormData();
 		Composite cmpCoolBar = new Composite(parent, SWT.NONE);
@@ -125,12 +114,12 @@ public class GraphDisplaySet {
 
 		//This is a tab/button for opening new graphs
 		CTabItem newGraph = new CTabItem(folder, SWT.NONE);
-		newGraph.setImage(GraphingPlugin.getImageDescriptor("icons/actions/new_wiz.gif").createImage());
-		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.DataView"));
+		newGraph.setImage(AbstractUIPlugin.imageDescriptorFromPlugin(GraphingPlugin.PLUGIN_ID, "icons/actions/new_wiz.gif").createImage()); //$NON-NLS-1$
+		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.DataView")); //$NON-NLS-1$
 
 		//Tab containing the data table
 		CTabItem item = new CTabItem(folder, SWT.NONE);
-		item.setText(Localization.getString("GraphDisplaySet.DataView"));
+		item.setText(Localization.getString("GraphDisplaySet.DataView")); //$NON-NLS-1$
 		Composite c = new Composite(folder, SWT.NONE);
 		GridLayout grid = new GridLayout();
 		grid.marginHeight = 0;
@@ -145,14 +134,12 @@ public class GraphDisplaySet {
 		item.setControl(c);
 		folder.setSelection(item);
 		lastSelectedTab = 1;
-
-		LogManager.logDebug("End createPartControl", this); //$NON-NLS-1$
 	}
-	
+
 	public IDataSet getDataSet() {
 		return dataSet;
 	}
-	
+
 	/**
 	 * Finds the graph that is open in the current tab
 	 * @return The graph that is currently visible on the screen
@@ -162,7 +149,7 @@ public class GraphDisplaySet {
 			return null;
 		return builders.get(folder.getSelectionIndex()-2);
 	}
-	
+
 	public void setFocus() {}
 
 	/**
@@ -170,9 +157,6 @@ public class GraphDisplaySet {
 	 * to anyting in this class after calling the dispose method.
 	 */
 	public void dispose() {
-		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
-		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
-
 		if(null != updater)
 			updater.dispose();
 		updater = null;
@@ -184,10 +168,8 @@ public class GraphDisplaySet {
 			folder = null;
 		}
 		listener = null;
-		
-		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
 	}
-	
+
 	/**
 	 * This class handles switching between tabs and creating new graphs.
 	 * When the user selects the first tab a new dialog is displayed for
@@ -215,10 +197,10 @@ public class GraphDisplaySet {
 					GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
 					gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 					folder.setSelection(item);
-					
+
 					AbstractChartBuilder g = gc.getCanvas();
 					item.setControl(gc);
-					
+
 					if(null != g) {
 						if(null != updater)
 							updater.addUpdateListener(g);
@@ -232,25 +214,25 @@ public class GraphDisplaySet {
 			fireTabChangedEvent();
 		}
 	}
-	
+
 	public void addTabListener(ITabListener listener) {
 		tabListeners.add(listener);
 	}
-	
+
 	public void removeTabListener(ITabListener listener) {
 		tabListeners.remove(listener);
 	}
-	
+
 	private void fireTabCloseEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
 			(tabListeners.get(i)).tabClosed();
 	}
-	
+
 	private void fireTabOpenEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
 			(tabListeners.get(i)).tabOpened();
 	}
-	
+
 	private void fireTabChangedEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
 			(tabListeners.get(i)).tabChanged();
@@ -262,7 +244,6 @@ public class GraphDisplaySet {
 	private ButtonClickListener listener;
 	private UpdateManager updater;
 	private ArrayList<ITabListener> tabListeners;
-	
-//	private ArrayList graphs;
+
 	private ArrayList<AbstractChartBuilder> builders;
 }

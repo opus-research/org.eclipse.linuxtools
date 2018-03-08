@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages;
 
@@ -43,7 +43,9 @@ final public class Messages extends NLS {
     public static String TraceControl_GettingVersionError;
 
     // Commands
+    public static String TraceControl_ErrorTitle;
     public static String TraceControl_RetrieveNodeConfigurationJob;
+    public static String TraceControl_RetrieveNodeConfigurationFailure;
     public static String TraceControl_ListSessionFailure;
     public static String TraceControl_EclipseCommandFailure;
     public static String TraceControl_NewNodeCreationFailure;
@@ -98,6 +100,31 @@ final public class Messages extends NLS {
     public static String TraceControl_CreateSessionNameTooltip;
     public static String TraceControl_CreateSessionPathLabel;
     public static String TraceControl_CreateSessionPathTooltip;
+
+    public static String TraceControl_CreateSessionConfigureStreamingButtonText;
+    public static String TraceControl_CreateSessionConfigureStreamingButtonTooltip;
+    public static String TraceControl_CreateSessionNoStreamingButtonText;
+    public static String TraceControl_CreateSessionNoStreamingButtonTooltip;
+    public static String TraceControl_CreateSessionTracePathText;
+    public static String TraceControl_CreateSessionTracePathTooltip;
+    public static String TraceControl_CreateSessionLinkButtonText;
+    public static String TraceControl_CreateSessionLinkButtonTooltip;
+    public static String TraceControl_CreateSessionProtocolLabelText;
+    public static String TraceControl_CreateSessionAddressLabelText;
+    public static String TraceControl_CreateSessionPortLabelText;
+    public static String TraceControl_CreateSessionControlUrlLabel;
+    public static String TraceControl_CreateSessionDataUrlLabel;
+    public static String TraceControl_CreateSessionCommonProtocolTooltip;
+    public static String TraceControl_CreateSessionControlAddressTooltip;
+    public static String TraceControl_CreateSessionControlPortTooltip;
+    public static String TraceControl_CreateSessionProtocolTooltip;
+    public static String TraceControl_CreateSessionDataAddressTooltip;
+    public static String TraceControl_CreateSessionDataPortTooltip;
+    public static String TraceControl_CreateSessionNoConsumertText;
+    public static String TraceControl_CreateSessionNoConsumertTooltip;
+    public static String TraceControl_CreateSessionDisableConsumertText;
+    public static String TraceControl_CreateSessionDisableConsumertTooltip;
+
     public static String TraceControl_InvalidSessionNameError;
     public static String TraceControl_SessionAlreadyExistsError;
     public static String TraceControl_SessionPathAlreadyExistsError;
@@ -228,6 +255,7 @@ final public class Messages extends NLS {
     public static String TraceControl_LoggingPreference;
     public static String TraceControl_LogfilePath;
     public static String TraceControl_AppendLogfilePreference;
+    public static String TraceControl_CommandTimeout;
 
     public static String TraceControl_VerboseLevelsPreference;
     public static String TraceControl_VerboseLevelNonePreference;

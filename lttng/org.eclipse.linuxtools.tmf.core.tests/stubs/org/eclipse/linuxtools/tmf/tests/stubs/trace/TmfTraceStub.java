@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
@@ -20,10 +21,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -38,7 +38,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("javadoc")
 public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
@@ -88,7 +88,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final String path, final int cacheSize, final long interval) throws TmfTraceException {
-        super(null, TmfEvent.class, path, cacheSize, interval);
+        super(null, ITmfEvent.class, path, cacheSize, interval);
         try {
             fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
@@ -122,7 +122,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
-        super(null, TmfEvent.class, path, cacheSize);
+        super(null, ITmfEvent.class, path, cacheSize);
         try {
             fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
@@ -141,7 +141,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
      * @throws FileNotFoundException
      */
     public TmfTraceStub(final IResource resource,  final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
-        super(resource, TmfEvent.class, path, cacheSize);
+        super(resource, ITmfEvent.class, path, cacheSize);
         try {
             fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
@@ -159,7 +159,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
      */
     public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion,
             final ITmfEventParser parser, final ITmfTraceIndexer indexer) throws TmfTraceException {
-        super(null, TmfEvent.class, path, cacheSize, 0, indexer);
+        super(null, ITmfEvent.class, path, cacheSize, 0, indexer);
         try {
             fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
@@ -317,7 +317,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         try {
             // parseNextEvent will update the context
             if (fTrace != null && getParser() != null && context != null) {
-                final ITmfEvent event = getParser().parseEvent(context.clone());
+                final ITmfEvent event = getParser().parseEvent(context);
                 return event;
             }
         } finally {

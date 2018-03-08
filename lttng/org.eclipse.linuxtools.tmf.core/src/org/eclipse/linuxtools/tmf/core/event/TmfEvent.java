@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -9,21 +9,18 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
+ *   Alexandre Montplaisir - Made immutable
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
  * A basic implementation of ITmfEvent.
- * <p>
- * Note that for performance reasons TmfEvent is NOT immutable. If a shallow
- * copy of the event is needed, use the copy constructor. Otherwise (deep copy)
- * use clone().
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -33,19 +30,19 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @see ITmfEventField
  * @see ITmfTrace
 */
-public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
+public class TmfEvent implements ITmfEvent {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private ITmfTrace fTrace;
-    private long fRank;
-    private ITmfTimestamp fTimestamp;
-    private String fSource;
-    private ITmfEventType fType;
-    private ITmfEventField fContent;
-    private String fReference;
+    private final ITmfTrace fTrace;
+    private final long fRank;
+    private final ITmfTimestamp fTimestamp;
+    private final String fSource;
+    private final ITmfEventType fType;
+    private final ITmfEventField fContent;
+    private final String fReference;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -68,6 +65,7 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
+     * @since 2.0
 
      */
     public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
@@ -86,6 +84,7 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
+     * @since 2.0
      */
     public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
@@ -121,146 +120,48 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
     // ITmfEvent
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getTrace()
-     */
     @Override
     public ITmfTrace getTrace() {
         return fTrace;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getRank()
-     */
     @Override
     public long getRank() {
         return fRank;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getTimestamp()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getTimestamp() {
         return fTimestamp;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getSource()
-     */
     @Override
     public String getSource() {
         return fSource;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getType()
-     */
     @Override
     public ITmfEventType getType() {
         return fType;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getContent()
-     */
     @Override
     public ITmfEventField getContent() {
         return fContent;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getReference()
-     */
     @Override
     public String getReference() {
         return fReference;
     }
 
     // ------------------------------------------------------------------------
-    // Convenience setters
-    // ------------------------------------------------------------------------
-
-    /**
-     * @param trace the new event trace
-     */
-    protected void setTrace(final ITmfTrace trace) {
-        fTrace = trace;
-    }
-
-    /**
-     * @param rank the new event rank
-     */
-    protected void setRank(final long rank) {
-        fRank = rank;
-    }
-
-    /**
-     * @param timestamp the new event timestamp
-     */
-    protected void setTimestamp(final ITmfTimestamp timestamp) {
-        fTimestamp = timestamp;
-    }
-
-    /**
-     * @param source the new event source
-     */
-    protected void setSource(final String source) {
-        fSource = source;
-    }
-
-    /**
-     * @param type the new event type
-     */
-    protected void setType(final ITmfEventType type) {
-        fType = type;
-    }
-
-    /**
-     * @param content the event new content
-     */
-    protected void setContent(final ITmfEventField content) {
-        fContent = content;
-    }
-
-    /**
-     * @param reference the new event reference
-     */
-    protected void setReference(final String reference) {
-        fReference = reference;
-    }
-
-    // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public TmfEvent clone() {
-        TmfEvent clone = null;
-        try {
-            clone = (TmfEvent) super.clone();
-            clone.fTrace = fTrace;
-            clone.fRank = fRank;
-            clone.fTimestamp = fTimestamp;
-            clone.fSource = fSource;
-            clone.fType = fType != null ? fType.clone() : null;
-            clone.fContent = fContent != null ? fContent.clone() : null;
-            clone.fReference = fReference;
-        } catch (final CloneNotSupportedException e) {
-        }
-        return clone;
-    }
-
-    // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -275,9 +176,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -338,20 +236,16 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        return "TmfEvent [fTimestamp=" + fTimestamp + ", fTrace=" + fTrace + ", fRank=" + fRank
-                + ", fSource=" + fSource + ", fType=" + fType + ", fContent=" + fContent
-                + ", fReference=" + fReference + "]";
+        return getClass().getSimpleName() + " [fTimestamp=" + getTimestamp()
+                + ", fTrace=" + getTrace() + ", fRank=" + getRank()
+                + ", fSource=" + getSource() + ", fType=" + getType()
+                + ", fContent=" + getContent() + ", fReference=" + getReference()
+                + "]";
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
-     */
     /**
      * @since 2.0
      */

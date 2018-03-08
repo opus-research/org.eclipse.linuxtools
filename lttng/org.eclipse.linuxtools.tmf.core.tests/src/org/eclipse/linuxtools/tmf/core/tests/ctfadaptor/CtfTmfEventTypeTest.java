@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,8 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -33,44 +31,18 @@ import org.junit.Test;
 public class CtfTmfEventTypeTest {
 
     /**
-     * Launch the test.
-     *
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(CtfTmfEventTypeTest.class);
-    }
-
-    /**
-     * Perform pre-test initialization.
-     */
-    @Before
-    public void setUp() {
-        // add additional set up code here
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
-
-    /**
      * Run the CtfTmfEventType(String,String,ITmfEventField) constructor test.
      */
     @Test
     public void testCtfTmfEventType() {
-        String eventName = ""; //$NON-NLS-1$
-        ITmfEventField content = new TmfEventField("", new ITmfEventField[] {}); //$NON-NLS-1$
+        String eventName = "";
+        ITmfEventField content = new TmfEventField("", new ITmfEventField[] {});
         CtfTmfEventType result = new CtfTmfEventType( eventName, content);
 
         assertNotNull(result);
-        assertEquals("", result.toString()); //$NON-NLS-1$
-        assertEquals("", result.getName()); //$NON-NLS-1$
-        assertEquals("Ctf Event", result.getContext()); //$NON-NLS-1$
+        assertEquals("", result.toString());
+        assertEquals("", result.getName());
+        assertEquals("Ctf Event", result.getContext());
     }
 
     /**
@@ -78,11 +50,11 @@ public class CtfTmfEventTypeTest {
      */
     @Test
     public void testToString() {
-        ITmfEventField emptyField = new TmfEventField("", new ITmfEventField[] {}); //$NON-NLS-1$
-        CtfTmfEventType fixture = new CtfTmfEventType("", emptyField); //$NON-NLS-1$
+        ITmfEventField emptyField = new TmfEventField("", new ITmfEventField[] {});
+        CtfTmfEventType fixture = new CtfTmfEventType("", emptyField);
 
         String result = fixture.toString();
 
-        assertEquals("", result); //$NON-NLS-1$
+        assertEquals("", result);
     }
 }

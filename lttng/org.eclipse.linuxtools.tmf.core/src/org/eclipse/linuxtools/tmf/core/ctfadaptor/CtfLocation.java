@@ -1,17 +1,19 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors:
+ *   Matthew Khouzam - Initial API and implementation
+ *   Alexandre Montplaisir - Extends TmfLocation
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * The nugget of information that is unique to a location in a CTF trace.
@@ -21,27 +23,34 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @version 1.0
  * @author Matthew Khouzam
  */
-public final class CtfLocation implements ITmfLocation {
+public final class CtfLocation extends TmfLocation {
 
-    private final CtfLocationData fLocation;
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
 
     /**
      * An invalid location
      */
-    public static final CtfLocationData INVALID_LOCATION = new CtfLocationData(-1, -1);
+    public static final CtfLocationInfo INVALID_LOCATION = new CtfLocationInfo(-1, -1);
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /**
-     * Constructor for CtfLocation. Uses a default index of 0.
+     * Basic constructor for CtfLocation. Uses a default index of 0.
      *
      * @param timestamp
      *            The timestamp of this location
+     * @since 2.0
      */
     public CtfLocation(final ITmfTimestamp timestamp) {
         this(timestamp.getValue(), 0);
     }
 
     /**
-     * Standard constructor
+     * Constructor using timestamp object and index
      *
      * @param timestamp
      *            The timestamp of this location
@@ -54,7 +63,7 @@ public final class CtfLocation implements ITmfLocation {
     }
 
     /**
-     * Change this location's timestamp and index values.
+     * Constructor using a long value for the timestamp, and an index
      *
      * @param timestampValue
      *            The new timestamp
@@ -63,7 +72,18 @@ public final class CtfLocation implements ITmfLocation {
      * @since 2.0
      */
     public CtfLocation(final long timestampValue, final long index) {
-       this(new CtfLocationData(timestampValue, index));
+       super(new CtfLocationInfo(timestampValue, index));
+    }
+
+    /**
+     * Constructor using a pre-made locationInfo object
+     *
+     * @param locationInfo
+     *            The locationInfo object to use
+     * @since 2.0
+     */
+    public CtfLocation(CtfLocationInfo locationInfo) {
+        super(locationInfo);
     }
 
     /**
@@ -73,74 +93,32 @@ public final class CtfLocation implements ITmfLocation {
      *            Other location to copy
      * @since 2.0
      */
-    public CtfLocation(final CtfLocationData location) {
-        fLocation = location;
+    public CtfLocation(final CtfLocation location) {
+        super(location);
     }
 
+    // ------------------------------------------------------------------------
+    // TmfLocation
+    // ------------------------------------------------------------------------
+
     /**
-     * Get the Location Data of this location
-     *
-     * @return The CtfLocationData
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationInfo()
      * @since 2.0
      */
     @Override
-    public CtfLocationData getLocationInfo() {
-        return fLocation;
+    public CtfLocationInfo getLocationInfo() {
+        return (CtfLocationInfo) super.getLocationInfo();
     }
 
-    @Override
-    public CtfLocation clone() {
-        return new CtfLocation(new CtfLocationData(fLocation.getTimestamp(), fLocation.getIndex()));
-    }
+    // ------------------------------------------------------------------------
+    // Object
+    // ------------------------------------------------------------------------
 
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result)
-                + ((fLocation == null) ? 0 : fLocation.hashCode());
-        return result;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof CtfLocation)) {
-            return false;
-        }
-        CtfLocation other = (CtfLocation) obj;
-        if (fLocation == null) {
-            if (other.fLocation != null) {
-                return false;
-            }
-        } else if (!fLocation.equals(other.fLocation)) {
-            return false;
-        }
-        return true;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         if( this.getLocationInfo().equals(CtfLocation.INVALID_LOCATION )) {
-            return "CtfLocation: INVALID"; //$NON-NLS-1$
+            return getClass().getSimpleName() + " [INVALID]"; //$NON-NLS-1$
         }
-        return "CtfLocation: " + getLocationInfo().toString(); //$NON-NLS-1$
+        return super.toString();
     }
 
 }

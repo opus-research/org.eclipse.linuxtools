@@ -16,8 +16,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ListEditor;
-import org.eclipse.linuxtools.systemtap.ui.structures.validators.DirectoryValidator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -72,6 +70,7 @@ public class PathPreferencePage extends FieldEditorPreferencePage implements IWo
 
 	}
 
+	@Override
 	public void init(IWorkbench workbench) {
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,19 +8,22 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Alexandre Montplaisir - Port to JUnit4
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.statesystem;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.TestCase;
-
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.IStateHistoryBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree.HistoryTreeBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -29,6 +32,9 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests for stack-attributes in the Generic State System (using
@@ -36,7 +42,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-public class StateSystemPushPopTest extends TestCase {
+public class StateSystemPushPopTest {
 
     private ITmfStateSystemBuilder ss;
 
@@ -45,26 +51,24 @@ public class StateSystemPushPopTest extends TestCase {
 
     private final File testHtFile;
 
-    private final static String errMsg = "Caught exception: "; //$NON-NLS-1$
+    private final static String errMsg = "Caught exception: ";
 
     /* State values that will be used */
     //private final static ITmfStateValue nullValue = TmfStateValue.nullValue();
-    private final static ITmfStateValue value1 = TmfStateValue.newValueString("A"); //$NON-NLS-1$
+    private final static ITmfStateValue value1 = TmfStateValue.newValueString("A");
     private final static ITmfStateValue value2 = TmfStateValue.newValueInt(10);
     private final static ITmfStateValue value3 = TmfStateValue.nullValue();
-    private final static ITmfStateValue value4 = TmfStateValue.newValueString("D"); //$NON-NLS-1$
+    private final static ITmfStateValue value4 = TmfStateValue.newValueString("D");
+    private final static ITmfStateValue value5 = TmfStateValue.newValueLong(Long.MAX_VALUE);
 
     /**
      * Test case constructor
      *
-     * @param name
-     *            The test name
      * @throws IOException
      *             If we couldn't create the state history test file
      */
-    public StateSystemPushPopTest(final String name) throws IOException {
-        super(name);
-        testHtFile = File.createTempFile("test", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
+    public StateSystemPushPopTest() throws IOException {
+        testHtFile = File.createTempFile("test", ".ht");
         testHtFile.deleteOnExit();
     }
 
@@ -82,21 +86,25 @@ public class StateSystemPushPopTest extends TestCase {
      * @throws StateValueTypeException
      *             Fails the test
      */
-    @Override
+    @Before
     public void setUp() throws IOException, TimeRangeException,
             AttributeNotFoundException, StateValueTypeException {
         ITmfStateValue value;
 
-        IStateHistoryBackend backend = new HistoryTreeBackend(testHtFile, 0);
+        IStateHistoryBackend backend = new HistoryTreeBackend(testHtFile, 0, 0L);
         ss = new StateSystem(backend, true);
 
         /* Build the thing */
-        final int attrib = ss.getQuarkAbsoluteAndAdd("Test", "stack"); //$NON-NLS-1$ //$NON-NLS-2$
+        final int attrib = ss.getQuarkAbsoluteAndAdd("Test", "stack");
 
         ss.pushAttribute( 2, value1, attrib);
         ss.pushAttribute( 4, value2, attrib);
         ss.pushAttribute( 6, value3, attrib);
-        ss.pushAttribute(10, value4, attrib);
+        ss.pushAttribute( 8, value4, attrib);
+        ss.pushAttribute(10, value5, attrib);
+
+        value = ss.popAttribute(11, attrib);
+        assertEquals(value5, value);
 
         value = ss.popAttribute(12, attrib);
         assertEquals(value4, value);
@@ -128,13 +136,13 @@ public class StateSystemPushPopTest extends TestCase {
         assertEquals(null, value); // Stack should already be empty here.
 
         ss.closeHistory(30);
-        attribute = ss.getQuarkAbsolute("Test", "stack"); //$NON-NLS-1$ //$NON-NLS-2$
+        attribute = ss.getQuarkAbsolute("Test", "stack");
     }
 
     /**
      * Clean-up after running a test. Delete the .ht file we created.
      */
-    @Override
+    @After
     public void tearDown() {
         testHtFile.delete();
     }
@@ -143,6 +151,7 @@ public class StateSystemPushPopTest extends TestCase {
      * Test that the value of the stack-attribute at the start and end of the
      * history are correct.
      */
+    @Test
     public void testBeginEnd() {
         try {
             interval = ss.querySingleState(0, attribute);
@@ -167,10 +176,11 @@ public class StateSystemPushPopTest extends TestCase {
     /**
      * Run single queries on the attribute stacks (with .querySingleState()).
      */
+    @Test
     public void testSingleQueries() {
         try {
-            final int subAttribute1 = ss.getQuarkRelative(attribute, "1"); //$NON-NLS-1$
-            final int subAttribute2 = ss.getQuarkRelative(attribute, "2"); //$NON-NLS-1$
+            final int subAttribute1 = ss.getQuarkRelative(attribute, "1");
+            final int subAttribute2 = ss.getQuarkRelative(attribute, "2");
 
             /* Test the stack attributes themselves */
             interval = ss.querySingleState(11, attribute);
@@ -203,9 +213,13 @@ public class StateSystemPushPopTest extends TestCase {
     /**
      * Test the .querySingletStackTop() convenience method.
      */
+    @Test
     public void testStackTop() {
         try {
             interval = ss.querySingleStackTop(10, attribute);
+            assertEquals(value5, interval.getStateValue());
+
+            interval = ss.querySingleStackTop(9, attribute);
             assertEquals(value4, interval.getStateValue());
 
             interval = ss.querySingleStackTop(13, attribute);
@@ -231,6 +245,7 @@ public class StateSystemPushPopTest extends TestCase {
     /**
      * Test the places where the stack is empty.
      */
+    @Test
     public void testEmptyStack() {
         try {
             /* At the start */
@@ -265,17 +280,18 @@ public class StateSystemPushPopTest extends TestCase {
     /**
      * Test full-queries (.queryFullState()) on the attribute stacks.
      */
+    @Test
     public void testFullQueries() {
         List<ITmfStateInterval> state;
         try {
-            final int subAttrib1 = ss.getQuarkRelative(attribute, "1"); //$NON-NLS-1$
-            final int subAttrib2 = ss.getQuarkRelative(attribute, "2"); //$NON-NLS-1$
-            final int subAttrib3 = ss.getQuarkRelative(attribute, "3"); //$NON-NLS-1$
-            final int subAttrib4 = ss.getQuarkRelative(attribute, "4"); //$NON-NLS-1$
+            final int subAttrib1 = ss.getQuarkRelative(attribute, "1");
+            final int subAttrib2 = ss.getQuarkRelative(attribute, "2");
+            final int subAttrib3 = ss.getQuarkRelative(attribute, "3");
+            final int subAttrib4 = ss.getQuarkRelative(attribute, "4");
 
-            /* Stack depth = 4 */
+            /* Stack depth = 5 */
             state = ss.queryFullState(10);
-            assertEquals(4, state.get(attribute).getStateValue().unboxInt());
+            assertEquals(5, state.get(attribute).getStateValue().unboxInt());
             assertEquals(value1, state.get(subAttrib1).getStateValue());
             assertEquals(value2, state.get(subAttrib2).getStateValue());
             assertEquals(value3, state.get(subAttrib3).getStateValue());

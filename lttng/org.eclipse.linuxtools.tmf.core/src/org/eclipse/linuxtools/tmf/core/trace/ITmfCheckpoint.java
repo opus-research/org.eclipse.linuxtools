@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,11 +8,12 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Patrick Tasse - Updated for location in checkpoint
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * The basic trace checkpoint structure in TMF. The purpose of the checkpoint is
@@ -32,31 +33,19 @@ public interface ITmfCheckpoint extends Comparable<ITmfCheckpoint> {
 
     /**
      * @return the timestamp of the event referred to by the context
+     * @since 2.0
      */
     public ITmfTimestamp getTimestamp();
 
     /**
-     * @return the location of the event referred to by the context
-     */
-    public ITmfContext getContext();
-
-    /**
-     * @return the location of the event referred to by the context
+     * @return the location of the event referred to by the checkpoint
      */
     public ITmfLocation getLocation();
-
-    /**
-     * @return a clone of the checkpoint
-     */
-    public ITmfCheckpoint clone();
 
     // ------------------------------------------------------------------------
     // Comparable
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
     @Override
     public int compareTo(ITmfCheckpoint checkpoint);
 
