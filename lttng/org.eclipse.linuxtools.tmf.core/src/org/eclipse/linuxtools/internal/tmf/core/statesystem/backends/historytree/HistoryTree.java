@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 
@@ -60,7 +59,7 @@ class HistoryTree {
     private final HT_IO treeIO;
 
     // ------------------------------------------------------------------------
-    // Variable Fields (will change throughout the existence of the SHT)
+    // Variable Fields (will change throughout the existance of the SHT)
     // ------------------------------------------------------------------------
 
     /** Latest timestamp found in the tree (at any given moment) */
@@ -264,7 +263,6 @@ class HistoryTree {
             try {
                 fc.close();
             } catch (IOException e) {
-                Activator.logError(e.getMessage());
             }
         }
         return;

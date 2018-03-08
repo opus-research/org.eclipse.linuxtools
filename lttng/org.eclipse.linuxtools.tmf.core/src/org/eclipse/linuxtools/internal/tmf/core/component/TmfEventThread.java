@@ -8,18 +8,19 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Bernd Hufmann - Update handling of suspend and resume
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.component;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
-import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -38,12 +39,12 @@ public class TmfEventThread implements Runnable {
     /**
      * The event provider
      */
-    private final TmfEventProvider fProvider;
+    private final TmfDataProvider fProvider;
 
     /**
      * The wrapped event request
      */
-    private final ITmfEventRequest fRequest;
+    private final ITmfDataRequest fRequest;
 
     /**
      * The request execution priority
@@ -60,11 +61,8 @@ public class TmfEventThread implements Runnable {
      */
     private volatile boolean isCompleted = false;
 
-    /** The synchronization object */
-    private final Object fSynchObject = new Object();
-
-    /** The flag for suspending a thread */
-    private volatile boolean fIsPaused = false;
+    /** Latch indicating if the thread is currently paused (>0 means paused) */
+    private CountDownLatch pausedLatch = new CountDownLatch(0);
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -76,7 +74,7 @@ public class TmfEventThread implements Runnable {
      * @param provider the event provider
      * @param request the request to process
      */
-    public TmfEventThread(TmfEventProvider provider, ITmfEventRequest request) {
+    public TmfEventThread(TmfDataProvider provider, ITmfDataRequest request) {
         assert provider != null;
         assert request  != null;
         fProvider = provider;
@@ -111,14 +109,14 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The event provider
      */
-    public ITmfEventProvider getProvider() {
+    public ITmfDataProvider getProvider() {
         return fProvider;
     }
 
     /**
      * @return The event request
      */
-    public ITmfEventRequest getRequest() {
+    public ITmfDataRequest getRequest() {
         return fRequest;
     }
 
@@ -139,8 +137,8 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The request execution state
      */
-    public boolean isPaused() {
-        return fIsPaused;
+    public synchronized boolean isPaused(){
+        return (pausedLatch.getCount() > 0);
     }
 
     /**
@@ -178,22 +176,11 @@ public class TmfEventThread implements Runnable {
             TmfCoreTracer.traceRequest(fRequest, "read first event"); //$NON-NLS-1$
 
             while (event != null && !fProvider.isCompleted(fRequest, event, nbRead)) {
+                pausedLatch.await();
 
                 TmfCoreTracer.traceEvent(fProvider, fRequest, event);
                 if (fRequest.getDataType().isInstance(event)) {
                     fRequest.handleData(event);
-                }
-
-                // Pause execution if requested
-
-                while (fIsPaused) {
-                    synchronized (fSynchObject) {
-                        try {
-                            fSynchObject.wait();
-                        } catch (InterruptedException e) {
-                            // continue
-                        }
-                    }
                 }
 
                 // To avoid an unnecessary read passed the last event requested
@@ -226,19 +213,16 @@ public class TmfEventThread implements Runnable {
     /**
      * Suspend the thread
      */
-    public void suspend() {
-        fIsPaused = true;
+    public synchronized void suspend() {
+        pausedLatch = new CountDownLatch(1);
         TmfCoreTracer.traceRequest(fRequest, "SUSPENDED"); //$NON-NLS-1$
     }
 
     /**
      * Resume the thread
      */
-    public void resume() {
-        fIsPaused = false;
-        synchronized (fSynchObject) {
-            fSynchObject.notifyAll();
-        }
+    public synchronized void resume() {
+        pausedLatch.countDown();
         TmfCoreTracer.traceRequest(fRequest, "RESUMED"); //$NON-NLS-1$
     }
 
