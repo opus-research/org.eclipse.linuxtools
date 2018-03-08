@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +34,16 @@ public class BitBufferTest {
     private BitBuffer fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(BitBufferTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
@@ -41,6 +52,14 @@ public class BitBufferTest {
         fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         fixture.setByteBuffer(ByteBuffer.allocate(0));
         fixture.position(1);
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
