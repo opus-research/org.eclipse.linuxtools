@@ -26,6 +26,11 @@ public class ProviderProfileConstants {
 	public static final String PREFS_KEY = "provider"; //$NON-NLS-1$
 	
 	/**
+	 * Profiling preferences key.
+	 */
+	public static final String CATEGORY_KEY = "category"; //$NON-NLS-1$
+	
+	/**
 	 * Project attribute to indicate project is overriding settings
 	 */
 	public static final String USE_PROJECT_SETTINGS = "use_project";
