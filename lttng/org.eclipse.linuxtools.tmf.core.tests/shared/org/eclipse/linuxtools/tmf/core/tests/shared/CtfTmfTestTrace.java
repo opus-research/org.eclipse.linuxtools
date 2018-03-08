@@ -53,23 +53,22 @@ public enum CtfTmfTestTrace {
 
     /**
      * Return a CtfTmfTrace object of this test trace. It will be already
-     * initTrace()'ed. You do not have to .dispose() the trace after use (the
-     * old one is disposed automatically when this method is called again).
+     * initTrace()'ed.
      *
      * Make sure you call {@link #exists()} before calling this!
      *
      * @return A CtfTmfTrace reference to this trace
      */
-    public synchronized CtfTmfTrace getTrace() {
-        if (fTrace != null) {
-            fTrace.dispose();
-        }
-        fTrace = new CtfTmfTrace();
-        try {
-            fTrace.initTrace(null, fPath, CtfTmfEvent.class);
-        } catch (TmfTraceException e) {
-            /* Should not happen if tracesExist() passed */
-            throw new RuntimeException(e);
+    public CtfTmfTrace getTrace() {
+        if (fTrace == null) {
+            CtfTmfTrace trace = new CtfTmfTrace();
+            try {
+                trace.initTrace(null, fPath, CtfTmfEvent.class);
+            } catch (TmfTraceException e) {
+                /* Should not happen if tracesExist() passed */
+                throw new RuntimeException(e);
+            }
+            fTrace = trace;
         }
         return fTrace;
     }
