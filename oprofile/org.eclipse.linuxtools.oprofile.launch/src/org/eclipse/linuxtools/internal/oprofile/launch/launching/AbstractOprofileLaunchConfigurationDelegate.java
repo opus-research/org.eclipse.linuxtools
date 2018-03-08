@@ -15,7 +15,6 @@
 package org.eclipse.linuxtools.internal.oprofile.launch.launching;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import org.eclipse.linuxtools.internal.oprofile.ui.view.OprofileView;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -118,6 +116,8 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 			}
 
 			ArrayList<String> argArray = new ArrayList<String>(Arrays.asList(getProgramArgumentsArray( config )));
+			IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(oprofileProject());
+			IPath workingDirPath = new Path(oprofileWorkingDirURI(config).getPath());
 			IFolder dataFolder = Oprofile.OprofileProject.getProject().getFolder(OPROFILE_DATA);
 			if(!dataFolder.exists()) {
 				dataFolder.create(false, true, null);
@@ -126,25 +126,19 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 			if (events.size()>0)
 				argArray.add(0,eventsString);
 			argArray.add(0, SESSION_DIR + oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OPROFILE_DATA);
-			argArray.add(0, OprofileProject.OPERF_BINARY);
 
 			for(int i = 0; i < options.getExecutionsNumber(); i++){
 				if (i!=0) argArray.add(APPEND);
 				String[] arguments = new String[argArray.size()];
 				arguments = argArray.toArray(arguments);
-				try {
-					process = RuntimeProcessFactory.getFactory().exec(arguments, OprofileProject.getProject());
-				} catch (IOException e1) {
-					process.destroy();
-					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
-					throw new CoreException(status);
-				}
+				process = launcher.execute(Path.fromOSString(OprofileProject.OPERF_BINARY), arguments, getEnvironment(config), workingDirPath, monitor);
 				DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
+
 				try{
 					process.waitFor();
 				} catch (InterruptedException e){
 					process.destroy();
-					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message"));
 					throw new CoreException(status);
 				}
 			}

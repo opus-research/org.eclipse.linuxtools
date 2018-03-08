@@ -36,7 +36,6 @@ public class ResourcesEntry extends TimeGraphEntry {
     }
 
     private final int fId;
-    private final LttngKernelTrace fTrace;
     private final Type fType;
     private final int fQuark;
 
@@ -59,9 +58,8 @@ public class ResourcesEntry extends TimeGraphEntry {
      *            The id of this entry
      */
     public ResourcesEntry(int quark, LttngKernelTrace trace, String name, long startTime, long endTime, Type type, int id) {
-        super(name, startTime, endTime);
+        super(quark, trace, name, startTime, endTime);
         fId = id;
-        fTrace = trace;
         fType = type;
         fQuark = quark;
     }
@@ -113,13 +111,9 @@ public class ResourcesEntry extends TimeGraphEntry {
         return fId;
     }
 
-    /**
-     * Get the entry's kernel trace
-     *
-     * @return the entry's kernel trace
-     */
+    @Override
     public LttngKernelTrace getTrace() {
-        return fTrace;
+        return (LttngKernelTrace) super.getTrace();
     }
 
     /**

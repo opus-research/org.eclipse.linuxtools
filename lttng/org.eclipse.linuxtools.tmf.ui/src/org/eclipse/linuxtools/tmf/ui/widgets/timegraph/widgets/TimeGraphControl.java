@@ -1918,8 +1918,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     private void updateStatusLine(int x) {
-        if (fStatusLineManager == null || null == fTimeProvider ||
-                fTimeProvider.getTime0() == fTimeProvider.getTime1()) {
+        if (fStatusLineManager == null) {
             return;
         }
         StringBuilder message = new StringBuilder();
@@ -2033,9 +2032,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
 
     @Override
     public void mouseDown(MouseEvent e) {
-        if (fDragState != DRAG_NONE || null == fTimeProvider ||
-                fTimeProvider.getTime0() == fTimeProvider.getTime1() ||
-                getCtrlSize().x - fTimeProvider.getNameSpace() <= 0) {
+        if (fDragState != DRAG_NONE || null == fTimeProvider) {
             return;
         }
         int idx;
@@ -2121,6 +2118,9 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                 updateCursor(e.x, e.stateMask);
             }
         } else if (3 == e.button) {
+            if (fTimeProvider.getTime0() == fTimeProvider.getTime1() || getCtrlSize().x - fTimeProvider.getNameSpace() <= 0) {
+                return;
+            }
             setCapture(true);
             fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), getCtrlSize().x - RIGHT_MARGIN);
             fDragX0 = fDragX;
