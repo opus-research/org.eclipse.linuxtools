@@ -21,4 +21,6 @@ Export-Package: org.eclipse.linuxtools.internal.lttng2.kernel.ui;x-friends:="org
  org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events;x-internal:=true,
  org.eclipse.linuxtools.internal.lttng2.kernel.ui.views;x-internal:=true,
  org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;x-internal:=true,
+ org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.cpu;x-internal:=true,
  org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources;x-internal:=true
+Import-Package: org.swtchart
