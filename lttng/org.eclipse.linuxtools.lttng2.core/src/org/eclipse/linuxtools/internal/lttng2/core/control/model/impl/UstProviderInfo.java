@@ -105,7 +105,6 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
      */
     @Override
     public void setEvents(List<IBaseEventInfo> events) {
-        fEvents.clear();
         for (Iterator<IBaseEventInfo> iterator = events.iterator(); iterator.hasNext();) {
             IBaseEventInfo eventInfo = iterator.next();
             fEvents.add(eventInfo);

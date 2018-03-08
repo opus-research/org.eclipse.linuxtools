@@ -148,7 +148,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
      */
     @Override
     public void setDomains(List<IDomainInfo> domains) {
-        fDomains.clear();
         for (Iterator<IDomainInfo> iterator = domains.iterator(); iterator.hasNext();) {
             IDomainInfo domainInfo = iterator.next();
             fDomains.add(domainInfo);
