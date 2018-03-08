@@ -80,8 +80,8 @@ public class InfoAdapter extends AbstractDataAdapter{
 	public static final String DUMP_STATUS = "dump-status"; //$NON-NLS-1$
 	
 	public static final String CPUINFO = "/proc/cpuinfo"; //$NON-NLS-1$
-	public static String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
-	public static String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
+	public static final String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
+	public static final String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
 	public static final String OP_SHARE = "/usr/share/oprofile/"; //$NON-NLS-1$
 	public static final String EVENTS = "events"; //$NON-NLS-1$
 	
@@ -104,15 +104,11 @@ public class InfoAdapter extends AbstractDataAdapter{
 				createDOM(null);
 			}else{
 				Process p = RuntimeProcessFactory.getFactory().exec("ophelp -X", Oprofile.OprofileProject.getProject());
-				if (p != null) {
-					InputStream is = p.getInputStream();
-					createDOM(is);
-				} else {
-					createDOM(null);
-				}
+				InputStream is = p.getInputStream();
+				createDOM(is);
 			}
 		} catch (IOException e) {
-			createDOM(null);
+			e.printStackTrace();
 		}
 	}
 
@@ -124,7 +120,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		try {
 			inputStream = resourceFile.openInputStream(EFS.NONE, new NullProgressMonitor());
 			createDOM(inputStream);
-			setEventIdCacheDoc(oldRoot);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -182,7 +177,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 			return;
 		}
 		createHeaders();
-		if (!hasTimerSupport() && oldRoot != null){
+		if (!hasTimerSupport()){
 			createXML();
 		}
 	}
@@ -225,14 +220,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		Element timerModeTag = newDoc.createElement(TIMER_MODE);
 		timerModeTag.setTextContent(String.valueOf(hasTimerSupport()));
 		newRoot.appendChild(timerModeTag);
-	}
-
-	/**
-	 * @since 2.1
-	 */
-	public static void setOprofileDir (String dir) {
-		DEV_OPROFILE = dir;
-		CPUTYPE = DEV_OPROFILE + "cpu_type";
 	}
 
 	/**
@@ -279,6 +266,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	 * @return the system's cpu frequency
 	 */
 	private int getCPUFrequency() {
+
 		int val = 0;
 		BufferedReader bi = null;
 		try {
@@ -467,12 +455,5 @@ public class InfoAdapter extends AbstractDataAdapter{
 	@Override
 	public Document getDocument() {
 		return newDoc;
-	}
-
-	/**
-	 * @since 2.1
-	 */
-	public void setEventIdCacheDoc (Element elem) {
-		EventIdCache.getInstance().setCacheDoc(elem);
 	}
 }

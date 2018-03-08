@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -110,7 +109,7 @@ public class StreamInputReader {
     }
 
     /**
-     * Gets the current packet context
+     * gets the current packet context
      *
      * @return the current packet context (size, lost events and such)
      */
@@ -227,7 +226,6 @@ public class StreamInputReader {
                  * Some problem happened, we'll assume that there are no more
                  * events
                  */
-                Activator.logError("Error reading CTF event in stream", e); //$NON-NLS-1$
                 return false;
             }
             return true;
@@ -248,6 +246,7 @@ public class StreamInputReader {
                 if (this.streamInput.addPacketHeaderIndex()) {
                     packetIndex = getPacketSize() - 1;
                     this.packetReader.setCurrentPacket(getPacket());
+
                 } else {
                     this.packetReader.setCurrentPacket(null);
                 }
@@ -267,7 +266,7 @@ public class StreamInputReader {
 
     /**
      * Changes the location of the trace file reader so that the current event
-     * is the first event with a timestamp greater or equal the given timestamp.
+     * is the first event with a timestamp greater than the given timestamp.
      *
      * @param timestamp
      *            The timestamp to seek to.
@@ -295,11 +294,9 @@ public class StreamInputReader {
         }
 
         /*
-         * Advance until either of these conditions are met
-         * <ul>
-         *   <li> reached the end of the trace file (the given timestamp is after the last event), </li>
-         *   <li> found the first event with a timestamp greater or equal the given timestamp. </li>
-         * </ul>
+         * Advance until A. we reached the end of the trace file (which means
+         * the given timestamp is after the last event), or B. we found the
+         * first event with a timestamp greater than the given timestamp.
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);

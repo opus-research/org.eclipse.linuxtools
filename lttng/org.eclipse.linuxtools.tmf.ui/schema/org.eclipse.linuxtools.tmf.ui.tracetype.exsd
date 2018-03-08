@@ -20,7 +20,6 @@
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="category"/>
             <element ref="type"/>
-            <element ref="experiment"/>
          </choice>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -123,60 +122,6 @@
             <annotation>
                <documentation>
                   The icon associated to the trace type.
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="resource"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="experiment">
-      <complexType>
-         <sequence>
-            <element ref="defaultEditor" minOccurs="0" maxOccurs="1"/>
-            <element ref="eventsTableType" minOccurs="0" maxOccurs="1"/>
-            <element ref="statisticsViewerType" minOccurs="0" maxOccurs="1"/>
-         </sequence>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The unique ID that identifies this experiment type.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The type name as it is displayed to the end user.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="category" type="string">
-            <annotation>
-               <documentation>
-                  An optional attribute that is composed of the category ID. The referenced category must be declared in a corresponding category element.
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.linuxtools.tmf.ui.tracetype/category/@id"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="experiment_type" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The fully qualified name of a class that extends the &lt;samp&gt;TmfExperiment&lt;/samp&gt; class
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.linuxtools.tmf.core.trace.TmfExperiment:"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="icon" type="string">
-            <annotation>
-               <documentation>
-                  The icon associated to the experiment type.
                </documentation>
                <appinfo>
                   <meta.attribute kind="resource"/>

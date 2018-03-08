@@ -24,14 +24,7 @@
         name="TestSDView2Loaders"
         restorable="true">
   </view>
-  <view
-        category="org.eclipse.linuxtools.tmf.ui.stubs"
-        class="org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView"
-        id="org.eclipse.linuxtools.tmf.ui.tests.testAnalysisView"
-        name="Test Analysis View"
-        restorable="true">
-  </view>
- </extension>
+	</extension>
  <extension
        point="org.eclipse.linuxtools.tmf.ui.uml2SDLoader">
     <uml2SDLoader
@@ -69,10 +62,6 @@
             id="org.eclipse.linuxtools.tmf.tests.category.tracetype"
             name="Test trace">
       </category>
-      <category
-            id="org.eclipse.linuxtools.tmf.tests.category.tracetype2"
-            name="Test trace2">
-      </category>
       <type
             category="org.eclipse.linuxtools.tmf.tests.category.tracetype"
             event_type="org.eclipse.linuxtools.tmf.core.event.TmfEvent"
@@ -83,54 +72,6 @@
                class="org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable">
          </eventsTableType>
       </type>
-      <type
-            category="org.eclipse.linuxtools.tmf.tests.category.tracetype"
-            event_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent"
-            id="org.eclipse.linuxtools.tmf.tests.ctf.tracetype"
-            name="CTF Tests"
-            trace_type="org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub">
-      </type>
-      <experiment
-            id="org.eclipse.linuxtools.tmf.tests.experimenttype"
-            name="Test experiment"
-            category="org.eclipse.linuxtools.tmf.tests.category.tracetype2"
-            experiment_type="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub">
-         <defaultEditor
-               id="org.eclipse.linuxtools.tmf.ui.editors.events.stub">
-         </defaultEditor>
-         <eventsTableType
-               class="org.eclipse.linuxtools.tmf.ui.tests.experiment.type.TmfEventsTableExperimentStub">
-         </eventsTableType>
-         <statisticsViewerType
-               class="org.eclipse.linuxtools.tmf.ui.tests.experiment.type.TmfStatisticsViewerStub">
-         </statisticsViewerType>
-      </experiment>
-   </extension>
-   <extension
-         point="org.eclipse.linuxtools.tmf.core.analysis">
-      <module
-            analysis_module="org.eclipse.linuxtools.tmf.ui.tests.stubs.analysis.TestAnalysisUi"
-            id="org.eclipse.linuxtools.tmf.ui.tests.test"
-            name="Test analysis in UI">
-         <tracetype
-               class="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub">
-         </tracetype>
-         <tracetype
-               class="org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub">
-         </tracetype>
-      </module>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            class="org.eclipse.linuxtools.tmf.ui.tests.experiment.type.TmfEventsEditorStub"
-            default="false"
-            id="org.eclipse.linuxtools.tmf.ui.editors.events.stub"
-            name="%events.editor.name">
-         <contentTypeBinding
-               contentTypeId="org.eclipse.linuxtools.tmf.ui.content-type.trace">
-         </contentTypeBinding>
-      </editor>
    </extension>
 
 </plugin>
