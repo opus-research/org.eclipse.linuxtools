@@ -60,4 +60,14 @@ final class StringStateValue extends TmfStateValue {
             return 0;
         }
     }
+
+    @Override
+    public ITmfStateValue add(ITmfStateValue stateValue) throws StateValueTypeException {
+        throw new StateValueTypeException();
+    }
+
+    @Override
+    public ITmfStateValue increment() throws StateValueTypeException {
+        throw new StateValueTypeException();
+    }
 }

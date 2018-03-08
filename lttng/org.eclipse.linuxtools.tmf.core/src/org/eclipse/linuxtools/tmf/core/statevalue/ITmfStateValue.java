@@ -9,6 +9,7 @@
  * Contributors:
  *   Alexandre Montplaisir - Initial API
  *   Jean-Christian Kouamé - make state values comparable
+ *   Jean-Christian kouame - add the add operation and the increment operation
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
@@ -90,4 +91,34 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
      */
     @Override
     public int compareTo(ITmfStateValue value);
+
+    /**
+     * return a new state value whose value is (this + val)
+     *
+     * @param val
+     *            The state value to be added
+     * @return a new state value whose value is (this + val)
+     * @throws StateValueTypeException
+     *          <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *          </ul>
+     * @since 3.0
+     */
+    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException;
+
+    /**
+     * Increment the contained value by one
+     *
+     * @return a new state value whose value is (this + 1)
+     * @throws StateValueTypeException
+     *             <ul>
+     *             <li>if it is a null state value</li>
+     *             <li>if the contained value is a string</li>
+     *             <li>if the contained value cannot be read</li>
+     *             </ul>
+     * @since 3.0
+     */
+    public ITmfStateValue increment() throws StateValueTypeException;
 }
