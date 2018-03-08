@@ -33,7 +33,6 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
@@ -99,7 +98,6 @@ import org.eclipse.ui.progress.IProgressConstants;
  * @version 1.0
  * @author Bernd Hufmann
  */
-@SuppressWarnings("deprecation")
 public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, ISDFindProvider, ISDFilterProvider, ISDAdvancedPagingProvider, ISelectionListener  {
 
     // ------------------------------------------------------------------------
@@ -270,7 +268,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     @TmfSignalHandler
     public void traceSelected(TmfTraceSelectedSignal signal) {
 
-        ITmfRequest indexRequest = null;
+        ITmfEventRequest indexRequest = null;
         fLock.lock();
         try {
             // Update the trace reference
@@ -303,8 +301,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                  * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
                  */
                 @Override
-                public synchronized void handleEvent(ITmfEvent event) {
-                    super.handleEvent(event);
+                public void handleData(ITmfEvent event) {
+                    super.handleData(event);
 
                     ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
@@ -375,7 +373,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                  * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleCompleted()
                  */
                 @Override
-                public synchronized void handleCompleted() {
+                public void handleCompleted() {
                     if (fEvents.isEmpty()) {
                         fFrame = new Frame();
                         fView.setFrameSync(fFrame);
@@ -407,7 +405,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         if (signal.getTrace() != fTrace) {
             return;
         }
-        ITmfRequest indexRequest = null;
+        ITmfEventRequest indexRequest = null;
         fLock.lock();
         try {
             indexRequest = fIndexRequest;
@@ -521,7 +519,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     @Override
     public void dispose() {
        super.dispose();
-       ITmfRequest indexRequest = null;
+       ITmfEventRequest indexRequest = null;
        fLock.lock();
        try {
            IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -873,7 +871,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      */
     protected void cancelOngoingRequests() {
         fLock.lock();
-        ITmfRequest pageRequest = null;
+        ITmfEventRequest pageRequest = null;
         try {
             // Cancel the search thread
             if (fFindJob != null) {
@@ -1141,8 +1139,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             private final List<ITmfSyncSequenceDiagramEvent> fSdEvent = new ArrayList<ITmfSyncSequenceDiagramEvent>();
 
             @Override
-            public synchronized void handleEvent(ITmfEvent event) {
-                super.handleEvent(event);
+            public void handleData(ITmfEvent event) {
+                super.handleData(event);
 
                 ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
@@ -1433,8 +1431,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          * @see org.eclipse.linuxtools.tmf.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.event.TmfData)
          */
         @Override
-        public synchronized void handleEvent(ITmfEvent event) {
-            super.handleEvent(event);
+        public void handleData(ITmfEvent event) {
+            super.handleData(event);
 
             if ((fMonitor!= null) && fMonitor.isCanceled()) {
                 super.cancel();

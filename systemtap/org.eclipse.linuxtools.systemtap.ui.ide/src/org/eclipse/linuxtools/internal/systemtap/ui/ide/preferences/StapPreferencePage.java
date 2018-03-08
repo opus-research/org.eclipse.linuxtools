@@ -9,27 +9,28 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.preferences;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.GraphingAPIUIPlugin;
-import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.Localization;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 
-
-public class GraphingAPIPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-	public GraphingAPIPreferencePage() {
+public class StapPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+	public StapPreferencePage() {
 		super(GRID);
-		setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("GraphingAPIPreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
+		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
+		setDescription(Localization.getString("StapPreferencePage.StapPreferenceDescription"));
 	}
 	
+	//TODO: Add content to this page
 	@Override
 	public void createFieldEditors() {
 	}
 
-	public void init(IWorkbench workbench) {}
-	
+	public void init(IWorkbench workbench) {
+	}
+
 }
