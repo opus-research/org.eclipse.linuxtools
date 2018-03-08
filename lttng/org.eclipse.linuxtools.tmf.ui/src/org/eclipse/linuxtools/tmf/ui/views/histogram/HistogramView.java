@@ -79,7 +79,7 @@ public class HistogramView extends TmfView {
     private Composite fParent;
 
     // The current experiment
-    private TmfExperiment fCurrentExperiment;
+    private TmfExperiment<ITmfEvent> fCurrentExperiment;
 
     // Current timestamp/time window
     private long fExperimentStartTime;
@@ -130,6 +130,7 @@ public class HistogramView extends TmfView {
     // ------------------------------------------------------------------------
 
     @Override
+    @SuppressWarnings("unchecked")
     public void createPartControl(Composite parent) {
 
         fParent = parent;
@@ -244,15 +245,16 @@ public class HistogramView extends TmfView {
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
 
         // Load the experiment if present
-        fCurrentExperiment = TmfExperiment.getCurrentExperiment();
+        fCurrentExperiment = (TmfExperiment<ITmfEvent>) TmfExperiment.getCurrentExperiment();
         if (fCurrentExperiment != null) {
             loadExperiment();
         }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setFocus() {
-        TmfExperiment experiment = TmfExperiment.getCurrentExperiment();
+        TmfExperiment<ITmfEvent> experiment = (TmfExperiment<ITmfEvent>) TmfExperiment.getCurrentExperiment();
         if ((experiment != null) && (experiment != fCurrentExperiment)) {
             fCurrentExperiment = experiment;
             initializeHistograms();
@@ -361,9 +363,10 @@ public class HistogramView extends TmfView {
      * @param signal the experiment selected signal
      */
     @TmfSignalHandler
-    public void experimentSelected(TmfExperimentSelectedSignal signal) {
+    @SuppressWarnings("unchecked")
+    public void experimentSelected(TmfExperimentSelectedSignal<ITmfEvent> signal) {
         assert (signal != null);
-        fCurrentExperiment = signal.getExperiment();
+        fCurrentExperiment = (TmfExperiment<ITmfEvent>) signal.getExperiment();
         loadExperiment();
     }
 
@@ -496,7 +499,7 @@ public class HistogramView extends TmfView {
         }
     }
 
-    private TmfTimeRange updateExperimentTimeRange(TmfExperiment experiment) {
+    private TmfTimeRange updateExperimentTimeRange(TmfExperiment<ITmfEvent> experiment) {
         fExperimentStartTime = 0;
         fExperimentEndTime = 0;
         fCurrentTimestamp = 0;
