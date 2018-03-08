@@ -74,9 +74,8 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
 		ISourceViewer sourceViewer,
 		String contentType) {
-		if (doubleClickStrategy == null) {
+		if (doubleClickStrategy == null)
 			doubleClickStrategy = new SpecfileDoubleClickStrategy();
-		}
 		return doubleClickStrategy;
 	}
 
@@ -119,9 +118,8 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	 */
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		if (specfileHover == null) {
+		if (specfileHover == null)
 			specfileHover = new SpecfileHover(this.editor);
-		}
 		return specfileHover;
 	}
 
@@ -217,9 +215,8 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	 */
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-		if (sourceViewer == null) {
+		if (sourceViewer == null)
 			return null;
-		}
 		return getRegisteredHyperlinkDetectors(sourceViewer);
 	}
 
