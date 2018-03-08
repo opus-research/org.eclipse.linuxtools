@@ -153,7 +153,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                     try {
                         trace.initTrace(element.getResource(), element.getLocation().getPath(), traceEvent.getClass());
                     } catch (final TmfTraceException e) {
-                        displayErrorMsg(Messages.OpenExperimentHandler_InitError + "\n\n" + e); //$NON-NLS-1$
+                        displayErrorMsg(Messages.OpenTraceHandler_InitError + "\n\n" + e); //$NON-NLS-1$
                         for (int j = 0; j < i; j++) {
                             traces[j].dispose();
                         }
