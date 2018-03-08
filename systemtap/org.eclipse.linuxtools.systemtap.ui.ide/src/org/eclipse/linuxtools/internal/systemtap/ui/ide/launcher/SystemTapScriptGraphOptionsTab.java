@@ -423,21 +423,12 @@ public class SystemTapScriptGraphOptionsTab extends
 		}
 
 		// Set values
-		boolean matches = matcher.matches();
-		if (!matches) {
-			this.regexErrorMessage = Messages.SystemTapScriptGraphOptionsTab_SampOutMustMatch;
-		}
 		Control[] children = textFieldsComposite.getChildren();
 		for (int i = 0; i < numberOfVisibleColumns; i++) {
-			if (!matches){
+			if (!matcher.matches()){
 				((Label)children[i*2+1]).setText(""); //$NON-NLS-1$
 			} else {
 				((Label)children[i*2+1]).setText(" " +matcher.group(i+1)); //$NON-NLS-1$
-				try{
-					Integer.parseInt(matcher.group(i+1));
-				}catch (NumberFormatException e){
-					this.regexErrorMessage = Messages.SystemTapScriptGraphOptionsTab_NoNum;
-				}
 			}
 		}
 
