@@ -78,10 +78,12 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 
 	@Test
 	public void testGlobalCompletion() {
-		Document testDocument = new Document(TEST_STP_SCRIPT);
+		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
+		IDocument testDocument = provider.createDocument(null);
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+		completionProcessor.waitForInitialization();
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
@@ -201,7 +203,8 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 	}
 
 	private ICompletionProposal[] getCompletionsForPrefix(String prefix) throws BadLocationException{
-		Document testDocument = new Document(TEST_STP_SCRIPT);
+		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
+		IDocument testDocument = provider.createDocument(null);
 		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 		testDocument.replace(offset, 0, prefix);
 		offset += prefix.length();
@@ -248,5 +251,4 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 		}
 		return false;
 	}
-
 }
