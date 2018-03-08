@@ -255,6 +255,10 @@ public class ScriptConsole extends IOConsole {
               cmd.removeInputStreamListener(consoleDaemon);
               setName(Localization.getString("ScriptConsole.Terminated") + super.getName());
 			ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[] {this});
+			
+	        
+			
+			
 		}
 	}
 	
