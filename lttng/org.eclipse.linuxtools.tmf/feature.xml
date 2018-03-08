@@ -39,7 +39,6 @@
       <import plugin="org.eclipse.ui.navigator.resources"/>
       <import plugin="org.eclipse.emf.common" version="2.5.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.emf.ecore" version="2.5.0" match="greaterOrEqual"/>
-      <import plugin="org.swtchart"/>
    </requires>
 
    <plugin
@@ -51,13 +50,6 @@
 
    <plugin
          id="org.eclipse.linuxtools.tmf.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.linuxtools.tmf.ui.graph"
          download-size="0"
          install-size="0"
          version="0.0.0"
