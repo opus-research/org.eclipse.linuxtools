@@ -32,18 +32,14 @@ import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
- * Implementation of ITmfStatistics which uses a state history for storing its
- * information.
- *
- * It requires building the history first, but gives very fast response times
- * when built : Queries are O(log n) wrt the size of the trace, and O(1) wrt to
- * the size of the time interval selected.
+ * Default implementation of an ITmfStatisticsProvider. It uses a state system
+ * underneath to store its information.
  *
  * @author Alexandre Montplaisir
  * @since 2.0
  */
 
-public class TmfStateStatistics implements ITmfStatistics {
+public class TmfStatistics  implements ITmfStatistics {
 
     /** ID for the statistics state system */
     public static final String STATE_ID = "org.eclipse.linuxtools.tmf.statistics"; //$NON-NLS-1$
@@ -62,7 +58,7 @@ public class TmfStateStatistics implements ITmfStatistics {
      * Empty constructor. The resulting TmfStatistics object will not be usable,
      * but it might be needed for sub-classes.
      */
-    public TmfStateStatistics() {
+    public TmfStatistics() {
         stats = null;
     }
 
@@ -74,7 +70,7 @@ public class TmfStateStatistics implements ITmfStatistics {
      * @throws TmfTraceException
      *             If something went wrong trying to initialize the statistics
      */
-    public TmfStateStatistics(ITmfTrace trace) throws TmfTraceException {
+    public TmfStatistics(ITmfTrace trace) throws TmfTraceException {
         /* Set up the path to the history tree file we'll use */
         IResource resource = trace.getResource();
         String supplDirectory = null;
@@ -98,15 +94,24 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public long getEventsTotal() {
-        /*
-         * The total itself is not stored in the state, so we will do a
-         * "event types" query then add the contents manually.
-         */
-        Map<String, Long> map = getEventTypesTotal();
-        long total = 0;
-        for (long count : map.values()) {
-            total += count;
+        long start = stats.getStartTime();
+        long end = stats.getCurrentEndTime();
+        int countAtStart = 0, countAtEnd = 0;
+
+        try {
+            final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
+            countAtStart = stats.querySingleState(start, quark).getStateValue().unboxInt();
+            countAtEnd = stats.querySingleState(end, quark).getStateValue().unboxInt();
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (TimeRangeException e) {
+            /* Should not happen, we're clamped to the start and end times */
+            e.printStackTrace();
         }
+
+        long total = countAtEnd - countAtStart;
         return total;
     }
 
@@ -143,15 +148,24 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end) {
-        /*
-         * The total itself is not stored in the state, so we will do a
-         * "event types" query then add the contents manually.
-         */
-        Map<String, Long> map = getEventTypesInRange(start, end);
-        long total = 0;
-        for (long count : map.values()) {
-            total += count;
+        int countAtStart = 0, countAtEnd = 0;
+        long startTimestamp = checkStartTime(start.getValue());
+        long endTimestamp = checkEndTime(end.getValue());
+
+        try {
+            final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
+            countAtStart = stats.querySingleState(startTimestamp, quark).getStateValue().unboxInt();
+            countAtEnd = stats.querySingleState(endTimestamp, quark).getStateValue().unboxInt();
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (TimeRangeException e) {
+            /* Should not happen, we're clamped to the start and end times */
+            e.printStackTrace();
         }
+
+        long total = countAtEnd - countAtStart;
         return total;
     }
 
@@ -251,6 +265,9 @@ public class TmfStateStatistics implements ITmfStatistics {
      * The attribute names that are used in the state provider
      */
     public static class Attributes {
+
+        /** Total nb of events */
+        public static final String TOTAL = "total"; //$NON-NLS-1$
 
         /** event_types */
         public static final String EVENT_TYPES = "event_types"; //$NON-NLS-1$<

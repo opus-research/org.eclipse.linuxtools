@@ -30,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
+import org.eclipse.linuxtools.tmf.core.statistics.TmfStatistics;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewer;
@@ -235,7 +235,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     @TmfSignalHandler
     public void stateSystemBuildCompleted(final TmfStateSystemBuildCompleted signal) {
-        if (isListeningTo(signal.getTrace().getName()) && signal.getID().equals(TmfStateStatistics.STATE_ID)) {
+        if (isListeningTo(signal.getTrace().getName()) && signal.getID().equals(TmfStatistics.STATE_ID)) {
             TmfExperiment experiment = TmfExperiment.getCurrentExperiment();
             requestData(experiment, experiment.getTimeRange());
             requestTimeRangeData(experiment, fRequestedTimerange);
@@ -698,8 +698,8 @@ public class TmfStatisticsViewer extends TmfViewer {
                 final ITmfStatistics stats = trace.getStatistics();
                 if (stats == null) {
                     /*
-                     * The statistics provider for this trace is not accessible
-                     * (yet?). Try the next one.
+                     * The state system is not accessible yet for this trace.
+                     * Try the next one.
                      */
                     continue;
                 }
@@ -759,22 +759,19 @@ public class TmfStatisticsViewer extends TmfViewer {
         ITmfTimestamp end = timeRange.getEndTime().normalize(0, TIME_SCALE);
         String name = trace.getName();
 
+        /*
+         * Fill in the Total row (cell A or B, depending if isGlobal)
+         * (we can still use .getEventsInRange(), even if it's global,
+         * start and end will cover the whole trace)
+         */
+        long globalTotal = stats.getEventsInRange(start, end);
+        statsData.setTotal(name, isGlobal, globalTotal);
+
         /* Fill in an the event counts (either cells C or D) */
         Map<String, Long> map = stats.getEventTypesInRange(start, end);
         for (Map.Entry<String, Long> entry : map.entrySet()) {
             statsData.setTypeCount(name, entry.getKey(), isGlobal, entry.getValue());
         }
-
-        /*
-         * Calculate the totals (cell A or B, depending if isGlobal). We will
-         * use the results of the previous request instead of sending another
-         * one.
-         */
-        long globalTotal = 0;
-        for (long val : map.values()) {
-            globalTotal += val;
-        }
-        statsData.setTotal(name, isGlobal, globalTotal);
     }
 
     /**
