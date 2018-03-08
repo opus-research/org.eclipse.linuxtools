@@ -7,19 +7,22 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Patrick Tasse - Initial API and implementation
- *   Bernd Hufmann - Added call site and model URI properties
+ *     Patrick Tasse - Initial API and implementation
+ *     Bernd Hufmann - Added call site and model URI properties
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.event;
+package org.eclipse.linuxtools.tmf.ui.viewers.events;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfCustomAttributes;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfModelLookup;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.util.ReadOnlyTextPropertyDescriptor;
+import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 
@@ -37,15 +40,18 @@ public class TmfEventPropertySource implements IPropertySource {
     private static final String ID_CONTENT = "event_content"; //$NON-NLS-1$
     private static final String ID_SOURCE_LOOKUP = "event_lookup"; //$NON-NLS-1$
     private static final String ID_MODEL_URI = "model_uri"; //$NON-NLS-1$
+    private static final String ID_CUSTOM_ATTRIBUTE = "custom_attribute"; //$NON-NLS-1$
 
     private static final String NAME_TIMESTAMP = "Timestamp"; //$NON-NLS-1$
     private static final String NAME_SOURCE = "Source"; //$NON-NLS-1$
     private static final String NAME_TYPE = "Type"; //$NON-NLS-1$
     private static final String NAME_REFERENCE = "Reference"; //$NON-NLS-1$
     private static final String NAME_CONTENT = "Content"; //$NON-NLS-1$
-    private static final String NAME_SOURCE_LOOKUP = "Call Site"; //$NON-NLS-1$
+    private static final String NAME_SOURCE_LOOKUP = "Source Lookup"; //$NON-NLS-1$
     private static final String NAME_MODEL_URI = "Model URI"; //$NON-NLS-1$
+    private static final String NAME_CUSTOM_ATTRIBUTES = "Custom Attributes"; //$NON-NLS-1$
 
+    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private ITmfEvent fEvent;
 
@@ -214,6 +220,48 @@ public class TmfEventPropertySource implements IPropertySource {
         }
     }
 
+    private class CustomAttributePropertySource implements IPropertySource {
+
+        private final ITmfCustomAttributes event;
+
+        public CustomAttributePropertySource(ITmfCustomAttributes event) {
+            this.event = event;
+        }
+
+        @Override
+        public Object getEditableValue() {
+            return EMPTY_STRING;
+        }
+
+        @Override
+        public IPropertyDescriptor[] getPropertyDescriptors() {
+            List<IPropertyDescriptor> descriptors = new ArrayList<IPropertyDescriptor>();
+
+            for (String customAttribute : event.listCustomAttributes()) {
+                descriptors.add(new ReadOnlyTextPropertyDescriptor(customAttribute, customAttribute));
+            }
+
+            return descriptors.toArray(new IPropertyDescriptor[0]);
+        }
+
+        @Override
+        public Object getPropertyValue(Object id) {
+            return event.getCustomAttribute((String) id);
+        }
+
+        @Override
+        public boolean isPropertySet(Object id) {
+            return false;
+        }
+
+        @Override
+        public void resetPropertyValue(Object id) {
+        }
+
+        @Override
+        public void setPropertyValue(Object id, Object value) {
+        }
+    }
 
     /**
      * Default constructor
@@ -233,17 +281,34 @@ public class TmfEventPropertySource implements IPropertySource {
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+
+        /* Display basic event information */
         descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_TIMESTAMP, NAME_TIMESTAMP));
         descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_SOURCE, NAME_SOURCE));
         descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_TYPE, NAME_TYPE));
         descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_REFERENCE, NAME_REFERENCE));
+
+        /* Display event fields */
+        descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_CONTENT, NAME_CONTENT));
+
+        /* Display source lookup information, if the event supplies it */
         if ((fEvent instanceof ITmfSourceLookup) && (((ITmfSourceLookup)fEvent).getCallsite() != null)) {
             descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_SOURCE_LOOKUP, NAME_SOURCE_LOOKUP));
         }
-        if ((fEvent instanceof ITmfModelLookup) && (((ITmfModelLookup)fEvent).getModelUri() != null)) {
+
+        /* Display Model URI information, if the event supplies it */
+        if ((fEvent instanceof ITmfModelLookup) && (((ITmfModelLookup) fEvent).getModelUri() != null)) {
             descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_MODEL_URI, NAME_MODEL_URI));
         }
-        descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_CONTENT, NAME_CONTENT));
+
+        /* Display custom attributes, if available */
+        if (fEvent instanceof ITmfCustomAttributes) {
+            ITmfCustomAttributes event = (ITmfCustomAttributes) fEvent;
+            if (event.listCustomAttributes() != null && !event.listCustomAttributes().isEmpty()) {
+                descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_CUSTOM_ATTRIBUTE, NAME_CUSTOM_ATTRIBUTES));
+            }
+        }
+
         return descriptors.toArray(new IPropertyDescriptor[0]);
     }
 
@@ -263,6 +328,8 @@ public class TmfEventPropertySource implements IPropertySource {
             return new SourceLookupPropertySource(((ITmfSourceLookup)fEvent));
         } else if (id.equals(ID_CONTENT) && fEvent.getContent() != null) {
             return new ContentPropertySource(fEvent.getContent());
+        } else if (id.equals(ID_CUSTOM_ATTRIBUTE)) {
+            return new CustomAttributePropertySource((ITmfCustomAttributes) fEvent);
         }
         return null;
     }
