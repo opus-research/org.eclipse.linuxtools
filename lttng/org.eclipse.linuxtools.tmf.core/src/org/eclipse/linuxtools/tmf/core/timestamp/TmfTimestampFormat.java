@@ -7,7 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
+ *     Francois Chouinard - Initial API and implementation
+ *     Marc-Andre Laperle - Add time zone preference
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -184,16 +186,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      */
     private static final long serialVersionUID = 2835829763122454020L;
 
-    /**
-     * The default timestamp pattern
-     */
-    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss.SSS CCC NNN"; //$NON-NLS-1$
-
-    /**
-     * The LTTng 0.x legacy timestamp format
-     */
-    public static final String DEFAULT_INTERVAL_PATTERN = "TTT.SSS CCC NNN"; //$NON-NLS-1$
-
     // Fractions of seconds supported patterns
     private static final String DOT_RE = "\\.";                 //$NON-NLS-1$
     private static final String SEP_RE = "[ \\.,-_:;/\\\"]?";   //$NON-NLS-1$
@@ -213,11 +205,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // ------------------------------------------------------------------------
 
     // The default timestamp pattern
-    private static String fDefaultTimePattern = null;
     private static TmfTimestampFormat fDefaultTimeFormat = null;
 
     // The default time interval format
-    private static String fDefaultIntervalPattern = null;
     private static TmfTimestampFormat fDefaultIntervalFormat = null;
 
     // The timestamp pattern
@@ -253,7 +243,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * The default constructor (uses the default pattern)
      */
     public TmfTimestampFormat() {
-        this(fDefaultTimePattern);
+        this(TmfTimePreferences.getInstance().getTimePattern());
     }
 
     /**
@@ -262,6 +252,17 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @param pattern the format pattern
      */
     public TmfTimestampFormat(String pattern) {
+        applyPattern(pattern);
+    }
+
+    /**
+     * The full constructor
+     *
+     * @param pattern the format pattern
+     * @param timeZone the time zone
+     */
+    public TmfTimestampFormat(String pattern, TimeZone timeZone) {
+        setTimeZone(timeZone);
         applyPattern(pattern);
     }
 
@@ -279,11 +280,11 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // ------------------------------------------------------------------------
 
     /**
-     * @param pattern the new default time pattern
      */
-    public static void setDefaultTimeFormat(final String pattern) {
-        fDefaultTimePattern = pattern;
-        fDefaultTimeFormat = new TmfTimestampFormat(fDefaultTimePattern);
+    public static void updateDefaultFormats() {
+        fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
+        fDefaultIntervalFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getIntervalPattern());
+
         TmfSignalManager.dispatchSignal(new TmfTimestampFormatUpdateSignal(null));
     }
 
@@ -292,18 +293,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      */
     public static TmfTimestampFormat getDefaulTimeFormat() {
         if (fDefaultTimeFormat == null) {
-            fDefaultTimeFormat = new TmfTimestampFormat(DEFAULT_TIME_PATTERN);
+            fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
         }
         return fDefaultTimeFormat;
-    }
-
-    /**
-     * @param pattern the new default interval pattern
-     */
-    public static void setDefaultIntervalFormat(final String pattern) {
-        fDefaultIntervalPattern = pattern;
-        fDefaultIntervalFormat = new TmfTimestampFormat(fDefaultIntervalPattern);
-        TmfSignalManager.dispatchSignal(new TmfTimestampFormatUpdateSignal(null));
     }
 
     /**
@@ -311,7 +303,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      */
     public static TmfTimestampFormat getDefaulIntervalFormat() {
         if (fDefaultIntervalFormat == null) {
-            fDefaultIntervalFormat = new TmfTimestampFormat(DEFAULT_INTERVAL_PATTERN);
+            fDefaultIntervalFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getIntervalPattern());
         }
         return fDefaultIntervalFormat;
     }
