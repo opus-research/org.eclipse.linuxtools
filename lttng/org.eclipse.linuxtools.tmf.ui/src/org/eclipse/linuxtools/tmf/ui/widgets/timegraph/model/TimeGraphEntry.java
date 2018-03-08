@@ -29,15 +29,18 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     /** Id field that may be used by views, so they don't have to extend this class if they don't need to */
     private final int fEntryId;
     private final ITmfTrace fTrace;
-
-    /** Entry's parent */
-    private TimeGraphEntry fParent = null;
-
-    /** List of child entries */
-    private final List<TimeGraphEntry> fChildren = new ArrayList<TimeGraphEntry>();
-
-    /** Name of this entry (text to show) */
-    private String fName;
+    /**
+     * Entry's parent
+     */
+    protected TimeGraphEntry fParent = null;
+    /**
+     * List of child entries
+     */
+    protected final List<TimeGraphEntry> fChildren = new ArrayList<TimeGraphEntry>();
+    /**
+     * Name of this entry (text to show)
+     */
+    protected String fName;
     private long fStartTime = -1;
     private long fEndTime = -1;
     private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
@@ -66,22 +69,9 @@ public class TimeGraphEntry implements ITimeGraphEntry {
         fEndTime = endTime;
     }
 
-    // ---------------------------------------------
-    // Getters and setters
-    // ---------------------------------------------
-
     @Override
     public ITimeGraphEntry getParent() {
         return fParent;
-    }
-
-    /**
-     * Sets the entry's parent
-     *
-     * @param entry The new parent entry
-     */
-    protected void setParent(TimeGraphEntry entry) {
-        fParent = entry;
     }
 
     @Override
@@ -179,37 +169,23 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     }
 
     /**
-     * Set the general event list of this entry.
-     *
-     * Creates a copy of the list to avoid the caller still modifying the list
+     * Set the general event list of this entry
      *
      * @param eventList
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        if (eventList != null) {
-            fEventList = new ArrayList<ITimeEvent>(eventList);
-        } else {
-            // the event list should never be null
-            fEventList = new ArrayList<ITimeEvent>();
-        }
+        fEventList = eventList;
     }
 
     /**
-     * Set the zoomed event list of this entry.
-     *
-     * Creates a copy of the list to avoid the caller still modifying the list
+     * Set the zoomed event list of this entry
      *
      * @param eventList
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        if (eventList != null) {
-            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
-        } else {
-            // the zoomed event list can be null
-            fZoomedEventList = null;
-        }
+        fZoomedEventList = eventList;
     }
 
     /**
@@ -222,11 +198,6 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     public void addChild(TimeGraphEntry child) {
         child.fParent = this;
         fChildren.add(child);
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + '(' + fName + ')';
     }
 
 }

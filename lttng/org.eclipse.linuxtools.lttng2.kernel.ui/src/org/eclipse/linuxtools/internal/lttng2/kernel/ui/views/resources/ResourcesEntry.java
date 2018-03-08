@@ -37,7 +37,7 @@ public class ResourcesEntry extends TimeGraphEntry {
 
     private final int fId;
     private final Type fType;
-    private final int fQuark;
+    private int fQuark;
 
     /**
      * Constructor
@@ -150,8 +150,8 @@ public class ResourcesEntry extends TimeGraphEntry {
      */
     public void addChild(ResourcesEntry entry) {
         int index;
-        for (index = 0; index < getChildren().size(); index++) {
-            ResourcesEntry other = (ResourcesEntry) getChildren().get(index);
+        for (index = 0; index < fChildren.size(); index++) {
+            ResourcesEntry other = (ResourcesEntry) fChildren.get(index);
             if (entry.getType().compareTo(other.getType()) < 0) {
                 break;
             } else if (entry.getType().equals(other.getType())) {
@@ -161,8 +161,8 @@ public class ResourcesEntry extends TimeGraphEntry {
             }
         }
 
-        entry.setParent(this);
-        getChildren().add(index, entry);
+        entry.fParent = this;
+        fChildren.add(index, entry);
     }
 
 }

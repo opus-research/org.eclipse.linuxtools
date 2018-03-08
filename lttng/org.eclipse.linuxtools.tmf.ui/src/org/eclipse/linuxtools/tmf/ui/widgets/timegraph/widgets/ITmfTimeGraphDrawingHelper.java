@@ -31,7 +31,7 @@ public interface ITmfTimeGraphDrawingHelper {
      *            the time
      * @return the x coordinate corresponding to the time
      */
-    int getXForTime(long time);
+    public int getXForTime(long time);
 
     /**
      * Return the time corresponding to an x coordinate
@@ -40,5 +40,5 @@ public interface ITmfTimeGraphDrawingHelper {
      *            the x coordinate
      * @return the time corresponding to the x coordinate
      */
-    long getTimeAtX(int x);
+    public long getTimeAtX(int x);
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,6 +17,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITmfTimeGraphDraw
 /**
  * Extension of the ITimeGraphPresentationProvider interface to avoid API breakage
  *
+ * @version 1.0
  * @author Geneviève Bastien
  * @since 2.1
  * TODO: Add me to ITimeGraphPresentationProvider before the 3.0 release
@@ -28,7 +29,7 @@ public interface ITimeGraphPresentationProvider2 extends ITimeGraphPresentationP
      *
      * @return The drawing helper
      */
-    ITmfTimeGraphDrawingHelper getDrawingHelper();
+    public ITmfTimeGraphDrawingHelper getDrawingHelper();
 
     /**
      * Sets this presentation provider's drawing helper.
@@ -38,6 +39,6 @@ public interface ITimeGraphPresentationProvider2 extends ITimeGraphPresentationP
      * @param helper
      *            The drawing helper
      */
-    void setDrawingHelper(ITmfTimeGraphDrawingHelper helper);
+    public void setDrawingHelper(ITmfTimeGraphDrawingHelper helper);
 
 }

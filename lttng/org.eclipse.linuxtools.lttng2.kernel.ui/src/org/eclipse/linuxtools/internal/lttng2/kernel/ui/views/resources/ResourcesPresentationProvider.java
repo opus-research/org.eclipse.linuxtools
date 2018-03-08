@@ -55,11 +55,11 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
 
     private enum State {
         IDLE             (new RGB(200, 200, 200)),
-        USERMODE         (new RGB(0,   200, 0)),
-        SYSCALL          (new RGB(0,     0, 200)),
-        IRQ              (new RGB(200,   0, 100)),
+        USERMODE         (new RGB(0, 200, 0)),
+        SYSCALL          (new RGB(0, 0, 200)),
+        IRQ              (new RGB(200, 0, 100)),
         SOFT_IRQ         (new RGB(200, 150, 100)),
-        IRQ_ACTIVE       (new RGB(200,   0, 100)),
+        IRQ_ACTIVE       (new RGB(200, 0, 100)),
         SOFT_IRQ_RAISED  (new RGB(200, 200, 0)),
         SOFT_IRQ_ACTIVE  (new RGB(200, 150, 100));
 

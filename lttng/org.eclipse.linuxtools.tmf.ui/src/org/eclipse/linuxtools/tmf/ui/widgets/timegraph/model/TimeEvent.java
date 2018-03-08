@@ -31,7 +31,6 @@ public class TimeEvent implements ITimeEvent {
     protected long fDuration;
 
     private final int fValue;
-
     /**
      * Default value when no other value present
      */
@@ -110,6 +109,6 @@ public class TimeEvent implements ITimeEvent {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + (hasValue() ? (" value=" + fValue) : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        return "TimeEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " value=" + (hasValue() ? fValue : "N/A"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 }

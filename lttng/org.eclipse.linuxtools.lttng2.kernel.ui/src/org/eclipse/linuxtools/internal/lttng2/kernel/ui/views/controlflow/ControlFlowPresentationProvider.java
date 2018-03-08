@@ -45,12 +45,12 @@ import org.eclipse.swt.graphics.Rectangle;
 public class ControlFlowPresentationProvider extends TimeGraphPresentationProvider {
 
     private enum State {
-        UNKNOWN        (new RGB(100, 100, 100)),
-        WAIT_BLOCKED   (new RGB(200, 200, 0)),
-        WAIT_FOR_CPU   (new RGB(200, 100, 0)),
-        USERMODE       (new RGB(0,   200, 0)),
-        SYSCALL        (new RGB(0,     0, 200)),
-        INTERRUPTED    (new RGB(200,   0, 100));
+        UNKNOWN(new RGB(100, 100, 100)),
+        WAIT_BLOCKED(new RGB(200, 200, 0)),
+        WAIT_FOR_CPU(new RGB(200, 100, 0)),
+        USERMODE(new RGB(0, 200, 0)),
+        SYSCALL(new RGB(0, 0, 200)),
+        INTERRUPTED(new RGB(200, 0, 100));
 
         public final RGB rgb;
 

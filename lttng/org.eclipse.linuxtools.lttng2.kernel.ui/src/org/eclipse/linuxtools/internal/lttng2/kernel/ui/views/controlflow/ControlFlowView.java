@@ -60,7 +60,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
     private static final String BIRTH_TIME_COLUMN = Messages.ControlFlowView_birthTimeColumn;
     private static final String TRACE_COLUMN = Messages.ControlFlowView_traceColumn;
 
-    private static final String[] COLUMN_NAMES = new String[] {
+    private final static String[] COLUMN_NAMES = new String[] {
             PROCESS_COLUMN,
             TID_COLUMN,
             PTID_COLUMN,
@@ -68,7 +68,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
             TRACE_COLUMN
     };
 
-    private static final String[] FILTER_COLUMN_NAMES = new String[] {
+    private final static String[] FILTER_COLUMN_NAMES = new String[] {
             PROCESS_COLUMN,
             TID_COLUMN
     };
@@ -82,28 +82,12 @@ public class ControlFlowView extends AbstractTimeGraphView {
      */
     public ControlFlowView() {
         super(ID, COLUMN_NAMES, FILTER_COLUMN_NAMES, new ControlFlowPresentationProvider());
+        fNextText = Messages.ControlFlowView_nextProcessActionNameText;
+        fNextTooltip = Messages.ControlFlowView_nextProcessActionToolTipText;
+        fPrevText = Messages.ControlFlowView_previousProcessActionNameText;
+        fPrevTooltip = Messages.ControlFlowView_previousProcessActionToolTipText;
         setTreeLabelProvider(new ControlFlowTreeLabelProvider());
         setEntryComparator(new ControlFlowEntryComparator());
-    }
-
-    @Override
-    protected String getNextText() {
-        return Messages.ControlFlowView_nextProcessActionNameText;
-    }
-
-    @Override
-    protected String getNextTooltip() {
-        return Messages.ControlFlowView_nextProcessActionToolTipText;
-    }
-
-    @Override
-    protected String getPrevText() {
-        return Messages.ControlFlowView_previousProcessActionNameText;
-    }
-
-    @Override
-    protected String getPrevTooltip() {
-        return Messages.ControlFlowView_previousProcessActionToolTipText;
     }
 
     private static class ControlFlowEntryComparator implements Comparator<ITimeGraphEntry> {
@@ -142,18 +126,17 @@ public class ControlFlowView extends AbstractTimeGraphView {
         @Override
         public String getColumnText(Object element, int columnIndex) {
             ControlFlowEntry entry = (ControlFlowEntry) element;
-
-            if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_processColumn)) {
+            if (columnIndex == 0) {
                 return entry.getName();
-            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_tidColumn)) {
+            } else if (columnIndex == 1) {
                 return Integer.toString(entry.getThreadId());
-            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_ptidColumn)) {
+            } else if (columnIndex == 2) {
                 if (entry.getParentThreadId() > 0) {
                     return Integer.toString(entry.getParentThreadId());
                 }
-            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_birthTimeColumn)) {
+            } else if (columnIndex == 3) {
                 return Utils.formatTime(entry.getStartTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
-            } else if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_traceColumn)) {
+            } else if (columnIndex == 4) {
                 return entry.getTrace().getName();
             }
             return ""; //$NON-NLS-1$
@@ -167,8 +150,8 @@ public class ControlFlowView extends AbstractTimeGraphView {
 
     @Override
     protected void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
-        setStartTime(Long.MAX_VALUE);
-        setEndTime(Long.MIN_VALUE);
+        fStartTime = Long.MAX_VALUE;
+        fEndTime = Long.MIN_VALUE;
 
         ArrayList<TimeGraphEntry> rootList = new ArrayList<TimeGraphEntry>();
         for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
@@ -184,8 +167,8 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 }
                 long start = ssq.getStartTime();
                 long end = ssq.getCurrentEndTime() + 1;
-                setStartTime(Math.min(getStartTime(), start));
-                setEndTime(Math.max(getEndTime(), end));
+                fStartTime = Math.min(fStartTime, start);
+                fEndTime = Math.max(fEndTime, end);
                 List<Integer> threadQuarks = ssq.getQuarks(Attributes.THREADS, "*"); //$NON-NLS-1$
                 for (int threadQuark : threadQuarks) {
                     if (monitor.isCanceled()) {
@@ -254,10 +237,11 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 }
                 buildTree(entryList, rootList);
             }
-            Collections.sort(rootList, getEntryComparator());
-            putEntryList(trace, (ArrayList<TimeGraphEntry>) rootList.clone());
-
-            if (trace.equals(getTrace())) {
+            Collections.sort(rootList, fEntryComparator);
+            synchronized (fEntryListMap) {
+                fEntryListMap.put(trace, (ArrayList<TimeGraphEntry>) rootList.clone());
+            }
+            if (trace == fTrace) {
                 refresh();
             }
         }
@@ -297,13 +281,13 @@ public class ControlFlowView extends AbstractTimeGraphView {
 
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
-        long resolution = Math.max(1, (end - start) / getDisplayWidth());
+        long resolution = Math.max(1, (end - start) / fDisplayWidth);
         List<ITimeEvent> eventList = getEventList(entry, entry.getStartTime(), entry.getEndTime(), resolution, monitor);
         if (monitor.isCanceled()) {
             return;
         }
         entry.setEventList(eventList);
-        if (trace.equals(getTrace())) {
+        if (trace == fTrace) {
             redraw();
         }
         for (ITimeGraphEntry child : entry.getChildren()) {

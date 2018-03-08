@@ -51,15 +51,15 @@ public class ResourcesView extends AbstractTimeGraphView {
 
     private static final String PROCESS_COLUMN = Messages.ControlFlowView_processColumn;
 
-    private static final String[] COLUMN_NAMES = new String[] {
+    private final static String[] COLUMN_NAMES = new String[] {
             PROCESS_COLUMN
     };
 
-    private static final String[] FILTER_COLUMN_NAMES = new String[] {
+    private final static String[] FILTER_COLUMN_NAMES = new String[] {
             PROCESS_COLUMN
     };
 
-    private static final int[] WEIGHTS = { 15, 85 };
+    private static final int[] WEIGHTS = {15, 85};
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -70,27 +70,11 @@ public class ResourcesView extends AbstractTimeGraphView {
      */
     public ResourcesView() {
         super(ID, COLUMN_NAMES, FILTER_COLUMN_NAMES, new ResourcesPresentationProvider());
+        fNextText = Messages.ResourcesView_nextResourceActionNameText;
+        fNextTooltip = Messages.ResourcesView_nextResourceActionToolTipText;
+        fPrevText = Messages.ResourcesView_previousResourceActionNameText;
+        fPrevTooltip = Messages.ResourcesView_previousResourceActionToolTipText;
         setWeight(WEIGHTS);
-    }
-
-    @Override
-    protected String getNextText() {
-        return Messages.ResourcesView_nextResourceActionNameText;
-    }
-
-    @Override
-    protected String getNextTooltip() {
-        return Messages.ResourcesView_nextResourceActionToolTipText;
-    }
-
-    @Override
-    protected String getPrevText() {
-        return Messages.ResourcesView_previousResourceActionNameText;
-    }
-
-    @Override
-    protected String getPrevTooltip() {
-        return Messages.ResourcesView_previousResourceActionToolTipText;
     }
 
     // ------------------------------------------------------------------------
@@ -99,9 +83,8 @@ public class ResourcesView extends AbstractTimeGraphView {
 
     @Override
     protected void buildEventList(ITmfTrace trace, IProgressMonitor monitor) {
-        setStartTime(Long.MAX_VALUE);
-        setEndTime(Long.MIN_VALUE);
-
+        fStartTime = Long.MAX_VALUE;
+        fEndTime = Long.MIN_VALUE;
         ArrayList<ResourcesEntry> entryList = new ArrayList<ResourcesEntry>();
         for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
             if (monitor.isCanceled()) {
@@ -117,14 +100,14 @@ public class ResourcesView extends AbstractTimeGraphView {
                 long endTime = ssq.getCurrentEndTime() + 1;
                 ResourcesEntry groupEntry = new ResourcesEntry(lttngKernelTrace, aTrace.getName(), startTime, endTime, 0);
                 entryList.add(groupEntry);
-                setStartTime(Math.min(getStartTime(), startTime));
-                setEndTime(Math.max(getEndTime(), endTime));
+                fStartTime = Math.min(fStartTime, startTime);
+                fEndTime = Math.max(fEndTime, endTime);
                 List<Integer> cpuQuarks = ssq.getQuarks(Attributes.CPUS, "*"); //$NON-NLS-1$
                 ResourcesEntry[] cpuEntries = new ResourcesEntry[cpuQuarks.size()];
                 for (int i = 0; i < cpuQuarks.size(); i++) {
                     int cpuQuark = cpuQuarks.get(i);
                     int cpu = Integer.parseInt(ssq.getAttributeName(cpuQuark));
-                    ResourcesEntry entry = new ResourcesEntry(cpuQuark, lttngKernelTrace, getStartTime(), getEndTime(), Type.CPU, cpu);
+                    ResourcesEntry entry = new ResourcesEntry(cpuQuark, lttngKernelTrace, fStartTime, fEndTime, Type.CPU, cpu);
                     groupEntry.addChild(entry);
                     cpuEntries[i] = entry;
                 }
@@ -133,7 +116,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 for (int i = 0; i < irqQuarks.size(); i++) {
                     int irqQuark = irqQuarks.get(i);
                     int irq = Integer.parseInt(ssq.getAttributeName(irqQuark));
-                    ResourcesEntry entry = new ResourcesEntry(irqQuark, lttngKernelTrace, getStartTime(), getEndTime(), Type.IRQ, irq);
+                    ResourcesEntry entry = new ResourcesEntry(irqQuark, lttngKernelTrace, fStartTime, fEndTime, Type.IRQ, irq);
                     groupEntry.addChild(entry);
                     irqEntries[i] = entry;
                 }
@@ -142,15 +125,16 @@ public class ResourcesView extends AbstractTimeGraphView {
                 for (int i = 0; i < softIrqQuarks.size(); i++) {
                     int softIrqQuark = softIrqQuarks.get(i);
                     int softIrq = Integer.parseInt(ssq.getAttributeName(softIrqQuark));
-                    ResourcesEntry entry = new ResourcesEntry(softIrqQuark, lttngKernelTrace, getStartTime(), getEndTime(), Type.SOFT_IRQ, softIrq);
+                    ResourcesEntry entry = new ResourcesEntry(softIrqQuark, lttngKernelTrace, fStartTime, fEndTime, Type.SOFT_IRQ, softIrq);
                     groupEntry.addChild(entry);
                     softIrqEntries[i] = entry;
                 }
             }
         }
-        putEntryList(trace, (ArrayList<TimeGraphEntry>) entryList.clone());
-
-        if (trace.equals(getTrace())) {
+        synchronized (fEntryListMap) {
+            fEntryListMap.put(trace, (ArrayList<TimeGraphEntry>) entryList.clone());
+        }
+        if (trace == fTrace) {
             refresh();
         }
         for (ResourcesEntry traceEntry : entryList) {
@@ -161,7 +145,7 @@ public class ResourcesView extends AbstractTimeGraphView {
             ITmfStateSystem ssq = lttngKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
             long startTime = ssq.getStartTime();
             long endTime = ssq.getCurrentEndTime() + 1;
-            long resolution = (endTime - startTime) / getDisplayWidth();
+            long resolution = (endTime - startTime) / fDisplayWidth;
             for (TimeGraphEntry entry : traceEntry.getChildren()) {
                 List<ITimeEvent> eventList = getEventList(entry, startTime, endTime, resolution, monitor);
                 entry.setEventList(eventList);

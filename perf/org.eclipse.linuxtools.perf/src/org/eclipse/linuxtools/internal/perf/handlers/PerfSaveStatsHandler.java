@@ -45,7 +45,7 @@ public class PerfSaveStatsHandler extends AbstractSaveDataHandler {
 						Messages.PerfSaveStat_error_msg,
 						newDataLoc.lastSegment());
 			} finally {
-				closeResource(bw);
+				closeResource(bw, statsData.getName());
 			}
 		}
 		return null;
