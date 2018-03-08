@@ -14,12 +14,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -127,14 +124,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Current working directory
 	private IPath curWorkingDir;
 
-	// Current stat comparison data
-	private IPerfData statDiffData;
-
-	// Current report comparison data
-	private IPerfData reportDiffData;
-
-	private Map<String, String> dataCache = new HashMap<String, String>();
-
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
@@ -151,14 +140,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 		return curProfileData;
 	}
 
-	public IPerfData getStatDiffData() {
-		return statDiffData;
-	}
-
-	public IPerfData getReportDiffData(){
-		return reportDiffData;
-	}
-
 	public IPath getWorkingDir(){
 		return curWorkingDir;
 	}
@@ -170,10 +151,9 @@ public class PerfPlugin extends AbstractUIPlugin {
 	 * @return File corresponding to given file or null if no working directory
 	 *         has been set.
 	 */
-	public File getPerfFile(String fileName) {
+	public IPath getPerfFile(String fileName) {
 		if (curWorkingDir != null) {
-			IPath curStatPath = curWorkingDir.append(fileName);
-			return curStatPath.toFile();
+			return curWorkingDir.append(fileName);
 		}
 		return null;
 	}
@@ -207,47 +187,8 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this.curProfileData = perfProfileData;
 	}
 
-	public void setStatDiffData(IPerfData diffData){
-		this.statDiffData = diffData;
-	}
-
-	public void setReportDiffData(IPerfData diffData){
-		this.reportDiffData = diffData;
-	}
-
 	public void setWorkingDir(IPath workingDir){
 		curWorkingDir = workingDir;
-	}
-
-	/* Basic cache access methods. */
-
-	/**
-	 * Cache data with associated key.
-	 *
-	 * @param key String key to associate with data.
-	 * @param data String data to cache.
-	 */
-	public void cacheData(String key, String data) {
-		dataCache.put(key, data);
-	}
-
-	/**
-	 * Get cached data corresponding to specified key.
-	 *
-	 * @param key String key to corresponding cached data.
-	 * @return String cached data corresponding to specified key.
-	 */
-	public String getCachedData(String key) {
-		return dataCache.get(key);
-	}
-
-	/**
-	 * Remove data corresponding to specified key from cache.
-	 *
-	 * @param key String key of cached data to remove.
-	 */
-	public void removeCachedData(String key) {
-		dataCache.remove(key);
 	}
 
 	/**

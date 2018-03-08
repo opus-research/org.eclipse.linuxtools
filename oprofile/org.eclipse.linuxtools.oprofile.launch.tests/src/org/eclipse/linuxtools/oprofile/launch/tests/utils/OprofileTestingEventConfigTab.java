@@ -40,11 +40,6 @@ public class OprofileTestingEventConfigTab extends AbstractEventConfigTab {
 	}
 
 	@Override
-	protected boolean hasPermissions(IProject project) {
-		return true;
-	}
-
-	@Override
 	protected IProject getOprofileProject() {
 		return project;
 	}
@@ -66,9 +61,6 @@ public class OprofileTestingEventConfigTab extends AbstractEventConfigTab {
 	protected OprofileCounter[] getOprofileCounters(ILaunchConfiguration config) {
 		// setup and return mock counters
 		OprofileCounter[] ctrs = new OprofileCounter[] { getOprofileCounter(1) };
-		if (config != null) {
-			ctrs[0].loadConfiguration(config);
-		}
 		return ctrs;
 	}
 
@@ -101,7 +93,7 @@ public class OprofileTestingEventConfigTab extends AbstractEventConfigTab {
 		// mock counter
 		OprofileCounter ctr = new OprofileCounter(i, events);
 		ctr.setCount(1);
-		ctr.setEvent(event);
+		ctr.setEvents(new OpEvent [] {event});
 
 		return ctr;
 	}

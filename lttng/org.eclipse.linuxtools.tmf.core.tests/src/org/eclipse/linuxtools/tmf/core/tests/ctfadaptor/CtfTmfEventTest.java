@@ -22,13 +22,14 @@ import static org.junit.Assume.assumeTrue;
 
 import java.util.Set;
 
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfIterator;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,7 +44,7 @@ import org.junit.Test;
  */
 public class CtfTmfEventTest {
 
-    private static final int TRACE_INDEX = 0;
+    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
 
     private static CtfTmfEvent nullEvent;
     private CtfTmfEvent fixture;
@@ -58,11 +59,12 @@ public class CtfTmfEventTest {
 
     /**
      * Perform pre-test initialization.
+     * @throws CTFReaderException error
      */
     @Before
-    public void setUp() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
-        CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
+    public void setUp() throws CTFReaderException {
+        assumeTrue(testTrace.exists());
+        CtfTmfTrace trace = testTrace.getTrace();
         CtfIterator tr = new CtfIterator(trace);
         tr.advance();
         fixture = tr.getCurrentEvent();
@@ -126,6 +128,26 @@ public class CtfTmfEventTest {
     }
 
     /**
+     * Run the ITmfEventField getSubFieldValue(String[]) method test.
+     */
+    @Test
+    public void testGetSubFieldValue() {
+        /* Field exists */
+        String[] names = { "pid" };
+        assertNotNull(fixture.getContent().getSubField(names));
+
+        /* First field exists, not the second */
+        String[] names2 = { "pid", "abcd" };
+        assertNull(fixture.getContent().getSubField(names2));
+
+        /* Both field do not exist */
+        String[] names3 = { "pfid", "abcd" };
+        assertNull(fixture.getContent().getSubField(names3));
+
+        /* TODO Missing case of embedded field, need event for it */
+    }
+
+    /**
      * Run the long getID() method test.
      */
     @Test
@@ -154,7 +176,7 @@ public class CtfTmfEventTest {
         String source = fixture.getSource();
         ITmfEventType type = fixture.getType();
         assertEquals(ITmfContext.UNKNOWN_RANK, rank);
-        assertEquals("test", trace.getName());
+        assertEquals("kernel", trace.getName());
         assertEquals("channel0_1", reference);
         assertEquals("1", source);
         assertEquals("lttng_statedump_vm_map", type.toString());

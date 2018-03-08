@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.internal.oprofile.core.opxml.info;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +26,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
+import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -80,8 +78,8 @@ public class InfoAdapter extends AbstractDataAdapter{
 	public static final String DUMP_STATUS = "dump-status"; //$NON-NLS-1$
 	
 	public static final String CPUINFO = "/proc/cpuinfo"; //$NON-NLS-1$
-	public static final String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
-	public static final String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
+	public static String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
+	public static String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
 	public static final String OP_SHARE = "/usr/share/oprofile/"; //$NON-NLS-1$
 	public static final String EVENTS = "events"; //$NON-NLS-1$
 	
@@ -104,11 +102,15 @@ public class InfoAdapter extends AbstractDataAdapter{
 				createDOM(null);
 			}else{
 				Process p = RuntimeProcessFactory.getFactory().exec("ophelp -X", Oprofile.OprofileProject.getProject());
-				InputStream is = p.getInputStream();
-				createDOM(is);
+				if (p != null) {
+					InputStream is = p.getInputStream();
+					createDOM(is);
+				} else {
+					createDOM(null);
+				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			createDOM(null);
 		}
 	}
 
@@ -120,20 +122,8 @@ public class InfoAdapter extends AbstractDataAdapter{
 		try {
 			inputStream = resourceFile.openInputStream(EFS.NONE, new NullProgressMonitor());
 			createDOM(inputStream);
+			setEventIdCacheDoc(oldRoot);
 		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Use {@link InfoAdapter(IFileStore)}
-	 */
-	@Deprecated
-	public InfoAdapter(File resourceFile) {
-		try {
-			FileInputStream fileInpStr = new FileInputStream(resourceFile);
-			createDOM(fileInpStr);
-		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
@@ -177,7 +167,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 			return;
 		}
 		createHeaders();
-		if (!hasTimerSupport()){
+		if (!hasTimerSupport() && oldRoot != null){
 			createXML();
 		}
 	}
@@ -220,6 +210,14 @@ public class InfoAdapter extends AbstractDataAdapter{
 		Element timerModeTag = newDoc.createElement(TIMER_MODE);
 		timerModeTag.setTextContent(String.valueOf(hasTimerSupport()));
 		newRoot.appendChild(timerModeTag);
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public static void setOprofileDir (String dir) {
+		DEV_OPROFILE = dir;
+		CPUTYPE = DEV_OPROFILE + "cpu_type";
 	}
 
 	/**
@@ -266,7 +264,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 	 * @return the system's cpu frequency
 	 */
 	private int getCPUFrequency() {
-
 		int val = 0;
 		BufferedReader bi = null;
 		try {
@@ -455,5 +452,12 @@ public class InfoAdapter extends AbstractDataAdapter{
 	@Override
 	public Document getDocument() {
 		return newDoc;
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public void setEventIdCacheDoc (Element elem) {
+		EventIdCache.getInstance().setCacheDoc(elem);
 	}
 }

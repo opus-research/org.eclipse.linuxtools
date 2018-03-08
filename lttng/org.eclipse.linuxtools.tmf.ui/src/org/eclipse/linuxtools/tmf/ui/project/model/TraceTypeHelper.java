@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.io.File;
-
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -90,8 +88,6 @@ public class TraceTypeHelper {
         boolean valid = false;
         if (fTrace != null) {
             valid = standardValidate(path);
-        } else if (fCategoryName.equals(TmfTraceType.CUSTOM_TXT_CATEGORY) || fCategoryName.equals(TmfTraceType.CUSTOM_XML_CATEGORY)) {
-            valid = customValidate(path);
         }
         return valid;
     }
@@ -110,9 +106,14 @@ public class TraceTypeHelper {
         return valid;
     }
 
-    private static boolean customValidate(String path) {
-        File f = new File(path);
-        return f.exists() && f.isFile();
+    /**
+     * Get the class associated with this trace type
+     *
+     * @return The trace class
+     * @since 3.0
+     */
+    public Class<? extends ITmfTrace> getTraceClass() {
+        return fTrace.getClass();
     }
 
     @Override

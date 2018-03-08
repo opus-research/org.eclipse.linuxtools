@@ -19,7 +19,7 @@ public abstract class AbstractTreeElement implements TreeElement{
 	 */
 	private static final long serialVersionUID = -4911602250295116203L;
 	private final TreeElement parent;
-	private final LinkedList<TreeElement> children = new LinkedList<TreeElement>();
+	private final LinkedList<TreeElement> children = new LinkedList<>();
 	private final String name;
 	private final int totalLines;
 	private final int executedLines;
@@ -56,7 +56,9 @@ public abstract class AbstractTreeElement implements TreeElement{
 	
 	@Override
 	public TreeElement getRoot() {
-		if (parent == null) return this;
+		if (parent == null) {
+			return this;
+		}
 		return parent.getRoot();
 	}
 
@@ -72,8 +74,9 @@ public abstract class AbstractTreeElement implements TreeElement{
 
 	@Override
 	public float getCoveragePercentage() {
-		 if (instrumentedLines !=0 )
+		 if (instrumentedLines !=0 ) {
 			return (100.f*executedLines)/(instrumentedLines);
+		 }
 		else return 0;
 	}
 

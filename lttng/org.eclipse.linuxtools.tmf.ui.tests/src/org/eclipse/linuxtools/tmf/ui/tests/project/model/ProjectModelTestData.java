@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.ui.tests.project.model;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 
 import org.eclipse.core.resources.IFolder;
@@ -21,9 +23,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
@@ -34,14 +37,15 @@ import org.eclipse.swt.widgets.Display;
 
 /**
  * Creates objects used for this package's testing purposes
+ *
+ * @author Geneviève Bastien
  */
 public class ProjectModelTestData {
 
     /** Default test project name */
     public static final String PROJECT_NAME = "Test_Project";
 
-    private static final int TRACE_INDEX = 0;
-    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
+    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
 
     /**
      * Gets a project element with traces all initialized
@@ -52,11 +56,13 @@ public class ProjectModelTestData {
      */
     public static TmfProjectElement getFilledProject() throws CoreException {
 
+        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
+
         IProject project = TmfProjectRegistry.createProject(PROJECT_NAME, null, null);
         IFolder traceFolder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
 
         /* Create a trace, if it exist, it will be replaced */
-        File file = new File(PATH);
+        File file = new File(testTrace.getPath());
         String path = file.getAbsolutePath();
         final IPath pathString = Path.fromOSString(path);
         IResource linkedTrace = TmfImportHelper.createLink(traceFolder, pathString, pathString.lastSegment());
@@ -64,7 +70,7 @@ public class ProjectModelTestData {
             return null;
         }
         linkedTrace.setPersistentProperty(TmfCommonConstants.TRACETYPE,
-                "org.eclipse.linuxtools.tmf.ui.type.ctf");
+                "org.eclipse.linuxtools.tmf.tests.ctf.tracetype");
 
         final TmfProjectElement projectElement = TmfProjectRegistry.getProject(project, true);
         TmfTraceElement traceElement = projectElement.getTracesFolder().getTraces().get(0);
@@ -79,7 +85,7 @@ public class ProjectModelTestData {
      * @return The trace name
      */
     public static String getTraceName() {
-        File file = new File(PATH);
+        File file = new File(testTrace.getPath());
         String path = file.getAbsolutePath();
         final IPath pathString = Path.fromOSString(path);
         return pathString.lastSegment();
@@ -90,10 +96,8 @@ public class ProjectModelTestData {
      *
      * @param project
      *            Project to delete
-     * @throws CoreException
-     *             Thrown by the resource deletion
      */
-    public static void deleteProject(TmfProjectElement project) throws CoreException {
+    public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
         for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
@@ -110,7 +114,11 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the experiment */
-                resource.delete(true, null);
+                try {
+                    resource.delete(true, null);
+                } catch (CoreException e) {
+                    Activator.getDefault().logError("Error deleting experiment element", e);
+                }
             }
         }
 
@@ -130,12 +138,20 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the trace */
-                resource.delete(true, new NullProgressMonitor());
+                try {
+                    resource.delete(true, new NullProgressMonitor());
+                } catch (CoreException e) {
+                    Activator.getDefault().logError("Error deleting trace element", e);
+                }
             }
         }
 
         /* Delete the project itself */
-        project.getResource().delete(true, null);
+        try {
+            project.getResource().delete(true, null);
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error deleting project", e);
+        }
     }
 
     /**

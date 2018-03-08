@@ -7,7 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Copied and adapted from NewFolderDialog
+ *     Francois Chouinard - Copied and adapted from NewFolderDialog
+ *     Marc-Andre Laperle - Add select/deselect all
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.dialogs;
@@ -19,13 +20,19 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -61,7 +68,7 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
     public SelectSupplementaryResourcesDialog(Shell shell, IResource[] resources) {
         super(shell);
         fAvailableResources = Arrays.copyOf(resources, resources.length);
-        setShellStyle(SWT.RESIZE);
+        setShellStyle(SWT.RESIZE | getShellStyle());
     }
 
     // ------------------------------------------------------------------------
@@ -94,7 +101,7 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
 
         Group contextGroup = new Group(composite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.SelectSpplementaryResources_ResourcesGroupTitle);
-        contextGroup.setLayout(new GridLayout());
+        contextGroup.setLayout(new GridLayout(2, false));
         contextGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         fTreeViewer = new CheckboxTreeViewer(contextGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -153,15 +160,72 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
       });
         fTreeViewer.setInput(fAvailableResources);
 
+        fTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                updateOKButtonEnablement();
+            }
+        });
+
+        Composite btComp = new Composite(contextGroup, SWT.NONE);
+        FillLayout layout = new FillLayout(SWT.VERTICAL);
+        layout.spacing = 4;
+        btComp.setLayout(layout);
+
+        GridData gd = new GridData();
+        gd.verticalAlignment = SWT.CENTER;
+        btComp.setLayoutData(gd);
+
+        final Button selectAll = new Button(btComp, SWT.PUSH);
+        selectAll.setText(Messages.Dialog_SelectAll);
+        selectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] items = fAvailableResources;
+                for (Object treeItem : items) {
+                    fTreeViewer.setChecked(treeItem, true);
+                }
+
+                updateOKButtonEnablement();
+            }
+        });
+
+        final Button deselectAll = new Button(btComp, SWT.PUSH);
+        deselectAll.setText(Messages.Dialog_DeselectAll);
+        deselectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] items = fAvailableResources;
+                for (Object treeItem : items) {
+                    fTreeViewer.setChecked(treeItem, false);
+                }
+
+                updateOKButtonEnablement();
+            }
+        });
+
         getShell().setMinimumSize(new Point(300, 150));
 
         return composite;
     }
 
+    private void updateOKButtonEnablement() {
+        Object[] checked = fTreeViewer.getCheckedElements();
+        getButton(IDialogConstants.OK_ID).setEnabled(checked.length > 0);
+    }
+
+    @Override
+    protected Control createButtonBar(Composite parent) {
+        Control control = super.createButtonBar(parent);
+        updateOKButtonEnablement();
+        return control;
+    }
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
     @Override

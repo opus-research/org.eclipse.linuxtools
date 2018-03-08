@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Geneviève Bastien - Experiment instantiated with experiment type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.editors;
@@ -139,7 +138,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                             setPartName(experimentElement.getName());
                             super.setSite(site);
                             super.setInput(fileEditorInput);
-                            TmfOpenTraceHelper.reopenTraceFromElement(experimentElement, this);
+                            TmfOpenTraceHelper.reopenExperimentFromElement(experimentElement, this);
                             return;
                         }
                     }
