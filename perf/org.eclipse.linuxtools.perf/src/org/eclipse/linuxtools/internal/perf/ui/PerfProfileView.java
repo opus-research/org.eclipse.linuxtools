@@ -70,6 +70,7 @@ public class PerfProfileView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		PerfPlugin.getDefault().setProfileView(this);
 	}
 	
 	public void refreshModel() {

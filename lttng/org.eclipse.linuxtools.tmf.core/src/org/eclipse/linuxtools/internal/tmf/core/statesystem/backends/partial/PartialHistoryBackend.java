@@ -295,7 +295,6 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         public CheckpointsRequest(ITmfStateProvider input, Map<Long, Long> checkpoints) {
             super(input.getExpectedEventType(),
                     TmfTimeRange.ETERNITY,
-                    0,
                     TmfDataRequest.ALL_DATA,
                     CHUNK_SIZE,
                     ITmfDataRequest.ExecutionType.BACKGROUND);
@@ -339,7 +338,6 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         PartialStateSystemRequest(ITmfStateProvider sci, TmfTimeRange range) {
             super(sci.getExpectedEventType(),
                     range,
-                    0,
                     TmfDataRequest.ALL_DATA,
                     CHUNK_SIZE,
                     ITmfDataRequest.ExecutionType.BACKGROUND);
