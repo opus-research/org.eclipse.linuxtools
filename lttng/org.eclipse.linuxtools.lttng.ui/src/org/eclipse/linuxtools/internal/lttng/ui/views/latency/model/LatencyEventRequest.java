@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2011 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.internal.lttng.ui.views.latency.model;
 import org.eclipse.linuxtools.internal.lttng.core.LttngConstants;
 import org.eclipse.linuxtools.internal.lttng.core.event.LttngEvent;
 import org.eclipse.linuxtools.internal.lttng.core.latency.analyzer.EventMatcher;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -24,13 +23,13 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
  * <b><u>LatencyEventRequest</u></b>
  * <p>
  */
-public class LatencyEventRequest extends TmfEventRequest {
+public class LatencyEventRequest extends TmfEventRequest<LttngEvent> {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
     final private LatencyController fController;
-
+    
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
@@ -58,13 +57,13 @@ public class LatencyEventRequest extends TmfEventRequest {
      * @see org.eclipse.linuxtools.tmf.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.event.TmfData)
      */
     @Override
-    public void handleData(ITmfEvent event) {
+    public void handleData(LttngEvent event) {
         super.handleData(event);
-
+        
         LttngEvent startEvent = EventMatcher.getInstance().process(event);
 
         if (startEvent != null) {
-            long latency = event.getTimestamp().getValue() - startEvent.getTimestamp().getValue();
+            long latency = event.getTimestamp().getValue() - startEvent.getTimestamp().getValue(); 
             fController.handleData(getNbRead(), startEvent.getTimestamp().getValue(), latency);
         }
     }

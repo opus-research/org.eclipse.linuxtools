@@ -17,7 +17,6 @@ import org.eclipse.linuxtools.internal.lttng.core.state.experiment.IStateExperim
 import org.eclipse.linuxtools.internal.lttng.core.state.experiment.StateManagerFactory;
 import org.eclipse.linuxtools.internal.lttng.core.trace.LTTngTextTrace;
 import org.eclipse.linuxtools.internal.lttng.core.trace.LTTngTrace;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -42,7 +41,7 @@ public abstract class LttngTestPreparation extends TestCase {
     static LTTngTextTrace ftextStream_T1 = null;
     private static LTTngTrace frealStream = null;
 
-    private TmfExperiment fTestExperiment = null;
+    private TmfExperiment<LttngEvent> fTestExperiment = null;
     protected volatile int feventCount = 0;
     protected boolean validSequence = true;
 
@@ -65,20 +64,21 @@ public abstract class LttngTestPreparation extends TestCase {
     /**
      * @return
      */
-    protected TmfExperiment prepareExperimentToTest() {
+    protected TmfExperiment<LttngEvent> prepareExperimentToTest() {
         if (fTestExperiment == null) {
             final String expId = "testExperiment";
             final int nbTraces = 1;
 
             // Define traces in experiment
-            final ITmfTrace[] traces = new ITmfTrace[nbTraces];
-            final ITmfTrace trace = prepareStreamToTest();
+            @SuppressWarnings("unchecked")
+            final ITmfTrace<LttngEvent>[] traces = new ITmfTrace[nbTraces];
+            final ITmfTrace<LttngEvent> trace = prepareStreamToTest();
             traces[0] = trace;
 
-            fTestExperiment = new TmfExperiment(LttngEvent.class, expId, traces, TmfExperiment.DEFAULT_BLOCK_SIZE);
+            fTestExperiment = new TmfExperiment<LttngEvent>(LttngEvent.class, expId, traces, TmfExperiment.DEFAULT_BLOCK_SIZE);
 
             // Set the current selected experiment as the test experiment
-            final TmfExperimentSelectedSignal signal = new TmfExperimentSelectedSignal(
+            final TmfExperimentSelectedSignal<LttngEvent> signal = new TmfExperimentSelectedSignal<LttngEvent>(
                     this, fTestExperiment);
             fTestExperiment.experimentSelected(signal);
         }
@@ -89,21 +89,23 @@ public abstract class LttngTestPreparation extends TestCase {
     /**
      * @return
      */
-    protected TmfExperiment prepareTextExperimentToTest() {
+    protected TmfExperiment<LttngEvent> prepareTextExperimentToTest() {
         if (fTestExperiment == null) {
             final String expId = "testExperiment";
             final int nbTraces = 1;
 
             // Define traces in experiment
-            final ITmfTrace[] traces = new ITmfTrace[nbTraces];
-            final ITmfTrace trace = prepareTextStreamToTest();
+            @SuppressWarnings("unchecked")
+            final
+            ITmfTrace<LttngEvent>[] traces = new ITmfTrace[nbTraces];
+            final ITmfTrace<LttngEvent> trace = prepareTextStreamToTest();
             traces[0] = trace;
 
             // create experiment and associate traces
-            fTestExperiment = new TmfExperiment(LttngEvent.class, expId, traces);
+            fTestExperiment = new TmfExperiment<LttngEvent>(LttngEvent.class, expId, traces);
 
             // Set the current selected experiment as the test experiment
-            final TmfExperimentSelectedSignal signal = new TmfExperimentSelectedSignal(
+            final TmfExperimentSelectedSignal<LttngEvent> signal = new TmfExperimentSelectedSignal<LttngEvent>(
                     this, fTestExperiment);
             fTestExperiment.experimentSelected(signal);
 
@@ -113,7 +115,7 @@ public abstract class LttngTestPreparation extends TestCase {
     }
 
     protected LTTngTrace prepareStreamToTest() {
-        if (frealStream == null) {
+        if (frealStream == null)
             try {
                 final URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(ftracepath_T1),
                         null);
@@ -124,15 +126,14 @@ public abstract class LttngTestPreparation extends TestCase {
                 System.out.println("ERROR : Could not open " + ftracepath_T1);
                 frealStream = null;
             }
-        } else {
+        else
             frealStream.seekEvent(0L);
-        }
 
         return frealStream;
     }
 
     protected LTTngTextTrace prepareTextStreamToTest() {
-        if (ftextStream_T1 == null) {
+        if (ftextStream_T1 == null)
             try {
                 final URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()),
                         new Path(fTextTracepath_T1), null);
@@ -144,9 +145,8 @@ public abstract class LttngTestPreparation extends TestCase {
                 System.out.println("ERROR : Could not open " + fTextTracepath_T1);
                 ftextStream_T1 = null;
             }
-        } else {
+        else
             ftextStream_T1.seekEvent(0);
-        }
 
         return ftextStream_T1;
     }
@@ -175,7 +175,7 @@ public abstract class LttngTestPreparation extends TestCase {
      *            , > startIdx and between 0 - 31
      * @return
      */
-    protected <T extends LttngEvent> TmfEventRequest prepareEventRequest(final Class<T> k, final int startIdx, final int endIdx) {
+    protected <T extends LttngEvent> TmfEventRequest<T> prepareEventRequest(final Class<T> k, final int startIdx, final int endIdx) {
         return prepareEventRequest(k, startIdx, endIdx, true);
     }
 
@@ -190,7 +190,7 @@ public abstract class LttngTestPreparation extends TestCase {
      *            , print the first expected events vs actual events
      * @return
      */
-    protected <T extends LttngEvent> TmfEventRequest prepareEventRequest(
+    protected <T extends LttngEvent> TmfEventRequest<T> prepareEventRequest(
             final Class<T> k, final int startIdx, final int endIdx, final boolean printFirst20) {
         // verify bounds
         if (!(endIdx > startIdx && startIdx >= 0 && endIdx <= 31)) {
@@ -207,10 +207,10 @@ public abstract class LttngTestPreparation extends TestCase {
 
         // request
         validSequence = true;
-        final TmfEventRequest request = new TmfEventRequest(k, trange, TmfDataRequest.ALL_DATA, DEFAULT_CHUNK) {
+        final TmfEventRequest<T> request = new TmfEventRequest<T>(k, trange, TmfDataRequest.ALL_DATA, DEFAULT_CHUNK) {
 
             @Override
-            public void handleData(final ITmfEvent event) {
+            public void handleData(final T event) {
                 if (event == null) {
                     System.out
                     .println("Syntheric Event Received is null, after event: "
@@ -220,11 +220,9 @@ public abstract class LttngTestPreparation extends TestCase {
 
                 // Listen to only one variant of synthetic event to keep
                 // track of
-                if (event instanceof LttngSyntheticEvent) {
-                    if (((LttngSyntheticEvent) event).getSynType() != SequenceInd.BEFORE) {
+                if (event instanceof LttngSyntheticEvent)
+                    if (((LttngSyntheticEvent) event).getSynType() != SequenceInd.BEFORE)
                         return;
-                    }
-                }
 
                 // Validating the orders of the first 20 events
                 if (printFirst20 && feventCount < 20) {
@@ -275,7 +273,7 @@ public abstract class LttngTestPreparation extends TestCase {
      *            , print the first expected events vs actual events
      * @return
      */
-    protected <T extends LttngEvent> TmfEventRequest prepareEventRequest2(
+    protected <T extends LttngEvent> TmfEventRequest<T> prepareEventRequest2(
             final Class<T> k, final int startIdx, final int endIdx, final boolean printFirst20) {
         // verify bounds
         if (!(endIdx > startIdx && startIdx >= 0 && endIdx <= 31)) {
@@ -292,10 +290,10 @@ public abstract class LttngTestPreparation extends TestCase {
 
         // request
         validSequence = true;
-        final TmfEventRequest request = new TmfEventRequest(k, trange, TmfDataRequest.ALL_DATA, DEFAULT_CHUNK) {
+        final TmfEventRequest<T> request = new TmfEventRequest<T>(k, trange, TmfDataRequest.ALL_DATA, DEFAULT_CHUNK) {
 
             @Override
-            public void handleData(final ITmfEvent event) {
+            public void handleData(final T event) {
                 if (event == null) {
                     System.out
                     .println("Syntheric Event Received is null, after event: "
@@ -305,11 +303,9 @@ public abstract class LttngTestPreparation extends TestCase {
 
                 // Listen to only one variant of synthetic event to keep
                 // track of
-                if (event instanceof LttngSyntheticEvent) {
-                    if (((LttngSyntheticEvent) event).getSynType() != SequenceInd.BEFORE) {
+                if (event instanceof LttngSyntheticEvent)
+                    if (((LttngSyntheticEvent) event).getSynType() != SequenceInd.BEFORE)
                         return;
-                    }
-                }
 
                 // Validating the orders of the first 20 events
                 if (printFirst20 && feventCount < 20) {
@@ -319,10 +315,9 @@ public abstract class LttngTestPreparation extends TestCase {
                         System.out.println("Expected Event: "
                                 + expectedEvents_T1[feventCount] + " actual: "
                                 + event.getTimestamp().getValue());
-                    } else {
+                    } else
                         System.out.println("Synthetic Event: " + feventCount
                                 + " matched expected time");
-                    }
                 }
 
                 // increment count
