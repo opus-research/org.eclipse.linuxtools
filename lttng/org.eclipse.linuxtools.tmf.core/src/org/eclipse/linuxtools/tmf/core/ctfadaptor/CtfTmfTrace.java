@@ -111,10 +111,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     @Override
     public synchronized void dispose() {
         CtfIteratorManager.removeTrace(this);
-        if (fTrace != null) {
-            fTrace.dispose();
-            fTrace = null;
-        }
+        fTrace = null;
         super.dispose();
     }
 

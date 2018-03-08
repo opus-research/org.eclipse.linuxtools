@@ -146,14 +146,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
         }
     }
 
-    /**
-     * Dispose the StreamInputPacketReader
-     * @since 2.0
-     */
-    public void dispose() {
-        bitBuffer.setByteBuffer(null);
-    }
-
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
