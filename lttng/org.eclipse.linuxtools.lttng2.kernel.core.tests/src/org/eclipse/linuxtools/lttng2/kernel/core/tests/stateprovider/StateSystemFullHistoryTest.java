@@ -25,7 +25,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -53,19 +52,13 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
             input = new LttngKernelStateProvider(testTrace.getTrace());
             ssq = TmfStateSystemFactory.newFullHistory(stateFile, input, true);
         } catch (IOException e) {
-            fail();
+            e.printStackTrace();
         } catch (TmfTraceException e) {
-            fail();
+            e.printStackTrace();
+        } finally {
+            stateFile.deleteOnExit();
+            stateFileBenchmark.deleteOnExit();
         }
-    }
-
-    /**
-     * Clean-up
-     */
-    @AfterClass
-    public static void tearDownClass() {
-        stateFile.delete();
-        stateFileBenchmark.delete();
     }
 
     // ------------------------------------------------------------------------

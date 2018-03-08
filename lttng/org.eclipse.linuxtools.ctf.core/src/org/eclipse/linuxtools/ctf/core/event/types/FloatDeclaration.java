@@ -15,7 +15,7 @@ import java.nio.ByteOrder;
 
 /**
  * A CTF float declaration.
- *
+ * 
  * The declaration of a floating point basic data type.
  *
  * @version 1.0
@@ -38,27 +38,22 @@ public class FloatDeclaration implements IDeclaration {
 
     /**
      * Constructor
-     *
-     * @param exponent
-     *            The exponent size in bits
-     * @param mantissa
-     *            The mantissa size in bits (+1 for sign) (see CTF spec)
-     * @param byteOrder
-     *            The byte order
-     * @param alignment
-     *            The alignment. Should be >= 1
+     * @param exponent the exponent size in bits
+     * @param mantissa the mantissa size in bits (+1 for sign) (see ctf spec)
+     * @param byteOrder the byte order
+     * @param alignment the alignment
      */
     public FloatDeclaration(int exponent, int mantissa, ByteOrder byteOrder,
             long alignment) {
         mant = mantissa;
         exp = exponent;
         this.byteOrder = byteOrder;
-        this.alignment = Math.max(alignment, 1);
+        this.alignment = alignment;
 
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**

@@ -117,9 +117,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < arrayDecl.getLength(); i++) {
                     values.add(((IntegerDefinition) arrayDef.getElem(i)).getValue());
                 }
-                long[] valuesArray = convertListToArray(values);
-                field = new CTFIntegerArrayField(fieldName, valuesArray,
-                        ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) arrayDecl.getElementType()).isSigned());
             }
             /* Add other types of arrays here */
@@ -140,9 +138,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < seqDef.getLength(); i++) {
                     values.add(((IntegerDefinition) seqDef.getElem(i)).getValue());
                 }
-                long[] valuesArray = convertListToArray(values);
-                field = new CTFIntegerArrayField(fieldName, valuesArray,
-                        ((IntegerDeclaration) seqDecl.getElementType()).getBase(),
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration) seqDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) seqDecl.getElementType()).isSigned());
             }
             /* Add other Sequence types here */
@@ -190,18 +186,6 @@ public abstract class CtfTmfEventField extends TmfEventField {
     public String toString() {
         return getName() + '=' + getFormattedValue();
     }
-
-    /**
-     * We cannot use List.toArray(T[]) for primitives types, so do it manually.
-     */
-    private static long[] convertListToArray(List<Long> list) {
-        long[] array = new long[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = list.get(i);
-        }
-        return array;
-    }
-
 }
 
 /**
@@ -290,22 +274,22 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
      * @param signed
      *            Are the values in the array signed or not
      */
-    CTFIntegerArrayField(String name, long[] longValues, int base, boolean signed) {
+    CTFIntegerArrayField(String name, List<Long> longValues, int base, boolean signed) {
         super(name, longValues, null);
         this.base = base;
         this.signed = signed;
     }
 
     @Override
-    public long[] getValue() {
-        return (long[]) super.getValue();
+    public List<Long> getValue() {
+        return (List<Long>) super.getValue();
     }
 
     @Override
     public String getFormattedValue() {
         if (formattedValue == null) {
             List<String> strings = new ArrayList<String>();
-            for (long value : getValue()) {
+            for (Long value : getValue()) {
                 strings.add(IntegerDefinition.formatNumber(value, base, signed));
             }
             formattedValue = strings.toString();

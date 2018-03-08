@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.tmf.tests.stubs.component;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -44,8 +44,8 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider {
     public ITmfContext armRequest(final ITmfEventRequest request) {
 
         // Get the TmfSyntheticEventStub provider
-        final ITmfEventProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class, TmfEventProviderStub.class);
-        final ITmfEventProvider provider = eventProviders[0];
+        final ITmfDataProvider[] eventProviders = TmfProviderManager.getProviders(ITmfEvent.class, TmfEventProviderStub.class);
+        final ITmfDataProvider provider = eventProviders[0];
 
         final TmfTimeRange range = request.getRange();
         final TmfEventRequest subRequest =

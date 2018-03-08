@@ -45,22 +45,14 @@ public class IntegerDeclaration implements IDeclaration {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
-     *
-     * @param len
-     *            The length in bits
-     * @param signed
-     *            Is the integer signed? false == unsigned
-     * @param base
-     *            The base (10-16 are most common)
-     * @param byteOrder
-     *            Big-endian little-endian or other
-     * @param encoding
-     *            ascii, utf8 or none.
-     * @param clock
-     *            The clock path, can be null
-     * @param alignment
-     *            The minimum alignment. Should be >= 1
+     * Contructor
+     * @param len the length in bits
+     * @param signed is the integer signed? false == unsigned
+     * @param base the base (10-16 are most common)
+     * @param byteOrder Big endian little endian or other
+     * @param encoding ascii, utf8 or none.
+     * @param clock the clock path, can be null
+     * @param alignment the minimum alignment
      */
     public IntegerDeclaration(int len, boolean signed, int base,
             ByteOrder byteOrder, Encoding encoding, String clock, long alignment) {
@@ -73,11 +65,11 @@ public class IntegerDeclaration implements IDeclaration {
         this.byteOrder = byteOrder;
         this.encoding = encoding;
         this.clock = clock;
-        this.alignment = Math.max(alignment, 1);
+        this.alignment = alignment;
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
@@ -89,7 +81,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Get the integer base commonly decimal or hex
+     * get the integer base commonly decimal or hex
      * @return the integer base
      */
     public int getBase() {
@@ -97,7 +89,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Gets the byte order
+     * gets the byte order
      * @return the byte order
      */
     public ByteOrder getByteOrder() {
@@ -105,7 +97,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Get encoding, chars are 8 bit ints
+     * get encoding, chars are 8 bit ints
      * @return the encoding
      */
     public Encoding getEncoding() {
@@ -113,7 +105,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Is the integer a character (8 bits and encoded?)
+     * is the integer a character (8 bits and encoded?)
      * @return is the integer a char
      */
    public boolean isCharacter() {

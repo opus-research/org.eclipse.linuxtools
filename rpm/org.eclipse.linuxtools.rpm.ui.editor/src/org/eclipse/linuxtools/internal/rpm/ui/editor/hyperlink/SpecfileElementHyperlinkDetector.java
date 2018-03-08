@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2013 Alexander Kurtakov.
+ * Copyright (c) 2008 Alexander Kurtakov.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,7 +24,6 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.ISpecfileSpecialSymbols;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
-import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileDefine;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileElement;
@@ -61,18 +60,11 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 			return null;
 		}
 
-		// Keeps the errorHandler on the initial opening of the .spec file
-		// otherwise, a new SpecfileParser does not initialize errorHandler
-		// until a SpecfileEditor#editorSaved is called
 		if (specfile == null) {
-			SpecfileEditor a = ((SpecfileEditor) this.getAdapter(SpecfileEditor.class));
-			if (a != null && a.getSpecfile() != null) {
-				specfile = a.getSpecfile();
-			} else {
-				SpecfileParser parser = new SpecfileParser();
-				specfile = parser.parse(document);
-			}
+			SpecfileParser parser = new SpecfileParser();
+			specfile = parser.parse(document);
 		}
+
 
 		int offset = region.getOffset();
 
@@ -149,8 +141,6 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 		IRegion urlRegion = new Region(lineInfo.getOffset()
 				+ line.indexOf(word, lineIndex), word.length());
 
-		// will only work with 1 active page
-		// does not work with CompareEditor
 		IWorkbench wb = PlatformUI.getWorkbench();
 		IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
 		IWorkbenchPage page = win.getActivePage();

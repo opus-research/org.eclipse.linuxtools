@@ -35,15 +35,19 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
- * An abstract base class that implements ITmfEventProvider.
+ * An abstract base class that implements ITmfDataProvider.
  * <p>
  * This abstract class implements the housekeeping methods to register/
  * de-register the event provider and to handle generically the event requests.
- * </p>
+ * <p>
+ * The concrete class can either re-implement processRequest() entirely or just
+ * implement the hooks (initializeContext() and getNext()).
+ * <p>
  *
  * @author Francois Chouinard
+ * @version 1.1
  */
-public abstract class TmfEventProvider extends TmfComponent implements ITmfEventProvider {
+public abstract class TmfEventProvider extends TmfComponent implements ITmfDataProvider {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -59,12 +63,14 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** List of coalesced requests */
-    protected final List<TmfCoalescedEventRequest> fPendingCoalescedRequests =
-            new ArrayList<TmfCoalescedEventRequest>();
-
     /** The type of event handled by this provider */
     protected Class<? extends ITmfEvent> fType;
+
+    /** Is there some data being logged? */
+    protected boolean fLogData;
+
+    /** Are errors being logged? */
+    protected boolean fLogError;
 
     /** Queue of events */
     protected BlockingQueue<ITmfEvent> fDataQueue;
@@ -72,11 +78,10 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     /** Size of the fDataQueue */
     protected int fQueueSize = DEFAULT_QUEUE_SIZE;
 
-    private final TmfRequestExecutor fExecutor;
-
-    private final Object fLock = new Object();
+    private TmfRequestExecutor fExecutor;
 
     private int fSignalDepth = 0;
+    private final Object fLock = new Object();
 
     private int fRequestPendingCounter = 0;
 
@@ -107,8 +112,11 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
         fType = type;
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
-        fExecutor.init();
+        fExecutor = new TmfRequestExecutor();
         fSignalDepth = 0;
+
+        fLogData = TmfCoreTracer.isEventTraced();
+//        fLogError = TmfCoreTracer.isErrorTraced();
 
         TmfProviderManager.register(fType, this);
     }
@@ -157,6 +165,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
         TmfProviderManager.deregister(fType, this);
         fExecutor.stop();
         super.dispose();
+        // if (Tracer.isComponentTraced()) Tracer.traceComponent(this, "stopped");
     }
 
     // ------------------------------------------------------------------------
@@ -189,7 +198,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     public void sendRequest(final ITmfEventRequest request) {
         synchronized (fLock) {
             if (fSignalDepth > 0) {
-                coalesceEventRequest(request);
+                coalesceDataRequest(request);
             } else {
                 dispatchRequest(request);
             }
@@ -241,8 +250,11 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     }
 
     // ------------------------------------------------------------------------
-    // Coalescing
+    // Coalescing (primitive test...)
     // ------------------------------------------------------------------------
+
+    /** List of coalesced requests */
+    protected List<TmfCoalescedEventRequest> fPendingCoalescedRequests = new ArrayList<TmfCoalescedEventRequest>();
 
     /**
      * Create a new request from an existing one, and add it to the coalesced
@@ -251,7 +263,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      * @param request
      *            The request to copy
      */
-    protected synchronized void newCoalescedEventRequest(ITmfEventRequest request) {
+    protected synchronized void newCoalescedDataRequest(ITmfEventRequest request) {
             TmfCoalescedEventRequest coalescedRequest = new TmfCoalescedEventRequest(
                     request.getDataType(),
                     request.getRange(),
@@ -272,7 +284,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      * @param request
      *            The request to add to the list
      */
-    protected void coalesceEventRequest(ITmfEventRequest request) {
+    protected void coalesceDataRequest(ITmfEventRequest request) {
         synchronized (fLock) {
             for (TmfCoalescedEventRequest coalescedRequest : fPendingCoalescedRequests) {
                 if (coalescedRequest.isCompatible(request)) {
@@ -284,7 +296,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
                     return;
                 }
             }
-            newCoalescedEventRequest(request);
+            newCoalescedDataRequest(request);
         }
     }
 
