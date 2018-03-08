@@ -687,7 +687,16 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                fViewer.setSelectionRange(beginTime, endTime);
+                if (beginTime == endTime) {
+                    fViewer.setSelectedTime(beginTime, true);
+                    if (fStartTime != fViewer.getTime0() || fStopTime != fViewer.getTime1()) {
+                        fStartTime = fViewer.getTime0();
+                        fStopTime = fViewer.getTime1();
+                        itemize(fStartTime, fStopTime);
+                    }
+                } else {
+                    fViewer.setSelectionRange(beginTime, endTime);
+                }
             }
         });
     }
