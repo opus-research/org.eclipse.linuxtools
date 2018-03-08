@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 
 /**
@@ -85,10 +84,8 @@ class HT_IO {
      * @param seqNumber
      *            Sequence number of the node we want
      * @return The wanted node in object form
-     * @throws ClosedChannelException
-     *             If the channel was closed before we could read
      */
-    HTNode readNode(int seqNumber) throws ClosedChannelException {
+    HTNode readNode(int seqNumber) {
         HTNode node = readNodeFromMemory(seqNumber);
         if (node == null) {
             return readNodeFromDisk(seqNumber);
@@ -109,22 +106,14 @@ class HT_IO {
      * This method here isn't private, if we know for sure the node cannot be in
      * memory it's a bit faster to use this directly (when opening a file from
      * disk for example)
-     *
-     * @throws ClosedChannelException
-     *             Usually happens because the file was closed while we were
-     *             reading. Instead of using a big reader-writer lock, we'll
-     *             just catch this exception.
      */
-    synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
+    synchronized HTNode readNodeFromDisk(int seqNumber) {
         HTNode readNode;
         try {
             seekFCToNodePos(fcIn, seqNumber);
             readNode = HTNode.readNode(tree, fcIn);
             return readNode;
-        } catch (ClosedChannelException e) {
-            throw e;
         } catch (IOException e) {
-            /* Other types of IOExceptions shouldn't happen at this point though */
             e.printStackTrace();
             return null;
         }
@@ -167,17 +156,13 @@ class HT_IO {
                 + ((long) tree.getNodeCount() * tree.config.blockSize);
     }
 
-    synchronized void closeFile() {
+    synchronized void deleteFile() {
         try {
             fis.close();
             fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    synchronized void deleteFile() {
-        closeFile();
 
         if(!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */

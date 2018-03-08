@@ -15,14 +15,15 @@ import java.util.ArrayList;
 
 import org.eclipse.linuxtools.systemtap.ui.graphing.structures.GraphDisplaySet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.ITabListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolder2Listener;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -41,8 +42,11 @@ import org.eclipse.ui.part.ViewPart;
 public class GraphSelectorView extends ViewPart {
 	public GraphSelectorView() {
 		super();
+		LogManager.logDebug("Start GraphSelectorView:", this); //$NON-NLS-1$
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 		displaySets = new ArrayList<GraphDisplaySet>();
 		tabListeners = new ArrayList<ITabListener>();
+		LogManager.logDebug("End GraphSelectorView:", this); //$NON-NLS-1$
 	}
 	
 	/**
@@ -73,6 +77,8 @@ public class GraphSelectorView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
+		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
+
 		FormData data2 = new FormData();
 		data2.left = new FormAttachment(0, 0);
 		data2.top = new FormAttachment(0, 0);
@@ -92,22 +98,27 @@ public class GraphSelectorView extends ViewPart {
 		data.right = new FormAttachment(100, 0);
 		data.bottom = new FormAttachment(100, 0);
 		scriptFolder.setLayoutData(data);
-		scriptFolder.addSelectionListener(new SelectionAdapter() {
-			@Override
+		scriptFolder.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				fireTabChangedEvent();
 			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {}
 		});
 		
 
-		scriptFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
-			@Override
+		scriptFolder.addCTabFolder2Listener(new CTabFolder2Listener() {
+			public void restore(CTabFolderEvent e) {}
+			public void showList(CTabFolderEvent e) {}
+			public void minimize(CTabFolderEvent e) {}
+			public void maximize(CTabFolderEvent e) {}
 			public void close(CTabFolderEvent e) {
 				displaySets.remove(scriptFolder.indexOf((CTabItem)e.item));
 				fireTabCloseEvent();
 			}
 		});
 
+		LogManager.logDebug("End createPartControl", this); //$NON-NLS-1$
 	}
 	
 	/**
@@ -134,21 +145,18 @@ public class GraphSelectorView extends ViewPart {
 	}
 	
 	private void fireTabCloseEvent() {
-		for(ITabListener tabListener:tabListeners) {
-			tabListener.tabClosed();
-		}
+		for(int i=0; i<tabListeners.size(); i++)
+			tabListeners.get(i).tabClosed();
 	}
 	
 	private void fireTabOpenEvent() {
-		for(ITabListener tabListener:tabListeners) {
-			tabListener.tabOpened();
-		}
+		for(int i=0; i<tabListeners.size(); i++)
+			tabListeners.get(i).tabOpened();
 	}
 	
 	private void fireTabChangedEvent() {
-		for(ITabListener tabListener:tabListeners) {
-			tabListener.tabChanged();
-		}
+		for(int i=0; i<tabListeners.size(); i++)
+			tabListeners.get(i).tabChanged();
 	}
 
 	/**
@@ -157,6 +165,8 @@ public class GraphSelectorView extends ViewPart {
 	 */
 	@Override
 	public void dispose() {
+		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();
 
 		if(null != scriptFolder)
@@ -165,10 +175,11 @@ public class GraphSelectorView extends ViewPart {
 		if(null != tabListeners)
 			tabListeners.removeAll(tabListeners);
 		tabListeners = null;
+		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
 	}
 	
 	private CTabFolder scriptFolder;
 	private ArrayList<GraphDisplaySet> displaySets;
 	private ArrayList<ITabListener> tabListeners;
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView";
 }

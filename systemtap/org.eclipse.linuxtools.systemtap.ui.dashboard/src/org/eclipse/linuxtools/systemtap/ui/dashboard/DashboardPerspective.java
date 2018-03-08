@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView;
  * @author Ryan Morse
  */
 public class DashboardPerspective implements IPerspectiveFactory {
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective"; //$NON-NLS-1$
+	public static String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective"; //$NON-NLS-1$
 	
 	public void createInitialLayout(IPageLayout layout) {
 		LogManager.logDebug("Start createInitialLayout:", this); //$NON-NLS-1$
@@ -49,6 +49,11 @@ public class DashboardPerspective implements IPerspectiveFactory {
 
 		layout.getViewLayout(DashboardModuleBrowserView.ID).setCloseable(false);
 		layout.getViewLayout(ActiveModuleBrowserView.ID).setCloseable(false);
+		//DashboardModuleBrowserView.getmoduleNames();
+		/*for (int i=0 ; i<moduleNames.size(); i++)
+		{
+			System.out.println("Dashboard perspective: " + moduleNames.get(i));
+		}*/
 
 		//Add the graph content view.
 		layout.addStandaloneView(DashboardView.ID, false, IPageLayout.TOP, 1.0f, editorArea);

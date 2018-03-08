@@ -20,10 +20,10 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
  * TODO: Implement me. Please.
  */
 @SuppressWarnings({"nls","javadoc"})
-public class TmfEventProviderStub extends TmfEventProvider {
+public class TmfEventProviderStub extends TmfEventProvider<TmfEvent> {
 
     private static final String DIRECTORY   = "testfiles";
     private static final String TEST_STREAM = "A-Test-10K";
@@ -69,13 +69,16 @@ public class TmfEventProviderStub extends TmfEventProvider {
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfContext armRequest(final ITmfRequest request) {
-        final ITmfContext context = fTrace.seekEvent(request.getTimeRange().getStartTime());
-        return context;
+    public ITmfContext armRequest(final ITmfDataRequest<TmfEvent> request) {
+        if (request instanceof ITmfEventRequest<?>) {
+            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest<?>) request).getRange().getStartTime());
+            return context;
+        }
+        return null;
     }
 
     @Override
-    public ITmfEvent getNext(final ITmfContext context) {
+    public TmfEvent getNext(final ITmfContext context) {
         return fTrace.getNext(context);
     }
 

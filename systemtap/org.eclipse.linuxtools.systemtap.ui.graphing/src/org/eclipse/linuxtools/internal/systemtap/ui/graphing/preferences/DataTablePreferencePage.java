@@ -29,7 +29,7 @@ public class DataTablePreferencePage extends FieldEditorPreferencePage implement
 		LogManager.logDebug("Start DataTablePreferencePage:", this); //$NON-NLS-1$
 		//setPreferenceStore(GraphingAPIUIPlugin.getDefault().getPreferenceStore());
 		setPreferenceStore(GraphingPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("DataTablePreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
+		setDescription(Localization.getString("DataTablePreferencePage.GraphDisplayPreferences"));
 		LogManager.logDebug("End DataTablePreferencePage:", this); //$NON-NLS-1$
 	}
 	
@@ -39,25 +39,35 @@ public class DataTablePreferencePage extends FieldEditorPreferencePage implement
 
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_JUMP_NEW_TABLE_ENTRY, 
-				Localization.getString("DataTablePreferencePage.JumpNewestEntry"), //$NON-NLS-1$
+				Localization.getString("DataTablePreferencePage.JumpNewestEntry"),
 				getFieldEditorParent()));
 		
 		addField(new BooleanFieldEditor(
 				GraphingAPIPreferenceConstants.P_AUTO_RESIZE, 
-				Localization.getString("DataTablePreferencePage.AutoResizeColumns"), //$NON-NLS-1$
+				Localization.getString("DataTablePreferencePage.AutoResizeColumns"),
 				getFieldEditorParent()));
 
 		addField(
 				new IntegerFieldEditor(
 				GraphingAPIPreferenceConstants.P_MAX_DATA_ITEMS,
-				Localization.getString("DataTablePreferencePage.MaxDataItems"), //$NON-NLS-1$
+				Localization.getString("DataTablePreferencePage.MaxDataItems"),
 				getFieldEditorParent()));
 		
 		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
 	}
 
 	public void init(IWorkbench workbench) {
+		LogManager.logDebug("Start init:", this); //$NON-NLS-1$
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
+		LogManager.logDebug("End init:", this); //$NON-NLS-1$
 	}
 	
+	@Override
+	public void dispose() {
+		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
+		super.dispose();
+		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
+	}
 }
 

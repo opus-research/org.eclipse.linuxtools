@@ -16,6 +16,7 @@ import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersImages;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersMessages;
 import org.eclipse.swt.graphics.Image;
 
+
 public class STDataViewersFiltersAction extends Action {
 
     /**
@@ -23,7 +24,7 @@ public class STDataViewersFiltersAction extends Action {
      */
     public STDataViewersFiltersAction() {
         super(STDataViewersMessages.filtersAction_title);
-        Image img = STDataViewersImages.getImage(STDataViewersImages.IMG_FILTER);
+        Image img = STDataViewersImages.getImage(STDataViewersImages.IMG_FILTER); 
         super.setImageDescriptor(ImageDescriptor.createFromImage(img));
         super.setToolTipText(STDataViewersMessages.filtersAction_tooltip);
         super.setEnabled(true);

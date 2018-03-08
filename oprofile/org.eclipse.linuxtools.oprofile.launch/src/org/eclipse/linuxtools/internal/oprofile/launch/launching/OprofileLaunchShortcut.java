@@ -42,8 +42,6 @@ public class OprofileLaunchShortcut extends ProfileLaunchShortcut {
 
 		//default event option
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
-		//default number of executions
-		wc.setAttribute(OprofileLaunchPlugin.ATTR_EXECUTIONS_NUMBER, 1);
 	}
 
 	//need to have this here because a saved launch config will have the manual

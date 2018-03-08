@@ -15,18 +15,20 @@ import java.io.File;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.Localization;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.preferences.DashboardPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.Localization;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.preferences.DashboardPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
 
 /**
  * This action allows users to add new directories of DashboardModules.  This provides support for downloading
@@ -75,6 +77,9 @@ public class ImportModuleLocationAction extends Action implements IWorkbenchWind
 			
 			IViewPart ivp = fWindow.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(DashboardModuleBrowserView.ID);
 			((DashboardModuleBrowserView)ivp).refresh();
+		} else {
+			String msg = Localization.getString("ImportModuleLocationAction.FileIsNull"); //$NON-NLS-1$
+			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("ImportModuleLocationAction.Problem"), msg); //$NON-NLS-1$
 		}
 		LogManager.logDebug("End run:", this); //$NON-NLS-1$
 	}

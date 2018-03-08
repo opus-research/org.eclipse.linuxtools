@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.request.TmfEventRequestStub;
  * <p>
  * Test suite for the TmfEventRequest class.
  */
-@SuppressWarnings({"nls","javadoc", "deprecation"})
+@SuppressWarnings({"nls","javadoc"})
 public class TmfEventRequestTest extends TestCase {
 
 	// ------------------------------------------------------------------------
@@ -36,12 +36,12 @@ public class TmfEventRequestTest extends TestCase {
 	private static TmfTimeRange range1 = new TmfTimeRange(TmfTimeRange.ETERNITY);
 	private static TmfTimeRange range2 = new TmfTimeRange(new TmfTimestamp(), TmfTimestamp.BIG_CRUNCH);
 
-	private static TmfEventRequest fRequest1;
-	private static TmfEventRequest fRequest1b;
-	private static TmfEventRequest fRequest1c;
-	private static TmfEventRequest fRequest2;
-	private static TmfEventRequest fRequest3;
-	private static TmfEventRequest fRequest4;
+	private static TmfEventRequest<TmfEvent> fRequest1;
+	private static TmfEventRequest<TmfEvent> fRequest1b;
+	private static TmfEventRequest<TmfEvent> fRequest1c;
+	private static TmfEventRequest<TmfEvent> fRequest2;
+	private static TmfEventRequest<TmfEvent> fRequest3;
+	private static TmfEventRequest<TmfEvent> fRequest4;
 
 	private static int fRequestCount;
 
@@ -59,12 +59,13 @@ public class TmfEventRequestTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		fRequest1  = new TmfEventRequestStub(TmfEvent.class, range1, 100, 200);
-		fRequest2  = new TmfEventRequestStub(TmfEvent.class, range2, 100, 200);
-		fRequest3  = new TmfEventRequestStub(TmfEvent.class, range2, 200, 200);
-		fRequest4  = new TmfEventRequestStub(TmfEvent.class, range2, 200, 300);
-		fRequest1b = new TmfEventRequestStub(TmfEvent.class, range1, 100, 200);
-		fRequest1c = new TmfEventRequestStub(TmfEvent.class, range1, 100, 200);
+		TmfDataRequest.reset();
+		fRequest1  = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range1, 100, 200);
+		fRequest2  = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range2, 100, 200);
+		fRequest3  = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range2, 200, 200);
+		fRequest4  = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range2, 200, 300);
+		fRequest1b = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range1, 100, 200);
+		fRequest1c = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range1, 100, 200);
 		fRequestCount = fRequest1c.getRequestId() + 1;
 	}
 
@@ -73,11 +74,11 @@ public class TmfEventRequestTest extends TestCase {
 		super.tearDown();
 	}
 
-	private static TmfEventRequest setupTestRequest(final boolean[] flags) {
+	private static TmfEventRequest<TmfEvent> setupTestRequest(final boolean[] flags) {
 
-		TmfEventRequest request = new TmfEventRequestStub(TmfEvent.class, new TmfTimeRange(TmfTimeRange.ETERNITY), 100, 200) {
-            @Override
-			public synchronized void handleCompleted() {
+		TmfEventRequest<TmfEvent> request = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, new TmfTimeRange(TmfTimeRange.ETERNITY), 100, 200) {
+		    @Override
+			public void handleCompleted() {
 		    	super.handleCompleted();
 		    	flags[0] = true;
 		    }
@@ -105,7 +106,7 @@ public class TmfEventRequestTest extends TestCase {
 	// ------------------------------------------------------------------------
 
 	public void testTmfEventRequest() {
-        TmfEventRequest request = new TmfEventRequestStub(TmfEvent.class);
+        TmfEventRequest<TmfEvent> request = new TmfEventRequestStub<TmfEvent>(TmfEvent.class);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -125,7 +126,7 @@ public class TmfEventRequestTest extends TestCase {
 
 	public void testTmfEventRequestTimeRange() {
         TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(), TmfTimestamp.BIG_CRUNCH);
-        TmfEventRequest request = new TmfEventRequestStub(TmfEvent.class, range);
+        TmfEventRequest<TmfEvent> request = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -145,7 +146,7 @@ public class TmfEventRequestTest extends TestCase {
 
 	public void testTmfEventRequestTimeRangeNbRequested() {
         TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(), TmfTimestamp.BIG_CRUNCH);
-        TmfEventRequest request = new TmfEventRequestStub(TmfEvent.class, range, 100);
+        TmfEventRequest<TmfEvent> request = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range, 100);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -165,7 +166,7 @@ public class TmfEventRequestTest extends TestCase {
 
 	public void testTmfEventRequestTimeRangeNbRequestedBlocksize() {
         TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(), TmfTimestamp.BIG_CRUNCH);
-        TmfEventRequest request = new TmfEventRequestStub(TmfEvent.class, range, 100, 200);
+        TmfEventRequest<TmfEvent> request = new TmfEventRequestStub<TmfEvent>(TmfEvent.class, range, 100, 200);
 
         assertEquals("getRequestId", fRequestCount++, request.getRequestId());
         assertEquals("getDataType",  TmfEvent.class, request.getDataType());
@@ -231,10 +232,10 @@ public class TmfEventRequestTest extends TestCase {
 	// ------------------------------------------------------------------------
 
 	public void testToString() {
-        String expected1 = "[TmfEventRequest(" + fRequest1.getRequestId() + ",TmfEvent," + range1 + ",0,100,200)]";
-        String expected2 = "[TmfEventRequest(" + fRequest2.getRequestId() + ",TmfEvent," + range2 + ",0,100,200)]";
-        String expected3 = "[TmfEventRequest(" + fRequest3.getRequestId() + ",TmfEvent," + range2 + ",0,200,200)]";
-        String expected4 = "[TmfEventRequest(" + fRequest4.getRequestId() + ",TmfEvent," + range2 + ",0,200,300)]";
+        String expected1 = "[TmfEventRequest(0,TmfEvent," + range1 + ",0,100,200)]";
+        String expected2 = "[TmfEventRequest(1,TmfEvent," + range2 + ",0,100,200)]";
+        String expected3 = "[TmfEventRequest(2,TmfEvent," + range2 + ",0,200,200)]";
+        String expected4 = "[TmfEventRequest(3,TmfEvent," + range2 + ",0,200,300)]";
 
         assertEquals("toString", expected1, fRequest1.toString());
         assertEquals("toString", expected2, fRequest2.toString());
@@ -249,7 +250,7 @@ public class TmfEventRequestTest extends TestCase {
 	public void testDone() {
 
 		final boolean[] flags = new boolean[4];
-		TmfEventRequest request = setupTestRequest(flags);
+		TmfEventRequest<TmfEvent> request = setupTestRequest(flags);
 		request.done();
 
 		assertTrue ("isCompleted", request.isCompleted());
@@ -269,7 +270,7 @@ public class TmfEventRequestTest extends TestCase {
 	public void testFail() {
 
 		final boolean[] flags = new boolean[4];
-		TmfEventRequest request = setupTestRequest(flags);
+		TmfEventRequest<TmfEvent> request = setupTestRequest(flags);
 		request.fail();
 
 		assertTrue ("isCompleted", request.isCompleted());
@@ -289,7 +290,7 @@ public class TmfEventRequestTest extends TestCase {
 	public void testCancel() {
 
 		final boolean[] flags = new boolean[4];
-		TmfEventRequest request = setupTestRequest(flags);
+		TmfEventRequest<TmfEvent> request = setupTestRequest(flags);
 		request.cancel();
 
 		assertTrue ("isCompleted", request.isCompleted());

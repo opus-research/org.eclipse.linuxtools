@@ -15,12 +15,12 @@ package org.eclipse.linuxtools.tmf.tests.stubs.component;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
@@ -31,8 +31,8 @@ import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings({"nls","javadoc", "deprecation"})
-public class TmfSyntheticEventProviderStub extends TmfEventProvider {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfSyntheticEventProviderStub extends TmfEventProvider<TmfSyntheticEventStub> {
 
     public static final int BLOCK_SIZE = 100;
     public static final int NB_EVENTS  = 1000;
@@ -42,18 +42,24 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider {
     }
 
     @Override
-    public ITmfContext armRequest(final ITmfRequest request) {
+    public ITmfContext armRequest(final ITmfDataRequest<TmfSyntheticEventStub> request) {
 
         // Get the TmfSyntheticEventStub provider
-        final ITmfEventProvider[] eventProviders = TmfProviderManager.getProviders(TmfEvent.class, TmfEventProviderStub.class);
-        final ITmfEventProvider provider = eventProviders[0];
+        final ITmfDataProvider<TmfEvent>[] eventProviders = (ITmfDataProvider<TmfEvent>[]) TmfProviderManager.getProviders(TmfEvent.class, TmfEventProviderStub.class);
+        final ITmfDataProvider<TmfEvent> provider = eventProviders[0];
 
-        final TmfEventRequest eventRequest = (TmfEventRequest) request;
+        // make sure we have the right type of request
+        if (!(request instanceof ITmfEventRequest<?>)) {
+            request.cancel();
+            return null;
+        }
+
+        final TmfEventRequest<TmfSyntheticEventStub> eventRequest = (TmfEventRequest<TmfSyntheticEventStub>) request;
         final TmfTimeRange range = eventRequest.getRange();
-        final TmfEventRequest subRequest =
-                new TmfEventRequest(TmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
+        final TmfEventRequest<TmfEvent> subRequest =
+                new TmfEventRequest<TmfEvent>(TmfEvent.class, range, NB_EVENTS, BLOCK_SIZE) {
             @Override
-            public void handleData(final ITmfEvent event) {
+            public void handleData(final TmfEvent event) {
                 super.handleData(event);
                 if (event != null) {
                     handleIncomingData(event);
@@ -69,7 +75,7 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider {
     }
 
     // Queue 2 synthetic events per base event
-    private void handleIncomingData(final ITmfEvent e) {
+    private void handleIncomingData(final TmfEvent e) {
         queueResult(new TmfSyntheticEventStub(e));
         queueResult(new TmfSyntheticEventStub(e));
     }
@@ -80,7 +86,7 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider {
     public TmfSyntheticEventStub getNext(final ITmfContext context) {
         TmfSyntheticEventStub data = null;
         try {
-            data = (TmfSyntheticEventStub) fDataQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+            data = fDataQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
             if (data == null) {
                 throw new InterruptedException();
             }
