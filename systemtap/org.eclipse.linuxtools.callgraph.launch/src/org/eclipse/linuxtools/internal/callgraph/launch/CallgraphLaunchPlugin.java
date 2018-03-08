@@ -80,5 +80,4 @@ public class CallgraphLaunchPlugin extends AbstractUIPlugin {
 	public static Shell getActiveWorkbenchShell() {
 		return getDefault().getWorkbench().getActiveWorkbenchWindow().getShell();
 	}
-
 }

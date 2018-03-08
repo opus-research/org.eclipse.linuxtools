@@ -272,7 +272,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * If there was no wildcard, we'll only return the one matching
          * attribute, if there is one.
          */
-        if (!split) {
+        if (split == false) {
             int quark;
             try {
                 quark = getQuarkAbsolute(prefixStr);
@@ -345,7 +345,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
-        Integer stackDepth;
+        Integer stackDepth = 0;
         int subAttributeQuark;
         ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
@@ -354,7 +354,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * If the StateValue was null, this means this is the first time we
              * use this attribute. Leave stackDepth at 0.
              */
-            stackDepth = 0;
         } else if (previousSV.getType() == Type.INTEGER) {
             /* Previous value was an integer, all is good, use it */
             stackDepth = previousSV.unboxInt();
@@ -457,7 +456,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * Will not happen since we're inserting null values only, but poor
              * compiler has no way of knowing this...
              */
-            throw new IllegalStateException(e);
+            e.printStackTrace();
         }
     }
 
@@ -531,6 +530,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          */
         for (int i = 0; i < stateInfo.size(); i++) {
             if (stateInfo.get(i) == null) {
+                //logMissingInterval(i, t);
                 stateInfo.set(i, new TmfStateInterval(t, t, i, TmfStateValue.nullValue()));
             }
         }
@@ -557,6 +557,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * We do NOT want to return 'null' here.
          */
         if (ret == null) {
+            //logMissingInterval(attributeQuark, t);
             return new TmfStateInterval(t, this.getCurrentEndTime(),
                     attributeQuark, TmfStateValue.nullValue());
         }
@@ -581,7 +582,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
-        return querySingleState(t, subAttribQuark);
+        ITmfStateInterval ret = querySingleState(t, subAttribQuark);
+        return ret;
     }
 
     @Override
