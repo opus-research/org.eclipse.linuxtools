@@ -10,22 +10,13 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -88,48 +79,20 @@ public class SourcesFileHyperlink implements IHyperlink {
 	public void open() {
 		IContainer container = original.getParent();
 		IResource resourceToOpen = container.findMember(fileName);
-		final byte[] empty = "".getBytes(); //$NON-NLS-1$
-		final InputStream source = new ByteArrayInputStream(empty);
-		IFile file = null;
-		int rc = -1;
-
 		if (resourceToOpen == null || !resourceToOpen.exists()) {
-			IResource sourcesFolder = container.getProject().findMember(
+			IResource sourcesFolder = container.getParent().findMember(
 					"SOURCES"); //$NON-NLS-1$
-			file = container.getFile(new Path(fileName));
-			if (sourcesFolder != null && sourcesFolder.exists()) {
-				file = ((IFolder) sourcesFolder).getFile(new Path(fileName));
-			}
-			if (!file.exists()) {
-				MessageBox mb = new MessageBox(Display.getCurrent()
-						.getActiveShell(), SWT.ICON_QUESTION | SWT.OK
-						| SWT.CANCEL);
-				mb.setText(Messages.SourcesFileDownloadHyperlink_5);
-				mb.setMessage(NLS.bind(Messages.SourcesFileHyperlink_2,
-						fileName));
-				rc = mb.open();
-
-				if (rc == SWT.OK ) {
-					try {
-						file.create(source, IResource.NONE, null);
-					} catch (CoreException e) {
-						SpecfileLog.logError(e);
-					}
-				}
-			}
-			resourceToOpen = file;
+			resourceToOpen = ((IFolder) sourcesFolder).getFile(fileName);
 		}
-
-		if (resourceToOpen != null && resourceToOpen.exists()) {
-			IWorkbenchPage page = PlatformUI.getWorkbench()
-					.getActiveWorkbenchWindow().getActivePage();
-			try {
-				if (resourceToOpen.getType() == IResource.FILE) {
-					IDE.openEditor(page, (IFile) resourceToOpen);
-				}
-			} catch (PartInitException e) {
-				SpecfileLog.logError(e);
+		IWorkbenchPage page = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage();
+		try {
+			if (resourceToOpen.getType() == IResource.FILE) {
+				IDE.openEditor(page, (IFile) resourceToOpen);
 			}
+		} catch (PartInitException e) {
+			SpecfileLog.logError(e);
 		}
 	}
+
 }
