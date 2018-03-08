@@ -16,8 +16,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -39,7 +37,6 @@ import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
@@ -294,21 +291,6 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		 */
 		else {
 			modname = fileName.substring(fileName.lastIndexOf('/')+1);
-
-			// Make sure script name only contains underscores and/or alphanumeric characters.
-			Pattern validModName = Pattern.compile("^[a-z0-9_]+(.stp)$"); //$NON-NLS-1$
-			Matcher modNameMatch = validModName.matcher(modname);
-			if(!modNameMatch.find()){
-				continueRun  = false;
-
-				Shell parent = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-				MessageDialog.openError(parent,
-						Messages.ScriptRunAction_InvalidScriptTitle,
-						Messages.ScriptRunAction_InvalidScriptTMessage);
-
-				return new String[0];
-			}
-
 			modname = modname.substring(0, modname.indexOf('.'));
 		}
 		if (modname.indexOf('-') != -1)
