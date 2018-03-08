@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
@@ -99,8 +100,9 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     /**
      * Method getCurrentEvent. gets the current event
      * @return CtfTmfEvent
+     * @since 3.0
      */
-    public CtfTmfEvent getCurrentEvent() {
+    public ITmfEvent getCurrentEvent() {
         final StreamInputReader top = super.getPrio().peek();
         if (top != null) {
             return CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
@@ -139,7 +141,12 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
          * assign the location index correctly
          */
         long index = 0;
-        final CtfTmfEvent currentEvent = this.getCurrentEvent();
+        final ITmfEvent event = this.getCurrentEvent();
+        CtfTmfEvent currentEvent = null;
+        // this will always be true since it is a seek
+        if( event instanceof CtfTmfEvent) {
+            currentEvent = (CtfTmfEvent) event;
+        }
         if (currentEvent != null) {
             currTimestamp = currentEvent.getTimestamp().getValue();
 

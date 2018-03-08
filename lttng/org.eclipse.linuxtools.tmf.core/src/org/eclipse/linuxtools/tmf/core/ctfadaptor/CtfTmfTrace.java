@@ -94,7 +94,7 @@ public class CtfTmfTrace extends TmfTrace
             CtfTmfContext ctx;
             /* Set the start and (current) end times for this trace */
             ctx = (CtfTmfContext) seekEvent(0L);
-            CtfTmfEvent event = getNext(ctx);
+            ITmfEvent event = getNext(ctx);
             if ((ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) || (ctx.getCurrentEvent() == null)) {
                 /* Handle the case where the trace is empty */
                 this.setStartTime(TmfTimestamp.BIG_BANG);
@@ -132,7 +132,8 @@ public class CtfTmfTrace extends TmfTrace
      * @param path
      *            String
      * @return IStatus IStatus.error or Status.OK_STATUS
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(IProject, String)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(IProject,
+     *      String)
      * @since 2.0
      */
     @Override
@@ -145,7 +146,8 @@ public class CtfTmfTrace extends TmfTrace
             } else {
                 CTFTraceReader ctfTraceReader = new CTFTraceReader(temp);
                 if (!ctfTraceReader.hasMoreEvents()) {
-                    // TODO: This will need an additional check when we support live traces
+                    // TODO: This will need an additional check when we support
+                    // live traces
                     // because having no event is valid for a live trace
                     validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_NoEvent);
                 }
@@ -153,7 +155,7 @@ public class CtfTmfTrace extends TmfTrace
             }
             temp.dispose();
         } catch (final CTFReaderException e) {
-            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
+            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError + ": " + e.toString()); //$NON-NLS-1$
         }
         return validTrace;
     }
@@ -212,7 +214,7 @@ public class CtfTmfTrace extends TmfTrace
         }
         context.setLocation(currentLocation);
         if (location == null) {
-            CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
+            ITmfEvent event = getIterator(this, context).getCurrentEvent();
             if (event != null) {
                 currentLocation = new CtfLocation(event.getTimestamp().getValue(), 0);
             }
@@ -249,11 +251,11 @@ public class CtfTmfTrace extends TmfTrace
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getNext(ITmfContext)
      */
     @Override
-    public synchronized CtfTmfEvent getNext(final ITmfContext context) {
+    public synchronized ITmfEvent getNext(final ITmfContext context) {
         if (fTrace == null) {
             return null;
         }
-        CtfTmfEvent event = null;
+        ITmfEvent event = null;
         if (context instanceof CtfTmfContext) {
             if (context.getLocation() == null || CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocationInfo())) {
                 return null;
@@ -370,8 +372,8 @@ public class CtfTmfTrace extends TmfTrace
     // -------------------------------------------
 
     @Override
-    public CtfTmfEvent parseEvent(ITmfContext context) {
-        CtfTmfEvent event = null;
+    public ITmfEvent parseEvent(ITmfContext context) {
+        ITmfEvent event = null;
         if (context instanceof CtfTmfContext) {
             final ITmfContext tmpContext = seekEvent(context.getLocation());
             event = getNext(tmpContext);
