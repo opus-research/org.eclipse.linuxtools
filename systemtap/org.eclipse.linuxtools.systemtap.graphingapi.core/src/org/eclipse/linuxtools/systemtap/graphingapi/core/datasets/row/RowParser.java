@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,19 +18,9 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataEntry;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
 
 
-
 public class RowParser implements IDataSetParser {
-	public RowParser(String[] regEx) {
-		this.regEx = Arrays.copyOf(regEx, regEx.length);
-		buildPattern();
-	}
-
-	private void buildPattern() {
-		StringBuilder wholeRegExpr = new StringBuilder();
-		for(int i=0; i<regEx.length; i++) {
-			wholeRegExpr.append('(' + regEx[i] + ')');
-		}
-		wholePattern = Pattern.compile(wholeRegExpr.toString());
+	public RowParser(String regEx) {
+		wholePattern = Pattern.compile(regEx);
 	}
 
 	@Override
@@ -45,21 +34,11 @@ public class RowParser implements IDataSetParser {
 
 		if(wholeMatcher.find()) {
 			e = new RowEntry();
-			Object[] data = new Object[regEx.length>>1];
+			int groupCount = wholeMatcher.groupCount();
+			Object[] data = new Object[groupCount];
 
-			int group=0, j;
-
-			for(int i=0; i<regEx.length; i++) {
-				group++;
-				for(j=0; j<regEx[i].length(); j++) {
-					if(regEx[i].charAt(j) == ')') {
-						group++;
-					}
-				}
-
-				if(0 == (i&1)) {
-					data[i>>1] = wholeMatcher.group(group);
-				}
+			for(int i = 0; i < groupCount; i++) {
+				data[i] = wholeMatcher.group(i+1);
 			}
 			e.putRow(0, data);
 			s.delete(0, wholeMatcher.end());
@@ -68,6 +47,5 @@ public class RowParser implements IDataSetParser {
 		return e;
 	}
 
-	private String[] regEx;
 	private Pattern wholePattern;
 }
