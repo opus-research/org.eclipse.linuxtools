@@ -17,12 +17,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Part of the BitBuffer tests which test the methods to read/write integers.
+ * Part of the BitBuffet tests with test the methods to read/write integers.
  * These are separated from the main file because the fixture is different.
  *
  * @author alexmont
@@ -41,12 +40,12 @@ public class BitBufferIntTest {
         createBuffer(fixture);
     }
 
-    private static void createBuffer(final BitBuffer fixture) {
+    private static void createBuffer(BitBuffer fixture) {
         createBuffer(fixture, 16);
     }
 
-    private static void createBuffer(final BitBuffer fixture, final int j) {
-        final byte[] bytes = new byte[j];
+    private static void createBuffer(BitBuffer fixture, int j) {
+        byte[] bytes = new byte[j];
         for (int i = 0; i < j; i++) {
             bytes[i] = (byte) (i % 0xff);
         }
@@ -59,7 +58,7 @@ public class BitBufferIntTest {
      */
     @Test
     public void testGetInt_base() {
-        final int result = fixture.getInt();
+        int result = fixture.getInt();
         assertEquals(0x020406, result);
     }
 
@@ -69,7 +68,7 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_pos0() {
         fixture.position(0);
-        final int result = fixture.getInt();
+        int result = fixture.getInt();
         assertEquals(0x010203, result);
     }
 
@@ -79,10 +78,10 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_pos1() {
         fixture.position(1);
-        final int length = 1;
-        final boolean signed = true;
+        int length = 1;
+        boolean signed = true;
 
-        final int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
@@ -92,10 +91,10 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_pos2() {
         fixture.position(2);
-        final int length = 0;
-        final boolean signed = true;
+        int length = 0;
+        boolean signed = true;
 
-        final int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
@@ -105,10 +104,10 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_signed() {
         fixture.position(1);
-        final int length = 0;
-        final boolean signed = true;
+        int length = 0;
+        boolean signed = true;
 
-        final int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
@@ -118,10 +117,10 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_signed_length1() {
         fixture.position(1);
-        final int length = 1;
-        final boolean signed = true;
+        int length = 1;
+        boolean signed = true;
 
-        final int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
@@ -131,13 +130,13 @@ public class BitBufferIntTest {
      */
     @Test
     public void testGetInt_le1() {
-        final BitBuffer le_fixture = new BitBuffer(
+        BitBuffer le_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
         le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(1);
-        final int length = 24;
-        final int result = le_fixture.getInt(length, false);
+        int length = 24;
+        int result = le_fixture.getInt(length, false);
 
         /* 0x020100 downshifted */
         assertEquals(0x810080, result);
@@ -149,13 +148,13 @@ public class BitBufferIntTest {
      */
     @Test
     public void testGetInt_le2() {
-        final BitBuffer le_fixture = new BitBuffer(
+        BitBuffer le_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
         le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(0);
-        final int length = 24;
-        final int result = le_fixture.getInt(length, false);
+        int length = 24;
+        int result = le_fixture.getInt(length, false);
         assertEquals(0x020100, result);
     }
 
@@ -164,15 +163,15 @@ public class BitBufferIntTest {
      */
     @Test(expected = java.nio.BufferOverflowException.class)
     public void testGetInt_invalid() {
-        final BitBuffer small_fixture = new BitBuffer(
+        BitBuffer small_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
         small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(10);
-        final int length = 32;
-        final boolean signed = true;
+        int length = 32;
+        boolean signed = true;
 
-        final int result = small_fixture.getInt(length, signed);
+        int result = small_fixture.getInt(length, signed);
         assertEquals(0, result);
     }
 
@@ -181,180 +180,16 @@ public class BitBufferIntTest {
      */
     @Test(expected = java.nio.BufferOverflowException.class)
     public void testGetInt_invalid2() {
-        final BitBuffer small_fixture = new BitBuffer(
+        BitBuffer small_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
         small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(1);
-        final int length = 64;
-        final boolean signed = true;
+        int length = 64;
+        boolean signed = true;
 
-        final int result = small_fixture.getInt(length, signed);
+        int result = small_fixture.getInt(length, signed);
         assertEquals(0, result);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong_pos0() throws CTFReaderException {
-        fixture.position(0);
-        final long result = fixture.getLong();
-        assertEquals(0x01020304050607L, result);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong_pos7() throws CTFReaderException {
-        fixture.position(7);
-        final long result = fixture.getLong();
-        assertEquals(0x81018202830384L, result);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong_pos8() throws CTFReaderException {
-        fixture.position(8);
-        final long result = fixture.getLong();
-        assertEquals(result, 0x0102030405060708L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong_pos0LE() throws CTFReaderException {
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong();
-        assertEquals(result, 0x0706050403020100L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong_pos7LE() throws CTFReaderException {
-        fixture.position(7);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong();
-        assertEquals(result, 0x100e0c0a08060402L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong_pos8LE() throws CTFReaderException {
-        fixture.position(8);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong();
-        assertEquals(result, 0x0807060504030201L);
-    }
-
-    /**
-     * Run the long getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35_pos0BE() throws CTFReaderException {
-        fixture.position(0);
-        final long result = fixture.getLong(35, false);
-        assertEquals(result, 0x081018L);
-    }
-
-    /**
-     * Run the long getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35_pos8BE() throws CTFReaderException {
-        fixture.position(8);
-        final long result = fixture.getLong(35, false);
-        assertEquals(result, 0x08101820L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35_pos0LE() throws CTFReaderException {
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong(35, false);
-
-        assertEquals(result, 0x0403020100L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35_pos7LE() throws CTFReaderException {
-        fixture.position(7);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong(35, false);
-        assertEquals(result, 0x0208060402L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35_pos8LE() throws CTFReaderException {
-        fixture.position(8);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong(35, false);
-        assertEquals(result, 0x0504030201L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35s_pos0LE() throws CTFReaderException {
-        fixture.position(0);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong(35, true);
-        assertEquals(result, 0xfffffffc03020100L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35s_pos7LE() throws CTFReaderException {
-        fixture.position(7);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong(35, true);
-        assertEquals(result, 0x0208060402L);
-    }
-
-    /**
-     * Run the int getLong(int) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testGetLong35s_pos8LE() throws CTFReaderException {
-        fixture.position(8);
-        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        final long result = fixture.getLong(35, true);
-        assertEquals(result, 0xfffffffd04030201L);
     }
 
     /**
@@ -362,7 +197,7 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt() {
-        final int value = 1;
+        int value = 1;
         fixture.position(1);
         fixture.putInt(value);
     }
@@ -372,8 +207,8 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_signed() {
-        final int length = 1;
-        final int value = 1;
+        int length = 1;
+        int value = 1;
 
         fixture.position(1);
         fixture.putInt(length, value);
@@ -384,8 +219,8 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_length0() {
-        final int length = 0;
-        final int value = 1;
+        int length = 0;
+        int value = 1;
 
         fixture.position(1);
         fixture.putInt(length, value);
@@ -396,8 +231,8 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_length1() {
-        final int length = 1;
-        final int value = 1;
+        int length = 1;
+        int value = 1;
 
         fixture.position(1);
         fixture.putInt(length, value);
@@ -433,12 +268,12 @@ public class BitBufferIntTest {
         createBuffer(fixture2, 4);
         fixture2.position(1);
 
-        final int length = 32;
-        final int value = 1;
+        int length = 32;
+        int value = 1;
 
         fixture2.putInt(length, value);
 
-        final int read = fixture2.getInt(1, true);
+        int read = fixture2.getInt(1, true);
         assertEquals(value, read);
     }
 }
