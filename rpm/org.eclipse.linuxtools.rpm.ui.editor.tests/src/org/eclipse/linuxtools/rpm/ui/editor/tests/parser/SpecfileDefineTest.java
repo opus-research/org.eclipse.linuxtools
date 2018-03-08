@@ -132,6 +132,7 @@ public class SpecfileDefineTest extends FileTestCase {
 			fail();
 		}
 	}
+
 	@Test
 	public void testUnderscoreDefine() {
 		SpecfileDefine blahDefine = specfile.getDefine("__find_requires");
@@ -139,10 +140,18 @@ public class SpecfileDefineTest extends FileTestCase {
 		assertEquals("__find_requires", blahDefine.getName());
 		assertEquals("%{SOURCE3}", blahDefine.getStringValue());
 	}
+
 	@Test
 	public void testWholeWordResolveDefine() {
 		String testResolve = UiUtils.resolveDefines(specfile, "%{version}.%{version_suffix}");
 		assertEquals(testResolve, "2.3.0.201302130906");
+	}
+
+	@Test
+	public void testResolveSCLMacro() {
+		String specText = "Name: %{?scl_prefix}eclipse-jgit" + "\n" + "%{name}";
+		newFile(specText);
+		assertEquals("eclipse-jgit", specfile.getName());
 	}
 
 }
