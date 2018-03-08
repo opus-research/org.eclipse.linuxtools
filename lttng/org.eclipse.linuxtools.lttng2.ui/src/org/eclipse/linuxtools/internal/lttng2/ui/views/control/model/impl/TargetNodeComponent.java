@@ -217,6 +217,23 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         return ""; //$NON-NLS-1$
     }
 
+    /**
+     * Returns if node supports filtering of events
+     * @return <code>true</code> if node supports filtering else <code>false</code>
+     */
+    public boolean isEventFilteringSupported() {
+        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
+    }
+
+    /**
+     * Returns if node supports networks streaming or not
+     * @return <code>true</code> if node supports filtering else <code>false</code>
+     * 
+     */
+    public boolean isNetworkStreamingSupported() {
+        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
