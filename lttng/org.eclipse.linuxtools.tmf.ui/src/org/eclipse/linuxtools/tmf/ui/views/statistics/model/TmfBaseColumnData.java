@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial Implementation
+ *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial Implementation
  *   Bernd Hufmann - Added Annotations
  *******************************************************************************/
 
@@ -41,8 +41,7 @@ public class TmfBaseColumnData implements ITmfStatisticsColumnData {
      */
     protected final String fTooltip;
     /**
-     * Adapts a StatisticsTreeNode into the content of it's corresponding cell
-     * for that column.
+     * Adapts a StatisticsTreeNode into the content of it's corresponding cell for that column.
      */
     protected final ColumnLabelProvider fLabelProvider;
     /**

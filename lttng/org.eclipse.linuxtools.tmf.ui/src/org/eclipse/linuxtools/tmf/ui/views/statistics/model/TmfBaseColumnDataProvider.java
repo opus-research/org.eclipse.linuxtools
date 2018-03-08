@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Implementation and Initial API
+ *   Mathieu Denis <mathieu.denis@polymtl.ca>  - Implementation and Initial API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
@@ -64,7 +64,7 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
      * Create basic columns to represent the statistics data
      */
     public TmfBaseColumnDataProvider() {
-        /* List that will be used to create the table. */
+        // List that will be used to create the table.
         fColumnData = new Vector<TmfBaseColumnData>();
         fColumnData.add(new TmfBaseColumnData(LEVEL_COLUMN, 200, SWT.LEFT, LEVEL_COLUMN_TIP, new ColumnLabelProvider() {
             @Override

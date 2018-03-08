@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
+ *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial API and Implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
@@ -34,16 +34,19 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
 public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /**
-     * Header for the event types categories.
+     * <h4>Header for the event types categories.</h4>
      */
     public static final String HEADER_EVENT_TYPES = Messages.TmfStatisticsData_EventTypes;
 
     /**
-     * Indicate that it's a value.
-     *
+     * <h4>Indicate that it's a value.</h4>
+     * <p>
      * Used when checking the possible child node for a node.
-     *
+     * </p>
+     * *
+     * <p>
      * It differentiate a category of a value by being appended to a value.
+     * </p>
      */
     protected static final String NODE = "z"; //$NON-NLS-1$
     /**
@@ -151,7 +154,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     }
 
     /**
-     * Get the event types paths.
+     * <h4>Get the event types paths.</h4>
      *
      * @param event
      *            Event to get the path for.
@@ -172,7 +175,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     }
 
     /**
-     * Get the standard paths for an event.
+     * <h4>Get the standard paths for an event.</h4>
      *
      * @param event
      *            Event to get the path for.

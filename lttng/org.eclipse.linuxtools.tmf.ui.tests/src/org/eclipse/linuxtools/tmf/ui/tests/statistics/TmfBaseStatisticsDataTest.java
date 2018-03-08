@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
+ *   Mathieu Denis (mathieu.denis@polymtl.ca)  - Initial design and implementation
  *   Bernd Hufmann - Fixed warnings
  *******************************************************************************/
 
@@ -31,13 +31,16 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
 
+/**
+ * TmfBaseStatistics Test Cases.
+ */
 @SuppressWarnings("nls")
 public class TmfBaseStatisticsDataTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
-    private       String fTestName = null;
+    private       String   fTestName = null;
 
     private final String fContext = "UnitTest";
     private final String fTypeId1 = "Some type1";
@@ -77,8 +80,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // ------------------------------------------------------------------------
 
     /**
-     * @param name
-     *            of the test
+     * @param name of the test
      */
     public TmfBaseStatisticsDataTest(final String name) {
         super(name);
@@ -110,6 +112,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of children.
+     */
     public void testGetChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.getChildren(AbsTmfStatisticsTree.ROOT);
@@ -136,7 +141,8 @@ public class TmfBaseStatisticsDataTest extends TestCase {
             temp = iterChild.next();
             if (keyExpected.contains(temp.getKey())) {
                 keyExpected.removeElement(temp.getKey());
-            } else {
+            }
+            else {
                 fail();
             }
         }
@@ -150,6 +156,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetAllChildren
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of all children.
+     */
     public void testGetAllChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.getAllChildren(AbsTmfStatisticsTree.ROOT);
@@ -166,10 +175,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         Vector<String> keyExpected = new Vector<String>();
         keyExpected.add(fEvent1.getType().toString());
         keyExpected.add(fEvent3.getType().toString());
-        /*
-         * It should return the eventType even though the number of events
-         * equals 0
-         */
+        // It should return the eventType even though the number of events equals 0
         fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().toString())).reset();
         // Getting children of a category
         childrenTreeNode = fStatsData.get(treeNode.getPath()).getAllChildren();
@@ -181,7 +187,8 @@ public class TmfBaseStatisticsDataTest extends TestCase {
             temp = iterChild.next();
             if (keyExpected.contains(temp.getKey())) {
                 keyExpected.removeElement(temp.getKey());
-            } else {
+            }
+            else {
                 fail();
             }
         }
@@ -195,6 +202,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // RegisterEvent
     // ------------------------------------------------------------------------
 
+    /**
+     * Test registering of events.
+     */
     public void testRegisterEvent() {
         TmfStatisticsTreeNode trace = fStatsData.get(new TmfFixedArray<String>(fTestName));
         assertEquals("registerEvent", 3, trace.getValue().nbEvents);
@@ -203,7 +213,8 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         for (TmfStatisticsTreeNode child : childrenTreeNode) {
             if (child.getKey().compareTo(fEvent1.getType().toString()) == 0) {
                 assertEquals("registerEvent", 2, child.getValue().nbEvents);
-            } else if (child.getKey().compareTo(fEvent3.getType().toString()) == 0) {
+            }
+            else if (child.getKey().compareTo(fEvent3.getType().toString()) == 0) {
                 assertEquals("registerEvent", 1, child.getValue().nbEvents);
             }
         }
@@ -213,6 +224,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // Get a node
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getter.
+     */
     public void testGet() {
         TmfStatisticsTreeNode traceRoot = fStatsData.get(new TmfFixedArray<String>(fTestName));
         assertNotNull("get", traceRoot);
@@ -225,6 +239,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetOrCreate
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting or creating of node entries.
+     */
     public void testGetOrCreate() {
         TmfFixedArray<String> newEventType = new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, "Fancy Type");
         TmfStatisticsTreeNode newEventTypeNode;
@@ -251,6 +268,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // GetParent
     // ------------------------------------------------------------------------
 
+    /**
+     * Test getting of parent node.
+     */
     public void testGetParent() {
         TmfStatisticsTreeNode parentNode = fStatsData.getParent(AbsTmfStatisticsTree.ROOT);
         assertNull("getParent", parentNode);
@@ -277,6 +297,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // Reset
     // ------------------------------------------------------------------------
 
+    /**
+     * Test reset method
+     */
     public void testReset() {
         fStatsData.reset(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes));
 
