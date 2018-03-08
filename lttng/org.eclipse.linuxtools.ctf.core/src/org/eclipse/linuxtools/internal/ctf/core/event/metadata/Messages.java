@@ -1,32 +1,26 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson.
+ * Copyright (c) 2013 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Matthew Khouzam - Initial API and implementation
+ *     Marc-Andre Laperle - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.lttng2.kernel.core.trace;
+package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
 import org.eclipse.osgi.util.NLS;
 
-/**
- * Message bundle for lttng2.kernel.core.trace
- *
- * @author Matthew Khouzam
- * @since 2.0
- */
+@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
-    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.lttng2.kernel.core.trace.messages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.ctf.core.event.metadata.messages"; //$NON-NLS-1$
 
-    /**
-     * The domain is not "kernel"
-     */
-    public static String LttngKernelTrace_DomainError;
+    public static String IOStructGen_UnknownTraceAttributeWarning;
+    public static String IOStructGen_UnknownStreamAttributeWarning;
+    public static String IOStructGen_UnknownIntegerAttributeWarning;
 
     static {
         // initialize resource bundle

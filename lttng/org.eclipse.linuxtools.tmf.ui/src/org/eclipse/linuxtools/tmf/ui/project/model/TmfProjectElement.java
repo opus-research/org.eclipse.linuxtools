@@ -96,22 +96,6 @@ public class TmfProjectElement extends TmfProjectModelElement {
         return fExperimentFolder;
     }
 
-    /**
-     * Finds the trace element under the traces folder for given name.
-     * @since 2.0
-     * @param name
-     *         - The name of trace to find
-     * @return the trace element with given name or null
-     */
-    public TmfTraceElement findTraceElement(String name) {
-        for (final ITmfProjectModelElement projectElement : fTraceFolder.getChildren()) {
-            if (projectElement.getName().equals(name)) {
-                return (TmfTraceElement) projectElement;
-            }
-        }
-        return null;
-    }
-
     // ------------------------------------------------------------------------
     // TmfProjectElement
     // ------------------------------------------------------------------------
