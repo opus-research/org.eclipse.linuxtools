@@ -35,6 +35,10 @@ public class SamplesProcessor extends XMLProcessor {
 	//a list of all samples (for this symbol)
 	private ArrayList<OpModelSample> sampleList;
 
+	/**
+	 * Creates a new object oprofile sample and a list of all oprofile samples
+	 * @param callData call data for the processor
+	 */
 	@Override
 	public void reset(Object callData) {
 		sample = new OpModelSample();
@@ -60,6 +64,10 @@ public class SamplesProcessor extends XMLProcessor {
 		}
 	}
 	
+	/**
+	 * Return oprofile samples
+	 * @return samples An array of oprofile samples
+	 */
 	public OpModelSample[] getSamples() {
 		OpModelSample[] samples = new OpModelSample[sampleList.size()];
 		sampleList.toArray(samples);

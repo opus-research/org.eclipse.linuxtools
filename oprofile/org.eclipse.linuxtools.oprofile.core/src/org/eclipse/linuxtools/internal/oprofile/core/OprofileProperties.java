@@ -21,6 +21,11 @@ public class OprofileProperties {
 	private OprofileProperties() {
 	}
 
+	/**
+	 * Return a string representing the plugin name
+	 * @param key a string to be returned in case the bundle is not found
+	 * @return a string for the plugin name
+	 */
 	public static String getString(String key) {
 		try {
 			return RESOURCE_BUNDLE.getString(key);
