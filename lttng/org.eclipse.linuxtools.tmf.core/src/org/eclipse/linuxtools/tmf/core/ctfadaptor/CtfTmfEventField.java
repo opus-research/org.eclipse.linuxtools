@@ -122,20 +122,9 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 field = new CTFIntegerArrayField(fieldName, valuesArray,
                         ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) arrayDecl.getElementType()).isSigned());
-            } else {
-                CtfTmfEventField[] elements =
-                        new CtfTmfEventField[arrayDef.getDefinitions().length];
-
-                /* Parse the elements of the array. */
-                for (int i = 0; i < arrayDef.getDefinitions().length; ++i) {
-                    Definition curDef = arrayDef.getDefinitions()[i];
-                    CtfTmfEventField curField = CtfTmfEventField.parseField(
-                            curDef, fieldName + "[" + i + "]"); //$NON-NLS-1$ //$NON-NLS-2$
-                    elements[i] = curField;
-                }
-
-                field = new CTFArrayField(fieldName, elements);
             }
+            /* Add other types of arrays here */
+
         } else if (fieldDef instanceof SequenceDefinition) {
             SequenceDefinition seqDef = (SequenceDefinition) fieldDef;
             SequenceDeclaration seqDecl = seqDef.getDeclaration();
@@ -375,36 +364,6 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return formattedValue;
     }
 
-}
-
-/**
- * CTF field implementation for arrays of arbitrary types.
- *
- * @author fdoray
- */
-final class CTFArrayField extends CtfTmfEventField {
-
-    /**
-     * Constructor for CTFStructField.
-     *
-     * @param elements
-     *            The elements of this field
-     * @param name
-     *            The name of this field
-     */
-    CTFArrayField(String name, ITmfEventField[] elements) {
-        super(name, elements, elements);
-    }
-
-    @Override
-    public CtfTmfEventField[] getValue() {
-        return (CtfTmfEventField[]) super.getValue();
-    }
-
-    @Override
-    public String getFormattedValue() {
-        return Arrays.toString(getValue());
-    }
 }
 
 /**
