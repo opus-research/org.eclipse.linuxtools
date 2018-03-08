@@ -22,7 +22,7 @@ public class SourcesFileCreateHyperlinkTest extends FileTestCase {
 	@Before
 	public void init() throws CoreException {
 		super.setUp();
-		String testText = "Patch0: test.patch\n";
+		String testText = "Patch0: test\n";
 		newFile(testText);
 	}
 
@@ -31,6 +31,6 @@ public class SourcesFileCreateHyperlinkTest extends FileTestCase {
 		SourcesFileCreateHyperlink patchTest = new SourcesFileCreateHyperlink(testFile, specfile.getPatch(0).getFileName(), null);
 		assertNotNull(patchTest);
 		patchTest.open();
-		assertNotNull(testFile.getProject().findMember("test.patch"));
+		assertNotNull(testFile.getProject().findMember("test"));
 	}
 }

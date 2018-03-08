@@ -18,7 +18,6 @@ import org.junit.runners.Suite;
 		SourcesFileHyperlinkDetectorTest.class,
 		SpecfileElementHyperlinkDetectorTest.class,
 		URLHyperlinkWithMacroDetectorTest.class,
-		SourcesFileHyperlinkDetectorTest.class,
 		SourcesFileCreateHyperlinkTest.class })
 public class HyperlinkAllTests {
 }
