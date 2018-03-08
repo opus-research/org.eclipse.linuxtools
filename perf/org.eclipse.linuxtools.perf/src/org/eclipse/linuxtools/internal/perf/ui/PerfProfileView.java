@@ -101,6 +101,8 @@ public class PerfProfileView extends ViewPart {
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
+		IMenuManager manager = bars.getMenuManager();
+		manager.add(new PerfSaveSessionAction());
 		fillLocalPullDown(bars.getMenuManager());
 		fillLocalToolBar(bars.getToolBarManager());
 	}
