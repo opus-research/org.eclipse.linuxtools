@@ -1,6 +1,5 @@
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.datasets.row;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -55,12 +54,12 @@ public class RowEntryTest {
 	
 	@Test
 	public void testGetRow() {
-		assertArrayEquals(data, entry.getRow(0));
+		assertEquals(data, entry.getRow(0));
 		assertNull(entry.getRow(10));
 		assertNull(entry.getRow(-1));
 
-		assertArrayEquals(data, entry.getRow(null));
-		assertArrayEquals(data, entry.getRow("asdf"));
+		assertEquals(data, entry.getRow(null));
+		assertEquals(data, entry.getRow("asdf"));
 	}
 	
 	@Test
