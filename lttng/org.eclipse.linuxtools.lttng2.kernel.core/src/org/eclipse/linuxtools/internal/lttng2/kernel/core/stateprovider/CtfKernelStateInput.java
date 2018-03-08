@@ -44,7 +44,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
      * Version number of this state provider. Please bump this if you modify the
      * contents of the generated state history in some way.
      */
-    private static final int VERSION = 0;
+    private static final int VERSION = 1;
 
     /* Event names HashMap. TODO: This can be discarded once we move to Java 7 */
     private final HashMap<String, Integer> knownEventNames;
