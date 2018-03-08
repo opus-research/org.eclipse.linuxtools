@@ -66,6 +66,9 @@ public class TmfEventRequestStub extends TmfEventRequest {
         super(dataType, range, index, nbRequested, blockSize);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
+     */
     @Override
     public void handleData(final ITmfEvent data) {
         super.handleData(data);

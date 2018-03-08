@@ -64,6 +64,12 @@
                 label="%action.run.name"
                 style="push">
           </command>
+          <command
+                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
+                icon="icons/actions/run/run_chart.gif"
+                label="%action.runChart.name"
+                style="push">
+          </command>
        </menuContribution>
     </extension>
 	
@@ -183,6 +189,12 @@
         id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
         name="%action.run.name">
   </command>
+  <command
+        defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler"
+        description="%action.runChart.desc"
+        id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
+        name="%action.runChart.name">
+  </command>
 	</extension>
 	<extension
 		point="org.eclipse.ui.actionSets">
@@ -208,7 +220,7 @@
 		<objectContribution
 			adaptable="false"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.definitionMenu"
-			objectClass="org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode">
+			objectClass="org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode">
 			<action
 				label="%action.viewDefinition.name"
 				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.DefinitionAction"
@@ -221,7 +233,7 @@
             id="org.eclipse.linuxtools.systemtap.ui.ide.actions">
          <action
                label="%action.addStapProbe.label"
-               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.AddStapProbe"
+               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.AddStapProbe"
                menubarPath="additions"
                id="org.eclipse.linuxtools.systemtap.ui.ide.AddStapProbe">
          </action>

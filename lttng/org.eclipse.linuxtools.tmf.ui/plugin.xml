@@ -39,15 +39,6 @@
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.statesystem.TmfStateSystemExplorer"
-            icon="icons/eview16/events_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.ssvisualizer"
-            name="%ssvisualizer.view.name"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
             class="org.eclipse.linuxtools.tmf.ui.views.colors.ColorsView"
             icon="icons/eview16/colors_view.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.colors"
@@ -87,14 +78,6 @@
             icon="icons/eview16/histogram.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.histogram"
             name="%histogram.view.name"
-            restorable="true">
-      </view>
-      <view
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.callstack.CallStackView"
-            icon="icons/eview16/callstack_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.callstack"
-            name="%callstack.view.name"
             restorable="true">
       </view>
    </extension>
@@ -152,17 +135,10 @@
       </category>
       <wizard
             category="org.eclipse.linuxtools.tmf.import.category"
-            class="org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard"
+            class="org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard"
             icon="icons/etool16/import.gif"
             id="org.eclipse.linuxtools.tmf.ui.trace.import.wizard"
             name="%project.import.wizard.name">
-      </wizard>
-      <wizard
-            category="org.eclipse.linuxtools.tmf.import.category"
-            class="org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard"
-            icon="icons/etool16/import.gif"
-            id="org.eclipse.linuxtools.tmf.ui.batch_import"
-            name="%project.import.wizard.name.batch">
       </wizard>
    </extension>
    <extension
@@ -333,27 +309,6 @@
                commandId="org.eclipse.ui.file.import"
                label="%command.import"
                mnemonic="%command.import.mnemonic"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
-                  <iterate
-                        operator="and">
-                     <instanceof
-                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                     </instanceof>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.batch_import"
-               label="%command.batch_import"
-               mnemonic="%command.batch_import.mnemonic"
                style="push">
             <visibleWhen
                   checkEnabled="false">
@@ -811,11 +766,6 @@
             id="org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.MoveSDRight"
             name="%commands.uml2sd.scrollright">
       </command>
-      <command
-            description="%command.batch_import.description"
-            id="org.eclipse.linuxtools.tmf.ui.batch_import"
-            name="%command.batch_import">
-      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -1080,42 +1030,12 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.editors.handlers.AddBookmarkHandler"
             commandId="org.eclipse.ui.edit.addBookmark">
          <activeWhen>
-            <and>
-               <with
-                     variable="activePart">
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor">
-                  </instanceof>
-               </with>
-               <count
-                     value="1">
-               </count>
-               <iterate
-                     ifEmpty="false"
-                     operator="and">
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.core.event.ITmfEvent">
-                  </instanceof>
-               </iterate>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.BatchImportTraceHandler"
-            commandId="org.eclipse.linuxtools.tmf.ui.batch_import">
-         <activeWhen>
-            <and>
-               <count
-                     value="1">
-               </count>
-               <iterate
-                     ifEmpty="false"
-                     operator="and">
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                  </instanceof>
-               </iterate>
-            </and>
+            <with
+                  variable="activeEditor">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor">
+               </instanceof>
+            </with>
          </activeWhen>
       </handler>
    </extension>
