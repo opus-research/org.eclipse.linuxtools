@@ -30,12 +30,14 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpUnitMask;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
+import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -54,11 +56,12 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
 public abstract class AbstractEventConfigTab extends
-AbstractLaunchConfigurationTab {
+		AbstractLaunchConfigurationTab {
 	private static final String EMPTY_STRING = "";
 	protected Button defaultEventCheck;
 	protected OprofileCounter[] counters = null;
 	protected CounterSubTab[] counterSubTabs;
+	private Boolean hasPermissions = null;
 	private Composite top;
 
 	/**
@@ -77,7 +80,7 @@ AbstractLaunchConfigurationTab {
 	 * @param top
 	 */
 	private void createCounterTabs(Composite top){
-		//tabs for each of the counters
+			//tabs for each of the counters
 		counters = getOprofileCounters(null);
 		TabItem[] counterTabs = new TabItem[counters.length];
 		counterSubTabs = new CounterSubTab[counters.length];
@@ -100,6 +103,23 @@ AbstractLaunchConfigurationTab {
 	}
 
 	/**
+	 * Disposes all widgets and creates the timer mode Event tab
+	 * @since 1.1
+	 * @param top
+	 */
+	private void createTimerModeTab(Composite top){
+		Control[] children = top.getChildren();
+		for (Control control : children) {
+			control.dispose();
+		}
+		counterSubTabs = null;
+		defaultEventCheck = null;
+
+		Label timerModeLabel = new Label(top, SWT.LEFT);
+		timerModeLabel.setText(OprofileLaunchMessages.getString("tab.event.timermode.no.options")); //$NON-NLS-1$
+	}
+
+	/**
 	 * @since 1.1
 	 */
 	private Composite getTabFolderComposite(){
@@ -119,11 +139,18 @@ AbstractLaunchConfigurationTab {
 	 * @see ILaunchConfigurationTab#initializeFrom(ILaunchConfiguration)
 	 */
 	public void initializeFrom(ILaunchConfiguration config) {
+		setPermissions(null);
 
 		IProject previousProject = getOprofileProject();
 		IProject project = getProject(config);
 		setOprofileProject(project);
 
+			if(!hasPermissions(project)){
+				OpcontrolException e = new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null));
+				OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
+				createTimerModeTab(top);
+				return;
+			}
 		updateOprofileInfo();
 
 		String previousHost = null;
@@ -173,14 +200,14 @@ AbstractLaunchConfigurationTab {
 		}
 
 		if(!getOprofileTimerMode()){
-			for (int i = 0; i < counters.length; i++) {
-				counters[i].loadConfiguration(config);
-			}
+				for (int i = 0; i < counters.length; i++) {
+					counters[i].loadConfiguration(config);
+				}
 
-			for (CounterSubTab tab : counterSubTabs) {
-				tab.initializeTab(config);
-				tab.createEventsFilter();
-			}
+				for (CounterSubTab tab : counterSubTabs) {
+					tab.initializeTab(config);
+					tab.createEventsFilter();
+				}
 			try{
 				boolean enabledState = config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 				defaultEventCheck.setSelection(enabledState);
@@ -199,9 +226,14 @@ AbstractLaunchConfigurationTab {
 		IProject project = getProject(config);
 		setOprofileProject(project);
 
-		if (getOprofileTimerMode() || counterSubTabs == null) {
+		if(!hasPermissions(project)){
+				return false;
+		}
+
+		if (getOprofileTimerMode()) {
 			return true;		//no options to check for validity
 		} else {
+
 			return validateEvents(config);
 		}
 	}
@@ -268,7 +300,10 @@ AbstractLaunchConfigurationTab {
 	 */
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		IProject project = getProject(config);
-		if (getOprofileTimerMode() || counterSubTabs == null) {
+		if (!hasPermissions(project)) {
+			return;
+		}
+		if (getOprofileTimerMode()) {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 		} else {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, defaultEventCheck.getSelection());
@@ -283,8 +318,14 @@ AbstractLaunchConfigurationTab {
 	 */
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		boolean useDefault = true;
+
 		IProject project = getProject(config);
 		setOprofileProject(project);
+		if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
+			if(!hasPermissions(project)){
+				return;
+			}
+		}
 
 		counters = getOprofileCounters(config);
 
@@ -345,6 +386,24 @@ AbstractLaunchConfigurationTab {
 	 * @return true if valid config, false otherwise
 	 */
 	protected abstract boolean checkEventSetupValidity(int counter, String name, int maskValue);
+
+	protected Boolean getPermissions(){
+		return hasPermissions;
+	}
+
+	/**
+	 * Checks if user has permission to run remote opcontrol as root.
+	 * @param project
+	 */
+	protected abstract boolean hasPermissions(IProject project);
+
+	/**
+	 * Sets user opcontrol permissions.
+	 * @param bool
+	 */
+	protected void setPermissions(Boolean bool){
+		hasPermissions = bool;
+	};
 
 	/**
 	 *
@@ -683,11 +742,6 @@ AbstractLaunchConfigurationTab {
 		public void initializeTab(ILaunchConfiguration config) {
 			//make all controls inactive, since the 'default event' checkbox
 			// is checked by default
-			try {
-				defaultEventCheck.setSelection(config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true));
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
 			setEnabledState(false);
 
 			if (config != null) {
@@ -763,7 +817,7 @@ AbstractLaunchConfigurationTab {
 				// Check the min count to update the error message (events can have
 				// different minimum reset counts)
 				int min = counter.getEvent().getMinCount();
-				if ((counter.getCount() < min) && (!defaultEventCheck.getSelection())){
+				if (counter.getCount() < min) {
 					setErrorMessage(getMinCountErrorMessage(min));
 				}
 			} else {
@@ -807,7 +861,7 @@ AbstractLaunchConfigurationTab {
 
 				// Check minimum count
 				int min = counter.getEvent().getMinCount();
-				if ((count < min) && (!defaultEventCheck.getSelection())) {
+				if (count < min) {
 					errorMessage = getMinCountErrorMessage(min);
 				}
 			} catch (NumberFormatException e) {

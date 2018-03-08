@@ -33,6 +33,6 @@ public class ScriptConsoleTest {
 		assertNotNull(console2);
 		assertNotSame(console, console2);
 	}
-
-	private ScriptConsole console;
+	
+	ScriptConsole console;
 }

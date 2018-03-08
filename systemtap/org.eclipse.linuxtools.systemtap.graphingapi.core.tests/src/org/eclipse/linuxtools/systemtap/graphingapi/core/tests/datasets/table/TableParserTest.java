@@ -42,5 +42,5 @@ public class TableParserTest {
 		assertEquals("1", entry.getRow(0)[0]);
 	}
 
-	private TableParser parser;
+	TableParser parser;
 }
