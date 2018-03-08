@@ -21,11 +21,11 @@ import static org.junit.Assume.assumeTrue;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfContext;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,9 +59,9 @@ public class CtfTmfContextTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(CtfTestTraces.tracesExist());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         trace = new CtfTmfTrace();
-        String path = CtfTestTraces.getTestTracePath(TRACE_INDEX);
+        String path = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
         trace.initTrace((IResource) null, path, CtfTmfEvent.class);
     }
 
