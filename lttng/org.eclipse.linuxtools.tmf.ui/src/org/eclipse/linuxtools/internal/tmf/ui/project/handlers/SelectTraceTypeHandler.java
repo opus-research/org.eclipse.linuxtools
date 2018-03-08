@@ -72,6 +72,10 @@ public class SelectTraceTypeHandler extends AbstractHandler {
 
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        if (page == null) {
+            return false;
+        }
+
         IWorkbenchPart part = page.getActivePart();
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
