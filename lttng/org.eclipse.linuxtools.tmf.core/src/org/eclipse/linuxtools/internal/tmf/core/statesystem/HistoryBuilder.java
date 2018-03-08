@@ -62,15 +62,19 @@ public class HistoryBuilder extends TmfComponent {
      *            construction is done. False (out-of-band) means we will start
      *            listening for the signal and return immediately. Another
      *            signal will be sent when finished.
+     * @throws IOException
+     *             Is thrown if anything went wrong (usually with the storage
+     *             backend)
      */
     public HistoryBuilder(IStateChangeInput stateChangeInput,
-            IStateHistoryBackend backend, boolean buildManually) {
+            IStateHistoryBackend backend, boolean buildManually)
+            throws IOException {
         if (stateChangeInput == null || backend == null) {
             throw new IllegalArgumentException();
         }
         sci = stateChangeInput;
         hb = backend;
-        ss = new StateSystem(hb);
+        ss = new StateSystem(hb, true);
 
         sci.assignTargetStateSystem(ss);
 
