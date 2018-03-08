@@ -47,7 +47,7 @@ class StatsStateProvider extends AbstractStateChangeInput {
      * Version number of this input handler. Please bump this if you modify the
      * contents of the generated state history in some way.
      */
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     /**
      * Constructor

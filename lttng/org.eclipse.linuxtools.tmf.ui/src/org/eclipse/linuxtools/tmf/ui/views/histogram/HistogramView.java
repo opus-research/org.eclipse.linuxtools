@@ -33,13 +33,11 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorPart;
 
 /**
  * The purpose of this view is to provide graphical time distribution statistics about the trace events.
@@ -98,8 +96,8 @@ public class HistogramView extends TmfView {
     private HistogramRequest fTimeRangeRequest;
 
     // Throttlers for the time sync and time-range sync signals
-    private final TmfSignalThrottler timeSyncThrottle;
-    private final TmfSignalThrottler timeRangeSyncThrottle;
+    private final TmfSignalThrottler fTimeSyncThrottle;
+    private final TmfSignalThrottler fTimeRangeSyncThrottle;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -110,8 +108,8 @@ public class HistogramView extends TmfView {
      */
     public HistogramView() {
         super(ID);
-        timeSyncThrottle = new TmfSignalThrottler(this, 200);
-        timeRangeSyncThrottle = new TmfSignalThrottler(this, 200);
+        fTimeSyncThrottle = new TmfSignalThrottler(this, 200);
+        fTimeRangeSyncThrottle = new TmfSignalThrottler(this, 200);
     }
 
     @Override
@@ -247,12 +245,9 @@ public class HistogramView extends TmfView {
         // Histogram
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
 
-        IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor instanceof ITmfTraceEditor) {
-            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
-            if (trace != null) {
-                traceSelected(new TmfTraceSelectedSignal(this, trace));
-            }
+        ITmfTrace trace = getActiveTrace();
+        if (trace != null) {
+            traceSelected(new TmfTraceSelectedSignal(this, trace));
         }
     }
 
@@ -309,7 +304,7 @@ public class HistogramView extends TmfView {
                         ITmfTimestamp ts = event.getTimestamp();
                         updateDisplayedCurrentTime(ts.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
                         TmfTimeSynchSignal signal = new TmfTimeSynchSignal(this, ts);
-                        timeSyncThrottle.queue(signal);
+                        fTimeSyncThrottle.queue(signal);
                     }
                 }
             };
@@ -335,7 +330,7 @@ public class HistogramView extends TmfView {
 
             // Send the FW signal
             TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange, currentTime);
-            timeRangeSyncThrottle.queue(signal);
+            fTimeRangeSyncThrottle.queue(signal);
         }
     }
 

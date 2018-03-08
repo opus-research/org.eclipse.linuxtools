@@ -96,7 +96,8 @@ public class TmfStateStatistics implements ITmfStatistics {
         final File htFile = new File(supplDirectory + File.separator + STATS_STATE_FILENAME);
         final IStateChangeInput htInput = new StatsStateProvider(trace);
 
-        this.stats = StateSystemManager.newPartialHistory(htFile, htInput, false);
+        this.stats = StateSystemManager.loadStateHistory(htFile, htInput, false);
+        registerStateSystems();
     }
 
     /**
@@ -114,7 +115,15 @@ public class TmfStateStatistics implements ITmfStatistics {
     public TmfStateStatistics(ITmfTrace trace, File historyFile) throws TmfTraceException {
         this.trace = trace;
         final IStateChangeInput htInput = new StatsStateProvider(trace);
-        this.stats = StateSystemManager.newPartialHistory(historyFile, htInput, true);
+        this.stats = StateSystemManager.loadStateHistory(historyFile, htInput, true);
+        registerStateSystems();
+    }
+
+    /**
+     * Register the state systems used here into the trace's state system array.
+     */
+    private void registerStateSystems() {
+        trace.registerStateSystem(STATE_ID, stats);
     }
 
     // ------------------------------------------------------------------------
@@ -207,8 +216,7 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         try {
             final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            /* Cannot use single queries with a partial history */
-            count = stats.queryFullState(endTime).get(quark).getStateValue().unboxInt();
+            count= stats.querySingleState(endTime, quark).getStateValue().unboxInt();
 
         } catch (TimeRangeException e) {
             /* Assume there is no events for that range */
@@ -360,8 +368,7 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         try {
             final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            /* Cannot use single queries with a partial history */
-            long count = stats.queryFullState(ts).get(quark).getStateValue().unboxInt();
+            long count = stats.querySingleState(ts, quark).getStateValue().unboxInt();
             return count;
 
         } catch (TimeRangeException e) {

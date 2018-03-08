@@ -37,10 +37,10 @@ import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
  */
 public class TmfSignalThrottler {
 
-    private final ITmfComponent component;
-    private final long delay;
-    private final Timer timer;
-    private TimerTask currentTask;
+    private final ITmfComponent fComponent;
+    private final long fDelay;
+    private final Timer fTimer;
+    private TimerTask fCurrentTask;
 
     /**
      * Constructor
@@ -51,15 +51,15 @@ public class TmfSignalThrottler {
      *            Time to wait before actually sending signals (in ms)
      */
     public TmfSignalThrottler(ITmfComponent component, long delay) {
-        this.component = component;
-        this.delay = delay;
-        this.timer = new Timer();
+        this.fComponent = component;
+        this.fDelay = delay;
+        this.fTimer = new Timer();
 
         /*
          * Initialize currentTask to something, so we don't have to do a null
          * check every time
          */
-        currentTask = new TimerTask() { @Override public void run() {} };
+        fCurrentTask = new TimerTask() { @Override public void run() {} };
     }
 
     /**
@@ -73,9 +73,9 @@ public class TmfSignalThrottler {
      *            The signal to queue for broadcasting
      */
     public synchronized void queue(TmfSignal signal) {
-        currentTask.cancel();
-        currentTask = new BroadcastRequest(signal);
-        timer.schedule(currentTask, delay);
+        fCurrentTask.cancel();
+        fCurrentTask = new BroadcastRequest(signal);
+        fTimer.schedule(fCurrentTask, fDelay);
     }
 
     /**
@@ -83,8 +83,8 @@ public class TmfSignalThrottler {
      * throttler from be used again.
      */
     public synchronized void dispose() {
-        timer.cancel();
-        timer.purge();
+        fTimer.cancel();
+        fTimer.purge();
     }
 
     private class BroadcastRequest extends TimerTask {
@@ -97,7 +97,7 @@ public class TmfSignalThrottler {
 
         @Override
         public void run() {
-            component.broadcast(signal);
+            fComponent.broadcast(signal);
         }
     }
 }
