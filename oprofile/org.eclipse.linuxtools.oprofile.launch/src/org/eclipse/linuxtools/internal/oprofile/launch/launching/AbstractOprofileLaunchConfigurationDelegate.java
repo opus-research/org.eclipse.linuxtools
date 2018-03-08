@@ -82,11 +82,18 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		IPath workingDirPath = new Path(oprofileWorkingDirURI().getPath());
 
 		String arguments[] = getProgramArgumentsArray( config );
-		Process process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
+		Process process = null;
+		for(int i = 0; i < options.getExecutionsNumber(); i++){
+			process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
+			DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
+			try{
+				process.waitFor();
+			} catch (InterruptedException e){
+				e.printStackTrace();
+			}
+		}
 
-		DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
-
-			postExec(options, daemonEvents, process);
+		postExec(options, daemonEvents, process);
 	}
 
 	protected abstract boolean preExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, ILaunch launch);
