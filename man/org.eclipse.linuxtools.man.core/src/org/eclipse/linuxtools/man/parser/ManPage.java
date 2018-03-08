@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.man.parser;
 
-import java.util.HashMap;
-
 import org.eclipse.linuxtools.internal.man.parser.ManParser;
 
 /**
@@ -21,26 +19,6 @@ import org.eclipse.linuxtools.internal.man.parser.ManParser;
 public class ManPage {
 
 	private StringBuilder rawContent;
-
-	private static HashMap<String, ManPage> pages = new HashMap<String, ManPage>();
-
-	/**
-	 * Returns a cached version of the man page if one is found otherwise
-	 * creates a new instance and caches it for next time.
-	 *
-	 * @param manPage
-	 *            the name of the man page to look up.
-	 * @return the requested man page.
-	 * @since 1.1
-	 */
-	public static synchronized ManPage getManPage(String manPage) {
-		ManPage page = pages.get(manPage);
-		if (page == null) {
-			page = new ManPage(manPage);
-			pages.put(manPage, page);
-		}
-		return page;
-	}
 
 	/**
 	 * Creates the man page which includes retrieving the raw content and
@@ -84,7 +62,7 @@ public class ManPage {
 	}
 
 	/**
-	 * Returns stripped representation of the man page. Stripped parts are:
+	 * Returns stripped representaton of the man page. Stripped parts are:
 	 * <ul>
 	 * <li>Header - all the parts before <b>NAME</b></li>
 	 * <li>Footer - all the parts from <b>AUTHOR</b> till the end</li>
@@ -93,43 +71,18 @@ public class ManPage {
 	 * @return The stripped html content of the man page.
 	 */
 	public StringBuilder getStrippedHtmlPage() {
-		StringBuilder sb = getStrippedPage();
-		sb.insert(0, "<pre>"); //$NON-NLS-1$
-		sb.append("</pre>"); //$NON-NLS-1$
-		return sb;
-	}
-
-	/**
-	 * Returns stripped representation of the man page in the format it was
-	 * received from executing man. Stripped parts are:
-	 * <ul>
-	 * <li>Header - all the parts before <b>NAME</b></li>
-	 * <li>Footer - all the parts from <b>AUTHOR</b> till the end</li>
-	 * </ul>
-	 *
-	 * @return The stripped plain text content of the man page.
-	 * @since 1.1
-	 */
-	public StringBuilder getStrippedPage() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(rawContent);
-		// The raw content may or may not be HTML
 		if (sb.indexOf("<b>N</b>") != -1) { //$NON-NLS-1$
 			sb.delete(0, sb.indexOf("<b>N</b>")); //$NON-NLS-1$
-		} else if (sb.indexOf("NAME") != -1) { //$NON-NLS-1$
-			sb.delete(0, sb.indexOf("NAME")); //$NON-NLS-1$
 		}
-
 		if (sb.indexOf("<b>A</b><b>U</b><b>T</b><b>H</b><b>O</b><b>R</b>") != -1) { //$NON-NLS-1$
 			sb.delete(
 					sb.indexOf("<b>A</b><b>U</b><b>T</b><b>H</b><b>O</b><b>R</b>"), //$NON-NLS-1$
 					sb.length());
-		} else if (sb.indexOf("AUTHOR") != -1) { //$NON-NLS-1$
-			sb.delete(sb.indexOf("AUTHOR"), //$NON-NLS-1$
-					sb.length());
 		}
-
+		sb.insert(0, "<pre>"); //$NON-NLS-1$
+		sb.append("</pre>"); //$NON-NLS-1$
 		return sb;
 	}
-
 }
