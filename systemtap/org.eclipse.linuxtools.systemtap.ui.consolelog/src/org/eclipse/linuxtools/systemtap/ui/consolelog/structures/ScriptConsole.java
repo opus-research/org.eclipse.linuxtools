@@ -42,11 +42,33 @@ import org.eclipse.ui.console.IOConsole;
 public class ScriptConsole extends IOConsole {
 	private static final long RETRY_STOP_TIME = 500;
 
+	/**
+	 * The command that will run in this console.
+	 */
 	private Command cmd;
+
+	/**
+	 * A protocol for sending "stop" signals to cmd when it is forcably
+	 * stopped by a user action.
+	 */
 	private Runnable stopCommand;
-	private Thread stopWatcher;
-	private Thread stopThread;
-	private Thread startThread;
+
+	/**
+	 * A thread in which to asynchronously run stopCommand.
+	 */
+	private Thread stopCommandThread;
+
+	/**
+	 * A thread used for notifying the console when cmd has successfully stopped.
+	 */
+	private Thread onCmdStopThread;
+
+	/**
+	 * A thread used for starting a new run of cmd. It starts a new run only
+	 * once a previous run of cmd has successfully stopped.
+	 */
+	private Thread onCmdStartThread;
+
 	private String moduleName;
 
 	private ErrorStreamDaemon errorDaemon;
@@ -84,7 +106,7 @@ public class ScriptConsole extends IOConsole {
 						if(activeConsole.getName().endsWith(name)) {
 							//Stop any script currently running, and terminate stream listeners.
 							if (activeConsole.isRunning()) {
-								activeConsole.stopWatcher.interrupt();
+								activeConsole.onCmdStopThread.interrupt();
 								activeConsole.stop();
 								if (activeConsole.errorDaemon != null) {
 									activeConsole.cmd.removeErrorStreamListener(activeConsole.errorDaemon);
@@ -181,7 +203,7 @@ public class ScriptConsole extends IOConsole {
 	 */
 	public void run(String[] command, String[] envVars, IErrorParser errorParser) {
 		// Don't start a new command if one is already waiting to be started.
-		if (startThread != null && startThread.isAlive()) {
+		if (onCmdStartThread != null && onCmdStartThread.isAlive()) {
 			return;
 		}
 		cmd = new ScpExec(command);
@@ -220,7 +242,7 @@ public class ScriptConsole extends IOConsole {
 	 */
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
 		// Don't start a new command if one is already waiting to be started.
-		if (startThread != null && startThread.isAlive()) {
+		if (onCmdStartThread != null && onCmdStartThread.isAlive()) {
 			return;
 		}
 		cmd = new Command(command, envVars);
@@ -249,7 +271,7 @@ public class ScriptConsole extends IOConsole {
 	}
 
 	private void run(final Command cmd, IErrorParser errorParser){
-		final Runnable runOnStop = new Runnable() {
+		final Runnable onCmdStop = new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -262,12 +284,12 @@ public class ScriptConsole extends IOConsole {
 				}
 			}
 		};
-		Runnable startOnStop = new Runnable() {
+		Runnable onCmdStart = new Runnable() {
 			@Override
 			public void run() {
-				if (stopThread != null && stopThread.isAlive()) {
+				if (stopCommandThread != null && stopCommandThread.isAlive()) {
 					try {
-						stopThread.join();
+						stopCommandThread.join();
 					} catch (InterruptedException e) {
 						return;
 					}
@@ -286,8 +308,8 @@ public class ScriptConsole extends IOConsole {
 					return;
 				}
 				notifyConsoleObservers(true);
-				stopWatcher = new Thread(runOnStop);
-				stopWatcher.start();
+				onCmdStopThread = new Thread(onCmdStop);
+				onCmdStopThread.start();
 			}
 		};
 
@@ -297,8 +319,8 @@ public class ScriptConsole extends IOConsole {
 		activate();
 		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
 
-		startThread = new Thread(startOnStop);
-        startThread.start();
+		onCmdStartThread = new Thread(onCmdStart);
+        onCmdStartThread.start();
 	}
 
 	private final void onCmdStopActions() {
@@ -372,10 +394,10 @@ public class ScriptConsole extends IOConsole {
 	 * Stops the running command and the associated listeners.
 	 */
 	public synchronized void stop() {
-		if (isRunning() && (stopThread == null || !stopThread.isAlive())) {
+		if (isRunning() && (stopCommandThread == null || !stopCommandThread.isAlive())) {
 			// Stop the underlying stap process
-			stopThread = new Thread(this.stopCommand);
-			stopThread.start();
+			stopCommandThread = new Thread(this.stopCommand);
+			stopCommandThread.start();
 			setName(Localization.getString("ScriptConsole.Terminated") + super.getName()); //$NON-NLS-1$
 		}
 	}
