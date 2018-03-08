@@ -213,13 +213,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
 
         /* Send an event request to update the state system to the target time. */
         TmfTimeRange range = new TmfTimeRange(
-                /*
-                 * The state at the checkpoint already includes any state change
-                 * caused by the event(s) happening exactly at 'checkpointTime',
-                 * if any. We must not include those events in the query.
-                 */
-                new TmfTimestamp(checkpointTime + 1, -9),
-                new TmfTimestamp(t, -9));
+                new TmfTimestamp(checkpointTime, -9), new TmfTimestamp(t, -9));
         ITmfEventRequest request = new PartialStateSystemRequest(partialInput, range);
         partialInput.getTrace().sendRequest(request);
 
