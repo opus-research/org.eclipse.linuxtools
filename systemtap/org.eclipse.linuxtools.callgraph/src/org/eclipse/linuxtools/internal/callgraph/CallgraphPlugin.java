@@ -1,4 +1,14 @@
-package org.eclipse.linuxtools.callgraph.tests;
+/*******************************************************************************
+ * Copyright (c) 2009 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
+package org.eclipse.linuxtools.internal.callgraph;
 
 import java.io.IOException;
 import java.net.URL;
@@ -13,20 +23,18 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class CallgraphPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.callgraph.tests";
-	public static String PLUGIN_LOCATION = "NULL";
-	
-	
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.callgraph"; //$NON-NLS-1$
+
 	// The shared instance
-	private static Activator plugin;
+	private static CallgraphPlugin plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public Activator() {
+	public CallgraphPlugin() {
 	}
 
 	/*
@@ -37,7 +45,9 @@ public class Activator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		PLUGIN_LOCATION = getPluginLocation();
+		
+		//TODO: Is this too slow?
+		CallGraphConstants.setPluginLocation(getPluginLocation());
 	}
 
 	/*
@@ -55,7 +65,7 @@ public class Activator extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static CallgraphPlugin getDefault() {
 		return plugin;
 	}
 
@@ -81,5 +91,7 @@ public class Activator extends AbstractUIPlugin {
 			e.printStackTrace();
 		}
 		return fileUrl.getFile();
+		
 	}
+
 }
