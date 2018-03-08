@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2012 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -16,7 +16,7 @@ import org.eclipse.osgi.util.NLS;
 
 /**
  * Message strings for TMF model handling.
- * 
+ *
  * @version 1.0
  * @author Francois Chouinard
  *
@@ -74,7 +74,7 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_InvalidTraceDirectory;
     /**
-     * The error message when a trace validation failed (import trace wizard). 
+     * The error message when a trace validation failed (import trace wizard).
      */
     public static String ImportTraceWizard_TraceValidationFailed;
     /**
@@ -105,6 +105,96 @@ public class Messages extends NLS {
      * The information label string.
      */
     public static String ImportTraceWizard_Information;
+    /**
+     * The dialog title of the import trace wizard
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_DialogTitle;
+    /**
+     * The title of the file system within the import trace wizard
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_FileSystemTitle;
+    /**
+     * The title of the the import trace wizard page.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_ImportTrace;
+    /**
+     * The label of the directory location (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_DirectoryLocation;
+    /**
+     * The title of the select trace directory dialog (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceDirectoryTitle;
+    /**
+     * The message of the select trace directory dialog (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceDirectoryMessage;
+    /**
+     * The title of the trace type label (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_TraceType;
+    /**
+     * The label of the overwrite checkbox (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_OverwriteExistingTrace;
+    /**
+     * The label of the checkbox to create a link to the trace in workspace (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_CreateLinksInWorkspace;
+    /**
+     * The error message for invalid trace directory (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_InvalidTraceDirectory;
+    /**
+     * The error message when a trace validation failed (import trace wizard).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_TraceValidationFailed;
+    /**
+     * The error message when trace source is empty (import trace wizard).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceSourceEmpty;
+    /**
+     * The error message when no trace is selected (import trace wizard).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceNoneSelected;
+    /**
+     * The error message when an error occurred during import operation.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_ImportProblem;
+    /**
+     * The error message if destination directory is a virtual folder.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_CannotImportFilesUnderAVirtualFolder;
+    /**
+     * The error message if destination directory is a virtual folder (for a link).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_HaveToCreateLinksUnderAVirtualFolder;
+    /**
+     * The label string of the browse button.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_BrowseButton;
+    /**
+     * The information label string.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_Information;
     /**
      *  The title of the select traces wizard.
      */
