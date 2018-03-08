@@ -36,10 +36,6 @@ import org.eclipse.ui.WorkbenchException;
  */
 public class RunScriptChartHandler extends RunScriptHandler {
 
-	public RunScriptChartHandler() {
-		super();
-	}
-
 	@Override
 	protected void scriptConsoleInitialized(ScriptConsole console){
 		getChartingOptions();
