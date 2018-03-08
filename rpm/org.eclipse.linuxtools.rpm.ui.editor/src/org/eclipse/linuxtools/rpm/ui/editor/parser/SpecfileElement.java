@@ -79,8 +79,8 @@ public class SpecfileElement {
 	public String resolve(String toResolve) {
 		if (specfile == null || toResolve.equals("")) {//$NON-NLS-1$
 			if (toResolve.length() > 2
-					&& toResolve.substring(2, toResolve.length() - 1).equals(
-							name)) {
+					&& toResolve.substring(2, toResolve.length() - 1)
+							.equals(name)) {
 				return toResolve;
 			}
 		}
@@ -90,15 +90,18 @@ public class SpecfileElement {
 	/**
 	 * Resolve using RPM to evaluate string
 	 *
-	 * @param toResolve
-	 *            The string to be evaluated
+	 * @param toResolve The string to be evaluated
 	 * @return The evaluated string
 	 */
 	public String resolveEval(String toResolve) {
 		String str = ""; //$NON-NLS-1$
 		try {
-			if ((specfile == null || toResolve.equals("")) && toResolve.length() > 2 && toResolve.substring(2, toResolve.length() - 1).equals(name)) { //$NON-NLS-1$
-				return toResolve;
+			if (specfile == null || toResolve.equals("")) {//$NON-NLS-1$
+				if (toResolve.length() > 2
+						&& toResolve.substring(2, toResolve.length() - 1)
+								.equals(name)) {
+					return toResolve;
+				}
 			}
 			str = RPMQuery.eval(UiUtils.resolveDefines(specfile, toResolve)).trim();
 		} catch (CoreException e) {
