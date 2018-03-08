@@ -24,6 +24,12 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.model.messages"; //$NON-NLS-1$
 
+    /**
+     * The message when analysis view is not available
+     * @since 3.0
+     */
+    public static String TmfTraceAnalysis_ViewUnavailable;
+
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
 
