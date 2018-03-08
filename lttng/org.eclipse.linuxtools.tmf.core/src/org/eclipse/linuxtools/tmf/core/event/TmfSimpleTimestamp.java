@@ -42,17 +42,14 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
     }
 
     /**
-     * Copy constructor
+     * Copy constructor. If the parameter is not a TmfSimpleTimestamp, the
+     * value will be kept as-is but the scale and precision will be set to zero.
      *
-     * @param timestamp the timestamp to copy or scale to 0
-     * @throws IllegalArgumentException if timestamp is null
-     * @throws ArithmeticException if timestamp can't be scaled to 0
+     * @param timestamp
+     *            The timestamp to copy
      */
     public TmfSimpleTimestamp(final ITmfTimestamp timestamp) {
-        if (timestamp == null) {
-            throw new IllegalArgumentException();
-        }
-        setValue(timestamp.normalize(0, 0).getValue(), 0, 0);
+        super(timestamp.getValue(), 0, 0);
     }
 
     // ------------------------------------------------------------------------
@@ -91,18 +88,6 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
             return new TmfSimpleTimestamp(getValue() - ts.getValue());
         }
         return super.getDelta(ts);
-    }
-
-    // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.TmfTimestamp#clone()
-     */
-    @Override
-    public TmfSimpleTimestamp clone() {
-        return (TmfSimpleTimestamp) super.clone();
     }
 
     // ------------------------------------------------------------------------
