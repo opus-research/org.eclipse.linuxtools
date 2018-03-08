@@ -75,5 +75,12 @@
             presentationLayer="4">
       </specification>
          </extension>
+   <extension
+        point="org.eclipse.ui.ide.markerResolution">
+     <markerResolutionGenerator
+           class="org.eclipse.linuxtools.internal.valgrind.ui.quickfixes.ValgrindResolutionGenerator"
+           markerType="org.eclipse.linuxtools.valgrind.launch.marker">
+     </markerResolutionGenerator>
+  </extension>
 
 </plugin>
