@@ -11,20 +11,18 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IStartup;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.plugin.*;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class to be used in the desktop.
  */
 public class GraphicalRunPlugin extends AbstractUIPlugin implements IStartup {
-	
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphicalrun"; //$NON-NLS-1$;
-
 	//The shared instance.
 	private static GraphicalRunPlugin plugin;
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.systemtap.ui.graphicalrun"; //$NON-NLS-1$
 	
 	/**
 	 * The constructor.
@@ -65,7 +63,7 @@ public class GraphicalRunPlugin extends AbstractUIPlugin implements IStartup {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(ID, path);
+		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 	
 	public void earlyStartup() {}

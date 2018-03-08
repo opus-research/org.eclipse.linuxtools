@@ -57,7 +57,7 @@ import com.jcraft.jsch.JSchException;
 
 abstract public class RunScriptBaseAction extends Action implements IWorkbenchWindowActionDelegate {
 
-	protected boolean runLocal = true;
+	protected boolean runLocal = false;
 	protected boolean continueRun = true;
 	protected String fileName = null;
 	protected String tmpfileName = null;
@@ -120,19 +120,10 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
             				console = ScriptConsole.getInstance(fileName);
             				console.runLocally(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
             			}
-            			scriptConsoleInitialized(console);
             		}
             	});
             }
 		}
-	}
-	
-	/**
-	 * Once a console for running the script has been created this
-	 * function is called so that observers can be added for example
-	 * @param console 
-	 */
-	protected void scriptConsoleInitialized(ScriptConsole console){
 	}
 	
 	protected abstract String getFilePath();
@@ -159,7 +150,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		}
 		return true;
 	}
-
+	
 	/**
 	 * The command line argument generation method used by <code>RunScriptAction</code>. This generates
 	 * a stap command line that includes the tapsets specified in user preferences, a guru mode flag
@@ -172,12 +163,13 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		String[] script;
 		
 		getImportedTapsets(cmdList);
-
+		
 		if(isGuru())
 			cmdList.add("-g"); //$NON-NLS-1$
+		
 
 		script = finalizeScript(cmdList);
-
+		
 		return script;
 	}
 	
