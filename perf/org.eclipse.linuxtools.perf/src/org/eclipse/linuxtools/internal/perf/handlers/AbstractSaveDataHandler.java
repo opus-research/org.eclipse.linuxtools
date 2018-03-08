@@ -10,15 +10,12 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.handlers;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.File;
 import java.text.MessageFormat;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.commands.IHandlerListener;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -26,8 +23,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.perf.BaseDataManipulator;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
-import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.swt.widgets.Display;
 
 /**
@@ -42,14 +37,14 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
 				.getActiveShell(), Messages.PerfSaveSession_title,
 				Messages.PerfSaveSession_msg, "", new IInputValidator() { //$NON-NLS-1$
 
-			@Override
-			public String isValid(String newText) {
-				if (newText.isEmpty()) {
-					return Messages.PerfSaveSession_invalid_filename_msg;
-				}
-				return null;
-			}
-		});
+					@Override
+					public String isValid(String newText) {
+						if ("".equals(newText)) { //$NON-NLS-1$
+							return Messages.PerfSaveSession_invalid_filename_msg;
+						}
+						return null;
+					}
+				});
 
 		if (dialog.open() == Window.OK) {
 			saveData(dialog.getValue());
@@ -93,22 +88,11 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
 	 * @param file <code>File</code> to save
 	 * @return true if we can go ahead and save the file, false otherwise
 	 */
-	public boolean canSave(IPath file) {
-		IRemoteFileProxy proxy = null;
-		URI fileURI = null;
-		try {
-			fileURI = new URI(file.toPortableString());
-			proxy = RemoteProxyManager.getInstance().getFileProxy(fileURI);
-		} catch (URISyntaxException e) {
-			MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
-		} catch (CoreException e) {
-			MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
-		}
-		IFileStore fileStore = proxy.getResource(fileURI.getPath());
-		if (fileStore.fetchInfo().exists()) {
+	public boolean canSave(File file) {
+		if (file.exists()) {
 			String msg = MessageFormat.format(
 					Messages.PerfSaveSession_file_exists_msg,
-					new Object[] { fileStore.getName() });
+					new Object[] { file.getName() });
 			return MessageDialog.openQuestion(Display.getCurrent()
 					.getActiveShell(),
 					Messages.PerfSaveSession_file_exists_title, msg);
@@ -131,7 +115,7 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
 	 *
 	 * @param filename the file name
 	 */
-	public abstract IPath saveData(String filename);
+	public abstract File saveData(String filename);
 
 	/**
 	 * Verify data to save.
