@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 
 /*
@@ -47,16 +45,7 @@ public abstract class LinuxtoolsProcessFactory {
 			envp = new String[0];
 		String ltPath = LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project);
 		String envpPath = getEnvpPath(envp);
-		String systemPath = null;
-		Map<String, String> systemEnvMap = null;
-		try {
-			systemEnvMap = RemoteProxyManager.getInstance().getEnv(project);
-			String pathValue = systemEnvMap.get(PATH);
-			if(pathValue != null)
-				systemPath = PATH + "=" + pathValue;
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
+		String systemPath = System.getenv(PATH);
 		StringBuffer newPath = new StringBuffer();
 		newPath.append(PATH_EQUAL);
 
@@ -85,8 +74,8 @@ public abstract class LinuxtoolsProcessFactory {
 					newEnvp[i] = newPath.toString();
 				else
 					newEnvp[i] = envp[i];
-		} else if(systemEnvMap != null) {
-			Map<String, String> envVars = systemEnvMap;
+		} else {
+			Map<String, String> envVars = System.getenv();
 			Set<String> keySet = envVars.keySet();
 			newEnvp = new String[envVars.size()];
 
@@ -95,8 +84,6 @@ public abstract class LinuxtoolsProcessFactory {
 				newEnvp[i] = key + "=" + envVars.get(key);
 				i++;
 			}
-		} else {
-			newEnvp = new String[] {};
 		}
 		return newEnvp;
 	}

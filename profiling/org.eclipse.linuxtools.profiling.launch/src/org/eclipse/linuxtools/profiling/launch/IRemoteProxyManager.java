@@ -26,6 +26,22 @@ public interface IRemoteProxyManager {
 	public IRemoteCommandLauncher getLauncher(URI uri) throws CoreException;
 	public String getOS(IProject project) throws CoreException;
 	public String getOS(URI uri) throws CoreException;
+	/**
+	 * Method to get system's environment variables.
+	 *
+	 * @param Project
+	 *            IProject
+	 * @return Mapping of environment variables
+	 * @since 2.1
+	*/	
 	public Map<String, String> getEnv(IProject project) throws CoreException;
+        /**
+         * Method to get system's environment variables.
+         *      
+         * @param Resource URI
+         *            URI
+         * @return Mapping of environment variables
+         * @since 2.1
+        */
 	public Map<String, String> getEnv(URI uri) throws CoreException;
 }

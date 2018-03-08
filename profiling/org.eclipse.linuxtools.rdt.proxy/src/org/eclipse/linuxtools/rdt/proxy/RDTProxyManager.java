@@ -73,7 +73,7 @@ public class RDTProxyManager implements IRemoteProxyManager {
 	public Map<String, String> getEnv(URI uri) throws CoreException {
 		IRemoteServices services = RemoteServices.getRemoteServices(uri);
 		IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
-		if(!connection.isOpen())
+		if(!connection.isOpen()) {
 			try {
 				connection.open(null);
 			} catch (RemoteConnectionException e) {
@@ -81,6 +81,7 @@ public class RDTProxyManager implements IRemoteProxyManager {
 				Activator.getDefault().getLog().log(status);
 				return Collections.emptyMap();
 			}
+		}
 		return connection.getEnv();
 	}
 
