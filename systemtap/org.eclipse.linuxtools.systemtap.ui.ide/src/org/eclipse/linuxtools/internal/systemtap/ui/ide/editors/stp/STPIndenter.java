@@ -24,8 +24,11 @@ import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPartitioningException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 
 /**
@@ -76,7 +79,7 @@ public final class STPIndenter {
 		final int prefContinuationIndent;
 		final boolean prefHasTemplates;
 		final String prefTabChar;
-		
+
 		private final IPreferencesService preferenceService;
 		private final IScopeContext[] preferenceContexts;
 		private final IProject fProject;
@@ -141,7 +144,7 @@ public final class STPIndenter {
 			prefHasTemplates= hasTemplates();
 			prefTabChar= getCoreFormatterOption(STPDefaultCodeFormatterConstants.FORMATTER_TAB_CHAR);
 		}
-		
+
 		private boolean prefUseTabs() {
 			return !IDEPlugin.SPACE.equals(getCoreFormatterOption(STPDefaultCodeFormatterConstants.FORMATTER_TAB_CHAR));
 		}
@@ -290,14 +293,6 @@ public final class STPIndenter {
 		}
 
 		private boolean prefParenthesisDeepIndent() {
-			// don't do parenthesis deep indentation
-//			String option= getCoreFormatterOption(STPDefaultCodeFormatterConstants.FORMATTER_CONTINUATION_INDENTATION);
-//			try {
-//				return STPDefaultCodeFormatterConstants.getIndentStyle(option) == STPDefaultCodeFormatterConstants.INDENT_ON_COLUMN;
-//			} catch (IllegalArgumentException e) {
-//				// ignore and return default
-//			}
-
 			return false;
 		}
 
@@ -327,7 +322,7 @@ public final class STPIndenter {
 
 			return 1; // sensible default
 		}
-		
+
 		private int prefAccessSpecifierIndent() {
 			if (STPDefaultCodeFormatterConstants.TRUE.equals(getCoreFormatterOption(STPDefaultCodeFormatterConstants.FORMATTER_INDENT_ACCESS_SPECIFIER_COMPARE_TO_TYPE_HEADER)))
 				return 1;
@@ -371,7 +366,7 @@ public final class STPIndenter {
 
 			return 2; // sensible default
 		}
-		
+
 		private boolean hasTemplates() {
 			return true;
 		}
@@ -528,7 +523,7 @@ public final class STPIndenter {
 		// Add additional indent
 		return createReusingIndent(reference, fPrefs.prefContinuationIndent, 0);
 	}
-	
+
 	/**
 	 * Computes the length of a <code>CharacterSequence</code>, counting
 	 * a tab character as the size until the next tab stop and every other
@@ -816,20 +811,20 @@ public final class STPIndenter {
 				case STPSymbols.TokenELSE:
 					danglingElse= true;
 					break;
-					
+
 				case STPSymbols.TokenCASE:
 				case STPSymbols.TokenDEFAULT:
 					if (isFirstTokenOnLine)
 						matchMode = MatchMode.MATCH_CASE;
 					break;
-					
+
 				case STPSymbols.TokenPUBLIC:
 				case STPSymbols.TokenPROTECTED:
 				case STPSymbols.TokenPRIVATE:
 					if (isFirstTokenOnLine && peekSecondToken(offset) != STPSymbols.TokenIDENT)
 						matchMode = MatchMode.MATCH_ACCESS_SPECIFIER;
 					break;
-					
+
 				case STPSymbols.TokenLBRACE: // for opening-brace-on-new-line style
 					if (bracelessBlockStart) {
 						extraIndent= fPrefs.prefIndentBracesForBlocks ? 0 : -1;
@@ -852,12 +847,12 @@ public final class STPIndenter {
 						fPosition = pos;
 					}
 					break;
-					
+
 				case STPSymbols.TokenRBRACE: // closing braces get unindented
 					if (isFirstTokenOnLine || prevToken != STPSymbols.TokenLBRACE)
 						matchMode = MatchMode.MATCH_BRACE;
 					break;
-					
+
 				case STPSymbols.TokenRPAREN:
 					if (isFirstTokenOnLine)
 						matchMode = MatchMode.MATCH_PAREN;
@@ -896,7 +891,7 @@ public final class STPIndenter {
 		MATCH_BRACE,
 		/**
 		 * The position of the matching parenthesis should be returned instead of doing code
-		 * analysis. 
+		 * analysis.
 		 */
 		MATCH_PAREN,
 		/**
@@ -1041,10 +1036,25 @@ public final class STPIndenter {
 			return NOT_FOUND;
 
 		case STPSymbols.TokenEQUAL:
-			// indent assignments
+			// indent assignments, but don't do so if there is a String
+			// after the assignment because SystemTap doesn't require
+			// semi-colons to end lines and so this should be treated as
+			// a complete assignment.
+			pos = fPosition;
+			while (pos < offset) {
+				try {
+					ITypedRegion partition = ((IDocumentExtension3)fDocument).getPartition(STPPartitionScanner.STP_PARTITIONING, pos, danglingElse);
+					if (STPPartitionScanner.STP_STRING.equals(partition.getType()))
+						return skipToStatementStart(danglingElse, false);
+					pos = partition.getOffset() + partition.getLength();
+				} catch (BadLocationException e) {
+					break;
+				} catch (BadPartitioningException e) {
+					break;
+				}
+			}
 			fIndent= fPrefs.prefAssignmentIndent;
 			return fPosition;
-
 		case STPSymbols.TokenCOLON:
 			pos= fPosition;
 			if (looksLikeCaseStatement()) {
@@ -1105,7 +1115,8 @@ public final class STPIndenter {
 			if (skipScope(STPSymbols.TokenLPAREN, STPSymbols.TokenRPAREN)) {
 				int scope= fPosition;
 				nextToken();
-				if (fToken == STPSymbols.TokenIF || fToken == STPSymbols.TokenWHILE || fToken == STPSymbols.TokenFOR) {
+				if (fToken == STPSymbols.TokenIF || fToken == STPSymbols.TokenWHILE || fToken == STPSymbols.TokenFOR
+						|| fToken == STPSymbols.TokenFOREACH) {
 					fIndent= fPrefs.prefSimpleIndent;
 					return fPosition;
 				}
@@ -1137,8 +1148,18 @@ public final class STPIndenter {
 			// indent by list-indent.
 			return skipToPreviousListItemOrListStart();
 
+		case STPSymbols.TokenPLUS:
+		case STPSymbols.TokenMINUS:
+		case STPSymbols.TokenLESSTHAN:
+		case STPSymbols.TokenAGGREGATE:
+		case STPSymbols.TokenSHIFTRIGHT:
+		case STPSymbols.TokenSHIFTLEFT:
+		case STPSymbols.TokenOTHER:
+			// Math symbol, use skipToPreviousListItemOrListStart.
+			return skipToPreviousListItemOrListStart();
+			// Otherwise, fall-through
 		default:
-			// Inside whatever we don't know about: 
+			// Inside whatever we don't know about:
 			// C would treat this as a list, but in SystemTap we might just have a line that doesn't
 			// end in a semi-colon.  We want to indent to the same level as the statement.
 			return skipToStatementStart(danglingElse, false);
@@ -1184,7 +1205,7 @@ public final class STPIndenter {
 
 	/**
 	 * Test whether the colon at the current position marks a case statement
-	 * 
+	 *
 	 * @return <code>true</code> if this looks like a case statement
 	 */
 	private boolean looksLikeCaseStatement() {
@@ -1219,7 +1240,7 @@ public final class STPIndenter {
 
 	/**
 	 * Test whether the colon at the current position marks a type inheritance decl.
-	 * 
+	 *
 	 * @return <code>true</code> if this looks like a type inheritance decl.
 	 */
 	private boolean looksLikeTypeInheritanceDecl() {
@@ -1243,7 +1264,7 @@ public final class STPIndenter {
 
 	/**
 	 * Test whether the colon at the current position marks a constructor initializer list.
-	 * 
+	 *
 	 * @return <code>true</code> if this looks like a constructor initializer list.
 	 */
 	private boolean looksLikeConstructorInitializer() {
@@ -1280,7 +1301,7 @@ public final class STPIndenter {
 				return true;
 			}
 			return false;
-			
+
 		case STPSymbols.TokenLBRACE:  // class A { A() :
 		case STPSymbols.TokenRBRACE:
 		case STPSymbols.TokenSEMICOLON:
@@ -1291,7 +1312,7 @@ public final class STPIndenter {
 
 	/**
 	 * Test whether the left brace at the current position marks an enum decl.
-	 * 
+	 *
 	 * @return <code>true</code> if this looks like an enum decl.
 	 */
 	private boolean looksLikeEnumDeclaration() {
@@ -1314,7 +1335,7 @@ public final class STPIndenter {
 
 	/**
 	 * Test whether the colon at the current position marks an access specifier.
-	 * 
+	 *
 	 * @return <code>true</code> if current position marks an access specifier
 	 */
 	private boolean isAccessSpecifier() {
@@ -1360,6 +1381,7 @@ public final class STPIndenter {
 				case STPSymbols.TokenDO:
 				case STPSymbols.TokenWHILE:
 				case STPSymbols.TokenFOR:
+				case STPSymbols.TokenFOREACH:
 				case STPSymbols.TokenTRY:
 					fIndent += fPrefs.prefIndentBracesForBlocks ? 1 : 0;
 					return fPosition;
@@ -1532,10 +1554,10 @@ public final class STPIndenter {
 			case STPSymbols.TokenMINUS:
 			case STPSymbols.TokenPLUS:
 				continue;
-				
+
 			case STPSymbols.TokenQUESTIONMARK:
 				return true;
-				
+
 			case STPSymbols.TokenSEMICOLON:
 			case STPSymbols.TokenLBRACE:
 			case STPSymbols.TokenRBRACE:
@@ -1573,12 +1595,12 @@ public final class STPIndenter {
 			case STPSymbols.TokenLBRACKET:
 			case STPSymbols.TokenEOF:
 				return fPosition;
-				
+
 			case STPSymbols.TokenSWITCH:
 				// start of switch statement
 				fIndent= fPrefs.prefCaseIndent;
 				return fPosition;
-				
+
 			case STPSymbols.TokenCASE:
 			case STPSymbols.TokenDEFAULT:
 				// align with previous label
@@ -1618,7 +1640,7 @@ public final class STPIndenter {
 			case STPSymbols.TokenLBRACKET:
 			case STPSymbols.TokenEOF:
 				return fPosition;
-				
+
 			case STPSymbols.TokenLBRACE:
 				// opening brace of class body
 				int pos= fPosition;
@@ -1676,13 +1698,13 @@ public final class STPIndenter {
 				try {
 					int lineOffset= fDocument.getLineOffset(startLine);
 					int bound= Math.min(fDocument.getLength(), startPosition + 1);
-					if ((fToken == STPSymbols.TokenSEMICOLON || fToken == STPSymbols.TokenRBRACE ||
+					if ((fToken == STPSymbols.TokenSEMICOLON || fToken == STPSymbols.TokenRBRACE || fToken == STPSymbols.TokenIDENT ||
 							fToken == STPSymbols.TokenLBRACE && !looksLikeArrayInitializerIntro() && !looksLikeEnumDeclaration()) &&
 							continuationLineCandidate) {
 						fIndent = fPrefs.prefContinuationIndent;
 					} else {
 						fAlign= fScanner.findNonWhitespaceForwardInAnyPartition(lineOffset, bound);
-						// If the reference line starts with a colon, skip the colon.  
+						// If the reference line starts with a colon, skip the colon.
 						if (peekToken(fAlign) == STPSymbols.TokenCOLON) {
 							fAlign= fScanner.findNonWhitespaceForwardInAnyPartition(fAlign + 1, bound);
 						}
@@ -1927,7 +1949,7 @@ public final class STPIndenter {
 			try {
 				IRegion lineRegion = fDocument.getLineInformationOfOffset(scopeIntroducerOffset);
 				if (fAlign > lineRegion.getOffset() + lineRegion.getLength()) {
-					fAlign= firstPossible; 
+					fAlign= firstPossible;
 				}
 			} catch (BadLocationException e) {
 				// Ignore.
@@ -2106,7 +2128,7 @@ public final class STPIndenter {
 
 	/**
 	 * Skips scope qualifiers of identifiers.
-	 * 
+	 *
 	 * @return <code>true</code> if a qualifier was encountered, the last token
 	 *         will be an IDENT.
 	 */
@@ -2281,7 +2303,7 @@ public final class STPIndenter {
 	 * header (i.e. a type name (potentially qualified) and a new keyword). The heuristic calls
 	 * <code>nextToken</code> and expects a possibly qualified identifier (type name) and a new
 	 * keyword
-	 * 
+	 *
 	 * @return <code>true</code> if the current position looks like a anonymous type declaration
 	 *         header.
 	 */
