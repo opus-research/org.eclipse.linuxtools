@@ -37,39 +37,39 @@ public class Criteria {
     /**
      * Flag whether lifeline is selected or not.
      */
-    private boolean fLifeLineSelected = false;
+    protected boolean fLifeLineSelected = false;
     /**
      * Flag whether synchronous message is selected or not.
      */
-    private boolean fSyncMessageSelected = false;
+    protected boolean fSyncMessageSelected = false;
     /**
      * Flag whether synchronous message return is selected or not.
      */
-    private boolean fSyncMessageReturnSelected = false;
+    protected boolean fSyncMessageReturnSelected = false;
     /**
      * Flag whether asynchronous message is selected or not.
      */
-    private boolean fAsyncMessageSelected = false;
+    protected boolean fAsyncMessageSelected = false;
     /**
      * Flag whether asynchronous message return is selected or not.
      */
-    private boolean fAsyncMessageReturnSelected = false;
+    protected boolean fAsyncMessageReturnSelected = false;
     /**
      * Flag whether case sensitive find is required or not.
      */
-    private boolean fCaseSenstiveSelected = false;
+    protected boolean fCaseSenstiveSelected = false;
     /**
      * Flag whether stop graph node is selected or not.
      */
-    private boolean fStopSelected = false;
+    protected boolean fStopSelected = false;
     /**
      * The find expression.
      */
-    private String  fExpression = null;
+    protected String  fExpression = null;
     /**
      * The find pattern as regular expression.
      */
-    private Pattern pattern = null;
+    protected Pattern pattern = null;
 
     // ------------------------------------------------------------------------
     // Constructors

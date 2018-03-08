@@ -35,10 +35,10 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
  */
 class ImportTraceContentProvider implements ITreeContentProvider {
 
-    private final Map<String, String> fTraceTypes = new HashMap<String, String>();
-    private final Map<String, Set<FileAndName>> fTraceFiles = new HashMap<String, Set<FileAndName>>();
-    private final List<String> fTraceTypesToScan;
-    private final Set<String> fParentFilesToScan;
+    final Map<String, String> fTraceTypes = new HashMap<String, String>();
+    final Map<String, Set<FileAndName>> fTraceFiles = new HashMap<String, Set<FileAndName>>();
+    final List<String> fTraceTypesToScan;
+    final Set<String> fParentFilesToScan;
 
     public ImportTraceContentProvider(List<String> traceTypesToScan, Set<String> parentFilesToScan) {
         fTraceTypesToScan = traceTypesToScan;
@@ -93,9 +93,9 @@ class ImportTraceContentProvider implements ITreeContentProvider {
     public synchronized Object[] getElements(Object inputElement) {
         List<String> candidates = new ArrayList<String>();
 
-        for (String candidate : fTraceTypesToScan) {
-            for (Entry<String, String> entry : fTraceTypes.entrySet()) {
-                if (entry.getValue().equals(candidate)) {
+        for( String candidate : fTraceTypesToScan){
+            for( Entry<String, String >entry : fTraceTypes.entrySet()){
+                if( entry.getValue().equals(candidate)){
                     candidates.add(entry.getKey());
                     break;
                 }
@@ -113,9 +113,6 @@ class ImportTraceContentProvider implements ITreeContentProvider {
                 Set<FileAndName> candidates = new TreeSet<FileAndName>();
                 for (FileAndName child : children) {
                     for (String parent : fParentFilesToScan) {
-                        // this is going to be slow, but less slow than UI
-                        // display and should not be done for more than 10k
-                        // elements.
                         if (child.getFile().getAbsolutePath().startsWith(parent)) {
                             candidates.add(child);
                         }
