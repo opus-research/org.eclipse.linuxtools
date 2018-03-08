@@ -83,6 +83,31 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="priority" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Positive integer stating priorty over launch provider&apos;s of the same type.
+Invalid values will be assigned the lowest priority to the extension.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="delegate" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A Class that extends &lt;code&gt;ProfileLaunchConfigurationDelegate&lt;/code&gt; and that will provide a launch delegate for profiling.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate:"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Name of launch provider.
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
