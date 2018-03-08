@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -111,6 +112,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private Action fPreviousItemAction;
     private Action fZoomInAction;
     private Action fZoomOutAction;
+    private Action fHideArrowsAction;
 
     /**
      * Standard constructor
@@ -1445,6 +1447,27 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         return fZoomOutAction;
     }
 
+    /**
+     * Get the hide arrows action
+     *
+     * @return The Action object
+     *
+     * @since 2.1
+     */
+    public Action getHideArrowsAction() {
+        if (fHideArrowsAction == null) {
+            fHideArrowsAction = new Action(Messages.TmfTimeGraphViewer_HideArrowsActionNameText, IAction.AS_CHECK_BOX) {
+                @Override
+                public void run() {
+                    fTimeGraphCtrl.hideArrows(fHideArrowsAction.isChecked());
+                    refresh();
+                }
+            };
+            fHideArrowsAction.setToolTipText(Messages.TmfTimeGraphViewer_HideArrowsActionToolTipText);
+            fHideArrowsAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_HIDE_ARROWS));
+        }
+        return fHideArrowsAction;
+    }
 
     private void adjustVerticalScrollBar() {
         int topIndex = fTimeGraphCtrl.getTopIndex();
