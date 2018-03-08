@@ -8,7 +8,7 @@
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
  *******************************************************************************/ 
-package org.eclipse.linuxtools.internal.oprofile.ui.model;
+package org.eclipse.linuxtools.oprofile.ui.model;
 
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelRoot;
@@ -68,17 +68,28 @@ public class UiModelRoot implements IUiModelElement {
 		return null;
 	}
 
+	/**
+	 * Returns the children of this element.
+	 * @return An array of child elements or null
+	 */
 	public IUiModelElement[] getChildren() {
 		if (events != null)
 			return events;
 		else
 			return new IUiModelElement[] { rootError };
 	}
-
+	/**
+	 * Returns if the element has any children.
+	 * @return true if the element has children, false otherwise
+	 */
 	public boolean hasChildren() {
 		return true;
 	}
 
+	/**
+	 * Returns the element's parent.
+	 * @return The parent element or null
+	 */
 	public IUiModelElement getParent() {
 		return null;
 	}
