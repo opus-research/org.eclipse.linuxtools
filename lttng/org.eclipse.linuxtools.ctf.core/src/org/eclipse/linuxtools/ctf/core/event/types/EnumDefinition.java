@@ -54,7 +54,7 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
 
         integerValue = declaration.getContainerType().createDefinition(
                 definitionScope, fieldName);
-        value = declaration.query(integerValue.getValue());
+        value = ((Long) integerValue.getValue()).toString();
     }
 
     // ------------------------------------------------------------------------
@@ -89,7 +89,7 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
      */
     public void setIntegerValue(long Value) {
         integerValue.setValue(Value);
-        value = declaration.query(Value);
+        value = ((Long) integerValue.getValue()).toString();
     }
 
     @Override
@@ -114,10 +114,4 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
         value = declaration.query(val);
     }
 
-    @Override
-    public String toString() {
-        return "{ value = " + getValue() + //$NON-NLS-1$
-                ", container = " + integerValue.toString() + //$NON-NLS-1$
-                " }"; //$NON-NLS-1$
-    }
 }
