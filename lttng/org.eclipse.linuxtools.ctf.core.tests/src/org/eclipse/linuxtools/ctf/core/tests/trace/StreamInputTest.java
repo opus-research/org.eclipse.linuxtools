@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
@@ -29,8 +29,6 @@ import org.junit.Test;
  */
 @SuppressWarnings("javadoc")
 public class StreamInputTest {
-
-    private static final int TRACE_INDEX = 0;
 
     private StreamInput fixture;
 
@@ -51,8 +49,8 @@ public class StreamInputTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(CtfTestTraces.tracesExist());
-        fixture = new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+        assumeTrue(TestParams.tracesExist());
+        fixture = new StreamInput(new Stream(TestParams.createTrace()),
                 (FileChannel) null, createFile());
         fixture.setTimestampEnd(1L);
     }
@@ -151,30 +149,30 @@ public class StreamInputTest {
 
     @Test
     public void testEquals1() throws CTFReaderException{
-        s1 = new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+        s1 = new StreamInput(new Stream(TestParams.createTrace()),
                 (FileChannel) null, createFile());
         assertFalse(s1.equals(null));
     }
 
     @Test
     public void testEquals2() throws CTFReaderException{
-        s1 = new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+        s1 = new StreamInput(new Stream(TestParams.createTrace()),
                 (FileChannel) null, createFile());
         assertFalse(s1.equals(new Long(23L)));
 
     }
     @Test
     public void testEquals3() throws CTFReaderException{
-        s1 = new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+        s1 = new StreamInput(new Stream(TestParams.createTrace()),
                 (FileChannel) null, createFile());
         assertEquals(s1,s1);
 
     }
     @Test
     public void testEquals4() throws CTFReaderException{
-        s1 = new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+        s1 = new StreamInput(new Stream(TestParams.createTrace()),
                 (FileChannel) null, createFile());
-        s2 = new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+        s2 = new StreamInput(new Stream(TestParams.createTrace()),
                 (FileChannel) null, createFile());
         assertEquals(s1,s2);
     }
