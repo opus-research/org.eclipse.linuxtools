@@ -51,10 +51,7 @@ public abstract class CtfIteratorManager {
      *            the trace to register.
      */
     public static synchronized void removeTrace(final CtfTmfTrace trace) {
-        CtfTraceManager mgr = map.remove(trace);
-        if (mgr != null) {
-            mgr.clear();
-        }
+        map.remove(trace);
     }
 
     /**
@@ -192,11 +189,4 @@ class CtfTraceManager {
         return elem;
     }
 
-    void clear() {
-        for (CtfIterator iterator : fMap.values()) {
-            iterator.dispose();
-        }
-        fMap.clear();
-        fRandomAccess.clear();
-    }
 }
