@@ -62,7 +62,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	 */
 	@Override
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_1, fileName);
+		return Messages.SourcesFileHyperlink_1 + ' ' + fileName;
 	}
 
 	/**

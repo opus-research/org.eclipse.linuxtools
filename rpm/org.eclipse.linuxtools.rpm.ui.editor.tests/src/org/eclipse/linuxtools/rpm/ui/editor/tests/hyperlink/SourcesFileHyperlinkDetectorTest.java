@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Red Hat, Inc.
+ * Copyright (c) 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,63 +8,80 @@
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.tests;
+package org.eclipse.linuxtools.rpm.ui.editor.tests.hyperlink;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.MailHyperlink;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.MailHyperlinkDetector;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.SourcesFileHyperlinkDetector;
 import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.linuxtools.rpm.ui.editor.tests.FileTestCase;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.junit.Before;
 import org.junit.Test;
 
-public class MailHyperlinkDetectorTest extends FileTestCase {
+public class SourcesFileHyperlinkDetectorTest extends FileTestCase {
+	@Before
+	public void init() throws CoreException {
+		super.setUp();
+		String testText = "Source0: test.zip\nPatch0: test.patch\n";
+		newFile(testText);
+	}
 
 	@Test
 	public void testDetectHyperlinks() throws PartInitException {
-		String testText = "Version: 0.0\n" + "Release: 0\n" + "%changelog\n"
-				+ "* Fri Feb 27 2009 Test <someone@smth.com> 3.3.2.4-6\n-\n"
-				+ "* Fri Feb 27 2009 Test someone@smth.com 3.3.2.4-6\n-\n";
-		newFile(testText);
-
 		IEditorPart openEditor = IDE.openEditor(PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage(), testFile,
 				"org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor");
 
 		editor = (SpecfileEditor) openEditor;
 		editor.doRevertToSaved();
-		MailHyperlinkDetector elementDetector = new MailHyperlinkDetector();
+		SourcesFileHyperlinkDetector elementDetector = new SourcesFileHyperlinkDetector();
 		elementDetector.setEditor(editor);
-		// test mail
-		IRegion region = new Region(38, 0);
+		// test source element
+		IRegion region = new Region(10, 0);
 		IHyperlink[] returned = elementDetector.detectHyperlinks(
 				editor.getSpecfileSourceViewer(), region, false);
-		assertEquals(1, returned.length);
-		assertTrue(returned[0] instanceof MailHyperlink);
+		assertEquals(2, returned.length);
 
-		region = new Region(124, 0);
+		// test empty
+		region = new Region(4, 0);
 		returned = elementDetector.detectHyperlinks(
 				editor.getSpecfileSourceViewer(), region, false);
+		assertNull(returned);
+	}
+
+	@Test
+	public void testDetectNoPatchInProject() throws PartInitException {
+		IEditorPart openEditor = IDE.openEditor(PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage(), testFile,
+				"org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor");
+
+		editor = (SpecfileEditor) openEditor;
+		editor.doRevertToSaved();
+		SourcesFileHyperlinkDetector elementDetector = new SourcesFileHyperlinkDetector();
+		elementDetector.setEditor(editor);
+		// test patch element
+		IRegion region = new Region(27, 0);
+		IHyperlink[] returned = elementDetector.detectHyperlinks(
+				editor.getSpecfileSourceViewer(), region, false);
+		// 1 = Create test.patch because test.patch doesn't exist in current project
 		assertEquals(1, returned.length);
-		assertTrue(returned[0] instanceof MailHyperlink);
 	}
 
 	@Test
 	public void testDetectHyperlinksNoRegionAndTextViewer() {
-		MailHyperlinkDetector elementDetector = new MailHyperlinkDetector();
+		SourcesFileHyperlinkDetector elementDetector = new SourcesFileHyperlinkDetector();
 		elementDetector.setEditor(editor);
 		IHyperlink[] returned = elementDetector.detectHyperlinks(null, null,
 				false);
 		assertNull(returned);
 	}
-
 }
