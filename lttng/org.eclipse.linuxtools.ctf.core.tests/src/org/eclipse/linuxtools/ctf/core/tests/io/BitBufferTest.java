@@ -14,7 +14,7 @@ import org.junit.Test;
 /**
  * The class <code>BitBufferTest</code> contains tests for the class
  * <code>{@link BitBuffer}</code>.
- *
+ * 
  * @author ematkho
  * @version $Revision: 1.0 $
  */
@@ -24,7 +24,7 @@ public class BitBufferTest {
 
     /**
      * Launch the test.
-     *
+     * 
      * @param args
      *            the command line arguments
      */
@@ -143,7 +143,7 @@ public class BitBufferTest {
      */
     @Test
     public void testGetOrder() {
-        ByteOrder result = fixture.getByteOrder();
+        ByteOrder result = fixture.order();
 
         assertNotNull(result);
         assertEquals("BIG_ENDIAN", result.toString()); //$NON-NLS-1$
@@ -156,7 +156,7 @@ public class BitBufferTest {
     public void testSetOrder() {
         ByteOrder order = ByteOrder.BIG_ENDIAN;
 
-        fixture.setByteOrder(order);
+        fixture.order(order);
     }
 
     /**
