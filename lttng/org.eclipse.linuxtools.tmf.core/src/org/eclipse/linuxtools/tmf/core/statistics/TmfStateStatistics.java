@@ -18,9 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -30,16 +27,15 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * Implementation of ITmfStatistics which uses a state history for storing its
- * information. In reality, it uses two state histories: one full, and one partial.
- * The "event totals" information are stored in the full one, and the rest (per
- * event type, per CPU, etc.) are stored in the partial one.
+ * information.
  *
  * It requires building the history first, but gives very fast response times
  * when built : Queries are O(log n) wrt the size of the trace, and O(1) wrt to
@@ -50,33 +46,27 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  */
 public class TmfStateStatistics implements ITmfStatistics {
 
-    /** ID for the full statistics state system */
-    public static final String FULL_STATE_ID = "org.eclipse.linuxtools.tmf.statistics.full"; //$NON-NLS-1$
+    /** ID for the statistics state system */
+    public static final String STATE_ID = "org.eclipse.linuxtools.tmf.statistics"; //$NON-NLS-1$
 
-    /** ID for the partial statistics state system */
-    public static final String PARTIAL_STATE_ID = "org.eclipse.linuxtools.tmf.statistics.partial"; //$NON-NLS-1$
-
-    /** Filename the full "statistics state history" file will have */
-    private static final String STATS_FULL_STATE_FILENAME = "statistics-full.ht"; //$NON-NLS-1$
-
-    /** Filename the partial "statistics state history" file will have */
-    private static final String STATS_PARTIAL_STATE_FILENAME = "statistics-partial.ht"; //$NON-NLS-1$
+    /** Filename the "statistics state history" file will have */
+    private static final String STATS_STATE_FILENAME = "statistics.ht"; //$NON-NLS-1$
 
     private final ITmfTrace trace;
 
-    /** The full state system, for event totals */
-    private final ITmfStateSystem fullStats;
-
-    /** The partial state system, for all other information */
-    private final ITmfStateSystem partialStats;
+    /**
+     * The state system that's used to stored the statistics. It's hidden from
+     * the trace, so that it doesn't conflict with ITmfTrace.getStateSystem()
+     * (which is something else!)
+     */
+    private final ITmfStateSystem stats;
 
     /**
      * Empty constructor. The resulting TmfStatistics object will not be usable,
      * but it might be needed for sub-classes.
      */
     public TmfStateStatistics() {
-        fullStats = null;
-        partialStats = null;
+        stats = null;
         trace = null;
     }
 
@@ -89,26 +79,13 @@ public class TmfStateStatistics implements ITmfStatistics {
      *             If something went wrong trying to initialize the statistics
      */
     public TmfStateStatistics(ITmfTrace trace) throws TmfTraceException {
-        /* Set up the path to the history tree file we'll use */
         this.trace = trace;
-        IResource resource = trace.getResource();
-        String supplDirectory = null;
 
-        try {
-            // get the directory where the history file will be stored.
-            supplDirectory = resource.getPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER);
-        } catch (CoreException e) {
-            throw new TmfTraceException(e.toString(), e);
-        }
+        String directory = TmfTraceManager.getSupplementaryFileDir(trace);
+        final File htFile = new File(directory + STATS_STATE_FILENAME);
+        final ITmfStateProvider htInput = new StatsStateProvider(trace);
 
-        final File fullFile = new File(supplDirectory + File.separator + STATS_FULL_STATE_FILENAME);
-        final IStateChangeInput fullInput = new StatsProviderTotals(trace);
-        this.fullStats = StateSystemManager.loadStateHistory(fullFile, fullInput, false);
-
-        final File partialFile = new File(supplDirectory + File.separator + STATS_PARTIAL_STATE_FILENAME);
-        final IStateChangeInput partialInput = new StatsProviderEventTypes(trace);
-        this.partialStats = StateSystemManager.newPartialHistory(partialFile, partialInput, false);
-
+        this.stats = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
         registerStateSystems();
     }
 
@@ -119,20 +96,15 @@ public class TmfStateStatistics implements ITmfStatistics {
      *
      * @param trace
      *            The trace for which we build these statistics
-     * @param fullHistoryFile
-     *            The location of the full state history file
-     * @param partialHistoryFile
-     *            The location of the partial state history file
+     * @param historyFile
+     *            The location of the state history file to build for the stats
      * @throws TmfTraceException
      *             If the file could not be written to
      */
-    public TmfStateStatistics(ITmfTrace trace, File fullHistoryFile,
-            File partialHistoryFile) throws TmfTraceException {
+    public TmfStateStatistics(ITmfTrace trace, File historyFile) throws TmfTraceException {
         this.trace = trace;
-        final IStateChangeInput fullInput = new StatsProviderTotals(trace);
-        final IStateChangeInput partialInput = new StatsProviderEventTypes(trace);
-        this.fullStats = StateSystemManager.loadStateHistory(fullHistoryFile, fullInput, true);
-        this.partialStats = StateSystemManager.newPartialHistory(partialHistoryFile, partialInput, true);
+        final ITmfStateProvider htInput = new StatsStateProvider(trace);
+        this.stats = TmfStateSystemFactory.newFullHistory(historyFile, htInput, true);
         registerStateSystems();
     }
 
@@ -140,8 +112,7 @@ public class TmfStateStatistics implements ITmfStatistics {
      * Register the state systems used here into the trace's state system array.
      */
     private void registerStateSystems() {
-        trace.registerStateSystem(FULL_STATE_ID, fullStats);
-        trace.registerStateSystem(PARTIAL_STATE_ID, partialStats);
+        trace.registerStateSystem(STATE_ID, stats);
     }
 
     // ------------------------------------------------------------------------
@@ -150,8 +121,7 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public void dispose() {
-        fullStats.dispose();
-        partialStats.dispose();
+        stats.dispose();
     }
 
     @Override
@@ -169,7 +139,10 @@ public class TmfStateStatistics implements ITmfStatistics {
                 long total;
                 Map<String, Long> map;
 
-                waitUntilBuilt();
+                /* Wait until the history building completed */
+                if (!stats.waitUntilBuilt()) {
+                    return;
+                }
 
                 /* Range should be valid for both global and time range queries */
                 total = getEventsInRange(start, end);
@@ -189,13 +162,16 @@ public class TmfStateStatistics implements ITmfStatistics {
         final List<Long> list = new LinkedList<Long>();
         final long increment = (end - start) / nb;
 
-        waitUntilBuilt();
+        /* Wait until the history building completed */
+        if (!stats.waitUntilBuilt()) {
+            return null;
+        }
 
         /*
          * We will do one state system query per "border", and save the
          * differences between each border.
          */
-        long prevTotal = (start == fullStats.getStartTime()) ? 0 : getEventCountAt(start);
+        long prevTotal = (start == stats.getStartTime()) ? 0 : getEventCountAt(start);
         long curTime = start + increment;
 
         long curTotal, count;
@@ -222,14 +198,14 @@ public class TmfStateStatistics implements ITmfStatistics {
     @Override
     public long getEventsTotal() {
         /* We need the complete state history to be built to answer this. */
-        fullStats.waitUntilBuilt();
+        stats.waitUntilBuilt();
 
-        long endTime = fullStats.getCurrentEndTime();
+        long endTime = stats.getCurrentEndTime();
         int count = 0;
 
         try {
-            final int quark = fullStats.getQuarkAbsolute(Attributes.TOTAL);
-            count= fullStats.querySingleState(endTime, quark).getStateValue().unboxInt();
+            final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
+            count= stats.querySingleState(endTime, quark).getStateValue().unboxInt();
 
         } catch (TimeRangeException e) {
             /* Assume there is no events for that range */
@@ -248,23 +224,23 @@ public class TmfStateStatistics implements ITmfStatistics {
     @Override
     public Map<String, Long> getEventTypesTotal() {
         /* We need the complete state history to be built to answer this. */
-        partialStats.waitUntilBuilt();
+        stats.waitUntilBuilt();
 
         Map<String, Long> map = new HashMap<String, Long>();
-        long endTime = partialStats.getCurrentEndTime();
+        long endTime = stats.getCurrentEndTime();
 
         try {
             /* Get the list of quarks, one for each even type in the database */
-            int quark = partialStats.getQuarkAbsolute(Attributes.EVENT_TYPES);
-            List<Integer> quarks = partialStats.getSubAttributes(quark, false);
+            int quark = stats.getQuarkAbsolute(Attributes.EVENT_TYPES);
+            List<Integer> quarks = stats.getSubAttributes(quark, false);
 
             /* Since we want the total we can look only at the end */
-            List<ITmfStateInterval> endState = partialStats.queryFullState(endTime);
+            List<ITmfStateInterval> endState = stats.queryFullState(endTime);
 
             String curEventName;
             long eventCount;
             for (int typeQuark : quarks) {
-                curEventName = partialStats.getAttributeName(typeQuark);
+                curEventName = stats.getAttributeName(typeQuark);
                 eventCount = endState.get(typeQuark).getStateValue().unboxInt();
                 map.put(curEventName, eventCount);
             }
@@ -285,10 +261,10 @@ public class TmfStateStatistics implements ITmfStatistics {
     public long getEventsInRange(long start, long end) {
         // FIXME Instead of waiting until the end, we could check the current
         // end time, and answer as soon as possible...
-        fullStats.waitUntilBuilt();
+        stats.waitUntilBuilt();
 
         long startCount;
-        if (start == fullStats.getStartTime()) {
+        if (start == stats.getStartTime()) {
             startCount = 0;
         } else {
             /*
@@ -306,7 +282,7 @@ public class TmfStateStatistics implements ITmfStatistics {
     public Map<String, Long> getEventTypesInRange(long start, long end) {
         // FIXME Instead of waiting until the end, we could check the current
         // end time, and answer as soon as possible...
-        partialStats.waitUntilBuilt();
+        stats.waitUntilBuilt();
 
         Map<String, Long> map = new HashMap<String, Long>();
 
@@ -318,18 +294,18 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         try {
             /* Get the list of quarks, one for each even type in the database */
-            int quark = partialStats.getQuarkAbsolute(Attributes.EVENT_TYPES);
-            List<Integer> quarks = partialStats.getSubAttributes(quark, false);
+            int quark = stats.getQuarkAbsolute(Attributes.EVENT_TYPES);
+            List<Integer> quarks = stats.getSubAttributes(quark, false);
 
-            List<ITmfStateInterval> endState = partialStats.queryFullState(endTime);
+            List<ITmfStateInterval> endState = stats.queryFullState(endTime);
 
             String curEventName;
             long countAtStart, countAtEnd, eventCount;
 
-            if (startTime == partialStats.getStartTime()) {
+            if (startTime == stats.getStartTime()) {
                 /* Only use the values picked up at the end time */
                 for (int typeQuark : quarks) {
-                    curEventName = partialStats.getAttributeName(typeQuark);
+                    curEventName = stats.getAttributeName(typeQuark);
                     eventCount = endState.get(typeQuark).getStateValue().unboxInt();
                     if (eventCount == -1) {
                         eventCount = 0;
@@ -341,9 +317,9 @@ public class TmfStateStatistics implements ITmfStatistics {
                  * Query the start time at -1, so the beginning of the interval
                  * is inclusive.
                  */
-                List<ITmfStateInterval> startState = partialStats.queryFullState(startTime - 1);
+                List<ITmfStateInterval> startState = stats.queryFullState(startTime - 1);
                 for (int typeQuark : quarks) {
-                    curEventName = partialStats.getAttributeName(typeQuark);
+                    curEventName = stats.getAttributeName(typeQuark);
                     countAtStart = startState.get(typeQuark).getStateValue().unboxInt();
                     countAtEnd = endState.get(typeQuark).getStateValue().unboxInt();
 
@@ -380,8 +356,8 @@ public class TmfStateStatistics implements ITmfStatistics {
         ts = checkEndTime(ts);
 
         try {
-            final int quark = fullStats.getQuarkAbsolute(Attributes.TOTAL);
-            long count = fullStats.querySingleState(ts, quark).getStateValue().unboxInt();
+            final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
+            long count = stats.querySingleState(ts, quark).getStateValue().unboxInt();
             return count;
 
         } catch (TimeRangeException e) {
@@ -399,26 +375,18 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     private long checkStartTime(long initialStart) {
         long start = initialStart;
-        if (start < fullStats.getStartTime()) {
-            return fullStats.getStartTime();
+        if (start < stats.getStartTime()) {
+            return stats.getStartTime();
         }
         return start;
     }
 
     private long checkEndTime(long initialEnd) {
         long end = initialEnd;
-        if (end > fullStats.getCurrentEndTime()) {
-            return fullStats.getCurrentEndTime();
+        if (end > stats.getCurrentEndTime()) {
+            return stats.getCurrentEndTime();
         }
         return end;
-    }
-
-    /**
-     * Wait until both backing state systems are finished building.
-     */
-    private void waitUntilBuilt() {
-        fullStats.waitUntilBuilt();
-        partialStats.waitUntilBuilt();
     }
 
 

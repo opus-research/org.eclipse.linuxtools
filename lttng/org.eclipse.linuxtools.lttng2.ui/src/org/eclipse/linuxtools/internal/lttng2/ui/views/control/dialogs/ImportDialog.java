@@ -35,7 +35,7 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceS
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy;
 import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
@@ -93,10 +93,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
      */
     private Button fOverwriteButton;
     /**
-     * The button to open import wizard for import locally.
-     */
-    private Button fImportLocallyButton;
-    /**
      * List of available LTTng 2.0 projects
      */
     private List<IProject> fProjects;
@@ -132,10 +128,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IImportDialog#getTracePathes()
-     */
+
     @Override
     public List<ImportFileInfo> getTracePathes() {
         List<ImportFileInfo> retList = new ArrayList<ImportFileInfo>();
@@ -143,19 +136,11 @@ public class ImportDialog extends Dialog implements IImportDialog {
         return retList;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IImportDialog#getProject()
-     */
     @Override
     public IProject getProject() {
         return fProjects.get(fProjectIndex);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IImportDialog#setSession(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent)
-     */
     @Override
     public void setSession(TraceSessionComponent session) {
         fSession = session;
@@ -164,10 +149,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
-     */
+
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -175,10 +157,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
         newShell.setImage(Activator.getDefault().loadIcon(IMPORT_ICON_FILE));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(Composite parent) {
 
@@ -204,23 +182,15 @@ public class ImportDialog extends Dialog implements IImportDialog {
         return fDialogComposite;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        fImportLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
+        Button importLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
         if (fSession.isStreamedTrace()) {
-            fImportLocallyButton.setText("&Next..."); //$NON-NLS-1$
+            importLocallyButton.setText("&Next..."); //$NON-NLS-1$
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
-     */
     @Override
     protected void okPressed() {
         if (!fIsError) {
@@ -311,6 +281,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
     // ------------------------------------------------------------------------
     // Helper methods and classes
     // ------------------------------------------------------------------------
+
     /**
      * Helper class for the contents of a folder in a tracing project
      *
@@ -450,14 +421,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
         fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
         fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
-
-//        Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-//        layout = new GridLayout(1, true);
-//        overrideGroup.setLayout(layout);
-//        overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//
-//        fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
-//        fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
 
         getShell().setMinimumSize(new Point(500, 50));
     }

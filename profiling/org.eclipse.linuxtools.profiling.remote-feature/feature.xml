@@ -3,7 +3,9 @@
       id="org.eclipse.linuxtools.profiling.remote"
       label="%featureName"
       version="1.0.0.qualifier"
-      provider-name="%featureProvider">
+      provider-name="%featureProvider"
+      license-feature="org.eclipse.linuxtools.license.feature"
+      license-feature-version="1.0.0.qualifier">
 
    <description>
       %description
@@ -32,13 +34,6 @@
       <import plugin="org.eclipse.linuxtools.profiling.launch"/>
       <import feature="org.eclipse.linuxtools.profiling" version="0.8.0" match="greaterOrEqual"/>
    </requires>
-
-   <plugin
-         id="org.eclipse.linuxtools.profiling.launch.remote"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="org.eclipse.linuxtools.rdt.proxy"

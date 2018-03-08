@@ -73,17 +73,11 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
     public DropAdapterAssistant() {
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.navigator.CommonDropAdapterAssistant#isSupportedType(org.eclipse.swt.dnd.TransferData)
-     */
     @Override
     public boolean isSupportedType(TransferData aTransferType) {
         return super.isSupportedType(aTransferType) || FileTransfer.getInstance().isSupportedType(aTransferType);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.navigator.CommonDropAdapterAssistant#validateDrop(java.lang.Object, int, org.eclipse.swt.dnd.TransferData)
-     */
     @Override
     public IStatus validateDrop(Object target, int operation, TransferData transferType) {
         if (target instanceof TmfTraceFolder) {
@@ -107,9 +101,6 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         return Status.CANCEL_STATUS;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.navigator.CommonDropAdapterAssistant#handleDrop(org.eclipse.ui.navigator.CommonDropAdapter, org.eclipse.swt.dnd.DropTargetEvent, java.lang.Object)
-     */
     @Override
     public IStatus handleDrop(CommonDropAdapter aDropAdapter, DropTargetEvent aDropTargetEvent, Object aTarget) {
         boolean ok = false;
@@ -270,6 +261,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         }
         if (traceResource != null && traceResource.exists()) {
             createLink(targetExperiment.getResource(), traceResource, traceResource.getName());
+            targetExperiment.closeEditors();
             return traceResource;
         }
         return null;
@@ -384,6 +376,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             }
             if (resource != null && resource.exists()) {
                 createLink(targetExperiment.getResource(), resource, resource.getName());
+                targetExperiment.closeEditors();
                 return true;
             }
         }

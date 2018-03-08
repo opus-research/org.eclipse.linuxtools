@@ -14,9 +14,12 @@
  *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.perf;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -44,6 +47,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
 	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
 	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
+	public static final String REPORT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.ReportViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -99,9 +103,12 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
 	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
 	public static final String STRINGS_ShowStat = "Show Stat View";
+	public static final String STRINGS_SearchSourceDisassembly = "Search Source Disassembly";
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
+	public static final String PERF_DEFAULT_STAT= "perf.stat";
+	public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
 	
@@ -112,13 +119,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 	private TreeParent _modelRoot;
 
 	// Source Disassembly Data
-	private SourceDisassemblyData sourceDisassemblyData;
+	private IPerfData sourceDisassemblyData;
 
 	// Stat Data
-	private StatData statData;
-
-	// Profile view
-	private PerfProfileView _ProfileView = null;
+	private IPerfData statData;
 
 	// Current profile data
 	private IPath curProfileData;
@@ -127,17 +131,22 @@ public class PerfPlugin extends AbstractUIPlugin {
 	private IPath curWorkingDir;
 
 	// Current stat comparison data
-	private StatComparisonData statDiffData;
+	private IPerfData statDiffData;
+
+	// Current report comparison data
+	private IPerfData reportDiffData;
+
+	private Map<String, String> dataCache = new HashMap<String, String>();
 
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
 
-	public SourceDisassemblyData getSourceDisassemblyData () {
+	public IPerfData getSourceDisassemblyData () {
 		return sourceDisassemblyData;
 	}
 
-	public StatData getStatData () {
+	public IPerfData getStatData () {
 		return statData;
 	}
 
@@ -145,12 +154,31 @@ public class PerfPlugin extends AbstractUIPlugin {
 		return curProfileData;
 	}
 
-	public StatComparisonData getStatDiffData() {
+	public IPerfData getStatDiffData() {
 		return statDiffData;
+	}
+
+	public IPerfData getReportDiffData(){
+		return reportDiffData;
 	}
 
 	public IPath getWorkingDir(){
 		return curWorkingDir;
+	}
+
+	/**
+	 * Get perf file with specified name under the current profiled project.
+	 *
+	 * @param fileName file name.
+	 * @return File corresponding to given file or null if no working directory
+	 *         has been set.
+	 */
+	public File getPerfFile(String fileName) {
+		if (curWorkingDir != null) {
+			IPath curStatPath = curWorkingDir.append(fileName);
+			return curStatPath.toFile();
+		}
+		return null;
 	}
 
 	/**
@@ -170,11 +198,11 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this._modelRoot = rootnode;
 	}
 
-	public void setSourceDisassemblyData (SourceDisassemblyData sourceDisassemblyData) {
+	public void setSourceDisassemblyData (IPerfData sourceDisassemblyData) {
 		this.sourceDisassemblyData = sourceDisassemblyData;
 	}
 
-	public void setStatData (StatData statData) {
+	public void setStatData (IPerfData statData) {
 		this.statData = statData;
 	}
 
@@ -182,29 +210,49 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this.curProfileData = perfProfileData;
 	}
 
-	public void setStatDiffData(StatComparisonData diffData){
+	public void setStatDiffData(IPerfData diffData){
 		this.statDiffData = diffData;
+	}
+
+	public void setReportDiffData(IPerfData diffData){
+		this.reportDiffData = diffData;
 	}
 
 	public void setWorkingDir(IPath workingDir){
 		curWorkingDir = workingDir;
 	}
-
-	public PerfProfileView getProfileView() {
-		if (_ProfileView == null) {
-			try {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
-			} catch (PartInitException e2) {
-				e2.printStackTrace();
-			}
-		}
-		return _ProfileView;
-	}
-
-	public void setProfileView(PerfProfileView profileView) {
-		this._ProfileView = profileView;
-	}
 	
+	/* Basic cache access methods. */
+
+	/**
+	 * Cache data with associated key.
+	 *
+	 * @param key String key to associate with data.
+	 * @param data String data to cache.
+	 */
+	public void cacheData(String key, String data) {
+		dataCache.put(key, data);
+	}
+
+	/**
+	 * Get cached data corresponding to specified key.
+	 *
+	 * @param key String key to corresponding cached data.
+	 * @return String cached data corresponding to specified key.
+	 */
+	public String getCachedData(String key) {
+		return dataCache.get(key);
+	}
+
+	/**
+	 * Remove data corresponding to specified key from cache.
+	 *
+	 * @param key String key of cached data to remove.
+	 */
+	public void removeCachedData(String key) {
+		dataCache.remove(key);
+	}
+
 	/**
 	 * The constructor
 	 */

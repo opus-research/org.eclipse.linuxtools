@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -47,26 +47,26 @@ public interface ITmfEventType {
     /**
      * @return the event type context
      */
-    public String getContext();
+    String getContext();
 
     /**
      * @return the event type ID
      */
-    public String getName();
+    String getName();
 
     /**
      * @return the event type root field
      */
-    public ITmfEventField getRootField();
+    ITmfEventField getRootField();
 
     /**
      * @return the event field names (labels)
      */
-    public String[] getFieldNames();
+    String[] getFieldNames();
 
     /**
      * @param index the event field index
      * @return the corresponding event field label
      */
-    public String getFieldName(int index);
+    String getFieldName(int index);
 }

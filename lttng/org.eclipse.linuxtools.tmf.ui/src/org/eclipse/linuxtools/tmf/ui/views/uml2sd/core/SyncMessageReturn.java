@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,7 @@ public class SyncMessageReturn extends SyncMessage {
     /**
      * The associated message(the message it is the return).
      */
-    protected SyncMessage fMessage = null;
+    private SyncMessage fMessage = null;
 
     // ------------------------------------------------------------------------
     // Constractors
@@ -57,7 +57,7 @@ public class SyncMessageReturn extends SyncMessage {
      * Default constructor
      */
     public SyncMessageReturn() {
-        fPrefId = ISDPreferences.PREF_SYNC_MESS_RET;
+        setColorPrefId(ISDPreferences.PREF_SYNC_MESS_RET);
     }
 
     // ------------------------------------------------------------------------
@@ -84,10 +84,6 @@ public class SyncMessageReturn extends SyncMessage {
         return fMessage;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -101,18 +97,14 @@ public class SyncMessageReturn extends SyncMessage {
         context.setLineStyle(context.getLineDotStyle());
         // Draw it selected?
         if (!isSelected()) {
-            context.setBackground(pref.getBackGroundColor(fPrefId));
-            context.setForeground(pref.getForeGroundColor(fPrefId));
+            context.setBackground(pref.getBackGroundColor(getColorPrefId()));
+            context.setForeground(pref.getForeGroundColor(getColorPrefId()));
         }
         super.draw(context);
         // restore the context
         context.setLineStyle(oldStyle);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return SYNC_MESS_RET_TAG;

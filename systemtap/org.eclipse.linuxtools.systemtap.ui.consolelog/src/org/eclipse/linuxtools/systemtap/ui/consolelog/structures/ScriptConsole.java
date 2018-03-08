@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpExec;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
@@ -174,7 +176,11 @@ public class ScriptConsole extends IOConsole {
 			@Override
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
-				stop.start();
+				try {
+					stop.start();
+				} catch (CoreException e) {
+				  // Failed to start the 'stop' process. Ignore.
+				}
 			}
 		};
 	    this.run(cmd, errorParser);
@@ -196,7 +202,7 @@ public class ScriptConsole extends IOConsole {
 				try {
 					RuntimeProcessFactory.getFactory().exec(getStopString(), null, null);
 				} catch (IOException e) {
-					e.printStackTrace();
+					ExceptionErrorDialog.openError(Localization.getString("ScriptConsole.ErrorKillingStap"), e); //$NON-NLS-1$
 				}
 			}
 		};
@@ -212,7 +218,11 @@ public class ScriptConsole extends IOConsole {
 	    	cmd.addErrorStreamListener(errorDaemon);
 	    }
         cmd.addInputStreamListener(consoleDaemon);
-        cmd.start();
+        try {
+			cmd.start();
+		} catch (CoreException e) {
+			ExceptionErrorDialog.openError(e.getMessage(), e);
+		}
         activate();
         notifyConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);

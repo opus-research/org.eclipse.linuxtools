@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -39,7 +39,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-abstract public class ChangeSessionStateHandler extends BaseControlViewHandler {
+public abstract class ChangeSessionStateHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -56,7 +56,7 @@ abstract public class ChangeSessionStateHandler extends BaseControlViewHandler {
     /**
      * @return new required state.
      */
-    abstract TraceSessionState getNewState();
+    public abstract TraceSessionState getNewState();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -72,12 +72,8 @@ abstract public class ChangeSessionStateHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If the command fails
      */
-    abstract public void changeState(TraceSessionComponent session, IProgressMonitor monitor) throws ExecutionException;
+    public abstract void changeState(TraceSessionComponent session, IProgressMonitor monitor) throws ExecutionException;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -121,10 +117,6 @@ abstract public class ChangeSessionStateHandler extends BaseControlViewHandler {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
         // Get workbench page for the Control View

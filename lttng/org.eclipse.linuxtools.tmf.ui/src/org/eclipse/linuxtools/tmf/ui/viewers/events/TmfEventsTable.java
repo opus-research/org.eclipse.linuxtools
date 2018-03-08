@@ -584,7 +584,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             }
         };
 
-        final IAction openCallsiteAction = new Action(Messages.TmfEventsTable_OpenCallsiteActionText) {
+        final IAction openCallsiteAction = new Action(Messages.TmfEventsTable_OpenSourceCodeActionText) {
             @Override
             public void run() {
                 final TableItem items[] = fTable.getSelection();
@@ -625,8 +625,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                                 }
                             });
                             dialog.setInput(files);
-                            dialog.setTitle(Messages.TmfEventsTable_OpenCallsiteSelectFileDialogTitle);
-                            dialog.setMessage(Messages.TmfEventsTable_OpenCallsiteSelectFileDialogTitle + '\n' + cs.toString());
+                            dialog.setTitle(Messages.TmfEventsTable_OpenSourceCodeSelectFileDialogTitle);
+                            dialog.setMessage(Messages.TmfEventsTable_OpenSourceCodeSelectFileDialogTitle + '\n' + cs.toString());
                             dialog.open();
                             Object[] result = dialog.getResult();
                             if (result != null && result.length > 0) {
@@ -641,7 +641,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), marker);
                             marker.delete();
                         } else if (files.size() == 0){
-                            displayException(new FileNotFoundException('\'' + cs.toString() + '\'' + '\n' + Messages.TmfEventsTable_OpenCallsiteNotFound));
+                            displayException(new FileNotFoundException('\'' + cs.toString() + '\'' + '\n' + Messages.TmfEventsTable_OpenSourceCodeNotFound));
                         }
                     } catch (CoreException e) {
                         displayException(e);
@@ -1782,11 +1782,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             final String reference = event.getReference();
             final String content = event.getContent().toString();
             fields = new TmfEventField[] {
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content)
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference, null),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content, null)
             };
         }
         return fields;
@@ -1896,9 +1896,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // ISelectionProvider
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
     /**
      * @since 2.0
      */
@@ -1907,9 +1904,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         selectionChangedListeners.add(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
-     */
     /**
      * @since 2.0
      */
@@ -1927,9 +1921,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         return new StructuredSelection(list);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
     /**
      * @since 2.0
      */
@@ -1938,9 +1929,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         selectionChangedListeners.remove(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
-     */
     /**
      * @since 2.0
      */
@@ -2104,11 +2092,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // Listeners
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.ui.views.colors.IColorSettingsListener#colorSettingsChanged(org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting[])
-     */
     @Override
     public void colorSettingsChanged(final ColorSetting[] colorSettings) {
         fTable.refresh();

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -41,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-abstract public class ChangeChannelStateHandler extends BaseControlViewHandler {
+public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -57,7 +57,7 @@ abstract public class ChangeChannelStateHandler extends BaseControlViewHandler {
     /**
      * @return the new state to set
      */
-    abstract protected TraceEnablement getNewState();
+    protected abstract TraceEnablement getNewState();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -69,12 +69,8 @@ abstract public class ChangeChannelStateHandler extends BaseControlViewHandler {
      * @param monitor - a progress monitor
      * @throws ExecutionException If the command fails
      */
-    abstract protected void changeState(TraceDomainComponent domain, List<String> channelNames, IProgressMonitor monitor) throws ExecutionException;
+    protected abstract void changeState(TraceDomainComponent domain, List<String> channelNames, IProgressMonitor monitor) throws ExecutionException;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -164,10 +160,6 @@ abstract public class ChangeChannelStateHandler extends BaseControlViewHandler {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
 
@@ -238,23 +230,23 @@ abstract public class ChangeChannelStateHandler extends BaseControlViewHandler {
     /**
      *  Class containing parameter for the command execution.
      */
-    static protected class Parameter {
+    protected static class Parameter {
         /**
          * Kernel domain component reference.
          */
-        final protected TraceDomainComponent fKernelDomain;
+        protected final TraceDomainComponent fKernelDomain;
         /**
          * UST domain component reference.
          */
-        final protected TraceDomainComponent fUstDomain;
+        protected final TraceDomainComponent fUstDomain;
         /**
          * The list of kernel channel components the command is to be executed on.
          */
-        final protected List<TraceChannelComponent> fKernelChannels;
+        protected final List<TraceChannelComponent> fKernelChannels;
         /**
          * The list of UST channel components the command is to be executed on.
          */
-        final protected List<TraceChannelComponent> fUstChannels;
+        protected final List<TraceChannelComponent> fUstChannels;
 
         /**
          * Constructor

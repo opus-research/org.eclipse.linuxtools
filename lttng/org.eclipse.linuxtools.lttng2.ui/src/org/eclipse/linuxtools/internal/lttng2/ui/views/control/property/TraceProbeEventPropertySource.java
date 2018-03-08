@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Bernd Hufmann - Initial API and implementation
+ *     Bernd Hufmann - Initial API and implementation
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.property;
 
@@ -18,8 +18,8 @@ import java.util.List;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceEventComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceProbeEventComponent;
+import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 /**
  * <p>
@@ -82,10 +82,7 @@ public class TraceProbeEventPropertySource extends TraceEventPropertySource {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyDescriptors()
-     */
+
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         IPropertyDescriptor[] superProperties = super.getPropertyDescriptors();
@@ -97,24 +94,20 @@ public class TraceProbeEventPropertySource extends TraceEventPropertySource {
         if (fEvent instanceof TraceProbeEventComponent) {
             TraceProbeEventComponent event = (TraceProbeEventComponent) fEvent;
             if (event.getAddress() != null) {
-                list.add(new TextPropertyDescriptor(TRACE_EVENT_PROBE_ADDRESS_PROPERTY_ID, TRACE_EVENT_PROBE_ADDRESS_PROPERTY_NAME));
+                list.add(new ReadOnlyTextPropertyDescriptor(TRACE_EVENT_PROBE_ADDRESS_PROPERTY_ID, TRACE_EVENT_PROBE_ADDRESS_PROPERTY_NAME));
             }
 
             if (event.getOffset() != null) {
-                list.add(new TextPropertyDescriptor(TRACE_EVENT_PROBE_OFFSET_PROPERTY_ID, TRACE_EVENT_PROBE_OFFSET_PROPERTY_NAME));
+                list.add(new ReadOnlyTextPropertyDescriptor(TRACE_EVENT_PROBE_OFFSET_PROPERTY_ID, TRACE_EVENT_PROBE_OFFSET_PROPERTY_NAME));
             }
 
             if (event.getSymbol() != null) {
-                list.add(new TextPropertyDescriptor(TRACE_EVENT_PROBE_SYMBOL_PROPERTY_ID, TRACE_EVENT_PROBE_SYMBOL_PROPERTY_NAME));
+                list.add(new ReadOnlyTextPropertyDescriptor(TRACE_EVENT_PROBE_SYMBOL_PROPERTY_ID, TRACE_EVENT_PROBE_SYMBOL_PROPERTY_NAME));
             }
         }
         return list.toArray(new IPropertyDescriptor[list.size()]);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyValue(java.lang.Object)
-     */
     @Override
     public Object getPropertyValue(Object id) {
         if(TRACE_EVENT_PROBE_ADDRESS_PROPERTY_ID.equals(id)) {

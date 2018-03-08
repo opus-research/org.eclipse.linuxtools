@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,12 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.SearchFilterDialog;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 
 /**
@@ -27,7 +26,7 @@ import org.eclipse.swt.SWT;
  * @author sveyrier
  *
  */
-public class OpenSDFindDialog extends Action {
+public class OpenSDFindDialog extends BaseSDAction {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -35,19 +34,12 @@ public class OpenSDFindDialog extends Action {
     /**
      * The action ID.
      */
-    public final static String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.sdFind"; //$NON-NLS-1$
+    public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.sdFind"; //$NON-NLS-1$
+
     /**
      * The action definition ID.
      */
-    public final static String ACTION_DEFINITION_ID = "org.eclipse.ui.edit.findReplace"; //$NON-NLS-1$
-
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-    /**
-     * The sequence diagram view reference
-     */
-    protected SDView fView;
+    public static final String ACTION_DEFINITION_ID = "org.eclipse.ui.edit.findReplace"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -65,24 +57,21 @@ public class OpenSDFindDialog extends Action {
      * @param view The view reference
      */
     public OpenSDFindDialog(SDView view) {
-        super(SDMessages._41);
+        super(view);
+        setText(Messages.SequenceDiagram_Find + "..."); //$NON-NLS-1$
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_SEARCH_SEQ));
         setId(ID);
         setActionDefinitionId(ACTION_DEFINITION_ID);
-        setToolTipText(SDMessages._41);
-        fView = view;
+        setToolTipText(Messages.SequenceDiagram_Find + "..."); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.action.Action#run()
-     */
+
     @Override
     public void run() {
-        if (fView == null) {
+        if (getView() == null) {
             return;
         }
 
@@ -90,24 +79,15 @@ public class OpenSDFindDialog extends Action {
         this.setEnabled(false);
 
         try {
-            if ((fView.getExtendedFindProvider() != null) && (fView.getExtendedFindProvider().getFindAction() != null)) {
-                fView.getExtendedFindProvider().getFindAction().run();
-            } else if (fView.getSDFindProvider() != null) {
-                SearchFilterDialog dialog = new SearchFilterDialog(fView, fView.getSDFindProvider(), false, SWT.NORMAL);
+            if ((getView().getExtendedFindProvider() != null) && (getView().getExtendedFindProvider().getFindAction() != null)) {
+                getView().getExtendedFindProvider().getFindAction().run();
+            } else if (getView().getSDFindProvider() != null) {
+                SearchFilterDialog dialog = new SearchFilterDialog(getView(), getView().getSDFindProvider(), false, SWT.NORMAL);
                 dialog.open();
             }
         } finally {
             // Enable action after finishing the search
             this.setEnabled(true);
         }
-    }
-
-    /**
-     * Sets the active SD view.
-     *
-     * @param view The SD view.
-     */
-   public void setView(SDView view) {
-        fView = view;
     }
 }
