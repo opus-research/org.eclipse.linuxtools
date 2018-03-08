@@ -204,7 +204,7 @@ public class RPMBuild {
 		} else {
 			command.add(specFile.getLocation().toString());
 			try {
-				return Utils.runCommand(outStream, specFile.getProject(),
+				return Utils.runCommand(outStream,
 						command.toArray(new String[command.size()]));
 			} catch (IOException e) {
 				throw new CoreException(new Status(IStatus.ERROR,
