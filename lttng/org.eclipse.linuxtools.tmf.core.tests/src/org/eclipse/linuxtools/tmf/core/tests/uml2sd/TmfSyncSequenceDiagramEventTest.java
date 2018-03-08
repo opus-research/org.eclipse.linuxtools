@@ -31,6 +31,7 @@ import org.junit.Test;
 /**
  * TmfSyncSequenceDiagramEventTest
  */
+@SuppressWarnings("nls")
 public class TmfSyncSequenceDiagramEventTest {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;

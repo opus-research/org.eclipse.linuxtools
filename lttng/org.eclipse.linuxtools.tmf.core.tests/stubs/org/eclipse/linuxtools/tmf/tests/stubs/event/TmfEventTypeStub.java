@@ -17,8 +17,10 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 
 /**
  * <b><u>TmfEventTypeStub</u></b>
+ * <p>
+ * TODO: Implement me. Please.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfEventTypeStub extends TmfEventType {
 
     private static final ITmfEventField FIELD_1 = new TmfEventField("Field1", null);

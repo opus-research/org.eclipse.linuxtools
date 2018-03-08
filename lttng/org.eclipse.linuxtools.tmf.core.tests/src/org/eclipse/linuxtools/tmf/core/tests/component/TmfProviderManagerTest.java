@@ -28,6 +28,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfProviderManager class.
  */
+@SuppressWarnings("nls")
 public class TmfProviderManagerTest {
 
     // ------------------------------------------------------------------------

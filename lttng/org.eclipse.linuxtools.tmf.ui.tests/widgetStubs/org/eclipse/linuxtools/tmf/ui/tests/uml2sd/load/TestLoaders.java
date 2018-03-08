@@ -61,7 +61,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     private Frame savedFrame = null;
 
     public TestLoaders() {
-        this("");
+        this(""); //$NON-NLS-1$
     }
 
     @SuppressWarnings("unused")
@@ -102,6 +102,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         createFrame();
     }
 
+    @SuppressWarnings("nls")
     private void createFrame() {
         Frame testFrame = new Frame();
         if (page == 1) {
@@ -385,6 +386,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         return null;
     }
 
+    @SuppressWarnings("nls")
     @Override
     public String getTitleString() {
         return "Test Loader";
@@ -446,6 +448,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             img = img_;
         }
 
+        @SuppressWarnings("nls")
         public Image getResourceImage(String _name) {
             ImageDescriptor imgage;
             try {

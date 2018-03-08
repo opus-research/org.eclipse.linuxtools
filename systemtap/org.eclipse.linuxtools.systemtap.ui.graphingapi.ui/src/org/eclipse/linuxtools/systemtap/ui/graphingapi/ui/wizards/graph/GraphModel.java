@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.graph;
 
-import java.util.Arrays;
-
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
 
@@ -71,7 +69,7 @@ public class GraphModel {
 	}
 
 	public void setYSeries(int[] y) {
-		graph.ySeries = Arrays.copyOf(y, y.length);
+		graph.ySeries = y;
 	}
 
 	public boolean isGraphSet() {

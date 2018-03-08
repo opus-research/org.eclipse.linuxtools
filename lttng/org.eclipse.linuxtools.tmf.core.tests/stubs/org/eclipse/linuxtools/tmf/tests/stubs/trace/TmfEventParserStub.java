@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfEventParserStub implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
