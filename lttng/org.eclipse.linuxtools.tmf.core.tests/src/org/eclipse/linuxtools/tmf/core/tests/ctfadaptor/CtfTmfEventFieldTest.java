@@ -192,6 +192,6 @@ public class CtfTmfEventFieldTest {
     public void testParseField_variant() {
         Definition fieldDef = fixture.lookupDefinition(VARIANT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
-        assertEquals("test=float=9.551467814359616E-38", result.toString());
+        assertEquals("float=9.551467814359616E-38", result.toString());
     }
 }
