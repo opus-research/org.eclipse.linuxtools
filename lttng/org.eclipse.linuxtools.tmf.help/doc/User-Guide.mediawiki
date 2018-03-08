@@ -952,15 +952,338 @@ In some case it might be necessary to change the implementation of the analysis 
 === Downloading the Reference Plug-in ===
 To download the reference plug-in that demonstrates the reference loader, use the following link: [http://wiki.eclipse.org/images/d/d3/ReferencePlugin.zip Reference Plug-in]. Just extract the zip file and import the extracted Eclipse plug-in (plug-in name: ''org.eclipse.linuxtools.tmf.reference.ui'') to your Eclipse workspace. <br>
 
+
+
+=Implementing a New Trace Type=
+
+The framework can easily be extended to support more trace types. To make a new tracetype, one must define the following items:
+
+* The event type
+
+* The trace reader
+
+* The trace context
+
+* The trace location
+
+* (Optional but recommended) Associations in TMF.UI
+
+The '''event type''' must be an ''ITmfEvent''. It can be a ''TmfEvent''. The event type must contain all the data of an event. The '''trace reader''' must be of an ''ITmfTrace'' type. The ''TmfTrace'' class will supply many background operations so that the reader only needs to implement certain functions. The '''trace context''' can be seen as a thread context. This should contain the information required to go to a certain event in a given trace. It can be a timestamp, a rank, a file position, or any other element. The '''trace location''' is an element that is cloned often to store checkpoints. It must be able to rebuild a context. Finally the associations in TMF.UI are to be able to associate a given trace, non-programmatically to a tracetype.
+
+==An Example: Nexus-lite parser==
+
+===Description of the file===
+
+This is a very small subset of the nexus trace format, with some changes to make it easier to read. There is one file. This file starts with 64 Strings containing the event names, then an arbitrarily large number of events. The events are each 64 bits long. the first 32 are the timestamp in microseconds, the second 32 are split into 6 bits for the event type, and 26 for the data payload.
+
+<pre>
+
+“Startup”, “Stop”, “Load”, “Add”,  … , “reserved”,
+
+</pre>
+
+then there will be the events in this format
+
+{|style="text-align: center"; width="85%"
+|colspan="3"|'''Nexus event format'''
+|-
+|style="width: 50%; background-color:#ccffff"|Timestamp (32 bits)
+|style="width: 10%; background-color:#ffccff"|Type (6 bits)
+|style="width: 40%; background-color:#ffffcc"|Payload (26 bits)
+|-
+|style="background-color:#ffcccc" colspan="3"|64 bits
+|}
+
+all events will be the same size (64 bits).
+
+===Trace Event===
+
+The '''TmfEvent''' type will work for this example. No code required.
+
+===Trace Reader===
+
+The trace reader will extend a '''TmfTrace''' type.
+
+It will need to implement:
+
+* validate (is the trace format valid?)
+
+* init (startup)
+
+* seek (go to a position in the trace)
+
+* readNext (read the next element in the trace)
+
+Here is an example implementation of the Nexus Trace file
+
+<pre>
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
+package com.example.nexuslite;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+
+/**
+ * Nexus trace type
+ *
+ * @author Matthew Khouzam
+ * @since 2.0
+ */
+public class NexusTrace extends TmfTrace implements ITmfEventParser {
+
+    private static final int CHUNK_SIZE = 65536;
+    private static final int EVENT_SIZE = 8;
+
+    TmfLongLocation fCurrent;
+
+    private long fSize;
+    private long fNbEvents;
+    private long fOffset;
+    private File fFile;
+    private String[] fEventTypes;
+    private TmfEvent fCurrentEvent;
+    private FileChannel fFileChannel;
+    private MappedByteBuffer fMappedByteBuffer;
+
+    @Override
+    public IStatus validate(IProject project, String path) {
+        File f = new File(path);
+        if (!f.exists()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist"); //$NON-NLS-1$
+        }
+        if (!f.isFile()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, path + " is not a file"); //$NON-NLS-1$
+        }
+        return Status.OK_STATUS;
+    }
+
+    @Override
+    public ITmfLocation getCurrentLocation() {
+        return fCurrent;
+    }
+
+    @Override
+    public void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException {
+        super.initTrace(resource, path, type);
+        fFile = new File(path);
+        fSize = fFile.length();
+        String header = new String();
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new FileReader(fFile));
+            header = br.readLine();
+            br.close();
+        } catch (IOException e) {
+        }
+        fOffset = header.length() + 1;
+        fNbEvents = (fSize - fOffset) / EVENT_SIZE;
+        fEventTypes = header.split(",", 64); // 64 values of types according to //$NON-NLS-1$
+                                            // the 'spec'
+        try {
+            fFileChannel = new FileInputStream(fFile).getChannel();
+            seek(0);
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        }
+    }
+
+    @Override
+    public double getLocationRatio(ITmfLocation location) {
+        return ((TmfLongLocation) location).getLocationInfo().doubleValue() / fNbEvents;
+    }
+
+    @Override
+    public ITmfContext seekEvent(ITmfLocation location) {
+        TmfLongLocation nl = (TmfLongLocation) location;
+        if (location == null) {
+            nl = new TmfLongLocation(0L);
+        }
+        try {
+            seek(nl.getLocationInfo());
+        } catch (IOException e) {
+        }
+        return new TmfContext(nl, nl.getLocationInfo());
+    }
+
+    @Override
+    public ITmfContext seekEvent(double ratio) {
+        long rank = (long) (ratio * fNbEvents);
+        try {
+            seek(rank);
+        } catch (IOException e) {
+        }
+        return new TmfContext(new TmfLongLocation(rank), rank);
+    }
+
+    private void seek(long rank) throws IOException {
+        final long position = fOffset + rank * EVENT_SIZE;
+        int size = Math.min((int) (fFileChannel.size() - position), CHUNK_SIZE);
+        fMappedByteBuffer = fFileChannel.map(MapMode.READ_ONLY, position, size);
+    }
+
+    @Override
+    protected void processEvent(ITmfEvent event) {
+    }
+
+    @Override
+    public synchronized long getNbEvents() {
+        return fNbEvents;
+    }
+
+    @Override
+    public synchronized ITmfEvent getNext(ITmfContext context) {
+        TmfEvent event = null;
+        long ts = -1;
+        int type = -1;
+        int payload = -1;
+        long pos = context.getRank();
+        if (pos < getNbEvents()) {
+            try {
+                // if we are approaching the limit size, move to a new window
+                if (fMappedByteBuffer.position() + EVENT_SIZE > fMappedByteBuffer.limit()) {
+                    seek(context.getRank());
+                }
+                // the trace format, is 32 bits for the time, 6 for the event
+                // type,
+                // 26 for the data.
+                // all the 0x00 stuff are masks.
+                ts = 0x00000000ffffffffL & fMappedByteBuffer.getInt();
+                long data = 0x00000000ffffffffL & fMappedByteBuffer.getInt();
+                type = (int) (data >> 26) & (0x03f);
+                payload = (int) (data & 0x003FFFFFFL);
+                // the time is in microseconds.
+                TmfTimestamp timestamp = new TmfTimestamp(ts, -6);
+                final String title = fEventTypes[type];
+                // put the value in a field
+                final TmfEventField tmfEventField = new TmfEventField("value", payload, null); //$NON-NLS-1$
+                // the field must be in an array
+                final TmfEventField[] events = new TmfEventField[1];
+                events[0] = tmfEventField;
+                final TmfEventField content = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, null, events);
+                // create the event
+                event = new TmfEvent(this, pos, timestamp, null, new TmfEventType(title, title, null), content, null);
+                fCurrent = new TmfLongLocation(pos);
+            } catch (IOException e) {
+            }
+        }
+        if (event != null) {
+            updateAttributes(context, event.getTimestamp());
+            context.setLocation(getCurrentLocation());
+            context.increaseRank();
+            processEvent(event);
+        }
+        fCurrentEvent = event;
+        return event;
+    }
+
+    @Override
+    public ITmfEvent parseEvent(ITmfContext context) {
+        return fCurrentEvent;
+    }
+
+}
+</pre>
+
+In this example the '''validate''' function checks if the file exists and is not a directory.
+
+The '''init''' function will read the event names, and find where the data starts. After this, the number of events is known, and since each event is 8 bytes long according to the specs. the seek is then trivial.
+
+The '''seek''' here will just reset the reader to the right location.
+
+The '''getNext''' will read the next event. Here the event is parsed. Since it is parsed here, '''parseEvent''' needs only return the current event. The sequence of actions necessary are populate the event, update the current location, call '''updateAttributes''', update the context then return the event.
+
+===Trace Context===
+
+The trace context will be a '''TmfContext'''.
+
+===Trace Location===
+
+The trace location will be a long, representing the offset in the file. The '''TmfLongLocation''' will be the used, once again, no code is required.
+
+===Other Associations (plugins.xml)===
+
+The '''plugins.xml''' file in the ui package needs to be updated if one wants users to access the given event type. It can be updated in the eclipse editor. In this case, add in the '''traceType''' extension a new type. To do that, '''right click''' on the extension then in the context menu, go to '''new >''', '''Type'''.
+[[Image:images/TraceAddExtension.png]]
+
+
+The '''id''' is the unique identifier used to refer to the trace.
+
+The '''name''' is the field that shall be displayed when a trace type is selected.
+
+The '''trace type''' is the canonical path refering to the class of the trace.
+
+The '''event type''' is the canonical path refering to the class of the events of a given trace.
+
+The  '''category''' is the container in which this trace type will be stored.
+
+The '''icon''' is the image to associate with that trace type.
+
+For those with an aversion to graphical editor, or an affinity to edit raw XML, the changes are stored in the '''extension''' field with '''tracetype''', add a type for the trace.
+<pre>
+<type
+    category= the category of the trace type
+    event_type=class name of the event, in this case "org.eclipse.linuxtools.tmf.core.event.TmfEvent"
+    icon="icon file"
+    id="unique id"
+    name="trace type name"
+    trace_type=class name, like "com.example.nexuslite.NexusTrace">
+</type></pre>
+
+
+==Best Practices==
+
+* Do not load the whole trace in RAM, it will limit the size of the trace that can be read.
+* Reuse as much code as possible, it makes the trace format much easier to maintain.
+* Use eclipse's editor instead of editing the xml directly.
+* Don't forget to export your trace type in manifest.mf.
+
+
 =CTF Parser=
 
-== CTF Format == 
-CTF is a format used to store traces. It is self defining, binary and made to be easy to write to. 
+== CTF Format ==
+CTF is a format used to store traces. It is self defining, binary and made to be easy to write to.
 Before going further, the full specification of the CTF file format can be found at http://www.efficios.com/ .
 
-For the purpose of the reader some basic description will be given. A CTF trace typically is made of several files all in the same folder. 
+For the purpose of the reader some basic description will be given. A CTF trace typically is made of several files all in the same folder.
 
-These files can be split into two types : 
+These files can be split into two types :
 * Metadata
 * Event streams
  
