@@ -83,7 +83,7 @@ import org.osgi.framework.Bundle;
  * @author Patrick Tasse
  * @since 2.0
  */
-public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReusableEditor, IPropertyListener, IResourceChangeListener, ISelectionProvider, ISelectionChangedListener, IPartListener, IGotoMarker {
+public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReusableEditor, IPropertyListener, IResourceChangeListener, ISelectionProvider, ISelectionChangedListener, IPartListener {
 
     /** ID for this class */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.editors.events"; //$NON-NLS-1$
@@ -94,7 +94,6 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     private Composite fParent;
     private ListenerList fSelectionChangedListeners = new ListenerList();
     private boolean fTraceSelected;
-    private IMarker fPendingGotoMarker;
 
     @Override
     public void doSave(final IProgressMonitor monitor) {
@@ -222,10 +221,6 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                 fEventsTable.addSelectionChangedListener(this);
                 fEventsTable.setTrace(fTrace, true);
                 fEventsTable.refreshBookmarks(fFile);
-                if (fPendingGotoMarker != null) {
-                    fEventsTable.gotoMarker(fPendingGotoMarker);
-                    fPendingGotoMarker = null;
-                }
 
                 /* ensure start time is set */
                 final ITmfContext context = fTrace.seekEvent(0);
@@ -461,26 +456,11 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     @Override
     public Object getAdapter(final Class adapter) {
         if (IGotoMarker.class.equals(adapter)) {
-            if (fTrace == null || fEventsTable == null) {
-                return this;
-            }
             return fEventsTable;
         } else if (IPropertySheetPage.class.equals(adapter)) {
             return new UnsortedPropertySheetPage();
         }
         return super.getAdapter(adapter);
-    }
-
-    /**
-     * @since 2.1
-     */
-    @Override
-    public void gotoMarker(IMarker marker) {
-        if (fTrace == null || fEventsTable == null) {
-            fPendingGotoMarker = marker;
-        } else {
-            fEventsTable.gotoMarker(marker);
-        }
     }
 
     @Override
