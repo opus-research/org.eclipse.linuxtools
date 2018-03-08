@@ -85,7 +85,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     private final List<String> fTraceTypesToScan = new ArrayList<String>();
     private final Set<String> fParentFilesToScan = new HashSet<String>();
 
-    private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider(fTraceTypesToScan, fParentFilesToScan);
+    private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider();
 
     private final Map<TraceValidationHelper, Boolean> fResults = new HashMap<TraceValidationHelper, Boolean>();
     private boolean fOverwrite = true;
@@ -236,8 +236,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             try {
                 if (fLinked) {
                     createLink(fTargetFolder, Path.fromOSString(traceToImport.getFile().getAbsolutePath()), traceToImport.getName());
-                    setTraceType(traceToImport);
-                    success = true;
+                    success = setTraceType(traceToImport).isOK();
                 }
                 else {
                     List<File> subList = new ArrayList<File>();
@@ -549,7 +548,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             updateScanQueue(pm, filesToScan, added);
         } catch (InterruptedException e) {
         }
-
     }
 
     /*
@@ -616,14 +614,12 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         fTracesToScan.put(tv);
                         monitor.subTask(tv.getTraceToScan());
                         if (monitor.isCanceled()) {
-                            ((ImportTraceWizardScanPage) fScanPage).refresh();
                             return CANCEL_STATUS;
                         }
                     }
                 }
             }
         }
-        ((ImportTraceWizardScanPage) fScanPage).refresh();
         return Status.OK_STATUS;
     }
 
@@ -660,7 +656,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
+                    if (retVal.matches(IStatus.CANCEL)) {
                         return retVal;
                     }
                 }
