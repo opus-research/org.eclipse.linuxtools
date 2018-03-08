@@ -101,7 +101,7 @@ public class TraceTypeHelper {
      * @return an object of the trace type
      * @since 2.1
      */
-    public ITmfTrace getTrace(){
+    public ITmfTrace getTrace() {
         return fTrace;
     }
 
@@ -113,16 +113,6 @@ public class TraceTypeHelper {
     private static boolean customValidate(String path) {
         File f = new File(path);
         return f.exists() && f.isFile();
-    }
-
-    /**
-     * Get the class associated with this trace type
-     *
-     * @return The trace class
-     * @since 3.0
-     */
-    public Class<? extends ITmfTrace> getTraceClass() {
-        return fTrace.getClass();
     }
 
     @Override

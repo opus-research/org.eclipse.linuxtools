@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,7 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Patrick Tasse - Updated for removal of context clone
+ *   Geneviève Bastien - Added the createTimestamp function
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -347,7 +348,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param eventName
      *            The name of the event to check
      * @return Whether the event is in the metadata or not
-     * @since 3.0
+     * @since 2.1
      */
     public boolean hasEvent(final String eventName) {
         Map<Long, IEventDeclaration> events = fTrace.getEvents(0L);
@@ -367,7 +368,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param names
      *            The array of events to check for
      * @return Whether all events are in the metadata
-     * @since 3.0
+     * @since 2.1
      */
     public boolean hasAllEvents(String[] names) {
         for (String name : names) {
@@ -385,7 +386,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param names
      *            The array of event names of check for
      * @return Whether one of the event is present in trace metadata
-     * @since 3.0
+     * @since 2.1
      */
     public boolean hasAtLeastOneOfEvents(String[] names) {
         for (String name : names) {
@@ -433,5 +434,17 @@ public class CtfTmfTrace extends TmfTrace
      */
     public CtfIterator createIterator() {
         return new CtfIterator(this);
+    }
+
+    // ------------------------------------------------------------------------
+    // Timestamp transformation functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public CtfTmfTimestamp createTimestamp(long ts) {
+        return new CtfTmfTimestamp(getTimestampTransform().transform(ts));
     }
 }

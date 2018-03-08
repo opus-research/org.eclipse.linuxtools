@@ -20,19 +20,15 @@ package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
@@ -42,8 +38,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlEvent;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
@@ -204,7 +198,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     public void refreshTraceType() {
         try {
             fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
-            refreshAnalysis();
         } catch (CoreException e) {
             Activator.getDefault().logError("Error refreshing trace type pesistent property for trace " + getName(), e); //$NON-NLS-1$
         }
@@ -585,103 +578,17 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     }
 
     /**
-     * Get the instantiated trace associated with this element. If it is not
-     * opened, the trace is opened, and the thread waits until it is available
-     * or after a timeout.
+     * Get the instantiated trace associated with this element.
      *
      * @return The instantiated trace or null if trace is not (yet) available
-     * @throws RuntimeException
-     *             exception from the waitTillOpened call
      * @since 2.1
      */
-    public ITmfTrace getTrace() throws RuntimeException {
+    public ITmfTrace getTrace() {
         for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
             if (trace.getResource().equals(getResource())) {
                 return trace;
             }
         }
-        /* The trace is not opened, let's open it */
-        TmfTraceElement elToOpen = getElementUnderTraceFolder();
-        TmfOpenTraceHelper.openTraceFromElement(elToOpen);
-        if (TmfOpenTraceHelper.waitTillOpened(elToOpen)) {
-            for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
-                if (trace.getResource().equals(getResource())) {
-                    return trace;
-                }
-            }
-        }
         return null;
     }
-
-    private void refreshAnalysis() {
-        List<TmfAnalysisElement> list = getAvailableAnalysis();
-
-        /* Remove children */
-        getChildren().clear();
-
-        /* Add the children again */
-        for (TmfAnalysisElement module : list) {
-            addChild(module);
-        }
-
-    }
-
-    /**
-     * Get the list of analysis elements
-     *
-     * @return Array of analysis elements
-     * @since 3.0
-     */
-    public List<TmfAnalysisElement> getAvailableAnalysis() {
-        List<TmfAnalysisElement> list = new ArrayList<TmfAnalysisElement>();
-
-        TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(getTraceType());
-
-        Class<? extends ITmfTrace> traceClass = null;
-
-        if (helper == null && fTraceTypeId != null) {
-            if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
-                for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                    if (fTraceTypeId.equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
-                        traceClass = CustomTxtTrace.class;
-                    }
-                }
-            }
-            if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
-                for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                    if (fTraceTypeId.equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
-                        traceClass = CustomTxtTrace.class;
-                    }
-                }
-            }
-        } else if (helper != null) {
-            traceClass = helper.getTraceClass();
-        }
-
-        if (traceClass == null) {
-            return list;
-        }
-
-        /** Get the base path to put the resource to */
-        IPath path = getProject().getTracesFolder().getPath();
-        if (fResource instanceof IFolder) {
-            IFolder folder = (IFolder) fResource;
-            path = folder.getFullPath();
-        } else if (fResource instanceof IFile) {
-            IFile file = (IFile) fResource;
-            path = path.append(file.getName());
-        }
-
-        for (IAnalysisModule module : TmfAnalysisManager.getAnalysisModules(traceClass).values()) {
-
-            /** No need for the resource to exist, nothing will be done with it */
-            IFolder newresource = ResourcesPlugin.getWorkspace().getRoot().getFolder(path.append(module.getId()));
-
-            TmfAnalysisElement analysis = new TmfAnalysisElement(module.getName(), newresource, this, module.getId(), module);
-            list.add(analysis);
-        }
-
-        return list;
-    }
-
 }

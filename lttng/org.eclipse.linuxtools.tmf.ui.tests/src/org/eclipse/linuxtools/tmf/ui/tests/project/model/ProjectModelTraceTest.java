@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.tests.project.model;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +22,8 @@ import static org.junit.Assume.assumeTrue;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.junit.After;
@@ -41,7 +44,7 @@ public class ProjectModelTraceTest {
     public void setUp() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            fixture = ProjectModelTestObjects.getFilledProject();
+            fixture = ProjectModelTestData.getFilledProject();
         } catch (CoreException e) {
             fail(e.getMessage());
         }
@@ -53,7 +56,7 @@ public class ProjectModelTraceTest {
     @After
     public void cleanUp() {
         try {
-            ProjectModelTestObjects.deleteProject(fixture);
+            ProjectModelTestData.deleteProject(fixture);
         } catch (CoreException e) {
             fail(e.getMessage());
         }
@@ -69,44 +72,34 @@ public class ProjectModelTraceTest {
         final TmfTraceElement traceElement = fixture.getTracesFolder().getTraces().get(0);
 
         /*
-         * Get the trace from the element, from main thread should throw an
-         * exception
+         * Get the trace from the element, it is not opened yet, should be null
          */
-        try {
-            traceElement.getTrace();
-            fail("There should be an exception because of thread access");
-        } catch (RuntimeException e) {
-            assertTrue(true);
-        }
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                /*
-                 * This will be blocked because the main thread is unavailable,
-                 * but at least it should return
-                 */
-                ITmfTrace trace = traceElement.getTrace();
-                assertNull(trace);
-            }
-        };
-        thread.start();
-        try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
-            fail(e.getMessage());
-        }
+        ITmfTrace trace = traceElement.getTrace();
+        assertNull(trace);
+
+        TmfOpenTraceHelper.openTraceFromElement(traceElement);
+
+        /* Give the trace a chance to open */
+        ProjectModelTestData.delayThread(5000);
+
+        trace = traceElement.getTrace();
+        assertNotNull(trace);
 
         /*
-         * TODO the open trace needs the display (main) thread which is occupied
-         * by this code! Can't do much else :(
+         * Open the trace from project, then get from element, both should be
+         * the exact same element as the active trace
          */
-        // /* Open the trace from project, then get from element, both should be
-        // the exact same element as the active trace */
-        // TmfOpenTraceHelper.openTraceFromElement(traceElement);
-        //
-        // ITmfTrace trace2 = TmfTraceManager.getInstance().getActiveTrace();
-        // assertFalse(trace2 == trace);
-        // trace = traceElement.getTrace();
-        // assertTrue(trace2 == trace);
+        TmfOpenTraceHelper.openTraceFromElement(traceElement);
+        ProjectModelTestData.delayThread(5000);
+
+        ITmfTrace trace2 = TmfTraceManager.getInstance().getActiveTrace();
+
+        /* The trace was reopened, it is not the same as before */
+        assertFalse(trace2 == trace);
+
+        /* Here, the getTrace() should return the same as active trace */
+        trace = traceElement.getTrace();
+        assertTrue(trace2 == trace);
     }
+
 }

@@ -18,18 +18,11 @@ import org.eclipse.osgi.util.NLS;
  * Message strings for TMF model handling.
  *
  * @author Jean-Christian Kouamé
- * @since 3.0
+ * @since 2.1
  */
-@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.model.messages"; //$NON-NLS-1$
-
-    /** Instantiate analysis message box title */
-    public static String TmfAnalysisElement_InstantiateAnalysis;
-
-    /** The message when analysis view is not available */
-    public static String TmfTraceAnalysis_ViewUnavailable;
 
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
@@ -68,10 +61,6 @@ public class Messages extends NLS {
     public static String TmfOpenTraceHelper_InitError;
     /** Error */
     public static String TmfOpenTraceHelper_Error;
-
-    public static String TmfTraceElement_Title;
-    public static String TmfTraceElement_NoTraceType;
-    public static String TmfTraceElement_InitError;
 
     static {
         // initialize resource bundle
