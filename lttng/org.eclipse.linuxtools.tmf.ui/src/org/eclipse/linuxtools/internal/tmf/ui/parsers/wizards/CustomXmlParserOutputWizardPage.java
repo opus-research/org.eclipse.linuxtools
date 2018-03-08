@@ -15,7 +15,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefiniti
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.SWT;
@@ -206,8 +205,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             writer.write(wizard.inputPage.getInputText());
             writer.close();
 
-            final CustomXmlTrace trace = new CustomXmlTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
-            trace.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, false);
+            final ITmfTrace trace = new CustomXmlTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
             previewTable.dispose();
             previewTable = new CustomEventsTable(definition, tableContainer, CACHE_SIZE);
             previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
