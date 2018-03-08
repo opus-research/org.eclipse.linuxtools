@@ -462,8 +462,7 @@ public final class TmfTraceType {
      */
     public boolean validate(String traceTypeName, String fileName) {
         if (traceTypeName != null && !traceTypeName.isEmpty()) {
-            final TraceTypeHelper traceTypeHelper = fTraceTypes.get(traceTypeName);
-            if (!traceTypeHelper.validate(fileName)) {
+            if (!fTraceTypes.get(traceTypeName).validate(fileName)) {
                 return false;
             }
         }
@@ -566,8 +565,8 @@ public final class TmfTraceType {
     }
 
     /**
-     * Is the trace type id a custom (user-defined) trace type. These are the
-     * traces like : text and xml defined by the custom trace wizard.
+     * Is the trace type id a custom (user-defined) trace type. These are the traces
+     * like : text and xml defined by the custom trace wizard.
      *
      * @param traceTypeId
      *            the trace type id
@@ -607,26 +606,21 @@ public final class TmfTraceType {
         return traceTypeId;
     }
 
-    TraceTypeHelper selectTraceType(String path, Shell shell) throws TmfTraceImportException {
-        return selectTraceType(path, shell, null);
-    }
-
     /**
-     * This member figures out the trace type of a given file. It will prompt
-     * the user if it needs more information to properly pick the trace type.
+     * Select a trace file for
      *
      * @param path
      *            The path of file to import
      * @param shell
      *            a shell to display the message to. If it is null, it is
      *            assumed to be cancelled.
-     * @param traceTypeHint the ID of a trace (like "o.e.l.specifictrace" )
-     * @return null if the request is cancelled or a TraceTypeHelper if it passes.
+     * @return null if the request is cancelled or a string in the form
+     *         "category:type" if it passes.
      * @throws TmfTraceImportException
      *             if the traces don't match or there are errors in the trace
      *             file
      */
-    TraceTypeHelper selectTraceType(String path, Shell shell, String traceTypeHint) throws TmfTraceImportException {
+    TraceTypeHelper selectTraceType(String path, Shell shell) throws TmfTraceImportException {
         List<TraceTypeHelper> validCandidates = new ArrayList<TraceTypeHelper>();
         getCustomTraceTypes();
         final Set<String> traceTypes = fTraceTypes.keySet();
@@ -636,29 +630,23 @@ public final class TmfTraceType {
             }
         }
 
-        TraceTypeHelper traceTypeToSet = null;
+        TraceTypeHelper traceTypeToSet;
         if (validCandidates.isEmpty()) {
             final String errorMsg = Messages.TmfOpenTraceHelper_NoTraceTypeMatch + path;
             throw new TmfTraceImportException(errorMsg);
         } else if (validCandidates.size() != 1) {
             List<TraceTypeHelper> reducedCandidates = reduce(validCandidates);
-            for (TraceTypeHelper tth : reducedCandidates) {
-                if (tth.getCanonicalName().equals(traceTypeHint)) {
-                    traceTypeToSet = tth;
+            if (reducedCandidates.size() == 0) {
+                throw new TmfTraceImportException(Messages.TmfOpenTraceHelper_ReduceError);
+            } else if (reducedCandidates.size() == 1) {
+                traceTypeToSet = reducedCandidates.get(0);
+            } else {
+                if (shell == null) {
+                    return null;
                 }
+                traceTypeToSet = getTraceTypeToSet(reducedCandidates, shell);
             }
-            if (traceTypeToSet == null) {
-                if (reducedCandidates.size() == 0) {
-                    throw new TmfTraceImportException(Messages.TmfOpenTraceHelper_ReduceError);
-                } else if (reducedCandidates.size() == 1) {
-                    traceTypeToSet = reducedCandidates.get(0);
-                } else {
-                    if (shell == null) {
-                        return null;
-                    }
-                    traceTypeToSet = getTraceTypeToSet(reducedCandidates, shell);
-                }
-            }
+
         } else {
             traceTypeToSet = validCandidates.get(0);
         }
@@ -700,7 +688,6 @@ public final class TmfTraceType {
     private TraceTypeHelper getTraceTypeToSet(List<TraceTypeHelper> candidates, Shell shell) {
         final Map<String, String> names = new HashMap<String, String>();
         Shell shellToShow = new Shell(shell);
-        shellToShow.setText(Messages.TmfTraceType_SelectTraceType);
         final String candidatesToSet[] = new String[1];
         for (TraceTypeHelper candidate : candidates) {
             Button b = new Button(shellToShow, SWT.RADIO);
