@@ -26,14 +26,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
-import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.util.SafeRunnable;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTable;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
@@ -50,10 +43,6 @@ import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ide.IGotoMarker;
-import org.eclipse.ui.views.properties.IPropertySheetEntry;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
-import org.eclipse.ui.views.properties.PropertySheetPage;
-import org.eclipse.ui.views.properties.PropertySheetSorter;
 import org.osgi.framework.Bundle;
 
 /**
@@ -72,9 +61,8 @@ import org.osgi.framework.Bundle;
  * @version 1.0
  * @author Francois Chouinard
  * @author Patrick Tasse
- * @since 2.0
  */
-public class TmfEventsView extends TmfView implements IResourceChangeListener, ISelectionProvider, ISelectionChangedListener {
+public class TmfEventsView extends TmfView implements IResourceChangeListener {
 
     /** Event View's ID */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.events"; //$NON-NLS-1$
@@ -84,7 +72,6 @@ public class TmfEventsView extends TmfView implements IResourceChangeListener, I
     private static final int DEFAULT_CACHE_SIZE = 100;
     private String fTitlePrefix;
     private Composite fParent;
-    private ListenerList fSelectionChangedListeners = new ListenerList();
 
 	// ------------------------------------------------------------------------
     // Constructor
@@ -121,12 +108,7 @@ public class TmfEventsView extends TmfView implements IResourceChangeListener, I
             experimentSelected(new TmfExperimentSelectedSignal(this, experiment));
         } else {
             fEventsTable = createEventsTable(parent);
-            fEventsTable.addSelectionChangedListener(this);
         }
-        // we need to wrap the ISelectionProvider interface in the view because
-        // the events table can be replaced later while the selection changed listener
-        // is only added once by the platform to the selection provider set here
-        getSite().setSelectionProvider(this);
     }
 
     @Override
@@ -226,19 +208,6 @@ public class TmfEventsView extends TmfView implements IResourceChangeListener, I
     public Object getAdapter(Class adapter) {
         if (IGotoMarker.class.equals(adapter)) {
             return fEventsTable;
-        } else if (IPropertySheetPage.class.equals(adapter)) {
-            // Override for unsorted property sheet page
-            return new PropertySheetPage() {
-                @Override
-                public void createControl(Composite parent) {
-                    super.createControl(parent);
-                    setSorter(new PropertySheetSorter() {
-                        @Override
-                        public void sort(IPropertySheetEntry[] entries) {
-                        }
-                    });
-                }
-            };
         }
         return super.getAdapter(adapter);
     }
@@ -250,95 +219,6 @@ public class TmfEventsView extends TmfView implements IResourceChangeListener, I
 	@SuppressWarnings("nls")
 	public String toString() {
     	return "[TmfEventsView]";
-    }
-
-    // ------------------------------------------------------------------------
-    // ISelectionProvider
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void addSelectionChangedListener(ISelectionChangedListener listener) {
-        fSelectionChangedListeners.add(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ISelection getSelection() {
-        if (fEventsTable == null) {
-            return StructuredSelection.EMPTY;
-        }
-        return fEventsTable.getSelection();
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-        fSelectionChangedListeners.remove(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void setSelection(ISelection selection) {
-        // not implemented
-    }
-
-    /**
-     * Notifies any selection changed listeners that the viewer's selection has changed.
-     * Only listeners registered at the time this method is called are notified.
-     *
-     * @param event a selection changed event
-     *
-     * @see ISelectionChangedListener#selectionChanged
-     * @since 2.0
-     */
-    protected void fireSelectionChanged(final SelectionChangedEvent event) {
-        Object[] listeners = fSelectionChangedListeners.getListeners();
-        for (int i = 0; i < listeners.length; ++i) {
-            final ISelectionChangedListener l = (ISelectionChangedListener) listeners[i];
-            SafeRunnable.run(new SafeRunnable() {
-                @Override
-                public void run() {
-                    l.selectionChanged(event);
-                }
-            });
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // ISelectionChangedListener
-    // ------------------------------------------------------------------------
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void selectionChanged(SelectionChangedEvent event) {
-        fireSelectionChanged(event);
     }
 
     // ------------------------------------------------------------------------
@@ -362,7 +242,6 @@ public class TmfEventsView extends TmfView implements IResourceChangeListener, I
                 fEventsTable.dispose();
             }
             fEventsTable = createEventsTable(fParent);
-            fEventsTable.addSelectionChangedListener(this);
             fEventsTable.setTrace(fExperiment, false);
             fEventsTable.refreshBookmarks(fExperiment.getBookmarksFile());
             if (fExperiment.getBookmarksFile() != null) {
