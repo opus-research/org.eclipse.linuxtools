@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Scanner;
 
+import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -36,7 +37,8 @@ public class WrongDeallocationResolutionTest extends AbstractValgrindTest {
 
 	private final String EMPTY_STRING = ""; //$NON-NLS-1$
 	private final String VALGRIND_MARKER_TYPE = "org.eclipse.linuxtools.valgrind.launch.marker"; //$NON-NLS-1$
-	private Document document;
+	private static Document document;
+	private static ICProject proj;
 	private IMarker[] markers;
 
 	@Override
@@ -139,7 +141,8 @@ public class WrongDeallocationResolutionTest extends AbstractValgrindTest {
 	}
 
 	private void createResolutionAndApply(IMarker marker) throws CoreException {
-		WrongDeallocationResolution resolution = new WrongDeallocationResolution();
+		WrongDeallocationResolution resolution = new WrongDeallocationResolution(
+				marker);
 		assertNotNull(resolution);
 
 		int numMarkersBefore = proj.getProject().findMarkers(
