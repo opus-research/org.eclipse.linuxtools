@@ -12,7 +12,10 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import java.nio.ByteBuffer;
+
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLocation;
 
 /**
@@ -119,6 +122,36 @@ public final class CtfLocation extends TmfLocation {
             return getClass().getSimpleName() + " [INVALID]"; //$NON-NLS-1$
         }
         return super.toString();
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeOut(ByteBuffer bufferOut) {
+        getLocationInfo().serializeOut(bufferOut);
+
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeIn(ByteBuffer bufferIn) {
+        getLocationInfo().serializeIn(bufferIn);
+    }
+
+    /**
+     * Create a new CtfLocation and serialize it in.
+     *
+     * @param bufferIn the buffer to read the CtfLocation from
+     * @return the created CtfLocation
+     * @since 3.0
+     */
+    public static ITmfLocation newAndSerialize(ByteBuffer bufferIn) {
+        CtfLocation c = new CtfLocation(0, 0);
+        c.serializeIn(bufferIn);
+        return c;
     }
 
 }
