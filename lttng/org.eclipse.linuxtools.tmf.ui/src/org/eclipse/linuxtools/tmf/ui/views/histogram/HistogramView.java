@@ -67,6 +67,11 @@ public class HistogramView extends TmfView {
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.histogram"; //$NON-NLS-1$
 
+    /**
+     *  The initial window span (in nanoseconds)
+     */
+    public static final long INITIAL_WINDOW_SPAN = (1L * 100 * 1000 * 1000); // .1sec
+
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -82,7 +87,7 @@ public class HistogramView extends TmfView {
     private long fTraceEndTime;
     private long fWindowStartTime;
     private long fWindowEndTime;
-    private long fWindowSpan;
+    private long fWindowSpan = INITIAL_WINDOW_SPAN;
     private long fCurrentTimestamp;
 
     // Time controls
@@ -420,7 +425,7 @@ public class HistogramView extends TmfView {
         fTraceEndTime = 0L;
         fWindowStartTime = 0L;
         fWindowEndTime = 0L;
-        fWindowSpan = 0L;
+        fWindowSpan = INITIAL_WINDOW_SPAN;
         fCurrentTimestamp = 0L;
 
         // Clear the UI widgets
@@ -456,13 +461,11 @@ public class HistogramView extends TmfView {
         fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
 
         if (drawTimeRangeHistogram) {
-            fCurrentTimestamp = fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+            fCurrentTimestamp = fTraceStartTime;
             fCurrentEventTimeControl.setValue(fCurrentTimestamp);
-            long startTime = fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            long duration = fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue() - startTime;
-            fFullTraceHistogram.setTimeRange(startTime, duration);
-            fTimeRangeHistogram.setTimeRange(startTime, duration);
-            sendTimeRangeRequest(startTime, startTime + duration);
+            fFullTraceHistogram.setTimeRange(fTraceStartTime, INITIAL_WINDOW_SPAN);
+            fTimeRangeHistogram.setTimeRange(fTraceStartTime, INITIAL_WINDOW_SPAN);
+            sendTimeRangeRequest(fTraceStartTime, fTraceStartTime + INITIAL_WINDOW_SPAN);
         }
 
         sendFullRangeRequest(fullRange);
@@ -542,36 +545,33 @@ public class HistogramView extends TmfView {
 
     private void initializeHistograms() {
         TmfTimeRange fullRange = updateTraceTimeRange();
-        long timestamp = fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        long startTime = fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        long duration = fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue() - startTime;
 
         if ((fTimeRangeRequest != null) && !fTimeRangeRequest.isCompleted()) {
             fTimeRangeRequest.cancel();
         }
         fTimeRangeHistogram.clear();
         fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
-        fTimeRangeHistogram.setTimeRange(startTime, duration);
-        fTimeRangeHistogram.setCurrentEvent(timestamp);
+        fTimeRangeHistogram.setTimeRange(fTraceStartTime, INITIAL_WINDOW_SPAN);
+        fTimeRangeHistogram.setCurrentEvent(fTraceStartTime);
 
         if ((fFullTraceRequest != null) && !fFullTraceRequest.isCompleted()) {
             fFullTraceRequest.cancel();
         }
         fFullTraceHistogram.clear();
         fFullTraceHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
-        fFullTraceHistogram.setTimeRange(startTime, duration);
-        fFullTraceHistogram.setCurrentEvent(timestamp);
+        fFullTraceHistogram.setTimeRange(fTraceStartTime, INITIAL_WINDOW_SPAN);
+        fFullTraceHistogram.setCurrentEvent(fTraceStartTime);
 
-        fWindowStartTime = startTime;
-        fWindowSpan = duration;
-        fWindowEndTime = startTime + duration;
+        fWindowStartTime = fTraceStartTime;
+        fWindowSpan = INITIAL_WINDOW_SPAN;
+        fWindowEndTime = fWindowStartTime + fWindowSpan;
 
-        fCurrentEventTimeControl.setValue(timestamp);
+        fCurrentEventTimeControl.setValue(fTraceStartTime);
 
-        fTimeSpanControl.setValue(duration);
+        fTimeSpanControl.setValue(fWindowSpan);
 
         if (!fullRange.equals(TmfTimeRange.NULL_RANGE)) {
-            sendTimeRangeRequest(startTime, startTime + duration);
+            sendTimeRangeRequest(fTraceStartTime, fTraceStartTime + fWindowSpan);
             sendFullRangeRequest(fullRange);
         }
     }
