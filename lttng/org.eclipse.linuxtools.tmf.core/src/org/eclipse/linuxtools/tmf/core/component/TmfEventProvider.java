@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.component;
 
-import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedEventRequest;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
@@ -24,10 +24,12 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 /**
  * An extension of TmfDataProvider timestamped events providers.
  *
+ * @param <T> The provider event type
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
-public abstract class TmfEventProvider extends TmfDataProvider {
+public abstract class TmfEventProvider<T extends ITmfEvent> extends TmfDataProvider<T> {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -41,7 +43,7 @@ public abstract class TmfEventProvider extends TmfDataProvider {
     }
 
     @Override
-    public void init(String name, Class<? extends ITmfEvent> type) {
+    public void init(String name, Class<T> type) {
         super.init(name, type);
     }
 
@@ -53,7 +55,7 @@ public abstract class TmfEventProvider extends TmfDataProvider {
      * @param type
      *            The type of handled events
      */
-   public TmfEventProvider(String name, Class<? extends ITmfEvent> type) {
+   public TmfEventProvider(String name, Class<T> type) {
         super(name, type);
     }
 
@@ -67,7 +69,7 @@ public abstract class TmfEventProvider extends TmfDataProvider {
      * @param queueSize
      *            The size of the queue
      */
-    public TmfEventProvider(String name, Class<? extends ITmfEvent> type, int queueSize) {
+    public TmfEventProvider(String name, Class<T> type, int queueSize) {
         super(name, type, queueSize);
     }
 
@@ -77,7 +79,7 @@ public abstract class TmfEventProvider extends TmfDataProvider {
      * @param other
      *            The other TmfEventProvider to copy
      */
-    public TmfEventProvider(TmfEventProvider other) {
+    public TmfEventProvider(TmfEventProvider<T> other) {
         super(other);
     }
 
@@ -86,25 +88,25 @@ public abstract class TmfEventProvider extends TmfDataProvider {
     // ------------------------------------------------------------------------
 
     @Override
-    public boolean isCompleted(ITmfDataRequest request, ITmfEvent data, int nbRead) {
+    public boolean isCompleted(ITmfDataRequest<T> request, T data, int nbRead) {
         boolean requestCompleted = super.isCompleted(request, data, nbRead);
-        if (!requestCompleted && request instanceof ITmfEventRequest) {
-            ITmfTimestamp endTime = ((ITmfEventRequest) request).getRange().getEndTime();
+        if (!requestCompleted && request instanceof ITmfEventRequest<?>) {
+            ITmfTimestamp endTime = ((ITmfEventRequest<?>) request).getRange().getEndTime();
             return data.getTimestamp().compareTo(endTime, false) > 0;
         }
         return requestCompleted;
     }
 
     @Override
-    protected synchronized void newCoalescedDataRequest(ITmfDataRequest request) {
-        if (request instanceof ITmfEventRequest) {
-            ITmfEventRequest eventRequest = (ITmfEventRequest) request;
-            TmfCoalescedEventRequest coalescedRequest = new TmfCoalescedEventRequest(eventRequest.getDataType(), eventRequest.getRange(),
+    protected synchronized void newCoalescedDataRequest(ITmfDataRequest<T> request) {
+        if (request instanceof ITmfEventRequest<?>) {
+            ITmfEventRequest<T> eventRequest = (ITmfEventRequest<T>) request;
+            TmfCoalescedEventRequest<T> coalescedRequest = new TmfCoalescedEventRequest<T>(eventRequest.getDataType(), eventRequest.getRange(),
                     eventRequest.getIndex(), eventRequest.getNbRequested(), eventRequest.getBlockSize(), eventRequest.getExecType());
             coalescedRequest.addRequest(eventRequest);
-            if (TmfCoreTracer.isRequestTraced()) {
-                TmfCoreTracer.traceRequest(request, "COALESCED with " + coalescedRequest.getRequestId()); //$NON-NLS-1$
-                TmfCoreTracer.traceRequest(coalescedRequest, "now contains " + coalescedRequest.getSubRequestIds()); //$NON-NLS-1$
+            if (Tracer.isRequestTraced()) {
+                Tracer.traceRequest(request, "COALESCED with " + coalescedRequest.getRequestId()); //$NON-NLS-1$
+                Tracer.traceRequest(coalescedRequest, "now contains " + coalescedRequest.getSubRequestIds()); //$NON-NLS-1$
             }
             fPendingCoalescedRequests.add(coalescedRequest);
         } else {
@@ -113,21 +115,21 @@ public abstract class TmfEventProvider extends TmfDataProvider {
     }
 
     @Override
-    protected void queueBackgroundRequest(final ITmfDataRequest request, final int blockSize, final boolean indexing) {
+    protected void queueBackgroundRequest(final ITmfDataRequest<T> request, final int blockSize, final boolean indexing) {
 
         if (! (request instanceof ITmfEventRequest)) {
             super.queueBackgroundRequest(request, blockSize, indexing);
             return;
         }
 
-        final TmfDataProvider provider = this;
+        final TmfDataProvider<T> provider = this;
 
         Thread thread = new Thread() {
             @Override
             public void run() {
 
-                if (TmfCoreTracer.isRequestTraced()) {
-                    TmfCoreTracer.traceRequest(request, "is being serviced by " + provider.getName()); //$NON-NLS-1$
+                if (Tracer.isRequestTraced()) {
+                    Tracer.traceRequest(request, "is being serviced by " + provider.getName()); //$NON-NLS-1$
                 }
 
                 request.start();
@@ -145,7 +147,7 @@ public abstract class TmfEventProvider extends TmfDataProvider {
 
                 while (!isFinished[0]) {
 
-                    TmfEventRequest subRequest= new TmfEventRequest(request.getDataType(), ((ITmfEventRequest) request).getRange(), startIndex + nbRead[0], CHUNK_SIZE[0], blockSize, ExecutionType.BACKGROUND) {
+                    TmfEventRequest<T> subRequest= new TmfEventRequest<T>(request.getDataType(), ((ITmfEventRequest<?>) request).getRange(), startIndex + nbRead[0], CHUNK_SIZE[0], blockSize, ExecutionType.BACKGROUND) {
 
                         @Override
                         public synchronized boolean isCompleted() {
@@ -153,7 +155,7 @@ public abstract class TmfEventProvider extends TmfDataProvider {
                         }
 
                         @Override
-                        public void handleData(ITmfEvent data) {
+                        public void handleData(T data) {
                             super.handleData(data);
                             if (request.getDataType().isInstance(data)) {
                                 request.handleData(data);
