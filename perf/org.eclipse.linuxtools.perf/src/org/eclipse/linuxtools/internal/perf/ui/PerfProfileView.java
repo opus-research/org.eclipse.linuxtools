@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.actions.PerfComparisonAction;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -81,7 +79,7 @@ public class PerfProfileView extends ViewPart {
 		contributeToActionBars();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
@@ -108,7 +106,6 @@ public class PerfProfileView extends ViewPart {
 	}
 
 	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(new PerfComparisonAction());
 	}
 
 	private void fillContextMenu(IMenuManager manager) {

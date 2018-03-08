@@ -93,6 +93,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 
 	
+	  
 	
 	// The shared instance
 	private static PerfPlugin plugin;
