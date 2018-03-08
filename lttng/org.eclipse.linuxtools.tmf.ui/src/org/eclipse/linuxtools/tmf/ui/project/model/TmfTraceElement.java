@@ -18,7 +18,6 @@ package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,10 +37,8 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfEnvironmentVariables;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.core.util.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.ui.IActionFilter;
@@ -86,7 +83,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     private static final String sfLocation = "location"; //$NON-NLS-1$
     private static final String sfEventType = "type"; //$NON-NLS-1$
     private static final String sfIsLinked = "linked"; //$NON-NLS-1$
-    private static final String sfEnvCategory = "Environment variable"; //$NON-NLS-1$
 
     private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
     private static final ReadOnlyTextPropertyDescriptor sfPathDescriptor = new ReadOnlyTextPropertyDescriptor(sfPath, sfPath);
@@ -412,40 +408,8 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         return null;
     }
 
-    /**
-     * get the environment variables of this traceElement if the corresponding
-     * trace is opened in the editor
-     *
-     * @return a map with the names an values of the environment variables
-     *         respectively as keys and values
-     */
-    private Map<String, String> getEnvVariables()
-    {
-        for (ITmfTrace fTrace : TmfTraceManager.getInstance().getOpenedTraces()) {
-            if (fTrace.getResource().equals(this.getResource())) {
-                if (fTrace instanceof ITmfEnvironmentVariables) {
-                    ITmfEnvironmentVariables envTrace = (ITmfEnvironmentVariables) fTrace;
-                    return envTrace.getEnvironment();
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        Map<String, String> envVariables = getEnvVariables();
-        if (envVariables != null && !envVariables.isEmpty()) {
-            ArrayList<IPropertyDescriptor> propertyDescriptorList = new ArrayList<IPropertyDescriptor>();
-            for (Map.Entry<String, String> varName : envVariables.entrySet()) {
-                ReadOnlyTextPropertyDescriptor descriptor = new ReadOnlyTextPropertyDescriptor(varName.getKey(), varName.getKey());
-                descriptor.setCategory(sfEnvCategory);
-                propertyDescriptorList.add(descriptor);
-            }
-            propertyDescriptorList.addAll(Arrays.asList(sfDescriptors));
-            IPropertyDescriptor array[] = new IPropertyDescriptor[propertyDescriptorList.size()];
-            return Arrays.copyOf(propertyDescriptorList.toArray(array), propertyDescriptorList.size());
-        }
         return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
@@ -472,14 +436,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             if (fTraceTypeId != null) {
                 IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
                 return (ce != null) ? (getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR)) : ""; //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
-
-        Map<String, String> envVariables = getEnvVariables();
-        if (envVariables != null && envVariables.isEmpty()) {
-            String value = envVariables.get(id);
-            if (value != null) {
-                return value;
             }
         }
 
@@ -532,7 +488,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
     /**
      * Close opened editors associated with this trace.
-     *
      * @since 2.0
      */
     public void closeEditors() {
