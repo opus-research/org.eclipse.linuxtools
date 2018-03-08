@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -59,9 +60,9 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
 
     private STContributedRulerColumn fColumn;
 
-    private IAnnotationEditorInput fInput;
+    private AbstractSTAnnotatedSourceEditorInput fInput;
 
-    private ISTAnnotationColumn fAnnotatedColumn;
+    private ArrayList<ISTAnnotationColumn> fListColumns;
 
     private STChangeRulerColumn fSTChangeRulerColumn;
 
@@ -75,11 +76,13 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
         STColumnSupport columnSupport = getSTColumnSupport();
         RulerColumnRegistry registry = RulerColumnRegistry.getDefault();
 
-		RulerColumnDescriptor abstractSTColumnDescriptor = registry
-				.getColumnDescriptor(STContributedRulerColumn.ID);
-		columnSupport.addSTColumn((CompositeRuler) getVerticalRuler(),
-				abstractSTColumnDescriptor, fAnnotatedColumn);
+        for (int i = 1; i <= fInput.getColumnCount(); i++) {
+            RulerColumnDescriptor abstractSTColumnDescriptor = registry
+                    .getColumnDescriptor(STContributedRulerColumn.ID);
+            columnSupport.addSTColumn((CompositeRuler) getVerticalRuler(), abstractSTColumnDescriptor,
+                    fListColumns.get(i - 1));
 
+        }
 
         CompositeRuler vr = (CompositeRuler) super.getVerticalRuler();
         for (Iterator<?> iter = vr.getDecoratorIterator(); iter.hasNext();) {
@@ -197,10 +200,15 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
     protected void doSetInput(IEditorInput input) throws CoreException {
         super.doSetInput(input);
 
-        if (input != null && input instanceof IAnnotationEditorInput) {
-            fInput = (IAnnotationEditorInput) input;
-            fAnnotatedColumn = fInput.getColumn();
+        if (input != null && input instanceof AbstractSTAnnotatedSourceEditorInput) {
+            fInput = (AbstractSTAnnotatedSourceEditorInput) input;
+            fListColumns = fInput.getColumns();
         }
+    }
+
+    protected boolean isSTRulerVisible() {
+        IPreferenceStore store = getPreferenceStore();
+        return store != null ? store.getBoolean(ST_RULER) : true;
     }
 
     private static class ToolTipSupport extends DefaultToolTip {
