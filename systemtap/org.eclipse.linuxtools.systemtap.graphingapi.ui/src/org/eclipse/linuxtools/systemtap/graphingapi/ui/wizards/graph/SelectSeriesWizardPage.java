@@ -24,32 +24,56 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.ColumnLayout;
 
-
-
-
-public class SelectSeriesWizardPage extends WizardPage {
+public class SelectSeriesWizardPage extends WizardPage implements Listener {
 	public SelectSeriesWizardPage() {
-		super("selectSeries"); //$NON-NLS-1$
-		setTitle(Localization.getString("SelectSeriesWizardPage.SelectSeries")); //$NON-NLS-1$
+		super("selectGraphAndSeries"); //$NON-NLS-1$
+		setTitle(Localization.getString("SelectGraphWizardPage.SelectGraphAndSeries")); //$NON-NLS-1$
 	}
 
 	@Override
 	public void createControl(Composite parent) {
-		edit = ((SelectGraphWizard)super.getWizard()).isEditing();
-		model = ((SelectGraphWizard)super.getWizard()).model;
+		wizard = (SelectGraphWizard)getWizard();
+		model = wizard.model;
+		edit = wizard.isEditing();
 
 		//Set the layout data
 		Composite comp = new Composite(parent, SWT.NULL);
 		comp.setLayout(new FormLayout());
 		FormData data1 = new FormData();
-		data1.left = new FormAttachment(0, 0);
-		data1.top = new FormAttachment(0, 0);
-		data1.right = new FormAttachment(40, 0);
-		data1.bottom = new FormAttachment(100, 0);
+
+		data1 = new FormData();
+		data1.left = new FormAttachment(0, 10);
+		data1.top = new FormAttachment(0, 10);
+		data1.width = 130;
+
+		Composite cmpGraphOptsGraph = new Composite(comp, SWT.NONE);
+		cmpGraphOptsGraph.setLayoutData(data1);
+		ColumnLayout colLayout = new ColumnLayout();
+		colLayout.maxNumColumns = 1;
+		cmpGraphOptsGraph.setLayout(colLayout);
+
+		Label glblTitle = new Label(cmpGraphOptsGraph, SWT.NONE);
+		glblTitle.setText(Localization.getString("SelectSeriesWizardPage.Graph")); //$NON-NLS-1$
+
+		String[] graphIDs = GraphFactory.getAvailableGraphs(wizard.model.getDataSet());
+		btnGraphs = new Button[graphIDs.length];
+		for(int i=0; i<btnGraphs.length; i++) {
+			btnGraphs[i] = new Button(cmpGraphOptsGraph, SWT.RADIO);
+			btnGraphs[i].setImage(GraphFactory.getGraphImage(graphIDs[i]));
+			btnGraphs[i].addListener(SWT.Selection, this);
+			btnGraphs[i].setData(graphIDs[i]);
+			btnGraphs[i].setToolTipText(GraphFactory.getGraphName(btnGraphs[i].getData().toString()) + "\n\n" + //$NON-NLS-1$
+					GraphFactory.getGraphDescription(btnGraphs[i].getData().toString()));
+			if (wizard.isEditing() && graphIDs[i].equals(wizard.model.getGraphID())) {
+				btnGraphs[i].setSelection(true);
+			}
+		}
 
 		//Add the title wigets
 		Label lblTitle = new Label(comp, SWT.NONE);
@@ -71,49 +95,48 @@ public class SelectSeriesWizardPage extends WizardPage {
 				}
 			}
 		});
+
 		data1 = new FormData();
-		data1.left = new FormAttachment(0,0);
-		data1.top = new FormAttachment(0,0);
+		data1.left = new FormAttachment(cmpGraphOptsGraph,40);
+		data1.top = new FormAttachment(cmpGraphOptsGraph,0,SWT.TOP);
 		data1.width = 200;
 		lblTitle.setLayoutData(data1);
 
 		data1 = new FormData();
-		data1.left = new FormAttachment(0,0);
-		data1.top = new FormAttachment(lblTitle,0);
+		data1.left = new FormAttachment(lblTitle, 0, SWT.LEFT);
+		data1.top = new FormAttachment(lblTitle, 0);
 		data1.width = 200;
 		txtTitle.setLayoutData(data1);
 
-
 		//Add the data series widgets
 		data1 = new FormData();
-		data1.left = new FormAttachment(0, 0);
+		data1.left = new FormAttachment(txtTitle, 0, SWT.LEFT);
 		data1.top = new FormAttachment(txtTitle, 20);
-		data1.right = new FormAttachment(40, 0);
-		data1.bottom = new FormAttachment(100, 0);
+		data1.width = 200;
 
-		Composite cmpGraphOpts = new Composite(comp, SWT.NONE);
-		cmpGraphOpts.setLayoutData(data1);
-		ColumnLayout colLayout = new ColumnLayout();
-		colLayout.maxNumColumns = 1;
-		cmpGraphOpts.setLayout(colLayout);
+		Composite cmpGraphOptsSeries = new Composite(comp, SWT.NONE);
+		cmpGraphOptsSeries.setLayoutData(data1);
+		ColumnLayout colLayoutSeries = new ColumnLayout();
+		colLayoutSeries.maxNumColumns = 1;
+		cmpGraphOptsSeries.setLayout(colLayoutSeries);
 
 		String[] labels = model.getSeries();
 
 		cboYItems = new Combo[labels.length];
 		lblYItems = new Label[cboYItems.length];
 
-		Label lblXItem = new Label(cmpGraphOpts, SWT.NONE);
+		Label lblXItem = new Label(cmpGraphOptsSeries, SWT.NONE);
 		lblXItem.setText(Localization.getString("SelectSeriesWizardPage.XSeries")); //$NON-NLS-1$
-		cboXItem = new Combo(cmpGraphOpts, SWT.DROP_DOWN);
+		cboXItem = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
 		cboXItem.addSelectionListener(new ComboSelectionListener());
 		cboXItem.add(Localization.getString("SelectSeriesWizardPage.RowID")); //$NON-NLS-1$
 
-		new Label(cmpGraphOpts, SWT.NONE);	//Spacer
+		new Label(cmpGraphOptsSeries, SWT.NONE);	//Spacer
 
 		for(int i=0; i<cboYItems.length; i++) {
-			lblYItems[i] = new Label(cmpGraphOpts, SWT.NONE);
+			lblYItems[i] = new Label(cmpGraphOptsSeries, SWT.NONE);
 			lblYItems[i].setText(Localization.getString("SelectSeriesWizardPage.YSeries") + i + ":"); //$NON-NLS-1$ //$NON-NLS-2$
-			cboYItems[i] = new Combo(cmpGraphOpts, SWT.DROP_DOWN);
+			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
 			cboYItems[i].addSelectionListener(new ComboSelectionListener());
 
 			if(i>0) {
@@ -155,9 +178,9 @@ public class SelectSeriesWizardPage extends WizardPage {
 		});
 
 		data1 = new FormData();
-		data1.left = new FormAttachment(cmpGraphOpts, 20);
-		data1.top = new FormAttachment(txtTitle, 0);
-		data1.right = new FormAttachment(100, 0);
+		data1.left = new FormAttachment(cmpGraphOptsGraph, 0, SWT.LEFT);
+		data1.top = new FormAttachment(cmpGraphOptsGraph, 10);
+		data1.right = new FormAttachment(cmpGraphOptsSeries, -5);
 		btnKey.setLayoutData(data1);
 
 		lblKey = new Label(comp, SWT.NONE);
@@ -184,24 +207,36 @@ public class SelectSeriesWizardPage extends WizardPage {
 		}
 
 		data1 = new FormData();
-		data1.left = new FormAttachment(cmpGraphOpts, 20);
+		data1.left = new FormAttachment(btnKey, 0, SWT.LEFT);
 		data1.top = new FormAttachment(btnKey, 0);
-		data1.right = new FormAttachment(80, 0);
+		data1.right = new FormAttachment(cmpGraphOptsSeries, 0, SWT.LEFT);
 		lblKey.setLayoutData(data1);
 
 		data1 = new FormData();
-		data1.left = new FormAttachment(cmpGraphOpts, 20);
+		data1.left = new FormAttachment(lblKey, 0, SWT.LEFT);
 		data1.top = new FormAttachment(lblKey, 2);
-		data1.right = new FormAttachment(80, 0);
+		data1.width = 150;
 		txtKey.setLayoutData(data1);
 
-		if (edit) {
-			setKeyEnablement(GraphFactory.isKeyRequired(model.getGraphID(), model.getDataSet()),
-							 GraphFactory.isKeyOptional(model.getGraphID(), model.getDataSet()));
+		//Select one of the graph types by default, rather than blank choice
+		if (!edit) {
+			btnGraphs[0].setSelection(true);
+			saveDataToModelGraph(graphIDs[0]);
+		}
+		else {
+			saveDataToModelGraph(wizard.model.getGraphID());
 		}
 
 		//Make comp visible
 		setControl(comp);
+	}
+
+	@Override
+	public void handleEvent(Event event) {
+		if(event.widget instanceof Button) {
+			saveDataToModelGraph(((Button)event.widget).getData().toString());
+			wizard.getContainer().updateButtons();
+		}
 	}
 
 	public void setKeyEnablement(boolean required, boolean optional) {
@@ -218,10 +253,17 @@ public class SelectSeriesWizardPage extends WizardPage {
 
 	@Override
 	public boolean isPageComplete() {
-		return saveDataToModel();
+		return saveDataToModelSeries();
 	}
 
-	private boolean saveDataToModel() {
+	private void saveDataToModelGraph(String selected) {
+		model.setGraph(selected);
+		setKeyEnablement(
+				GraphFactory.isKeyRequired(model.getGraphID(), model.getDataSet()),
+				GraphFactory.isKeyOptional(model.getGraphID(), model.getDataSet()));
+	}
+
+	private boolean saveDataToModelSeries() {
 		if(isSeriesUnique()) {
 			model.setTitle(txtTitle.getText());
 
@@ -234,7 +276,7 @@ public class SelectSeriesWizardPage extends WizardPage {
 
 			int i, count;
 			for(i=1, count=1; i<cboYItems.length; i++)
-				if(cboYItems[i].isVisible() && 0 != cboYItems[i].getSelectionIndex())
+				if(0 != cboYItems[i].getSelectionIndex())
 					count++;
 
 			int[] ySeries = new int[count];
@@ -281,6 +323,11 @@ public class SelectSeriesWizardPage extends WizardPage {
 	@Override
 	public void dispose() {
 		super.dispose();
+		if(null != btnGraphs)
+			for(int i=0; i<btnGraphs.length; i++)
+				btnGraphs[i] = null;
+		btnGraphs = null;
+
 		if(null != txtTitle)
 			txtTitle.dispose();
 		txtTitle = null;
@@ -348,6 +395,9 @@ public class SelectSeriesWizardPage extends WizardPage {
 			getWizard().getContainer().updateButtons();
 		}
 	}
+
+	private Button[] btnGraphs;
+	private SelectGraphWizard wizard;
 
 	private Text txtTitle;		//TODO: Move this to another page once graphs get more detail
 	private Text txtKey;
