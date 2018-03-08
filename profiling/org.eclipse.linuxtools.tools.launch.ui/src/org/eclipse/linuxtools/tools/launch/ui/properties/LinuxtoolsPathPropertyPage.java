@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.tools.launch.ui.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -107,12 +106,9 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		GridLayout layoutRadios= new GridLayout();
 		layoutRadios.marginWidth= 0;
 		layoutRadios.numColumns= 1;
-		GridData gridData = new GridData();
-		gridData.horizontalSpan = 2;
-		gridData.horizontalAlignment = SWT.FILL;
-		gridData.grabExcessHorizontalSpace = true;
 		radios.setLayout(layoutRadios);
-		radios.setLayoutData(gridData);
+
+		Composite space = new Composite(result, SWT.NONE);
 
 		boolean systemPathSelected = getPreferenceStore().getBoolean(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME);
 		systemEnvButton = new Button(radios, SWT.RADIO);
