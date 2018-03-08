@@ -301,10 +301,48 @@ public class IOstructgenTest {
             byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7, 0x36,
                     0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
                     (byte) 0xb4, 0x38, (byte) 0x85, 0x7f, (byte) 0x8d };
-            final int size = 4096;
+            final int size = 4096+48;
             byte[] data = new byte[size];
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < 4; i++) {
                 data[i] = 0x00;
+            }
+            // timestamp_begin 64 Good
+            for( int i = 4; i < 12; i++ ){
+                data[i] = 0;
+            }
+            // timestamp_end 64 GoodIsh?
+            for( int i = 12; i < 20; i++ ){
+                data[19] = 0x04;
+            }
+            // content_size 64
+            for( int i = 20; i < 28; i++){
+                data[i] = 0x00;
+            }
+            byte hi = 32672 / 256;
+            byte lo = 32672 % 0xff;
+
+            data[20] = lo;
+            data[21] = hi;
+            // packet_size 64
+            for( int i = 28; i < 36; i++){
+                data[i] = 0x00;
+            }
+            data[29] = (byte) 0x80;
+
+
+            // events_discarded 32
+            for( int i = 36; i < 44; i++){
+                data[i] = 0x00;
+            }
+
+            // cpu_id 32
+            for( int i = 44; i < 48; i++){
+                data[i] = 0x00;
+            }
+
+            // fill me
+            for (int i = 48; i < size; i++) {
+                data[i] = 0x02;
             }
             f = new File(tempTraceDir + "/dummyChan");
             fw = new FileWriter(f);
