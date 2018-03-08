@@ -96,7 +96,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         final File htFile = new File(supplDirectory + File.separator + STATS_STATE_FILENAME);
         final IStateChangeInput htInput = new StatsStateProvider(trace);
 
-        this.stats = StateSystemManager.loadStateHistory(htFile, htInput, false);
+        this.stats = StateSystemManager.newPartialHistory(htFile, htInput, false);
     }
 
     /**
@@ -114,7 +114,7 @@ public class TmfStateStatistics implements ITmfStatistics {
     public TmfStateStatistics(ITmfTrace trace, File historyFile) throws TmfTraceException {
         this.trace = trace;
         final IStateChangeInput htInput = new StatsStateProvider(trace);
-        this.stats = StateSystemManager.loadStateHistory(historyFile, htInput, true);
+        this.stats = StateSystemManager.newPartialHistory(historyFile, htInput, true);
     }
 
     // ------------------------------------------------------------------------
@@ -207,7 +207,8 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         try {
             final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            count= stats.querySingleState(endTime, quark).getStateValue().unboxInt();
+            /* Cannot use single queries with a partial history */
+            count = stats.queryFullState(endTime).get(quark).getStateValue().unboxInt();
 
         } catch (TimeRangeException e) {
             /* Assume there is no events for that range */
@@ -359,7 +360,8 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         try {
             final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            long count = stats.querySingleState(ts, quark).getStateValue().unboxInt();
+            /* Cannot use single queries with a partial history */
+            long count = stats.queryFullState(ts).get(quark).getStateValue().unboxInt();
             return count;
 
         } catch (TimeRangeException e) {
