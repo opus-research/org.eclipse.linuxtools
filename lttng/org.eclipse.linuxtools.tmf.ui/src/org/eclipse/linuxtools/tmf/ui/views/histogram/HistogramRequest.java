@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Francois Chouinard
  * <p>
  */
-public class HistogramRequest extends TmfEventRequest {
+public class HistogramRequest extends TmfEventRequest<ITmfEvent> {
 
     // ------------------------------------------------------------------------
     // Attributes
