@@ -42,6 +42,11 @@ public class CoverageAnnotationColumn implements ISTAnnotationColumn {
 	}
 
 	@Override
+	public String getLongDescription(int line) {
+		return null;
+	}
+
+	@Override
 	public String getTooltip(int index) {
 		try {
 			Line l = lines.get(index+1);

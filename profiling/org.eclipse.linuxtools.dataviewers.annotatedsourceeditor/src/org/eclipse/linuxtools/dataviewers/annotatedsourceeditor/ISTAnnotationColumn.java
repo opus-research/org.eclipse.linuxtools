@@ -14,4 +14,6 @@ public interface ISTAnnotationColumn {
     String getAnnotation(int line);
 
     String getTooltip(int line);
+
+    String getLongDescription(int line);
 }
