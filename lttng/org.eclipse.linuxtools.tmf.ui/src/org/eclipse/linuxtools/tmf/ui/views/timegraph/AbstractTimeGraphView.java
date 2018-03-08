@@ -27,15 +27,12 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
@@ -57,7 +54,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProv
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphRangeUpdateEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphSelectionEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphViewer;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
@@ -73,12 +69,16 @@ import org.eclipse.ui.IActionBars;
 /**
  * An abstract view all time graph views can inherit
  *
- * This view contains either a time graph viewer, or a time graph combo which is
- * divided between a tree viewer on the left and a time graph viewer on the right.
+ * This view contains a time graph combo, divided between a treeview on the
+ * left, showing entries and a canvas on the right to draw something for these
+ * entries.
  *
  * @since 2.1
  */
 public abstract class AbstractTimeGraphView extends TmfView {
+
+    private final String[] fColumns;
+    private final String[] fFilterColumns;
 
     /**
      * Redraw state enum
@@ -91,8 +91,8 @@ public abstract class AbstractTimeGraphView extends TmfView {
     // Fields
     // ------------------------------------------------------------------------
 
-    /** The timegraph wrapper */
-    private ITimeGraphWrapper fTimeGraphWrapper;
+    /** The timegraph combo */
+    private TimeGraphCombo fTimeGraphCombo;
 
     /** The selected trace */
     private ITmfTrace fTrace;
@@ -124,6 +124,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
     /** The previous resource action */
     private Action fPreviousResourceAction;
 
+    /** The relative weight of the sash */
+    private int[] fWeight = { 1, 1 };
+
     /** A comparator class */
     private Comparator<ITimeGraphEntry> fEntryComparator = null;
 
@@ -136,173 +139,189 @@ public abstract class AbstractTimeGraphView extends TmfView {
     /** The presentation provider for this view */
     private final TimeGraphPresentationProvider fPresentation;
 
-    /** The tree column label array, or null if combo is not used */
-    private String[] fColumns;
+    private TreeLabelProvider fLabelProvider = new TreeLabelProvider();
 
-    /** The tree label provider, or null if combo is not used */
-    private TreeLabelProvider fLabelProvider = null;
+    // ------------------------------------------------------------------------
+    // Getters and setters
+    // ------------------------------------------------------------------------
 
-    /** The relative weight of the sash, ignored if combo is not used */
-    private int[] fWeight = { 1, 1 };
+    /**
+     * Getter for the time graph combo
+     *
+     * @return The Time graph combo
+     */
+    protected TimeGraphCombo getTimeGraphCombo() {
+        return fTimeGraphCombo;
+    }
 
-    /** The filter column label array, or null if filter is not used */
-    private String[] fFilterColumns;
+    /**
+     * Sets the tree label provider
+     *
+     * @param tlp
+     *            The tree label provider
+     */
+    protected void setTreeLabelProvider(final TreeLabelProvider tlp) {
+        fLabelProvider = tlp;
+    }
+
+    /**
+     * Sets the relative weight of each part of the time graph combo
+     *
+     * @param weights
+     *            The array of relative weights of each part of the combo
+     */
+    protected void setWeight(final int[] weights) {
+        fWeight = weights;
+    }
+
+    /**
+     * Gets the display width
+     *
+     * @return the display width
+     */
+    protected int getDisplayWidth() {
+        return fDisplayWidth;
+    }
+
+    /**
+     * Gets the comparator for the entries
+     *
+     * @return The entry comparator
+     */
+    protected Comparator<ITimeGraphEntry> getEntryComparator() {
+        return fEntryComparator;
+    }
+
+    /**
+     * Sets the comparator class for the entries * Gets the display width
+     *
+     * @param comparator
+     *            A comparator object
+     */
+    protected void setEntryComparator(final Comparator<ITimeGraphEntry> comparator) {
+        fEntryComparator = comparator;
+    }
+
+    /**
+     * Gets the trace displayed in the view
+     *
+     * @return The trace
+     */
+    protected ITmfTrace getTrace() {
+        return fTrace;
+    }
+
+    /**
+     * Sets the trace to display
+     *
+     * @param trace
+     *            The trace
+     */
+    protected void setTrace(final ITmfTrace trace) {
+        fTrace = trace;
+    }
+
+    /**
+     * Gets the start time
+     *
+     * @return The start time
+     */
+    protected long getStartTime() {
+        return fStartTime;
+    }
+
+    /**
+     * Sets the start time
+     *
+     * @param time
+     *            The start time
+     */
+    protected void setStartTime(long time) {
+        fStartTime = time;
+    }
+
+    /**
+     * Gets the end time
+     *
+     * @return The end time
+     */
+    protected long getEndTime() {
+        return fEndTime;
+    }
+
+    /**
+     * Sets the end time
+     *
+     * @param time
+     *            The end time
+     */
+    protected void setEndTime(long time) {
+        fEndTime = time;
+    }
+
+    /**
+     * Gets the entry list map
+     *
+     * @return the entry list map
+     */
+    protected Map<ITmfTrace, List<TimeGraphEntry>> getEntryListMap() {
+        return Collections.unmodifiableMap(fEntryListMap);
+    }
+
+    /**
+     * Adds an entry to the entry list
+     *
+     * @param trace
+     *            the trace to add
+     * @param list
+     *            The list of time graph entries
+     * @since 2.1
+     */
+    protected void putEntryList(ITmfTrace trace, List<TimeGraphEntry> list) {
+        synchronized(fEntryListMap) {
+            fEntryListMap.put(trace, list);
+        }
+    }
+
+    /**
+     * Text for the "next" button
+     *
+     * @return The "next" button text
+     */
+    protected String getNextText() {
+        return Messages.AbstractTimeGraphtView_NextText;
+    }
+
+    /**
+     * Tooltip for the "next" button
+     *
+     * @return Tooltip for the "next" button
+     */
+    protected String getNextTooltip() {
+        return Messages.AbstractTimeGraphView_NextTooltip;
+    }
+
+    /**
+     * Text for the "Previous" button
+     *
+     * @return The "Previous" button text
+     */
+    protected String getPrevText() {
+        return Messages.AbstractTimeGraphView_PreviousText;
+    }
+
+    /**
+     * Tooltip for the "previous" button
+     *
+     * @return Tooltip for the "previous" button
+     */
+    protected String getPrevTooltip() {
+        return Messages.AbstractTimeGraphView_PreviousTooltip;
+    }
 
     // ------------------------------------------------------------------------
     // Classes
     // ------------------------------------------------------------------------
-
-    private interface ITimeGraphWrapper {
-
-        void setTimeGraphProvider(TimeGraphPresentationProvider fPresentation);
-
-        TimeGraphViewer getTimeGraphViewer();
-
-        void addSelectionListener(ITimeGraphSelectionListener iTimeGraphSelectionListener);
-
-        ISelectionProvider getSelectionProvider();
-
-        void setFocus();
-
-        boolean isDisposed();
-
-        void refresh();
-
-        void setInput(ITimeGraphEntry[] entries);
-
-        void redraw();
-
-        void update();
-
-    }
-
-    private class TimeGraphViewerWrapper implements ITimeGraphWrapper {
-        private TimeGraphViewer viewer;
-
-        private TimeGraphViewerWrapper(Composite parent, int style) {
-            viewer = new TimeGraphViewer(parent, style);
-        }
-
-        @Override
-        public void setTimeGraphProvider(TimeGraphPresentationProvider timeGraphProvider) {
-            viewer.setTimeGraphProvider(timeGraphProvider);
-        }
-
-        @Override
-        public TimeGraphViewer getTimeGraphViewer() {
-            return viewer;
-        }
-
-        @Override
-        public void addSelectionListener(ITimeGraphSelectionListener listener) {
-            viewer.addSelectionListener(listener);
-        }
-
-        @Override
-        public ISelectionProvider getSelectionProvider() {
-            return viewer.getSelectionProvider();
-        }
-
-        @Override
-        public void setFocus() {
-            viewer.setFocus();
-        }
-
-        @Override
-        public boolean isDisposed() {
-            return viewer.getControl().isDisposed();
-        }
-
-        @Override
-        public void setInput(ITimeGraphEntry[] input) {
-            viewer.setInput(input);
-        }
-
-        @Override
-        public void refresh() {
-            viewer.refresh();
-        }
-
-        @Override
-        public void redraw() {
-            viewer.getControl().redraw();
-        }
-
-        @Override
-        public void update() {
-            viewer.getControl().update();
-        }
-    }
-
-    private class TimeGraphComboWrapper implements ITimeGraphWrapper {
-        private TimeGraphCombo combo;
-
-        private TimeGraphComboWrapper(Composite parent, int style) {
-            combo = new TimeGraphCombo(parent, style, fWeight);
-        }
-
-        @Override
-        public void setTimeGraphProvider(TimeGraphPresentationProvider timeGraphProvider) {
-            combo.setTimeGraphProvider(timeGraphProvider);
-        }
-
-        @Override
-        public TimeGraphViewer getTimeGraphViewer() {
-            return combo.getTimeGraphViewer();
-        }
-
-        @Override
-        public void addSelectionListener(ITimeGraphSelectionListener listener) {
-            combo.addSelectionListener(listener);
-        }
-
-        @Override
-        public ISelectionProvider getSelectionProvider() {
-            return combo.getTreeViewer();
-        }
-
-        @Override
-        public void setFocus() {
-            combo.setFocus();
-        }
-
-        @Override
-        public boolean isDisposed() {
-            return combo.isDisposed();
-        }
-
-        @Override
-        public void setInput(ITimeGraphEntry[] input) {
-            combo.setInput(input);
-        }
-
-        @Override
-        public void refresh() {
-            combo.refresh();
-        }
-
-        @Override
-        public void redraw() {
-            combo.redraw();
-        }
-
-        @Override
-        public void update() {
-            combo.update();
-        }
-
-        TimeGraphCombo getTimeGraphCombo() {
-            return combo;
-        }
-
-        TreeViewer getTreeViewer() {
-            return combo.getTreeViewer();
-        }
-
-        IAction getShowFilterAction() {
-            return combo.getShowFilterAction();
-        }
-    }
 
     private class TreeContentProvider implements ITreeContentProvider {
 
@@ -341,9 +360,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
     }
 
     /**
-     * Base class to provide the labels for the tree viewer. Views extending
-     * this class typically need to override the getColumnText method if they
-     * have more than one column to display
+     * Base class to provide the labels for the left tree view entry. Views
+     * extending this class typically need to override the getColumnText method
+     * if they have more than one column to display
      */
     protected static class TreeLabelProvider implements ITableLabelProvider {
 
@@ -433,7 +452,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
             /* Refresh the arrows when zooming */
             List<ILinkEvent> events = getLinkList(fZoomStartTime, fZoomEndTime, fResolution, fMonitor);
             if (events != null) {
-                fTimeGraphWrapper.getTimeGraphViewer().setLinks(events);
+                fTimeGraphCombo.setLinks(events);
                 redraw();
             }
         }
@@ -466,225 +485,24 @@ public abstract class AbstractTimeGraphView extends TmfView {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructs a time graph view that contains either a time graph viewer or
-     * a time graph combo.
-     *
-     * By default, the view uses a time graph viewer. To use a time graph combo,
-     * the subclass constructor must call {@link #setTreeColumns(String[])} and
-     * {@link #setTreeLabelProvider(TreeLabelProvider)}.
+     * Constructor
      *
      * @param id
      *            The id of the view
+     * @param cols
+     *            The columns to display in the tree view on the left
+     * @param filterCols
+     *            The columns list to filter the view
      * @param pres
      *            The presentation provider
      */
-    public AbstractTimeGraphView(String id, TimeGraphPresentationProvider pres) {
+    public AbstractTimeGraphView(String id, String[] cols, String[] filterCols,
+            TimeGraphPresentationProvider pres) {
         super(id);
+        fColumns = cols;
+        fFilterColumns = filterCols;
         fPresentation = pres;
         fDisplayWidth = Display.getDefault().getBounds().width;
-    }
-
-    // ------------------------------------------------------------------------
-    // Getters and setters
-    // ------------------------------------------------------------------------
-
-    /**
-     * Getter for the time graph combo
-     *
-     * @return The time graph combo, or null if combo is not used
-     */
-    protected TimeGraphCombo getTimeGraphCombo() {
-        if (fTimeGraphWrapper instanceof TimeGraphComboWrapper) {
-            return ((TimeGraphComboWrapper) fTimeGraphWrapper).getTimeGraphCombo();
-        }
-        return null;
-    }
-
-    /**
-     * Getter for the time graph viewer
-     *
-     * @return The time graph viewer
-     */
-    protected TimeGraphViewer getTimeGraphViewer() {
-        return fTimeGraphWrapper.getTimeGraphViewer();
-    }
-
-    /**
-     * Sets the tree column labels.
-     * This should be called from the constructor.
-     *
-     * @param columns
-     *            The array of tree column labels
-     */
-    protected void setTreeColumns(final String[] columns) {
-        fColumns = columns;
-    }
-
-    /**
-     * Sets the tree label provider.
-     * This should be called from the constructor.
-     *
-     * @param tlp
-     *            The tree label provider
-     */
-    protected void setTreeLabelProvider(final TreeLabelProvider tlp) {
-        fLabelProvider = tlp;
-    }
-
-    /**
-     * Sets the relative weight of each part of the time graph combo.
-     * This should be called from the constructor.
-     *
-     * @param weights
-     *            The array (length 2) of relative weights of each part of the combo
-     */
-    protected void setWeight(final int[] weights) {
-        fWeight = weights;
-    }
-
-    /**
-     * Sets the filter column labels.
-     * This should be called from the constructor.
-     *
-     * @param filterColumns
-     *            The array of filter column labels
-     */
-    protected void setFilterColumns(final String[] filterColumns) {
-        fFilterColumns = filterColumns;
-    }
-
-    /**
-     * Gets the display width
-     *
-     * @return the display width
-     */
-    protected int getDisplayWidth() {
-        return fDisplayWidth;
-    }
-
-    /**
-     * Gets the comparator for the entries
-     *
-     * @return The entry comparator
-     */
-    protected Comparator<ITimeGraphEntry> getEntryComparator() {
-        return fEntryComparator;
-    }
-
-    /**
-     * Sets the comparator class for the entries
-     *
-     * @param comparator
-     *            A comparator object
-     */
-    protected void setEntryComparator(final Comparator<ITimeGraphEntry> comparator) {
-        fEntryComparator = comparator;
-    }
-
-    /**
-     * Gets the trace displayed in the view
-     *
-     * @return The trace
-     */
-    protected ITmfTrace getTrace() {
-        return fTrace;
-    }
-
-    /**
-     * Gets the start time
-     *
-     * @return The start time
-     */
-    protected long getStartTime() {
-        return fStartTime;
-    }
-
-    /**
-     * Sets the start time
-     *
-     * @param time
-     *            The start time
-     */
-    protected void setStartTime(long time) {
-        fStartTime = time;
-    }
-
-    /**
-     * Gets the end time
-     *
-     * @return The end time
-     */
-    protected long getEndTime() {
-        return fEndTime;
-    }
-
-    /**
-     * Sets the end time
-     *
-     * @param time
-     *            The end time
-     */
-    protected void setEndTime(long time) {
-        fEndTime = time;
-    }
-
-    /**
-     * Gets the entry list map
-     *
-     * @return the entry list map
-     */
-    protected Map<ITmfTrace, List<TimeGraphEntry>> getEntryListMap() {
-        return Collections.unmodifiableMap(fEntryListMap);
-    }
-
-    /**
-     * Adds an entry to the entry list
-     *
-     * @param trace
-     *            the trace to add
-     * @param list
-     *            The list of time graph entries
-     */
-    protected void putEntryList(ITmfTrace trace, List<TimeGraphEntry> list) {
-        synchronized(fEntryListMap) {
-            fEntryListMap.put(trace, list);
-        }
-    }
-
-    /**
-     * Text for the "next" button
-     *
-     * @return The "next" button text
-     */
-    protected String getNextText() {
-        return Messages.AbstractTimeGraphtView_NextText;
-    }
-
-    /**
-     * Tooltip for the "next" button
-     *
-     * @return Tooltip for the "next" button
-     */
-    protected String getNextTooltip() {
-        return Messages.AbstractTimeGraphView_NextTooltip;
-    }
-
-    /**
-     * Text for the "Previous" button
-     *
-     * @return The "Previous" button text
-     */
-    protected String getPrevText() {
-        return Messages.AbstractTimeGraphView_PreviousText;
-    }
-
-    /**
-     * Tooltip for the "previous" button
-     *
-     * @return Tooltip for the "previous" button
-     */
-    protected String getPrevTooltip() {
-        return Messages.AbstractTimeGraphView_PreviousTooltip;
     }
 
     // ------------------------------------------------------------------------
@@ -693,23 +511,23 @@ public abstract class AbstractTimeGraphView extends TmfView {
 
     @Override
     public void createPartControl(Composite parent) {
-        if (fColumns == null || fLabelProvider == null) {
-            fTimeGraphWrapper = new TimeGraphViewerWrapper(parent, SWT.NONE);
-        } else {
-            TimeGraphComboWrapper wrapper = new TimeGraphComboWrapper(parent, SWT.NONE);
-            fTimeGraphWrapper = wrapper;
-            TimeGraphCombo combo = wrapper.getTimeGraphCombo();
-            combo.setTreeContentProvider(new TreeContentProvider());
-            combo.setTreeLabelProvider(fLabelProvider);
-            combo.setTreeColumns(fColumns);
-            combo.setFilterContentProvider(new TreeContentProvider());
-            combo.setFilterLabelProvider(new TreeLabelProvider());
-            combo.setFilterColumns(fFilterColumns);
-        }
+        fTimeGraphCombo = new TimeGraphCombo(parent, SWT.NONE, fWeight);
 
-        fTimeGraphWrapper.setTimeGraphProvider(fPresentation);
+        fTimeGraphCombo.setTreeContentProvider(new TreeContentProvider());
 
-        fTimeGraphWrapper.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
+        fTimeGraphCombo.setTreeLabelProvider(fLabelProvider);
+
+        fTimeGraphCombo.setTimeGraphProvider(fPresentation);
+
+        fTimeGraphCombo.setTreeColumns(fColumns);
+
+        fTimeGraphCombo.setFilterContentProvider(new TreeContentProvider());
+
+        fTimeGraphCombo.setFilterLabelProvider(new TreeLabelProvider());
+
+        fTimeGraphCombo.setFilterColumns(fFilterColumns);
+
+        fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
             @Override
             public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
                 final long startTime = event.getStartTime();
@@ -723,7 +541,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
             }
         });
 
-        fTimeGraphWrapper.getTimeGraphViewer().addTimeListener(new ITimeGraphTimeListener() {
+        fTimeGraphCombo.getTimeGraphViewer().addTimeListener(new ITimeGraphTimeListener() {
             @Override
             public void timeSelected(TimeGraphTimeEvent event) {
                 TmfNanoTimestamp startTime = new TmfNanoTimestamp(event.getBeginTime());
@@ -732,17 +550,17 @@ public abstract class AbstractTimeGraphView extends TmfView {
             }
         });
 
-        fTimeGraphWrapper.addSelectionListener(new ITimeGraphSelectionListener() {
+        fTimeGraphCombo.addSelectionListener(new ITimeGraphSelectionListener() {
             @Override
             public void selectionChanged(TimeGraphSelectionEvent event) {
                 // ITimeGraphEntry selection = event.getSelection();
             }
         });
 
-        fTimeGraphWrapper.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
+        fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         IStatusLineManager statusLineManager = getViewSite().getActionBars().getStatusLineManager();
-        fTimeGraphWrapper.getTimeGraphViewer().getTimeGraphControl().setStatusLineManager(statusLineManager);
+        fTimeGraphCombo.getTimeGraphViewer().getTimeGraphControl().setStatusLineManager(statusLineManager);
 
         // View Action Handling
         makeActions();
@@ -754,12 +572,12 @@ public abstract class AbstractTimeGraphView extends TmfView {
         }
 
         // make selection available to other views
-        getSite().setSelectionProvider(fTimeGraphWrapper.getSelectionProvider());
+        getSite().setSelectionProvider(fTimeGraphCombo.getTreeViewer());
     }
 
     @Override
     public void setFocus() {
-        fTimeGraphWrapper.setFocus();
+        fTimeGraphCombo.setFocus();
     }
 
     // ------------------------------------------------------------------------
@@ -840,15 +658,15 @@ public abstract class AbstractTimeGraphView extends TmfView {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                if (fTimeGraphWrapper.isDisposed()) {
+                if (fTimeGraphCombo.isDisposed()) {
                     return;
                 }
                 if (beginTime == endTime) {
-                    fTimeGraphWrapper.getTimeGraphViewer().setSelectedTime(beginTime, true);
+                    fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(beginTime, true);
                 } else {
-                    fTimeGraphWrapper.getTimeGraphViewer().setSelectionRange(beginTime, endTime);
+                    fTimeGraphCombo.getTimeGraphViewer().setSelectionRange(beginTime, endTime);
                 }
-                startZoomThread(fTimeGraphWrapper.getTimeGraphViewer().getTime0(), fTimeGraphWrapper.getTimeGraphViewer().getTime1());
+                startZoomThread(fTimeGraphCombo.getTimeGraphViewer().getTime0(), fTimeGraphCombo.getTimeGraphViewer().getTime1());
 
                 synchingToTime(beginTime);
             }
@@ -874,10 +692,10 @@ public abstract class AbstractTimeGraphView extends TmfView {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                if (fTimeGraphWrapper.isDisposed()) {
+                if (fTimeGraphCombo.isDisposed()) {
                     return;
                 }
-                fTimeGraphWrapper.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
+                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
                 startZoomThread(startTime, endTime);
             }
         });
@@ -889,7 +707,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
      */
     @TmfSignalHandler
     public void updateTimeFormat( final TmfTimestampFormatUpdateSignal signal){
-        fTimeGraphWrapper.refresh();
+        this.fTimeGraphCombo.refresh();
     }
 
     // ------------------------------------------------------------------------
@@ -901,7 +719,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
             fEntryList = fEntryListMap.get(fTrace);
             if (fEntryList == null) {
                 synchronized (fBuildThreadMap) {
-                    BuildThread buildThread = new BuildThread(fTrace, getName());
+                    BuildThread buildThread = new BuildThread(fTrace, this.getName());
                     fBuildThreadMap.put(fTrace, buildThread);
                     buildThread.start();
                 }
@@ -983,7 +801,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                if (fTimeGraphWrapper.isDisposed()) {
+                if (fTimeGraphCombo.isDisposed()) {
                     return;
                 }
                 ITimeGraphEntry[] entries = null;
@@ -997,8 +815,8 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 if (fEntryComparator != null) {
                     Arrays.sort(entries, fEntryComparator);
                 }
-                fTimeGraphWrapper.setInput(entries);
-                fTimeGraphWrapper.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
+                fTimeGraphCombo.setInput(entries);
+                fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
 
                 long selectionBeginTime = fTrace == null ? 0 : fTraceManager.getSelectionBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 long selectionEndTime = fTrace == null ? 0 : fTraceManager.getSelectionEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
@@ -1006,13 +824,11 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 long endTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 startTime = Math.max(startTime, fStartTime);
                 endTime = Math.min(endTime, fEndTime);
-                fTimeGraphWrapper.getTimeGraphViewer().setSelectionRange(selectionBeginTime, selectionEndTime);
-                fTimeGraphWrapper.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectionRange(selectionBeginTime, selectionEndTime);
+                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
 
-                if (fTimeGraphWrapper instanceof TimeGraphComboWrapper) {
-                    for (TreeColumn column : ((TimeGraphComboWrapper) fTimeGraphWrapper).getTreeViewer().getTree().getColumns()) {
-                        column.pack();
-                    }
+                for (TreeColumn column : fTimeGraphCombo.getTreeViewer().getTree().getColumns()) {
+                    column.pack();
                 }
 
                 startZoomThread(startTime, endTime);
@@ -1035,11 +851,11 @@ public abstract class AbstractTimeGraphView extends TmfView {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                if (fTimeGraphWrapper.isDisposed()) {
+                if (fTimeGraphCombo.isDisposed()) {
                     return;
                 }
-                fTimeGraphWrapper.redraw();
-                fTimeGraphWrapper.update();
+                fTimeGraphCombo.redraw();
+                fTimeGraphCombo.update();
                 synchronized (fSyncObj) {
                     if (fRedrawState == State.PENDING) {
                         fRedrawState = State.IDLE;
@@ -1061,10 +877,10 @@ public abstract class AbstractTimeGraphView extends TmfView {
     }
 
     private void makeActions() {
-        fPreviousResourceAction = fTimeGraphWrapper.getTimeGraphViewer().getPreviousItemAction();
+        fPreviousResourceAction = fTimeGraphCombo.getTimeGraphViewer().getPreviousItemAction();
         fPreviousResourceAction.setText(getPrevText());
         fPreviousResourceAction.setToolTipText(getPrevTooltip());
-        fNextResourceAction = fTimeGraphWrapper.getTimeGraphViewer().getNextItemAction();
+        fNextResourceAction = fTimeGraphCombo.getTimeGraphViewer().getNextItemAction();
         fNextResourceAction.setText(getNextText());
         fNextResourceAction.setToolTipText(getNextTooltip());
     }
@@ -1080,20 +896,18 @@ public abstract class AbstractTimeGraphView extends TmfView {
      * @param manager the tool bar manager
      */
     protected void fillLocalToolBar(IToolBarManager manager) {
-        if (fTimeGraphWrapper instanceof TimeGraphComboWrapper) {
-            if (fFilterColumns.length > 0) {
-                manager.add(((TimeGraphComboWrapper) fTimeGraphWrapper).getShowFilterAction());
-            }
+        if (fFilterColumns.length > 0) {
+            manager.add(fTimeGraphCombo.getShowFilterAction());
         }
-        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getShowLegendAction());
+        manager.add(fTimeGraphCombo.getTimeGraphViewer().getShowLegendAction());
         manager.add(new Separator());
-        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getResetScaleAction());
-        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getPreviousEventAction());
-        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getNextEventAction());
+        manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
+        manager.add(fTimeGraphCombo.getTimeGraphViewer().getPreviousEventAction());
+        manager.add(fTimeGraphCombo.getTimeGraphViewer().getNextEventAction());
         manager.add(fPreviousResourceAction);
         manager.add(fNextResourceAction);
-        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getZoomInAction());
-        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getZoomOutAction());
+        manager.add(fTimeGraphCombo.getTimeGraphViewer().getZoomInAction());
+        manager.add(fTimeGraphCombo.getTimeGraphViewer().getZoomOutAction());
         manager.add(new Separator());
     }
 }
