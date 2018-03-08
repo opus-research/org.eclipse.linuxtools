@@ -38,7 +38,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
@@ -190,7 +190,7 @@ public class TmfExperimentTest extends TestCase {
     // ------------------------------------------------------------------------
 
     public void testSeekBadLocation() {
-        ITmfContext context = fExperiment.seekEvent(new TmfLongLocation(0L));
+        ITmfContext context = fExperiment.seekEvent(new TmfLocation<Long>(0L));
         assertNull("seekEvent", context);
     }
 
@@ -244,6 +244,7 @@ public class TmfExperimentTest extends TestCase {
         assertEquals("Context rank", 0, context.getRank());
     }
 
+    @SuppressWarnings("rawtypes")
     public void testGetLocationRatio() {
 
         // First event
@@ -535,7 +536,7 @@ public class TmfExperimentTest extends TestCase {
     public void testSeekLocationOutOfScope() {
 
         // Position trace at beginning
-        ITmfContext context = fExperiment.seekEvent((ITmfLocation) null);
+        ITmfContext context = fExperiment.seekEvent((ITmfLocation<?>) null);
 
         ITmfEvent event = fExperiment.getNext(context);
         assertEquals("Event timestamp", 1, event.getTimestamp().getValue());
@@ -722,7 +723,7 @@ public class TmfExperimentTest extends TestCase {
 
     public void testGetNextAfterSeekingOnLocation_1() {
 
-        final ITmfLocation INITIAL_LOC = null;
+        final ITmfLocation<?> INITIAL_LOC = null;
         final long INITIAL_TS = 1;
         final int NB_READS = 20;
 
@@ -749,7 +750,7 @@ public class TmfExperimentTest extends TestCase {
 
     public void testGetNextAfterSeekingOnLocation_2() {
 
-        final ITmfLocation INITIAL_LOC = fExperiment.seekEvent(1L).getLocation();
+        final ITmfLocation<?> INITIAL_LOC = fExperiment.seekEvent(1L).getLocation();
         final long INITIAL_TS = 2;
         final int NB_READS = 20;
 
@@ -774,7 +775,7 @@ public class TmfExperimentTest extends TestCase {
 
     public void testGetNextAfterSeekingOnLocation_3() {
 
-        final ITmfLocation INITIAL_LOC = fExperiment.seekEvent(500L).getLocation();
+        final ITmfLocation<?> INITIAL_LOC = fExperiment.seekEvent(500L).getLocation();
         final long INITIAL_TS = 501;
         final int NB_READS = 20;
 
@@ -800,7 +801,7 @@ public class TmfExperimentTest extends TestCase {
     public void testGetNextLocation() {
         ITmfContext context1 = fExperiment.seekEvent(0);
         fExperiment.getNext(context1);
-        ITmfLocation location = context1.getLocation().clone();
+        ITmfLocation<?> location = context1.getLocation().clone();
         ITmfEvent event1 = fExperiment.getNext(context1);
         ITmfContext context2 = fExperiment.seekEvent(location);
         ITmfEvent event2 = fExperiment.getNext(context2);
@@ -810,7 +811,7 @@ public class TmfExperimentTest extends TestCase {
     public void testGetNextEndLocation() {
         ITmfContext context1 = fExperiment.seekEvent(fExperiment.getNbEvents() - 1);
         fExperiment.getNext(context1);
-        ITmfLocation location = context1.getLocation().clone();
+        ITmfLocation<?> location = context1.getLocation().clone();
         ITmfContext context2 = fExperiment.seekEvent(location);
         ITmfEvent event = fExperiment.getNext(context2);
         assertNull("Event", event);

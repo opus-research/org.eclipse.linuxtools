@@ -207,7 +207,7 @@ class StateSystemBuildRequest extends TmfEventRequest {
     private final ITmfTrace trace;
 
     StateSystemBuildRequest(HistoryBuilder builder) {
-        super(builder.getInputPlugin().getExpectedEventType(),
+        super(builder.getInputPlugin().getExpectedEventType().getClass(),
                 TmfTimeRange.ETERNITY,
                 TmfDataRequest.ALL_DATA,
                 chunkSize,

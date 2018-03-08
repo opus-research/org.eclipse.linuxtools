@@ -37,9 +37,8 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
 
     private static final int DEFAULT_EVENTS_QUEUE_SIZE = 10000;
 
-    private final ITmfTrace trace;
-    private final Class<? extends ITmfEvent> eventType;
     private final BlockingQueue<ITmfEvent> eventsQueue;
+    private final ITmfTrace trace;
     private final Thread eventHandlerThread;
 
     private boolean ssAssigned;
@@ -51,16 +50,12 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
      *
      * @param trace
      *            The LTTng 2.0 kernel trace directory
-     * @param eventType
-     *            The specific class for the event type that will be used within
-     *            the subclass
      */
-    public AbstractStateChangeInput(ITmfTrace trace, Class<? extends ITmfEvent> eventType) {
-        this.trace = trace;
-        this.eventType = eventType;
+    public AbstractStateChangeInput(ITmfTrace trace) {
         eventsQueue = new ArrayBlockingQueue<ITmfEvent>(DEFAULT_EVENTS_QUEUE_SIZE);
-        eventHandlerThread = new Thread(new EventProcessor(), "CTF Kernel Event Handler"); //$NON-NLS-1$
+        this.trace = trace;
         ssAssigned = false;
+        eventHandlerThread = new Thread(new EventProcessor(), "CTF Kernel Event Handler"); //$NON-NLS-1$
     }
 
     @Override
@@ -94,12 +89,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     }
 
     @Override
-    public final Class<? extends ITmfEvent> getExpectedEventType() {
-        return eventType;
-    }
-
-    @Override
-    public final void processEvent(ITmfEvent event) {
+    public void processEvent(ITmfEvent event) {
         /* Make sure the target state system has been assigned */
         if (!ssAssigned) {
             System.err.println("Cannot process event without a target state system"); //$NON-NLS-1$
@@ -114,6 +104,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
             e.printStackTrace();
         }
     }
+
 
     /**
      * This is the runner class for the second thread, which will take the
@@ -133,11 +124,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
                 event = eventsQueue.take();
                 while (event.getTimestamp().getValue() != -1) {
                     currentEvent = event;
-
-                    /* Make sure this is an event the sub-class can process */
-                    if (eventType.isInstance(event)) {
-                        eventHandle(event);
-                    }
+                    eventHandle(event);
                     event = eventsQueue.take();
                 }
                 /* We've received the last event, clean up */
@@ -170,6 +157,9 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     // ------------------------------------------------------------------------
     // Abstract methods
     // ------------------------------------------------------------------------
+
+    @Override
+    public abstract ITmfEvent getExpectedEventType();
 
     /**
      * Handle the given event and send the appropriate state transitions into

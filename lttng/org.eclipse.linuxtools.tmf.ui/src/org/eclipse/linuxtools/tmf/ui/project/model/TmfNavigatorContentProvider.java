@@ -345,6 +345,7 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
      * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedChildren(java.lang.Object, java.util.Set)
      */
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void getPipelinedChildren(Object parent, Set currentChildren) {
         customizeTmfElements(getChildren(parent), currentChildren);
     }
@@ -354,6 +355,7 @@ public class TmfNavigatorContentProvider implements IPipelinedTreeContentProvide
      * @see org.eclipse.ui.navigator.IPipelinedTreeContentProvider#getPipelinedElements(java.lang.Object, java.util.Set)
      */
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void getPipelinedElements(Object input, Set currentElements) {
         customizeTmfElements(getElements(input), currentElements);
     }

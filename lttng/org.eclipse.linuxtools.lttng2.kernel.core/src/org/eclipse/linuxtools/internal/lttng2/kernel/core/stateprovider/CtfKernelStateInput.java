@@ -57,7 +57,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
      *            The LTTng 2.0 kernel trace directory
      */
     public CtfKernelStateInput(CtfTmfTrace trace) {
-        super(trace, CtfTmfEvent.class);
+        super(trace);
         knownEventNames = fillEventNames();
     }
 
@@ -69,11 +69,17 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
     }
 
     @Override
+    public CtfTmfEvent getExpectedEventType() {
+        return CtfTmfEvent.getNullEvent();
+    }
+
+    @Override
     protected void eventHandle(ITmfEvent ev) {
-        /*
-         * AbstractStateChangeInput should have already checked for the correct
-         * class type
-         */
+        if (!(ev instanceof CtfTmfEvent)) {
+            /* Wrong event type, can't process */
+            return;
+        }
+
         CtfTmfEvent event = (CtfTmfEvent) ev;
 
         int quark;
