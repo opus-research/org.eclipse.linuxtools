@@ -10,10 +10,14 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.callgraph.launch.tests;
 
-import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.IBinary;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapUIErrorMessages;
 import org.eclipse.linuxtools.internal.callgraph.launch.LaunchStapGraph;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+
+
+
 
 public class LaunchShortcutsTest extends AbstractStapTest{
 
@@ -35,7 +39,8 @@ public class LaunchShortcutsTest extends AbstractStapTest{
 	}
 	
 	
-	public void testLaunchCallGraph() throws CModelException {
+	public void testLaunchCallGraph() {
+		try {
 			SystemTapUIErrorMessages.setActive(false);
 			
 			LaunchStapGraph launch = new LaunchStapGraph();
@@ -44,11 +49,22 @@ public class LaunchShortcutsTest extends AbstractStapTest{
 			IBinary bin = proj.getBinaryContainer().getBinaries()[0];
 			launch.launch(bin, "profile");
 			String script = launch.getScript();
+			System.out.println(script);
 			
 			assert(script.contains("probe process(@1).function(\"calledOnce\").call{	callFunction(probefunc())	}	probe process(@1).function(\"calledOnce\").return{		returnFunction(probefunc())	}"));
 			assert(script.contains("probe process(@1).function(\"calledTwice\").call{	callFunction(probefunc())	}	probe process(@1).function(\"calledTwice\").return{		returnFunction(probefunc())	}"));
 			assert(script.contains("probe process(@1).function(\"main\").call{	callFunction(probefunc())	}	probe process(@1).function(\"main\").return{		returnFunction(probefunc())	}"));
 
+			
+			
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	}
+
+	@Override
+	protected Bundle getBundle() {
+		return FrameworkUtil.getBundle(this.getClass());
 	}
 
 }

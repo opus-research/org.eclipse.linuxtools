@@ -43,17 +43,17 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 
 		createLegend();
 		createTitle(title);
-
+		
 		this.addPaintListener(paintListener);
 
-		parent.addCheckOption(Localization.getString("AChart.Title"), titleListener); //$NON-NLS-1$
-		parent.addCheckOption(Localization.getString("AChart.Legend"), legendListener); //$NON-NLS-1$
+		parent.addCheckOption(Localization.getString("AChart.Title"), titleListener);
+		parent.addCheckOption(Localization.getString("AChart.Legend"), legendListener);
 	}
-
+	
 	protected void createTitle(String title) {
 		this.title = new GraphLabel(this, title, this, 0.1f, SWT.BOLD);
 	}
-
+	
 	protected void createLegend() {
 		String[] labels = adapter.getLabels();
 		String[] labels2 = new String[labels.length-1];
@@ -63,10 +63,10 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 			labels2[i] = labels[i+1];
 			colors[i] = new Color(this.getDisplay(), IGraphColorConstants.COLORS[i]);
 		}
-
+		
 		legend = new GraphLegend(this, labels2, colors);
 	}
-
+	
 	protected void paintAll(GC gc) {
 		paintElementList(gc);
 		if(showLegend && legend != null)
@@ -74,19 +74,19 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 		if(showTitle && title != null)
 			title.paint(gc);
 	}
-
+	
 	@Override
 	public void dispose() {
 		this.removePaintListener(paintListener);
-		parent.removeCheckOption(Localization.getString("AChart.Title")); //$NON-NLS-1$
-		parent.removeCheckOption(Localization.getString("AChart.Legend")); //$NON-NLS-1$
+		parent.removeCheckOption(Localization.getString("AChart.Title"));
+		parent.removeCheckOption(Localization.getString("AChart.Legend"));
 
 		legendListener = null;
 		titleListener = null;
 
 		super.dispose();
 	}
-
+	
 	/*
 	 * Listeners are below:
 	 *  paintListener - A PaintListener for making sure everything is drawn
@@ -94,34 +94,28 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 	 *  legendListener - A SelectionListener for the legend checkbox
 	 */
 	private final PaintListener paintListener = new PaintListener() {
-		@Override
 		public void paintControl(PaintEvent e) {
 			paintAll(e.gc);
 		}
 	};
-
+	
 	private SelectionListener titleListener = new SelectionListener() {
-		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {}
-		@Override
 		public void widgetSelected(SelectionEvent e) {
 			showTitle = ((Button)e.getSource()).getSelection();
 			repaint();
 		}
 	};
-
+	
 	private SelectionListener legendListener = new SelectionListener() {
-		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {}
-		@Override
 		public void widgetSelected(SelectionEvent e) {
 			showLegend = ((Button)e.getSource()).getSelection();
 			repaint();
 		}
 	};
-
+	
 	public abstract boolean isMultiGraph();
-	@Override
 	public abstract void handleUpdateEvent();
 	public abstract void paintElementList(GC gc);
 
@@ -129,8 +123,8 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 	protected GraphLegend legend;
 	protected GraphLabel title;
 	protected LinkedList<Object>[] elementList;
-
+	
 	public boolean showTitle, showLegend;
-
+	
 	private IAdapter adapter;
 }

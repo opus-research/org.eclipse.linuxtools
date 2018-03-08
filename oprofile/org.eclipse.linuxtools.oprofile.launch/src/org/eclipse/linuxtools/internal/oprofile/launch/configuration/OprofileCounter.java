@@ -49,18 +49,9 @@ public class OprofileCounter {
 	 * @param nr	the counter number
 	 */
 	public OprofileCounter(int nr) {
-		this(nr, Oprofile.getEvents(nr));
-	}
-
-	/**
-	 * Constructor for OprofileCounter.
-	 * @param nr the counter number
-	 * @param events the given events for counter number <code>nr</code>
-	 */
-	public OprofileCounter(int nr, OpEvent[] events) {
 		number = nr;
 		_enabled = false;
-		eventList = events;
+		eventList = Oprofile.getEvents(number);
 		daemonEvent = new OprofileDaemonEvent();
 	}
 

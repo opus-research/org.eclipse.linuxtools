@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,26 +16,46 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationData;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Collection of tests for the {@link CtfLocationInfo}
+ * Collection of tests for the {@link CtfLocationData}
  *
  * @author alexmont
  */
 public class CtfLocationDataTest {
 
-    private CtfLocationInfo fixture;
+    private CtfLocationData fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CtfLocationDataTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-        fixture = new CtfLocationInfo(1, 0);
+        fixture = new CtfLocationData(1, 0);
     }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
+    }
+
 
     /**
      * Test for the .getTimestamp() and .getIndex() methods
@@ -63,9 +83,9 @@ public class CtfLocationDataTest {
      */
     @Test
     public void testEquals() {
-        CtfLocationInfo same = new CtfLocationInfo(1, 0);
-        CtfLocationInfo diff1 = new CtfLocationInfo(100, 0);
-        CtfLocationInfo diff2 = new CtfLocationInfo(1, 10);
+        CtfLocationData same = new CtfLocationData(1, 0);
+        CtfLocationData diff1 = new CtfLocationData(100, 0);
+        CtfLocationData diff2 = new CtfLocationData(1, 10);
 
         assertTrue(fixture.equals(same));
         assertFalse(fixture.equals(diff1));
@@ -77,10 +97,10 @@ public class CtfLocationDataTest {
      */
     @Test
     public void testCompareTo() {
-        CtfLocationInfo same = new CtfLocationInfo(1, 0);
-        CtfLocationInfo smaller = new CtfLocationInfo(0, 0);
-        CtfLocationInfo bigger1 = new CtfLocationInfo(1000, 500);
-        CtfLocationInfo bigger2 = new CtfLocationInfo(1, 1);
+        CtfLocationData same = new CtfLocationData(1, 0);
+        CtfLocationData smaller = new CtfLocationData(0, 0);
+        CtfLocationData bigger1 = new CtfLocationData(1000, 500);
+        CtfLocationData bigger2 = new CtfLocationData(1, 1);
 
         assertEquals(0, same.compareTo(fixture));
         assertEquals(-1, smaller.compareTo(fixture));
@@ -93,7 +113,7 @@ public class CtfLocationDataTest {
      */
     @Test
     public void testToString() {
-        String expected = "Element [1/0]";
+        String expected = "Element [1/0]"; //$NON-NLS-1$
         assertEquals(expected, fixture.toString());
     }
 }

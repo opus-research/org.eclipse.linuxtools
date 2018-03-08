@@ -27,10 +27,10 @@ import org.eclipse.ui.forms.widgets.ColumnLayout;
 
 public class SortFilterWizardPage extends FilterWizardPage {
 	public SortFilterWizardPage() {
-		super("selectFilterOptions"); //$NON-NLS-1$
-		setTitle(Localization.getString("SortFilterWizardPage.CreateSortFilter")); //$NON-NLS-1$
+		super("selectFilterOptions");
+		setTitle(Localization.getString("SortFilterWizardPage.CreateSortFilter"));
 	}
-
+	
 	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
@@ -48,29 +48,29 @@ public class SortFilterWizardPage extends FilterWizardPage {
 		ColumnLayout colLayout = new ColumnLayout();
 		colLayout.maxNumColumns = 1;
 		cmpFilterOpts.setLayout(colLayout);
-
+		
 		//Column
 		Label lblColumn = new Label(cmpFilterOpts, SWT.NONE);
-		lblColumn.setText(Localization.getString("SortFilterWizardPage.Column")); //$NON-NLS-1$
+		lblColumn.setText(Localization.getString("SortFilterWizardPage.Column"));
 		cboColumn = new Combo(cmpFilterOpts, SWT.DROP_DOWN);
 		cboColumn.addSelectionListener(selectionListener);
 		for(int i=0; i<wizard.series.length; i++)
 			cboColumn.add(wizard.series[i]);
 
 		new Label(cmpFilterOpts, SWT.NONE);	//Spacer
-
+		
 		//Style
 		radAscending = new Button(cmpFilterOpts, SWT.RADIO);
-		radAscending.setText(Localization.getString("SortFilterWizardPage.Ascending")); //$NON-NLS-1$
+		radAscending.setText(Localization.getString("SortFilterWizardPage.Ascending"));
 		radAscending.addSelectionListener(selectionListener);
 		radAscending.setSelection(true);
 		radDescending = new Button(cmpFilterOpts, SWT.RADIO);
-		radDescending.setText(Localization.getString("SortFilterWizardPage.Descending")); //$NON-NLS-1$
+		radDescending.setText(Localization.getString("SortFilterWizardPage.Descending"));
 		radDescending.addSelectionListener(selectionListener);
 
 		setControl(comp);
 	}
-
+	
 	@Override
 	public boolean canFlipToNextPage() {
 		return false;

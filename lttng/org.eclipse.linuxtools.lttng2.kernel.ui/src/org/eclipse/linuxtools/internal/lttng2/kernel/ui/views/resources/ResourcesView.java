@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -29,6 +29,9 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -40,11 +43,9 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTimeListener;
@@ -59,6 +60,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorPart;
 
 /**
  * Main implementation for the LTTng 2.0 kernel Resource view
@@ -344,9 +346,12 @@ public class ResourcesView extends TmfView {
         makeActions();
         contributeToActionBars();
 
-        ITmfTrace trace = getActiveTrace();
-        if (trace != null) {
-            traceSelected(new TmfTraceSelectedSignal(this, trace));
+        IEditorPart editor = getSite().getPage().getActiveEditor();
+        if (editor instanceof ITmfTraceEditor) {
+            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
+            if (trace != null) {
+                traceSelected(new TmfTraceSelectedSignal(this, trace));
+            }
         }
     }
 

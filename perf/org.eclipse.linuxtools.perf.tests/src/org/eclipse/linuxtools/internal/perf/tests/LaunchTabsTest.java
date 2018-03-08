@@ -63,14 +63,14 @@ public class LaunchTabsTest extends AbstractTest {
 	
 	//getter functions for otherwise unaccessible member variables 
 	private static class TestOptionsTab extends PerfOptionsTab {
-		protected Text getTxtKernelLocation() { return txtKernelLocation; }
-		protected Button getChkRecordRealtime() { return chkRecordRealtime; }
-		protected Button getChkRecordVerbose() { return chkRecordVerbose; }
-		protected Button getChkSourceLineNumbers() { return chkSourceLineNumbers; }
-		protected Button getChkKernelSourceLineNumbers() { return chkKernelSourceLineNumbers; }
-		protected Button getChkMultiplexEvents() { return chkMultiplexEvents; }
-		protected Button getChkModuleSymbols() { return chkModuleSymbols; }
-		protected Button getChkHideUnresolvedSymbols() { return chkHideUnresolvedSymbols; }
+		protected Text get_txtKernel_Location() { return _txtKernel_Location; }
+		protected Button get_chkRecord_Realtime() { return _chkRecord_Realtime; }
+		protected Button get_chkRecord_Verbose() { return _chkRecord_Verbose; }
+		protected Button get_chkSourceLineNumbers() { return _chkSourceLineNumbers; }
+		protected Button get_chkKernel_SourceLineNumbers() { return _chkKernel_SourceLineNumbers; }
+		protected Button get_chkMultiplexEvents() { return _chkMultiplexEvents; }
+		protected Button get_chkModuleSymbols() { return _chkModuleSymbols; }
+		protected Button get_chkHideUnresolvedSymbols() { return _chkHideUnresolvedSymbols; }
 	}
 	
 	public void testOptionsTab() throws CoreException {
@@ -85,7 +85,7 @@ public class LaunchTabsTest extends AbstractTest {
 		tab.initializeFrom(config);
 		assertTrue(tab.isValid(config));
 		
-		Button rrCheck = tab.getChkRecordRealtime();
+		Button rrCheck = tab.get_chkRecord_Realtime();
 		rrCheck.setSelection(true);
 		rrCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -95,7 +95,7 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Record_Realtime, true));
 		
-		Button rvCheck = tab.getChkRecordVerbose();
+		Button rvCheck = tab.get_chkRecord_Verbose();
 		rvCheck.setSelection(true);
 		rvCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -105,7 +105,7 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Record_Verbose, true));
 		
-		Button slcCheck = tab.getChkSourceLineNumbers();
+		Button slcCheck = tab.get_chkSourceLineNumbers();
 		slcCheck.setSelection(true);
 		slcCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -115,7 +115,7 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_SourceLineNumbers, true));
 		
-		Button kslcCheck = tab.getChkKernelSourceLineNumbers();
+		Button kslcCheck = tab.get_chkKernel_SourceLineNumbers();
 		kslcCheck.setSelection(true);
 		kslcCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -125,7 +125,7 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, true));
 		
-		Button meCheck = tab.getChkMultiplexEvents();
+		Button meCheck = tab.get_chkMultiplexEvents();
 		meCheck.setSelection(true);
 		meCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -135,7 +135,7 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Multiplex, true));
 		
-		Button msCheck = tab.getChkModuleSymbols();
+		Button msCheck = tab.get_chkModuleSymbols();
 		msCheck.setSelection(true);
 		msCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -145,7 +145,7 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, true));
 		
-		Button husCheck = tab.getChkHideUnresolvedSymbols();
+		Button husCheck = tab.get_chkHideUnresolvedSymbols();
 		husCheck.setSelection(true);
 		husCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -179,7 +179,7 @@ public class LaunchTabsTest extends AbstractTest {
 		assertTrue(msCheck.getSelection());
 		assertTrue(husCheck.getSelection());
 		
-		Text klocText = tab.getTxtKernelLocation();
+		Text klocText = tab.get_txtKernel_Location();
 		klocText.setText("doesntexist"); //$NON-NLS-1$
 		klocText.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
@@ -193,7 +193,7 @@ public class LaunchTabsTest extends AbstractTest {
 	
 	//getter functions for otherwise unaccessible member variables 
 	private static class TestEventsTab extends PerfEventsTab {
-		public Button get_chkDefaultEvent() { return chkDefaultEvent; }
+		public Button get_chkDefaultEvent() { return _chkDefaultEvent; }
 	}
 	
 	public void testEventsTab() throws CoreException {

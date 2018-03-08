@@ -47,10 +47,9 @@ public class StapTreeContentProvider implements ITreeContentProvider{
 
 	@Override
 	public boolean hasChildren(Object element) {
-		if (element instanceof StapData) {
+		if (element instanceof StapData)
 			return element == null ? false : 
 				((StapData) element).children.size() > 0;
-		}
 		return false;
 	}
 

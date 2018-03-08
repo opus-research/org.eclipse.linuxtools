@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Geneviève Bastien - Moved the delete code to element model's classes
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -153,7 +152,19 @@ public class DeleteTraceHandler extends AbstractHandler {
                             }
                             for (ITmfProjectModelElement child : toRemove) {
                                 // Close the experiment if open
-                                ((TmfExperimentElement) experiment).removeTrace((TmfTraceElement)child);
+                                file = ((TmfExperimentElement) experiment).getBookmarksFile();
+                                input = new FileEditorInput(file);
+                                for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+                                    for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                                        for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                                            if (editorReference.getEditorInput().equals(input)) {
+                                                wbPage.closeEditor(editorReference.getEditor(false), false);
+                                            }
+                                        }
+                                    }
+                                }
+                                experiment.removeChild(child);
+                                child.getResource().delete(true, null);
                             }
                         }
 

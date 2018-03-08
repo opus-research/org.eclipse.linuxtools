@@ -16,7 +16,6 @@ import java.text.NumberFormat;
 
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractPercentageDrawerField;
 import org.eclipse.linuxtools.dataviewers.charts.provider.IChartField;
-import org.eclipse.linuxtools.internal.gprof.Messages;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 
 
@@ -28,7 +27,7 @@ import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 public class RatioProfField extends AbstractPercentageDrawerField implements IChartField{
 	
 	/** Format to use to display percentages */
-	public final static NumberFormat nf = new DecimalFormat("##0.0#"); //$NON-NLS-1$
+	public final static NumberFormat nf = new DecimalFormat("##0.0#");
 	
 	
 	/**
@@ -63,7 +62,7 @@ public class RatioProfField extends AbstractPercentageDrawerField implements ICh
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return Messages.RatioProfField_TIME_PERCENTAGE;
+		return "% Time";
 	}
 
 	/* 

@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.gprof.view.fields;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
 import org.eclipse.linuxtools.dataviewers.charts.provider.IChartField;
-import org.eclipse.linuxtools.internal.gprof.Messages;
 import org.eclipse.linuxtools.internal.gprof.parser.GmonDecoder;
 import org.eclipse.linuxtools.internal.gprof.parser.HistogramDecoder;
 import org.eclipse.linuxtools.internal.gprof.view.GmonView;
@@ -63,8 +62,18 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		if (samples) return Messages.SampleProfField_SAMPLE_HDR;
-		return Messages.SampleProfField_TIME_HDR;
+		String prefix = "";
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				prefix = "ICACHE ";
+			} else if (decoder.isDCache()) {
+				prefix = "DCACHE ";
+			}
+		}
+		if (samples) return prefix + "Samples";
+		return prefix + "Time";
 	}
 	
 	/*
@@ -73,8 +82,19 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	 */
 	@Override
 	public String getColumnHeaderTooltip() {
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				return "Time spent by function accessing instruction cache";
+			} else if (decoder.isDCache()) {
+				return "Time spent by function accessing data cache";
+			}
+		}
 		return null;
 	}
+	
+	
 
 	/*
 	 * (non-Javadoc)
@@ -84,12 +104,12 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	public String getValue(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getSamples();
-		if (i == -1) return ""; //$NON-NLS-1$
+		if (i == -1) return "";
 		if (samples) {
 			return String.valueOf(i);
 		} else {
 			double prof_rate = getProfRate();
-			if (prof_rate == UNINITIALIZED) return "?"; //$NON-NLS-1$
+			if (prof_rate == UNINITIALIZED) return "?";
 			return getValue(i, prof_rate);
 		}
 	}
@@ -106,37 +126,37 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 		long ns = timeInNs%1000;
 		
 		long timeInUs = timeInNs/1000;
-		if (timeInUs == 0) return ns + "ns"; //$NON-NLS-1$
+		if (timeInUs == 0) return ns + "ns";
 		long us = timeInUs%1000;
 		
 		long timeInMs = timeInUs/1000;
 		if (timeInMs == 0) {
-			String ns_s = "" + ns; //$NON-NLS-1$
-			while (ns_s.length() < 3) ns_s = "0" + ns_s; //$NON-NLS-1$
-			return us + "." + ns_s + "us"; //$NON-NLS-1$ //$NON-NLS-2$
+			String ns_s = "" + ns;
+			while (ns_s.length() < 3) ns_s = "0" + ns_s;
+			return us + "." + ns_s + "us";
 		}
 		long ms = timeInMs%1000;
 		
 		long timeInS = timeInMs/1000;
 		if (timeInS == 0) {
-			String us_s = "" + us; //$NON-NLS-1$
-			while (us_s.length() < 3) us_s = "0" + us_s; //$NON-NLS-1$
-			return ms + "." + us_s + "ms"; //$NON-NLS-1$ //$NON-NLS-2$
+			String us_s = "" + us;
+			while (us_s.length() < 3) us_s = "0" + us_s;
+			return ms + "." + us_s + "ms";
 		}
 		long s = timeInS%60;
 		
 		long timeInMin = timeInS/60;
 		if (timeInMin == 0) {
-			String ms_s = "" + ms; //$NON-NLS-1$
-			while (ms_s.length() < 3) ms_s = "0" + ms_s; //$NON-NLS-1$
-			return s + "." + ms_s + "s"; //$NON-NLS-1$ //$NON-NLS-2$
+			String ms_s = "" + ms;
+			while (ms_s.length() < 3) ms_s = "0" + ms_s;
+			return s + "." + ms_s + "s";
 		}
 		long min = timeInMin%60;
 		
 		long timeInHour = timeInMin/60;
-		if (timeInHour == 0) return min + "min " + s + "s"; //$NON-NLS-1$ //$NON-NLS-2$
+		if (timeInHour == 0) return min + "min " + s + "s";
 		
-		return timeInHour + "h " + min + "min"; //$NON-NLS-1$ //$NON-NLS-2$
+		return timeInHour + "h " + min + "min";
 	}
 	
 
@@ -172,14 +192,25 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	 */
 	@Override
 	public String getToolTipText(Object element) {
+		String suffix = "";
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				suffix = " in instruction cache";
+			} else if (decoder.isDCache()) {
+				suffix = " in data cache";
+			}
+		}
+		
 		if (element instanceof HistRoot) {
-			return Messages.SampleProfField_TOTAL_TIME_SPENT;
+			return "total time spent in the program" + suffix;
 		} else if (element instanceof HistFunction) {
-			return Messages.SampleProfField_TIME_SPENT_IN_FUNCTION;
+			return "time spent in this function" + suffix;
 		} else if (element instanceof HistFile) {
-			return Messages.SampleProfField_TIME_SPENT_IN_FILE;
+			return "time spent in this file" + suffix;
 		} else if (element instanceof HistLine) {
-			return Messages.SampleProfField_TIME_SPENT_AT_LOCATION;
+			return "time spent at this location" + suffix;
 		}
 		return null;
 	}
@@ -199,4 +230,6 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 		return i;
 	}
 
+	
+	
 }

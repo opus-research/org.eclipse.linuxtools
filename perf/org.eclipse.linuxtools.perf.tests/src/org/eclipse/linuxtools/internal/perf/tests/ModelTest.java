@@ -113,7 +113,7 @@ public class ModelTest extends AbstractTest {
 
 		PerfPlugin.getDefault().setModelRoot(invisibleRoot);
 		// update the model root for the view
-		PerfCore.RefreshView("resources/defaultevent-data/perf.data");
+		PerfCore.RefreshView();
 
 		// number of parents excluding invisibleRoot
 		int numOfParents = getNumberOfParents(invisibleRoot) - 1;

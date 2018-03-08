@@ -24,22 +24,21 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
 	public EditorPreferencePage() {
 		super(GRID);
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("EditorPreferencePage.EditorPreferenceDescription")); //$NON-NLS-1$
+		setDescription(Localization.getString("EditorPreferencePage.EditorPreferenceDescription"));
 	}
 	
 	@Override
 	public void createFieldEditors() {
 		addField(new ColorFieldEditor(
 				IDEPreferenceConstants.P_EDITOR_BACKGROUND, 
-				Localization.getString("EditorPreferencePage.BackgroundColor"), getFieldEditorParent())); //$NON-NLS-1$
+				Localization.getString("EditorPreferencePage.BackgroundColor"), getFieldEditorParent()));
 		
 		addField(new BooleanFieldEditor(
 				IDEPreferenceConstants.P_SHOW_LINE_NUMBERS,
-				Localization.getString("EditorPreferencePage.ShowLineNumbers"), //$NON-NLS-1$
+				Localization.getString("EditorPreferencePage.ShowLineNumbers"),
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 }

@@ -57,7 +57,6 @@ public class GraphCanvas extends Canvas {
 		hBar = this.getHorizontalBar();
 		vBar = this.getVerticalBar();
 		hBar.addListener (SWT.Selection, new Listener () {
-			@Override
 			public void handleEvent (Event e) {
 				if(hBar.getSelection()+hBar.getThumb() == hBar.getMaximum())
 					autoScroll = true;
@@ -70,7 +69,6 @@ public class GraphCanvas extends Canvas {
 		});
 
 		vBar.addListener (SWT.Selection, new Listener () {
-			@Override
 			public void handleEvent (Event e) {
 				autoScroll = false;
 
@@ -121,7 +119,6 @@ public class GraphCanvas extends Canvas {
 	 */
 	public synchronized void repaint() {
 		getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				redraw();
 			}

@@ -21,21 +21,21 @@ import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener
 
 
 public class LoggingStreamDaemon implements IGobblerListener {
-
+	
 	/**
 	 * Sets up an output to log to.
 	 */
 	public LoggingStreamDaemon() {
 		output = new StringBuilder();
 		try {
-			outputFile = File.createTempFile(this.toString(), ".tmp"); //$NON-NLS-1$
+			outputFile = File.createTempFile(this.toString(), ".tmp");
 			writer = new FileWriter(outputFile, true);
 		} catch(IOException ioe) {
 			outputFile = null;
 		}
 		saveLog = false;
 	}
-
+	
 	/**
 	 * Pushes output to log.
 	 */
@@ -52,7 +52,6 @@ public class LoggingStreamDaemon implements IGobblerListener {
 	/**
 	 * Outputs one line.
 	 */
-	@Override
 	public void handleDataEvent(String line) {
 		output.append(line);
 		this.pushData();
@@ -60,7 +59,7 @@ public class LoggingStreamDaemon implements IGobblerListener {
 
 	/**
 	 * Reads in and returns the output produced.
-	 *
+	 * 
 	 * @return The logged data.
 	 */
 	public String getOutput() {
@@ -72,19 +71,19 @@ public class LoggingStreamDaemon implements IGobblerListener {
 			char[] buffer = new char[BUFFER_SIZE];
 			int count;
 			StringBuilder builder = new StringBuilder();
-			while(-1 != (count = reader.read(buffer)))
+			while(-1 != (count = reader.read(buffer))) 
 				builder.append(buffer, 0, count);
 			reader.close();
 			return builder.toString();
 		} catch(IOException ioe) {}
 		return null;
 	}
-
+	
 	/**
 	 * Saves the logfile.
-	 *
+	 * 
 	 * @param file The file to save the log data to.
-	 *
+	 * 
 	 * @return True if the save was successful.
 	 */
 	public boolean saveLog(File file) {
@@ -97,7 +96,7 @@ public class LoggingStreamDaemon implements IGobblerListener {
 			FileWriter w = new FileWriter(file, true);
 			char[] buffer = new char[BUFFER_SIZE];
 			int count;
-			while(-1 != (count = r.read(buffer)))
+			while(-1 != (count = r.read(buffer))) 
 				w.write(new String(buffer, 0, count));
 			w.flush();
 			writer.close();
@@ -111,7 +110,7 @@ public class LoggingStreamDaemon implements IGobblerListener {
 		}
 		return true;
 	}
-
+	
 	public void dispose() {
 		if(null != outputFile && !saveLog)
 			outputFile.delete();
@@ -123,7 +122,7 @@ public class LoggingStreamDaemon implements IGobblerListener {
 		}
 		writer = null;
 	}
-
+	
 	protected StringBuilder output;
 	protected File outputFile;
 	protected FileWriter writer;

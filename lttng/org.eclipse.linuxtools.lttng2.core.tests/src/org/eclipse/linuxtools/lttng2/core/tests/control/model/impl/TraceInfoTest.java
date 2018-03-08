@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,28 +8,23 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.core.tests.control.model.impl;
 
-import static org.junit.Assert.*;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ITraceInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.TraceInfo;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
- * The class <code>TraceInfoTest</code> contains test for the class
- * <code>{@link TraceInfo}</code>.
+ * The class <code>TraceInfoTest</code> contains test for the class <code>{@link TraceInfo}</code>.
  */
-public class TraceInfoTest {
+@SuppressWarnings({"nls", "javadoc"})
+public class TraceInfoTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Test data
     // ------------------------------------------------------------------------
-
     private ITraceInfo fTraceInfo1 = null;
     private ITraceInfo fTraceInfo2 = null;
 
@@ -37,14 +32,26 @@ public class TraceInfoTest {
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
-
     /**
      * Perform pre-test initialization.
+     *
+     * @throws Exception if the initialization fails for some reason
+     *
      */
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
         fTraceInfo1 = new TraceInfo("event1");
         fTraceInfo2 = new TraceInfo("event2");
+    }
+
+    /**
+     * Perform post-test clean-up.
+     *
+     * @throws Exception if the clean-up fails for some reason
+     *
+     */
+    @Override
+    public void tearDown() throws Exception {
     }
 
     // ------------------------------------------------------------------------
@@ -53,8 +60,8 @@ public class TraceInfoTest {
 
     /**
      * Run the BaseEventInfo() constructor test.
+     *
      */
-    @Test
     public void testTraceInfo() {
         TraceInfo fixture = new TraceInfo("event");
         assertNotNull(fixture);
@@ -65,7 +72,6 @@ public class TraceInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testTraceInfo2() {
         try {
             String name = null;
@@ -80,7 +86,6 @@ public class TraceInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testTraceInfoCopy() {
         TraceInfo info = new TraceInfo((TraceInfo)fTraceInfo1);
 
@@ -90,7 +95,6 @@ public class TraceInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testTraceCopy2() {
         try {
             TraceInfo info = null;
@@ -104,8 +108,8 @@ public class TraceInfoTest {
 
     /**
      * Run the void setEventType(String) method test.
+     *
      */
-    @Test
     public void testSetName() {
         TraceInfo fixture = new TraceInfo("event");
         fixture.setName("newName");
@@ -114,8 +118,8 @@ public class TraceInfoTest {
 
     /**
      * Run the String toString() method test.
+     *
      */
-    @Test
     public void testToString_1() {
         String result = fTraceInfo1.toString();
 
@@ -127,10 +131,6 @@ public class TraceInfoTest {
     // equals
     // ------------------------------------------------------------------------
 
-    /**
-     * Run the equals() method test.
-     */
-    @Test
     public void testEqualsReflexivity() {
         assertTrue("equals", fTraceInfo1.equals(fTraceInfo1));
         assertTrue("equals", fTraceInfo2.equals(fTraceInfo2));
@@ -139,10 +139,6 @@ public class TraceInfoTest {
         assertTrue("equals", !fTraceInfo2.equals(fTraceInfo1));
     }
 
-    /**
-     * Run the equals() method test.
-     */
-    @Test
     public void testEqualsSymmetry() {
         TraceInfo info1 = new TraceInfo((TraceInfo)fTraceInfo1);
         TraceInfo info2 = new TraceInfo((TraceInfo)fTraceInfo2);
@@ -153,10 +149,7 @@ public class TraceInfoTest {
         assertTrue("equals", info2.equals(fTraceInfo2));
         assertTrue("equals", fTraceInfo2.equals(info2));
     }
-    /**
-     * Run the equals() method test.
-     */
-    @Test
+
     public void testEqualsTransivity() {
         TraceInfo info1 = new TraceInfo((TraceInfo)fTraceInfo1);
         TraceInfo info2 = new TraceInfo((TraceInfo)fTraceInfo1);
@@ -166,10 +159,7 @@ public class TraceInfoTest {
         assertTrue("equals", info2.equals(info3));
         assertTrue("equals", info1.equals(info3));
     }
-    /**
-     * Run the equals() method test.
-     */
-    @Test
+
     public void testEqualsNull() {
         assertTrue("equals", !fTraceInfo1.equals(null));
         assertTrue("equals", !fTraceInfo2.equals(null));
@@ -179,10 +169,6 @@ public class TraceInfoTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    /**
-     * Run the hashCode() method test.
-     */
-    @Test
     public void testHashCode() {
         TraceInfo info1 = new TraceInfo((TraceInfo)fTraceInfo1);
         TraceInfo info2 = new TraceInfo((TraceInfo)fTraceInfo2);

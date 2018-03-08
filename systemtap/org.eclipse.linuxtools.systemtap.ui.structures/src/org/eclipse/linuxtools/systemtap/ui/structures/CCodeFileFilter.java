@@ -23,13 +23,12 @@ public class CCodeFileFilter implements FileFilter {
 	 *
 	 * @return A boolean value indicating whether or not to display the file.
 	 */
-	@Override
 	public boolean accept(File f) {
 		if(null == f)
 			return false;
 		return accept(f.getName(), f.isDirectory());
 	}
-
+	
 	/**
 	 * Checks a file type and only passes it (returns true) if it is either a directory, a .c, or a .h
 	 * file type.
@@ -49,6 +48,6 @@ public class CCodeFileFilter implements FileFilter {
 	}
 
 	public String getDescription() {
-		return ".c, .h files"; //$NON-NLS-1$
+		return ".c, .h files";
 	}
 }

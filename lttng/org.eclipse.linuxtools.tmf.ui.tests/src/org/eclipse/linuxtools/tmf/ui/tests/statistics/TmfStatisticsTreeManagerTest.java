@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,50 +9,52 @@
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
  *   Bernd Hufmann - Fixed warnings
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeManager;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * TmfStatisticsTreeRootFactory Test Case.
  */
-public class TmfStatisticsTreeManagerTest {
+@SuppressWarnings("nls")
+public class TmfStatisticsTreeManagerTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
 
-    private TmfStatisticsTree fStatisticsData1;
-    private TmfStatisticsTree fStatisticsData2;
-    private TmfStatisticsTree fStatisticsData3;
-    private String            fDataKey1 = "key1";
-    private String            fDataKey2 = "key2";
-    private String            fDataKey3 = "key3";
-
+    TmfStatisticsTree fStatisticsData1;
+    TmfStatisticsTree fStatisticsData2;
+    TmfStatisticsTree fStatisticsData3;
+    String            fDataKey1 = "key1";
+    String            fDataKey2 = "key2";
+    String            fDataKey3 = "key3";
 
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        addStatsTreeRoot();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     /**
-     * Initialization
+     * Adding of statistics tree root.
      */
-    @Before
-    public void setUp() {
+    public void addStatsTreeRoot() {
         fStatisticsData1 = new TmfStatisticsTree();
         fStatisticsData2 = new TmfStatisticsTree();
         fStatisticsData3 = new TmfStatisticsTree();
@@ -64,14 +66,13 @@ public class TmfStatisticsTreeManagerTest {
     /**
      * Clean the statistics tree
      */
-    private static void removeStatsTreeRoot() {
+    public void removeStatsTreeRoot() {
         TmfStatisticsTreeManager.removeAll();
     }
 
     /**
      * Test adding of statistics tree root. It should not throw exceptions
      */
-    @Test
     public void testaddStatsTreeRoot() {
         removeStatsTreeRoot();
 
@@ -103,7 +104,6 @@ public class TmfStatisticsTreeManagerTest {
     /**
      * Test getting of statistics tree root.
      */
-    @Test
     public void testGetStatTreeRoot() {
         TmfStatisticsTreeNode value1 = TmfStatisticsTreeManager.getStatTreeRoot(fDataKey1);
         TmfStatisticsTreeNode value2 = TmfStatisticsTreeManager.getStatTreeRoot(fDataKey2);
@@ -117,7 +117,6 @@ public class TmfStatisticsTreeManagerTest {
     /**
      * Test getting statistics tree.
      */
-    @Test
     public void testGetStatTree() {
         TmfStatisticsTree value1 = TmfStatisticsTreeManager.getStatTree(fDataKey1);
         TmfStatisticsTree value2 = TmfStatisticsTreeManager.getStatTree(fDataKey2);
@@ -135,7 +134,6 @@ public class TmfStatisticsTreeManagerTest {
     /**
      * Test checking for tree root existence.
      */
-    @Test
     public void testContainsTreeRoot() {
         assertTrue("containsTreeRoot", TmfStatisticsTreeManager.containsTreeRoot(fDataKey1));
         assertTrue("containsTreeRoot", TmfStatisticsTreeManager.containsTreeRoot(fDataKey2));
@@ -149,7 +147,6 @@ public class TmfStatisticsTreeManagerTest {
     /**
      * Test removal of statistics tree node.
      */
-    @Test
     public void testRemoveStatTreeRoot() {
         TmfStatisticsTreeManager.removeStatTreeRoot(fDataKey1);
         assertNull("removeStatTreeRoot", TmfStatisticsTreeManager.getStatTree(fDataKey1));
@@ -168,7 +165,6 @@ public class TmfStatisticsTreeManagerTest {
     /**
      * Test removal of all root nodes.
      */
-    @Test
     public void testRemoveAll() {
         TmfStatisticsTreeManager.removeAll();
         assertNull("removeAll", TmfStatisticsTreeManager.getStatTreeRoot(fDataKey2));

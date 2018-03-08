@@ -72,7 +72,6 @@ public class PathPreferencePage extends FieldEditorPreferencePage implements IWo
 
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 }

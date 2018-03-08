@@ -66,7 +66,6 @@ public class GraphPreferencePage extends FieldEditorPreferencePage implements IW
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {}
 	
 }

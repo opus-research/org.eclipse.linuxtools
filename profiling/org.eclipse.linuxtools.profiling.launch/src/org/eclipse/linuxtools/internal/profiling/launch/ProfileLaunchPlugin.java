@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.profiling.launch;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -79,19 +78,7 @@ public class ProfileLaunchPlugin extends AbstractUIPlugin {
 	}
 
 	public static Shell getActiveWorkbenchShell() {
-		IWorkbenchWindow window = getDefault().getWorkbench().getActiveWorkbenchWindow();
-		if (window != null) {
-			return window.getShell();
-		}
-		return null;
-	}
-
-	public static Shell getShell() {
-		if (getActiveWorkbenchShell() != null) {
-			return getActiveWorkbenchShell();
-		}
-		IWorkbenchWindow[] windows = getDefault().getWorkbench().getWorkbenchWindows();
-		return windows[0].getShell();
+		return getDefault().getWorkbench().getActiveWorkbenchWindow().getShell();
 	}
 
 	/**

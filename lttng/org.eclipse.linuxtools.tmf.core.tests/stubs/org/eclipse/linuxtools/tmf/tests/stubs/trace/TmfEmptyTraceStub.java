@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
@@ -64,7 +64,7 @@ public class TmfEmptyTraceStub extends TmfTraceStub {
     }
 
     @Override
-    public ITmfEvent parseEvent(final ITmfContext context) {
+    public TmfEvent parseEvent(final ITmfContext context) {
         return null;
     }
 

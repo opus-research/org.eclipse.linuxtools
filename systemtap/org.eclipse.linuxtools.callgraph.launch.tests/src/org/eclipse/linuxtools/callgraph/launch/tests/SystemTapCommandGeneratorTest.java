@@ -11,11 +11,15 @@
 package org.eclipse.linuxtools.callgraph.launch.tests;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapCommandGenerator;
+import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 
-public class SystemTapCommandGeneratorTest extends AbstractStapTest{ 
+import junit.framework.TestCase;
+
+public class SystemTapCommandGeneratorTest extends TestCase{ 
 	
 	//HACK TO GET THE PATH TO THE TESTING PROJECT
 	File file = new File("");
@@ -23,31 +27,45 @@ public class SystemTapCommandGeneratorTest extends AbstractStapTest{
 	SystemTapCommandGenerator stapgen = new SystemTapCommandGenerator();
 	
 	public void testExecutionWithScriptAndBinaryAndArgument(){
-
+		
 		String binaryFilePath = location + "factorial";
 		String scriptPath = location + "function_count.stp";
-
-		// RUN
-		String cmd = SystemTapCommandGenerator.generateCommand(scriptPath,
-				binaryFilePath, "", true, true, binaryFilePath, "",
-				PluginConstants.STAP_PATH);
-
-		assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath + " "
-				+ binaryFilePath, cmd);
+		
+		//RUN
+		String cmd = SystemTapCommandGenerator
+				.generateCommand(
+						scriptPath,
+						binaryFilePath,
+						"",
+						true,
+						true,
+						binaryFilePath, "", PluginConstants.STAP_PATH);
+		
+		assertEquals(
+				"stap -c '"+binaryFilePath+"' "+scriptPath+ " " +binaryFilePath,
+				cmd);
 		killStap();
-		// END
-	}
+		//END
+		}
 	
 	public void testScriptExecution(){
 
 		String scriptPath = location + "simple.stp";
-
-		// RUN
-		String cmd = SystemTapCommandGenerator.generateCommand(scriptPath, "",
-				"", false, false, "", "", PluginConstants.STAP_PATH);
-
-		assertEquals("stap " + scriptPath, cmd);
-		// END
+		
+		//RUN
+		String cmd = SystemTapCommandGenerator
+		.generateCommand(
+				scriptPath,
+				"",
+				"",
+				false,
+				false,
+				"", "", PluginConstants.STAP_PATH);
+		
+		assertEquals(
+				"stap "+scriptPath,
+				cmd);
+		//END
 	}
 
 	public void testExecutionWithScriptAndBinary() {
@@ -65,4 +83,12 @@ public class SystemTapCommandGeneratorTest extends AbstractStapTest{
 		killStap();
 	}
 
+	
+	public void killStap() {
+		try {
+			RuntimeProcessFactory.getFactory().exec("kill stap", null);			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

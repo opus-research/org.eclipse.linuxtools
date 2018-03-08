@@ -25,12 +25,11 @@ import org.eclipse.ui.console.IOConsoleOutputStream;
 public class ConsoleStreamDaemon implements IGobblerListener {
 	public ConsoleStreamDaemon(ScriptConsole console) {
 		this.console = console;
-		if(null != console) {
+		if(null != console)
 			ioConsole = console.newOutputStream();
-		}
 		disposed = false;
 	}
-
+	
 	/**
 	 * Prints out the new output data to the console
 	 */
@@ -47,12 +46,11 @@ public class ConsoleStreamDaemon implements IGobblerListener {
 	/**
 	 * Captures data events and pushes the data to the console
 	 */
-	@Override
 	public void handleDataEvent(String line) {
 		output = line;
 		this.pushData();
 	}
-
+	
 	/**
 	 * Checks to see if the class has been disposed already
 	 * @return boolean representing whether or not the class has been disposed
@@ -60,7 +58,7 @@ public class ConsoleStreamDaemon implements IGobblerListener {
 	public boolean isDisposed() {
 		return disposed;
 	}
-
+	
 	/**
 	 * Disposes of all internal references in the class. No method should be called after this.
 	 */

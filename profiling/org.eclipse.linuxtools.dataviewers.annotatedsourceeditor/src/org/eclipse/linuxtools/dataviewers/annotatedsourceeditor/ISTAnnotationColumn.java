@@ -11,7 +11,9 @@
 package org.eclipse.linuxtools.dataviewers.annotatedsourceeditor;
 
 public interface ISTAnnotationColumn {
-    String getAnnotation(int line);
-
-    String getTooltip(int line);
+	String getTitle();
+	String getAnnotation(int line);
+	String getTooltip(int line);
+	String getLongDescription(int line);
+	String getHeaderTooltip();
 }
