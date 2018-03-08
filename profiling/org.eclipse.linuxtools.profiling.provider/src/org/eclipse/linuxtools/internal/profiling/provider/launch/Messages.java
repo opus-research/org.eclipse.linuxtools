@@ -8,15 +8,15 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.profiling.snapshot.launch;
+package org.eclipse.linuxtools.internal.profiling.provider.launch;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.profiling.snapshot.launch.messages"; //$NON-NLS-1$
-	public static String SnapshotLaunchShortcut_0;
-	public static String SnapshotPreferencesPage_0;
-	public static String SnapshotPreferencesPage_1;
+	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.profiling.provider.launch.messages"; //$NON-NLS-1$
+	public static String ProviderLaunchShortcut_0;
+	public static String ProviderPreferencesPage_0;
+	public static String ProviderPreferencesPage_1;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

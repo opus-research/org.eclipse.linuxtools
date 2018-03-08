@@ -132,7 +132,7 @@ public class LibHover implements ICHelpProvider {
     				File lDir = new File(locationDir.toOSString());
     				lDir.mkdir();
     				IPath location = locationDir.append(getTransformedName(l.getName()) + ".libhover"); //$NON-NLS-1$
-    				File target = new File(location.toOSString()); //$NON-NLS-1$
+    				File target = new File(location.toOSString());
     				if (!target.exists()) {
     					FileOutputStream f = new FileOutputStream(locationDir.append("tmpFile").toOSString()); //$NON-NLS-1$
     					ObjectOutputStream out = new ObjectOutputStream(f);
@@ -224,7 +224,7 @@ public class LibHover implements ICHelpProvider {
 					File f = file.toLocalFile(EFS.NONE, null);
 					if (f != null) {
 						String name = getCleanName(fileName.substring(0,fileName.length()-9));
-						HelpBook h = new HelpBook(name, type); //$NON-NLS-1$
+						HelpBook h = new HelpBook(name, type);
 						helpBooks.add(h);
 						helpBooksMap.put(name, h);
 						String location = file.toURI().toString();
@@ -275,7 +275,7 @@ public class LibHover implements ICHelpProvider {
         }
         
 		public int compareTo (FunctionSummary x) {
-			FunctionSummary y = (FunctionSummary)x;
+			FunctionSummary y = x;
 			return getName().compareTo(y.getName());
 		}
 
@@ -315,7 +315,7 @@ public class LibHover implements ICHelpProvider {
         public IRequiredInclude[] getIncludes() {
         	IRequiredInclude[] includes = new IRequiredInclude[Includes.size()];
         	for (int i = 0; i < Includes.size(); ++i) {
-        		includes[i] = (IRequiredInclude)Includes.get(i);
+        		includes[i] = Includes.get(i);
         	}
         	return includes;
         }
@@ -336,6 +336,7 @@ public class LibHover implements ICHelpProvider {
 			this.toffset = toffset;
 			this.tlength = tlength;
 		}
+		@Override
 		public IStatus runOnAST(ILanguage lang, IASTTranslationUnit ast) {
 			if (ast != null) {
 				result = ast.getNodeSelector(null).findEnclosingName(toffset, tlength);
@@ -354,7 +355,8 @@ public class LibHover implements ICHelpProvider {
 			super("ASTDeclarationFinderJob", t); // $NON-NLS-1$
 			this.binding = binding;
 		}
-    	public IStatus runOnAST(ILanguage lang, IASTTranslationUnit ast) {
+    	@Override
+		public IStatus runOnAST(ILanguage lang, IASTTranslationUnit ast) {
     		if (ast != null) {
     			decls = ast.getDeclarationsInAST(binding);
     		}
@@ -378,7 +380,7 @@ public class LibHover implements ICHelpProvider {
         	try {
         		if (context instanceof IHoverHelpInvocationContext) {
         			// We know the file offset of the member reference.
-        			IRegion region = (IRegion)((IHoverHelpInvocationContext)context).getHoverRegion();
+        			IRegion region = ((IHoverHelpInvocationContext)context).getHoverRegion();
         			
         			// Now, let's find the declaration of the method.  We need to do this because we want the specific
         			// member prototype to go searching for.  There could be many members called "x" which have different
@@ -636,7 +638,7 @@ public class LibHover implements ICHelpProvider {
 			SortedMap<String, FunctionInfo> map = cppInfo.functions.tailMap(prefix);
 			Set<Map.Entry<String, FunctionInfo>> c = map.entrySet();
 			for (Iterator<Entry<String, FunctionInfo>> i = c.iterator(); i.hasNext();) {
-				Map.Entry<String, FunctionInfo> e = (Map.Entry<String, FunctionInfo>)i.next();
+				Map.Entry<String, FunctionInfo> e = i.next();
 				FunctionInfo x = e.getValue();
 				String name = x.getName();
 				// Look for names that start with prefix, but ignore names that
@@ -661,7 +663,7 @@ public class LibHover implements ICHelpProvider {
 		}
 		IFunctionSummary[] summaries = new IFunctionSummary[fList.size()];
 		for (int k = 0; k < summaries.length; k++) {
-			summaries[k] = (IFunctionSummary)fList.get(k);
+			summaries[k] = fList.get(k);
 		}
 		return summaries;
 	}
