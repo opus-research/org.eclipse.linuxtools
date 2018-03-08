@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.internal.rpm.ui.editor.UiUtils;
 import org.eclipse.linuxtools.internal.rpm.core.utils.DownloadJob;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
+import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
 import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMHandlerUtils;
 import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMUtils;
 import org.eclipse.swt.widgets.Shell;
@@ -38,12 +39,13 @@ public class SpecfileEditorDownloadSourcesActionDelegate extends AbstractHandler
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final Shell shell =  HandlerUtil.getActiveShellChecked(event);
+		final SpecfileParser specparser = new SpecfileParser();
 		IFile workFile = null;
 		Specfile specfile = null;
 
 		IResource resource = RPMHandlerUtils.getResource(event);
 		workFile = resource instanceof IFile ? (IFile) resource : null;
-		specfile = RPMUtils.parseToSpecfile(workFile);
+		specfile = specparser.parse(workFile);
 
 		// retrieve source(s) from specfile
 		final List<SpecfileSource> sourceURLList = specfile != null ? (List<SpecfileSource>) specfile

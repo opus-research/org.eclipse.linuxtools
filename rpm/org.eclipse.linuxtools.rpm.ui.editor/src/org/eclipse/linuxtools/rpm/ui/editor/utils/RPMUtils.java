@@ -10,16 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.ui.editor.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.Activator;
-import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
-import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -30,34 +22,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * Utility class for RPM UI Editor related things.
- * 
+ *
  */
 public class RPMUtils {
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.fedoraproject.eclipse.packager.IProjectRoot#getSpecfileModel()
-	 */
-	public static Specfile parseToSpecfile(IFile file) {
-		SpecfileParser parser = new SpecfileParser();
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					file.getContents()));
-			while ((line = reader.readLine()) != null) {
-				sb.append(line + "\n"); //$NON-NLS-1$
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Specfile specfile = parser.parse(sb.toString());
-		return specfile;
-	}
 
 	/**
 	 * Show an error dialog.

@@ -52,12 +52,6 @@ public class SpecfileTag extends SpecfileElement {
 		}
 		return resolve(stringValue);
 	}
-	public String getEvaldStringValue() {
-		if (tagType == TagType.INT) {
-			return Integer.toString(intValue);
-		}
-		return resolveEval(stringValue);
-	}
 	public void setValue(String value) {
 		this.tagType = TagType.STRING;
 		this.stringValue = value;

@@ -361,8 +361,8 @@
                </command>
          <command
                commandId="rpmEditor.downloadSources.command"
-               label="%command.label.2"
-               tooltip="%command.tooltip.2">
+               label="%command.name.2"
+               tooltip="%command.name.2">
             <visibleWhen>
                <iterate
                      ifEmpty="false"
@@ -387,8 +387,8 @@
          </command>
          <command
                commandId="rpmEditor.prepareSources.command"
-               label="%command.label.3"
-               tooltip="%command.tooltip.3">
+               label="%command.name.3"
+               tooltip="%command.name.3">
             <visibleWhen>
                <iterate
                      ifEmpty="false"
