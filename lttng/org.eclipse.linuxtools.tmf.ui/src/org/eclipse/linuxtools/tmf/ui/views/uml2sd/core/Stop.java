@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ * 
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
@@ -22,7 +23,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
  * This draw a cross on the lifeline. The stop y coordinate depend on the event occurrence when it appears.
  * A stop is never drawn it is assigned to a lifeline.
  * </p>
- *
+ * 
  * @version 1.0
  * @author sveyrier
  */
@@ -35,7 +36,7 @@ public class Stop extends GraphNode {
      * The graphNode ID
      */
     public static final String STOP = "STOP"; //$NON-NLS-1$
-
+    
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -45,7 +46,7 @@ public class Stop extends GraphNode {
     protected Lifeline fLifeline = null;
     /**
      * This basically represents the time when the stop occurs on the owning Lifeline
-     *
+     * 
      * @see Lifeline Lifeline for more event occurence details
      */
     protected int fEventOccurrence = 0;
@@ -104,7 +105,7 @@ public class Stop extends GraphNode {
 
     /**
      * Set the lifeline on which the stop must be draw
-     *
+     * 
      * @param theLifeline The the stop owing lifeline
      */
     public void setLifeline(Lifeline theLifeline) {
@@ -113,7 +114,7 @@ public class Stop extends GraphNode {
 
     /**
      * Set the event occurrence when this stop appears
-     *
+     * 
      * @param occurrence the eventOccurence to assign to the stop
      */
     public void setEventOccurrence(int occurrence) {
