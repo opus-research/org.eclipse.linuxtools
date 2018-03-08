@@ -352,13 +352,13 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
     private final class ScanRunnable extends Job {
 
-        // monitor is stored here, starts as the main monitor but becomes a submonitor
+        // monitor is stored here, starts as the main monitor but becomes a
+        // submonitor
         private IProgressMonitor fMonitor;
 
         public ScanRunnable(String name) {
             super(name);
         }
-
 
         private synchronized IProgressMonitor getMonitor() {
             return fMonitor;
@@ -375,7 +375,8 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
             control.getDisplay().syncExec(new Runnable() {
                 @Override
                 public void run() {
-                    // monitor gets overwritten here so it's necessary to save it in a field.
+                    // monitor gets overwritten here so it's necessary to save
+                    // it in a field.
                     fMonitor = SubMonitor.convert(getMonitor());
                     getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
@@ -406,6 +407,10 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                     if (!getBatchWizard().hasScanned(traceToScan)) {
                         getBatchWizard().addResult(traceToScan, TmfTraceType.getInstance().validate(traceToScan));
                     }
+
+                    /*
+                     * The following is to update the UI
+                     */
                     validCombo = getBatchWizard().getResult(traceToScan);
                     if (validCombo) {
                         // Synched on it's parent
@@ -413,8 +418,16 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         getBatchWizard().getScannedTraces().addCandidate(traceToScan.getTraceType(), new File(traceToScan.getTraceToScan()));
                         updated = true;
                     }
-                    // position++;
-
+                    final int scanned = getBatchWizard().getNumberOfResults();
+                    final int total = scanned + fTracesToScan.size();
+                    final int prevVal = (int) ((scanned - 1) * 100.0 / total);
+                    final int curVal = (int) ((scanned) * 100.0 / total);
+                    if (curVal != prevVal) {
+                        updated = true;
+                    }
+                    /*
+                     * update the progress
+                     */
                     if (updated) {
                         if (!control.isDisposed()) {
                             control.getDisplay().asyncExec(new Runnable() {
@@ -424,6 +437,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                                         getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                                         getMonitor().subTask(traceToScan.getTraceToScan());
                                         getMonitor().worked(1);
+                                        ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScanScanning + ' '
+                                                + Integer.toString(curVal)
+                                                + '%');
                                     }
                                 }
                             }
@@ -431,6 +447,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         }
                     }
 
+                    /*
+                     * here we update the table
+                     */
                     final boolean editing = traceTypeViewer.isCellEditorActive();
                     if (updated && !editing)
                     {
