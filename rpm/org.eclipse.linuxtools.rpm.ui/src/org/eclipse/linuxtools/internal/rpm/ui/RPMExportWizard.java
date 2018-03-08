@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.rpm.core.IRPMConstants;
+import org.eclipse.linuxtools.rpm.ui.RPMExportOperation;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 

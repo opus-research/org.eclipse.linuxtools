@@ -8,13 +8,16 @@
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.rpm.ui;
+package org.eclipse.linuxtools.rpm.ui;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.linuxtools.internal.rpm.ui.BuildType;
+import org.eclipse.linuxtools.internal.rpm.ui.Messages;
+import org.eclipse.linuxtools.internal.rpm.ui.RpmConsole;
 import org.eclipse.linuxtools.rpm.core.RPMProject;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
@@ -22,7 +25,7 @@ import org.osgi.framework.FrameworkUtil;
 
 /**
  * Job for handling rpm exports.
- * 
+ *
  */
 public class RPMExportOperation extends Job {
 	private RPMProject rpmProject;
@@ -30,7 +33,7 @@ public class RPMExportOperation extends Job {
 
 	/**
 	 * Creates the job for exporting rpms.
-	 * 
+	 *
 	 * @param rpmProject The project to use as base for the export operation.
 	 * @param exportType The export type.
 	 */
@@ -42,7 +45,7 @@ public class RPMExportOperation extends Job {
 
 	/**
 	 * @see org.eclipse.jface.operation.IRunnableWithProgress#run(IProgressMonitor)
-	 * 
+	 *
 	 */
 	@Override
 	public IStatus run(IProgressMonitor monitor) {
@@ -54,8 +57,8 @@ public class RPMExportOperation extends Job {
 		switch (exportType) {
 		case ALL:
 			try {
-				monitor.setTaskName(Messages
-						.getString("RPMExportOperation.Executing_RPM_Export")); //$NON-NLS-1$
+				monitor.beginTask(Messages
+						.getString("RPMExportOperation.Executing_RPM_Export"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
 				result = rpmProject.buildAll(out);
 			} catch (CoreException e) {
 				result = new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
@@ -64,8 +67,8 @@ public class RPMExportOperation extends Job {
 			break;
 
 		case BINARY:
-			monitor.setTaskName(Messages
-					.getString("RPMExportOperation.Executing_RPM_Export")); //$NON-NLS-1$
+			monitor.beginTask(Messages
+					.getString("RPMExportOperation.Executing_RPM_Export"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
 			try {
 				result = rpmProject.buildBinaryRPM(out);
 			} catch (CoreException e) {
@@ -75,8 +78,8 @@ public class RPMExportOperation extends Job {
 			break;
 
 		case SOURCE:
-			monitor.setTaskName(Messages
-					.getString("RPMExportOperation.Executing_SRPM_Export")); //$NON-NLS-1$
+			monitor.beginTask(Messages
+					.getString("RPMExportOperation.Executing_SRPM_Export"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
 			try {
 				result = rpmProject.buildSourceRPM(out);
 			} catch (CoreException e) {
