@@ -23,8 +23,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalThrottler;
@@ -40,17 +40,10 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
 
 /**
@@ -79,8 +72,6 @@ public class HistogramView extends TmfView {
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.histogram"; //$NON-NLS-1$
 
-    private static final Image LINK_IMG = Activator.getDefault().getImageFromPath("/icons/etool16/link.gif"); //$NON-NLS-1$
-
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -101,13 +92,8 @@ public class HistogramView extends TmfView {
     private long fSelectionEndTime;
 
     // Time controls
-    private HistogramTextControl fSelectionStartControl;
-    private HistogramTextControl fSelectionEndControl;
+    private HistogramTextControl fCurrentEventTimeControl;
     private HistogramTextControl fTimeSpanControl;
-
-    // Link
-    private Label fLinkButton;
-    private boolean fLinkState;
 
     // Histogram/request for the full trace range
     private static FullTraceHistogram fFullTraceHistogram;
@@ -147,8 +133,7 @@ public class HistogramView extends TmfView {
         }
         fFullTraceHistogram.dispose();
         fTimeRangeHistogram.dispose();
-        fSelectionStartControl.dispose();
-        fSelectionEndControl.dispose();
+        fCurrentEventTimeControl.dispose();
         fTimeSpanControl.dispose();
         super.dispose();
     }
@@ -163,8 +148,7 @@ public class HistogramView extends TmfView {
         fParent = parent;
 
         // Control labels
-        final String selectionStartLabel = Messages.HistogramView_selectionStartLabel;
-        final String selectionEndLabel = Messages.HistogramView_selectionEndLabel;
+        final String currentEventLabel = Messages.HistogramView_currentEventLabel;
         final String windowSpanLabel = Messages.HistogramView_windowSpanLabel;
 
         // --------------------------------------------------------------------
@@ -180,56 +164,40 @@ public class HistogramView extends TmfView {
         gridLayout.marginWidth = 0;
         viewComposite.setLayout(gridLayout);
 
+        // Use all available space
+        GridData gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.verticalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        viewComposite.setLayoutData(gridData);
+
         // --------------------------------------------------------------------
         // Time controls
         // --------------------------------------------------------------------
 
-        Composite controlsComposite = new Composite(viewComposite, SWT.NONE);
+        Composite controlsComposite = new Composite(viewComposite, SWT.FILL);
         gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
         gridLayout.horizontalSpacing = 5;
-        gridLayout.verticalSpacing = 1;
-        gridLayout.makeColumnsEqualWidth = false;
-        controlsComposite.setLayout(gridLayout);
-        GridData gridData = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        controlsComposite.setLayoutData(gridData);
-
-        Composite selectionGroup = new Composite(controlsComposite, SWT.BORDER);
-        gridLayout = new GridLayout();
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
-        gridLayout.horizontalSpacing = 0;
         gridLayout.verticalSpacing = 0;
-        selectionGroup.setLayout(gridLayout);
+        gridLayout.makeColumnsEqualWidth = false;
+        gridLayout.marginLeft = 5;
+        gridLayout.marginRight = 5;
+        controlsComposite.setLayout(gridLayout);
 
-        // Selection start control
+        // Current event time control
         gridData = new GridData();
-        gridData.horizontalAlignment = SWT.FILL;
+        gridData.horizontalAlignment = SWT.CENTER;
         gridData.verticalAlignment = SWT.CENTER;
-        fSelectionStartControl = new HistogramSelectionStartControl(this, selectionGroup, selectionStartLabel, 0L);
-        fSelectionStartControl.setLayoutData(gridData);
-        fSelectionStartControl.setValue(Long.MIN_VALUE);
-
-        // Selection end control
-        gridData = new GridData();
-        gridData.horizontalAlignment = SWT.FILL;
-        gridData.verticalAlignment = SWT.CENTER;
-        fSelectionEndControl = new HistogramSelectionEndControl(this, selectionGroup, selectionEndLabel, 0L);
-        fSelectionEndControl.setLayoutData(gridData);
-        fSelectionEndControl.setValue(Long.MIN_VALUE);
-
-        // Link button
-        gridData = new GridData();
-        fLinkButton = new Label(controlsComposite, SWT.NONE);
-        fLinkButton.setImage(LINK_IMG);
-        fLinkButton.setLayoutData(gridData);
-        addLinkButtonListeners();
+        fCurrentEventTimeControl = new HistogramCurrentTimeControl(this, controlsComposite, currentEventLabel, 0L);
+        fCurrentEventTimeControl.setLayoutData(gridData);
+        fCurrentEventTimeControl.setValue(Long.MIN_VALUE);
 
         // Window span time control
         gridData = new GridData();
-        gridData.horizontalAlignment = SWT.FILL;
+        gridData.horizontalAlignment = SWT.CENTER;
         gridData.verticalAlignment = SWT.CENTER;
         fTimeSpanControl = new HistogramTimeRangeControl(this, controlsComposite, windowSpanLabel, 0L);
         fTimeSpanControl.setLayoutData(gridData);
@@ -239,7 +207,7 @@ public class HistogramView extends TmfView {
         // Time range histogram
         // --------------------------------------------------------------------
 
-        Composite timeRangeComposite = new Composite(viewComposite, SWT.NONE);
+        Composite timeRangeComposite = new Composite(viewComposite, SWT.FILL);
         gridLayout = new GridLayout();
         gridLayout.numColumns = 1;
         gridLayout.marginHeight = 0;
@@ -256,7 +224,6 @@ public class HistogramView extends TmfView {
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         timeRangeComposite.setLayoutData(gridData);
 
         // Histogram
@@ -284,7 +251,6 @@ public class HistogramView extends TmfView {
         gridData.verticalAlignment = SWT.FILL;
         gridData.horizontalSpan = 2;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         fullRangeComposite.setLayoutData(gridData);
 
         // Histogram
@@ -384,30 +350,6 @@ public class HistogramView extends TmfView {
         TmfTimestamp endTs = new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE);
         TmfTimeSynchSignal signal = new TmfTimeSynchSignal(this, beginTs, endTs);
         fTimeSyncThrottle.queue(signal);
-    }
-
-    /**
-     * Get selection begin time
-     * @return the begin time of current selection
-     */
-    long getSelectionBegin() {
-        return fSelectionBeginTime;
-    }
-
-    /**
-     * Get selection end time
-     * @return the end time of current selection
-     */
-    long getSelectionEnd() {
-        return fSelectionEndTime;
-    }
-
-    /**
-     * Get the link state
-     * @return true if begin and end selection time should be linked
-     */
-    boolean getLinkState() {
-        return fLinkState;
     }
 
     /**
@@ -532,8 +474,7 @@ public class HistogramView extends TmfView {
         // Clear the UI widgets
         fFullTraceHistogram.clear();
         fTimeRangeHistogram.clear();
-        fSelectionStartControl.setValue(Long.MIN_VALUE);
-        fSelectionEndControl.setValue(Long.MIN_VALUE);
+        fCurrentEventTimeControl.setValue(Long.MIN_VALUE);
 
         fTimeSpanControl.setValue(Long.MIN_VALUE);
     }
@@ -666,8 +607,7 @@ public class HistogramView extends TmfView {
 
         fSelectionBeginTime = selectionBeginTime;
         fSelectionEndTime = selectionEndTime;
-        fSelectionStartControl.setValue(fSelectionBeginTime);
-        fSelectionEndControl.setValue(fSelectionEndTime);
+        fCurrentEventTimeControl.setValue(fSelectionBeginTime);
 
         fTimeSpanControl.setValue(duration);
 
@@ -683,8 +623,7 @@ public class HistogramView extends TmfView {
 
         fFullTraceHistogram.setSelection(fSelectionBeginTime, fSelectionEndTime);
         fTimeRangeHistogram.setSelection(fSelectionBeginTime, fSelectionEndTime);
-        fSelectionStartControl.setValue(fSelectionBeginTime);
-        fSelectionEndControl.setValue(fSelectionEndTime);
+        fCurrentEventTimeControl.setValue(fSelectionBeginTime);
     }
 
     private void updateDisplayedTimeRange(long start, long end) {
@@ -719,7 +658,8 @@ public class HistogramView extends TmfView {
         fTimeRangeHistogram.setTimeRange(startTime, endTime - startTime);
 
         int cacheSize = fTrace.getCacheSize();
-        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(), timeRange, 0, TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.FOREGROUND, false);
+        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(),
+                timeRange, 0, ITmfEventRequest.ALL_DATA, cacheSize, ExecutionType.FOREGROUND, false);
         fTrace.sendRequest(fTimeRangeRequest);
     }
 
@@ -728,8 +668,12 @@ public class HistogramView extends TmfView {
             fFullTraceRequest.cancel();
         }
         int cacheSize = fTrace.getCacheSize();
-        fFullTraceRequest = new HistogramRequest(fFullTraceHistogram.getDataModel(), fullRange, (int) fFullTraceHistogram.fDataModel.getNbEvents(),
-                TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.BACKGROUND, true);
+        fFullTraceRequest = new HistogramRequest(fFullTraceHistogram.getDataModel(),
+                fullRange,
+                (int) fFullTraceHistogram.fDataModel.getNbEvents(),
+                ITmfEventRequest.ALL_DATA,
+                cacheSize,
+                ExecutionType.BACKGROUND, true);
         fTrace.sendRequest(fFullTraceRequest);
     }
 
@@ -739,31 +683,4 @@ public class HistogramView extends TmfView {
         bars.getToolBarManager().add(new Separator());
     }
 
-    private void addLinkButtonListeners() {
-        fLinkButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                fSelectionEndControl.setEnabled(fLinkState);
-                fLinkState = !fLinkState;
-                fLinkButton.redraw();
-            }
-        });
-
-        fLinkButton.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                if (fLinkState) {
-                    Rectangle r = fLinkButton.getBounds();
-                    r.x = -1;
-                    r.y = -1;
-                    e.gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                    e.gc.drawRectangle(r);
-                    r.x = 0;
-                    r.y = 0;
-                    e.gc.setForeground(e.display.getSystemColor(SWT.COLOR_DARK_GRAY));
-                    e.gc.drawRectangle(r);
-                }
-            }
-        });
-    }
 }

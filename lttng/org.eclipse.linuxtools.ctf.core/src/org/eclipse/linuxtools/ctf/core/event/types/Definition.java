@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
 /**
- * A CTF definiton
+ * A CTF definition
  *
  * A definition is like an object of a declaration class. It fills the declaration
  * with values. <br>
@@ -137,8 +137,8 @@ public abstract class Definition {
      * @since 2.2
      */
     protected static void alignRead(BitBuffer input, IDeclaration declaration){
-        int align = (int) declaration.getAlignment();
-        int pos = input.position() + ((align - (input.position() % align)) % align);
+        long align = declaration.getAlignment();
+        long pos = input.position() + ((align - (input.position() % align)) % align);
         input.position(pos);
     }
 
