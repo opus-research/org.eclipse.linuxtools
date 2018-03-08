@@ -18,8 +18,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.variables.VariablesPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -50,6 +54,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
@@ -58,6 +63,7 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
 import org.osgi.framework.Version;
 
 public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
+    public static final String MALLOC_IMPLEMENTATION = "customMallocLibraries"; //$NON-NLS-1$
 	protected static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
 	// General controls
@@ -74,6 +80,12 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 	protected Spinner mainStackSizeSpinner;
 	protected Button dSymUtilButton;
 	protected List suppFileList;
+	protected Group otherGroup;
+	protected Text customMallocText;
+	protected Button customMallocButton;
+	protected Combo customMallocCombo;
+	protected Button dynamicLibRadio;
+	protected Button staticLibRadio;
 
 	protected String tool;
 	protected String[] tools;
@@ -184,6 +196,8 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 
 		createErrorOptions(generalTop);
 
+		createOtherOptions(generalTop);
+
 		generalTab.setControl(generalTop);
 
 		TabItem suppTab = new TabItem(optionsFolder, SWT.NONE);
@@ -211,6 +225,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 
 		updateLaunchConfigurationDialog();
 	}
+
 
 	protected void recomputeSize() {
 		Point point = top.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -285,6 +300,88 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 		runFreeresButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 
+	private void createOtherOptions(Composite top) {
+		otherGroup = new Group(top, SWT.NONE);
+		otherGroup.setLayout(new GridLayout());
+		otherGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		otherGroup.setText(Messages.getString("ValgrindOptionsTab.Other_Options")); //$NON-NLS-1$
+
+		Composite otherTop = new Composite(otherGroup, SWT.NONE);
+		GridLayout topLayout = new GridLayout(4, true);
+		topLayout.makeColumnsEqualWidth = true;
+		otherTop.setLayout(topLayout);
+		otherTop.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+		customMallocButton = new Button(otherTop, SWT.CHECK);
+		customMallocButton.setText(Messages.getString("ValgrindOptionsTab.custom_malloc")); //$NON-NLS-1$
+		GridData buttonGridData = new GridData();
+		buttonGridData.horizontalSpan = 4;
+		customMallocButton.setLayoutData(buttonGridData);
+		customMallocButton.addSelectionListener(new SelectionAdapter() {
+		@Override
+		public void widgetSelected(SelectionEvent e) {
+			checkCustomMallocEnablement();
+			updateLaunchConfigurationDialog();
+			}
+		});
+
+	    dynamicLibRadio = new Button(otherTop, SWT.RADIO);
+	    dynamicLibRadio.setText(Messages.getString("ValgrindOptionsTab.custom_malloc_dynamic_lib"));
+	    GridData dynamicLibData = new GridData();
+	    dynamicLibData.horizontalSpan = 1;
+	    dynamicLibData.horizontalIndent = 10;
+	    dynamicLibRadio.setLayoutData(dynamicLibData);
+	    dynamicLibRadio.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkCustomMallocEnablement();
+				updateLaunchConfigurationDialog();
+				}
+			});
+
+		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(ValgrindLaunchPlugin.PLUGIN_ID, MALLOC_IMPLEMENTATION);
+		IExtension[] extensions = extPoint.getExtensions();
+		if(extensions.length > 0){
+			customMallocCombo = new Combo(otherTop, SWT.DROP_DOWN);
+			GridData comboGridData = new GridData(SWT.FILL, SWT.CENTER, false, false);
+			comboGridData.horizontalSpan = 2;
+			customMallocCombo.setLayoutData(comboGridData);
+			customMallocCombo.addModifyListener(modifyListener);
+
+			for (IExtension extension : extensions) {
+				for (IConfigurationElement configElement : extension.getConfigurationElements()){
+					if(configElement != null){
+						customMallocCombo.add(configElement.getAttribute("name"));
+						customMallocCombo.setData(configElement.getAttribute("name"), configElement.getAttribute("lib_soname"));
+					}
+				}
+			}
+		} else {
+			customMallocText = new Text(otherTop, SWT.BORDER);
+			customMallocText.addModifyListener(modifyListener);
+			GridData textGridData = new GridData(SWT.FILL, SWT.CENTER, false, false);
+			textGridData.horizontalSpan = 2;
+			customMallocText.setLayoutData(textGridData);
+		}
+
+		staticLibRadio = new Button(otherTop, SWT.RADIO);
+		staticLibRadio.setText(Messages.getString("ValgrindOptionsTab.custom_malloc_static_lib"));
+		GridData staticGridData = new GridData();
+		staticGridData.horizontalIndent = 10;
+		staticGridData.horizontalAlignment = GridData.FILL;
+		staticGridData.horizontalSpan = 2;
+		staticLibRadio.setLayoutData(staticGridData);
+
+		staticLibRadio.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkCustomMallocEnablement();
+				updateLaunchConfigurationDialog();
+				}
+			});
+	}
+
+
 	protected void createErrorOptions(Composite top) {
 		Group errorGroup = new Group(top, SWT.NONE);
 		errorGroup.setLayout(new GridLayout());
@@ -354,6 +451,17 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 		dSymUtilButton.addSelectionListener(selectListener);
 		dSymUtilButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		dSymUtilButton.setVisible(false);
+	}
+
+	private void updateOtherOptions() {
+		// Since "Other malloc implementations" currently is the only item in this category, it doesn't
+		// make sense to show the category if valgrind's version doesn't support it.
+		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0){
+			otherGroup.setVisible(true);
+		}
+		else {
+			otherGroup.setVisible(false);
+		}
 	}
 
 	private void updateErrorOptions() {
@@ -525,6 +633,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 
 		updateErrorOptions();
+		updateOtherOptions();
 
 		try {
 			if (!noToolCombo) {
@@ -562,6 +671,24 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 			// 3.6.0 specific
 			if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
 				dSymUtilButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL));
+			}
+
+			// 3.8.0 specific
+			if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
+				customMallocButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL));
+				if(customMallocText != null){
+					customMallocText.setText(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC));
+				}
+
+				boolean dynamicLibrary = configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL);
+				if(dynamicLibrary){
+					dynamicLibRadio.setSelection(true);
+					staticLibRadio.setSelection(false);
+				} else {
+					dynamicLibRadio.setSelection(false);
+					staticLibRadio.setSelection(true);
+				}
+				checkCustomMallocEnablement();
 			}
 		} catch (CoreException e) {
 			ex = e;
@@ -628,6 +755,24 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
 			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, dSymUtilButton.getSelection());
 		}
+		
+		// 3.8.0 specific
+		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_BOOL, customMallocButton.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL, dynamicLibRadio.getSelection());
+			if(customMallocText != null){
+				configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, customMallocText.getText());
+			} else {
+				String attribute = new String();
+				String comboText = customMallocCombo.getText();
+				if(customMallocCombo.getData(comboText) == null){
+					attribute = comboText;
+				} else {
+					attribute = (String) customMallocCombo.getData(comboText);
+				}
+				configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, attribute);
+			}
+		}
 
 		if (dynamicTab != null) {
 			dynamicTab.performApply(configuration);
@@ -691,6 +836,16 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
+	private void checkCustomMallocEnablement() {
+		dynamicLibRadio.setEnabled(customMallocButton.getSelection());
+		staticLibRadio.setEnabled(customMallocButton.getSelection());
+		if(customMallocText != null){
+			customMallocText.setEnabled(customMallocButton.getSelection() && dynamicLibRadio.getSelection());
+		} else {
+			customMallocCombo.setEnabled(customMallocButton.getSelection() && dynamicLibRadio.getSelection());
+		}
+	}
+
 	private void checkMainStackEnablement() {
 		mainStackSizeSpinner.setEnabled(mainStackSizeButton.getSelection());
 	}
@@ -745,5 +900,39 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 
 	public String[] getTools() {
 		return tools;
+	}
+
+	/**
+	 * @return {@link Combo} if an extension of 8888888extensionpoint88888
+	 *         provides malloc implementations, {@link Text} otherwise
+	 */
+	public Control getCustomMallocControl(){
+		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(ValgrindLaunchPlugin.PLUGIN_ID, MALLOC_IMPLEMENTATION);
+		IExtension[] extensions = extPoint.getExtensions();
+		if(extensions.length > 0){
+			return customMallocCombo;
+		} else {
+			return customMallocText;
+		}
+	}
+
+	public Button getCustomMallocButton(){
+		return customMallocButton;
+	}
+
+	public Button getDynamicLibRadio() {
+		return dynamicLibRadio;
+	}
+
+	public void setDynamicLibRadio(Button dynamicLibRadio) {
+		this.dynamicLibRadio = dynamicLibRadio;
+	}
+
+	public Button getStaticLibRadio() {
+		return staticLibRadio;
+	}
+
+	public void setStaticLibRadio(Button staticLibRadio) {
+		this.staticLibRadio = staticLibRadio;
 	}
 }
