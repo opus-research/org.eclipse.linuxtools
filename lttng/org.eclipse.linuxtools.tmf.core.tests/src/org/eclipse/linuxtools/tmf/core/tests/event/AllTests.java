@@ -10,7 +10,6 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Event Model
  *   Alexandre Montplaisir - Port to JUnit4
- *   Patrick Tasse - Added TmfNanoTimestampTest
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
@@ -27,7 +26,6 @@ import org.junit.runners.Suite;
     TmfEventTest.class,
     TmfEventTypeManagerTest.class,
     TmfEventTypeTest.class,
-    TmfNanoTimestampTest.class,
     TmfSimpleTimestampTest.class,
     TmfTimePreferencesTest.class,
     TmfTimeRangeTest.class,

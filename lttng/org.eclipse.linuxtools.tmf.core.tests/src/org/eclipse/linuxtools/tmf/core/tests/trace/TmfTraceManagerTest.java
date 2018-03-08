@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
@@ -122,7 +121,7 @@ public class TmfTraceManagerTest {
     }
 
     private void selectTimeRange(TmfTimeRange tr) {
-        TmfSignalManager.dispatchSignal(new TmfRangeSynchSignal(this, tr));
+        TmfSignalManager.dispatchSignal(new TmfRangeSynchSignal(this, tr, null));
     }
 
     // ------------------------------------------------------------------------
@@ -214,9 +213,7 @@ public class TmfTraceManagerTest {
         ITmfTimestamp ts = new TmfTimestamp(t2start + ONE_SECOND, SCALE);
         selectTimestamp(ts);
 
-        ITmfTimestamp afterTs = tm.getSelectionBeginTime();
-        assertEquals(ts, afterTs);
-        afterTs = tm.getSelectionEndTime();
+        ITmfTimestamp afterTs = tm.getCurrentTime();
         assertEquals(ts, afterTs);
     }
 
@@ -227,13 +224,11 @@ public class TmfTraceManagerTest {
     @Test
     public void testTimestampBefore() {
         openTrace(trace2);
-        ITmfTimestamp beforeTs = tm.getSelectionBeginTime();
+        ITmfTimestamp beforeTs = tm.getCurrentTime();
         ITmfTimestamp ts = new TmfTimestamp(t2start - ONE_SECOND, SCALE);
         selectTimestamp(ts);
 
-        ITmfTimestamp curTs = tm.getSelectionBeginTime();
-        assertEquals(beforeTs, curTs);
-        curTs = tm.getSelectionEndTime();
+        ITmfTimestamp curTs = tm.getCurrentTime();
         assertEquals(beforeTs, curTs);
     }
 
@@ -244,13 +239,11 @@ public class TmfTraceManagerTest {
     @Test
     public void testTimestampAfter() {
         openTrace(trace2);
-        ITmfTimestamp beforeTs = tm.getSelectionBeginTime();
+        ITmfTimestamp beforeTs = tm.getCurrentTime();
         ITmfTimestamp ts = new TmfTimestamp(t2end + ONE_SECOND, SCALE);
         selectTimestamp(ts);
 
-        ITmfTimestamp curTs = tm.getSelectionBeginTime();
-        assertEquals(beforeTs, curTs);
-        curTs = tm.getSelectionEndTime();
+        ITmfTimestamp curTs = tm.getCurrentTime();
         assertEquals(beforeTs, curTs);
     }
 
@@ -342,13 +335,11 @@ public class TmfTraceManagerTest {
         selectTimestamp(ts);
 
         /* Timestamp of trace1 should have been updated */
-        assertEquals(ts, tm.getSelectionBeginTime());
-        assertEquals(ts, tm.getSelectionEndTime());
+        assertEquals(ts, tm.getCurrentTime());
 
         /* Timestamp of trace2 should not have changed */
         selectTrace(trace2);
-        assertEquals(trace2.getStartTime(), tm.getSelectionBeginTime());
-        assertEquals(trace2.getStartTime(), tm.getSelectionEndTime());
+        assertEquals(trace2.getStartTime(), tm.getCurrentTime());
     }
 
     /**
@@ -367,13 +358,11 @@ public class TmfTraceManagerTest {
         selectTimestamp(ts);
 
         /* Timestamp of trace1 should not have changed */
-        assertEquals(trace1.getStartTime(), tm.getSelectionBeginTime());
-        assertEquals(trace1.getStartTime(), tm.getSelectionEndTime());
+        assertEquals(trace1.getStartTime(), tm.getCurrentTime());
 
         /* Timestamp of trace2 should not have changed */
         selectTrace(trace2);
-        assertEquals(trace2.getStartTime(), tm.getSelectionBeginTime());
-        assertEquals(trace2.getStartTime(), tm.getSelectionEndTime());
+        assertEquals(trace2.getStartTime(), tm.getCurrentTime());
     }
 
     /**
@@ -391,13 +380,11 @@ public class TmfTraceManagerTest {
         selectTimestamp(ts);
 
         /* Timestamp of trace1 should not have changed */
-        assertEquals(trace1.getStartTime(), tm.getSelectionBeginTime());
-        assertEquals(trace1.getStartTime(), tm.getSelectionEndTime());
+        assertEquals(trace1.getStartTime(), tm.getCurrentTime());
 
         /* Timestamp of trace2 should not have changed */
         selectTrace(trace2);
-        assertEquals(trace2.getStartTime(), tm.getSelectionBeginTime());
-        assertEquals(trace2.getStartTime(), tm.getSelectionEndTime());
+        assertEquals(trace2.getStartTime(), tm.getCurrentTime());
     }
 
     /**
@@ -529,8 +516,7 @@ public class TmfTraceManagerTest {
         selectTimestamp(ts);
 
         /* The experiment's current time should be updated. */
-        assertEquals(ts, tm.getSelectionBeginTime());
-        assertEquals(ts, tm.getSelectionEndTime());
+        assertEquals(ts, tm.getCurrentTime());
     }
 
     /**
@@ -548,8 +534,7 @@ public class TmfTraceManagerTest {
         selectTimestamp(ts);
 
         /* The experiment's current time should be updated. */
-        assertEquals(ts, tm.getSelectionBeginTime());
-        assertEquals(ts, tm.getSelectionEndTime());
+        assertEquals(ts, tm.getCurrentTime());
     }
 
     /**
@@ -566,8 +551,7 @@ public class TmfTraceManagerTest {
         selectTimestamp(ts);
 
         /* The experiment's current time should NOT be updated. */
-        assertEquals(trace1.getStartTime(), tm.getSelectionBeginTime());
-        assertEquals(trace1.getStartTime(), tm.getSelectionEndTime());
+        assertEquals(trace1.getStartTime(), tm.getCurrentTime());
     }
 
     /**
