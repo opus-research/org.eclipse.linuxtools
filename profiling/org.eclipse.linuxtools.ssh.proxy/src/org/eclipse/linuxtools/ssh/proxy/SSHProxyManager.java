@@ -27,22 +27,24 @@ import org.eclipse.linuxtools.profiling.launch.IRemoteProxyManager;
 public class SSHProxyManager implements IRemoteProxyManager {
 
 	@Override
-	public IRemoteFileProxy getFileProxy(URI uri) {
+	public IRemoteFileProxy getFileProxy(URI uri) throws CoreException {
 		return new SSHFileProxy(uri);
 	}
 
 	@Override
-	public IRemoteFileProxy getFileProxy(IProject project) {
+	public IRemoteFileProxy getFileProxy(IProject project) throws CoreException {
 		return new SSHFileProxy(project.getLocationURI());
 	}
 
 	@Override
-	public IRemoteCommandLauncher getLauncher(URI uri) {
+	public IRemoteCommandLauncher getLauncher(URI uri)
+			throws CoreException {
 		return new SSHCommandLauncher(uri);
 	}
 
 	@Override
-	public IRemoteCommandLauncher getLauncher(IProject project) {
+	public IRemoteCommandLauncher getLauncher(IProject project)
+			throws CoreException {
 		return new SSHCommandLauncher(project.getLocationURI());
 	}
 

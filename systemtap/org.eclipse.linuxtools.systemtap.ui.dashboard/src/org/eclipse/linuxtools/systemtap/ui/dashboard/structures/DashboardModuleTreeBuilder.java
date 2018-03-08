@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
  */
 public class DashboardModuleTreeBuilder {
 	public DashboardModuleTreeBuilder() {
-		tree = new TreeNode("Root", "", true); //$NON-NLS-1$ //$NON-NLS-2$
+		tree = new TreeNode("Root", "", true);
 			}
 	
 	public DashboardModuleTreeBuilder(TreeNode t) {
@@ -69,11 +69,11 @@ public class DashboardModuleTreeBuilder {
 				scanNextLevel(fs[i]);
 			else {
 				try {
-					File folder = new File(SystemTapGUISettings.tempDirectory + "/bundles/"); //$NON-NLS-1$
+					File folder = new File(SystemTapGUISettings.tempDirectory + "/bundles/");
 					if(!folder.exists())
 						folder.mkdirs();
 					
-					File file = new File(folder + "/" + fs[i].getName() + ".tmp");  //$NON-NLS-1$//$NON-NLS-2$
+					File file = new File(folder + "/" + fs[i].getName() + ".tmp");
 					file.createNewFile();
 					ZipArchive.uncompressFile(file.getAbsolutePath(), fs[i].getAbsolutePath());
 					ZipArchive.unzipFiles(file.getAbsolutePath(), folder.getAbsolutePath());
@@ -107,7 +107,7 @@ public class DashboardModuleTreeBuilder {
 	 * @return The tree node matching the provided path
 	 */
 	private TreeNode findInsertLocation(String path) {
-		String[] folders = path.split("\\p{Punct}"); //$NON-NLS-1$
+		String[] folders = path.split("\\p{Punct}");
 		TreeNode level = tree;
 		//
 		for(int j,i=0; i<folders.length; i++) {
@@ -116,7 +116,7 @@ public class DashboardModuleTreeBuilder {
 					break;
 			}
 			if(j >= level.getChildCount())
-				level.add(new TreeNode("", folders[i], true)); //$NON-NLS-1$
+				level.add(new TreeNode("", folders[i], true));
 			level = level.getChildAt(j);
 		}
 		return level;

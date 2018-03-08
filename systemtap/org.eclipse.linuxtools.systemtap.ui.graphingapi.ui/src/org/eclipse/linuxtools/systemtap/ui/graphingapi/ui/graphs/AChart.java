@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets.GraphCanvas;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets.GraphComposite;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets.GraphLabel;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets.GraphLegend;
+import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -31,13 +32,13 @@ import org.eclipse.swt.widgets.Button;
 
 
 
-public abstract class AChart extends GraphCanvas implements IGraph {
+public abstract class AChart extends GraphCanvas implements IGraph, IUpdateListener {
 	@SuppressWarnings("unchecked")
 	public AChart(GraphComposite parent, int style, String title, IAdapter adapt) {
 		super(parent, style);
 		adapter = adapt;
 
-		elementList = new LinkedList[adapt.getSeriesCount()];
+		elementList = (LinkedList<Object>[])new LinkedList[adapt.getSeriesCount()];
 		for(int i=0; i<elementList.length; i++)
 			elementList[i] = new LinkedList<Object>();
 
@@ -75,7 +76,6 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 			title.paint(gc);
 	}
 	
-	@Override
 	public void dispose() {
 		this.removePaintListener(paintListener);
 		parent.removeCheckOption(Localization.getString("AChart.Title"));

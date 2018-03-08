@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
 /**
@@ -24,28 +25,23 @@ public class CStringStorage implements IStorage {
 		this.string = input;
 	}
 
-	@Override
-	public InputStream getContents() {
+	public InputStream getContents() throws CoreException {
 		return new ByteArrayInputStream(string.getBytes());
 	}
 
-	@Override
 	public IPath getFullPath() {
 		return null;
 	}
 
-	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		return null;
 	}
 
-	@Override
 	public String getName() {
 		int len = Math.min(5, string.length());
 		return string.substring(0, len).concat("..."); //$NON-NLS-1$
 	}
 
-	@Override
 	public boolean isReadOnly() {
 		return true;
 	}

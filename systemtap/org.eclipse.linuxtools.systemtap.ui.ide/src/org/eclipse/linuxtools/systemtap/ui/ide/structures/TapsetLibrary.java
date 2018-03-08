@@ -52,7 +52,7 @@ public final class TapsetLibrary {
 	public static void init() {
 		if(null != stpp && stpp.isRunning())
 			return;
-
+		
 		if(IDEPlugin.getDefault().getPreferenceStore()
 				.getBoolean(IDEPreferenceConstants.P_STORED_TREE) && 
 				isTreeFileCurrent())
@@ -68,7 +68,7 @@ public final class TapsetLibrary {
 	private static void runStapParser() {
 		String[] tapsets = IDEPlugin.getDefault().getPreferenceStore()
 								.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
-
+		
 		stpp = new TapsetParser(tapsets);
 		stpp.start();
 		stpp.addListener(completionListener);
@@ -195,18 +195,7 @@ public final class TapsetLibrary {
 				TreeSettings.setTrees(functionTree, probeTree);
 		}
 	};
-
-	/**
-	 * This method will stop services started by
-	 * {@link TapsetLibrary#init()} such as the {@link TapsetParser} 
-	 * @since 1.2
-	 */
-	public static void stop(){
-		if(null != stpp && stpp.isRunning()){
-			stpp.stop();
-		}
-	}
-
+	
 	private static TreeNode functionTree = null;
 	private static TreeNode probeTree = null;
 	private static TapsetParser stpp = null;

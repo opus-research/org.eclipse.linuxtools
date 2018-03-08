@@ -19,10 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -36,11 +34,8 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.systemtap.ui.editor.ColorManager;
-import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -52,8 +47,6 @@ public class STPEditor extends SimpleEditor {
     private ProjectionSupport stpProjectionSupport;
 	private Annotation[] stpOldAnnotations;
 	private ProjectionAnnotationModel stpAnnotationModel;
-
-	public static final String ID="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor";
 
 	public STPEditor() {
 		super();
@@ -70,15 +63,6 @@ public class STPEditor extends SimpleEditor {
 		setDocumentProvider(new STPDocumentProvider());
 	}
 
-	@Override
-	protected void doSetInput(IEditorInput input) throws CoreException {
-		if(input instanceof FileStoreEditorInput)
-			input= new PathEditorInput(new Path(((FileStoreEditorInput) input).getURI().getPath()));
-
-		super.doSetInput(input);
-	}
-
-	@Override
 	public void createPartControl(Composite parent)
 	{
 	    super.createPartControl(parent);
@@ -89,7 +73,6 @@ public class STPEditor extends SimpleEditor {
 	   stpAnnotationModel = viewer.getProjectionAnnotationModel();
 	}
 	
-	@Override
 	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
 		
 		ISourceViewer viewer = new ProjectionViewer(parent, ruler,
@@ -114,7 +97,6 @@ public class STPEditor extends SimpleEditor {
 		stpOldAnnotations = updatedAnnotations;
 	}
 	
-	@Override
 	protected void createActions() {
 		Action action = new ContentAssistAction(ResourceBundle.getBundle("org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.strings"), "ContentAssistProposal.", this); 
 		String id = ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
@@ -128,13 +110,11 @@ public class STPEditor extends SimpleEditor {
 		return this.getSourceViewer();
 	}
 	
-	@Override
 	public void dispose() {
 		colorManager.dispose();
 		super.dispose();
 	}
 
-	@Override
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 
 		super.editorContextMenuAboutToShow(menu);

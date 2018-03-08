@@ -25,9 +25,6 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -86,9 +83,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // The trace parser
     private ITmfEventParser fParser;
-
-    // The trace's statistics
-    private ITmfStatistics fStatistics;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -227,8 +221,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             }
         }
         super.init(traceName, type);
-
-        buildStatistics();
     }
 
     /**
@@ -249,20 +241,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
-    }
-
-    /**
-     * The default implementation of TmfTrace uses a TmfStatistics backend.
-     * Override this if you want to specify another type (or none at all).
-     *
-     * @since 2.0
-     */
-    protected void buildStatistics() throws TmfTraceException {
-        /*
-         * Initialize the statistics provider, but only if a Resource has been
-         * set (so we don't build it for experiments, for unit tests, etc.)
-         */
-        fStatistics = (fResource == null ? null : new TmfStateStatistics(this) );
     }
 
     /**
@@ -335,26 +313,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return fParser;
     }
 
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ITmfStatistics getStatistics() {
-        return fStatistics;
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ITmfStateSystem getStateSystem() {
-        /*
-         * By default, no state system is used. Sub-classes can specify their
-         * own behaviour.
-         */
-        return null;
-    }
-
     // ------------------------------------------------------------------------
     // ITmfTrace - Trace characteristics getters
     // ------------------------------------------------------------------------
@@ -380,7 +338,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @Override
     public ITmfTimestamp getStartTime() {
-        return fStartTime;
+        return fStartTime.clone();
     }
 
     /* (non-Javadoc)
@@ -388,7 +346,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @Override
     public ITmfTimestamp getEndTime() {
-        return fEndTime;
+        return fEndTime.clone();
     }
 
     // ------------------------------------------------------------------------
@@ -420,8 +378,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param range the new time range
      */
     protected void setTimeRange(final TmfTimeRange range) {
-        fStartTime = range.getStartTime();
-        fEndTime = range.getEndTime();
+        fStartTime = range.getStartTime().clone();
+        fEndTime = range.getEndTime().clone();
     }
 
     /**
@@ -430,7 +388,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param startTime the new first event timestamp
      */
     protected void setStartTime(final ITmfTimestamp startTime) {
-        fStartTime = startTime;
+        fStartTime = startTime.clone();
     }
 
     /**
@@ -439,7 +397,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param endTime the new last event timestamp
      */
     protected void setEndTime(final ITmfTimestamp endTime) {
-        fEndTime = endTime;
+        fEndTime = endTime.clone();
     }
 
     /**
@@ -481,7 +439,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A rank <= 0 indicates to seek the first event
         if (rank <= 0) {
-            ITmfContext context = seekEvent((ITmfLocation) null);
+            ITmfContext context = seekEvent((ITmfLocation<?>) null);
             context.setRank(0);
             return context;
         }
@@ -508,7 +466,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A null timestamp indicates to seek the first event
         if (timestamp == null) {
-            ITmfContext context = seekEvent((ITmfLocation) null);
+            ITmfContext context = seekEvent((ITmfLocation<?>) null);
             context.setRank(0);
             return context;
         }
@@ -520,11 +478,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         final ITmfContext nextEventContext = context.clone(); // Must use clone() to get the right subtype...
         ITmfEvent event = getNext(nextEventContext);
         while (event != null && event.getTimestamp().compareTo(timestamp, false) < 0) {
-            context.dispose();
             context = nextEventContext.clone();
             event = getNext(nextEventContext);
         }
-        nextEventContext.dispose();
         if (event == null) {
             context.setLocation(null);
             context.setRank(ITmfContext.UNKNOWN_RANK);
@@ -570,19 +526,17 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected synchronized void updateAttributes(final ITmfContext context, final ITmfTimestamp timestamp) {
         if (fStartTime.equals(TmfTimestamp.BIG_BANG) || (fStartTime.compareTo(timestamp, false) > 0)) {
-            fStartTime = timestamp;
+            fStartTime = timestamp.clone();
         }
         if (fEndTime.equals(TmfTimestamp.BIG_CRUNCH) || (fEndTime.compareTo(timestamp, false) < 0)) {
-            fEndTime = timestamp;
+            fEndTime = timestamp.clone();
         }
         if (context.hasValidRank()) {
             long rank = context.getRank();
             if (fNbEvents <= rank) {
                 fNbEvents = rank + 1;
             }
-            if (fIndexer != null) {
-                fIndexer.updateIndex(context, timestamp);
-            }
+            fIndexer.updateIndex(context, timestamp);
         }
     }
 

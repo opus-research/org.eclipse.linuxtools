@@ -13,10 +13,8 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
  * A basic implementation of ITmfEvent.
@@ -33,7 +31,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @see ITmfEventField
  * @see ITmfTrace
 */
-public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
+public class TmfEvent implements ITmfEvent, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -244,7 +242,7 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
             clone = (TmfEvent) super.clone();
             clone.fTrace = fTrace;
             clone.fRank = fRank;
-            clone.fTimestamp = fTimestamp;
+            clone.fTimestamp = fTimestamp != null ? fTimestamp.clone() : null;
             clone.fSource = fSource;
             clone.fType = fType != null ? fType.clone() : null;
             clone.fContent = fContent != null ? fContent.clone() : null;
@@ -349,17 +347,4 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
                 + ", fReference=" + fReference + "]";
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public Object getAdapter(Class adapter) {
-        if (adapter == IPropertySource.class) {
-            return new TmfEventPropertySource(this);
-        }
-        return null;
-    }
 }

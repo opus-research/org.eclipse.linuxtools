@@ -23,7 +23,6 @@ public class AllTests {
         //$JUnit-BEGIN$
         suite.addTestSuite(TraceControlComponentTest.class);
         suite.addTestSuite(TraceControlTreeModelTest.class);
-        suite.addTestSuite(TraceControlTreeModelNoProvidersTest.class);
         suite.addTestSuite(TraceControlKernelProviderTests.class);
         suite.addTestSuite(TraceControlUstProviderTests.class);
         suite.addTestSuite(TraceControlKernelSessionTests.class);

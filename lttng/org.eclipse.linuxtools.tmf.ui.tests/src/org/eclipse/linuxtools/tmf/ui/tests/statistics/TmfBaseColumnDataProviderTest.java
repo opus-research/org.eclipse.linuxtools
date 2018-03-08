@@ -23,11 +23,13 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnDataProvider;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 
 /**
@@ -76,7 +78,9 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     private final TmfEventField fContent2;
     private final TmfEventField fContent3;
 
-    private final TmfStatisticsTree fStatsData;
+    private final TmfBaseStatisticsTree fStatsData;
+
+    private final ITmfExtraEventInfo fExtraInfo;
 
     // ------------------------------------------------------------------------
     // Housekeeping
@@ -100,14 +104,17 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
         fContent3 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other different content");
         fEvent3 = new TmfEvent(null, fTimestamp3, fSource, fType3, fContent3, fReference);
 
-        fStatsData = new TmfStatisticsTree();
-
-        fStatsData.getOrCreateNode(fTestName, Messages.TmfStatisticsData_EventTypes);
-
-        fStatsData.setTotal(fTestName, true, 3);
-        fStatsData.setTypeCount(fTestName, fEvent1.getType().getName(), true, 1);
-        fStatsData.setTypeCount(fTestName, fEvent2.getType().getName(), true, 1);
-        fStatsData.setTypeCount(fTestName, fEvent3.getType().getName(), true, 1);
+        fStatsData = new TmfBaseStatisticsTree();
+        fExtraInfo = new ITmfExtraEventInfo() {
+            @Override
+            public String getTraceName() {
+                return name;
+            }
+        };
+        fStatsData.getOrCreate(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes));
+        fStatsData.registerEvent(fEvent1, fExtraInfo);
+        fStatsData.registerEvent(fEvent2, fExtraInfo);
+        fStatsData.registerEvent(fEvent3, fExtraInfo);
 
         provider = new TmfBaseColumnDataProvider();
     }
@@ -123,9 +130,9 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
         assertNotNull("getColumnData", columnsData);
         assertEquals("getColumnData", 3, columnsData.size());
 
-        TmfStatisticsTreeNode parentNode = fStatsData.getNode(fTestName);
-        TmfStatisticsTreeNode treeNode1  = fStatsData.getNode(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().getName());
-        TmfStatisticsTreeNode treeNode2  = fStatsData.getNode(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent3.getType().getName());
+        TmfStatisticsTreeNode parentNode = fStatsData.get(new TmfFixedArray<String>(fTestName));
+        TmfStatisticsTreeNode treeNode1  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().toString()));
+        TmfStatisticsTreeNode treeNode2  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent3.getType().toString()));
         ViewerComparator vComp = null;
         for (TmfBaseColumnData columnData : columnsData) {
             assertNotNull("getColumnData", columnData);
@@ -135,9 +142,9 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
             // Testing labelProvider
             ColumnLabelProvider labelProvider = columnData.getLabelProvider();
             if (columnData.getHeader().compareTo(LEVEL_COLUMN) == 0) {
-                assertEquals("getColumnData", 0, labelProvider.getText(treeNode1).compareTo(treeNode1.getName()));
+                assertEquals("getColumnData", 0, labelProvider.getText(treeNode1).compareTo(treeNode1.getKey()));
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                assertEquals("getColumnData", 0, labelProvider.getText(treeNode1).compareTo(Long.toString(1)));
+                assertEquals("getColumnData", 0, labelProvider.getText(treeNode1).compareTo(Long.toString(2)));
             }
 
             // Testing comparator
@@ -147,8 +154,8 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
                 assertTrue("getColumnData", vComp.compare(null, treeNode2, treeNode1) > 0);
                 assertTrue("getColumnData", vComp.compare(null, treeNode1, treeNode1) == 0);
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                assertTrue("getColumnData", vComp.compare(null, treeNode1, treeNode2) == 0);
-                assertTrue("getColumnData", vComp.compare(null, treeNode2, treeNode1) == 0);
+                assertTrue("getColumnData", vComp.compare(null, treeNode1, treeNode2) > 0);
+                assertTrue("getColumnData", vComp.compare(null, treeNode2, treeNode1) < 0);
                 assertTrue("getColumnData", vComp.compare(null, treeNode1, treeNode1) == 0);
             }
 
@@ -157,7 +164,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
             if (columnData.getHeader().compareTo(LEVEL_COLUMN) == 0) {
                 assertNull("getColumnData", percentProvider);
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                double percentage = (double) treeNode1.getValues().getTotal() / parentNode.getValues().getTotal();
+                double percentage = (double) treeNode1.getValue().getTotal() / parentNode.getValue().getTotal();
                 assertEquals("getColumnData", percentage, percentProvider.getPercentage(treeNode1));
             }
         }

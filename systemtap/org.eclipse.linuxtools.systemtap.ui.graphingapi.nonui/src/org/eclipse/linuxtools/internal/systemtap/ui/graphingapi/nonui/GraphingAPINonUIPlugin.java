@@ -34,7 +34,6 @@ public class GraphingAPINonUIPlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called upon plug-in activation
 	 */
-	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 	}
@@ -42,7 +41,6 @@ public class GraphingAPINonUIPlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called when the plug-in is stopped
 	 */
-	@Override
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
 		plugin = null;
@@ -68,6 +66,6 @@ public class GraphingAPINonUIPlugin extends AbstractUIPlugin {
 
 	@SuppressWarnings("unchecked")
 	public static <T> ArrayList<T>[] createArrayList(int size, T instance) {
-		return new ArrayList[size];
+		return (ArrayList<T>[])new ArrayList[size];
 	}
 }

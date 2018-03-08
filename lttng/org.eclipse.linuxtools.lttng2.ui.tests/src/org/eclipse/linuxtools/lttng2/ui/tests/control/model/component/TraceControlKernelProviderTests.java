@@ -36,7 +36,6 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.Kernel
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceChannelComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceEventComponent;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceProviderGroup;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.model.IHost;
@@ -143,17 +142,13 @@ public class TraceControlKernelProviderTests extends TestCase {
         // Verify that node is connected
         assertEquals(TargetNodeState.CONNECTED, node.getTargetNodeState());
 
-        // Get provider and session group
+        // Get provider groups
         ITraceControlComponent[] groups = node.getChildren();
         assertNotNull(groups);
         assertEquals(2, groups.length);
 
-        // Check for kernel provider
-        TraceProviderGroup providerGroup = (TraceProviderGroup) groups[0];
-        assertTrue(providerGroup.hasKernelProvider());
-
         // Get kernel provider
-        ITraceControlComponent[] providers = providerGroup.getChildren();
+        ITraceControlComponent[] providers = groups[0].getChildren();
         KernelProviderComponent kernelProvider = (KernelProviderComponent) providers[0];
 
         // Get kernel provider events and select 2 events

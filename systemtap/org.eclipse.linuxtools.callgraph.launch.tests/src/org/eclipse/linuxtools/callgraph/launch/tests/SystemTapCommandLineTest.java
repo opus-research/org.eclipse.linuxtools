@@ -65,15 +65,15 @@ public class SystemTapCommandLineTest extends TestCase {
 			InputStream inpstr = pr.getInputStream();
 			BufferedReader rbuff = new BufferedReader (new InputStreamReader(inpstr));
 			String line = "";
-			StringBuilder text = new StringBuilder();
+			String text = "";
 			
 			//READ THE STANDARD OUTPUT OF COMMAND
 			while ((line = rbuff.readLine()) != null){
-				text.append(line);
+				text += line;
 			}
 			
 			rbuff.close();
-			return text.toString();
+			return text;
 			
 		} catch (IOException e) {
 			e.printStackTrace();

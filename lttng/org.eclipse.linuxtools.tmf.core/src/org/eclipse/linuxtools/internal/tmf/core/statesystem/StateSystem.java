@@ -18,17 +18,16 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
@@ -45,15 +44,12 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public class StateSystem implements ITmfStateSystemBuilder {
+public class StateSystem implements IStateSystemBuilder {
 
     /* References to the inner structures */
     private final AttributeTree attributeTree;
     private final TransientState transState;
     private final IStateHistoryBackend backend;
-
-    /* Latch tracking if the state history is done building or not */
-    private final CountDownLatch finishedLatch = new CountDownLatch(1);
 
     /**
      * General constructor
@@ -77,16 +73,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* We're opening an existing file */
             this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
             transState.setInactive();
-            finishedLatch.countDown(); /* The history is already built */
-        }
-    }
-
-    @Override
-    public void waitUntilBuilt() {
-        try {
-            finishedLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -161,7 +147,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
              */
             attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
-        finishedLatch.countDown(); /* Mark the history as finished building */
     }
 
     //--------------------------------------------------------------------------
@@ -336,29 +321,27 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         stackDepth++;
-        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, stackDepth.toString());
+        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark,
+                stackDepth.toString());
 
-        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
     }
 
     @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public void popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
-        /* These are the state values of the stack-attribute itself */
-        ITmfStateValue previousSV = queryOngoingState(attributeQuark);
+        Integer stackDepth;
+        int subAttributeQuark;
+        ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
-            /*
-             * Trying to pop an empty stack. This often happens at the start of
-             * traces, for example when we see a syscall_exit, without having
-             * the corresponding syscall_entry in the trace. Just ignore
-             * silently.
-             */
-            return null;
+            /* Same as if stackDepth == 0, see below */
+            return;
         }
-        if (previousSV.getType() != ITmfStateValue.TYPE_INTEGER) {
+        if (previousSV.getType() != 0) {
             /*
              * The existing value was a string, this doesn't look like a valid
              * stack attribute.
@@ -366,34 +349,33 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        Integer stackDepth = previousSV.unboxInt();
+        stackDepth = previousSV.unboxInt();
 
-        if (stackDepth <= 0) {
+        if (stackDepth == 0) {
+            /*
+             * Trying to pop an empty stack. This often happens at the start of
+             * traces, for example when we see a syscall_exit, without having
+             * the corresponding syscall_entry in the trace. Just ignore
+             * silently.
+             */
+            return;
+        }
+
+        if (stackDepth < 0) {
             /* This on the other hand should not happen... */
-            /* the case where == -1 was handled previously by .isNull() */
-            String message = "A top-level stack attribute cannot " + //$NON-NLS-1$
-                    "have a value of 0 or less (except -1/null)."; //$NON-NLS-1$
+            String message = "A top-level stack attribute " + //$NON-NLS-1$
+                    "cannot have a negative integer value."; //$NON-NLS-1$
             throw new StateValueTypeException(message);
         }
 
-        /* The attribute should already exist at this point */
-        int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
-        ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
+        /* The attribute should already exist... */
+        subAttributeQuark = getQuarkRelative(attributeQuark,
+                stackDepth.toString());
 
-        /* Update the state value of the stack-attribute */
-        ITmfStateValue nextSV;
-        if (--stackDepth == 0 ) {
-            /* Jump over "0" and store -1 (a null state value) */
-            nextSV = TmfStateValue.nullValue();
-        } else {
-            nextSV = TmfStateValue.newValueInt(stackDepth);
-        }
-        modifyAttribute(t, nextSV, attributeQuark);
-
-        /* Delete the sub-attribute that contained the user's state value */
+        stackDepth--;
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         removeAttribute(t, subAttributeQuark);
-
-        return poppedValue;
     }
 
     @Override
@@ -506,28 +488,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
-            throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException {
-        Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
-
-        if (curStackDepth == -1) {
-            /* There is nothing stored in this stack at this moment */
-            return null;
-        } else if (curStackDepth < -1 || curStackDepth == 0) {
-            /*
-             * This attribute is an integer attribute, but it doesn't seem like
-             * it's used as a stack-attribute...
-             */
-            throw new StateValueTypeException();
-        }
-
-        int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
-        ITmfStateInterval ret = querySingleState(t, subAttribQuark);
-        return ret;
-    }
-
-    @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2) throws TimeRangeException,
             AttributeNotFoundException {
@@ -621,7 +581,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     static void logMissingInterval(int attribute, long timestamp) {
-        Activator.logInfo("No data found in history for attribute " + //$NON-NLS-1$
+        Tracer.traceInfo("No data found in history for attribute " + //$NON-NLS-1$
                 attribute + " at time " + timestamp + //$NON-NLS-1$
                 ", returning dummy interval"); //$NON-NLS-1$
     }

@@ -7,8 +7,8 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
 
 import java.io.File;
-import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.PipedInputStream;
 import java.util.ArrayList;
 
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.ErrorMessage;
@@ -115,8 +115,7 @@ public class Subscription extends Thread {
 	 * Contains blocking reads.
 	 * 
 	 */
-	  @Override
-	public void run () {
+	  public void run () {
 		running = true;
 		DMResponse subrep = null;
 		//long timeToRemove = 0;
@@ -242,9 +241,9 @@ public class Subscription extends Thread {
 	 */
 	public ArrayList<IGobblerListener> getInputStreamListeners() {
 		if(null != inputGobbler)
-			return inputGobbler.getDataListeners();
-		else
 			return inputListeners;
+		else
+			return inputGobbler.getDataListeners();
 	}
 	
 	/**
@@ -253,9 +252,9 @@ public class Subscription extends Thread {
 	 */
 	public ArrayList<IGobblerListener> getErrorStreamListeners() {
 		if(null != errorGobbler)
-			return errorGobbler.getDataListeners();
-		else
 			return errorListeners;
+		else
+			return errorGobbler.getDataListeners();
 	}
 	
 	/**

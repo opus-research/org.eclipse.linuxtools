@@ -39,7 +39,6 @@ public class HistBucket extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#hasChildren()
 	 */
-	@Override
 	public boolean hasChildren() {
 		return false;
 	}
@@ -48,13 +47,11 @@ public class HistBucket extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getChildren()
 	 */
-	@Override
 	public LinkedList<? extends TreeElement> getChildren() {
 		return null;
 	}
 
 
-	@Override
 	public int getCalls() {
 		return -1;
 	}
@@ -63,7 +60,6 @@ public class HistBucket extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getName()
 	 */
-	@Override
 	public String getName() {
 		return "0x" + Long.toHexString(bucket.start_addr);
 	}
@@ -72,7 +68,6 @@ public class HistBucket extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getSamples()
 	 */
-	@Override
 	public int getSamples() {
 		return bucket.time;
 	}

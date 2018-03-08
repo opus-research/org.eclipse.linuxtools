@@ -73,7 +73,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
     }
 
     @Override
-    public ITmfLocation getLocation() {
+    public ITmfLocation<? extends Comparable<?>> getLocation() {
         return curLocation;
     }
 
@@ -83,9 +83,9 @@ public class CtfTmfLightweightContext implements ITmfContext {
     }
 
     @Override
-    public void setLocation(ITmfLocation location) {
+    public void setLocation(ITmfLocation<? extends Comparable<?>> location) {
         curLocation = (CtfLocation) location;
-        getIterator().seek(curLocation.getLocationInfo());
+        getIterator().seek(curLocation.getLocation());
     }
 
     @Override
@@ -120,19 +120,19 @@ public class CtfTmfLightweightContext implements ITmfContext {
      * @return success or not
      */
     public synchronized boolean advance() {
-        final CtfLocationData curLocationData = this.curLocation.getLocationInfo();
+        final CtfLocationData curLocationData = this.curLocation.getLocation();
         boolean retVal = getIterator().advance();
         CtfTmfEvent currentEvent = getIterator().getCurrentEvent();
 
         if (currentEvent != null) {
-            final long timestampValue = currentEvent.getTimestamp().getValue();
+            final long timestampValue = currentEvent.getTimestampValue();
             if (curLocationData.getTimestamp() == timestampValue) {
-                curLocation = new CtfLocation(timestampValue, curLocationData.getIndex() + 1);
+                curLocation.setLocation(timestampValue, curLocationData.getIndex() + 1);
             } else {
-                curLocation = new CtfLocation(timestampValue, 0L);
+                curLocation.setLocation(timestampValue, 0L);
             }
         } else {
-            curLocation = new CtfLocation(CtfLocation.INVALID_LOCATION);
+            curLocation.setLocation(CtfLocation.INVALID_LOCATION);
         }
 
         return retVal;
@@ -151,7 +151,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
      * @return success or not
      */
     public synchronized boolean seek(final long timestamp) {
-        curLocation = new CtfLocation(timestamp, 0);
+        curLocation.setLocation(timestamp, 0);
         return getIterator().seek(timestamp);
     }
 
@@ -164,7 +164,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
      * @since 2.0
      */
     public synchronized boolean seek(final CtfLocationData location) {
-        curLocation = new CtfLocation(location);
+        curLocation.setLocation(location);
         return getIterator().seek(location);
     }
 

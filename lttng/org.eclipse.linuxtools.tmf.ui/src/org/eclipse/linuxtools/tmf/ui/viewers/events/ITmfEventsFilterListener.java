@@ -17,7 +17,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
  * A filter/search event listener
- *
+ * 
  * @version 1.0
  * @author Patrick Tasse
  */

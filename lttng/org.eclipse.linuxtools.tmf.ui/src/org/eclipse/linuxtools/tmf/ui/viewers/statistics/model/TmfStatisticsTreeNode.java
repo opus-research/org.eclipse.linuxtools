@@ -10,105 +10,70 @@
  *   Yann N. Dauphin <dhaemon@gmail.com> - Implementation for stats
  *   Francois Godin <copelnug@gmail.com> - Re-design for new stats structure
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Re-design for new stats structure (2)
- *   Alexandre Montplaisir - Move the tree structure logic into the nodes
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
 
 /**
  * A tree where nodes can be accessed efficiently using paths.
  *
  * It works like file systems. Each node is identified by a key. A path is an
- * array of String. The elements of the array represent the path from the root
- * to this node.
+ * array ({@link TmfFixedArray}) of String. The elements of the array represent
+ * the path from the root to this node.
  *
- * @author Mathieu Denis
  * @version 2.0
  * @since 2.0
+ * @author Mathieu Denis
  */
 public class TmfStatisticsTreeNode {
 
-    /** Tree to which this node belongs */
-    private final TmfStatisticsTree fTree;
+    /**
+     * Value of the node.
+     */
+    protected TmfStatistics fValue;
 
-    /** Path of this node. The last element represents its basename. */
-    private final String[] fPath;
+    /**
+     * Path of the node.
+     */
+    protected TmfFixedArray<String> fPath;
 
-    /** Parent node */
-    private final TmfStatisticsTreeNode fParent;
-
-    /** Children of this node, indexed by their basename. */
-    private final Map<String, TmfStatisticsTreeNode> fChildren;
-
-    /** Statistics values associated to this node. */
-    private final TmfStatisticsValues fValues;
+    /**
+     * Corresponding StatisticsData.
+     */
+    protected AbsTmfStatisticsTree fNodes;
 
     /**
      * Constructor.
      *
-     * @param tree
-     *            Owner tree of this node
-     * @param parent
-     *            Parent node of this one
      * @param path
      *            Path to the node.
+     * @param nodes
+     *            Corresponding StatisticsData.
      */
-    public TmfStatisticsTreeNode(TmfStatisticsTree tree,
-            TmfStatisticsTreeNode parent, final String... path) {
-        /* The path must not contain any null element, or else we won't be
-         * able to walk the tree. */
-        for (String elem : path) {
-            if (elem == null) {
-                throw new IllegalArgumentException();
-            }
-        }
-
-        fTree = tree;
+    public TmfStatisticsTreeNode(final TmfFixedArray<String> path,
+            AbsTmfStatisticsTree nodes) {
         fPath = path;
-        fParent = parent;
-        fChildren = new HashMap<String, TmfStatisticsTreeNode>();
-        fValues = new TmfStatisticsValues();
-    }
-
-    /**
-     * Get the name for this node. It's used as the key in the parent's node.
-     *
-     * @return Name of this node.
-     */
-    public String getName() {
-        if (fPath.length == 0) {
-            /* This means we are the root node, which has no path itself */
-            return "root"; //$NON-NLS-1$
-        }
-        return fPath[fPath.length - 1];
+        fNodes = nodes;
+        fValue = new TmfStatistics();
     }
 
     /**
      * Test if a node contain the specified child.
      *
-     * @param childName
+     * @param key
      *            Name of the child.
      * @return true: if child with given key is present, false: if no child
      *         exists with given key name
      */
-    public boolean containsChild(String childName) {
-        return fChildren.containsKey(childName);
-    }
-
-    /**
-     * Retrieve the given child from this node.
-     *
-     * @param childName
-     *            The (base)name of the child you want
-     * @return The child object, or null if it doesn't exist
-     */
-    public TmfStatisticsTreeNode getChild(String childName) {
-        return fChildren.get(childName);
+    public boolean containsChild(String key) {
+        if (AbsTmfStatisticsTree.ROOT.equals(fPath)) {
+            return fNodes.get(new TmfFixedArray<String>(key)) != null;
+        }
+        return (fNodes.get(fPath.append(key)) != null);
     }
 
     /**
@@ -117,25 +82,25 @@ public class TmfStatisticsTreeNode {
      * @return Direct children of this node.
      */
     public Collection<TmfStatisticsTreeNode> getChildren() {
-        return fChildren.values();
+        return fNodes.getChildren(fPath);
     }
 
     /**
-     * Add a child to this node.
+     * Get the children of this node.
      *
-     * @param childName
-     *            Name of the child to add
-     * @return The newly-created child
+     * @return Direct children of this node.
      */
-    public TmfStatisticsTreeNode addChild(String childName) {
-        TmfStatisticsTreeNode child;
-        String[] childPath = new String[fPath.length + 1];
-        System.arraycopy(fPath, 0, childPath, 0, fPath.length);
-        childPath[fPath.length] = childName;
+    public Collection<TmfStatisticsTreeNode> getAllChildren() {
+        return fNodes.getAllChildren(fPath);
+    }
 
-        child = new TmfStatisticsTreeNode(this.fTree, this, childPath);
-        fChildren.put(childName, child);
-        return child;
+    /**
+     * Get the key for this node.
+     *
+     * @return Key associated with this node.
+     */
+    public String getKey() {
+        return fPath.get(fPath.size() - 1);
     }
 
     /**
@@ -144,7 +109,7 @@ public class TmfStatisticsTreeNode {
      * @return Number of direct children of this node.
      */
     public int getNbChildren() {
-        return fChildren.size();
+        return fNodes.getChildren(fPath).size();
     }
 
     /**
@@ -153,7 +118,7 @@ public class TmfStatisticsTreeNode {
      * @return Parent node.
      */
     public TmfStatisticsTreeNode getParent() {
-        return fParent;
+        return fNodes.getParent(fPath);
     }
 
     /**
@@ -161,7 +126,7 @@ public class TmfStatisticsTreeNode {
      *
      * @return The path of the node.
      */
-    public String[] getPath() {
+    public TmfFixedArray<String> getPath() {
         return fPath;
     }
 
@@ -170,8 +135,8 @@ public class TmfStatisticsTreeNode {
      *
      * @return Value associated with this node.
      */
-    public TmfStatisticsValues getValues() {
-        return fValues;
+    public TmfStatistics getValue() {
+        return fValue;
     }
 
     /**
@@ -180,7 +145,7 @@ public class TmfStatisticsTreeNode {
      * @return True if the node has children.
      */
     public boolean hasChildren() {
-        return (fChildren.size() > 0);
+        return !fNodes.getChildren(fPath).isEmpty();
     }
 
     /**
@@ -188,41 +153,18 @@ public class TmfStatisticsTreeNode {
      * no children.
      */
     public void reset() {
-        fValues.resetTotalCount();
-        fValues.resetPartialCount();
-        fChildren.clear();
-    }
-
-    /**
-     * Resets the global number of events. It doesn't remove any node
-     * and doesn't modify the partial event count. Works recursively.
-     *
-     * @since 2.0
-     */
-    public void resetGlobalValue() {
-        for (TmfStatisticsTreeNode child : fChildren.values()) {
-            child.resetGlobalValue();
-        }
-        fValues.resetTotalCount();
+        fValue = new TmfStatistics();
+        fNodes.reset(fPath);
     }
 
     /**
      * Resets the number of events in the time range. It doesn't remove any node
-     * and doesn't modify the global event count. Works recursively.
+     * and doesn't modify the global event count.
      *
      * @since 2.0
      */
     public void resetTimeRangeValue() {
-        for (TmfStatisticsTreeNode child : fChildren.values()) {
-            child.resetTimeRangeValue();
-        }
-        fValues.resetPartialCount();
-    }
-
-    @Override
-    public String toString() {
-        /* Used for debugging only */
-        return "Stats node, path = " + Arrays.toString(fPath) + //$NON-NLS-1$
-                ", values = " + fValues.toString(); //$NON-NLS-1$
+        getValue().resetPartialCount();
+        fNodes.resetTimeRangeValue(fPath);
     }
 }

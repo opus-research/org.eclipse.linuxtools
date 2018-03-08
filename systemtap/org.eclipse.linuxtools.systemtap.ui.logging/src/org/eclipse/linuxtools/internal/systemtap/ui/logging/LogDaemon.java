@@ -40,7 +40,6 @@ public class LogDaemon extends TimerTask {
 		t.scheduleAtFixedRate(this, 100, 5000);
 	}
 
-	@Override
 	public void run() {
 		LinkedList<?> entries = LogManager.getInstance().getEntries();
 		if(writer == null || 0 == entries.size())

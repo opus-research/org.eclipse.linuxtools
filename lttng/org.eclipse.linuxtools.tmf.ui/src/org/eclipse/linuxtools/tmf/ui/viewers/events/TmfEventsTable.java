@@ -30,7 +30,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
@@ -44,13 +43,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.util.SafeRunnable;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
@@ -125,10 +117,9 @@ import org.eclipse.ui.themes.ColorUtil;
  * @version 1.0
  * @author Francois Chouinard
  * @author Patrick Tasse
- * @since 2.0
  */
 public class TmfEventsTable extends TmfComponent implements IGotoMarker,
-        IColorSettingsListener, ITmfEventsFilterProvider, ISelectionProvider {
+        IColorSettingsListener, ITmfEventsFilterProvider {
 
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
@@ -217,13 +208,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     protected SearchThread fSearchThread;
     protected final Object fSearchSyncObj = new Object();
     protected List<ITmfEventsFilterListener> fEventsFilterListeners = new ArrayList<ITmfEventsFilterListener>();
-
-    /**
-     * List of selection change listeners (element type: <code>ISelectionChangedListener</code>).
-     *
-     * @see #fireSelectionChanged
-     */
-    private ListenerList selectionChangedListeners = new ListenerList();
 
     // Bookmark map <Rank, MarkerId>
     protected Map<Long, Long> fBookmarksMap = new HashMap<Long, Long>();
@@ -341,7 +325,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         }
                     }
                 }
-                fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, getSelection()));
             }
         });
 
@@ -500,7 +483,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     }
                     fTable.setSelection(index + 1); // +1 for header row
                     fSelectedRank = rank;
-                } else if (e.data instanceof ITmfLocation) {
+                } else if (e.data instanceof ITmfLocation<?>) {
                     // DOES NOT WORK: rank undefined in context from seekLocation()
                     // ITmfLocation<?> location = (ITmfLocation<?>) e.data;
                     // TmfContext context = fTrace.seekLocation(location);
@@ -688,13 +671,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         fRawViewer.setMenu(menu);
     }
 
-
-    @SuppressWarnings("unused")
     protected void appendToTablePopupMenu(final MenuManager tablePopupMenu, final TableItem selectedItem) {
         // override to append more actions
     }
 
-    @SuppressWarnings("unused")
     protected void appendToRawPopupMenu(final MenuManager rawViewerPopupMenu) {
         // override to append more actions
     }
@@ -747,7 +727,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             content[i] = fields[i].getValue() != null ? fields[i].getValue().toString() : ""; //$NON-NLS-1$
         }
         item.setText(content);
-        item.setData(event);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
         item.setData(Key.RANK, rank);
 
@@ -840,7 +819,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 item.setText(i, ""); //$NON-NLS-1$
             }
         }
-        item.setData(null);
         item.setData(Key.TIMESTAMP, null);
         item.setData(Key.RANK, null);
         item.setForeground(null);
@@ -1304,7 +1282,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         protected long rank;
         protected long foundRank = -1;
         protected TmfDataRequest request;
-        private ITmfTimestamp foundTimestamp = null;
 
         public SearchThread(final ITmfFilterTreeNode searchFilter, final ITmfFilterTreeNode eventFilter, final int startIndex,
                 final long currentRank, final int direction) {
@@ -1336,7 +1313,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     rank = event.rank;
                     if (searchFilter.matches(event.event) && ((eventFilter == null) || eventFilter.matches(event.event))) {
                         foundRank = event.rank;
-                        foundTimestamp = event.event.getTimestamp();
                         break;
                     }
                     if (direction == Direction.FORWARD) {
@@ -1374,7 +1350,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         super.handleData(event);
                         if (searchFilter.matches(event) && ((eventFilter == null) || eventFilter.matches(event))) {
                             foundRank = currentRank;
-                            foundTimestamp = event.getTimestamp();
                             if (direction == Direction.FORWARD) {
                                 done();
                                 return;
@@ -1438,10 +1413,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     }
                     fTable.setSelection(selection);
                     fSelectedRank = foundRank;
-                    fRawViewer.selectAndReveal(fSelectedRank);
-                    if (foundTimestamp != null) {
-                        broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, foundTimestamp));
-                    }
                     synchronized (fSearchSyncObj) {
                         fSearchThread = null;
                     }
@@ -1549,8 +1520,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                             startFilterThread();
                         }
                     }
+                    fRawViewer.setTrace(fTrace);
                 }
-                fRawViewer.setTrace(fTrace);
             }
         });
     }
@@ -1601,84 +1572,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
 
     protected void populateCompleted() {
         // Nothing by default;
-    }
-
-    // ------------------------------------------------------------------------
-    // ISelectionProvider
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void addSelectionChangedListener(ISelectionChangedListener listener) {
-        selectionChangedListeners.add(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ISelection getSelection() {
-        if (fTable == null || fTable.isDisposed()) {
-            return StructuredSelection.EMPTY;
-        }
-        List<Object> list = new ArrayList<Object>(fTable.getSelection().length);
-        for (TableItem item : fTable.getSelection()) {
-            if (item.getData() != null) {
-                list.add(item.getData());
-            }
-        }
-        return new StructuredSelection(list);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-        selectionChangedListeners.remove(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void setSelection(ISelection selection) {
-        // not implemented
-    }
-
-    /**
-     * Notifies any selection changed listeners that the viewer's selection has changed.
-     * Only listeners registered at the time this method is called are notified.
-     *
-     * @param event a selection changed event
-     *
-     * @see ISelectionChangedListener#selectionChanged
-     * @since 2.0
-     */
-    protected void fireSelectionChanged(final SelectionChangedEvent event) {
-        Object[] listeners = selectionChangedListeners.getListeners();
-        for (int i = 0; i < listeners.length; ++i) {
-            final ISelectionChangedListener l = (ISelectionChangedListener) listeners[i];
-            SafeRunnable.run(new SafeRunnable() {
-                public void run() {
-                    l.selectionChanged(event);
-                }
-            });
-        }
     }
 
     // ------------------------------------------------------------------------
@@ -1945,7 +1838,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     // Get the rank of the selected event in the table
                     final ITmfContext context = fTrace.seekEvent(timestamp);
                     final long rank = context.getRank();
-                    context.dispose();
                     fSelectedRank = rank;
 
                     fTable.getDisplay().asyncExec(new Runnable() {
@@ -1991,12 +1883,4 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         mb.open();
     }
 
-    /**
-     * @since 2.0
-     */
-    public void refresh() {
-        fCache.clear();
-        fTable.refresh();
-        fTable.redraw();
-    }
 }

@@ -11,22 +11,22 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobbler;
 
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.TestCase;
 
-public class StreamGobblerTest{
+public class StreamGobblerTest extends TestCase {
+	public StreamGobblerTest(String name) {
+		super(name);
+	}
 
-	@Before
-	public void setUp() {
+	protected void setUp() throws Exception {
+		super.setUp();
+
 		sg = new StreamGobbler(System.in);
 		sg.start();
 	}
 
-	@Test
 	public void testStreamGobbler() {
 		assertNotNull("StreamGobbler not null", sg);
 
@@ -37,24 +37,25 @@ public class StreamGobblerTest{
 		assertNotNull("StreamGobbler not null", sg);
 	}
 
-	@Test
 	public void testIsRunning() {
 		assertTrue("StreamGobbler running", sg.isRunning());
 		sg.stop();
 		assertFalse("StreamGobbler stopped", sg.isRunning());
 	}
 	
-	@Test
 	public void testStop() {
 		assertTrue("StreamGobbler running", sg.isRunning());
 		sg.stop();
 		assertFalse("StreamGobbler stopped", sg.isRunning());
 	}
 	
-	@Test
 	public void testDispose() {
 		sg.dispose();
 		assertFalse(sg.isRunning());
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 	
 	StreamGobbler sg;
