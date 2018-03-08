@@ -162,6 +162,9 @@ public class LoadersManager {
         }
 
         IWorkbenchPage persp = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        if (persp == null) {
+            return null;
+        }
 
         SDView sdView = view;
 
@@ -234,6 +237,10 @@ public class LoadersManager {
         if ((currentLoader != null) && (currentLoader != loader)) {
             if (loader != null) {
                 IWorkbenchPage persp = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                if (persp == null) {
+                    return;
+                }
+
                 try {
                     // Search view corresponding to the viewId
                     SDView sdview = null;

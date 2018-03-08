@@ -60,6 +60,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -499,11 +500,14 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
             resetLoader();
 
-            IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-            if (editor instanceof ITmfTraceEditor) {
-                ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
-                if (trace != null) {
-                    traceSelected(new TmfTraceSelectedSignal(this, trace));
+            IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (activePage != null) {
+                IEditorPart editor = activePage.getActiveEditor();
+                if (editor instanceof ITmfTraceEditor) {
+                    ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
+                    if (trace != null) {
+                        traceSelected(new TmfTraceSelectedSignal(this, trace));
+                    }
                 }
             }
         } finally {
