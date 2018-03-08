@@ -9,6 +9,7 @@
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
  *   Alexandre Montplaisir - Split out in separate class
+ *   Matthew Khouzam - update api (exceptions)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.types;
@@ -56,8 +57,12 @@ public class IntegerEndiannessTest {
         input = new BitBuffer(bb);
     }
 
-    /** Read 32-bits BE
-     * @throws CTFReaderException error */
+    /**
+     * Read 32-bits BE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
     public void test32BE() throws CTFReaderException {
         IntegerDeclaration be = new IntegerDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
@@ -66,8 +71,12 @@ public class IntegerEndiannessTest {
         assertEquals(0xabcdef12, fixture_be.getValue());
     }
 
-    /** Read 64-bits BE
-     * @throws CTFReaderException error*/
+    /**
+     * Read 64-bits BE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
     public void test64BE() throws CTFReaderException {
         IntegerDeclaration be = new IntegerDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
@@ -76,8 +85,12 @@ public class IntegerEndiannessTest {
         assertEquals(0xabcdef123456789aL, fixture_be.getValue());
     }
 
-    /** Read 32-bits LE
-     * @throws CTFReaderException error*/
+    /**
+     * Read 32-bits LE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
     public void test32LE() throws CTFReaderException {
         IntegerDeclaration le = new IntegerDeclaration(32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
@@ -86,8 +99,12 @@ public class IntegerEndiannessTest {
         assertEquals(0x12efcdab, fixture_le.getValue());
     }
 
-    /** Read 64-bits LE
-     * @throws CTFReaderException error*/
+    /**
+     * Read 64-bits LE
+     *
+     * @throws CTFReaderException
+     *             error
+     */
     @Test
     public void test64LE() throws CTFReaderException {
         IntegerDeclaration le = new IntegerDeclaration(64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);

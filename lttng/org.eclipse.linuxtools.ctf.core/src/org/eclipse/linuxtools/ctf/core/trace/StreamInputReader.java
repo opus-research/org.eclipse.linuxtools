@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -225,7 +226,16 @@ public class StreamInputReader {
          * If an event is available, read it.
          */
         if (this.packetReader.hasMoreEvents()) {
-            this.setCurrentEvent(this.packetReader.readNextEvent());
+            try {
+                this.setCurrentEvent(this.packetReader.readNextEvent());
+            } catch (CTFReaderException e) {
+                /*
+                 * Some problem happened, we'll assume that there are no more
+                 * events
+                 */
+                Activator.logError("Error reading CTF event in stream", e); //$NON-NLS-1$
+                return false;
+            }
             return true;
         }
         this.setCurrentEvent(null);
@@ -243,10 +253,15 @@ public class StreamInputReader {
         if (getPacketSize() >= (packetIndex + 1)) {
             this.packetReader.setCurrentPacket(getPacket());
         } else {
-            if (this.streamInput.addPacketHeaderIndex()) {
-                packetIndex = getPacketSize() - 1;
-                this.packetReader.setCurrentPacket(getPacket());
-            } else {
+            try {
+                if (this.streamInput.addPacketHeaderIndex()) {
+                    packetIndex = getPacketSize() - 1;
+                    this.packetReader.setCurrentPacket(getPacket());
+                } else {
+                    this.packetReader.setCurrentPacket(null);
+                }
+
+            } catch (CTFReaderException e) {
                 this.packetReader.setCurrentPacket(null);
             }
         }
@@ -291,10 +306,11 @@ public class StreamInputReader {
         }
 
         /*
-         * Advance until either of these conditions are met <ul> <li> reached
-         * the end of the trace file (the given timestamp is after the last
-         * event), </li> <li> found the first event with a timestamp greater or
-         * equal the given timestamp. </li> </ul>
+         * Advance until either of these conditions are met
+         * <ul>
+         *   <li> reached the end of the trace file (the given timestamp is after the last event), </li>
+         *   <li> found the first event with a timestamp greater or equal the given timestamp. </li>
+         * </ul>
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);

@@ -125,7 +125,8 @@ public abstract class Definition {
      * @param input
      *            the bitbuffer containing the data to read.
      * @throws CTFReaderException
-     *             the error message
+     *             An error occurred reading the data. If the buffer is reading
+     *             beyond its end, this exception will be raised.
      * @since 2.0
      */
     public abstract void read(BitBuffer input) throws CTFReaderException;
@@ -137,14 +138,18 @@ public abstract class Definition {
      *            The bitbuffer that is being read
      * @param declaration
      *            The declaration which has an alignment
-     * @throws CTFReaderException
-     *            happens when there is an out of bounds exception
      * @since 2.2
      */
-    protected static void alignRead(BitBuffer input, IDeclaration declaration) throws CTFReaderException {
-        long align = declaration.getAlignment();
-        long position = input.position();
-        long pos = position + ((align - (position % align)) % align);
+    protected static void alignRead(BitBuffer input, IDeclaration declaration){
+        long mask = declaration.getAlignment() -1;
+        /*
+         * The alignment is a power of 2
+         */
+        long pos = input.position();
+        if ((pos & mask) == 0) {
+            return;
+        }
+        pos = (pos + mask) & ~mask;
         input.position(pos);
     }
 

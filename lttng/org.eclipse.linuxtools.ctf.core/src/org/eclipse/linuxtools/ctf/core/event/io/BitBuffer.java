@@ -10,7 +10,7 @@
  *  Matthew Khouzam - Initial Design and implementation + overhaul
  *  Francis Giraldeau - Initial API and implementation
  *  Philippe Proulx - Some refinement and optimization
- *  Etienne Bergeron - fix zero size read + cleanup
+ *  Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -84,11 +84,7 @@ public final class BitBuffer {
     public BitBuffer(ByteBuffer buf, ByteOrder order) {
         setByteBuffer(buf);
         setByteOrder(order);
-        try {
-            position(0);
-        } catch (CTFReaderException e) {
-            // impossible to reach here, 0 is always valid.
-        }
+        position(0);
     }
 
     // ------------------------------------------------------------------------
@@ -103,7 +99,8 @@ public final class BitBuffer {
      *
      * @return The int value (signed) read from the buffer
      * @throws CTFReaderException
-     *             error
+     *             An error occurred reading the long. This exception can be
+     *             raised if the buffer tries to read out of bounds
      */
     public int getInt() throws CTFReaderException {
         return getInt(BIT_INT, true);
@@ -117,7 +114,8 @@ public final class BitBuffer {
      *
      * @return The long value (signed) read from the buffer
      * @throws CTFReaderException
-     *             An error occurred reading the long.
+     *             An error occurred reading the long. This exception can be
+     *             raised if the buffer tries to read out of bounds
      */
     public long getLong() throws CTFReaderException {
         return get(BIT_LONG, true);
@@ -136,21 +134,22 @@ public final class BitBuffer {
      *            The sign extended flag
      * @return The long value read from the buffer
      * @throws CTFReaderException
-     *             errors with the data
+     *             An error occurred reading the data. If more than 64 bits at a
+     *             time are read, or the buffer is read beyond its end, this
+     *             exception will be raised.
      */
-
     public long get(int length, boolean signed) throws CTFReaderException {
         if (length > BIT_LONG) {
             throw new CTFReaderException("Cannot read a long longer than 64 bits. Rquested: " + length); //$NON-NLS-1$
         }
         if (length > BIT_INT) {
             final int highShift = length - BIT_INT;
-            long a = getInt() & 0x00000000FFFFFFFFL;
+            long a = getInt();
             long b = getInt(highShift, false);
             long retVal;
             /* Cast the signed-extended int into a unsigned int. */
             a &= 0xFFFFFFFFL;
-            b &= ((1L << highShift) - 1L);
+            b &= (1L << highShift) - 1L;
 
             retVal = (this.byteOrder == ByteOrder.BIG_ENDIAN) ? ((a << highShift) | b) : ((b << BIT_INT) | a);
             /* sign extend */
@@ -160,7 +159,8 @@ public final class BitBuffer {
             }
             return retVal;
         }
-        return getInt(length, signed);
+        long retVal = getInt(length, signed);
+        return (signed ? retVal : (retVal & 0xFFFFFFFFL));
     }
 
     /**
@@ -176,7 +176,8 @@ public final class BitBuffer {
      *            The sign extended flag
      * @return The int value read from the buffer
      * @throws CTFReaderException
-     *             error
+     *             An error occurred reading the data. When the buffer is read
+     *             beyond its end, this exception will be raised.
      */
     private int getInt(int length, boolean signed) throws CTFReaderException {
 
@@ -187,7 +188,9 @@ public final class BitBuffer {
 
         /* Validate that the buffer has enough bits. */
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot read the integer, the buffer does not have enough remaining space. Requested:" + length); //$NON-NLS-1$
+            throw new CTFReaderException("Cannot read the integer, " + //$NON-NLS-1$
+                    "the buffer does not have enough remaining space. " + //$NON-NLS-1$
+                    "Requested:" + length); //$NON-NLS-1$
         }
 
         /* Get the value from the byte buffer. */
@@ -198,11 +201,11 @@ public final class BitBuffer {
          * Try a fast read when the position is byte-aligned by using
          * java.nio.ByteBuffer's native methods
          */
+        /*
+         * A faster alignment detection as the compiler cannot guaranty that pos
+         * is always positive.
+         */
         if ((this.pos & (BitBuffer.BIT_CHAR - 1)) == 0) {
-            /*
-             * A-- faster alignment detection as the compiler cannot guaranty
-             * that pos is always positive.
-             */
             switch (length) {
             case BitBuffer.BIT_CHAR:
                 // Byte
@@ -366,7 +369,8 @@ public final class BitBuffer {
      * @param value
      *            The int value to write
      * @throws CTFReaderException
-     *             error
+     *             An error occurred writing the data. If the buffer is written
+     *             beyond its end, this exception will be raised.
      */
     public void putInt(int value) throws CTFReaderException {
         putInt(BIT_INT, value);
@@ -386,13 +390,15 @@ public final class BitBuffer {
      * @param value
      *            The value to write
      * @throws CTFReaderException
-     *             error
+     *             An error occurred writing the data. If the buffer is written
+     *             beyond its end, this exception will be raised.
      */
     public void putInt(int length, int value) throws CTFReaderException {
         final long curPos = this.pos;
 
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot write to bitbuffer, insufficient space. Requested: " + length); //$NON-NLS-1$
+            throw new CTFReaderException("Cannot write to bitbuffer, " //$NON-NLS-1$
+                    + "insufficient space. Requested: " + length); //$NON-NLS-1$
         }
         if (length == 0) {
             return;
@@ -583,14 +589,8 @@ public final class BitBuffer {
      *
      * @param newPosition
      *            The new position of the buffer.
-     * @throws CTFReaderException
-     *             Thrown on out of bounds exceptions
      */
-    public void position(long newPosition) throws CTFReaderException {
-
-        if ((this.buf != null) && (newPosition / 8) > this.buf.capacity()) {
-            throw new CTFReaderException("Out of bounds exception on a position move, attempting to access position: " + newPosition); //$NON-NLS-1$
-        }
+    public void position(long newPosition) {
         this.pos = newPosition;
     }
 
@@ -631,11 +631,7 @@ public final class BitBuffer {
      * Resets the bitbuffer.
      */
     public void clear() {
-        try {
-            position(0);
-        } catch (CTFReaderException e) {
-            // Impossible to reach here, position 0 is safe
-        }
+        position(0);
 
         if (this.buf == null) {
             return;
