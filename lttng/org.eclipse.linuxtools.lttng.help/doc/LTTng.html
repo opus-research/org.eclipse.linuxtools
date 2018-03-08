@@ -40,7 +40,7 @@
 				<a href="LTTng.html#Project_View">Project View</a>
 			</li>
 			<li>
-				<a href="LTTng-Kernel-Analysis.html#Events_Editor">Events Editor</a>
+				<a href="LTTng.html#Events_View">Events View</a>
 			</li>
 			<li>
 				<a href="LTTng.html#Histogram_View">Histogram View</a>
@@ -330,12 +330,9 @@
 		<p>Traces can be also be imported to a project by dragging from another tracing project and dropping to the project's trace folder. The trace will be copied and the trace type will be set.</p>
 		<p>Any resource can be dragged and dropped from a non-tracing project, and any file or folder can be dragged from an external tool, into a tracing project's trace folder. The resource will be copied or imported as a new trace, however the trace type will be unknown and need to be set manually by the user.</p>
 		<p>It is also possible to drop a trace, resource, file or folder into an existing experiment. If the item does not already exist as a trace in the project's trace folder, it will first be copied or imported, then the trace will be added to the experiment.</p>
-		<h2 id="Events_editor">Events editor</h2>
-		<p>The Events editor shows the basic trace data in chronological order in a tabular format.</p>
-		<p>When opened, the Events editor displays the events of the currently focused tab's trace or experiment. Selecting another tab will populate all the other views with the selected trace. The traces can be dragged in the editor area so that several traces may be shown side by side. These traces are synchronized by timestamp. </p>
-		<p>
-			<img border="0" src="images/LTTng2EventsEditor.png"/>
-		</p>
+		<h2 id="Events_View">Events View</h2>
+		<p>The Events view shows the basic trace data in chronological order in a tabular format.</p>
+		<p>When opened, the Events view displays the events of the currently selected trace or experiment.</p>
 		<p>The header displays the current trace (or experiment) name. </p>
 		<p>Being part of the 
 			<b>Tracing and Monitoring</b> Framework, the default table displays the following fields:  
@@ -358,13 +355,12 @@
 			</li>
 		</ul>
 		<p>The first row of the table is the header row a.k.a. the Search and Filter row.</p>
-		<p>The highlighted event is the 
-			<i>current event</i> and is synchronized with the other views. If you select another event, the other views will be updated accordingly. The properties view will display a more detailed view of a the selected event. 
-		</p>
 		<p>
-			<img border="0" src="images/LTTng2EventProperties.png"/>
+			<img border="0" src="images/DefaultEventsView.png"/>
 		</p>
-		<p>The Events editor can be closed, disposing a trace. When this is done, all the views displaying the information will switch to the next event editor tab. If all the editor tabs are closed, then the views will display their empty states. </p>
+		<p>The highlighted event is the 
+			<i>current event</i> and is synchronized with the other views. If you select another event, the other views will be synchronized accordingly.
+		</p>
 		<h3 id="Searching_and_Filtering">Searching and Filtering</h3>
 		<p>Searching and filtering of events in the table can be performed by entering matching conditions in one or multiple columns in the header row (the first row below the column header).</p>
 		<p>To toggle between searching and filtering, click on the 'search' (
@@ -467,16 +463,14 @@
 			</li>
 		</ul>
 		<h2 id="Statistics_View">Statistics View</h2>
-		<p>The Statistics View displays the various event counters that are collected when analyzing a trace. The data is organized per trace. To open the Statistics View, select Windows -&gt; Show View -&gt; Other... -&gt; Tracing -&gt; Statistics. A new view will open with the name Statistics. This view shows 3 columns: 
-			<i>Level</i> 
-			<i>Events total</i> and 
-			<i>Events in selected time range</i>. After parsing a trace the view will display the number of events per event type in the second column and in the third, the currently selected time range's event type distribution is shown. The cells where the number of events are printed also contain a colored bar that indicates the percentage of the event count in relation to the total number of events. The statistics is collected for the whole trace. This view is part of the 
+		<p>The Statistics View displays the various event counters that are collected when analyzing a trace. The data is organized per trace. To open the Statistics View, select Windows -&gt; Show View -&gt; Other... -&gt; Tracing -&gt; Statistics. A new view will open with the name Statistics. This view shows 2 columns: 
+			<i>Level</i> and 
+			<i>Number of Events</i>. After parsing a trace the view will display the number of events per event type. The cells where the number of events are printed also contain a colored bar that indicates the percentage of the event count in relation to the total number of events. The statistics is collected for the whole trace. This view is part of the 
 			<b>Tracing and Monitoring Framework (TMF)</b> and is generic. It will work for any trace type extensions. For the LTTng 2.0 integration the Statistics view will display statistics as shown below.:
 		</p>
 		<p>
-			<img border="0" src="images/LTTng2StateBasedStatisticsView.png"/>
+			<img border="0" src="images/LTTng2StatisticsView.png"/>
 		</p>
-		<p>The statistics use a state system, therefore will load very quickly once the state system is written. </p>
 		<h2 id="Colors_View">Colors View</h2>
 		<p>
 			<img border="0" src="images/ColorsView.png"/>
