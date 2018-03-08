@@ -19,17 +19,19 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
+import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
 
 public class STPPartitionScanner extends RuleBasedPartitionScanner {
-	public final static String STP_PARTITIONING = "__stp_partitioning"; //$NON-NLS-1$
-	
 	public final static String STP_COMMENT = "__stp_comment"; //$NON-NLS-1$
+	public final static String STP_KEYWORD = "__stp_keyword"; //$NON-NLS-1$
+	public final static String STP_STRING = "__stp_string"; //$NON-NLS-1$
 	public final static String STP_CONDITIONAL = "__stp_conditional"; //$NON-NLS-1$
+	public final static String STP_PROBE = "__stp_probe"; //$NON-NLS-1$
 
 	public static String[] STP_PARTITION_TYPES = { IDocument.DEFAULT_CONTENT_TYPE, 
-		STP_COMMENT, STP_CONDITIONAL};
+		STP_COMMENT, STP_KEYWORD, STP_STRING, STP_CONDITIONAL, STP_PROBE};
 
 	/**
 	 * Detect empty comments
@@ -73,20 +75,26 @@ public class STPPartitionScanner extends RuleBasedPartitionScanner {
 	public STPPartitionScanner() {
 		
 		IToken stpComment = new Token(STP_COMMENT);
+		IToken stpString = new Token(STP_STRING);
 		IToken stpConditional = new Token(STP_CONDITIONAL);
+		IToken stpProbe = new Token(STP_PROBE);
 		
 		// Add special case word rule.
 		EmptyCommentRule emptyCommentRule= new EmptyCommentRule(stpComment);
 
         setPredicateRules(new IPredicateRule[] {
         		new EndOfLineRule("//", stpComment), //$NON-NLS-1$
+        		new MultiLineRule("probe", "}", stpProbe),  //$NON-NLS-1$//$NON-NLS-2$
         		new MultiLineRule("/*", "*/", stpComment),  //$NON-NLS-1$//$NON-NLS-2$
+        		new EndOfLineRule("/*", stpComment), //$NON-NLS-1$
                 new EndOfLineRule("#",  stpComment), //$NON-NLS-1$
 	            emptyCommentRule,    
                 new EndOfLineRule("#if", stpConditional), //$NON-NLS-1$
                 new EndOfLineRule("#else", stpConditional), //$NON-NLS-1$
                 new EndOfLineRule("#endif", stpConditional), //$NON-NLS-1$
                 new EndOfLineRule("#define", stpConditional), //$NON-NLS-1$
+        		new SingleLineRule("\"", "\"", stpString, '\\'), //$NON-NLS-1$ //$NON-NLS-2$
+                new SingleLineRule("'", "'", stpString, '\\'), //$NON-NLS-1$ //$NON-NLS-2$
              });
 
 	}
