@@ -141,7 +141,8 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
          * the state. That way, when that event leaves the queue, we will know
          * for sure that the state system processed the preceding real event.
          */
-        TmfEvent ev = new EmptyEvent();
+        TmfTimestamp ts = new TmfTimestamp(0); /* it must not be -1! */
+        TmfEvent ev = new TmfEvent(null, ts, null, null, null, null);
 
         try {
             eventsQueue.put(ev);
@@ -150,20 +151,6 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Inner classes
-    // ------------------------------------------------------------------------
-
-    /**
-     * Empty event that should be totally ignored by the event handler. It can
-     * by used for synchronisation purposes.
-     */
-    private class EmptyEvent extends TmfEvent {
-        public EmptyEvent() {
-            super(null, new TmfTimestamp(0), null, null, null, null);
         }
     }
 
@@ -184,12 +171,6 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
             try {
                 event = eventsQueue.take();
                 while (event.getTimestamp().getValue() != -1) {
-                    if (event instanceof EmptyEvent) {
-                        /* Synchronization event, should be ignored */
-                        event = eventsQueue.take();
-                        continue;
-                    }
-
                     currentEvent = event;
 
                     /* Make sure this is an event the sub-class can process */
