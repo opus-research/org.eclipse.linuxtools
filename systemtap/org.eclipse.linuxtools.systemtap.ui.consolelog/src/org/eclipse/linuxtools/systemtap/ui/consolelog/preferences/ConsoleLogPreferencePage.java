@@ -20,32 +20,32 @@ public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implemen
 	public ConsoleLogPreferencePage() {
 		super(GRID);
 		setPreferenceStore(ConsoleLogPlugin.getDefault().getPreferenceStore());
-		setDescription(Messages.ConsoleLogPreferencePage_PreferencesTitle);
+		setDescription("Preferences when accessing a remote server");
 	}
 	
 	@Override
 	public void createFieldEditors() {
 		
 		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.HOST_NAME,
-				Messages.ConsoleLogPreferencePage_Host, getFieldEditorParent()));
+				"Host Name: ", getFieldEditorParent()));
 		
 		addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.PORT_NUMBER,
-				Messages.ConsoleLogPreferencePage_Port, getFieldEditorParent()));
+				"Port: ", getFieldEditorParent()));
 		
 		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.SCP_USER,
-				Messages.ConsoleLogPreferencePage_User, getFieldEditorParent()));
+				"User Name: ", getFieldEditorParent()));
 		
 		StringFieldEditor passwordField = new StringFieldEditor(
-				ConsoleLogPreferenceConstants.SCP_PASSWORD, Messages.ConsoleLogPreferencePage_Password,
+				ConsoleLogPreferenceConstants.SCP_PASSWORD, "Password: ",
                 getFieldEditorParent());
         passwordField.getTextControl(getFieldEditorParent()).setEchoChar('*');
         addField(passwordField);
 
 		addField(new BooleanFieldEditor(ConsoleLogPreferenceConstants.REMEMBER_SERVER,
-				Messages.ConsoleLogPreferencePage_AlwaysConnectToHost, getFieldEditorParent()));
+				"Always connect to this host.", getFieldEditorParent()));
 		
 		addField(new IntegerFieldEditor(ConsoleLogPreferenceConstants.SAVE_LENGTH,
-				Messages.ConsoleLogPreferencePage_SecondsToSaveData, getFieldEditorParent()));
+				"Seconds to Save Data: ", getFieldEditorParent()));
 
 	}
 
