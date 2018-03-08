@@ -154,12 +154,15 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 
 				int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount,
 						PerfPlugin.ATTR_StatRunCount_default);
-				StringBuffer buff = new StringBuffer();
+				StringBuffer args = new StringBuffer();
 				for (String arg : arguments) {
-					buff.append(arg);
-					buff.append(" "); //$NON-NLS-1$
+					args.append(arg);
+					args.append(" "); //$NON-NLS-1$
 				}
-				title = renderProcessLabel(exePath.toOSString() + " " + buff.toString()); //$NON-NLS-1$
+				title = renderProcessLabel("Performance counter stats for "
+						+ exePath.toOSString()
+						+ " " + args.toString() //$NON-NLS-1$
+						+ " (" + runCount + " runs)" ); //$NON-NLS-1$ /$NON-NLS-2$
 				StatData sd = new StatData(title, exePath.toOSString(), arguments, runCount);
 				sd.parse();
 				PerfPlugin.getDefault().setStatData(sd);
