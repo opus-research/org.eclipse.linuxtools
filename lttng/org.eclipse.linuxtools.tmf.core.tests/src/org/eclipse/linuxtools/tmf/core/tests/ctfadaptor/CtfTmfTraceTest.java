@@ -50,7 +50,8 @@ import org.junit.Test;
  */
 public class CtfTmfTraceTest {
 
-    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.KERNEL;
+    private static final int TRACE_INDEX = 0;
+    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
 
     private CtfTmfTrace fixture;
 
@@ -62,9 +63,9 @@ public class CtfTmfTraceTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         fixture = new CtfTmfTrace();
-        fixture.initTrace((IResource) null, testTrace.getPath(), CtfTmfEvent.class);
+        fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
     }
 
     /**
@@ -344,7 +345,8 @@ public class CtfTmfTraceTest {
     @Test
     public void testValidate() {
         IProject project = null;
-        IStatus result = fixture.validate(project, testTrace.getPath());
+        String path = PATH;
+        IStatus result = fixture.validate(project, path);
         assertTrue(result.isOK());
     }
 

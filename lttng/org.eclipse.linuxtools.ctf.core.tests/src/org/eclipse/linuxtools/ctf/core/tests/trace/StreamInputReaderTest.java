@@ -16,7 +16,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.File;
 import java.nio.channels.FileChannel;
 import java.util.Set;
 
@@ -42,7 +41,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class StreamInputReaderTest {
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private StreamInputReader fixture;
 
@@ -60,8 +59,8 @@ public class StreamInputReaderTest {
     }
 
     private static StreamInputReader getStreamInputReader() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
-        CTFTrace trace = testTrace.getTrace();
+        assumeTrue(CtfTestTraces.tracesExist());
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
         Stream s = trace.getStream((long) 0);
         Set<StreamInput> streamInput = s.getStreamInputs();
         StreamInputReader retVal = null;
@@ -96,7 +95,7 @@ public class StreamInputReaderTest {
     @Test(expected = CTFReaderException.class)
     public void testStreamInputReader_invalid() throws CTFReaderException {
         StreamInput streamInput = new StreamInput(
-                new Stream(new CTFTrace("")), (FileChannel) null, new File(""));
+                new Stream(new CTFTrace("")), (FileChannel) null, CtfTestTraces.getEmptyFile());
 
         StreamInputReader result = new StreamInputReader(streamInput);
         assertNotNull(result);

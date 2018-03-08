@@ -12,71 +12,101 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.shared;
 
+import java.io.File;
+
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
 /**
- * Available CTF TMF test traces. Kind-of-extends {@link CtfTestTraces}.
+ * Definitions used by all tests using CTF-TMF trace files.
  *
- * To run tests using these, you first need to run the "get-traces.[xml|sh]"
- * script located under lttng/org.eclipse.linuxtools.ctf.core.tests/traces/ .
+ * To run these tests, you will first need to run the "get-traces.sh" script
+ * located under lttng/org.eclipse.linuxtools.ctf.core.tests/traces/ .
  *
  * @author Alexandre Montplaisir
  */
-public enum CtfTmfTestTraces {
-    /** Example kernel trace */
-    KERNEL,
-    /** Another kernel trace */
-    TRACE2,
-    /** Kernel trace with event contexts */
-    KERNEL_VM;
+public final class CtfTmfTestTraces {
 
+    private CtfTmfTestTraces() {}
 
-    private final String fPath;
-    private CtfTmfTrace fTrace = null;
+    private static final File emptyFile = new File("");
+    private static CtfTmfTrace emptyTrace = new CtfTmfTrace();
 
-    private CtfTmfTestTraces() {
-        /* This makes my head spin */
-        fPath = CtfTestTraces.valueOf(this.name()).getPath();
+    private static CtfTmfTrace[] testTraces = new CtfTmfTrace[3];
+
+    /**
+     * Get an empty File (new File("");)
+     *
+     * @return An empty file
+     */
+    public static File getEmptyFile() {
+        return emptyFile;
     }
 
     /**
-     * @return The path of this trace
+     * Get an empty CtfTmfTrace (new CtfTmfTrace();)
+     *
+     * @return An empty trace
      */
-    public String getPath() {
-        return fPath;
+    public static CtfTmfTrace getEmptyTrace() {
+        return emptyTrace;
     }
 
     /**
-     * Return a CtfTmfTrace object of this test trace. It will be already
-     * initTrace()'ed.
+     * Get a reference to the test trace used for the kernel event handler unit
+     * tests.
      *
-     * Make sure you call {@link #exists()} before calling this!
+     * Make sure you call {@link #tracesExist()} before calling this!
      *
-     * @return A CtfTmfTrace reference to this trace
+     * @param idx
+     *            The index of the test trace you want
+     * @return A CtfTmfTrace reference to the test trace
      */
-    public CtfTmfTrace getTrace() {
-        if (fTrace == null) {
-            CtfTmfTrace trace = new CtfTmfTrace();
+    public synchronized static CtfTmfTrace getTestTrace(int idx) {
+        if (testTraces[idx] == null) {
+            String tracePath = CtfTestTraces.getTestTracePath(idx);
+            testTraces[idx] = new CtfTmfTrace();
             try {
-                trace.initTrace(null, fPath, CtfTmfEvent.class);
+                testTraces[idx].initTrace(null, tracePath, CtfTmfEvent.class);
             } catch (TmfTraceException e) {
                 /* Should not happen if tracesExist() passed */
+                testTraces[idx] = null;
                 throw new RuntimeException(e);
             }
-            fTrace = trace;
         }
-        return fTrace;
+        return testTraces[idx];
+    }
+
+    // ------------------------------------------------------------------------
+    // Wrappers around direct CtfTestTraces methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get the (string) path to a given test trace.
+     *
+     * You should call {@link #tracesExist()} before calling this if you are
+     * going to use this trace for real.
+     *
+     * @param idx
+     *            The index of the trace among all the available ones
+     * @return The path to the test trace
+     */
+    public static String getTestTracePath(int idx) {
+        return CtfTestTraces.getTestTracePath(idx);
     }
 
     /**
-     * Check if the trace actually exists on disk or not.
+     * Check if the test traces are present before trying to open them.
      *
-     * @return If the trace is present
+     * This should be called in unit tests within a asssumeTrue() call, to skip
+     * the test/test-class if the traces are not available.
+     *
+     * @return True if the trace is available, false if not
      */
-    public boolean exists() {
-        return CtfTestTraces.valueOf(this.name()).exists();
+    public static boolean tracesExist() {
+        return CtfTestTraces.tracesExist();
     }
+
 }

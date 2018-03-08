@@ -35,7 +35,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class CTFTraceReaderTest {
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private CTFTraceReader fixture;
 
@@ -46,8 +46,8 @@ public class CTFTraceReaderTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
-        fixture = new CTFTraceReader(testTrace.getTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new CTFTraceReader(CtfTestTraces.getTestTrace(TRACE_INDEX));
     }
 
     /**
@@ -58,7 +58,7 @@ public class CTFTraceReaderTest {
      */
     @Test
     public void testOpen_existing() throws CTFReaderException {
-        CTFTrace trace = testTrace.getTrace();
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
 
         CTFTraceReader result = new CTFTraceReader(trace);
         assertNotNull(result);
@@ -155,7 +155,7 @@ public class CTFTraceReaderTest {
      */
     @Test
     public void testEquals() throws CTFReaderException {
-        CTFTraceReader fixture2 = new CTFTraceReader(testTrace.getTrace());
+        CTFTraceReader fixture2 = new CTFTraceReader(CtfTestTraces.getTestTrace(TRACE_INDEX));
         assertEquals(fixture, fixture2);
     }
 

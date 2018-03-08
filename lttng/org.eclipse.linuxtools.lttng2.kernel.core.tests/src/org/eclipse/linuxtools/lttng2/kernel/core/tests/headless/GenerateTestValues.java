@@ -36,7 +36,7 @@ import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
  */
 public class GenerateTestValues {
 
-    private static CtfTmfTestTraces testTrace = CtfTmfTestTraces.TRACE2;
+    private static final int TRACE_INDEX = 1;
     private static final long targetTimestamp = 18670067372290L + 1331649577946812237L;
     private static final String INDENT = "    ";
 
@@ -49,7 +49,7 @@ public class GenerateTestValues {
      *             I'm messing with Exception. Come at me bro!
      */
     public static void main(String[] args) throws Exception {
-        if (!testTrace.exists()) {
+        if (!CtfTmfTestTraces.tracesExist()) {
             System.err.println("Trace files not present.");
             return;
         }
@@ -61,7 +61,7 @@ public class GenerateTestValues {
         PrintWriter writer = new PrintWriter(new FileWriter(logFile), true);
 
         /* Build and query the state system */
-        ITmfStateProvider input = new LttngKernelStateProvider(testTrace.getTrace());
+        ITmfStateProvider input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
         ITmfStateSystem ssq = TmfStateSystemFactory.newFullHistory(stateFile, input, true);
         List<ITmfStateInterval> fullState = ssq.queryFullState(targetTimestamp);
 

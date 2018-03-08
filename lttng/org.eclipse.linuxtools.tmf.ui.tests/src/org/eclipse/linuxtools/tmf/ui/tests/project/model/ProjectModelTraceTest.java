@@ -41,7 +41,7 @@ public class ProjectModelTraceTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(CtfTmfTestTraces.KERNEL.exists());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
             fixture = ProjectModelTestData.getFilledProject();
         } catch (CoreException e) {

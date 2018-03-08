@@ -48,7 +48,7 @@ public class CTFTraceTest {
 
     private static final String METADATA_FILENAME = "metadata";
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private static final String CTF_VERSION_NUMBER = "1.8";
     private static final String CTF_SUITE_TEST_DIRECTORY = "ctf-testsuite/tests/" + CTF_VERSION_NUMBER;
@@ -60,13 +60,8 @@ public class CTFTraceTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(testTrace.exists());
-        try {
-            fixture = testTrace.getTraceFromFile();
-        } catch (CTFReaderException e) {
-            /* If the assumeTrue() call passed, this should not happen. */
-            fail();
-        }
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
         fixture.setMinor(1L);
         fixture.setUUID(UUID.randomUUID());
         fixture.setPacketHeader(new StructDeclaration(1L));
@@ -79,12 +74,8 @@ public class CTFTraceTest {
      */
     @Test
     public void testOpen_existing() {
-        try {
-            CTFTrace result = testTrace.getTraceFromFile();
-            assertNotNull(result.getUUID());
-        } catch (CTFReaderException e) {
-            fail();
-        }
+        CTFTrace result = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        assertNotNull(result.getUUID());
     }
 
     /**
@@ -120,7 +111,7 @@ public class CTFTraceTest {
 
         // Add a stream
         try {
-            Stream stream = new Stream(testTrace.getTrace());
+            Stream stream = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
             stream.setId(1234);
             fixture.addStream(stream);
         } catch (CTFReaderException e) {
@@ -268,19 +259,15 @@ public class CTFTraceTest {
      */
     @Test
     public void testPacketHeaderIsSet_invalid() {
-        try {
-            CTFTrace fixture2 = testTrace.getTraceFromFile();
-            fixture2.setMinor(1L);
-            fixture2.setUUID(UUID.randomUUID());
-            fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
-            fixture2.setMajor(1L);
-            fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
+        CTFTrace fixture2 = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        fixture2.setMinor(1L);
+        fixture2.setUUID(UUID.randomUUID());
+        fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
+        fixture2.setMajor(1L);
+        fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
 
-            boolean result = fixture2.packetHeaderIsSet();
-            assertFalse(result);
-        } catch (CTFReaderException e) {
-            fail();
-        }
+        boolean result = fixture2.packetHeaderIsSet();
+        assertFalse(result);
     }
 
     /**

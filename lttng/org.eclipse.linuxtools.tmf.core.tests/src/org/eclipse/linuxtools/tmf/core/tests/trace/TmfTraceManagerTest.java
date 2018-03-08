@@ -67,10 +67,9 @@ public class TmfTraceManagerTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(CtfTmfTestTraces.TRACE2.exists());
-        assumeTrue(CtfTmfTestTraces.KERNEL.exists());
-        trace1 = CtfTmfTestTraces.TRACE2.getTrace();
-        trace2 = CtfTmfTestTraces.KERNEL.getTrace();
+        assumeTrue(CtfTmfTestTraces.tracesExist());
+        trace1 = CtfTmfTestTraces.getTestTrace(1);
+        trace2 = CtfTmfTestTraces.getTestTrace(0);
 
         trace1.indexTrace(true);
         trace2.indexTrace(true);

@@ -33,7 +33,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class MetadataTest {
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private Metadata fixture;
 
@@ -44,8 +44,8 @@ public class MetadataTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
-        fixture = new Metadata(testTrace.getTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new Metadata(CtfTestTraces.getTestTrace(TRACE_INDEX));
     }
 
     /**

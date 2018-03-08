@@ -42,7 +42,8 @@ public class EventContextTest {
     // ------------------------------------------------------------------------
 
     /* We use test trace #2, kernel_vm, which has event contexts */
-    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.KERNEL_VM;
+    private static final int TRACE_INDEX = 2;
+    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
 
     private static CtfTmfTrace fixture;
     private static long startTime;
@@ -60,9 +61,9 @@ public class EventContextTest {
      */
     @BeforeClass
     public static void setUp() throws TmfTraceException {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         fixture = new CtfTmfTrace();
-        fixture.initTrace((IResource) null, testTrace.getPath(), CtfTmfEvent.class);
+        fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
         fixture.indexTrace(true);
 
         startTime = fixture.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();

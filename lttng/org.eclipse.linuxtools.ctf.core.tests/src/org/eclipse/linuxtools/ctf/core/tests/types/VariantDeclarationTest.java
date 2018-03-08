@@ -36,7 +36,7 @@ import org.junit.Test;
  */
 public class VariantDeclarationTest {
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private VariantDeclaration fixture;
 
@@ -87,13 +87,13 @@ public class VariantDeclarationTest {
     }
 
     private static IDefinitionScope createDefinitionScope() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTestTraces.tracesExist());
         VariantDeclaration declaration = new VariantDeclaration();
         declaration.setTag("");
         VariantDeclaration variantDeclaration = new VariantDeclaration();
         variantDeclaration.setTag("");
         VariantDefinition variantDefinition = new VariantDefinition(
-                variantDeclaration, testTrace.getTrace(), "");
+                variantDeclaration, CtfTestTraces.getTestTrace(TRACE_INDEX), "");
         IDefinitionScope definitionScope = new StructDefinition(
                 new StructDeclaration(1L), variantDefinition, "");
         String fieldName = "";
