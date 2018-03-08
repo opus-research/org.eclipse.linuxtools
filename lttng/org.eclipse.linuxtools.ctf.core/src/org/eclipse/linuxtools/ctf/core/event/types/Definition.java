@@ -137,8 +137,8 @@ public abstract class Definition {
      * @since 2.2
      */
     protected static void alignRead(BitBuffer input, IDeclaration declaration){
-        int align = (int) declaration.getAlignment();
-        int pos = input.position() + ((align - (input.position() % align)) % align);
+        long align = declaration.getAlignment();
+        long pos = input.position() + ((align - (input.position() % align)) % align);
         input.position(pos);
     }
 
