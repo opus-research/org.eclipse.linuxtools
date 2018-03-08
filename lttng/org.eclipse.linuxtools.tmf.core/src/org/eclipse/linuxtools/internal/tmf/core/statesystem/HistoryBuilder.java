@@ -50,36 +50,29 @@ public class HistoryBuilder extends TmfComponent {
     private boolean started = true; /* Don't handle signals until we're ready */
 
     /**
-     * Instantiate a new HistoryBuilder helper. The input -> ss -> backend
-     * relationships should have been set up already.
+     * Instantiate a new HistoryBuilder helper.
      *
      * @param stateChangeInput
-     *            The input plugin to use
-     * @param ss
-     *            The state system object that will receive the state changes
-     *            from the input
+     *            The input plugin to use. This is required.
      * @param backend
-     *            The back-end storage to use, which will receive the intervals
-     *            from the ss
+     *            The back-end storage to use.
      * @param buildManually
      *            Should we build this history in-band or not. True means we
      *            will start the building ourselves and block the caller until
      *            construction is done. False (out-of-band) means we will start
-     *            listening for the signal and return immediately.
+     *            listening for the signal and return immediately. Another
+     *            signal will be sent when finished.
      */
-    public HistoryBuilder(IStateChangeInput stateChangeInput, StateSystem ss,
+    public HistoryBuilder(IStateChangeInput stateChangeInput,
             IStateHistoryBackend backend, boolean buildManually) {
-        if (stateChangeInput == null || backend == null || ss == null) {
+        if (stateChangeInput == null || backend == null) {
             throw new IllegalArgumentException();
         }
-        if (stateChangeInput.getAssignedStateSystem() != ss) {
-            /* Logic check to make sure the input is setup properly */
-            throw new RuntimeException();
-        }
-
         sci = stateChangeInput;
         hb = backend;
-        this.ss = ss;
+        ss = new StateSystem(hb);
+
+        sci.assignTargetStateSystem(ss);
 
         if (buildManually) {
             TmfSignalManager.deregister(this);
