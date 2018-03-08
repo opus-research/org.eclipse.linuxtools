@@ -7,8 +7,6 @@
  *
  * Contributors:
  *    Red Hat initial API and implementation
- *    Daniel HB <danielhb@br.ibm.com> - 2012/12/14 - added RemoteProxyManager
- *    extension point support.
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.profiling.launch.provider.launch;
 
@@ -16,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -38,10 +35,8 @@ public class ProviderFramework {
 	/**
 	 * Get a profiling launch shortcut that provides the specified type of profiling. This
 	 * looks through extensions of the extension point
-	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
-	 *  that have a specific type attribute.
+	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> that have a
+	 * specific type attribute.
 	 *
 	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
 	 * @return a profiling launch shortcut that implements <code>ProfileLaunchShortcut</code>
@@ -68,8 +63,6 @@ public class ProviderFramework {
 	 * Get a profiling launch shortcut that is associated with the specified id.
 	 * This looks through extensions of the extension point
 	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
 	 * that have a specific id.
 	 *
 	 * @param id A unique identifier
@@ -104,10 +97,8 @@ public class ProviderFramework {
 	/**
 	 * Get a launch configuration delegate that is associated with the specified id.
 	 * This looks through extensions of the extension point
-	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> 
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
-	 * that have a specific delegate attribute.
+	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> that
+	 * have a specific delegate attribute.
 	 *
 	 * @param id a unique identifier
 	 * @return a launch configuration delegate that implements
@@ -143,15 +134,13 @@ public class ProviderFramework {
 	 * Get id of highest priority profiling tabgroup launch configuration that
 	 * provides the type of profiling. This looks through extensions of the
 	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
 	 * extension point that have a specific type attribute.
 	 *
 	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
 	 * @return an id of the profiling launch shortcut that implements
 	 * <code>ProfileLaunchShortcut</code> and provides the necessary
 	 * profiling type, or <code>null</code> if none could be found.
-	 * @since 2.0
+	 * @since 1.2
 	 */
 	public static String getHighestProviderId(String type) {
 		ArrayList<IConfigurationElement> list = getOrderedConfigElements(type);
@@ -166,14 +155,12 @@ public class ProviderFramework {
 	 * Get map of all pairs of names and IDs of the specific provider type. This
 	 * looks through extensions of the extension point
 	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
 	 * that have a specific type.
 	 *
 	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
 	 * @return A <code>HashMap<String, String></code> of all pairs of names and IDs
 	 * of the specific type.
-	 * @since 2.0
+	 * @since 1.2
 	 */
 	public static HashMap<String, String> getProviderNamesForType(String type) {
 		HashMap<String, String> ret = new HashMap<String, String>();
@@ -253,45 +240,26 @@ public class ProviderFramework {
 	 * Helper method to return the list of extensions that contribute the the
 	 * provider framework.
 	 * @return All extensions that contribute to the provider framework.
-	 * 
-	 * Daniel HB, 2012/12/14 - making this method public instead of private
-	 * to avoid code repetition on other classes.
-	 * @since 2.0
 	 */
-	public static IConfigurationElement [] getConfigurationElements () {
-		List <IConfigurationElement> configurationElements = new ArrayList<IConfigurationElement>();
-		
+	private static IConfigurationElement [] getConfigurationElements () {
 		IExtensionPoint extPoint = Platform.getExtensionRegistry()
 				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, "launchProvider"); //$NON-NLS-1$
-		
-		IConfigurationElement [] configElements = extPoint.getConfigurationElements();
-		
-		for (IConfigurationElement configElement : configElements)
-			configurationElements.add(configElement);
-		
-		
-		extPoint = Platform.getExtensionRegistry()
-				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, "RemoteProxyManager"); //$NON-NLS-1$
-		configElements = extPoint.getConfigurationElements();
-		for (IConfigurationElement configElement : configElements)
-			configurationElements.add(configElement);
-		
-		return configurationElements.toArray(
-				new IConfigurationElement[configurationElements.size()]);
+		return extPoint.getConfigurationElements();
 	}
 
 	/**
 	 * Get name of tool with plug-in id <code>id</code>. This looks through
 	 * extensions of the
 	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
 	 * extensions point.
 	 * 
-	 * @since 2.0
+	 * @since 1.2
 	 */
 	public static String getProviderToolNameFromId(String id) {
-		IConfigurationElement[] configs = getConfigurationElements();
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
+						"launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentId = config.getAttribute("id"); //$NON-NLS-1$

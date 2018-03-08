@@ -7,8 +7,6 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *    Daniel HB <danielhb@br.ibm.com> - 2012/12/14 - added support to 
- *    RemoteProxyManager extension point.
  *******************************************************************************/ 
 package org.eclipse.linuxtools.profiling.launch;
 
@@ -19,13 +17,15 @@ import org.eclipse.cdt.launch.ui.CArgumentsTab;
 import org.eclipse.cdt.launch.ui.CMainTab;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.EnvironmentTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderFramework;
+import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 
 public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
@@ -48,19 +48,19 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 	/**
 	 * Get a profiling tab that provides the specified type of profiling. This
 	 * looks through extensions of the extension point
-	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> 
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
-	 * that have a
+	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> that have a
 	 * specific type attribute.
 	 *
 	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
 	 * @return a tab that implements <code>ProfileLaunchConfigurationTabGroup</code>
 	 * and provides the necessary profiling type, or <code>null</code> if none could be found.
-	 * @since 2.0
+	 * @since 1.1
 	 */
 	public static ProfileLaunchConfigurationTabGroup getTabGroupProvider(String type) {
-		IConfigurationElement[] configs = ProviderFramework.getConfigurationElements();
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
+						"launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentType = config.getAttribute("type"); //$NON-NLS-1$
@@ -85,21 +85,20 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 	/**
 	 * Get a profiling tab that is associated with the specified id.
 	 * This looks through extensions of the extension point
-	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> 	 
-	 *  and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
-	 * that have a
+	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> that have a
 	 * specific id.
 	 *
 	 * @param id A unique identifier
 	 * @return a tab that implements <code>ProfileLaunchConfigurationTabGroup</code>
 	 * and provides the necessary profiling type, or <code>null</code> if none could be found.
-	 * @since 2.0
+	 * @since 1.1
 	 */
 	public static ProfileLaunchConfigurationTabGroup getTabGroupProviderFromId(
 			String id) {
-		IConfigurationElement[] configs = ProviderFramework.getConfigurationElements();
-		
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
+						"launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentId = config.getAttribute("id"); //$NON-NLS-1$
@@ -109,10 +108,9 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 					try {
 						Object obj = config
 								.createExecutableExtension("tabgroup"); //$NON-NLS-1$
-						
-						if (ProfileLaunchConfigurationTabGroup.class.isAssignableFrom(
-								obj.getClass()))
+						if (obj instanceof ProfileLaunchConfigurationTabGroup) {
 							return (ProfileLaunchConfigurationTabGroup) obj;
+						}
 					} catch (CoreException e) {
 						// continue, perhaps another configuration will succeed
 					}
@@ -140,17 +138,18 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 	/**
 	 * Get all IDs of the specific type. This looks through extensions of
 	 * the extension point <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code>
-	 * and
-	 * <code>org.eclipse.linuxtools.profiling.launch.RemoteProxyManager</code>
 	 * that have a specific type.
 	 *
 	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
 	 * @return A <code>String []</code> of all IDs of the specific type.
-	 * @since 2.0
+	 * @since 1.2
 	 */
 	public static String[] getProviderIdsForType(String type) {
 		ArrayList<String> ret = new ArrayList<String> ();
-		IConfigurationElement[] configs = ProviderFramework.getConfigurationElements();
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
+						"launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentId = config.getAttribute("id"); //$NON-NLS-1$
@@ -163,5 +162,5 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 		}
 		return ret.toArray(new String [] {});
 	}
-	
+
 }

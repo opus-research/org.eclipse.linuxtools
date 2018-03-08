@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="provider"/>
+            <element ref="manager"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,20 +47,13 @@
       </complexType>
    </element>
 
-   <element name="provider">
+   <element name="manager">
       <annotation>
          <documentation>
             A class which implements IRemoteProxyManager.
          </documentation>
       </annotation>
       <complexType>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  specifies a unique identifier for this launch provider.
-               </documentation>
-            </annotation>
-         </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
@@ -75,48 +68,6 @@
             <annotation>
                <documentation>
                   Connection scheme that this RemoteProxyManager supports.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="tabgroup" type="string" use="required">
-            <annotation>
-               <documentation>
-                  A Class that extends &lt;code&gt;RemoteProxyProfileLaunchConfigurationTabGroup&lt;/code&gt; and that will provide a set of tabs.
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.linuxtools.profiling.launch.RemoteProxyProfileLaunchConfigurationTabGroup:"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="delegate" type="string" use="required">
-            <annotation>
-               <documentation>
-                  A Class that extends &lt;code&gt;ProfileLaunchConfigurationDelegate&lt;/code&gt; and that will provide a launch delegate for profiling.
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate:"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Name of launch provider.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="priority" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Positive integer stating priorty over launch provider&apos;s of the same type.
-Invalid values will be assigned the lowest priority to the extension.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="type" type="string">
-            <annotation>
-               <documentation>
-                  Optional parameter to be used on the unified launcher framework.
                </documentation>
             </annotation>
          </attribute>
