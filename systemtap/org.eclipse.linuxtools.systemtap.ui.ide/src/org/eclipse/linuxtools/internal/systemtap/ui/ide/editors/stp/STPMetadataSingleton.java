@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
  */
 public class STPMetadataSingleton {
 
-	public static String[] NO_MATCHES = new String[0];
+	public static String[] NO_MATCHES = new String[] {Messages.STPMetadataSingleton_noCompletions};
 
 	private static STPMetadataSingleton instance = null;
 
@@ -39,10 +39,6 @@ public class STPMetadataSingleton {
 			instance = new STPMetadataSingleton();
 		}
 		return instance;
-	}
-
-	public void waitForInitialization(){
-		TapsetLibrary.waitForInitialization();
 	}
 
 	/**
@@ -94,8 +90,6 @@ public class STPMetadataSingleton {
 	 */
 	public String[] getProbeVariableCompletions(String probe, String prefix){
 		TreeNode node = TapsetLibrary.getProbes();
-		if (node == null )
-			return NO_MATCHES;
 
 		// Get the matching leaf node.
 		node = node.getChildByName(getTapset(probe));
@@ -145,10 +139,8 @@ public class STPMetadataSingleton {
 	 */
 	private String getTapset(String data) {
 		int i = data.indexOf('.');
-		if (i < 0){
-			return data;
-		}
-
+		if (i < 0)
+			throw new StringIndexOutOfBoundsException();
 		return data.substring(0, data.indexOf('.'));
 	}
 

@@ -2,6 +2,11 @@
 <?eclipse version="3.0"?>
 <plugin>
 	<extension
+		point="org.eclipse.ui.startup">
+		<!--startup class=""-->
+	</extension>
+
+	<extension
 		point="org.eclipse.ui.commands">
 		<command
 			name="%command.exportScript.name"

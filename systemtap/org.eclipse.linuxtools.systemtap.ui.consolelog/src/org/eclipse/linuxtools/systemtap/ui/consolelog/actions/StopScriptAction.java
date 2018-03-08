@@ -11,11 +11,12 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.actions;
 
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole.ScriptConsoleObserver;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
 
 
 
@@ -23,8 +24,7 @@ import org.eclipse.ui.PlatformUI;
  * A class that handles stopping the <code>ScriptConsole</code>.
  * @author Ryan Morse
  */
-public class StopScriptAction extends ConsoleAction implements ScriptConsoleObserver {
-
+public class StopScriptAction extends ConsoleAction {
 	/**
 	 * This is the main method of the class. It handles stopping the
 	 * currently active <code>ScriptConsole</code>.
@@ -32,8 +32,8 @@ public class StopScriptAction extends ConsoleAction implements ScriptConsoleObse
 	@Override
 	public void run() {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
+				ScriptConsole console = getActive();
 				if(null != console && console.isRunning()){
 					console.stop();
 				}
@@ -41,17 +41,57 @@ public class StopScriptAction extends ConsoleAction implements ScriptConsoleObse
 		});
 	}
 
-	public StopScriptAction(ScriptConsole fConsole) {
-		super(fConsole,
-				ConsoleLogPlugin.getDefault().getBundle().getEntry("icons/actions/stop_script.gif"), //$NON-NLS-1$
-				Localization.getString("action.stopScript.name"), //$NON-NLS-1$
-				Localization.getString("action.stopScript.desc")); //$NON-NLS-1$
-		console.addScriptConsoleObserver(this);
-	}
-
 	@Override
-	public void runningStateChanged(boolean running) {
-		setEnabled(running);
+	public void selectionChanged(IAction a, ISelection s) {
+				a.setEnabled(anyRunning());
+			}
+
+
+	/**
+	 * This method will stop the i'th <code>ScriptConsole</code> if it is running.
+	 * @param i The index value of the console that will be stopped.
+	 */
+	public void run(int i) {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		if (ic[i] instanceof ScriptConsole){
+			ScriptConsole console = (ScriptConsole)ic[i];
+
+			if(console.isRunning())
+				console.stop();
+		}
 	}
 
+	/**
+	 * This method will stop all consoles that are running.
+	 */
+	public void stopAll() {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		ScriptConsole console;
+
+		for(int i=0; i<ic.length; i++) {
+			if (ic[i] instanceof ScriptConsole){
+				console = (ScriptConsole)ic[i];
+				if(console.isRunning())
+					console.stop();
+			}
+		}
+	}
+
+	/**
+	 * This method will check to see if any scripts are currently running.
+	 * @return - boolean indicating whether any scripts are running
+	 */
+	public boolean anyRunning() {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		ScriptConsole console;
+
+		for(int i=0; i<ic.length; i++) {
+			if (ic[i] instanceof ScriptConsole){
+				console = (ScriptConsole)ic[i];
+				if(console.isRunning())
+					return true;
+			}
+		}
+		return false;
+	}
 }

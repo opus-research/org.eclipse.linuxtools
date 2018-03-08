@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetFactory;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IViewPart;
@@ -40,110 +40,121 @@ import org.eclipse.ui.WorkbenchException;
 
 /**
  * This action is designed to open up an exported <code>DataSet</code> from the graphing.
- * It allows users to bring up data from previous runs of stap so they can
+ * It allows users to bring up data from previous runs of stap so they can 
  * see old data.  Importing DataSets is no different then a script live and getting data.
  * @author Ryan Morse
  */
 public class ImportDataSetAction extends Action implements IWorkbenchWindowActionDelegate {
-	@Override
 	public void init(IWorkbenchWindow window) {
+		LogManager.logDebug("Start ImportDataSetAction.init", this); //$NON-NLS-1$
+		LogManager.logDebug("Initializing", this); //$NON-NLS-1$
 		fWindow = window;
+		LogManager.logDebug("End ImportDataSetAction.init", this); //$NON-NLS-1$
 	}
 
 	/**
 	 * This is the main method of the action.  It handles prompting the user
-	 * for a file that contains an exported DataSet.  Then, it will generate
+	 * for a file that contans an exported DataSet.  Then, it will generate
 	 * a new <code>DataSet</code> to hold all of the data.
 	 * @param act The action that fired this method.
 	 */
-	@Override
 	public void run(IAction act) {
+		LogManager.logDebug("Start ImportDataSetAction.run", this); //$NON-NLS-1$
 		//Get the file
 		FileDialog dialog= new FileDialog(fWindow.getShell(), SWT.OPEN);
-		dialog.setText(Localization.getString("ImportDataSetAction.OpenDataSetFile")); //$NON-NLS-1$
+		dialog.setText(Localization.getString("ImportDataSetAction.OpenDataSetFile"));
 		String fileName = dialog.open();
-
+		
 		File f = null;
-
+		
 		if(null == fileName || fileName.length() <= 0)
 			return;
-
+		
 		f = new File(fileName);
 
 		if(!f.exists() || !f.canRead())
 			return;
-
+		
 		//Create a new DataSet
 		IDataSet dataSet = readFile(f);
-
+		
 		if(null == dataSet) {
-			MessageDialog
-					.openWarning(
-							fWindow.getShell(),
-							Localization
-									.getString("ImportDataSetAction.Problem"), Localization.getString("ImportDataSetAction.ErrorReadingDataSet")); //$NON-NLS-1$ //$NON-NLS-2$
+			displayError(Localization.getString("ImportDataSetAction.ErrorReadingDataSet"));
 			return;
 		}
-
+		
 		//Create a new script set
 		try {
 			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(GraphingPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 			IViewPart ivp = p.findView(GraphSelectorView.ID);
 			((GraphSelectorView)ivp).createScriptSet(fileName, dataSet);
 		} catch(WorkbenchException we) {
-			ExceptionErrorDialog.openError(Localization.getString("ImportDataSetAction.UnableToImportDataSet"), we); //$NON-NLS-1$
+			LogManager.logCritical("WorkbenchException ImportDataSetAction.run:" + we.getMessage(), this); //$NON-NLS-1$
 		}
+		LogManager.logDebug("End ImportDataSetAction.run", this); //$NON-NLS-1$
 	}
 
-	@Override
 	public void selectionChanged(IAction a, ISelection s) {}
-
+	
 	/**
 	 * Read the contents of the file into a new DataSet
 	 * @param f The file that was selected to read a DataSet from
 	 * @return The newly created DataSet containing the data from the file.
 	 */
 	private IDataSet readFile(File f) {
+		LogManager.logDebug("Start ImportDataSetAction.readFile", this); //$NON-NLS-1$
 		IDataSet data;
 
 		readHeader(f);
 		if(null == labels || null == id)
 			return null;
-
+			
 		data = DataSetFactory.createFilteredDataSet(id, labels);
 		data.readFromFile(f);
-
+		
+		LogManager.logDebug("End ImportDataSetAction.readFile", this); //$NON-NLS-1$
 		return data;
 	}
-
+	
 	/**
 	 * This method will read out the labels and DataSet type from the file
 	 * @param f The file that was selected for reading.
 	 * @return An array of all of the labels found in the file
 	 */
 	private void readHeader(File f) {
+		LogManager.logDebug("Start ImportDataSetAction.readLabels", this); //$NON-NLS-1$
 
 		try {
 			FileReader fr = new FileReader(f);
 			BufferedReader br = new BufferedReader(fr);
-
+			
 			id = br.readLine();
-
+			
 			String line = br.readLine();
 			br.close();
-			labels = line.split(", "); //$NON-NLS-1$
+			labels = line.split(", ");
 		} catch(FileNotFoundException fnfe) {
-			ExceptionErrorDialog.openError(Localization.getString("ImportDataSetAction.UnableToReadHeader"), fnfe); //$NON-NLS-1$
+			LogManager.logCritical("FileNotFoundException ImportDataSetAction.readLabels:" + fnfe.getMessage(), this); //$NON-NLS-1$
 		} catch(IOException ioe) {
-			ExceptionErrorDialog.openError(Localization.getString("ImportDataSetAction.UnableToReadHeader"), ioe); //$NON-NLS-1$
+			LogManager.logCritical("IOException ImportDataSetAction.readLabels:" + ioe.getMessage(), this); //$NON-NLS-1$
 		}
-	}
 
-	@Override
+		LogManager.logDebug("End ImportDataSetAction.readLabels", this); //$NON-NLS-1$
+	}
+	
+	private void displayError(String message) {
+		LogManager.logInfo("Initializing", MessageDialog.class); //$NON-NLS-1$
+		MessageDialog.openWarning(fWindow.getShell(), Localization.getString("ImportDataSetAction.Problem"), message);
+		LogManager.logInfo("Disposing", MessageDialog.class); //$NON-NLS-1$
+	}
+	
 	public void dispose() {
+		LogManager.logDebug("Start ImportDataSetAction.dispose", this); //$NON-NLS-1$
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		fWindow = null;
+		LogManager.logDebug("End ImportDataSetAction.dispose", this); //$NON-NLS-1$
 	}
-
+	
 	private IWorkbenchWindow fWindow;
 	private String id;
 	private String[] labels;

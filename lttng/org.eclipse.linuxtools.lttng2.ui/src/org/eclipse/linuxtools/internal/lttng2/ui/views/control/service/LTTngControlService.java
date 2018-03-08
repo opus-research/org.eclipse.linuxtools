@@ -23,7 +23,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IUstProviderInfo;
@@ -34,7 +33,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BaseEventI
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.DomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.FieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.SessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.UstProviderInfo;
@@ -43,7 +41,6 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.preferences.ControlPreferences;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandResult;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.ICommandShell;
-import org.osgi.framework.Version;
 
 /**
  * <p>
@@ -53,6 +50,7 @@ import org.osgi.framework.Version;
  * @author Bernd Hufmann
  */
 public class LTTngControlService implements ILttngControlService {
+
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -65,7 +63,7 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * The version string.
      */
-    protected Version fVersion = null;
+    protected String fVersion = "Unknown"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -90,10 +88,7 @@ public class LTTngControlService implements ILttngControlService {
      */
     @Override
     public String getVersion() {
-        if (fVersion == null) {
-            return "Unknown"; //$NON-NLS-1$
-        }
-        return fVersion.toString();
+        return fVersion;
     }
 
     /**
@@ -101,19 +96,8 @@ public class LTTngControlService implements ILttngControlService {
      * @param version - a version to set
      */
     public void setVersion(String version) {
-        fVersion = new Version(version);
+        fVersion = version;
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#isVersionSupported(java.lang.String)
-     */
-    @Override
-    public boolean isVersionSupported(String version) {
-        Version tmp = new Version(version);
-        return (fVersion != null && fVersion.compareTo(tmp) >= 0) ? true : false;
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -133,8 +117,10 @@ public class LTTngControlService implements ILttngControlService {
 
         // Output:
         // Available tracing sessions:
-        // 1) mysession1 (/home/user/lttng-traces/mysession1-20120123-083928) [inactive]
-        // 2) mysession (/home/user/lttng-traces/mysession-20120123-083318) [inactive]
+        // 1) mysession1 (/home/user/lttng-traces/mysession1-20120123-083928)
+        // [inactive]
+        // 2) mysession (/home/user/lttng-traces/mysession-20120123-083318)
+        // [inactive]
         //
         // Use lttng list <session_name> for more details
 
@@ -182,11 +168,6 @@ public class LTTngControlService implements ILttngControlService {
                 sessionInfo.setSessionState(matcher.group(2));
                 index++;
                 continue;
-            }
-
-            matcher = LTTngControlServiceConstants.TRACE_NETWORK_PATH_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                sessionInfo.setStreamedTrace(true);
             }
 
             matcher = LTTngControlServiceConstants.TRACE_SESSION_PATH_PATTERN.matcher(line);
@@ -255,9 +236,8 @@ public class LTTngControlService implements ILttngControlService {
             // Error: Unable to list kernel events
             // or:
             // Error: Unable to list kernel events
-            //
 
-            if ((result.getOutput().length > 0) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[0]).matches()) ||
+            if ((result.getOutput().length == 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[0]).matches()) ||
                ((result.getOutput().length > 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[1]).matches()))) {
                 return events;
             }
@@ -297,14 +277,8 @@ public class LTTngControlService implements ILttngControlService {
     public List<IUstProviderInfo> getUstProvider(IProgressMonitor monitor) throws ExecutionException {
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_UST);
 
-        if (isVersionSupported("2.1.0")) { //$NON-NLS-1$
-            command.append(LTTngControlServiceConstants.OPTION_FIELDS);
-        }
-
         ICommandResult result = executeCommand(command.toString(), monitor);
 
-        // Note that field print-outs exists for version >= 2.1.0
-        //
         // UST events:
         // -------------
         //
@@ -313,18 +287,12 @@ public class LTTngControlService implements ILttngControlService {
         // ust_tests_hello:tptest_sighandler (loglevel: TRACE_EMERG0) (type:
         // tracepoint)
         // ust_tests_hello:tptest (loglevel: TRACE_EMERG0) (type: tracepoint)
-        //    field: doublefield (float)
-        //    field: floatfield (float)
-        //    field: stringfield (string)
         //
         // PID: 6459 - Name:
         // /home/user/git/lttng-ust/tests/hello.cxx/.libs/lt-hello
         // ust_tests_hello:tptest_sighandler (loglevel: TRACE_EMERG0) (type:
         // tracepoint)
         // ust_tests_hello:tptest (loglevel: TRACE_EMERG0) (type: tracepoint)
-        //    field: doublefield (float)
-        //    field: floatfield (float)
-        //    field: stringfield (string)
 
         List<IUstProviderInfo> allProviders = new ArrayList<IUstProviderInfo>();
         IUstProviderInfo provider = null;
@@ -334,12 +302,14 @@ public class LTTngControlService implements ILttngControlService {
             String line = result.getOutput()[index];
             Matcher matcher = LTTngControlServiceConstants.UST_PROVIDER_PATTERN.matcher(line);
             if (matcher.matches()) {
+
                 provider = new UstProviderInfo(matcher.group(2).trim());
                 provider.setPid(Integer.valueOf(matcher.group(1).trim()));
                 List<IBaseEventInfo> events = new ArrayList<IBaseEventInfo>();
                 index = getProviderEventInfo(result.getOutput(), ++index, events);
                 provider.setEvents(events);
                 allProviders.add(provider);
+
             } else {
                 index++;
             }
@@ -354,12 +324,6 @@ public class LTTngControlService implements ILttngControlService {
      */
     @Override
     public ISessionInfo createSession(String sessionName, String sessionPath, IProgressMonitor monitor) throws ExecutionException {
-        return createSession(sessionName, sessionPath, false, false, monitor);
-    }
-
-    @Override
-    public ISessionInfo createSession(String sessionName, String sessionPath, boolean noConsumer, boolean disableConsumer,
-            IProgressMonitor monitor) throws ExecutionException {
 
         String newName = formatParameter(sessionName);
         String newPath = formatParameter(sessionPath);
@@ -371,12 +335,6 @@ public class LTTngControlService implements ILttngControlService {
             command.append(newPath);
         }
 
-        if (noConsumer) {
-            command.append(LTTngControlServiceConstants.OPTION_NO_CONSUMER);
-        } else if (disableConsumer) {
-            command.append(LTTngControlServiceConstants.OPTION_DISABLE_CONSUMER);
-        }
-
         ICommandResult result = executeCommand(command.toString(), monitor);
 
         //Session myssession2 created.
@@ -396,109 +354,33 @@ public class LTTngControlService implements ILttngControlService {
                     formatOutput(result));
         }
 
-        if ((name == null) || (!"".equals(sessionName) && !name.equals(sessionName))) { //$NON-NLS-1$
+        if ((name == null) || (!name.equals(sessionName))) {
             // Unexpected name returned
             throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     Messages.TraceControl_UnexpectedNameError + ": " + name); //$NON-NLS-1$
         }
 
-        SessionInfo sessionInfo = new SessionInfo(name);
-
-        if (!noConsumer) {
-            // Get and verify session path
-            matcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(output[1]);
-            String path = null;
-
-            if (matcher.matches()) {
-                path = String.valueOf(matcher.group(1).trim());
-            } else {
-                // Output format not expected
-                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
-                        formatOutput(result));
-            }
-
-            if ((path == null) || ((sessionPath != null) && (!path.contains(sessionPath)))) {
-                // Unexpected path
-                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
-            }
-            sessionInfo.setSessionPath(path);
-        }
-
-        return sessionInfo;
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#createSession(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, boolean, org.eclipse.core.runtime.IProgressMonitor)
-     */
-    @Override
-    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl,
-            String dataUrl, boolean noConsumer, boolean disableConsumer, IProgressMonitor monitor) throws ExecutionException {
-
-        String newName = formatParameter(sessionName);
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (networkUrl != null) {
-            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
-            command.append(networkUrl);
-        } else {
-            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
-            command.append(controlUrl);
-
-            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
-            command.append(dataUrl);
-        }
-
-        if (noConsumer) {
-            command.append(LTTngControlServiceConstants.OPTION_NO_CONSUMER);
-        } else if (disableConsumer) {
-            command.append(LTTngControlServiceConstants.OPTION_DISABLE_CONSUMER);
-        }
-
-        ICommandResult result = executeCommand(command.toString(), monitor);
-
-        //Session myssession2 created.
-        //Traces will be written in /home/user/lttng-traces/myssession2-20120209-095418
-        String[] output = result.getOutput();
-
-        // Get and verify session name
-        Matcher matcher = LTTngControlServiceConstants.CREATE_SESSION_NAME_PATTERN.matcher(output[0]);
-        String name = null;
+        // Get and verify session path
+        matcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(output[1]);
+        String path = null;
 
         if (matcher.matches()) {
-            name = String.valueOf(matcher.group(1).trim());
+            path = String.valueOf(matcher.group(1).trim());
         } else {
             // Output format not expected
             throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
                     formatOutput(result));
         }
-        // Get and verify session path
-        matcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(output[1]);
-        String path = null;
+
+        if ((path == null) || ((sessionPath != null) && (!path.contains(sessionPath)))) {
+            // Unexpected path
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                    Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
+        }
 
         SessionInfo sessionInfo = new SessionInfo(name);
-        if (!noConsumer && (networkUrl != null)) {
-            if (matcher.matches()) {
-                path = String.valueOf(matcher.group(1).trim());
-            } else {
-                // Output format not expected
-                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
-                        formatOutput(result));
-            }
-
-            if (path == null) {
-                // Unexpected path
-                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
-            }
-            sessionInfo.setSessionPath(path);
-        }
-        sessionInfo.setStreamedTrace(true);
+        sessionInfo.setSessionPath(path);
 
         return sessionInfo;
     }
@@ -648,10 +530,10 @@ public class LTTngControlService implements ILttngControlService {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#enableEvents(java.lang.String, java.lang.String, java.util.List, boolean, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#enableEvent(java.lang.String, java.lang.String, java.util.List, boolean, org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
-    public void enableEvents(String sessionName, String channelName, List<String> eventNames, boolean isKernel, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+    public void enableEvents(String sessionName, String channelName, List<String> eventNames, boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
 
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_ENABLE_EVENT);
 
@@ -687,13 +569,6 @@ public class LTTngControlService implements ILttngControlService {
         }
 
         command.append(LTTngControlServiceConstants.OPTION_TRACEPOINT);
-
-        if (filterExpression != null) {
-            command.append(LTTngControlServiceConstants.OPTION_FILTER);
-            command.append('\'');
-            command.append(filterExpression);
-            command.append('\'');
-        }
 
         executeCommand(command.toString(), monitor);
 
@@ -758,10 +633,10 @@ public class LTTngControlService implements ILttngControlService {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#enableLogLevel(java.lang.String, java.lang.String, java.lang.String, org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType, org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#enableLogLevel(java.lang.String, java.lang.String, java.lang.String, org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.LogLevelType, org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceLogLevel, org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
-    public void enableLogLevel(String sessionName, String channelName, String eventName, LogLevelType logLevelType, TraceLogLevel level, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+    public void enableLogLevel(String sessionName, String channelName, String eventName, LogLevelType logLevelType, TraceLogLevel level, IProgressMonitor monitor) throws ExecutionException {
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_ENABLE_EVENT);
 
         command.append(eventName);
@@ -787,9 +662,8 @@ public class LTTngControlService implements ILttngControlService {
         command.append(level.getInName());
 
         executeCommand(command.toString(), monitor);
+
     }
-
-
 
     /*
      * (non-Javadoc)
@@ -1109,11 +983,6 @@ public class LTTngControlService implements ILttngControlService {
                 eventInfo.setLogLevel(matcher.group(2).trim());
                 eventInfo.setEventType(matcher.group(3).trim());
                 eventInfo.setState(matcher.group(4));
-                String filter = matcher.group(5);
-                if (filter != null) {
-                    filter = filter.substring(1, filter.length() - 1); // remove '[' and ']'
-                    eventInfo.setFilterExpression(filter);
-                }
                 events.add(eventInfo);
                 index++;
             } else if (matcher2.matches()) {
@@ -1121,11 +990,6 @@ public class LTTngControlService implements ILttngControlService {
                 eventInfo.setLogLevel(TraceLogLevel.LEVEL_UNKNOWN);
                 eventInfo.setEventType(matcher2.group(2).trim());
                 eventInfo.setState(matcher2.group(3));
-                String filter = matcher2.group(4);
-                if (filter != null) {
-                    filter = filter.substring(1, filter.length() - 1); // remove '[' and ']'
-                    eventInfo.setFilterExpression(filter);
-                }
 
                 if (eventInfo.getEventType() == TraceEventType.PROBE) {
                     IProbeEventInfo probeEvent = new ProbeEventInfo(eventInfo.getName());
@@ -1213,60 +1077,16 @@ public class LTTngControlService implements ILttngControlService {
      */
     protected int getProviderEventInfo(String[] output, int currentIndex, List<IBaseEventInfo> events) {
         int index = currentIndex;
-        IBaseEventInfo eventInfo = null;
         while (index < output.length) {
             String line = output[index];
             Matcher matcher = LTTngControlServiceConstants.PROVIDER_EVENT_PATTERN.matcher(line);
             if (matcher.matches()) {
-                // sched_kthread_stop (loglevel: TRACE_EMERG0) (type: tracepoint)
-                eventInfo = new BaseEventInfo(matcher.group(1).trim());
+                // sched_kthread_stop (loglevel: TRACE_EMERG0) (type:
+                // tracepoint)
+                IBaseEventInfo eventInfo = new BaseEventInfo(matcher.group(1).trim());
                 eventInfo.setLogLevel(matcher.group(2).trim());
                 eventInfo.setEventType(matcher.group(3).trim());
                 events.add(eventInfo);
-                index++;
-            } else if (LTTngControlServiceConstants.EVENT_FIELD_PATTERN.matcher(line).matches()) {
-                if (eventInfo != null) {
-                    List<IFieldInfo> fields = new ArrayList<IFieldInfo>();
-                    index = getFieldInfo(output, index, fields);
-                    eventInfo.setFields(fields);
-                } else {
-                    index++;
-                }
-            }
-            else if (LTTngControlServiceConstants.UST_PROVIDER_PATTERN.matcher(line).matches()) {
-                return index;
-            } else {
-                index++;
-            }
-        }
-        return index;
-    }
-
-
-    /**
-     * Parse a field's information.
-     *
-     * @param output
-     *            A command output array
-     * @param currentIndex
-     *            The current index in the command output array
-     * @param fields
-     *            List for returning the field information
-     * @return The new current index in the command output array
-     */
-    protected int getFieldInfo(String[] output, int currentIndex, List<IFieldInfo> fields) {
-        int index = currentIndex;
-        IFieldInfo fieldInfo = null;
-        while (index < output.length) {
-            String line = output[index];
-            Matcher matcher = LTTngControlServiceConstants.EVENT_FIELD_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                // field: content (string)
-                fieldInfo = new FieldInfo(matcher.group(2).trim());
-                fieldInfo.setFieldType(matcher.group(3).trim());
-                fields.add(fieldInfo);
-            } else if (LTTngControlServiceConstants.PROVIDER_EVENT_PATTERN.matcher(line).matches()) {
-                return index;
             } else if (LTTngControlServiceConstants.UST_PROVIDER_PATTERN.matcher(line).matches()) {
                 return index;
             }

@@ -66,38 +66,31 @@ public class PathEditorInput implements IPathEditorInput, ILocationProvider {
 		return fPath.equals(other.fPath);
 	}
 	
-	@Override
 	public boolean exists() {
 		return fPath.toFile().exists();
 	}
 	
-	@Override
 	public ImageDescriptor getImageDescriptor() {
 		return PlatformUI.getWorkbench().getEditorRegistry().getImageDescriptor(fPath.toString());
 	}
 	
-	@Override
 	public String getName() {
 		String[] substr = fPath.segments();
 		return substr[substr.length -1];
 	}
 	
-	@Override
 	public String getToolTipText() {
 		return fPath.makeRelative().toOSString();
 	}
 	
-	@Override
 	public IPath getPath() {
 		return fPath;
 	}
 
-	@Override
 	public Object getAdapter(Class adapter) {
 		return null;
 	}
 
-	@Override
 	public IPersistableElement getPersistable() {
 		return null;
 	}
@@ -106,7 +99,6 @@ public class PathEditorInput implements IPathEditorInput, ILocationProvider {
 		return fMainWindow;
 	}
 
-	@Override
 	public IPath getPath(Object element) {
 		if(element instanceof PathEditorInput) {
 			return ((PathEditorInput)element).getPath();

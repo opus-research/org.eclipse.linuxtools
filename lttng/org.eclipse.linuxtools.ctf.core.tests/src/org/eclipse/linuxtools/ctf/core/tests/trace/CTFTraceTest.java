@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.nio.ByteOrder;
@@ -15,11 +14,11 @@ import java.util.UUID;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,8 +32,6 @@ import org.junit.Test;
  */
 @SuppressWarnings("javadoc")
 public class CTFTraceTest {
-
-    private static final int TRACE_INDEX = 0;
 
     private CTFTrace fixture;
 
@@ -53,8 +50,7 @@ public class CTFTraceTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(CtfTestTraces.tracesExist());
-        fixture = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        fixture = TestParams.createTraceFromFile();
         fixture.setMinor(1L);
         fixture.setUUID(UUID.randomUUID());
         fixture.setPacketHeader(new StructDeclaration(1L));
@@ -75,7 +71,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testOpen_existing() {
-        CTFTrace result = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        CTFTrace result = TestParams.createTraceFromFile();
         assertNotNull(result.getUUID());
     }
 
@@ -112,7 +108,7 @@ public class CTFTraceTest {
         int nbStreams = fixture.nbStreams();
         assertEquals(1, nbStreams);
         // Add a stream
-        Stream stream = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
+        Stream stream = new Stream(TestParams.createTrace());
         stream.setId(1234);
         fixture.addStream(stream);
         // test number of streams
@@ -254,7 +250,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testPacketHeaderIsSet_invalid() {
-        CTFTrace fixture2 = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        CTFTrace fixture2 = TestParams.createTraceFromFile();
         fixture2.setMinor(1L);
         fixture2.setUUID(UUID.randomUUID());
         fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
