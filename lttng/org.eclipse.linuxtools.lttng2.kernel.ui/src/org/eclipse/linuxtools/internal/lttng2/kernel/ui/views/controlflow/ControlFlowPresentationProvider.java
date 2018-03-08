@@ -75,9 +75,12 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
     public int getStateTableIndex(ITimeEvent event) {
         if (event instanceof ControlFlowEvent) {
             int status = ((ControlFlowEvent) event).getStatus();
-            return getMatchingState(status).ordinal();
+            State state = getMatchingState(status);
+            if (state != State.UNKNOWN) {
+                return state.ordinal();
+            }
         }
-        return State.UNKNOWN.ordinal();
+        return TRANSPARENT;
     }
 
     @Override
