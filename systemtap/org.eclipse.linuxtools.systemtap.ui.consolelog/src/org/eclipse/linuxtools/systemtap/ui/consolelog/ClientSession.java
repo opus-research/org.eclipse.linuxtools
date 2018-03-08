@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.DMResponse;
  *
  */
 public final class ClientSession extends Thread {
-  
+	
 	private static ClientSession instance = null;
 	private static int portnumber, clientID;
 	private static boolean connected;
@@ -324,6 +324,3 @@ public final class ClientSession extends Thread {
 //    	return rc;
 	}
 }
-
-
-
