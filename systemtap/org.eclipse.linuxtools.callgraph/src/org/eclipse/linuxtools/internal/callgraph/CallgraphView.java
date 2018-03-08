@@ -690,9 +690,6 @@ public class CallgraphView extends SystemTapView {
 	}
 	
 
-	/**
-	 * @since 1.1
-	 */
 	public void stapPermissionError() {
 		Process p = null;
 		try {
