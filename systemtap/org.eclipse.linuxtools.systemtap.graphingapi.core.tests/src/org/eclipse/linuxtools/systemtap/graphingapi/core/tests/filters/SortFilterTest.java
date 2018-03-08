@@ -94,5 +94,5 @@ public class SortFilterTest {
 		assertTrue(SortFilter.ID.equals(filter.getID()));
 	}
 
-	private SortFilter filter;
+	SortFilter filter;
 }

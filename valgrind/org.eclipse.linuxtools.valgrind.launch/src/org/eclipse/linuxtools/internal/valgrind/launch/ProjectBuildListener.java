@@ -36,7 +36,6 @@ public class ProjectBuildListener implements IResourceChangeListener {
 		project = targetProject;
 	}
 
-	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		if (project != null && isPostBuildEvent(event)) {
 
@@ -103,7 +102,6 @@ public class ProjectBuildListener implements IResourceChangeListener {
 
 			// clear valgrind error view
 			Display.getDefault().syncExec(new Runnable() {
-				@Override
 				public void run() {
 					ValgrindUIPlugin.getDefault().resetView();
 				}

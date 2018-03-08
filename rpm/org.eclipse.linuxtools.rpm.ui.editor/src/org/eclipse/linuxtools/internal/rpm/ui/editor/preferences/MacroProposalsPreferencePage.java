@@ -43,7 +43,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * RPM macro proposals and hover preference page class.
- *
+ * 
  */
 public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage {
@@ -53,7 +53,6 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 
@@ -96,7 +95,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		 * The Add file button.
 		 */
 		private Button addFileButton;
-
+		
 		/**
 		 * The Add button.
 		 */
@@ -144,7 +143,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 			FileDialog dialog = new FileDialog(getShell());
 			return dialog.open();
 		}
-
+		
 		protected String getNewDirInputObject() {
 			DirectoryDialog dialog = new DirectoryDialog(getShell());
 			return dialog.open();
@@ -177,7 +176,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 				selectionChanged();
 			}
 		}
-
+		
 		/**
 		 * Notifies that the Add button has been pressed.
 		 */
@@ -198,7 +197,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 
 		/**
 		 * Creates the Add, Remove, Up, and Down button in the given button box.
-		 *
+		 * 
 		 * @param box
 		 *            the box for the buttons
 		 */
@@ -212,7 +211,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 
 		/**
 		 * Helper method to create a push button.
-		 *
+		 * 
 		 * @param parent
 		 *            the parent control
 		 * @param key
@@ -269,7 +268,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		/**
 		 * Returns this field editor's button box containing the Add, Remove,
 		 * Up, and Down button.
-		 *
+		 * 
 		 * @param parent The parent control
 		 * @return the button box
 		 */
@@ -282,7 +281,6 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 				buttonBox.setLayout(layout);
 				createButtons(buttonBox);
 				buttonBox.addDisposeListener(new DisposeListener() {
-					@Override
 					public void widgetDisposed(DisposeEvent event) {
 						addFileButton = null;
 						addDirButton = null;
@@ -303,7 +301,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 
 		/**
 		 * Returns this field editor's list control.
-		 *
+		 * 
 		 * @param parent The parent control
 		 * @return the list control
 		 */
@@ -315,7 +313,6 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 				list.setFont(parent.getFont());
 				list.addSelectionListener(getSelectionListener());
 				list.addDisposeListener(new DisposeListener() {
-					@Override
 					public void widgetDisposed(DisposeEvent event) {
 						list = null;
 					}
@@ -329,7 +326,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		/**
 		 * Returns this field editor's selection listener. The listener is
 		 * created if nessessary.
-		 *
+		 * 
 		 * @return the selection listener
 		 */
 		private SelectionListener getSelectionListener() {
@@ -345,7 +342,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		 * This method is internal to the framework; subclassers should not call
 		 * this method.
 		 * </p>
-		 *
+		 * 
 		 * @return the shell
 		 */
 		@Override
@@ -384,7 +381,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 
 		/**
 		 * Moves the currently selected item up or down.
-		 *
+		 * 
 		 * @param up
 		 *            <code>true</code> if the item should move up, and
 		 *            <code>false</code> if it should move down

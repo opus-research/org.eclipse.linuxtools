@@ -245,7 +245,6 @@ public class ProviderFramework {
 		}
 
 		Collections.sort(configList, new Comparator<IConfigurationElement>() {
-			@Override
 			public int compare(IConfigurationElement c1,
 					IConfigurationElement c2) {
 				int p1, p2;
@@ -298,7 +297,7 @@ public class ProviderFramework {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentId = config.getAttribute("id"); //$NON-NLS-1$
 				if (currentId != null && currentId.equals(id)) {
-					return config.getAttribute("name"); //$NON-NLS-1$
+					return config.getAttribute("name");
 				}
 			}
 		}
@@ -319,7 +318,7 @@ public class ProviderFramework {
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentId = config.getAttribute("id"); //$NON-NLS-1$
-				String currentToolDescription = config.getAttribute(attribute);
+				String currentToolDescription = config.getAttribute(attribute); //$NON-NLS-1$
 				if (currentId != null && currentToolDescription != null
 						&& currentId.equals(toolId)) {
 					return currentToolDescription;
@@ -453,7 +452,7 @@ public class ProviderFramework {
 	 * the workspace preferences.  If no project is obtainable or the project
 	 * has not indicated override, then it looks at provider preferences.  If these
 	 * are not set or the specified preference points to a non-installed provider,
-	 * it will look for the provider with the highest priority for the specified type.
+	 * it will look for the provider with the highest priority for the specified type. 
 	 * If this fails, it will look for the default provider.
 	 *
 	 * @param type a profiling type
@@ -477,7 +476,7 @@ public class ProviderFramework {
 							Boolean use_project_settings = store.getBoolean(ProviderProfileConstants.USE_PROJECT_SETTINGS + type);
 							if (use_project_settings.booleanValue() == true) {
 								String provider = store.getString(ProviderProfileConstants.PREFS_KEY + type);
-								if (!provider.isEmpty())
+								if (!provider.equals(""))
 									providerId = provider;
 							}
 						}
@@ -492,8 +491,8 @@ public class ProviderFramework {
 			// Look in the preferences for a provider
 			providerId = ConfigurationScope.INSTANCE.getNode(
 					ProviderProfileConstants.PLUGIN_ID).get(
-							ProviderProfileConstants.PREFS_KEY + type, ""); //$NON-NLS-1$
-			if (providerId.isEmpty() || getConfigurationDelegateFromId(providerId) == null) {
+							ProviderProfileConstants.PREFS_KEY + type, "");
+			if (providerId.equals("") || getConfigurationDelegateFromId(providerId) == null) {
 
 				// Get highest priority provider
 				providerId = getHighestProviderId(type);

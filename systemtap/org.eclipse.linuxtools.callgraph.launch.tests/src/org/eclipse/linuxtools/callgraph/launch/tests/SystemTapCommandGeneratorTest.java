@@ -10,23 +10,19 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.callgraph.launch.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapCommandGenerator;
-import org.junit.Test;
 
-public class SystemTapCommandGeneratorTest extends AbstractStapTest {
+public class SystemTapCommandGeneratorTest extends AbstractStapTest{
 
-	// HACK TO GET THE PATH TO THE TESTING PROJECT
+	//HACK TO GET THE PATH TO THE TESTING PROJECT
 	File file = new File("");
 	private String location = file.getAbsolutePath() + "/";
 	SystemTapCommandGenerator stapgen = new SystemTapCommandGenerator();
 
-	@Test
-	public void testExecutionWithScriptAndBinaryAndArgument() {
+	public void testExecutionWithScriptAndBinaryAndArgument(){
 
 		String binaryFilePath = location + "factorial";
 		String scriptPath = location + "function_count.stp";
@@ -36,14 +32,13 @@ public class SystemTapCommandGeneratorTest extends AbstractStapTest {
 				binaryFilePath, "", true, true, binaryFilePath, "",
 				PluginConstants.STAP_PATH);
 
-		assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath
-				+ " --runtime=dyninst " + binaryFilePath, cmd);
+		assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath + " --runtime=dyninst "
+				+ binaryFilePath, cmd);
 		killStap();
 		// END
 	}
 
-	@Test
-	public void testScriptExecution() {
+	public void testScriptExecution(){
 
 		String scriptPath = location + "simple.stp";
 
@@ -55,16 +50,14 @@ public class SystemTapCommandGeneratorTest extends AbstractStapTest {
 		// END
 	}
 
-	@Test
 	public void testExecutionWithScriptAndBinary() {
 
 		// RUN
 		String binaryFilePath = location + "factorial";
 		String scriptPath = location + "allsyscall.stp";
 
-		String cmd = SystemTapCommandGenerator.generateCommand(scriptPath,
-				binaryFilePath, "", true, false, "", "",
-				PluginConstants.STAP_PATH);
+		String cmd = SystemTapCommandGenerator.
+			generateCommand(scriptPath, binaryFilePath, "", true, false, "", "", PluginConstants.STAP_PATH);
 
 		assertEquals("stap -c '" + binaryFilePath + "' " + scriptPath, cmd);
 		// END
