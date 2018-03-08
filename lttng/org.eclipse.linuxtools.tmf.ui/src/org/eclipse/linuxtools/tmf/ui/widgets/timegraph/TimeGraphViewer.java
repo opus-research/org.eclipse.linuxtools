@@ -174,7 +174,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
      *
      * @param links
      *            the links to display in this time graph combo
-     * @since 2.1
+     * @since 3.0
      */
     public void setLinks(List<ILinkEvent> links) {
         if (fTimeGraphCtrl != null) {
@@ -427,8 +427,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
             fTime0 = fTime0Bound;
             fTime1 = fTime1Bound;
         }
-        fTime0 = Math.max(fTime0Bound, Math.min(fTime0, fTime1Bound));
-        fTime1 = Math.max(fTime0Bound, Math.min(fTime1, fTime1Bound));
         if (fTime1 - fTime0 < fMinTimeInterval) {
             fTime1 = Math.min(fTime1Bound, fTime0 + fMinTimeInterval);
         }
@@ -582,7 +580,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @since 2.1
+     * @since 3.0
      */
     @Override
     public long getSelectionBegin() {
@@ -590,7 +588,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @since 2.1
+     * @since 3.0
      */
     @Override
     public long getSelectionEnd() {
@@ -642,17 +640,10 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
      *            The end time
      */
     public void setTimeBounds(long beginTime, long endTime) {
-        if (endTime >= beginTime) {
-            fBeginTime = beginTime;
-            fEndTime = endTime;
-            fTime0Bound = beginTime;
-            fTime1Bound = endTime;
-        } else {
-            fBeginTime = 0;
-            fEndTime = 0;
-            fTime0Bound = 0;
-            fTime1Bound = 0;
-        }
+        fBeginTime = beginTime;
+        fEndTime = endTime;
+        fTime0Bound = beginTime;
+        fTime1Bound = endTime;
         fTimeGraphCtrl.adjustScrolls();
     }
 
@@ -673,7 +664,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @since 2.1
+     * @since 3.0
      */
     @Override
     public void setSelectionRangeNotify(long beginTime, long endTime) {
@@ -688,7 +679,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     }
 
     /**
-     * @since 2.1
+     * @since 3.0
      */
     @Override
     public void setSelectionRange(long beginTime, long endTime) {
@@ -1477,7 +1468,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
      *
      * @return The Action object
      *
-     * @since 2.1
+     * @since 3.0
      */
     public Action getHideArrowsAction(final IDialogSettings dialogSettings) {
         if (fHideArrowsAction == null) {

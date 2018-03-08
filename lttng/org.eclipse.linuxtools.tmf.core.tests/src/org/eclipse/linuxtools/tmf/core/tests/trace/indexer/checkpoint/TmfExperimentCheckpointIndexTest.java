@@ -12,7 +12,7 @@
  *   Patrick Tasse - Updated for ranks in experiment location
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.trace;
+package org.eclipse.linuxtools.tmf.core.tests.trace.indexer.checkpoint;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,10 +30,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
@@ -89,11 +89,11 @@ public class TmfExperimentCheckpointIndexTest {
         try {
             URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true);
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             fTestTraces[0] = trace1;
             location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
             test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true);
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             fTestTraces[1] = trace2;
         } catch (final TmfTraceException e) {
             e.printStackTrace();
@@ -143,11 +143,11 @@ public class TmfExperimentCheckpointIndexTest {
         try {
             URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM1), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, false);
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, false, null, null);
             testTraces[0] = trace1;
             location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM2), null);
             test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, false);
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, false, null, null);
             testTraces[1] = trace2;
         } catch (final TmfTraceException e) {
             e.printStackTrace();
