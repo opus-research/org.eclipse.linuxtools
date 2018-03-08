@@ -17,8 +17,8 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
+import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
-import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,9 +104,16 @@ public class CTFTraceTest {
      */
     @Test
     public void testAddStream() throws ParseException, CTFReaderException {
+        // test number of streams
+        int nbStreams = fixture.nbStreams();
+        assertEquals(1, nbStreams);
+        // Add a stream
         Stream stream = new Stream(TestParams.createTrace());
         stream.setId(1234);
         fixture.addStream(stream);
+        // test number of streams
+        nbStreams = fixture.nbStreams();
+        assertEquals(2, nbStreams);
     }
 
     /**
@@ -226,15 +233,6 @@ public class CTFTraceTest {
     public void testMinorIsSet() {
         boolean result = fixture.minorIsSet();
         assertTrue(result);
-    }
-
-    /**
-     * Run the int nbStreams() method test.
-     */
-    @Test
-    public void testNbStreams() {
-        int result = fixture.nbStreams();
-        assertEquals(2, result);
     }
 
     /**
