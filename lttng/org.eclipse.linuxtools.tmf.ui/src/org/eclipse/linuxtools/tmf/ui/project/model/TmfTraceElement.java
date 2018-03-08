@@ -576,4 +576,33 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             experiment.closeEditors();
         }
     }
+
+    /**
+     * Get the instantiated trace associated with this element. If it is not
+     * opened, the trace is opened, and the thread waits until it is available
+     * or after a timeout.
+     *
+     * @return The instantiated trace or null if trace is not (yet) available
+     * @throws RuntimeException
+     *             exception from the waitTillOpened call
+     * @since 2.1
+     */
+    public ITmfTrace getTrace() throws RuntimeException {
+        for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
+            if (trace.getResource().equals(getResource())) {
+                return trace;
+            }
+        }
+        /* The trace is not opened, let's open it */
+        TmfTraceElement elToOpen = getElementUnderTraceFolder();
+        TmfOpenTraceHelper.openTraceFromElement(elToOpen);
+        if (TmfOpenTraceHelper.waitTillOpened(elToOpen)) {
+            for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
+                if (trace.getResource().equals(getResource())) {
+                    return trace;
+                }
+            }
+        }
+        return null;
+    }
 }
