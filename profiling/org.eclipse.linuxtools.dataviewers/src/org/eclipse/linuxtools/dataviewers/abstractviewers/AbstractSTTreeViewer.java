@@ -135,7 +135,6 @@ public abstract class AbstractSTTreeViewer extends AbstractSTViewer {
 									Rectangle bounds = item.getBounds(i);
 									if (bounds.contains(e.x,e.y)){
 										handleHyperlink(field,item.getData());
-										return;
 									}
 								}
 							}
