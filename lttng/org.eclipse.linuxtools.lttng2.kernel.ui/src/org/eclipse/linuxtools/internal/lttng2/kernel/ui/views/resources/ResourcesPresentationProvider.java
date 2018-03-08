@@ -25,7 +25,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
@@ -208,27 +207,6 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                             }
                         }
                     } catch (AttributeNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (TimeRangeException e) {
-                        e.printStackTrace();
-                    } catch (StateValueTypeException e) {
-                        e.printStackTrace();
-                    }
-                } else if (status == StateValues.CPU_STATUS_RUN_USERMODE || status == StateValues.CPU_STATUS_RUN_SYSCALL){
-                    // In running state get the current tid
-                    ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
-
-                    try {
-                        int cpuQuark = entry.getQuark();
-                        int currentThreadQuark = ssq.getQuarkRelative(cpuQuark, Attributes.CURRENT_THREAD);
-                        ITmfStateInterval interval = ssq.querySingleState(event.getTime(), currentThreadQuark);
-                        if (!interval.getStateValue().isNull()) {
-                            ITmfStateValue state = interval.getStateValue();
-                            int currentThreadId = state.unboxInt();
-                            retMap.put(Messages.ResourcesView_attributeTidName, Integer.toString(currentThreadId));
-                        }
-                    }catch (AttributeNotFoundException e) {
                         e.printStackTrace();
                     } catch (TimeRangeException e) {
                         e.printStackTrace();
