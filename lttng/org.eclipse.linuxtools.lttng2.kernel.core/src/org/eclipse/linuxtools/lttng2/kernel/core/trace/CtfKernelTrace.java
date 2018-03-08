@@ -92,15 +92,4 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
         this.ss = StateSystemManager.loadStateHistory(htFile, htInput, STATE_ID, false);
     }
-
-    @Override
-    public synchronized void dispose() {
-        /* Clean up the state system */
-        if (ss != null) {
-            ss.dispose();
-        }
-        super.dispose();
-    }
-
-
 }

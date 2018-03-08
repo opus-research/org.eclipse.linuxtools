@@ -64,6 +64,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser {
         } catch (IOException e) {
             throw new TmfTraceException(e.getMessage(), e);
         }
+        indexTrace(false);
     }
 
     @Override
