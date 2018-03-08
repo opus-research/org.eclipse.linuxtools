@@ -31,6 +31,9 @@ public class SequenceDefinition extends Definition {
     // Attributes
     // ------------------------------------------------------------------------
 
+    /** Max allowed size for sequences. 640k ought to be enough for everybody. */
+    private static final long MAX_SEQUENCE_SIZE = 640000;
+
     private final SequenceDeclaration declaration;
     private final IntegerDefinition lengthDefinition;
     private Definition definitions[];
@@ -117,6 +120,7 @@ public class SequenceDefinition extends Definition {
 
     /**
      * Is the sequence a null terminated string?
+     *
      * @return true == is a string, false == is not a string
      */
     public boolean isString() {
@@ -137,13 +141,18 @@ public class SequenceDefinition extends Definition {
 
     @Override
     public void read(BitBuffer input) throws CTFReaderException {
-        currentLength = (int) lengthDefinition.getValue();
+        final long requestedLength = lengthDefinition.getValue();
+        if (requestedLength > MAX_SEQUENCE_SIZE) {
+            throw new CTFReaderException("Unsupported sequence size, requested size is " + //$NON-NLS-1$
+                    String.valueOf(requestedLength) + ", max allowed is " + MAX_SEQUENCE_SIZE); //$NON-NLS-1$
+        }
+
+        currentLength = (int) requestedLength;
 
         if ((definitions == null) || (definitions.length < currentLength)) {
             Definition newDefinitions[] = new Definition[currentLength];
 
             int i = 0;
-
             if (definitions != null) {
                 System.arraycopy(definitions, 0, newDefinitions, 0, definitions.length);
             }
