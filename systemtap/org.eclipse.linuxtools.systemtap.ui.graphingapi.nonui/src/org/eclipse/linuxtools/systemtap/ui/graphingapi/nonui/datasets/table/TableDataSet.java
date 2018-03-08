@@ -19,7 +19,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IBlockDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataEntry;
@@ -29,10 +28,10 @@ import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IHistorica
 
 public class TableDataSet implements IHistoricalDataSet, IBlockDataSet {
 	public TableDataSet(String[] labels) {
-		if(null == labels){
+		if(null == labels)
 			this.titles = new String[0];
-		} else {
-			this.titles = Arrays.copyOf(labels, labels.length);
+		else {
+			this.titles = labels;
 		}
 		data = new ArrayList<TableEntry>();
 	}

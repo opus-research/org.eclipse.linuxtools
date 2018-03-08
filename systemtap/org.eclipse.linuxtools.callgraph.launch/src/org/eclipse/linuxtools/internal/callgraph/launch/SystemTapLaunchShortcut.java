@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.callgraph.launch;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.cdt.core.CCorePlugin;
@@ -800,7 +799,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		public GetFunctionsJob(String name, ICProject p, Object[] o) {
 			super(name);
 			functionList = new ArrayList<String>();
-			listOfFiles = Arrays.copyOf(o, o.length);
+			listOfFiles = o;
 			project = p;
 		}
 

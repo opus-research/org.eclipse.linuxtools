@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.widgets;
 
-import java.util.Arrays;
-
 import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.Localization;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -31,8 +29,8 @@ import org.eclipse.swt.graphics.Rectangle;
 public class GraphLegend implements IGraphPrimitive {
 	public GraphLegend(GraphCanvas graph, String[] keysPassed, Color[] colorsPassed) {
 		this.graph = graph;
-		colors = Arrays.copyOf(colorsPassed, colorsPassed.length);
-		keys = Arrays.copyOf(keysPassed, keysPassed.length);
+		colors = colorsPassed;
+		keys = keysPassed;
 		bounds = new Rectangle[keys.length];
 
 		width = 0;
