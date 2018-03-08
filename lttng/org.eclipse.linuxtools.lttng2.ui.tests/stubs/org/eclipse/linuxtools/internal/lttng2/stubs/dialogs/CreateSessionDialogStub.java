@@ -27,7 +27,6 @@ public class CreateSessionDialogStub implements ICreateSessionDialog {
     private String fNetworkUrl = null;
     private String fControlUrl = null;
     private String fDataUrl = null;
-    private boolean fIsSnapshot;
 
     @Override
     public String getSessionName() {
@@ -98,12 +97,4 @@ public class CreateSessionDialogStub implements ICreateSessionDialog {
         this.fDataUrl = fDataUrl;
     }
 
-    @Override
-    public boolean isSnapshot() {
-        return fIsSnapshot;
-    }
-
-    public void setSnapshot(boolean isSnapshot) {
-        fIsSnapshot = isSnapshot;
-    }
 }

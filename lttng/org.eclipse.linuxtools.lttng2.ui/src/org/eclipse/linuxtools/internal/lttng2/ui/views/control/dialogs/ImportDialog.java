@@ -240,9 +240,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
                     traceName.append(trace.getName());
                     traceName.insert(0, '-');
 
-                    String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
-
-                    while (!parent.getAbsolutePath().equals(path)) {
+                    while (!parent.getAbsolutePath().equals(fSession.getSessionPath())) {
                         traceName.insert(0, parent.getName());
                         traceName.insert(0, '-');
                         parent = parent.getParentRemoteFile();
@@ -344,10 +342,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
 
-        final String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
-        final IRemoteFile remoteFolder = fsss.getRemoteFileObject(path, new NullProgressMonitor());
-        // make sure that remote directory is read and not cached
-        remoteFolder.markStale(true, true);
+        final IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSession.getSessionPath(), new NullProgressMonitor());
 
         fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER);
         GridData data = new GridData(GridData.FILL_BOTH);
@@ -380,14 +375,10 @@ public class ImportDialog extends Dialog implements IImportDialog {
         });
         fFolderViewer.setInput(remoteFolder);
 
+        // Select all traces by default
         Object[] children = remoteFolder.getContents(RemoteChildrenContentsType.getInstance());
-        // children can be null if there the path doesn't exist. This happens when a trace
-        // session hadn't been started and no output was created.
-        if (children != null) {
-            // Select all traces by default
-            for (int i = 0; i < children.length; i++) {
-                fFolderViewer.setSubtreeChecked(children[i], true);
-            }
+        for (int i = 0; i < children.length; i++) {
+            fFolderViewer.setSubtreeChecked(children[i], true);
         }
 
         Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);

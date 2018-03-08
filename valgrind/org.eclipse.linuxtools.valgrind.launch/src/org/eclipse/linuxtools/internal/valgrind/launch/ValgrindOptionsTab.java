@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.valgrind.launch;
 
 import java.util.Arrays;
 
+import org.eclipse.cdt.debug.core.CDebugUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -25,7 +26,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindToolPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -513,7 +513,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 			try {
 				IProject project;
 				try {
-					project = ConfigUtils.getProject(ConfigUtils.getProjectName(configuration));
+					project = CDebugUtils.verifyCProject(configuration).getProject();
 				} catch (Exception e1) {
 					// no project is still a possibility the validator handles
 					project = null;
