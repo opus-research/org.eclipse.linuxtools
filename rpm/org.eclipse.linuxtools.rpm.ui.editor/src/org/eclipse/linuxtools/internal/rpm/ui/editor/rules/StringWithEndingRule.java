@@ -18,16 +18,21 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.detectors.IStrictWordDetector;
 
 public class StringWithEndingRule implements IRule {
+	/**
+	 * The default token to be returned on success and if nothing else has been
+	 * specified.
+	 */
+	protected IToken fDefaultToken;
 
-	private IToken token;
+	protected IToken token;
 
-	private IStrictWordDetector fDetector;
+	protected IStrictWordDetector fDetector;
 
 	/** The column constraint */
-	private int fColumn = UNDEFINED;
+	protected int fColumn = UNDEFINED;
 
 	/** Internal setting for the un-initialized column constraint */
-	private static final int UNDEFINED = -1;
+	protected static final int UNDEFINED = -1;
 
 	/** Buffer used for pattern detection */
 	private StringBuilder fBuffer = new StringBuilder();
@@ -44,6 +49,8 @@ public class StringWithEndingRule implements IRule {
 		fDetector = trailingCharDetector;
 		fStartingSequence = startingSequence;
 		fMandatoryEndSequence = endSequenceRequired;
+		fDefaultToken = Token.UNDEFINED;
+
 	}
 
 	public IToken evaluate(ICharacterScanner scanner) {

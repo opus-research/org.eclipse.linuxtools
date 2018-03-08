@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.rpm.rpmlint.builder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -21,7 +20,7 @@ import org.eclipse.linuxtools.internal.rpm.rpmlint.parser.RpmlintParser;
 
 public class RpmlintDeltaVisitor implements IResourceDeltaVisitor {
 
-	private List<String> paths = new ArrayList<String>();
+	private ArrayList<String> paths = new ArrayList<String>();
 
 	/**
 	 * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
@@ -45,8 +44,8 @@ public class RpmlintDeltaVisitor implements IResourceDeltaVisitor {
 		}
 		return true;
 	}
-
-	public List<String> getVisitedPaths() {
+	
+	public ArrayList<String> getVisitedPaths() {
 		return paths;
 	}
 
