@@ -192,9 +192,7 @@ public class HistoryBuilder extends TmfComponent {
      * this trace.
      */
     private boolean signalIsForUs(ITmfTrace sender) {
-        if (sender == sp.getTrace()) {
-            return true;
-        } else if (sender instanceof TmfExperiment) {
+        if (sender instanceof TmfExperiment) {
             /* Yeah doing a lazy instanceof check here, but it's a special case! */
             TmfExperiment exp = (TmfExperiment) sender;
             for (ITmfTrace childTrace : exp.getTraces()) {
@@ -202,6 +200,8 @@ public class HistoryBuilder extends TmfComponent {
                     return true;
                 }
             }
+        } else if (sender == sp.getTrace()) {
+            return true;
         }
         return false;
     }
@@ -232,7 +232,6 @@ class StateSystemBuildRequest extends TmfEventRequest {
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
     private final ITmfTrace trace;
-    private final TmfExperiment experiment;
 
     StateSystemBuildRequest(HistoryBuilder builder) {
         super(builder.getStateProvider().getExpectedEventType(),
@@ -243,11 +242,6 @@ class StateSystemBuildRequest extends TmfEventRequest {
         this.builder = builder;
         this.sci = builder.getStateProvider();
         this.trace = sci.getTrace();
-        if (this.trace instanceof TmfExperiment) {
-            this.experiment = (TmfExperiment) this.trace;
-        } else {
-            this.experiment = null;
-        }
     }
 
     @Override
@@ -255,16 +249,6 @@ class StateSystemBuildRequest extends TmfEventRequest {
         super.handleData(event);
         if (event != null && event.getTrace() == trace) {
             sci.processEvent(event);
-        } else if (event != null && experiment != null) {
-            /*
-             * If the request is for an experiment, check if the event is from
-             * one of the child experiment
-             */
-            for (ITmfTrace childTrace : experiment.getTraces()) {
-                if (childTrace == event.getTrace()) {
-                    sci.processEvent(event);
-                }
-            }
         }
     }
 
