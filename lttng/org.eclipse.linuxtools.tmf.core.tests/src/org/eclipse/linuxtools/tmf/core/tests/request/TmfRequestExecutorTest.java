@@ -18,13 +18,13 @@ import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfEventStub;
 
 /**
  * Test suite for the TmfRequestExecutor class.
@@ -132,7 +132,7 @@ public class TmfRequestExecutorTest extends TestCase {
 
 	// Dummy provider
 	private static class MyProvider extends TmfDataProvider {
-	    private ITmfEvent fEvent = new TmfEventStub();
+	    private ITmfEvent fEvent = new TmfEvent();
 
         @Override
         public String getName() {
