@@ -172,18 +172,23 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
                 if (STContributedRulerColumn.ID.equals(descriptor.getId())) {
                     fColumn = ((STContributedRulerColumn) column);
                     // this is a workaround...
-                    STChangeRulerColumn fDelegate = null;
-                    if (fColumns != null && fColumns.size() > 0) {
-                    	 fDelegate = createSTRulerColumn(fColumns.get(fColumns
-                                 .size() - 1));
-                    }
-                    fColumn.setSTColumn(fDelegate);
+                    fColumn.setForwarder(new STContributedRulerColumn.ICompatibilityForwarder() {
+                        @Override
+                        public IVerticalRulerColumn createSTRulerColumn() {
+                            if (fColumns != null && fColumns.size() > 0) {
+                                IVerticalRulerColumn fDelegate = fEditor.createSTRulerColumn(fColumns.get(fColumns
+                                        .size() - 1));
+                                return fDelegate;
+                            }
+                            return null;
+                        }
+                    });
                 }
             }
         }
     }
 
-    protected STChangeRulerColumn createSTRulerColumn(ISTAnnotationColumn annotationColumn) {
+    protected IVerticalRulerColumn createSTRulerColumn(ISTAnnotationColumn annotationColumn) {
         fSTChangeRulerColumn = new STChangeRulerColumn(getSharedColors(), annotationColumn);
         ((IChangeRulerColumn) fSTChangeRulerColumn).setHover(createChangeHover());
         initializeLineNumberRulerColumn(fLineNumberRulerColumn);
