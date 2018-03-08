@@ -138,11 +138,9 @@ public abstract class Definition {
      *            The bitbuffer that is being read
      * @param declaration
      *            The declaration which has an alignment
-     * @throws CTFReaderException
-     *            Happens when there is an out of bounds exception
      * @since 2.2
      */
-    protected static void alignRead(BitBuffer input, IDeclaration declaration) throws CTFReaderException{
+    protected static void alignRead(BitBuffer input, IDeclaration declaration){
         long mask = declaration.getAlignment() -1;
         /*
          * The alignment is a power of 2
