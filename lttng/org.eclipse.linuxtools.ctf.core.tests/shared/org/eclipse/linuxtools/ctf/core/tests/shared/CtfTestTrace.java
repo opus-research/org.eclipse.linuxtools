@@ -24,22 +24,20 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
  *
  * @author Alexandre Montplaisir
  */
-public enum CtfTestTraces {
+public enum CtfTestTrace {
     /** Example kernel trace */
     KERNEL("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"),
     /** Another kernel trace */
     TRACE2("../org.eclipse.linuxtools.ctf.core.tests/traces/trace2"),
     /** Kernel trace with event contexts */
-    KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"),
-    /** UST trace with lots of lost events */
-    HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost");
+    KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm");
 
 
     private final String fPath;
     private CTFTrace fTrace = null;
     private CTFTrace fTraceFromFile = null;
 
-    private CtfTestTraces(String path) {
+    private CtfTestTrace(String path) {
         fPath = path;
     }
 

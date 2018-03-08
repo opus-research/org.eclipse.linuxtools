@@ -28,7 +28,7 @@ import java.util.UUID;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
@@ -48,7 +48,7 @@ public class CTFTraceTest {
 
     private static final String METADATA_FILENAME = "metadata";
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
 
     private static final String CTF_VERSION_NUMBER = "1.8";
     private static final String CTF_SUITE_TEST_DIRECTORY = "ctf-testsuite/tests/" + CTF_VERSION_NUMBER;

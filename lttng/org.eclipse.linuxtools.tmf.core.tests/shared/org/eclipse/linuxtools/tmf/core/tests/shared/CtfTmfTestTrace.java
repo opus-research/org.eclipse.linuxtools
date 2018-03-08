@@ -12,36 +12,34 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.shared;
 
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
 /**
- * Available CTF TMF test traces. Kind-of-extends {@link CtfTestTraces}.
+ * Available CTF TMF test traces. Kind-of-extends {@link CtfTestTrace}.
  *
  * To run tests using these, you first need to run the "get-traces.[xml|sh]"
  * script located under lttng/org.eclipse.linuxtools.ctf.core.tests/traces/ .
  *
  * @author Alexandre Montplaisir
  */
-public enum CtfTmfTestTraces {
+public enum CtfTmfTestTrace {
     /** Example kernel trace */
     KERNEL,
     /** Another kernel trace */
     TRACE2,
     /** Kernel trace with event contexts */
-    KERNEL_VM,
-    /** UST trace with lots of lost events */
-    HELLO_LOST;
+    KERNEL_VM;
 
 
     private final String fPath;
     private CtfTmfTrace fTrace = null;
 
-    private CtfTmfTestTraces() {
+    private CtfTmfTestTrace() {
         /* This makes my head spin */
-        fPath = CtfTestTraces.valueOf(this.name()).getPath();
+        fPath = CtfTestTrace.valueOf(this.name()).getPath();
     }
 
     /**
@@ -79,6 +77,6 @@ public enum CtfTmfTestTraces {
      * @return If the trace is present
      */
     public boolean exists() {
-        return CtfTestTraces.valueOf(this.name()).exists();
+        return CtfTestTrace.valueOf(this.name()).exists();
     }
 }

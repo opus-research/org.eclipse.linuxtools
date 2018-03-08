@@ -17,7 +17,7 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  */
 public class LttngKernelStateProviderTest {
 
-    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.TRACE2;
+    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.TRACE2;
 
     private static ITmfStateProvider input;
 

@@ -23,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 
 /**
  * Small program to regenerate the values used in "TestValues.java" from the
@@ -36,7 +36,7 @@ import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
  */
 public class GenerateTestValues {
 
-    private static CtfTmfTestTraces testTrace = CtfTmfTestTraces.TRACE2;
+    private static CtfTmfTestTrace testTrace = CtfTmfTestTrace.TRACE2;
     private static final long targetTimestamp = 18670067372290L + 1331649577946812237L;
     private static final String INDENT = "    ";
 

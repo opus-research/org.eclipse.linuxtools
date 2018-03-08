@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -35,7 +35,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class CTFTraceReaderTest {
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
 
     private CTFTraceReader fixture;
 

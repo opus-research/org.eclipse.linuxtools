@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.junit.Test;
 
 /**
@@ -40,7 +40,7 @@ import org.junit.Test;
 public abstract class StateSystemTest {
 
     /** Test trace used for these tests */
-    protected static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.TRACE2;
+    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.TRACE2;
 
     /** Expected start time of the test trace/state history */
     protected static final long startTime = 1331668247314038062L;

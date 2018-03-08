@@ -22,7 +22,7 @@ import java.io.File;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
@@ -39,7 +39,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class StreamInputTest {
 
-    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
 
     private StreamInput fixture;
 
