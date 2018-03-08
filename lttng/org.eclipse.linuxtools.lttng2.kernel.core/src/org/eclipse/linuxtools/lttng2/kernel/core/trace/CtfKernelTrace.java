@@ -20,11 +20,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
-import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpEventMatching;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
-import org.eclipse.linuxtools.tmf.core.event.matching.ITmfEventMatching;
-import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -99,14 +96,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
         ITmfStateSystem ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
         fStateSystems.put(STATE_ID, ss);
-    }
-
-    @Override
-    public ITmfEventMatching getMatchingClass(final TmfEventMatching.MatchingType matchType) {
-        if (matchType == TmfEventMatching.MatchingType.NETWORK) {
-            return new TcpEventMatching();
-        }
-        return null;
     }
 
 }

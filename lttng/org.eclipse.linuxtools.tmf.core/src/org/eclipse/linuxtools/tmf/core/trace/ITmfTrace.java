@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,8 +9,6 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Geneviève Bastien  - Added timestamp transforms and timestamp
- *                        creation functions
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -26,23 +24,20 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.matching.ITmfEventMatching;
-import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching;
-import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
  * <ul>
- * <li>an associated Eclipse resource
- * <li>a path to its location on the file system
- * <li>the type of the events it contains
- * <li>the number of events it contains
- * <li>the time range (span) of the events it contains
+ * <li> an associated Eclipse resource
+ * <li> a path to its location on the file system
+ * <li> the type of the events it contains
+ * <li> the number of events it contains
+ * <li> the time range (span) of the events it contains
  * </ul>
  * Concrete ITmfTrace classes have to provide a parameter-less constructor and
- * an initialization method (<i>initTrace</i>) if they are to be opened from the
- * Project View. Also, a validation method (<i>validate</i>) has to be provided
- * to ensure that the trace is of the correct type.
+ * an initialization method (<i>initTrace</i>) if they are to be opened from
+ * the Project View. Also, a validation method (<i>validate</i>) has to be
+ * provided to ensure that the trace is of the correct type.
  * <p>
  * A trace can be accessed simultaneously from multiple threads by various
  * application components. To avoid obvious multi-threading issues, the trace
@@ -53,7 +48,6 @@ import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
  * timestamp) or for a plain trace location.
  * <p>
  * <b>Example 1</b>: Process a whole trace
- *
  * <pre>
  * ITmfContext context = trace.seekEvent(0);
  * ITmfEvent event = trace.getNext(context);
@@ -62,22 +56,18 @@ import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
  *     event = trace.getNext(context);
  * }
  * </pre>
- *
  * <b>Example 2</b>: Process 50 events starting from the 1000th event
- *
  * <pre>
  * int nbEventsRead = 0;
  * ITmfContext context = trace.seekEvent(1000);
  * ITmfEvent event = trace.getNext(context);
- * while (event != null &amp;&amp; nbEventsRead &lt; 50) {
+ * while (event != null && nbEventsRead < 50) {
  *     nbEventsRead++;
  *     processEvent(event);
  *     event = trace.getNext(context);
  * }
  * </pre>
- *
  * <b>Example 3</b>: Process the events between 2 timestamps (inclusive)
- *
  * <pre>
  * ITmfTimestamp startTime = ...;
  * ITmfTimestamp endTime = ...;
@@ -88,22 +78,19 @@ import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
  *     event = trace.getNext(context);
  * }
  * </pre>
- *
  * A trace is also an event provider so it can process event requests
  * asynchronously (and coalesce compatible, concurrent requests).
  * <p>
- * </pre> <b>Example 4</b>: Process a whole trace (see ITmfEventRequest for
- * variants)
- *
+ * </pre>
+ * <b>Example 4</b>: Process a whole trace (see ITmfEventRequest for variants)
  * <pre>
  * ITmfRequest request = new TmfEventRequest&lt;MyEventType&gt;(MyEventType.class) {
- *     &#064;Override
+ *     &#64;Override
  *     public void handleData(MyEventType event) {
  *         super.handleData(event);
  *         processEvent(event);
  *     }
- *
- *     &#064;Override
+ *     &#64;Override
  *     public void handleCompleted() {
  *         finish();
  *         super.handleCompleted();
@@ -144,27 +131,21 @@ public interface ITmfTrace extends ITmfDataProvider {
      * properly parameterize an ITmfTrace instantiated with its parameterless
      * constructor.
      * <p>
-     * Typically, the parameterless constructor will provide the block size and
-     * its associated parser and indexer.
+     * Typically, the parameterless constructor will provide the block size
+     * and its associated parser and indexer.
      *
-     * @param resource
-     *            the trace resource
-     * @param path
-     *            the trace path
-     * @param type
-     *            the trace event type
-     * @throws TmfTraceException
-     *             If we couldn't open the trace
+     * @param resource the trace resource
+     * @param path the trace path
+     * @param type the trace event type
+     * @throws TmfTraceException If we couldn't open the trace
      */
     public void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException;
 
     /**
      * Validate that the trace is of the correct type.
      *
-     * @param project
-     *            the eclipse project
-     * @param path
-     *            the trace path
+     * @param project the eclipse project
+     * @param path the trace path
      *
      * @return true if trace is valid
      */
@@ -264,40 +245,10 @@ public interface ITmfTrace extends ITmfDataProvider {
     /**
      * Returns the ratio (proportion) corresponding to the specified location.
      *
-     * @param location
-     *            a trace specific location
+     * @param location a trace specific location
      * @return a floating-point number between 0.0 (beginning) and 1.0 (end)
      */
     public double getLocationRatio(ITmfLocation location);
-
-    // ------------------------------------------------------------------------
-    // Timestamp transformation functions
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns the timestamp transformation for this trace
-     *
-     * @return the timestamp transform
-     * @since 2.0
-     */
-    public ITmfTimestampTransform getTimestampTransform();
-
-    /**
-     * Sets the trace's timestamp transform
-     *
-     * @param tt The timestamp transform for all timestamps of this trace
-     * @since 2.0
-     */
-    public void setTimestampTransform(final ITmfTimestampTransform tt);
-
-    /**
-     * Creates a timestamp for this trace, using the transformation formula
-     *
-     * @param ts The time in long with which to create the timestamp
-     * @return The new timestamp
-     * @since 2.0
-     */
-    public ITmfTimestamp createTimestamp(long ts);
 
     // ------------------------------------------------------------------------
     // SeekEvent operations (returning a trace context)
@@ -312,9 +263,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * If not null, the location requested must be valid otherwise the returned
      * context is undefined (up to the implementation to recover if possible).
      * <p>
-     *
-     * @param location
-     *            the trace specific location
+     * @param location the trace specific location
      * @return a context which can later be used to read the corresponding event
      */
     public ITmfContext seekEvent(ITmfLocation location);
@@ -322,21 +271,21 @@ public interface ITmfTrace extends ITmfDataProvider {
     /**
      * Position the trace at the 'rank'th event in the trace.
      * <p>
-     * A rank <= 0 is interpreted as seeking for the first event of the trace.
+     * A rank <= 0 is interpreted as seeking for the first event of the
+     * trace.
      * <p>
      * If the requested rank is beyond the last trace event, the context
      * returned will yield a null event if used in a subsequent read.
      *
-     * @param rank
-     *            the event rank
+     * @param rank the event rank
      * @return a context which can later be used to read the corresponding event
      */
     public ITmfContext seekEvent(long rank);
 
     /**
      * Position the trace at the first event with the specified timestamp. If
-     * there is no event with the requested timestamp, a context pointing to the
-     * next chronological event is returned.
+     * there is no event with the requested timestamp, a context pointing to
+     * the next chronological event is returned.
      * <p>
      * A null timestamp is interpreted as seeking for the first event of the
      * trace.
@@ -344,8 +293,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * If the requested timestamp is beyond the last trace event, the context
      * returned will yield a null event if used in a subsequent read.
      *
-     * @param timestamp
-     *            the timestamp of desired event
+     * @param timestamp the timestamp of desired event
      * @return a context which can later be used to read the corresponding event
      * @since 2.0
      */
@@ -359,8 +307,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * voluntarily vague. Typically, it would refer to the event proportional
      * rank (arguably more intuitive) or timestamp in the trace file.
      *
-     * @param ratio
-     *            the proportional 'rank' in the trace
+     * @param ratio the proportional 'rank' in the trace
      * @return a context which can later be used to read the corresponding event
      */
     public ITmfContext seekEvent(double ratio);
@@ -388,16 +335,4 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @since 2.0
      */
     public TmfTimeRange getCurrentRange();
-
-    /**
-     * Returns the instance of an event matching class depending on the type of
-     * matching desired
-     *
-     * @param matchType
-     *            The desired match type for which to return to create a class
-     * @return a class for matching events
-     * @since 2.0
-     */
-    public ITmfEventMatching getMatchingClass(final TmfEventMatching.MatchingType matchType);
-
 }
