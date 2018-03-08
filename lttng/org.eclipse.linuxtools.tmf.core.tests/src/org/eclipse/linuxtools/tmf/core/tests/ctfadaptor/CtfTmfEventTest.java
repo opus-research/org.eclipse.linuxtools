@@ -65,7 +65,7 @@ public class CtfTmfEventTest {
         CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
         CtfIterator tr = new CtfIterator(trace);
         tr.advance();
-        fixture = (CtfTmfEvent) tr.getCurrentEvent();
+        fixture = tr.getCurrentEvent();
     }
 
     /**
@@ -123,26 +123,6 @@ public class CtfTmfEventTest {
         ITmfEventField[] fields = nullEvent.getContent().getFields();
         ITmfEventField[] fields2 = new ITmfEventField[0];
         assertArrayEquals(fields2, fields);
-    }
-
-    /**
-     * Run the ITmfEventField getSubFieldValue(String[]) method test.
-     */
-    @Test
-    public void testGetSubFieldValue() {
-        /* Field exists */
-        String[] names = { "pid" };
-        assertNotNull(fixture.getContent().getSubField(names));
-
-        /* First field exists, not the second */
-        String[] names2 = { "pid", "abcd" };
-        assertNull(fixture.getContent().getSubField(names2));
-
-        /* Both field do not exist */
-        String[] names3 = { "pfid", "abcd" };
-        assertNull(fixture.getContent().getSubField(names3));
-
-        /* TODO Missing case of embedded field, need event for it */
     }
 
     /**

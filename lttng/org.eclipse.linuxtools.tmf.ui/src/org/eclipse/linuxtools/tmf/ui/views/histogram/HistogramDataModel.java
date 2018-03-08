@@ -12,21 +12,13 @@
  *                   time stamp in any order
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Francois Chouinard - Added support for empty initial buckets
- *   Patrick Tasse - Support selection range
- *   Jean-Christian Kouamé - Added support to manage lost events
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.util.Pair;
 
 /**
  * Histogram-independent data model.
@@ -57,9 +49,9 @@ import org.eclipse.linuxtools.tmf.core.util.Pair;
  * <i>basetime</i>, the buckets will be moved to the right to account for the
  * new smaller timestamp. The new <i>basetime</i> is a multiple of the bucket
  * duration smaller then the previous <i>basetime</i>. Note that the <i>basetime</i>
- * might no longer be anymore a timestamp of an event. If necessary, the buckets will
+ * might not be anymore a timestamp of an event. If necessary, the buckets will
  * be compacted before moving to the right. This might be necessary to not
- * lose any event counts at the end of the buckets array.
+ * loose any event counts at the end of the buckets array.
  * <p>
  * The mapping from the model to the UI is performed by the <i>scaleTo()</i>
  * method. By keeping the number of buckets <i>n</i> relatively large with
@@ -101,15 +93,11 @@ public class HistogramDataModel implements IHistogramDataModel {
     private long fFirstBucketTime; // could be negative when analyzing events with descending order!!!
     private long fFirstEventTime;
     private long fLastEventTime;
-    private long fSelectionBegin;
-    private long fSelectionEnd;
+    private long fCurrentEventTime;
     private long fTimeLimit;
 
     // Private listener lists
     private final ListenerList fModelListeners;
-
-    // Lost events
-    private List<Pair<Integer, TmfTimeRange>> lostEventInfos = new LinkedList<Pair<Integer, TmfTimeRange>>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -166,10 +154,8 @@ public class HistogramDataModel implements IHistogramDataModel {
         fFirstBucketTime = other.fFirstBucketTime;
         fFirstEventTime = other.fFirstEventTime;
         fLastEventTime = other.fLastEventTime;
-        fSelectionBegin = other.fSelectionBegin;
-        fSelectionEnd = other.fSelectionEnd;
+        fCurrentEventTime = other.fCurrentEventTime;
         fTimeLimit = other.fTimeLimit;
-        lostEventInfos = other.lostEventInfos;
         fModelListeners = new ListenerList();
         Object[] listeners = other.fModelListeners.getListeners();
         for (Object listener : listeners) {
@@ -247,29 +233,9 @@ public class HistogramDataModel implements IHistogramDataModel {
     /**
      * Returns the time of the current event in the model.
      * @return the time of the current event.
-     * @deprecated As of 2.1, use {@link #getSelectionBegin()} and {@link #getSelectionEnd()}
      */
-    @Deprecated
     public long getCurrentEventTime() {
-        return fSelectionBegin;
-    }
-
-    /**
-     * Returns the begin time of the current selection in the model.
-     * @return the begin time of the current selection.
-     * @since 3.0
-     */
-    public long getSelectionBegin() {
-        return fSelectionBegin;
-    }
-
-    /**
-     * Returns the end time of the current selection in the model.
-     * @return the end time of the current selection.
-     * @since 3.0
-     */
-    public long getSelectionEnd() {
-        return fSelectionEnd;
+        return fCurrentEventTime;
     }
 
     /**
@@ -278,23 +244,6 @@ public class HistogramDataModel implements IHistogramDataModel {
      */
     public long getTimeLimit() {
         return fTimeLimit;
-    }
-
-    /**
-     * @return a list with all lost events time range
-     * @since 3.0
-     */
-    public List<Pair<Integer, TmfTimeRange>> getLostEventInfos() {
-        return lostEventInfos;
-    }
-
-    /**
-     * @param lostEventInfos
-     *            a list with lost events time range
-     * @since 3.0
-     */
-    public void setLostEventInfos(List<Pair<Integer, TmfTimeRange>> lostEventInfos) {
-        this.lostEventInfos = lostEventInfos;
     }
 
     // ------------------------------------------------------------------------
@@ -352,62 +301,29 @@ public class HistogramDataModel implements IHistogramDataModel {
         fNbEvents = 0;
         fFirstBucketTime = 0;
         fLastEventTime = 0;
-        fSelectionBegin = 0;
-        fSelectionEnd = 0;
+        fCurrentEventTime = 0;
         fLastBucket = 0;
         fBucketDuration = 1;
         updateEndTime();
         fireModelUpdateNotification();
-        lostEventInfos.clear();
     }
 
     /**
      * Sets the current event time (no notification of listeners)
      *
      * @param timestamp A time stamp to set.
-     * @deprecated As of 2.1, use {@link #setSelection(long, long)}
      */
-    @Deprecated
     public void setCurrentEvent(long timestamp) {
-        fSelectionBegin = timestamp;
-        fSelectionEnd = timestamp;
+        fCurrentEventTime = timestamp;
     }
 
     /**
      * Sets the current event time with notification of listeners
      *
      * @param timestamp A time stamp to set.
-     * @deprecated As of 2.1, use {@link #setSelectionNotifyListeners(long, long)}
      */
-    @Deprecated
     public void setCurrentEventNotifyListeners(long timestamp) {
-        fSelectionBegin = timestamp;
-        fSelectionEnd = timestamp;
-        fireModelUpdateNotification();
-    }
-
-    /**
-     * Sets the current selection time range (no notification of listeners)
-     *
-     * @param beginTime The selection begin time.
-     * @param endTime The selection end time.
-     * @since 3.0
-     */
-    public void setSelection(long beginTime, long endTime) {
-        fSelectionBegin = beginTime;
-        fSelectionEnd = endTime;
-    }
-
-    /**
-     * Sets the current selection time range with notification of listeners
-     *
-     * @param beginTime The selection begin time.
-     * @param endTime The selection end time.
-     * @since 3.0
-     */
-    public void setSelectionNotifyListeners(long beginTime, long endTime) {
-        fSelectionBegin = beginTime;
-        fSelectionEnd = endTime;
+        fCurrentEventTime = timestamp;
         fireModelUpdateNotification();
     }
 
@@ -502,7 +418,6 @@ public class HistogramDataModel implements IHistogramDataModel {
         // Scale horizontally
         result.fMaxValue = 0;
 
-        setLostEventsScaledData(width, height, barWidth, result);
         int nbBars = width / barWidth;
         int bucketsPerBar = (fLastBucket / nbBars) + 1;
         result.fBucketDuration = Math.max(bucketsPerBar * fBucketDuration,1);
@@ -519,34 +434,19 @@ public class HistogramDataModel implements IHistogramDataModel {
             if (result.fMaxValue < count) {
                 result.fMaxValue = count;
             }
-            if(result.fmaxCombinedValue < count + result.fLostEventsData[i]) {
-                result.fmaxCombinedValue = count + result.fLostEventsData[i];
-            }
         }
 
         // Scale vertically
         if (result.fMaxValue > 0) {
             result.fScalingFactor = (double) height / result.fMaxValue;
         }
-        if(result.fmaxCombinedValue > 0 ) {
-            result.fScalingFactorCombined = (double) height / result.fmaxCombinedValue;
-        }
 
         fBucketDuration = Math.max(fBucketDuration, 1);
-        // Set selection begin and end index in the scaled histogram
-        if (fSelectionBegin < fFirstBucketTime) {
-            result.fSelectionBeginBucket = -1;
-        } else if (fSelectionBegin > fLastEventTime) {
-            result.fSelectionBeginBucket = fLastBucket;
+        // Set the current event index in the scaled histogram
+        if ((fCurrentEventTime >= fFirstBucketTime) && (fCurrentEventTime <= fLastEventTime)) {
+            result.fCurrentBucket = (int) ((fCurrentEventTime - fFirstBucketTime) / fBucketDuration) / bucketsPerBar;
         } else {
-            result.fSelectionBeginBucket = (int) ((fSelectionBegin - fFirstBucketTime) / fBucketDuration) / bucketsPerBar;
-        }
-        if (fSelectionEnd < fFirstBucketTime) {
-            result.fSelectionEndBucket = -1;
-        } else if (fSelectionEnd > fLastEventTime) {
-            result.fSelectionEndBucket = fLastBucket;
-        } else {
-            result.fSelectionEndBucket = (int) ((fSelectionEnd - fFirstBucketTime) / fBucketDuration) / bucketsPerBar;
+            result.fCurrentBucket = HistogramScaledData.OUT_OF_RANGE_BUCKET;
         }
 
         result.fFirstBucketTime = fFirstBucketTime;
@@ -590,86 +490,4 @@ public class HistogramDataModel implements IHistogramDataModel {
         return offset;
     }
 
-        /**
-     * Add the lost event's time range and the number of lost events it contains
-     * into the specific list. If there is already a lost event registered at
-     * this time range, update the value in the list.
-     *
-     * @param tr
-     *            time range of a lost event
-     * @param lostEvents
-     *            the number of lost events
-     * @since 3.0
-     */
-    public void addLostEvents(TmfTimeRange tr, int lostEvents) {
-        if (tr.getStartTime().getValue() < 0 || tr.getEndTime().getValue() < 0) {
-            return;
-        }
-        boolean found = false;
-        /* check if there is already a lost event registered at this time range */
-        for (int i = 0; i < lostEventInfos.size() && found == true; i++) {
-            Pair<Integer, TmfTimeRange> info = lostEventInfos.get(i);
-            if (isFullyOverlapped(info.getSecond(), tr)) {
-                long start = Math.min(tr.getStartTime().getValue(), info.getSecond().getStartTime().getValue());
-                long end = Math.max(tr.getEndTime().getValue(), info.getSecond().getEndTime().getValue());
-                TmfTimeRange timeRange = new TmfTimeRange(
-                        new TmfTimestamp(start, ITmfTimestamp.NANOSECOND_SCALE),
-                        new TmfTimestamp(end, ITmfTimestamp.NANOSECOND_SCALE));
-                int nbLostEvents = lostEvents + info.getFirst();
-                info = new Pair<Integer, TmfTimeRange>(nbLostEvents, timeRange);
-                found = true;
-            }
-        }
-        if (!found) {
-            final Pair<Integer, TmfTimeRange> infos = new Pair<Integer, TmfTimeRange>(lostEvents, tr);
-            lostEventInfos.add(infos);
-        }
-    }
-
-    /**
-     * @param width
-     *            A width of the histogram canvas
-     * @param height
-     *            A height of the histogram canvas
-     * @param barWidth
-     *            A width (in pixel) of a histogram bar
-     * @param result
-     *            The histogram scaled data
-     * @since 3.0
-     */
-    public void setLostEventsScaledData(int width, int height, int barWidth, HistogramScaledData result) {
-        int nbBars = width / barWidth;
-        int bucketsPerBar = (fLastBucket / nbBars) + 1;
-        for (int i = 0; i < lostEventInfos.size(); i++) {
-            int startingBar = (int) Math.min(((lostEventInfos.get(i).getSecond().getStartTime().getValue() - fFirstBucketTime) / fBucketDuration / bucketsPerBar), nbBars - 1);
-            int endingBar = (int) Math.min(((lostEventInfos.get(i).getSecond().getEndTime().getValue() - fFirstBucketTime) / fBucketDuration / bucketsPerBar), nbBars - 1);
-
-            int delta = (endingBar - startingBar) + 1;
-            int lostEventPerBar = lostEventInfos.get(i).getFirst() / delta;
-            int remainder = lostEventInfos.get(i).getFirst() % delta;
-            for (int j=startingBar; j<=endingBar; j++) {
-                result.fLostEventsData[j] += lostEventPerBar;
-                if(j<remainder) {
-                    result.fLostEventsData[j]++;
-                }
-            }
-        }
-    }
-
-    /**
-     * check if two time ranges are fully self overlapped
-     * @param tr1 The first time range to check
-     * @param tr2 The second time range to check
-     * @return True if both time ranges are fully overlapped
-     * @since 3.0
-     */
-    public boolean isFullyOverlapped(TmfTimeRange tr1, TmfTimeRange tr2) {
-        if ((tr1.getStartTime().getValue() <= tr2.getStartTime().getValue()
-                && tr1.getEndTime().getValue() >= tr2.getEndTime().getValue())
-                || (tr2.getStartTime().getValue() <= tr1.getStartTime().getValue()
-                && tr2.getEndTime().getValue() >= tr1.getEndTime().getValue())) {
-            return true;
-        }
-        return false;
-    }
 }

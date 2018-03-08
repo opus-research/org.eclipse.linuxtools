@@ -11,9 +11,8 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
 /**
  * Lightweight Context for CtfTmf traces. Should only use 3 references, 1 ref to
@@ -59,9 +58,6 @@ public class CtfTmfContext implements ITmfContext {
         return curRank;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation getLocation() {
         return curLocation;
@@ -72,9 +68,6 @@ public class CtfTmfContext implements ITmfContext {
         return curRank != CtfLocation.INVALID_LOCATION.getTimestamp();
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void setLocation(ITmfLocation location) {
         curLocation = (CtfLocation) location;
@@ -113,9 +106,8 @@ public class CtfTmfContext implements ITmfContext {
      * Gets the current event. Wrapper to help CtfTmfTrace
      *
      * @return The event or null
-     * @since 3.0
      */
-    public synchronized ITmfEvent getCurrentEvent() {
+    public synchronized CtfTmfEvent getCurrentEvent() {
         return getIterator().getCurrentEvent();
     }
 
@@ -127,10 +119,10 @@ public class CtfTmfContext implements ITmfContext {
     public synchronized boolean advance() {
         final CtfLocationInfo curLocationData = this.curLocation.getLocationInfo();
         boolean retVal = getIterator().advance();
-        ITmfEvent event = getIterator().getCurrentEvent();
+        CtfTmfEvent currentEvent = getIterator().getCurrentEvent();
 
-        if (event != null) {
-            final long timestampValue = event.getTimestamp().getValue();
+        if (currentEvent != null) {
+            final long timestampValue = currentEvent.getTimestamp().getValue();
             if (curLocationData.getTimestamp() == timestampValue) {
                 curLocation = new CtfLocation(timestampValue, curLocationData.getIndex() + 1);
             } else {
