@@ -1,19 +1,18 @@
 /**********************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage;
@@ -34,6 +33,7 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * Set the red, green and blue value of the optional color to be used for filling the execution occurrence.
      */
@@ -66,10 +66,7 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setLifeline(org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.Lifeline)
-     */
+
     @Override
     public void setLifeline(Lifeline theLifeline) {
         super.setLifeline(theLifeline);
@@ -131,6 +128,7 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * Set the time when the execution occurrence starts.
      *
      * @param time the time when the execution occurrence starts
+     * @since 2.0
      */
     public void setStartTime(ITmfTimestamp time) {
         fStartTime = time;
@@ -144,6 +142,7 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * Set the time when the execution occurrence ends.
      *
      * @param time the time when the execution occurrence ends
+     * @since 2.0
      */
     public void setEndTime(ITmfTimestamp time) {
         fEndTime = time;
@@ -153,37 +152,27 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getStartTime() {
         return fStartTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getEndTime() {
         return fEndTime;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
-     */
     @Override
     public boolean hasTimeInfo() {
         return fHasTimeInfo;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         super.draw(context);
@@ -199,10 +188,6 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setUnselectedFillColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     protected IColor setUnselectedFillColor(IGC context) {
         ISDPreferences pref = SDViewPref.getInstance();
@@ -220,10 +205,6 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         return super.setUnselectedFillColor(context);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setUnselectedStrokeColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     protected IColor setUnselectedStrokeColor(IGC context) {
         if (fStrokeRGB != null) {

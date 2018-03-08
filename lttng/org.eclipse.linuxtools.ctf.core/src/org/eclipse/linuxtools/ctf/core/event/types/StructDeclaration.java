@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * A CTF structure declaration.
- * 
+ *
  * A structure is similar to a C structure, it is a compound data type that
  * contains other datatypes in fields. they are stored in an hashmap and indexed
  * by names which are strings.
@@ -125,26 +125,15 @@ public class StructDeclaration implements IDeclaration {
         return "[declaration] struct[" + Integer.toHexString(hashCode()) + ']'; //$NON-NLS-1$
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result)
-                + ((fieldsList == null) ? 0 : fieldsList.hashCode());
+        result = (prime * result) + fieldsList.hashCode();
         result = (prime * result) + (int) (maxAlign ^ (maxAlign >>> 32));
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -157,11 +146,7 @@ public class StructDeclaration implements IDeclaration {
             return false;
         }
         StructDeclaration other = (StructDeclaration) obj;
-        if (fieldsList == null) {
-            if (other.fieldsList != null) {
-                return false;
-            }
-        } else if (!fieldsList.equals(other.fieldsList)) {
+        if (!fieldsList.equals(other.fieldsList)) {
             return false;
         }
         if (maxAlign != other.maxAlign) {

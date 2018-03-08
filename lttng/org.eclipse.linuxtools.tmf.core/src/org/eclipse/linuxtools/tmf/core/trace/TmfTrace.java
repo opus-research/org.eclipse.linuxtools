@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,13 +9,14 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
+ *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
@@ -23,20 +24,18 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -99,12 +98,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // The trace's statistics
     private ITmfStatistics fStatistics;
 
-    // The current selected time
-    private ITmfTimestamp fCurrentTime = TmfTimestamp.ZERO;
-
-    // The current selected range
-    private TmfTimeRange fCurrentRange = TmfTimeRange.NULL_RANGE;
-
     /**
      * The collection of state systems that are registered with this trace. Each
      * sub-class can decide to add its (one or many) state system to this map
@@ -113,7 +106,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     protected final Map<String, ITmfStateSystem> fStateSystems =
-            new HashMap<String, ITmfStateSystem>();
+            new LinkedHashMap<String, ITmfStateSystem>();
 
     // ------------------------------------------------------------------------
     // Construction
@@ -127,65 +120,37 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
-     * The standard constructor (non-live trace). Applicable when the trace
-     * implements its own parser and if at checkpoint-based index is OK.
+     * Full constructor.
      *
-     * @param resource the resource associated to the trace
-     * @param type the trace event type
-     * @param path the trace path
-     * @param cacheSize the trace cache size
-     * @throws TmfTraceException If something failed during the opening
+     * @param resource
+     *            The resource associated to the trace
+     * @param type
+     *            The type of events that will be read from this trace
+     * @param path
+     *            The path to the trace on the filesystem
+     * @param cacheSize
+     *            The trace cache size. Pass '-1' to use the default specified
+     *            in {@link ITmfTrace#DEFAULT_TRACE_CACHE_SIZE}
+     * @param interval
+     *            The trace streaming interval. You can use '0' for post-mortem
+     *            traces.
+     * @param indexer
+     *            The trace indexer. You can pass 'null' to use a default
+     *            checkpoint indexer.
+     * @param parser
+     *            The trace event parser. Use 'null' if (and only if) the trace
+     *            object itself is also the ITmfEventParser to be used.
+     * @throws TmfTraceException
+     *             If something failed during the opening
      */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize) throws TmfTraceException {
-        this(resource, type, path, cacheSize, 0);
-    }
-
-    /**
-     * The standard constructor (live trace). Applicable when the trace
-     * implements its own parser and if at checkpoint-based index is OK.
-     *
-     * @param resource the resource associated to the trace
-     * @param type the trace event type
-     * @param path the trace path
-     * @param cacheSize the trace cache size
-     * @param interval the trace streaming interval
-     * @throws TmfTraceException If something failed during the opening
-     */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize, final long interval) throws TmfTraceException {
-        this(resource, type, path, cacheSize, interval, null);
-    }
-
-    /**
-     * The 'non-default indexer' constructor. Allows to provide a trace
-     * specific indexer.
-     *
-     * @param resource the resource associated to the trace
-     * @param type the trace event type
-     * @param path the trace path
-     * @param cacheSize the trace cache size
-     * @param interval the trace streaming interval
-     * @param indexer the trace indexer
-     * @throws TmfTraceException If something failed during the opening
-     */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize,
-            final long interval, final ITmfTraceIndexer indexer) throws TmfTraceException {
-        this(resource, type, path, cacheSize, interval, indexer, null);
-    }
-
-    /**
-     * The full constructor where trace specific indexer/parser are provided.
-     *
-     * @param resource the resource associated to the trace
-     * @param type the trace event type
-     * @param path the trace path
-     * @param cacheSize the trace cache size
-     * @param interval the trace streaming interval
-     * @param indexer the trace indexer
-     * @param parser the trace event parser
-     * @throws TmfTraceException If something failed during the opening
-     */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize,
-            final long interval, final ITmfTraceIndexer indexer, final ITmfEventParser parser) throws TmfTraceException {
+    protected TmfTrace(final IResource resource,
+            final Class<? extends ITmfEvent> type,
+            final String path,
+            final int cacheSize,
+            final long interval,
+            final ITmfTraceIndexer indexer,
+            final ITmfEventParser parser)
+                    throws TmfTraceException {
         super();
         fCacheSize = (cacheSize > 0) ? cacheSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE;
         fStreamingInterval = interval;
@@ -216,9 +181,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ITmfTrace - Initializers
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#initTrace(org.eclipse.core.resources.IResource, java.lang.String, java.lang.Class)
-     */
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         fIndexer = new TmfCheckpointIndexer(this, fCacheSize);
@@ -234,7 +196,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @throws TmfTraceException If something failed during the initialization
      */
-    protected void initialize(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
+    protected void initialize(final IResource resource,
+            final String path,
+            final Class<? extends ITmfEvent> type)
+                    throws TmfTraceException {
         if (path == null) {
             throw new TmfTraceException("Invalid trace path"); //$NON-NLS-1$
         }
@@ -268,11 +233,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
-     * Index the trace
-     *
-     * @param waitForCompletion index synchronously (true) or not (false)
+     * @since 2.0
      */
-    protected void indexTrace(boolean waitForCompletion) {
+    @Override
+    public void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
     }
 
@@ -338,41 +302,26 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ITmfTrace - Basic getters
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getEventType()
-     */
     @Override
     public Class<ITmfEvent> getEventType() {
         return (Class<ITmfEvent>) super.getType();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getResource()
-     */
     @Override
     public IResource getResource() {
         return fResource;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getPath()
-     */
     @Override
     public String getPath() {
         return fPath;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getIndexPageSize()
-     */
     @Override
     public int getCacheSize() {
         return fCacheSize;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getStreamingInterval()
-     */
     @Override
     public long getStreamingInterval() {
         return fStreamingInterval;
@@ -404,80 +353,51 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     @Override
-    public final ITmfStateSystem getStateSystem(String id) {
-        return fStateSystems.get(id);
+    public final Map<String, ITmfStateSystem> getStateSystems() {
+        return Collections.unmodifiableMap(fStateSystems);
     }
 
     /**
      * @since 2.0
      */
     @Override
-    public final Collection<String> listStateSystems() {
-        return fStateSystems.keySet();
+    public final void registerStateSystem(String id, ITmfStateSystem ss) {
+        fStateSystems.put(id, ss);
     }
 
     // ------------------------------------------------------------------------
     // ITmfTrace - Trace characteristics getters
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getNbEvents()
-     */
     @Override
     public synchronized long getNbEvents() {
         return fNbEvents;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getTimeRange()
+    /**
+     * @since 2.0
      */
     @Override
     public TmfTimeRange getTimeRange() {
         return new TmfTimeRange(fStartTime, fEndTime);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getStartTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getStartTime() {
         return fStartTime;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getEndTime()
+    /**
+     * @since 2.0
      */
     @Override
     public ITmfTimestamp getEndTime() {
         return fEndTime;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentTime()
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ITmfTimestamp getCurrentTime() {
-        return fCurrentTime;
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentRange()
-     */
-    /**
-     * @since 2.0
-     */
-    @Override
-    public TmfTimeRange getCurrentRange() {
-        return fCurrentRange;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getInitialRangeOffset()
-     */
     /**
      * @since 2.0
      */
@@ -514,6 +434,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Update the trace events time range
      *
      * @param range the new time range
+     * @since 2.0
      */
     protected void setTimeRange(final TmfTimeRange range) {
         fStartTime = range.getStartTime();
@@ -524,6 +445,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Update the trace chronologically first event timestamp
      *
      * @param startTime the new first event timestamp
+     * @since 2.0
      */
     protected void setStartTime(final ITmfTimestamp startTime) {
         fStartTime = startTime;
@@ -533,6 +455,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Update the trace chronologically last event timestamp
      *
      * @param endTime the new last event timestamp
+     * @since 2.0
      */
     protected void setEndTime(final ITmfTimestamp endTime) {
         fEndTime = endTime;
@@ -569,9 +492,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ITmfTrace - SeekEvent operations (returning a trace context)
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#seekEvent(long)
-     */
     @Override
     public synchronized ITmfContext seekEvent(final long rank) {
 
@@ -596,8 +516,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return context;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#seekEvent(org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp)
+    /**
+     * @since 2.0
      */
     @Override
     public synchronized ITmfContext seekEvent(final ITmfTimestamp timestamp) {
@@ -613,17 +533,21 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         ITmfContext context = fIndexer.seekIndex(timestamp);
 
         // And locate the requested event context
-        final ITmfContext nextEventContext = context.clone(); // Must use clone() to get the right subtype...
-        ITmfEvent event = getNext(nextEventContext);
+        ITmfLocation previousLocation = context.getLocation();
+        long previousRank = context.getRank();
+        ITmfEvent event = getNext(context);
         while (event != null && event.getTimestamp().compareTo(timestamp, false) < 0) {
-            context.dispose();
-            context = nextEventContext.clone();
-            event = getNext(nextEventContext);
+            previousLocation = context.getLocation();
+            previousRank = context.getRank();
+            event = getNext(context);
         }
-        nextEventContext.dispose();
         if (event == null) {
             context.setLocation(null);
             context.setRank(ITmfContext.UNKNOWN_RANK);
+        } else {
+            context.dispose();
+            context = seekEvent(previousLocation);
+            context.setRank(previousRank);
         }
         return context;
     }
@@ -632,9 +556,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ITmfTrace - Read operations (returning an actual event)
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#readNextEvent(org.eclipse.linuxtools.tmf.core.trace.ITmfContext)
-     */
     @Override
     public synchronized ITmfEvent getNext(final ITmfContext context) {
         // parseEvent() does not update the context
@@ -663,6 +584,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @param context the current trace context
      * @param timestamp the corresponding timestamp
+     * @since 2.0
      */
     protected synchronized void updateAttributes(final ITmfContext context, final ITmfTimestamp timestamp) {
         if (fStartTime.equals(TmfTimestamp.BIG_BANG) || (fStartTime.compareTo(timestamp, false) > 0)) {
@@ -670,13 +592,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
         if (fEndTime.equals(TmfTimestamp.BIG_CRUNCH) || (fEndTime.compareTo(timestamp, false) < 0)) {
             fEndTime = timestamp;
-        }
-        if (fCurrentRange == TmfTimeRange.NULL_RANGE) {
-            fCurrentTime = timestamp;
-            ITmfTimestamp initialOffset = getInitialRangeOffset();
-            long endValue = timestamp.getValue() + initialOffset.normalize(0, timestamp.getScale()).getValue();
-            ITmfTimestamp endTimestamp = new TmfTimestamp(endValue, timestamp.getScale());
-            fCurrentRange = new TmfTimeRange(timestamp, endTimestamp);
         }
         if (context.hasValidRank()) {
             long rank = context.getRank();
@@ -726,40 +641,40 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
-        ITmfTrace trace = signal.getTrace();
-        if (signal.getTrace() instanceof TmfExperiment) {
-            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
-            for (ITmfTrace expTrace : experiment.getTraces()) {
-                if (expTrace == this) {
-                    trace = expTrace;
-                    break;
-                }
+        boolean signalIsForUs = false;
+        for (ITmfTrace trace : TmfTraceManager.getTraceSet(signal.getTrace())) {
+            if (trace == this) {
+                signalIsForUs = true;
+                break;
             }
         }
-        if (trace == this) {
-            /* the signal is for this trace or for an experiment containing this trace */
-            try {
-                buildStatistics();
-            } catch (TmfTraceException e) {
-                e.printStackTrace();
-            }
-            try {
-                buildStateSystem();
-            } catch (TmfTraceException e) {
-                e.printStackTrace();
-            }
 
-            /* Refresh the project, so it can pick up new files that got created. */
-            try {
-                if (fResource != null) {
-                    fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                }
-            } catch (CoreException e) {
-                e.printStackTrace();
-            }
+        if (!signalIsForUs) {
+            return;
         }
+
+        /*
+         * The signal is either for this trace, or for an experiment containing
+         * this trace.
+         */
+        try {
+            buildStatistics();
+            buildStateSystem();
+        } catch (TmfTraceException e) {
+            e.printStackTrace();
+        }
+
+        /* Refresh the project, so it can pick up new files that got created. */
+        try {
+            if (fResource != null) {
+                fResource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+
         if (signal.getTrace() == this) {
-            /* the signal is for this trace or experiment */
+            /* Additionally, the signal is directly for this trace or experiment. */
             if (getNbEvents() == 0) {
                 return;
             }
@@ -791,42 +706,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
     }
 
-    /**
-     * Signal handler for the TmfTimeSynchSignal signal
-     *
-     * @param signal The incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void synchToTime(final TmfTimeSynchSignal signal) {
-        if (signal.getCurrentTime().compareTo(fStartTime) >= 0 && signal.getCurrentTime().compareTo(fEndTime) <= 0) {
-            fCurrentTime = signal.getCurrentTime();
-        }
-    }
-
-    /**
-     * Signal handler for the TmfRangeSynchSignal signal
-     *
-     * @param signal The incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void synchToRange(final TmfRangeSynchSignal signal) {
-        if (signal.getCurrentTime().compareTo(fStartTime) >= 0 && signal.getCurrentTime().compareTo(fEndTime) <= 0) {
-            fCurrentTime = signal.getCurrentTime();
-        }
-        if (signal.getCurrentRange().getIntersection(getTimeRange()) != null) {
-            fCurrentRange = signal.getCurrentRange().getIntersection(getTimeRange());
-        }
-    }
-
     // ------------------------------------------------------------------------
     // toString
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     @SuppressWarnings("nls")
     public synchronized String toString() {

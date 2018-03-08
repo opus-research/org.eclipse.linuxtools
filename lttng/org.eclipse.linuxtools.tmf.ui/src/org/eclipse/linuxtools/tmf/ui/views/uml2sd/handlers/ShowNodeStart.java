@@ -1,16 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- * 
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: 
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *
+ * Contributors:
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
 import java.util.Iterator;
@@ -28,7 +27,7 @@ import org.eclipse.ui.IViewPart;
 
 /**
  * Action class implementation to show end of a graph node.
- * 
+ *
  * @version 1.0
  * @author sveyrier
  */
@@ -37,6 +36,7 @@ public class ShowNodeStart extends Action {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * The sequence diagram view reference
      */
@@ -45,6 +45,7 @@ public class ShowNodeStart extends Action {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
+
     /**
      * Default constructor
      */
@@ -54,13 +55,14 @@ public class ShowNodeStart extends Action {
 
     /**
      * Constructor
-     * 
-     * @param view The sequence diagram view reference
+     *
+     * @param view
+     *            The sequence diagram view reference
      */
     public ShowNodeStart(IViewPart view) {
         super();
         if (view instanceof SDView) {
-            fView = (SDView)view;
+            fView = (SDView) view;
         }
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_NODE_START));
     }
@@ -68,11 +70,8 @@ public class ShowNodeStart extends Action {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.action.Action#run()
-     */
-   @Override
+
+    @Override
     @SuppressWarnings("rawtypes")
     public void run() {
         if (fView == null) {
@@ -102,12 +101,13 @@ public class ShowNodeStart extends Action {
         }
     }
 
-   /**
-    * Sets the active SD view.
-    * 
-    * @param view The SD view.
-    */
-  public void setView(SDView view) {
-       fView = view;
-   }
+    /**
+     * Sets the active SD view.
+     *
+     * @param view
+     *            The SD view.
+     */
+    public void setView(SDView view) {
+        fView = view;
+    }
 }

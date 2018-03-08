@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,7 +19,6 @@ import org.eclipse.osgi.util.NLS;
  *
  * @author Mathieu Denis
  * @since 2.0
- * @version 2.0
  */
 public class Messages extends NLS {
 

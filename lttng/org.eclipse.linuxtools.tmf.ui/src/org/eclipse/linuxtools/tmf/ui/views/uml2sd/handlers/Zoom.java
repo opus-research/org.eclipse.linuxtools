@@ -1,16 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
 import org.eclipse.jface.action.Action;
@@ -22,7 +21,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Display;
@@ -124,30 +123,30 @@ public class Zoom extends Action {
 
         switch (type) {
         case ZOOM_IN:
-            setText(SDMessages._47);
-            setToolTipText(SDMessages._48);
+            setText(Messages.SequenceDiagram_ZoomIn);
+            setToolTipText(Messages.SequenceDiagram_ZoomInTheDiagram);
             setId(ZOOM_IN_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_ZOOM_IN_MENU));
             break;
 
         case ZOOM_OUT:
-            setText(SDMessages._51);
-            setToolTipText(SDMessages._52);
+            setText(Messages.SequenceDiagram_ZoomOut);
+            setToolTipText(Messages.SequenceDiagram_ZoomOutTheDiagram);
             setId(ZOOM_OUT_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_ZOOM_OUT_MENU));
             break;
 
         case ZOOM_RESET:
-            setText(SDMessages._49);
-            setToolTipText(SDMessages._50);
+            setText(Messages.SequenceDiagram_ResetZoomFactor);
+            setToolTipText(Messages.SequenceDiagram_ResetZoomFactor);
             setId(RESET_ZOOM_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_HOME_MENU));
             break;
 
         case ZOOM_NONE:
         default:
-            setText(SDMessages._53);
-            setToolTipText(SDMessages._54);
+            setText(Messages.SequenceDiagram_Select);
+            setToolTipText(Messages.SequenceDiagram_Select);
             setId(NO_ZOOM_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_SELECT_MENU));
             break;
@@ -157,10 +156,7 @@ public class Zoom extends Action {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.action.Action#run()
-     */
+
     @Override
     public void run() {
 

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -15,7 +16,6 @@ import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
@@ -80,10 +80,7 @@ public class TraceEventComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getImage()
-     */
+
     @Override
     public Image getImage() {
         if (fEventInfo.getState() == TraceEnablement.DISABLED) {
@@ -185,10 +182,6 @@ public class TraceEventComponent extends TraceControlComponent {
         fEventInfo.setFilterExpression(filter);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
-     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -228,18 +221,6 @@ public class TraceEventComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
-    /**
-     * Add contexts to given channels and or events
-     *
-     * @param contexts
-     *            - a list of contexts to add
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void addContexts(List<String> contexts) throws ExecutionException {
-        addContexts(contexts, new NullProgressMonitor());
-    }
 
     /**
      * Add contexts to given channels and or events

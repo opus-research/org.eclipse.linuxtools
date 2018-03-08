@@ -1,23 +1,22 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import java.text.MessageFormat;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -73,10 +72,6 @@ public class PagesDialog extends Dialog {
     // Methods
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     public Control createDialogArea(Composite parent) {
 
@@ -85,13 +80,13 @@ public class PagesDialog extends Dialog {
         data.grabExcessHorizontalSpace = true;
         data.horizontalAlignment = GridData.FILL;
         ret.setLayoutData(data);
-        ret.setText(SDMessages._67);
+        ret.setText(Messages.SequenceDiagram_PageNavigation);
 
         FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
         ret.setLayout(fillLayout);
 
         Label label = new Label(ret, SWT.NONE);
-        label.setText(SDMessages._75);
+        label.setText(Messages.SequenceDiagram_CurrentPage);
 
         fCurrentPage = new TextArea(ret);
         fCurrentPage.setBounds(1, fProvider.pagesCount());
@@ -102,14 +97,10 @@ public class PagesDialog extends Dialog {
 
         updateComments();
 
-        getShell().setText(SDMessages._68);
+        getShell().setText(Messages.SequenceDiagram_SequenceDiagramPages);
         return ret;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
-     */
     @Override
     public void okPressed() {
         int currentPageValue = fCurrentPage.getValue() - 1;
@@ -123,15 +114,15 @@ public class PagesDialog extends Dialog {
     protected void updateComments() {
         int pages = Math.max(0, fProvider.pagesCount());
         StringBuffer totalPageCommentText = new StringBuffer();
-        totalPageCommentText.append(SDMessages._70);
+        totalPageCommentText.append(Messages.SequenceDiagram_Total);
         totalPageCommentText.append(pages);
         totalPageCommentText.append(" "); //$NON-NLS-1$
         if (pages == 0) {
-            totalPageCommentText.append(SDMessages._71);
+            totalPageCommentText.append(Messages.SequenceDiagram_pages);
         } else if (pages == 1) {
-            totalPageCommentText.append(SDMessages._72);
+            totalPageCommentText.append(Messages.SequenceDiagram_page);
         } else {
-            totalPageCommentText.append(SDMessages._73);
+            totalPageCommentText.append(Messages.SequenceDiagram_pages);
         }
         fTotalPageComment.setText(totalPageCommentText.toString());
     }
@@ -140,6 +131,7 @@ public class PagesDialog extends Dialog {
     // ------------------------------------------------------------------------
     // Helper classes
     // ------------------------------------------------------------------------
+
     /**
      * This is a Text Control that accepts only digits and ensures that bounds are respected
      */
@@ -205,7 +197,7 @@ public class PagesDialog extends Dialog {
             Integer tab[] = new Integer[2];
             tab[0] = Integer.valueOf(fMin);
             tab[1] = Integer.valueOf(fMax);
-            fText.setToolTipText(MessageFormat.format(SDMessages._69, (Object[]) tab));
+            fText.setToolTipText(MessageFormat.format(Messages.SequenceDiagram_IsInBetween, (Object[]) tab));
         }
     }
 

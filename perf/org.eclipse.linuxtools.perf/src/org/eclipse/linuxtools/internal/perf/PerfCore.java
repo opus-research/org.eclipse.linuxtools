@@ -28,6 +28,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.perf.model.PMCommand;
 import org.eclipse.linuxtools.internal.perf.model.PMDso;
@@ -55,7 +58,7 @@ public class PerfCore {
 				strBuf.append("\n");
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logException(e);
 		}
 		String str = strBuf.toString();
 		if (!str.trim().equals("") && print != null) {
@@ -129,7 +132,7 @@ public class PerfCore {
 					return ConfigUtils.getProject(projectName);
 				}
 			} catch (CoreException e1) {
-				e1.printStackTrace();
+				logException(e1);
 			}
 		}
 
@@ -162,7 +165,7 @@ public class PerfCore {
 			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 		} catch( IOException e ) {
-			e.printStackTrace();
+			logException(e);
 		} 
 		return parseEventList(input);
 	}
@@ -198,7 +201,7 @@ public class PerfCore {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logException(e);
 		} finally {
 			if (null != input) {
 				try {
@@ -221,7 +224,7 @@ public class PerfCore {
 			try {
 				p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logException(e);
 			}
 		} else {
 			try {
@@ -229,11 +232,11 @@ public class PerfCore {
 				workingDirFileStore = proxy.getResource(workingDir.toOSString());
 				p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, environ, workingDirFileStore, project);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logException(e);
 			} catch (CoreException e) {
-				e.printStackTrace();
+				logException(e);
 			} catch (URISyntaxException e) {
-				e.printStackTrace();
+				logException(e);
 			}
 		}			
 
@@ -261,7 +264,7 @@ public class PerfCore {
 		} 
 		catch (IOException e) 
 		{
-			e.printStackTrace();
+			logException(e);
 			return false;
 		}
 		return true;
@@ -381,18 +384,20 @@ public class PerfCore {
 		try {
 			if (workingDir==null) {
 				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, perfDataLoc), project);
+				PerfPlugin.getDefault().setPerfProfileData(new Path(perfDataLoc));
+				PerfPlugin.getDefault().setWorkingDir(project.getLocation());
 			} else {
-				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, workingDir.toOSString() + PerfPlugin.PERF_DEFAULT_DATA), project);
+				String defaultPerfDataLoc = workingDir.toOSString() + PerfPlugin.PERF_DEFAULT_DATA;
+				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, defaultPerfDataLoc), project);
+				PerfPlugin.getDefault().setPerfProfileData(new Path(defaultPerfDataLoc));
+				PerfPlugin.getDefault().setWorkingDir(workingDir);
 			}
 
-			//			p.waitFor();
 			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			//spitting error stream moved to end of while loop, due to commenting of p.waitFor()
 		} catch( IOException e ) {
-			e.printStackTrace();
-			/*} catch (InterruptedException e) {
-			e.printStackTrace();*/
+			logException(e);
 		} 
 
 
@@ -434,7 +439,7 @@ public class PerfCore {
 		float percent;
 
 		Process p = null;
-		int samples;
+		double samples;
 		String comm,dso,symbol;
 		boolean kernelFlag;
 		PMEvent currentEvent = null;
@@ -471,7 +476,7 @@ public class PerfCore {
 						continue;
 					}
 					percent = Float.parseFloat(items[0]); //percent column
-					samples = Integer.parseInt(items[1].trim()); //samples column
+					samples = Double.parseDouble(items[1].trim()); //samples column
 					comm = items[2].trim(); //command column
 					dso = items[3].trim(); //dso column
 					symbol = items[4].trim(); //symbol column 
@@ -508,7 +513,7 @@ public class PerfCore {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logException(e);
 		}
 		spitStream(error,"Perf Report", print);
 
@@ -560,7 +565,7 @@ public class PerfCore {
 								input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 								error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 							} catch (IOException e) {
-								e.printStackTrace();
+								logException(e);
 							}
 
 							PerfCore.parseAnnotation(monitor, input,
@@ -642,7 +647,13 @@ public class PerfCore {
 						//if (PerfPlugin.DEBUG_ON) System.err.println("Parsed line ref without being in valid block, shouldn't happen.");
 						break;
 					} else {
-						currentSym.addPercent(Integer.parseInt(items[1]), percent);
+						int lineNum = -1;
+						try {
+							lineNum = Integer.parseInt(items[1]);
+						} catch (NumberFormatException e) {
+							// leave line number as -1
+						}
+						currentSym.addPercent(lineNum, percent);
 						// Symbol currently in 'Unfiled Symbols' but we now know the actual parent
 						if (currentSym.getParent().getName().equals(PerfPlugin.STRINGS_UnfiledSymbols)) {
 							currentSym.getParent().removeChild(currentSym);
@@ -657,7 +668,7 @@ public class PerfCore {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logException(e);
 		}
 	}
 
@@ -672,10 +683,19 @@ public class PerfCore {
 					view.setContentDescription(title);
 					view.refreshModel();
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					logException(e);
 				}
 			}
 		});
 	}
 
+	/**
+	 * Log specified exception.
+	 * @param e Exception to log.
+	 */
+	public static void logException(Exception e) {
+		Status status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID,
+				e.getMessage());
+		PerfPlugin.getDefault().getLog().log(status);
+	}
 }

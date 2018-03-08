@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,17 +16,17 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
-import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
-import org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider.CtfTestFiles;
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 
 /**
  * Simple example of how to use the state system using a CTF kernel trace.
@@ -42,9 +42,9 @@ public class BasicStateSystemExample {
     public static void main(String[] args) {
         /* Read a trace and build the state system */
         try {
-            File newStateFile = new File("/tmp/helloworldctf.ht"); //$NON-NLS-1$
-            IStateChangeInput input = new CtfKernelStateInput(CtfTestFiles.getTestTrace());
-            ITmfStateSystem ss = StateSystemManager.loadStateHistory(newStateFile, input, true);
+            File newStateFile = new File("/tmp/helloworldctf.ht");
+            ITmfStateProvider input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(1));
+            ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(newStateFile, input, true);
 
             requestExample(ss);
         } catch (TmfTraceException e) {
@@ -67,25 +67,25 @@ public class BasicStateSystemExample {
             List<ITmfStateInterval> stateIntervals;
             StringBuilder output = new StringBuilder();
 
-            currentThreadByCPUS = ssb.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
+            currentThreadByCPUS = ssb.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);
 
             for (Integer currentThread : currentThreadByCPUS) {
                 stateIntervals = ssb.queryHistoryRange(currentThread.intValue(), ssb.getStartTime(),
                         ssb.getCurrentEndTime());
 
                 /* Output formatting */
-                output.append("Value of attribute : "); //$NON-NLS-1$
+                output.append("Value of attribute : ");
                 output.append(ssb.getFullAttributePath(currentThread.intValue()));
-                output.append("\n------------------------------------------------\n"); //$NON-NLS-1$
+                output.append("\n------------------------------------------------\n");
                 for (ITmfStateInterval stateInterval : stateIntervals) {
                     /* Print the interval */
                     output.append('[');
                     output.append(String.valueOf(stateInterval.getStartTime()));
-                    output.append(", "); //$NON-NLS-1$
+                    output.append(", ");
                     output.append(String.valueOf(stateInterval.getEndTime()));
                     output.append(']');
                     /* Print the attribute value */
-                    output.append(" = "); //$NON-NLS-1$
+                    output.append(" = ");
                     output.append(stateInterval.getStateValue().unboxInt());
                     output.append('\n');
                 }

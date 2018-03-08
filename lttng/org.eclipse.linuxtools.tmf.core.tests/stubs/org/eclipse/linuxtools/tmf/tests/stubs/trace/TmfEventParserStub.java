@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("javadoc")
 public class TmfEventParserStub implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
@@ -106,7 +106,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 }
                 content.append("]");
 
-                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString());
+                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
                 final ITmfEvent event = new TmfEvent(fEventStream,
                         new TmfTimestamp(ts, -3, 0),     // millisecs
                         source, fTypes[typeIndex], root, reference.toString());

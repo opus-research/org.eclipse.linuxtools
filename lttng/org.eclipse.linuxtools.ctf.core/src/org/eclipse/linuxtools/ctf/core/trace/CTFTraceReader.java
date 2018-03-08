@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial API and implementation
- * Contributors: Alexandre Montplaisir - Initial API and implementation
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *     Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -194,6 +195,11 @@ public class CTFTraceReader {
      * lower next event timestamp.
      */
     private void populateStreamInputReaderHeap() {
+        if (this.streamInputReaders.isEmpty()) {
+            this.prio = new PriorityQueue<StreamInputReader>();
+            return;
+        }
+
         /*
          * Create the priority queue with a size twice as bigger as the number
          * of reader in order to avoid constant resizing.
@@ -399,7 +405,7 @@ public class CTFTraceReader {
             }
 
             sb.append("]\t" + this.eventCountPerTraceFile[se.getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
-            Activator.getDefault().log(sb.toString());
+            Activator.log(sb.toString());
         }
     }
 
@@ -418,9 +424,7 @@ public class CTFTraceReader {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + (int) (startTime ^ (startTime >>> 32));
-        result = (prime * result)
-                + ((streamInputReaders == null) ? 0 : streamInputReaders
-                        .hashCode());
+        result = (prime * result) + streamInputReaders.hashCode();
         result = (prime * result) + ((trace == null) ? 0 : trace.hashCode());
         return result;
     }
@@ -437,11 +441,7 @@ public class CTFTraceReader {
             return false;
         }
         CTFTraceReader other = (CTFTraceReader) obj;
-        if (streamInputReaders == null) {
-            if (other.streamInputReaders != null) {
-                return false;
-            }
-        } else if (!streamInputReaders.equals(other.streamInputReaders)) {
+        if (!streamInputReaders.equals(other.streamInputReaders)) {
             return false;
         }
         if (trace == null) {
@@ -454,11 +454,6 @@ public class CTFTraceReader {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         /* Only for debugging, shouldn't be externalized */

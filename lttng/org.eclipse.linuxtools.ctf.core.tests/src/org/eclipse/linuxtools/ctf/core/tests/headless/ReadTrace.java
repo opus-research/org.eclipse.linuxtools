@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -30,7 +30,6 @@ public class ReadTrace {
     /**
      * @param args
      */
-    @SuppressWarnings("nls")
     public static void main(String[] args) {
         final String TRACE_PATH = "traces/kernel";
 
@@ -108,7 +107,7 @@ public class ReadTrace {
      */
     private static String formatDate(long timestamp) {
         Date d = new Date(timestamp / 1000000);
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss."); //$NON-NLS-1$
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.");
         String output = df.format(d) + (timestamp % 1000000000);
         return output;
     }

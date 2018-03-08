@@ -1,6 +1,5 @@
 /*******************************************************************************
-
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * A concrete implementation of TmfLocation based on ITmfTimestamp:s
@@ -41,9 +40,6 @@ public final class TmfTimestampLocation extends TmfLocation {
         super(other.getLocationInfo());
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationInfo()
-     */
     @Override
     public ITmfTimestamp getLocationInfo() {
         return (ITmfTimestamp) super.getLocationInfo();

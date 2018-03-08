@@ -1,16 +1,15 @@
 /**********************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
@@ -60,10 +59,6 @@ public class BasicExecutionOccurrence extends GraphNode {
     // Constants
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
-     */
     @Override
     public int getX() {
         if (fLifeline == null) {
@@ -72,10 +67,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         return fLifeline.getX() + Metrics.getLifelineWidth() / 2 - Metrics.EXECUTION_OCCURRENCE_WIDTH / 2;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         if (fLifeline == null) {
@@ -84,10 +75,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         return fLifeline.getY() + fLifeline.getHeight() + (Metrics.getMessageFontHeigth() + Metrics.getMessagesSpacing()) * fStartEventOccurrence;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         if (fLifeline == null) {
@@ -96,10 +83,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         return Metrics.EXECUTION_OCCURRENCE_WIDTH;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         if (fLifeline == null) {
@@ -108,10 +91,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         return ((Metrics.getMessageFontHeigth() + Metrics.getMessagesSpacing())) * (fEndEventOccurrence - fStartEventOccurrence);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int xValue, int yValue) {
         int x = getX();
@@ -129,10 +108,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getName()
-     */
     @Override
     public String getName() {
         if (super.getName() == null || super.getName().equals("")) { //$NON-NLS-1$
@@ -197,10 +172,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         fEndEventOccurrence = occurrence;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         int x = getX();
@@ -269,19 +240,11 @@ public class BasicExecutionOccurrence extends GraphNode {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return EXEC_OCC_TAG;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#positiveDistanceToPoint(int, int)
-     */
     @Override
     public boolean positiveDistanceToPoint(int x, int y) {
         if (getY() + getHeight() > y) {
@@ -290,10 +253,6 @@ public class BasicExecutionOccurrence extends GraphNode {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#isVisible(int, int, int, int)
-     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         if ((getLifeline() != null) && (getLifeline().isVisible(x, y, width, height))) {

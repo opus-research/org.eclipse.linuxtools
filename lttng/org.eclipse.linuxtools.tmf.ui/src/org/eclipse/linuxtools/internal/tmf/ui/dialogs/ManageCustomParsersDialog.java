@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -68,9 +68,6 @@ public class ManageCustomParsersDialog extends Dialog {
         setShellStyle(SWT.RESIZE | SWT.MAX | getShellStyle());
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(Composite parent) {
         getShell().setText(Messages.ManageCustomParsersDialog_DialogHeader);
@@ -284,9 +281,6 @@ public class ManageCustomParsersDialog extends Dialog {
         return composite;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);

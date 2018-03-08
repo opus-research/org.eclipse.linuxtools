@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -90,7 +90,7 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
     public void setRegex(String regex) {
         this.fRegex = regex;
         try {
-            this.fPattern = Pattern.compile(regex);
+            this.fPattern = Pattern.compile(regex, Pattern.DOTALL);
         } catch (PatternSyntaxException e) {
             this.fPattern = null;
         }

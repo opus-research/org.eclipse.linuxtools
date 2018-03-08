@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -38,9 +38,9 @@ public abstract class CustomEventType extends TmfEventType {
     private static ITmfEventField getRootField(CustomTraceDefinition definition) {
         ITmfEventField[] fields = new ITmfEventField[definition.outputs.size()];
         for (int i = 0; i < fields.length; i++) {
-            fields[i] = new TmfEventField(definition.outputs.get(i).name, null);
+            fields[i] = new TmfEventField(definition.outputs.get(i).name, null, null);
         }
-        ITmfEventField rootField = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, fields);
+        ITmfEventField rootField = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, null, fields);
         return rootField;
     }
 

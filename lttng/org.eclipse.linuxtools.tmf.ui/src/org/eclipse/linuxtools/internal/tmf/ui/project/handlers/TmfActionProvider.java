@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2012 Ericsson
+* Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -37,10 +37,6 @@ public class TmfActionProvider extends CommonActionProvider {
     public TmfActionProvider() {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.navigator.CommonActionProvider#init(org.eclipse.ui.navigator.ICommonActionExtensionSite)
-     */
     @Override
     public void init(ICommonActionExtensionSite aSite) {
         ICommonViewerSite viewSite = aSite.getViewSite();
@@ -52,10 +48,6 @@ public class TmfActionProvider extends CommonActionProvider {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.actions.ActionGroup#fillActionBars(org.eclipse.ui.IActionBars)
-     */
     @Override
     public void fillActionBars(IActionBars actionBars) {
         if (openAction.isEnabled()) {

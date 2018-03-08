@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -43,16 +43,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
      */
     protected abstract Object getValue();
 
-    /**
-     * Specify how to "serialize" this value when writing it to a file.
-     * Alternatively you can return "null" here if you do not need a byte-array
-     * indirection (the getValue will get written as-in instead of the offset in
-     * the file block)
-     *
-     * @return The state value in byte array form
-     */
-    public abstract byte[] toByteArray();
-
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -85,16 +75,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return 0;
         }
         return this.getValue().hashCode();
-    }
-
-    /**
-     * Return the max size that a variable-length state value can have when
-     * serialized.
-     *
-     * @return The maximum size in bytes
-     */
-    public static int getStateValueMaxSize() {
-        return Byte.MAX_VALUE;
     }
 
     /*
@@ -138,6 +118,20 @@ public abstract class TmfStateValue implements ITmfStateValue {
         return new StringStateValue(strValue);
     }
 
+    /**
+     * Factory constructor for Long state values
+     *
+     * @param longValue The long value to contain
+     * @return The newly-create TmfStateValue object
+     * @since 2.0
+     */
+    public static TmfStateValue newValueLong(long longValue) {
+        if (longValue == -1) {
+            return nullValue();
+        }
+        return new LongStateValue(longValue);
+    }
+
     @Override
     public int unboxInt() throws StateValueTypeException {
         if (this.isNull()) {
@@ -145,7 +139,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return -1;
         }
 
-        if (this.getType() != 0) { /* 0 = int type */
+        if (this.getType() != Type.INTEGER) {
             throw new StateValueTypeException();
         }
         return (Integer) this.getValue();
@@ -158,9 +152,25 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return "nullValue"; //$NON-NLS-1$
         }
 
-        if (this.getType() != 1) { /* 1 = string type */
+        if (this.getType() != Type.STRING) {
             throw new StateValueTypeException();
         }
         return (String) this.getValue();
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public long unboxLong() throws StateValueTypeException {
+        if (this.isNull()) {
+            /* Long value expected, return "-1" instead */
+            return -1;
+        }
+
+        if (this.getType() != Type.LONG) {
+            throw new StateValueTypeException();
+        }
+        return (Long) this.getValue();
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,16 +21,17 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.ITmfColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
@@ -156,12 +157,16 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     private boolean fSendRangeRequest = true;
 
+    /** Reference to the trace manager */
+    private final TmfTraceManager fTraceManager;
+
     /**
      * Empty constructor. To be used in conjunction with
      * {@link TmfStatisticsViewer#init(Composite, String, ITmfTrace)}
      */
     public TmfStatisticsViewer() {
         super();
+        fTraceManager = TmfTraceManager.getInstance();
     }
 
     /**
@@ -178,6 +183,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     public TmfStatisticsViewer(Composite parent, String viewerName, ITmfTrace trace) {
         init(parent, viewerName, trace);
+        fTraceManager = TmfTraceManager.getInstance();
     }
 
     /**
@@ -204,11 +210,6 @@ public class TmfStatisticsViewer extends TmfViewer {
         initInput();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.core.component.TmfComponent#dispose()
-     */
     @Override
     public void dispose() {
         super.dispose();
@@ -242,7 +243,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Sends the time range request only once from this method.
             if (fSendRangeRequest) {
                 fSendRangeRequest = false;
-                requestTimeRangeData(trace, fTrace.getCurrentRange());
+                requestTimeRangeData(trace, fTraceManager.getCurrentRange());
             }
         }
         requestData(trace, signal.getRange());
@@ -564,14 +565,8 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Checks if the trace is already in the statistics tree.
             int numNodeTraces = statisticsTreeNode.getNbChildren();
 
-            int numTraces = 1;
-            ITmfTrace[] trace = { fTrace };
-            // For experiment, gets all the traces within it
-            if (fTrace instanceof TmfExperiment) {
-                TmfExperiment experiment = (TmfExperiment) fTrace;
-                numTraces = experiment.getTraces().length;
-                trace = experiment.getTraces();
-            }
+            ITmfTrace[] traces = TmfTraceManager.getTraceSet(fTrace);
+            int numTraces = traces.length;
 
             if (numTraces == numNodeTraces) {
                 boolean same = true;
@@ -580,7 +575,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                  * previously selected.
                  */
                 for (int i = 0; i < numTraces; i++) {
-                    String traceName = trace[i].getName();
+                    String traceName = traces[i].getName();
                     if (!statisticsTreeNode.containsChild(traceName)) {
                         same = false;
                         break;
@@ -711,14 +706,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                 statTree.resetTimeRangeValue();
             }
 
-            ITmfTrace[] traces;
-            if (trace instanceof TmfExperiment) {
-                TmfExperiment experiment = (TmfExperiment) trace;
-                traces = experiment.getTraces();
-            } else {
-                traces = new ITmfTrace[] { trace };
-            }
-            for (final ITmfTrace aTrace : traces) {
+            for (final ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
                 if (!isListeningTo(aTrace)) {
                     continue;
                 }

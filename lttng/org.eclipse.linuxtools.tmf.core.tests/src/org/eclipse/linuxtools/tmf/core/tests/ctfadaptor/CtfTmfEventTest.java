@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Set;
 
@@ -27,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -42,6 +43,8 @@ import org.junit.Test;
  */
 public class CtfTmfEventTest {
 
+    private static final int TRACE_INDEX = 0;
+
     private static CtfTmfEvent nullEvent;
     private CtfTmfEvent fixture;
 
@@ -55,13 +58,11 @@ public class CtfTmfEventTest {
 
     /**
      * Perform pre-test initialization.
-     *
-     * @throws TmfTraceException
-     *             If the test trace is not found
      */
     @Before
-    public void setUp() throws TmfTraceException {
-        CtfTmfTrace trace = TestParams.createTrace();
+    public void setUp() {
+        assumeTrue(CtfTmfTestTraces.tracesExist());
+        CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
         CtfIterator tr = new CtfIterator(trace);
         tr.advance();
         fixture = tr.getCurrentEvent();
@@ -90,7 +91,7 @@ public class CtfTmfEventTest {
     @Test
     public void testGetEventName() {
         String result = nullEvent.getEventName();
-        assertEquals("Empty CTF event", result); //$NON-NLS-1$
+        assertEquals("Empty CTF event", result);
     }
 
     /**
@@ -107,7 +108,7 @@ public class CtfTmfEventTest {
      */
     @Test
     public void testGetFieldValue() {
-        String fieldName = "pid"; //$NON-NLS-1$
+        String fieldName = "pid";
         ITmfEventField result = fixture.getContent().getField(fieldName);
 
         assertNotNull(result);
@@ -152,11 +153,11 @@ public class CtfTmfEventTest {
         String reference = fixture.getReference();
         String source = fixture.getSource();
         ITmfEventType type = fixture.getType();
-        assertEquals(rank, ITmfContext.UNKNOWN_RANK);
-        assertEquals(trace.getName(), "test"); //$NON-NLS-1$
-        assertEquals(reference,"channel0_1"); //$NON-NLS-1$
-        assertEquals(source, "1"); //$NON-NLS-1$
-        assertEquals(type.toString(), "lttng_statedump_vm_map"); //$NON-NLS-1$
+        assertEquals(ITmfContext.UNKNOWN_RANK, rank);
+        assertEquals("test", trace.getName());
+        assertEquals("channel0_1", reference);
+        assertEquals("1", source);
+        assertEquals("lttng_statedump_vm_map", type.toString());
     }
 
     /**
@@ -168,7 +169,7 @@ public class CtfTmfEventTest {
         Set<String> attributes = fixture.listCustomAttributes();
         assertEquals(0, attributes.size());
 
-        String attrib = fixture.getCustomAttribute("bozo"); //$NON-NLS-1$
+        String attrib = fixture.getCustomAttribute("bozo");
         assertNull(attrib);
     }
 
@@ -178,7 +179,7 @@ public class CtfTmfEventTest {
     @Test
     public void testToString() {
         String s = fixture.getContent().toString();
-        assertEquals("pid=1922, inode=917738, flags=0x8000075, end=0xb73ec000, start=0xb73ea000, pgoff=0", s); //$NON-NLS-1$
+        assertEquals("pid=1922, start=0xb73ea000, end=0xb73ec000, flags=0x8000075, inode=917738, pgoff=0", s);
     }
 
     /**
@@ -191,8 +192,8 @@ public class CtfTmfEventTest {
         assertSame(nullEvent2, nullEvent);
         assertNotNull(nullEvent);
         assertEquals(-1, nullEvent.getCPU());
-        assertEquals("Empty CTF event", nullEvent.getEventName()); //$NON-NLS-1$
-        assertEquals("No stream", nullEvent.getReference()); //$NON-NLS-1$
+        assertEquals("Empty CTF event", nullEvent.getEventName());
+        assertEquals("No stream", nullEvent.getReference());
         assertArrayEquals(new ITmfEventField[0], nullEvent.getContent().getFields());
         assertEquals(-1L, nullEvent.getID());
         assertEquals(-1L, nullEvent.getTimestamp().getValue());

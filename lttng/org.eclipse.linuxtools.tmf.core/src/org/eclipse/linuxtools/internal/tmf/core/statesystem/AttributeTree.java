@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
  * The Attribute Tree is the /proc-like filesystem used to organize attributes.
@@ -28,7 +31,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
  * @author alexmont
  *
  */
-final class AttributeTree {
+public class AttributeTree {
 
     /* "Magic number" for attribute tree files or file sections */
     private final static int ATTRIB_TREE_MAGIC_NUMBER = 0x06EC3671;
@@ -284,7 +287,26 @@ final class AttributeTree {
                 }
                 prevNode = nextNode;
             }
-            return attributeList.size() - 1;
+            /*
+             * Insert an initial null value for this attribute in the state
+             * system (in case the state provider doesn't set one).
+             */
+            final int newAttrib = attributeList.size() - 1;
+            try {
+                ss.modifyAttribute(ss.getStartTime(), TmfStateValue.nullValue(), newAttrib);
+            } catch (TimeRangeException e) {
+                /* Should not happen, we're inserting at ss's start time */
+                throw new RuntimeException();
+            } catch (AttributeNotFoundException e) {
+                /* Should not happen, we just created this attribute! */
+                throw new RuntimeException();
+            } catch (StateValueTypeException e) {
+                /* Should not happen, there is no existing state value, and the
+                 * one we insert is a null value anyway. */
+                throw new RuntimeException();
+            }
+
+            return newAttrib;
         }
         /*
          * The attribute was already existing, return the quark of that

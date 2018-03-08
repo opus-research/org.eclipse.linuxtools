@@ -1,11 +1,23 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.types;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -23,7 +35,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,37 +47,20 @@ import org.junit.Test;
  */
 public class StructDefinitionTest {
 
-    private static final String TEST_STRUCT_ID = "testStruct"; //$NON-NLS-1$
-
-    private static final String ENUM_2 = "y"; //$NON-NLS-1$
-
-    private static final String ENUM_1 = "x"; //$NON-NLS-1$
-
-    private static final String TAG_ID = "Tag"; //$NON-NLS-1$
-
-    private static final String INT_ID = "_id"; //$NON-NLS-1$
-
-    private static final String STRING_ID = "_args"; //$NON-NLS-1$
-
-    private static final String ENUM_ID = "_enumArgs"; //$NON-NLS-1$
-
-    private static final String SEQUENCE_ID = "_seq"; //$NON-NLS-1$
-
-    private static final String LENGTH_SEQ = "_len"; //$NON-NLS-1$
+    private static final String TEST_STRUCT_ID = "testStruct";
+    private static final String ENUM_2 = "y";
+    private static final String ENUM_1 = "x";
+    private static final String TAG_ID = "Tag";
+    private static final String INT_ID = "_id";
+    private static final String STRING_ID = "_args";
+    private static final String ENUM_ID = "_enumArgs";
+    private static final String SEQUENCE_ID = "_seq";
+    private static final String LENGTH_SEQ = "_len";
 
     private StructDefinition fixture;
-
-    private static final String VAR_FIELD_NAME = "SomeVariant"; //$NON-NLS-1$
-
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(StructDefinitionTest.class);
-    }
+    private StructDefinition emptyStruct;
+    private StructDefinition simpleStruct;
+    private static final String VAR_FIELD_NAME = "SomeVariant";
 
     /**
      * Perform pre-test initialization.
@@ -98,14 +92,15 @@ public class StructDefinitionTest {
         VariantDefinition vd = varDec.createDefinition(fixture,VAR_FIELD_NAME );
         vd.setTagDefinition(eDef);
 
-    }
+        // Create an empty struct
+        StructDeclaration esDec = new StructDeclaration(32);
+        emptyStruct = esDec.createDefinition(null, TEST_STRUCT_ID);
 
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
+        // Create a simple struct with two items
+        StructDeclaration ssDec = new StructDeclaration(32);
+        ssDec.addField(INT_ID, id);
+        ssDec.addField(STRING_ID, sd);
+        simpleStruct = ssDec.createDefinition(null, TEST_STRUCT_ID);
     }
 
     /**
@@ -122,7 +117,7 @@ public class StructDefinitionTest {
      */
     @Test
     public void testGetDefinitions_1() {
-        HashMap<String, Definition> result = fixture.getDefinitions();
+        Map<String, Definition> result = fixture.getDefinitions();
         assertNotNull(result);
     }
 
@@ -142,7 +137,7 @@ public class StructDefinitionTest {
      */
     @Test
     public void testLookupDefinition() {
-        String lookupPath = "args"; //$NON-NLS-1$
+        String lookupPath = "args";
         Definition result = fixture.lookupDefinition(lookupPath);
 
         assertNotNull(result);
@@ -163,7 +158,7 @@ public class StructDefinitionTest {
      */
     @Test
     public void testLookupInteger_1() {
-        String name = "_id"; //$NON-NLS-1$
+        String name = "_id";
         IntegerDefinition result = fixture.lookupInteger(name);
         assertNotNull(result);
     }
@@ -240,5 +235,11 @@ public class StructDefinitionTest {
     public void testToString() {
         String result = fixture.toString();
         assertNotNull(result);
+
+        result = emptyStruct.toString();
+        assertEquals("{  }", result);
+
+        result = simpleStruct.toString();
+        assertEquals("{ _id = 0, _args = \"\" }", result);
     }
 }

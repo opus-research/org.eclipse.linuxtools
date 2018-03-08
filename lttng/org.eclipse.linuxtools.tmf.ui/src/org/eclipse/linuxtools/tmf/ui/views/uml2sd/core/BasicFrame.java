@@ -1,24 +1,23 @@
 /**********************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
- * Copyright (c) 2011, 2012 Ericsson.
- *
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * IBM - Initial API and implementation
- * Bernd Hufmann - Updated for TMF
+ *     IBM - Initial API and implementation
+ *     Bernd Hufmann - Updated for TMF
  **********************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -164,39 +163,22 @@ public class BasicFrame extends GraphNode {
         return fHorizontalIndex;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#addNode(org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode)
-     */
     @Override
     public void addNode(GraphNode nodeToAdd) {
         fComputeMinMax = true;
         super.addNode(nodeToAdd);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
-     */
     @Override
     public int getX() {
         return Metrics.FRAME_H_MARGIN;
     }
 
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         return Metrics.FRAME_V_MARGIN;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         if (fHorizontalIndex == 0) {
@@ -205,10 +187,6 @@ public class BasicFrame extends GraphNode {
         return fHorizontalIndex * Metrics.swimmingLaneWidth() + Metrics.LIFELINE_H_MAGIN * 2 + 1 - Metrics.LIFELINE_SPACING;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         // The Frame height depends on the maximum number of messages added to a lifeline
@@ -310,10 +288,6 @@ public class BasicFrame extends GraphNode {
         context.setForeground(pref.getForeGroundColor(ISDPreferences.PREF_FRAME));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
         draw(context, true);
@@ -392,6 +366,7 @@ public class BasicFrame extends GraphNode {
      * Return the minimum time stored in the frame taking all GraphNodes into account
      *
      * @return the minimum GraphNode time
+     * @since 2.0
      */
     public ITmfTimestamp getMinTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
@@ -410,6 +385,7 @@ public class BasicFrame extends GraphNode {
      *
      * @param min
      *            The minimum timestamp
+     * @since 2.0
      */
     public void setMin(ITmfTimestamp min) {
         fMinTime = min;
@@ -421,6 +397,7 @@ public class BasicFrame extends GraphNode {
      *
      * @param max
      *            The maximum timestamp
+     * @since 2.0
      */
     public void setMax(ITmfTimestamp max) {
         fMaxTime = max;
@@ -439,6 +416,7 @@ public class BasicFrame extends GraphNode {
      * Return the maximum time stored in the frame taking all GraphNodes into account
      *
      * @return the maximum GraphNode time
+     * @since 2.0
      */
     public ITmfTimestamp getMaxTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
@@ -483,6 +461,7 @@ public class BasicFrame extends GraphNode {
      * Returns the minimum time between consecutive messages.
      *
      * @return the minimum time between consecutive messages
+     * @since 2.0
      */
     public ITmfTimestamp getSDMinTime() {
         computeMaxMinTime();
@@ -493,6 +472,7 @@ public class BasicFrame extends GraphNode {
      * Returns the maximum time between consecutive messages.
      *
      * @return the maximum time between consecutive messages
+     * @since 2.0
      */
     public ITmfTimestamp getSDMaxTime() {
         computeMaxMinTime();
@@ -576,19 +556,11 @@ public class BasicFrame extends GraphNode {
         return timeArray;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int x, int y) {
         return false;

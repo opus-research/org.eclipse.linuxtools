@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -22,11 +22,11 @@ import java.util.Map;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -214,9 +214,9 @@ public class CustomEvent extends TmfEvent {
             String value = fData.get(outputColumn.name);
             if (outputColumn.name.equals(CustomTraceDefinition.TAG_TIMESTAMP) && date != null) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat(fDefinition.timeStampOutputFormat);
-                fColumnData[i++] = new TmfEventField(outputColumn.name, dateFormat.format(date));
+                fColumnData[i++] = new TmfEventField(outputColumn.name, dateFormat.format(date), null);
             } else {
-                fColumnData[i++] = new TmfEventField(outputColumn.name, (value != null ? value : "")); //$NON-NLS-1$
+                fColumnData[i++] = new TmfEventField(outputColumn.name, (value != null ? value : ""), null); //$NON-NLS-1$
             }
         }
         CustomEventContent curContent = (CustomEventContent) getContent();

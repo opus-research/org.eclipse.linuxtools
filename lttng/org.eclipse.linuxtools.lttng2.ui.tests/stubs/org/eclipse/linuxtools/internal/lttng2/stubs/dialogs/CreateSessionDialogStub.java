@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.stubs.dialogs;
 
@@ -20,9 +21,12 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceS
 @SuppressWarnings("javadoc")
 public class CreateSessionDialogStub implements ICreateSessionDialog {
 
-    public String fName = "mysession"; //$NON-NLS-1$
+    public String fName = "mysession";
     public String fPath = null;
-
+    private boolean fIsStreamedTrace = false;
+    private String fNetworkUrl = null;
+    private String fControlUrl = null;
+    private String fDataUrl = null;
 
     @Override
     public String getSessionName() {
@@ -40,8 +44,7 @@ public class CreateSessionDialogStub implements ICreateSessionDialog {
     }
 
     @Override
-    public void setTraceSessionGroup(TraceSessionGroup group) {
-
+    public void initialize(TraceSessionGroup group) {
     }
 
     @Override
@@ -56,4 +59,42 @@ public class CreateSessionDialogStub implements ICreateSessionDialog {
     public void setSessionName(String name) {
         fName = name;
     }
+
+    @Override
+    public boolean isStreamedTrace() {
+        return fIsStreamedTrace;
+    }
+
+    public void setStreamedTrace(boolean isStreamedTrace) {
+        fIsStreamedTrace = isStreamedTrace;
+    }
+
+    @Override
+    public String getNetworkUrl() {
+        return fNetworkUrl;
+    }
+
+    public void setNetworkUrl(String fNetworkUrl) {
+        this.fNetworkUrl = fNetworkUrl;
+    }
+
+
+    @Override
+    public String getControlUrl() {
+        return fControlUrl;
+    }
+
+    public void setControlUrl(String fControlUrl) {
+        this.fControlUrl = fControlUrl;
+    }
+
+    @Override
+    public String getDataUrl() {
+        return fDataUrl;
+    }
+
+    public void setDataUrl(String fDataUrl) {
+        this.fDataUrl = fDataUrl;
+    }
+
 }

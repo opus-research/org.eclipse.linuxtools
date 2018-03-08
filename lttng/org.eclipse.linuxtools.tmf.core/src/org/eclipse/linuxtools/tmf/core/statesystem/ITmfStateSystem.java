@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -77,21 +77,6 @@ public interface ITmfStateSystem {
      * @return The current number of attributes in the system
      */
     public int getNbAttributes();
-
-    /**
-     * Check if a given quark is the last attribute that was added to the
-     * system.
-     *
-     * This is a common case, and it's a bit clearer than
-     * " x == getNbAttributes - 1"
-     *
-     * @param quark
-     *            The quark to check for
-     * @return True if this is the last quark that was added to the system,
-     *         false if not
-     * @since 2.0
-     */
-    public boolean isLastAttribute(int quark);
 
     /**
      * @name Read-only quark-getting methods
@@ -218,6 +203,19 @@ public interface ITmfStateSystem {
      *             If the requested attribute is invalid
      */
     public ITmfStateValue queryOngoingState(int attributeQuark)
+            throws AttributeNotFoundException;
+
+    /**
+     * Get the start time of the current ongoing state, for the specified
+     * attribute.
+     *
+     * @param attribute
+     *            Quark of the attribute
+     * @return The current start time of the ongoing state
+     * @throws AttributeNotFoundException
+     *             If the attribute is invalid
+     */
+    public long getOngoingStartTime(int attribute)
             throws AttributeNotFoundException;
 
     /**

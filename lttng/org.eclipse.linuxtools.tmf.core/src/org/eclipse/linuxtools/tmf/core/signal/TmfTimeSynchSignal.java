@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.signal;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * A new current time is selected (for component synchronization)
@@ -31,6 +31,7 @@ public class TmfTimeSynchSignal extends TmfSignal {
      *            Object sending this signal
      * @param ts
      *            Synchronize to which timestamp
+     * @since 2.0
      */
     public TmfTimeSynchSignal(Object source, ITmfTimestamp ts) {
         super(source);
@@ -39,16 +40,12 @@ public class TmfTimeSynchSignal extends TmfSignal {
 
     /**
      * @return The synchronization timestamp of this signal
+     * @since 2.0
      */
     public ITmfTimestamp getCurrentTime() {
         return fCurrentTime;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return "[TmfTimeSynchSignal (" + fCurrentTime.toString() + ")]"; //$NON-NLS-1$ //$NON-NLS-2$

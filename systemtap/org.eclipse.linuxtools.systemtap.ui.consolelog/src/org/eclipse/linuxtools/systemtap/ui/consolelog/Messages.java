@@ -12,8 +12,12 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
 import org.eclipse.osgi.util.NLS;
 
+/**
+ * @since 2.0
+ */
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.systemtap.ui.consolelog.messages"; //$NON-NLS-1$
+	public static String ScpExec_errorConnectingToServer;
 	public static String ScpExec_ConnTimedOut;
 	public static String ScpExec_Error;
 	public static String ScpExec_FileTransferFailed;
