@@ -177,6 +177,14 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
         }
     }
 
+    /**
+     * Copy constructor
+     */
+    @SuppressWarnings("unused")
+    private TmfDataRequest(TmfDataRequest other) {
+        this(null, 0, ALL_DATA, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
+    }
+
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
