@@ -128,6 +128,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
     // The previous resource action
     private Action fPreviousResourceAction;
 
+    // The default mouse left action
+    private Action fDefaultMouseLeftAction;
+
     // The relative weight of the sash
     private int[] fWeight = { 1, 1 };
     /**
@@ -161,6 +164,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
      * Tooltip for the "Previous" button
      */
     protected String fPrevTooltip = Messages.AbstractTimeGraphView_PreviousTooltip;
+
 
     // ------------------------------------------------------------------------
     // Getters and setters
@@ -725,6 +729,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         fNextResourceAction = fTimeGraphCombo.getTimeGraphViewer().getNextItemAction();
         fNextResourceAction.setText(fNextText);
         fNextResourceAction.setToolTipText(fNextTooltip);
+        fDefaultMouseLeftAction = fTimeGraphCombo.getTimeGraphViewer().getDefaultMouseLeftAction();
     }
 
     private void contributeToActionBars() {
@@ -736,6 +741,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         if (fFilterColumns.length > 0) {
             manager.add(fTimeGraphCombo.getShowFilterAction());
         }
+        manager.add(fDefaultMouseLeftAction);
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getShowLegendAction());
         manager.add(new Separator());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
