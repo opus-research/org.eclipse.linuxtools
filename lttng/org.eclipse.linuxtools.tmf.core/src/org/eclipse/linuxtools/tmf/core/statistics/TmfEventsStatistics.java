@@ -13,6 +13,8 @@
 package org.eclipse.linuxtools.tmf.core.statistics;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -126,6 +128,31 @@ public class TmfEventsStatistics implements ITmfStatistics {
         };
         statsThread.start();
         return;
+    }
+
+    @Override
+    public List<Long> histogramQuery(long start, long end, int nb) {
+        final List<Long> list = new LinkedList<Long>();
+        final long increment = (end - start) / nb;
+        long curStart, curEnd, count;
+
+        curStart = start;
+        curEnd = curStart + increment;
+        for (int i = 0; i < nb - 1; i++) {
+            count = getEventsInRange(curStart, curEnd);
+            list.add(count);
+
+            /* Update range for next bucket */
+            curStart = curEnd + 1;
+            curEnd = curStart + increment;
+        }
+
+        /* For the last bucket, use the requested range's end time */
+        count = getEventsInRange(curStart, end);
+        list.add(count);
+
+        return list;
+
     }
 
     private synchronized void cancelOngoingRequests() {
