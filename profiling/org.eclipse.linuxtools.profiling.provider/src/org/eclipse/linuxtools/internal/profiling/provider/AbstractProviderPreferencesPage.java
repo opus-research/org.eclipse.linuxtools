@@ -24,7 +24,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
-import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderFramework;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
@@ -60,7 +59,7 @@ public class AbstractProviderPreferencesPage extends
 
 	public void initializeDefaultPreferences() {
 			super.performDefaults();
-			String providerId = ProviderFramework
+			String providerId = ProfileLaunchShortcut
 					.getDefaultLaunchShortcutProviderId(type);
 			ConfigurationScope.INSTANCE.getNode(type)
 					.put(ProviderProfileConstants.PREFS_KEY, providerId);
@@ -69,12 +68,12 @@ public class AbstractProviderPreferencesPage extends
 
 	@Override
 	protected void createFieldEditors() {
-		String providerId = ProviderFramework
+		String providerId = ProfileLaunchShortcut
 				.getDefaultLaunchShortcutProviderId(type);
 		
 		getPreferenceStore().setDefault(ProviderProfileConstants.PREFS_KEY, providerId);
 
-		HashMap<String, String> map = ProviderFramework
+		HashMap<String, String> map = ProfileLaunchConfigurationTabGroup
 				.getProviderNamesForType(type);
 		// 2d array containing launch provider names on the first column and
 		// corresponding id's on the second.
