@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
@@ -57,12 +57,12 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
      *            The LTTng 2.0 kernel trace directory
      */
     public CtfKernelStateInput(CtfTmfTrace trace) {
-        super(trace, CtfTmfEvent.class);
+        super(trace, CtfTmfEvent.class, "LTTng Kernel"); //$NON-NLS-1$
         knownEventNames = fillEventNames();
     }
 
     @Override
-    public void assignTargetStateSystem(IStateSystemBuilder ssb) {
+    public void assignTargetStateSystem(ITmfStateSystemBuilder ssb) {
         /* We can only set up the locations once the state system is assigned */
         super.assignTargetStateSystem(ssb);
         setupCommonLocations();

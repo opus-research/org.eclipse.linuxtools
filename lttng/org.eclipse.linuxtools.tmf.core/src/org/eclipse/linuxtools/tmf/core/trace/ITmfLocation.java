@@ -20,7 +20,7 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * enough information to allow the positioning of the trace 'pointer' to read an
  * arbitrary event.
  * <p>
- * This location is trace-specific, must be comparable and immutable.
+ * This location is trace-specific and must be comparable.
  *
  * @version 2.0
  * @author Francois Chouinard
@@ -38,5 +38,14 @@ public interface ITmfLocation {
      * @since 2.0
      */
     public Comparable<?> getLocationInfo();
+
+    // ------------------------------------------------------------------------
+    // Operations
+    // ------------------------------------------------------------------------
+
+    /**
+     * @return a clone of the location
+     */
+    public ITmfLocation clone();
 
 }
