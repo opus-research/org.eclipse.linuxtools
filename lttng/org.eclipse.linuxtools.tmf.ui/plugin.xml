@@ -368,9 +368,15 @@
                         <instanceof
                               value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
                         </instanceof>
-                        <instanceof
-                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
-                        </instanceof>
+                        <and>
+                           <instanceof
+                                 value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                           </instanceof>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.eclipse.linuxtools.tmf.ui.hasTraces">
+                           </test>
+                        </and>
                      </or>
                   </iterate>
                </with>
@@ -1161,7 +1167,7 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.TracePropertyTester"
             id="org.eclipse.linuxtools.tmf.ui.tracePropertyTester"
             namespace="org.eclipse.linuxtools.tmf.ui"
-            properties="isExperimentTrace,hasSupplementaryFiles,traceType"
+            properties="isExperimentTrace,hasSupplementaryFiles,traceType,hasTraces"
             type="org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement">
       </propertyTester>
    </extension>

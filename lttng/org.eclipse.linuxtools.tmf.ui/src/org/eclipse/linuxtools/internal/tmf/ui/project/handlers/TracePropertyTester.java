@@ -34,6 +34,8 @@ public class TracePropertyTester extends PropertyTester {
     private final static String IS_EXPERIMENT_TRACE = "isExperimentTrace"; //$NON-NLS-1$
     private final static String HAS_SUPPLEMENTARY_FILES = "hasSupplementaryFiles"; //$NON-NLS-1$
     private final static String TRACE_TYPE = "traceType"; //$NON-NLS-1$
+    private final static String EXPERIMENT_HAS_TRACES = "hasTraces"; //$NON-NLS-1$
+
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -105,6 +107,16 @@ public class TracePropertyTester extends PropertyTester {
             if (receiver != null && receiver instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) receiver;
                 if (expectedValue instanceof String && expectedValue.equals(trace.getTraceType())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (EXPERIMENT_HAS_TRACES.equals(property)) {
+            if ((receiver != null) && (receiver instanceof TmfExperimentElement)) {
+                TmfExperimentElement expElement = (TmfExperimentElement) receiver;
+                if (expElement.getTraces().size() > 0) {
                     return true;
                 }
             }
