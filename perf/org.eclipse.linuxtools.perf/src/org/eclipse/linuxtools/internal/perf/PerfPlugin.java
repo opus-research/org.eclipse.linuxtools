@@ -37,6 +37,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String VIEW_ID = "org.eclipse.linuxtools.perf.ui.ProfileView";
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
 	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
+	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -97,9 +98,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String PERF_DEFAULT_DATA = "perf.data";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
-
-	
-	  
 	
 	// The shared instance
 	private static PerfPlugin plugin;
@@ -122,6 +120,9 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Current working directory
 	private IPath curWorkingDir;
 
+	// Current stat comparison data
+	private StatComparisonData statDiffData;
+
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
@@ -136,6 +137,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public IPath getPerfProfileData() {
 		return curProfileData;
+	}
+
+	public StatComparisonData getStatDiffData() {
+		return statDiffData;
 	}
 
 	public IPath getWorkingDir(){
@@ -169,6 +174,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public void setPerfProfileData(IPath perfProfileData) {
 		this.curProfileData = perfProfileData;
+	}
+
+	public void setStatDiffData(StatComparisonData diffData){
+		this.statDiffData = diffData;
 	}
 
 	public void setWorkingDir(IPath workingDir){
