@@ -29,7 +29,7 @@ import org.junit.runners.Suite;
     TmfSimpleTimestampTest.class,
     TmfTimeRangeTest.class,
     TmfTimestampDeltaTest.class,
-    TmfTimestampTest.class,
+    TmfTimestampTest.class
 })
 public class AllTests {
 
