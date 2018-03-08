@@ -612,7 +612,13 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     public void traceOpened(TmfTraceOpenedSignal signal) {
         if (signal.getTrace() == this) {
             initializeStreamingMonitor();
+
+            /*
+             * Some experiment types may have state systems for them, so we need
+             * to build them here
+             */
+            buildStateSystem();
+
         }
     }
-
 }
