@@ -170,15 +170,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
     }
 
     /**
-     * Gets the stream's event context definition.
-     *
-     * @return The streamEventContext definition
-     */
-    public StructDefinition getStreamEventContextDef() {
-        return streamEventContextDef;
-    }
-
-    /**
      * Gets the CPU (core) number
      *
      * @return the CPU (core) number
