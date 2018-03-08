@@ -53,18 +53,34 @@ public class UiModelEvent implements IUiModelElement {
 		return toString();
 	}
 	
+	/**
+	 * Returns this element children
+	 * @return sessions An array of IUiModelElements
+	 */
 	public IUiModelElement[] getChildren() {
 		return sessions;
 	}
 
+	/**
+	 * Returns if the element has any children.
+	 * @return true if the element has children, false otherwise
+	 */
 	public boolean hasChildren() {
 		return (sessions == null || sessions.length == 0 ? false : true);
 	}
 
+	/**
+	 * Returns the element's parent.
+	 * @return parent The parent element
+	 */
 	public IUiModelElement getParent() {
 		return parent;
 	}
 
+	/**
+	 * Returns the Image to display next to the text in the tree viewer.
+	 * @return an Image object of the icon
+	 */
 	public Image getLabelImage() {
 		return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.EVENT_ICON).createImage();
 	}
