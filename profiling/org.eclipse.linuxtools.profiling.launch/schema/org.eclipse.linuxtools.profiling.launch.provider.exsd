@@ -83,13 +83,6 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="priority" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Positive integer stating priorty over launch provider&apos;s of the same type.
-               </documentation>
-            </annotation>
-         </attribute>
       </complexType>
    </element>
 
