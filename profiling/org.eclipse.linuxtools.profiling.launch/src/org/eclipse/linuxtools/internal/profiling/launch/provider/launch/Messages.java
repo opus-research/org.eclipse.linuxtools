@@ -8,16 +8,21 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.profiling.provider.launch;
+package org.eclipse.linuxtools.internal.profiling.launch.provider.launch;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.profiling.provider.launch.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.profiling.launch.provider.launch.messages"; //$NON-NLS-1$
 	public static String ProviderLaunchShortcut_0;
 	public static String ProviderPreferencesPage_0;
 	public static String ProviderPreferencesPage_1;
 	public static String ProviderOptionsTab_0;
+	public static String UseProjectSetting_0;
+	public static String ProjectSettings_0;
+	public static String PreferenceLink_0;
+	public static String ProviderLaunchConfigurationPrompt_0;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

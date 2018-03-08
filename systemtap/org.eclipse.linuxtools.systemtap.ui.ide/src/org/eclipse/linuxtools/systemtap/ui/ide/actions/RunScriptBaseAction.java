@@ -36,9 +36,12 @@ import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
+
+import com.jcraft.jsch.JSchException;
 
 /**
  * This <code>Action</code> is used to run a SystemTap script that is currently open in the editor.
@@ -94,19 +97,28 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 					serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
 					tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
 					 scpclient.transfer(fileName,tmpfileName);
-			        }catch(Exception e){e.printStackTrace();}
+			        } catch (JSchException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 			}
-			String[] script = buildScript();
-			String[] envVars = getEnvironmentVariables();
+			final String[] script = buildStandardScript();
+			final String[] envVars = getEnvironmentVariables();
             if(continueRun)
             {
-            	ScriptConsole console;
-            	if(getRunLocal() == false) {
-            		console = ScriptConsole.getInstance(serverfileName);
-            	} else {
-            		console = ScriptConsole.getInstance(fileName);
-            	}
-                console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
+            	Display.getDefault().asyncExec(new Runnable() {
+            		public void run() {
+            			final ScriptConsole console;
+            			if(getRunLocal() == false) {
+            				console = ScriptConsole.getInstance(serverfileName);
+            				console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
+            			} else {
+            				console = ScriptConsole.getInstance(fileName);
+            				console.runLocally(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
+            			}
+            		}
+            	});
             }
 		}
 	}
@@ -141,6 +153,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	 * @return The arguments to pass to <code>Runtime.exec</code> to start the stap process on this script.
 	 * @see TerminalCommand
 	 * @see Runtime#exec(java.lang.String[], java.lang.String[])
+	 * @deprecated Use {@link RunScriptBaseAction#buildStandardScript()} instead
 	 */
 	protected String[] buildScript() {
 		return buildStandardScript();
