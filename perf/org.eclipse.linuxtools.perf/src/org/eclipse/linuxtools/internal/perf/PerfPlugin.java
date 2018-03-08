@@ -14,12 +14,19 @@
  *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.perf;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -37,6 +44,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String VIEW_ID = "org.eclipse.linuxtools.perf.ui.ProfileView";
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
 	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
+	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -92,14 +100,14 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
 	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
 	public static final String STRINGS_ShowStat = "Show Stat View";
+	public static final String STRINGS_SearchSourceDisassembly = "Search Source Disassembly";
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
+	public static final String PERF_DEFAULT_STAT= "perf.stat";
+	public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
-
-	
-	  
 	
 	// The shared instance
 	private static PerfPlugin plugin;
@@ -122,6 +130,9 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Current working directory
 	private IPath curWorkingDir;
 
+	// Current stat comparison data
+	private StatComparisonData statDiffData;
+
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
@@ -138,8 +149,27 @@ public class PerfPlugin extends AbstractUIPlugin {
 		return curProfileData;
 	}
 
+	public StatComparisonData getStatDiffData() {
+		return statDiffData;
+	}
+
 	public IPath getWorkingDir(){
 		return curWorkingDir;
+	}
+
+	/**
+	 * Get perf file with specified name under the current profiled project.
+	 *
+	 * @param fileName file name.
+	 * @return File corresponding to given file or null if no working directory
+	 *         has been set.
+	 */
+	public File getPerfFile(String fileName) {
+		if (curWorkingDir != null) {
+			IPath curStatPath = curWorkingDir.append(fileName);
+			return curStatPath.toFile();
+		}
+		return null;
 	}
 
 	/**
@@ -169,6 +199,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public void setPerfProfileData(IPath perfProfileData) {
 		this.curProfileData = perfProfileData;
+	}
+
+	public void setStatDiffData(StatComparisonData diffData){
+		this.statDiffData = diffData;
 	}
 
 	public void setWorkingDir(IPath workingDir){
@@ -235,4 +269,30 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
+
+	/**
+	 * Log the given exception and display the message/reason in an error
+	 * message box. (From org.eclipse.linuxtools.packagekit.ui.Activator)
+	 *
+	 * @param ex the given exception to display
+	 * @since 2.0
+	 */
+	public void openError(Exception ex, final String title) {
+		StringWriter writer = new StringWriter();
+		ex.printStackTrace(new PrintWriter(writer));
+
+		final String message = ex.getMessage();
+		final String formattedMessage = PLUGIN_ID + " : " + message; //$NON-NLS-1$
+		final Status status = new Status(IStatus.ERROR, PLUGIN_ID, formattedMessage, new Throwable(writer.toString()));
+
+		getLog().log(status);
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				ErrorDialog.openError(Display.getDefault().getActiveShell(),
+						title, message, status);
+			}
+		});
+	}
+
 }

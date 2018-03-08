@@ -81,10 +81,11 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 				IDataEntry output;
 				while(true) {
 					output = parser.parse(sb);
-					if(null != output)
+					if(null != output) {
 						dataSet.setData(output);
-					else
+					} else {
 						break;
+					}
 				}
 
 				try {
@@ -141,10 +142,8 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 			}
 			br.close();
 		} catch(FileNotFoundException fnfe) {
-			fnfe.printStackTrace();
 			ExceptionErrorDialog.openError(Localization.getString("OpenScriptOutputAction.ErrorReadingFile"), fnfe); //$NON-NLS-1$
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
 			ExceptionErrorDialog.openError(Localization.getString("OpenScriptOutputAction.ErrorReadingFile"), ioe); //$NON-NLS-1$
 		}
 		return sb;
