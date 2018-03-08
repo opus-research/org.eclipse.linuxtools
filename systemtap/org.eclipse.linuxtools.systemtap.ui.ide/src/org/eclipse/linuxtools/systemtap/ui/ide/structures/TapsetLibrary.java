@@ -68,6 +68,36 @@ public final class TapsetLibrary {
 		String documentation = pages.get(element);
 		if (documentation == null) {
 			documentation = (new ManPage(element)).getStrippedPage().toString();
+
+			if (!documentation.contains("No manual entry for") && //$NON-NLS-1$
+					element.startsWith("probe::")) { //$NON-NLS-1$ //$NON-NLS-2$
+				// If this is a probe parse out the variables
+				System.out.println("TapsetLibrary.getDocumentation() ");
+				String[] sections = documentation.split("VALUES"); //$NON-NLS-1$
+				if (sections.length > 1){
+					// Discard any other sections
+					String variablesString = sections[1].split("CONTEXT|SystemTap Tapset Reference")[0].trim(); //$NON-NLS-1$
+					String[] variables = variablesString.split("\n"); //$NON-NLS-1$
+					int i = 0;
+					while ( i < variables.length) {
+						String variableName = variables[i].trim();
+						StringBuilder variableDocumentation = new StringBuilder();
+						i++;
+						while (i < variables.length && !variables[i].isEmpty()){
+							variableDocumentation.append(variables[i].trim());
+							variableDocumentation.append("\n"); //$NON-NLS-1$
+							i++;
+						}
+						System.out
+								.println("TapsetLibrary.getDocumentation()"
+										+ variableName + " " + variableDocumentation);
+						pages.put(element + "::" + variableName, variableDocumentation.toString().trim()); //$NON-NLS-1$
+						i++;
+					}
+					System.out.println("TapsetLibrary.getDocumentation() variables " + variables);
+				}
+			}
+
 			pages.put(element, documentation);
 		}
 		return documentation;

@@ -163,15 +163,16 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		int prefixLength = prefix.length();
 		for (int i = 0; i < completionData.length; i++){
 			int endIndex = completionData[i].indexOf(':');
+			String variableName = completionData[i].substring(prefixLength, endIndex);
 			result[i] = new CompletionProposal(
-							completionData[i].substring(prefixLength, endIndex),
+							variableName,
 							offset,
 							0,
 							endIndex - prefixLength,
 							null,
 							completionData[i] + " - variable", //$NON-NLS-1$
 							null,
-							null);
+							TapsetLibrary.getDocumentation("probe::" + probe + "::" + variableName)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return result;
 	}
