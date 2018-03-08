@@ -8,7 +8,7 @@
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
  *******************************************************************************/ 
-package org.eclipse.linuxtools.oprofile.ui.model;
+package org.eclipse.linuxtools.internal.oprofile.ui.model;
 
 import org.eclipse.swt.graphics.Image;
 
