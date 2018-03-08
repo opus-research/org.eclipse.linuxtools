@@ -128,7 +128,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     public void testGetColumnData() {
         List<TmfBaseColumnData> columnsData = provider.getColumnData();
         assertNotNull("getColumnData", columnsData);
-        assertEquals("getColumnData", 3, columnsData.size());
+        assertEquals("getColumnData", 2, columnsData.size());
 
         TmfStatisticsTreeNode parentNode = fStatsData.get(new TmfFixedArray<String>(fTestName));
         TmfStatisticsTreeNode treeNode1  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().toString()));
@@ -164,7 +164,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
             if (columnData.getHeader().compareTo(LEVEL_COLUMN) == 0) {
                 assertNull("getColumnData", percentProvider);
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                double percentage = (double) treeNode1.getValue().getTotal() / parentNode.getValue().getTotal();
+                double percentage = (double) treeNode1.getValue().nbEvents / parentNode.getValue().nbEvents;
                 assertEquals("getColumnData", percentage, percentProvider.getPercentage(treeNode1));
             }
         }

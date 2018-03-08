@@ -23,18 +23,14 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  */
 public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
 
-    private CtfLocationData fLocation;
-
     /**
      * An invalid location
      */
-    public static final CtfLocationData INVALID_LOCATION = new CtfLocationData(-1, -1);
+    public static final CtfLocationData INVALID_LOCATION = new CtfLocationData(-1,-1);
 
     /**
-     * Copy constructor
-     *
-     * @param location
-     *            Other location to copy
+     * Constructor for CtfLocation.
+     * @param location Long
      * @since 2.0
      */
     public CtfLocation(CtfLocationData location) {
@@ -42,34 +38,28 @@ public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
     }
 
     /**
-     * Standard constructor
-     *
-     * @param timestamp
-     *            The timestamp of this location
-     * @param index
-     *            The index of this location for this timestamp
+     * Constructor for CtfLocation.
+     * @param timestamp ITmfTimestamp
+     * @param offset the offset
      * @since 2.0
      */
-    public CtfLocation(ITmfTimestamp timestamp, long index) {
-        setLocation(new CtfLocationData(timestamp.getValue(), index));
+    public CtfLocation(ITmfTimestamp timestamp, long offset) {
+        setLocation(new CtfLocationData(timestamp.getValue(), offset));
     }
-
     /**
-     * Constructor for CtfLocation. Uses a default index of 0.
-     *
-     * @param timestamp
-     *            The timestamp of this location
+     * Constructor for CtfLocation.
+     * @param timestamp ITmfTimestamp
      */
     @Deprecated
     public CtfLocation(ITmfTimestamp timestamp) {
         setLocation(new CtfLocationData(timestamp.getValue(), 0));
     }
 
+    private CtfLocationData fLocation;
+
     /**
-     * Move this location to another location's position.
-     *
-     * @param location
-     *            The location to seek to
+     * Method setLocation.
+     * @param location the location
      * @since 2.0
      */
     public void setLocation(CtfLocationData location) {
@@ -77,23 +67,18 @@ public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
     }
 
     /**
-     * Change this location's timestamp and index values.
-     *
-     * @param timestampValue
-     *            The new timestamp
-     * @param index
-     *            The new index
+     * @param timestampValue the timestamp
+     * @param offset the offset
      * @since 2.0
      */
-    public void setLocation(long timestampValue, long index) {
-       this.fLocation = new CtfLocationData(timestampValue, index);
+    public void setLocation(long timestampValue, long offset) {
+       this.fLocation = new CtfLocationData(timestampValue, offset);
     }
 
 
     /**
-     * Get the Location Data of this location
-     *
-     * @return The CtfLocationData
+     * Method getLocation.
+     * @return Long
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocation()
      * @since 2.0
      */
@@ -102,9 +87,14 @@ public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
         return fLocation;
     }
 
+    /**
+     * Method clone.
+     * @return CtfLocation
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#clone()
+     */
     @Override
     public CtfLocation clone() {
-        return new CtfLocation(new CtfLocationData(fLocation.getTimestamp(), fLocation.getIndex()));
+        return new CtfLocation(new CtfLocationData(fLocation.getTimestamp(), fLocation.getOffset()));
     }
 
 

@@ -167,10 +167,10 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         context.setLocation(curLocation);
         context.seek(curLocation.getLocation());
-        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocation());
+        final long currentTime = ((Long)context.getLocation().getLocation());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
-        return ((double) currentTime.getTimestamp() - startTime)
+        return ((double) currentTime - startTime)
                 / (endTime - startTime);
     }
 
