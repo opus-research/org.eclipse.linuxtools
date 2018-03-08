@@ -37,11 +37,7 @@ public enum CtfTmfTestTrace {
     /** Trace synchronization: destination trace */
     SYNC_DEST,
     /** UST trace with lots of lost events */
-    HELLO_LOST,
-    /** UST trace with lttng-ust-cyg-profile events (aka -finstrument-functions) */
-    CYG_PROFILE,
-    /** UST trace with lttng-ust-cyg-profile-fast events (no address in func_exit) */
-    CYG_PROFILE_FAST;
+    HELLO_LOST;
 
 
     private final String fPath;
