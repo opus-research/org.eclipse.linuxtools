@@ -22,10 +22,10 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 final class IntegerStateValue extends TmfStateValue {
 
-    private final int value;
+    private final Integer valueInt;
 
     public IntegerStateValue(int valueAsInt) {
-        this.value = valueAsInt;
+        this.valueInt = new Integer(valueAsInt);
     }
 
     @Override
@@ -39,22 +39,13 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public boolean equals(@Nullable Object object) {
-        if (!(object instanceof IntegerStateValue)) {
-            return false;
-        }
-        IntegerStateValue other = (IntegerStateValue) object;
-        return this.value == other.value;
-    }
-
-    @Override
-    public int hashCode() {
-        return value;
+    public Integer getValue() {
+        return valueInt;
     }
 
     @Override
     public @Nullable String toString() {
-        return String.format("%3d", value); //$NON-NLS-1$
+        return String.format("%3d", valueInt); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
@@ -63,12 +54,12 @@ final class IntegerStateValue extends TmfStateValue {
 
     @Override
     public int unboxInt() {
-        return value;
+        return valueInt;
     }
 
     @Override
     public long unboxLong() {
         /* It's always safe to up-cast a int into a long */
-        return value;
+        return valueInt;
     }
 }
