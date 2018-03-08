@@ -48,7 +48,6 @@ public abstract class GcovTest {
 		
 		bot.button("Next >").click();
 		bot.button("Finish").click();
-		bot.sleep(3000); // give Eclipse chance to update project
 	}
 	
 	public static void populateProject(SWTWorkbenchBot bot, String projectName) throws Exception {
@@ -75,9 +74,9 @@ public abstract class GcovTest {
 
 				@Override
 				public String getFailureMessage() {
-					return ifile + " not yet created after 6000ms";
+					return ifile + " not yet created after 3000ms";
 				}
-			}, 6000);
+			}, 3000);
 		}
 		lnr.close();
 	}
