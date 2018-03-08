@@ -35,7 +35,6 @@ public class AllPerfTests {
 
 		if (RUN_PERF) {
 			suite.addTestSuite(LaunchTest.class);
-			suite.addTestSuite(LaunchRemoteTest.class);
 		}
 
 		return suite;
