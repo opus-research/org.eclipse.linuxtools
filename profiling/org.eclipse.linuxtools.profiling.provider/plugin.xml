@@ -324,4 +324,43 @@
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchConfigurationType.image">
       </launchConfigurationTypeImage>
    </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            category="org.eclipse.cdt.ui.newui.Page_head_general"
+            class="org.eclipse.linuxtools.internal.profiling.provider.ProfilingPropertyPage"
+            id="org.eclipse.linuxtools.profiling.provider.properties.page1"
+            name="%page.name">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.cdt.ui.cPropertyTab">
+      <tab
+            class="org.eclipse.linuxtools.internal.profiling.provider.TimingPropertyTab"
+            icon="icons/time_obj.gif"
+            name="%page.name.0"
+            parent="org.eclipse.linuxtools.internal.profiling.provider.ProfilingPropertyPage"
+            weight="010">
+      </tab>
+   </extension>
+   <extension
+         point="org.eclipse.cdt.ui.cPropertyTab">
+      <tab
+            class="org.eclipse.linuxtools.internal.profiling.provider.MemoryPropertyTab"
+            icon="icons/memory_view.gif"
+            name="%page.name.1"
+            parent="org.eclipse.linuxtools.internal.profiling.provider.ProfilingPropertyPage"
+            weight="011">
+      </tab>
+   </extension>
+   <extension
+         point="org.eclipse.cdt.ui.cPropertyTab">
+      <tab
+            class="org.eclipse.linuxtools.internal.profiling.provider.CoveragePropertyTab"
+            icon="icons/toggle.gif"
+            name="%page.name.2"
+            parent="org.eclipse.linuxtools.internal.profiling.provider.ProfilingPropertyPage"
+            weight="012">
+      </tab>
+   </extension>
 </plugin>
