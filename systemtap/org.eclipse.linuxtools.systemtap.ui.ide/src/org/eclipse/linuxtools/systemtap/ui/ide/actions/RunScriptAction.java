@@ -79,7 +79,6 @@ public class RunScriptAction extends Action implements IWorkbenchWindowActionDel
 	 * then builds the command line arguments for stap and retrieves the environment variables.
 	 * Finally, it gets an instance of <code>ScriptConsole</code> to run the script.
 	 */
-	@Override
 	public void run() {
 		LogManager.logDebug("Start run:", this); //$NON-NLS-1$
 		continueRun = true;
@@ -130,9 +129,9 @@ public class RunScriptAction extends Action implements IWorkbenchWindowActionDel
 	 */
 	protected boolean isValid() {
 		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
-
+        
 		if(isValidFile(ed))
-			if(isValidDirectory(getFilePath()))
+			if(isValidDirectory(((PathEditorInput)ed.getEditorInput()).getPath().toString()))
 				return true;
 		return true;
 	}

@@ -1,22 +1,25 @@
 package org.eclipse.linuxtools.systemtap.ui.structures.validators;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import junit.framework.TestCase;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.ConditionalExpressionValidator;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.DirectoryValidator;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.IntegerValidator;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.MultiValidator;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.NumberValidator;
 
-import org.junit.Before;
-import org.junit.Test;
 
+public class MultiValidatorTest extends TestCase {
+	public MultiValidatorTest(String name) {
+		super(name);
+	}
 
-public class MultiValidatorTest {
-
-	@Before
-	public void setUp() {
+	protected void setUp() throws Exception {
+		super.setUp();
 		validator = new MultiValidator();
 		validator.addValidator(new NumberValidator());
 		validator.addValidator(new NumberValidator());
 	}
 
-	@Test
 	public void testAddValidator() {
 		validator.addValidator(new IntegerValidator());
 		validator.addValidator(new ConditionalExpressionValidator());
@@ -24,7 +27,6 @@ public class MultiValidatorTest {
 		validator.addValidator(new NumberValidator());
 	}
 	
-	@Test
 	public void testIsValid() {
 		assertNotNull("Null not a number", validator.isValid(null));
 		assertNotNull("Blank not a number", validator.isValid(""));
@@ -33,6 +35,10 @@ public class MultiValidatorTest {
 		assertNull("Integer is valid", validator.isValid("3"));
 		assertNull("Double is valid", validator.isValid("2.2"));
 		assertNull("Double is a number", validator.isValid(".3"));
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 
 	MultiValidator validator;

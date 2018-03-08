@@ -1,20 +1,22 @@
 package org.eclipse.linuxtools.systemtap.ui.consolelog.test.structures;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.junit.Before;
-import org.junit.Test;
 
-public class ScriptConsoleTest {
 
-	@Before
-	public void setUp() {
+import junit.framework.TestCase;
+
+public class ScriptConsoleTest extends TestCase {
+
+	public ScriptConsoleTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+				
 		console = ScriptConsole.getInstance("test");
 	}
-	@Test
+	
 	public void testGetInstance() {
 		assertNotNull(console);
 		assertSame(console, ScriptConsole.getInstance("test"));
@@ -23,5 +25,41 @@ public class ScriptConsoleTest {
 		assertNotSame(console, console2);
 	}
 	
+	public void testRun() {
+		
+	}
+	
+	public void testIsRunning() {
+		
+	}
+	
+	public void testIsDisposed() {
+		
+	}
+	
+	public void testSaveStream() {
+		
+	}
+	
+	public void testGetCommand() {
+		
+	}
+	
+	public void testStop() {
+		
+	}
+
+	public void testDispose() {
+		
+	}
+	
+	public void testSetName() {
+		
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+
 	ScriptConsole console;
 }

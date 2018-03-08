@@ -8,14 +8,13 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 public class CustomAction extends Action implements IWorkbenchAction{
 
-    private static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.actions.CustomAction"; //$NON-NLS-1$
+    private static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.actions.CustomAction";
 
     public CustomAction(){
         setId(ID);
     }
 
-    @Override
-	public void run() {
+    public void run() {
 
         Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
         String dialogBoxTitle = "Message";

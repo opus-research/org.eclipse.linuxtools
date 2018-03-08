@@ -47,7 +47,6 @@ public class RemoveMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#run
 	 */
-	@Override
 	public void run(IAction action) {
 		IWorkbenchPage page = window.getActivePage();
 		IEditorPart part = page.getActiveEditor();
@@ -86,7 +85,7 @@ public class RemoveMarkerAction implements IWorkbenchWindowActionDelegate {
 			try {
 				int start = doc.getLineOffset(i);
 				int length = doc.getLineLength(i);
-				if (doc.get(start, length).contains(stapCommentMarker)) {
+				if (doc.get(start, length).contains(stapCommentMarker)) { //$NON-NLS-1$
 					doc.replace(start, length, ""); //$NON-NLS-1$
 				}
 			} catch (BadLocationException e) {
@@ -102,7 +101,6 @@ public class RemoveMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#selectionChanged
 	 */
-	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
@@ -112,7 +110,6 @@ public class RemoveMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#dispose
 	 */
-	@Override
 	public void dispose() {
 	}
 
@@ -122,7 +119,6 @@ public class RemoveMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
-	@Override
 	public void init(IWorkbenchWindow window) {
 		this.window = window;
 	}

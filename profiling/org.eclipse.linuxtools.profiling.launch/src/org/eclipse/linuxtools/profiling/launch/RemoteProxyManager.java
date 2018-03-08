@@ -87,9 +87,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 	}
 
 	public IRemoteFileProxy getFileProxy(IProject project) throws CoreException {
-		if (project == null) {
-			return getLocalFileProxy();
-		}
 		URI projectURI = project.getLocationURI();
 		return getFileProxy(projectURI);
 	}
@@ -105,9 +102,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 	}
 
 	public IRemoteCommandLauncher getLauncher(IProject project) throws CoreException {
-		if (project == null){
-			return new LocalLauncher();
-		}
 		URI projectURI = project.getLocationURI();
 		return getLauncher(projectURI);
 	}

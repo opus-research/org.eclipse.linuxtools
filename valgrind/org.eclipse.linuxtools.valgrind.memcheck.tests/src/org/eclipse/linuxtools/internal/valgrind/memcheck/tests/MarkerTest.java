@@ -85,7 +85,7 @@ public class MarkerTest extends AbstractMemcheckTest {
 		markers.remove(ix);
 	}
 
-	private boolean isWorkspaceFrame(ValgrindStackFrame frame) {
+	private boolean isWorkspaceFrame(ValgrindStackFrame frame) throws Exception {
 		ISourceLocator locator = frame.getLaunch().getSourceLocator();
 		Object result = DebugUITools.lookupSource(frame.getFile(), locator)
 				.getSourceElement();

@@ -65,7 +65,6 @@ public class CovView extends AbstractSTDataView {
 	 * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createAbstractSTViewer
 	 * (org.eclipse.swt.widgets.Composite)
 	 */
-	@Override
 	protected AbstractSTViewer createAbstractSTViewer(Composite parent) {
 		return new CovViewer(parent);
 	}
@@ -116,7 +115,6 @@ public class CovView extends AbstractSTDataView {
 	 * This is a callback that will allow us
 	 * to create the viewer and initialize it.
 	 */
-	@Override
 	public void createPartControl(Composite parent) {
 		STDataViewersImages.getImageDescriptor(""); // workaround a bug
 		super.createPartControl(parent);
@@ -127,7 +125,6 @@ public class CovView extends AbstractSTDataView {
 		l.marginWidth = 0;
 	}
 
-	@Override
 	protected void createTitle(Composite parent) {
 		label = new Label(parent, SWT.WRAP);
 		GridData data = new GridData(SWT.FILL, SWT.BEGINNING, true, false, 1, 1);
@@ -192,12 +189,11 @@ public class CovView extends AbstractSTDataView {
 	private static void reportError(Exception _) {
 		final String message = "An error has occured when parsing "
 				+ "the coverage data files :\n" + _.getMessage();
-			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+			Status status = new Status(Status.ERROR, Activator.PLUGIN_ID,
 					IStatus.ERROR, message, _);
 
 			Activator.getDefault().getLog().log(status);
 			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-				@Override
 				public void run() {
 					Shell s = PlatformUI.getWorkbench().getDisplay().getActiveShell();
 					MessageDialog.openError(s, "Gcov Parsing Error", message);
@@ -235,7 +231,6 @@ public class CovView extends AbstractSTDataView {
 	@Override
 	protected IAction createExportToCSVAction() {
 		IAction action = new STExportToCSVAction(this.getSTViewer()) {
-			@Override
 			public void run() {
 				Object o = getSTViewer().getInput();
 				if (o instanceof CovManager) {
