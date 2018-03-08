@@ -28,14 +28,12 @@ public abstract class FilterWizardPage extends WizardPage {
 		wizard = (SelectFilterWizard)super.getWizard();
 	}
 	
-	@Override
 	public boolean canFlipToNextPage() {
 		return false;
 	}
 	
 	abstract void createFilter();
 
-	@Override
 	public void dispose() {
 		wizard = null;
 		super.dispose();

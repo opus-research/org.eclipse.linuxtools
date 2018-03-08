@@ -32,18 +32,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.FrameworkUtil;
 
 public class TestManualLaunching extends AbstractTest {
-	private static class testingOprofileLaunchConfigurationDelegate extends OprofileManualLaunchConfigurationDelegate {
+	private class testingOprofileLaunchConfigurationDelegate extends OprofileManualLaunchConfigurationDelegate {
 		public boolean eventsIsNull;
 		public OprofileDaemonOptions _options;  
-		@Override
 		protected void oprofileDumpSamples() { return; }
-		@Override
 		protected void oprofileReset() { return; }
-		@Override
 		protected void oprofileShutdown() { return; }
-		@Override
 		protected void oprofileStartCollection() { return; }
-		@Override
 		protected void oprofileSetupDaemon(OprofileDaemonOptions options, OprofileDaemonEvent[] events) { 
 			_options = options; 
 			eventsIsNull = events == null ? true : false; 
@@ -86,7 +81,7 @@ public class TestManualLaunching extends AbstractTest {
 	}
 
 	@Override
-	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
+	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) throws CoreException {
 		OprofileEventConfigTab configTab = new OprofileEventConfigTab();
 		OprofileSetupTab setupTab = new OprofileSetupTab();
 		configTab.setDefaults(wc);

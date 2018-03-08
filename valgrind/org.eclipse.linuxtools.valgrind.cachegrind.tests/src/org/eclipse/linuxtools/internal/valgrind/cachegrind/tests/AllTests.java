@@ -10,13 +10,25 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.cachegrind.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.eclipse.linuxtools.internal.valgrind.cachegrind.CachegrindPlugin;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({ BasicCachegrindTest.class, CModelLabelsTest.class,
-		DoubleClickTest.class, LaunchConfigTabTest.class,
-		MultiProcessTest.class, ExpandCollapseTest.class })
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 public class AllTests {
-	
+
+	public static Test suite() {
+		TestSuite suite = new TestSuite(
+				"Tests for " + CachegrindPlugin.PLUGIN_ID); //$NON-NLS-1$
+		//$JUnit-BEGIN$
+		suite.addTestSuite(BasicCachegrindTest.class);
+		suite.addTestSuite(CModelLabelsTest.class);
+		suite.addTestSuite(DoubleClickTest.class);
+		suite.addTestSuite(LaunchConfigTabTest.class);
+		suite.addTestSuite(MultiProcessTest.class);
+		suite.addTestSuite(ExpandCollapseTest.class);
+		//$JUnit-END$
+		return suite;
+	}
+
 }

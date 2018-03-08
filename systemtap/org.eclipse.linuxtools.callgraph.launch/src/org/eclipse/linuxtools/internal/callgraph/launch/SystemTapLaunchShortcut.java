@@ -111,7 +111,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 	protected String name;
 	protected String binaryPath;
-	protected String scriptPath;
+	protected String scriptPath; //$NON-NLS-1$
 	protected String arguments;
 	protected String outputPath;
 	protected String binName;
@@ -166,7 +166,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 	@Override
 	protected void setDefaultProfileAttributes(
-			ILaunchConfigurationWorkingCopy wc) {
+			ILaunchConfigurationWorkingCopy wc) throws CoreException {
 		SystemTapOptionsTab tab = new SystemTapOptionsTab();
 		tab.setDefaults(wc);
 	}
@@ -443,7 +443,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				wc = getLaunchConfigType().newInstance(
 						null,
 						getLaunchManager()
-								.generateLaunchConfigurationName(name));
+								.generateLaunchConfigurationName(name)); //$NON-NLS-1$
 				setDefaultProfileAttributes(wc);
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -468,7 +468,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	}
 
 	public void errorHandler() {
-	}
+	};
 
 	/*
 	 * The following are convenience methods for test programs, etc. to check
@@ -573,7 +573,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 				Object[] unitList = chooseUnit(list, numberOfFiles);
 				if (unitList == null || unitList.length == 0) {
-					return null;
+					return null; //$NON-NLS-1$
 				} else if (unitList.length == 1
 						&& unitList[0].toString().equals(USER_SELECTED_ALL)) {
 					funcs = "*"; //$NON-NLS-1$
@@ -642,7 +642,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 					if (obj instanceof ICContainer) {
 						ICElement[] array = ((ICContainer) obj).getChildren();
 						for (ICElement c : array) {
-							if (!(validElement(c)))
+							if (!(validElement(c))) //$NON-NLS-1$
 								continue;
 							if (c.getElementName().contains("main") && !output.contains(c)) //$NON-NLS-1$
 								output.add(c);
@@ -674,13 +674,13 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				if (obj instanceof ICContainer) {
 					ICElement[] array = ((ICContainer) obj).getChildren();
 					for (ICElement c : array) {
-						if (!(validElement(c)))
+						if (!(validElement(c))) //$NON-NLS-1$
 							continue;
 						if (!output.contains(c))
 							output.add(c);
 					}
 				} else if (obj instanceof ICElement) {
-					if (validElement((ICElement) obj)) {
+					if (validElement((ICElement) obj)) { //$NON-NLS-1$
 						if (!output.contains(obj)) {
 							output.add(obj);
 						}
@@ -926,7 +926,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 * <br>
 	 * The name of the created launch will be 'DefaultSystemTapLaunch' 
 	 */
-	@Override
 	public void launch(IBinary bin, String mode) {
 		initialize();
 		this.bin = bin;

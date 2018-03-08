@@ -727,7 +727,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             content[i] = fields[i].getValue() != null ? fields[i].getValue().toString() : ""; //$NON-NLS-1$
         }
         item.setText(content);
-        item.setData(event);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
         item.setData(Key.RANK, rank);
 
@@ -820,7 +819,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 item.setText(i, ""); //$NON-NLS-1$
             }
         }
-        item.setData(null);
         item.setData(Key.TIMESTAMP, null);
         item.setData(Key.RANK, null);
         item.setForeground(null);

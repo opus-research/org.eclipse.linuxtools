@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.valgrind.tests;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCommand;
@@ -21,13 +22,13 @@ public class ValgrindStubCommand extends ValgrindCommand {
 	protected int exitcode;
 
 	@Override
-	public String whichVersion(IProject project) {
+	public String whichVersion(IProject project) throws IOException {
 		return "valgrind-3.4.0"; //$NON-NLS-1$
 	}
 	
 	@Override
 	public void execute(String[] commandArray, Object env, File wd, String exeFile,
-			boolean usePty, IProject project) {
+			boolean usePty, IProject project) throws IOException {
 		args = commandArray;
 	}
 	

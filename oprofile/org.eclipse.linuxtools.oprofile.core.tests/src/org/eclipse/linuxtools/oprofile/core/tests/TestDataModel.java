@@ -25,7 +25,7 @@ public class TestDataModel extends TestCase {
 	}
 	
 	@Override
-	protected void setUp() {
+	protected void setUp() throws Exception {
 		_testRoot = new TestingOpModelRoot();
 		_testRoot.refreshModel();
 	}

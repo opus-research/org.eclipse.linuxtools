@@ -35,7 +35,6 @@ public class PieChart extends Chart {
 		this.addPaintListener(new PieChartPaintListener(this, plotArea));
 	}
 
-	@Override
 	public void addPaintListener(PaintListener listener)  {
 		if (!listener.getClass().getName().startsWith("org.swtchart.internal.axis")) //$NON-NLS-1$
 			super.addPaintListener(listener);
