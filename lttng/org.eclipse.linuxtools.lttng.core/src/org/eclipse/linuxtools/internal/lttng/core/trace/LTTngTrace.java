@@ -207,7 +207,9 @@ public class LTTngTrace extends TmfTrace<LttngEvent> implements ITmfEventParser<
                                 updateJniTrace();
                             }
                         };
-                        experiment.sendRequest(request);
+                        synchronized (experiment) {
+                            experiment.sendRequest(request);
+                        }
                         try {
                             request.waitForCompletion();
                         } catch (final InterruptedException e) {

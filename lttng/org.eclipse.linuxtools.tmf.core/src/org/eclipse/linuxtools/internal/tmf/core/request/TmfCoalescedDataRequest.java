@@ -218,7 +218,7 @@ public class TmfCoalescedDataRequest<T extends ITmfEvent> extends TmfDataRequest
 		// TmfCoalescedDataRequest; extended classes should call
 		// the sub-requests handleData().
 		if (getClass() == TmfCoalescedDataRequest.class) {
-		    long index = getIndex() + getNbRead();
+		    long index = getNbRead();
 	    	for (ITmfDataRequest<T> request : fRequests) {
 	    	    if (!request.isCompleted()) {
                     if (request.getDataType().isInstance(data)) {
