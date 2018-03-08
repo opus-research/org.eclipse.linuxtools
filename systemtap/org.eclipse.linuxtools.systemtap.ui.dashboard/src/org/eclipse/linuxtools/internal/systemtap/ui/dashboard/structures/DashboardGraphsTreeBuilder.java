@@ -6,39 +6,34 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse, Anithra P J, Anithra P J
+ *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse, Anithra P J
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.dashboard.structures;
+package org.eclipse.linuxtools.internal.systemtap.ui.dashboard.structures;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.structures.ZipArchive;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardMetaData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleFileFilter;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ModuleTreeNode;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
 
 /**
  * This class is responsible for searching through the Dashboard module
  * directory and building a tree with their modules.
+ * @author Ryan Morse
  */
-public class DashboardModuleTreeBuilder {
-	public DashboardModuleTreeBuilder() {
-		tree = new TreeNode("Root", "", true); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-	
-	public DashboardModuleTreeBuilder(TreeNode t) {
-		tree = t;
+public class DashboardGraphsTreeBuilder {
+	public DashboardGraphsTreeBuilder() {
+		tree = new TreeNode("Root", "", false); //$NON-NLS-1$ //$NON-NLS-2$
 	}
-	
-	/**
-	 * Returns the tree containing all of the dashboard modules
-	 * @return TreeNode with dashboard modules
-	 */
-	public TreeNode getTree() {
-		return tree;
+
+	public DashboardGraphsTreeBuilder(TreeNode t) {
+		tree = t;
 	}
 
 	/**
@@ -49,7 +44,7 @@ public class DashboardModuleTreeBuilder {
 	public void generateTree(File folder) {
 		scanNextLevel(folder);
 	}
-	
+
 	/**
 	 * This is the main method for this class. It searches through the provided
 	 * file/folder and builds the tree with any dashboard modules it finds.
@@ -57,48 +52,40 @@ public class DashboardModuleTreeBuilder {
 	 */
 	private void scanNextLevel(File f) {
 		File[] fs = f.listFiles(new DashboardModuleFileFilter());
-		if (fs == null){
-			return;
-		}
-		DashboardMetaData dmd;
-		DashboardModule dm;
-		
+		DashboardMetaData dgd;
+		DashboardModule dg;
+
 		TreeNode location;
 		for(int i=0; i<fs.length; i++) {
-			if(fs[i].isDirectory())
+			if(fs[i].isDirectory()) {
 				scanNextLevel(fs[i]);
-			else {
+			} else {
 				try {
 					File folder = new File(SystemTapGUISettings.tempDirectory + "/bundles/"); //$NON-NLS-1$
-					if(!folder.exists())
+					if(!folder.exists()) {
 						folder.mkdirs();
-					
-					File file = new File(folder + "/" + fs[i].getName() + ".tmp");  //$NON-NLS-1$//$NON-NLS-2$
+					}
+
+					File file = new File(folder + "/" + fs[i].getName() + ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
 					file.createNewFile();
 					ZipArchive.uncompressFile(file.getAbsolutePath(), fs[i].getAbsolutePath());
 					ZipArchive.unzipFiles(file.getAbsolutePath(), folder.getAbsolutePath());
-					dmd = new DashboardMetaData(folder.getAbsolutePath() + DashboardModule.metaFileName);
-					dm = dmd.getModule();
-					dm.archiveFile = fs[i];
-					int index = searchModuleNames(dm.category);
-					if (index == -1)
-					{
-						moduleNames.add(dm.category);
-						//
-						DashboardView.addmodulename(dm.category);
-					}
-					location = findInsertLocation(dm.category);
-					location.add(new ModuleTreeNode(dm, dm.display, true));
-					
+					dgd = new DashboardMetaData(folder.getAbsolutePath() + DashboardModule.metaFileName);
+					dg = dgd.getModule();
+					dg.archiveFile = fs[i];
+					location = findInsertLocation(dg.category);
+					location.add(new ModuleTreeNode(dg, dg.display, true));
+
 					File[] files = folder.listFiles();
-					for(int j=0; j<files.length; j++)
+					for(int j=0; j<files.length; j++) {
 						files[j].delete();
+					}
 					folder.delete();
 				} catch(IOException ioe) {}
 			}
 		}
 	}
-	
+
 	/**
 	 * This method searches through the tree to find the correct location
 	 * to add the new module.  If the path does not exist yet, a new node will
@@ -109,32 +96,21 @@ public class DashboardModuleTreeBuilder {
 	private TreeNode findInsertLocation(String path) {
 		String[] folders = path.split("\\p{Punct}"); //$NON-NLS-1$
 		TreeNode level = tree;
-		//
+
 		for(int j,i=0; i<folders.length; i++) {
 			for(j=0; j<level.getChildCount(); j++) {
-				if(level.getChildAt(j).toString().equals(folders[i]))
+				if(level.getChildAt(j).toString().equals(folders[i])) {
 					break;
+				}
 			}
 			if(j >= level.getChildCount())
-				level.add(new TreeNode("", folders[i], true)); //$NON-NLS-1$
+			 {
+				level.add(new TreeNode("", folders[i], false)); //$NON-NLS-1$
+			}
 			level = level.getChildAt(j);
 		}
 		return level;
 	}
-	
-	
-	private int searchModuleNames(String moduleName) {
-		//
-		
-		if(moduleNames.size() > 0)
-		{
-		for (int i = 0; i<moduleNames.size();i++)
-		{
-			if (moduleName.equals(moduleNames.get(i))) return i;
-		} 
-		}
-		return -1;
-	}
+
 	private TreeNode tree;
-	public static ArrayList<String> moduleNames = new ArrayList<String>();
 }
