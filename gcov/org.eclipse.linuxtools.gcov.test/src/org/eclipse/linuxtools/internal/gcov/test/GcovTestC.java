@@ -9,7 +9,10 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
+import org.junit.FixMethodOrder;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class GcovTestC {
 
@@ -58,18 +61,18 @@ public class GcovTestC {
 		}
 
 			@Test
-			public void createProject() {
+			public void AcreateProject() {
 				System.out.println("Test: " + getClass().getName());
 				GcovTest.createProject(bot, PROJECT_NAME, PROJECT_TYPE);
 			}
 
 			@Test
-			public void populateProject() throws Exception {
+			public void BpopulateProject() throws Exception {
 				GcovTest.populateProject(bot, PROJECT_NAME);
 			}
 
 			@Test
-			public void compileProject() {
+			public void CcompileProject() {
 				GcovTest.compileProject(bot, PROJECT_NAME);
 			}
 		
