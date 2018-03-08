@@ -21,7 +21,7 @@ import java.nio.ByteOrder;
  * @version 1.0
  * @author Matthew Khouzam
  */
-public class FloatDeclaration implements IPrimitiveDeclaration {
+public class FloatDeclaration implements IDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -95,11 +95,6 @@ public class FloatDeclaration implements IPrimitiveDeclaration {
     public FloatDefinition createDefinition(IDefinitionScope definitionScope,
             String fieldName) {
         return new FloatDefinition(this, definitionScope, fieldName);
-    }
-
-    @Override
-    public long getSize() {
-        return (mant + exp + 7) / 8; // ceiling
     }
 
     @Override

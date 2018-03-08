@@ -26,7 +26,7 @@ import java.nio.ByteOrder;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class IntegerDeclaration implements IPrimitiveDeclaration {
+public class IntegerDeclaration implements IDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -82,7 +82,6 @@ public class IntegerDeclaration implements IPrimitiveDeclaration {
 
     /**
      * Is the integer signed?
-     *
      * @return the is the integer signed
      */
     public boolean isSigned() {
@@ -91,7 +90,6 @@ public class IntegerDeclaration implements IPrimitiveDeclaration {
 
     /**
      * Get the integer base commonly decimal or hex
-     *
      * @return the integer base
      */
     public int getBase() {
@@ -100,7 +98,6 @@ public class IntegerDeclaration implements IPrimitiveDeclaration {
 
     /**
      * Gets the byte order
-     *
      * @return the byte order
      */
     public ByteOrder getByteOrder() {
@@ -109,7 +106,6 @@ public class IntegerDeclaration implements IPrimitiveDeclaration {
 
     /**
      * Get encoding, chars are 8 bit ints
-     *
      * @return the encoding
      */
     public Encoding getEncoding() {
@@ -118,41 +114,32 @@ public class IntegerDeclaration implements IPrimitiveDeclaration {
 
     /**
      * Is the integer a character (8 bits and encoded?)
-     *
      * @return is the integer a char
      */
-    public boolean isCharacter() {
+   public boolean isCharacter() {
         return (length == 8) && (encoding != Encoding.NONE);
     }
 
-    /**
-     * How many bits is this int
-     *
-     * @return the length of the int
-     */
+   /**
+    * How many bits is this int
+    * @return the length of the int
+    */
     public int getLength() {
         return length;
     }
 
     @Override
-    public long getAlignment() {
+    public long getAlignment(){
         return alignment;
     }
 
     /**
      * The integer's clock, since timestamps are stored in ints
-     *
      * @return the integer's clock, can be null. (most often it is)
      */
-    public String getClock() {
+    public String getClock(){
         return clock;
     }
-
-    @Override
-    public long getSize() {
-        return (length + 7) / 8; // ceiling
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
