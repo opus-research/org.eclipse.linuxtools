@@ -40,7 +40,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
     private TmfStateSystemFactory() {}
 
     /** Size of the blocking queue to use when building a state history */
-    private static final int QUEUE_SIZE = 10000;
+    private final static int QUEUE_SIZE = 10000;
 
     /**
      * Load the history file matching the target trace. If the file already
@@ -82,7 +82,8 @@ public final class TmfStateSystemFactory extends TmfComponent {
                     stateProvider.getVersion();
             try {
                 htBackend = new HistoryTreeBackend(htFile, version);
-                return HistoryBuilder.openExistingHistory(htBackend);
+                ITmfStateSystem ss = HistoryBuilder.openExistingHistory(htBackend);
+                return ss;
             } catch (IOException e) {
                 /*
                  * There was an error opening the existing file. Perhaps it was

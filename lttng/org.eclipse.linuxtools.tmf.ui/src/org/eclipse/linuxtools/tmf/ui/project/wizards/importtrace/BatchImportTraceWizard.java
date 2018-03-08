@@ -427,7 +427,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 }
             } catch (CoreException e) {
                 Activator.getDefault().logError(Messages.BatchImportTraceWizardErrorImportingTraceResource
-                        + ' ' + resource.getName(), e);
+                        + " " + resource.getName(), e); //$NON-NLS-1$
             }
         }
         return validate;
