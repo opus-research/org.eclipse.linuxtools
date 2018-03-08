@@ -36,7 +36,6 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 	 * Starts up the process that will execute the provided command and registers
 	 * the <code>StreamGobblers</code> with their respective streams.
 	 */
-	@Override
 	protected boolean init() {
 		try {
 			process = RuntimeProcessFactory.getFactory().exec(cmd, envVars, null);
@@ -57,7 +56,6 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 	 * is called when the new Thread is created, and thus should never be called by
 	 * any implementing program. To run call the <code>start</code> method.
 	 */
-	@Override
 	public void run() {
 		errorGobbler.start();
 		inputGobbler.start();
@@ -67,7 +65,6 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 		stop();
 	}
 
-	@Override
 	public synchronized void stop() {
 		if(!stopped) {
 			process.destroy();
