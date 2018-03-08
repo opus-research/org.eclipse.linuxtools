@@ -39,7 +39,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfTraceImportException;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -309,21 +308,15 @@ public final class TmfTraceType {
         // add the custom trace types
         for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
             String traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
-            ITmfTrace trace = new CustomTxtTrace(def);
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_TXT_CATEGORY, def.definitionName, trace);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_TXT_CATEGORY, def.definitionName, new CustomTxtTrace(def));
             fTraceTypes.put(traceTypeId, tt);
             traceTypes.add(traceTypeId);
-            // Deregister trace as signal handler because it is only used for validation
-            TmfSignalManager.deregister(trace);
         }
         for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
             String traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
-            ITmfTrace trace = new CustomXmlTrace(def);
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_XML_CATEGORY, def.definitionName, trace);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_XML_CATEGORY, def.definitionName, new CustomXmlTrace(def));
             fTraceTypes.put(traceTypeId, tt);
             traceTypes.add(traceTypeId);
-            // Deregister trace as signal handler because it is only used for validation
-            TmfSignalManager.deregister(trace);
         }
         return traceTypes;
     }
@@ -363,8 +356,6 @@ public final class TmfTraceType {
                 ITmfTrace trace = null;
                 try {
                     trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                    // Deregister trace as signal handler because it is only used for validation
-                    TmfSignalManager.deregister(trace);
                 } catch (CoreException e) {
                 }
                 TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);

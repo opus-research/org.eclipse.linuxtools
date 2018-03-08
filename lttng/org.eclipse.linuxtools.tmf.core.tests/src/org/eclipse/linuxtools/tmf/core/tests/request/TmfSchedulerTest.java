@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -378,14 +378,14 @@ public class TmfSchedulerTest {
     // ------------------------------------------------------------------------
 
     private class BackgroundRequest extends TmfEventRequest {
-        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String backgroundName;
 
         BackgroundRequest(TmfTimeRange timeRange) {
-            super(fixture.getEventType(), timeRange,
-                    TmfDataRequest.ALL_DATA,
-                    CHUNK_SIZE,
+            super(fixture.getEventType(),
+                    timeRange,
+                    0,
+                    ITmfEventRequest.ALL_DATA,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -407,14 +407,14 @@ public class TmfSchedulerTest {
     }
 
     private class ForegroundRequest extends TmfEventRequest {
-        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String foregroundName;
 
         ForegroundRequest(TmfTimeRange timeRange) {
-            super(fixture.getEventType(), timeRange,
-                    TmfDataRequest.ALL_DATA,
-                    CHUNK_SIZE,
+            super(fixture.getEventType(),
+                    timeRange,
+                    0,
+                    ITmfEventRequest.ALL_DATA,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }
