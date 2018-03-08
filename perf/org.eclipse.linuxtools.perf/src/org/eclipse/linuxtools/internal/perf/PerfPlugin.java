@@ -45,7 +45,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
 	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
 	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
-	public static final String REPORT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.ReportViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -101,6 +100,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
 	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
 	public static final String STRINGS_ShowStat = "Show Stat View";
+	public static final String STRINGS_SearchSourceDisassembly = "Search Source Disassembly";
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
@@ -133,9 +133,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Current stat comparison data
 	private StatComparisonData statDiffData;
 
-	// Current report comparison data
-	private ReportComparisonData reportDiffData;
-
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
@@ -154,10 +151,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public StatComparisonData getStatDiffData() {
 		return statDiffData;
-	}
-
-	public ReportComparisonData getReportDiffData(){
-		return reportDiffData;
 	}
 
 	public IPath getWorkingDir(){
@@ -210,10 +203,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public void setStatDiffData(StatComparisonData diffData){
 		this.statDiffData = diffData;
-	}
-
-	public void setReportDiffData(ReportComparisonData diffData){
-		this.reportDiffData = diffData;
 	}
 
 	public void setWorkingDir(IPath workingDir){
