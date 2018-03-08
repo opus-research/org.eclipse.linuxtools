@@ -18,7 +18,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -52,9 +51,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
     private final TransientState transState;
     private final IStateHistoryBackend backend;
 
-    /* Latch tracking if the state history is done building or not */
-    private final CountDownLatch finishedLatch = new CountDownLatch(1);
-
     /**
      * General constructor
      *
@@ -77,16 +73,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* We're opening an existing file */
             this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
             transState.setInactive();
-            finishedLatch.countDown(); /* The history is already built */
-        }
-    }
-
-    @Override
-    public void waitUntilBuilt() {
-        try {
-            finishedLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -161,7 +147,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
              */
             attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
-        finishedLatch.countDown(); /* Mark the history as finished building */
     }
 
     //--------------------------------------------------------------------------

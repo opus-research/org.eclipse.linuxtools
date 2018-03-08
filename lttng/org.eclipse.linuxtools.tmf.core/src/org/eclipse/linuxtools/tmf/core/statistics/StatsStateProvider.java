@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * The resulting attribute tree will look like this:
  *
  * <root>
- *   |-- total
  *   \-- event_types
  *        |-- <event name 1>
  *        |-- <event name 2>
@@ -75,10 +74,6 @@ class StatsStateProvider extends AbstractStateChangeInput {
         final String eventName = event.getType().getName();
 
         try {
-
-            /* Total number of events */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
-            ss.incrementAttribute(ts, quark);
 
             /* Number of events of each type, globally */
             quark = ss.getQuarkRelativeAndAdd(typeAttribute, eventName);
