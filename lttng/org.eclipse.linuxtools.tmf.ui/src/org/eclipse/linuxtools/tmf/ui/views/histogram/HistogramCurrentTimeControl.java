@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,20 +10,20 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Francois Chouinard - Simplified constructor, handle interval format change
- *   Patrick Tasse - Update value handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import java.text.ParseException;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.widgets.Composite;
 
@@ -34,6 +34,12 @@ import org.eclipse.swt.widgets.Composite;
  * @author Francois Chouinard
  */
 public class HistogramCurrentTimeControl extends HistogramTextControl {
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+
+    private long fTraceStartTime;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -55,6 +61,9 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
         TmfSignalManager.register(this);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramTextControl#dispose()
+     */
     @Override
     public void dispose() {
         TmfSignalManager.deregister(this);
@@ -66,12 +75,8 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
 
     @Override
     protected void updateValue() {
-        if (getValue() == Long.MIN_VALUE) {
-            fTextValue.setText(""); //$NON-NLS-1$
-            return;
-        }
         String string = fTextValue.getText();
-        long value = getValue();
+        long value = 0;
         try {
             value = TmfTimestampFormat.getDefaulTimeFormat().parseValue(string, getValue());
         } catch (ParseException e) {
@@ -92,19 +97,28 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
 
             // Set and propagate
             setValue(value);
-            fParentView.updateSelectionTime(value, value);
-        } else {
-            setValue(value);
+            fParentView.updateCurrentEventTime(value);
         }
     }
 
     @Override
     public void setValue(long time) {
-        if (time != Long.MIN_VALUE) {
-            super.setValue(time, new TmfTimestamp(time, ITmfTimestamp.NANOSECOND_SCALE).toString());
-        } else {
-            super.setValue(time, ""); //$NON-NLS-1$
-        }
+        super.setValue(time, new TmfTimestamp(time, ITmfTimestamp.NANOSECOND_SCALE).toString());
+    }
+
+    // ------------------------------------------------------------------------
+    // Signal Handlers
+    // ------------------------------------------------------------------------
+
+    /**
+     * Update the initial time value
+     *
+     * @param signal the time range signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceUpdated(final TmfTraceUpdatedSignal signal) {
+        fTraceStartTime = signal.getTrace().getTimeRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
     }
 
     // ------------------------------------------------------------------------

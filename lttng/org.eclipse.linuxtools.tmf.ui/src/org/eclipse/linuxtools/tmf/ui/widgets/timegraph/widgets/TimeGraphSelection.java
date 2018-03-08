@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2012 Intel Corporation, Ericsson
+ * Copyright (c) 2007 Intel Corporation, 2009, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
+ *
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -29,7 +30,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
  */
 public class TimeGraphSelection implements IStructuredSelection {
 
-    private List<Object> list = new ArrayList<Object>();
+    List<Object> list = new ArrayList<Object>();
 
     /**
      * Default constructor
@@ -45,9 +46,7 @@ public class TimeGraphSelection implements IStructuredSelection {
      *            The initial selection to add to this one
      */
     public TimeGraphSelection(Object sel) {
-        if (sel != null) {
-            list.add(sel);
-        }
+        add(sel);
     }
 
     /**

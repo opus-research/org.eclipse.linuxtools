@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -9,11 +9,11 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
- *   Alexandre Montplaisir - Removed Cloneable, made immutable
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,22 +29,49 @@ import java.util.Map;
  * @see ITmfEvent
  * @see ITmfEventType
  */
-public class TmfEventField implements ITmfEventField {
+public class TmfEventField implements ITmfEventField, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final String fName;
-    private final Object fValue;
-    private final ITmfEventField[] fFields;
+    private String fName;
+    private Object fValue;
+    private ITmfEventField[] fFields;
 
-    private final String[] fFieldNames;
-    private final Map<String, ITmfEventField> fNameMapping;
+    private String[] fFieldNames;
+    private Map<String, ITmfEventField> fNameMapping;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
+
+    /**
+     * Default constructor
+     */
+    @SuppressWarnings("unused")
+    private TmfEventField() {
+    }
+
+    /**
+     * Constructor for a structural field
+     *
+     * @param name the event field id
+     * @param fields the list of subfields
+     */
+    public TmfEventField(final String name, final ITmfEventField[] fields) {
+        this(name, null, fields);
+    }
+
+    /**
+     * Constructor for a terminal field (no subfields)
+     *
+     * @param name the event field id
+     * @param value the event field value
+     */
+    public TmfEventField(final String name, final Object value) {
+        this(name, value, null);
+    }
 
     /**
      * Full constructor
@@ -59,18 +86,8 @@ public class TmfEventField implements ITmfEventField {
         }
         fName = name;
         fValue = value;
-        fFields = fields;
-
-        /* Fill the fFieldNames and fNameMapping structures */
-        final int nbFields = (fFields != null) ? fFields.length : 0;
-        fFieldNames = new String[nbFields];
-        fNameMapping = new HashMap<String, ITmfEventField>();
-
-        for (int i = 0; i < nbFields; i++) {
-            final String curName = fFields[i].getName();
-            fFieldNames[i] = curName;
-            fNameMapping.put(curName, fFields[i]);
-        }
+        fFields = (fields != null) ? Arrays.copyOf(fields, fields.length) : null;
+        populateStructs();
     }
 
     /**
@@ -86,28 +103,40 @@ public class TmfEventField implements ITmfEventField {
         fValue = field.fValue;
         fFields = field.fFields;
         fFieldNames = field.fFieldNames;
-        fNameMapping = field.fNameMapping;
+        populateStructs();
     }
 
     // ------------------------------------------------------------------------
     // ITmfEventField
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getName()
+     */
     @Override
     public String getName() {
         return fName;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
+     */
     @Override
     public Object getValue() {
         return fValue;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldNames()
+     */
     @Override
     public String[] getFieldNames() {
-        return fFieldNames;
+        return Arrays.copyOf(fFieldNames, fFieldNames.length);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldName(int)
+     */
     @Override
     public String getFieldName(final int index) {
         final ITmfEventField field = getField(index);
@@ -117,22 +146,45 @@ public class TmfEventField implements ITmfEventField {
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFields()
+     */
     @Override
     public ITmfEventField[] getFields() {
-        return (fFields != null) ? fFields : new ITmfEventField[0];
+        return (fFields != null) ? Arrays.copyOf(fFields, fFields.length) : new ITmfEventField[0];
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(java.lang.String)
+     */
     @Override
     public ITmfEventField getField(final String name) {
         return fNameMapping.get(name);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(int)
+     */
     @Override
     public ITmfEventField getField(final int index) {
         if (fFields != null && index >= 0 && index < fFields.length) {
             return fFields[index];
         }
         return null;
+    }
+
+    // ------------------------------------------------------------------------
+    // Convenience setters
+    // ------------------------------------------------------------------------
+
+    /**
+     * @param value new field raw value
+     * @param fields the corresponding fields
+     */
+    protected void setValue(final Object value, final ITmfEventField[] fields) {
+        fValue = value;
+        fFields = (fields != null) ? Arrays.copyOf(fields, fields.length) : null;
+        populateStructs();
     }
 
     // ------------------------------------------------------------------------
@@ -148,16 +200,54 @@ public class TmfEventField implements ITmfEventField {
     public final static ITmfEventField makeRoot(final String[] labels) {
         final ITmfEventField[] fields = new ITmfEventField[labels.length];
         for (int i = 0; i < labels.length; i++) {
-            fields[i] = new TmfEventField(labels[i], null, null);
+            fields[i] = new TmfEventField(labels[i], null);
         }
         // Return a new root field;
-        return new TmfEventField(ITmfEventField.ROOT_FIELD_ID, null, fields);
+        return new TmfEventField(ITmfEventField.ROOT_FIELD_ID, fields);
+    }
+
+    /*
+     * Populate the subfield names and the name map
+     */
+    private void populateStructs() {
+        final int nbFields = (fFields != null) ? fFields.length : 0;
+        fFieldNames = new String[nbFields];
+        fNameMapping = new HashMap<String, ITmfEventField>();
+        for (int i = 0; i < nbFields; i++) {
+            final String name = fFields[i].getName();
+            fFieldNames[i] = name;
+            fNameMapping.put(name, fFields[i]);
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfEventField clone() {
+        TmfEventField clone = null;
+        try {
+            clone = (TmfEventField) super.clone();
+            clone.fName = fName;
+            clone.fValue = fValue;
+            clone.fFields = (fFields != null) ? fFields.clone() : null;
+            clone.populateStructs();
+        } catch (final CloneNotSupportedException e) {
+        }
+        return clone;
     }
 
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -167,6 +257,9 @@ public class TmfEventField implements ITmfEventField {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -192,6 +285,9 @@ public class TmfEventField implements ITmfEventField {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         StringBuilder ret = new StringBuilder();
@@ -230,14 +326,6 @@ public class TmfEventField implements ITmfEventField {
             }
             sb.append(field.toString());
         }
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public String getFormattedValue() {
-        return getValue().toString();
     }
 
 }

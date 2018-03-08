@@ -4,9 +4,7 @@
       label="%featureName"
       version="1.0.0.qualifier"
       provider-name="%provider"
-      os="linux"
-      license-feature="org.eclipse.linuxtools.license.feature"
-      license-feature-version="1.0.0.qualifier">
+      os="linux">
 
    <description url="http://www.eclipse.org/linuxtools/">
       %description
@@ -36,5 +34,4 @@
       <import feature="org.eclipse.linuxtools.perf.feature" version="0.1.0" match="greaterOrEqual"/>
       <import feature="org.eclipse.linuxtools.profiling.remote" version="0.8.0" match="greaterOrEqual"/>
    </requires>
-
 </feature>

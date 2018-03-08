@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
- *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -33,6 +32,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -87,7 +87,10 @@ public class RenameTraceDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -177,17 +180,26 @@ public class RenameTraceDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#computeResult()
+     */
     @Override
     protected void computeResult() {
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#create()
+     */
     @Override
     public void create() {
         super.create();
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.dialogs.SelectionStatusDialog#okPressed()
+     */
     @Override
     protected void okPressed() {
         IResource trace = renameTrace(fNewTraceNameText.getText());
@@ -215,13 +227,10 @@ public class RenameTraceDialog extends SelectionStatusDialog {
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
-                    // Close the trace if open
-                    fTrace.closeEditors();
-
                     if (fTrace.getResource() instanceof IFolder) {
                         IFolder folder = (IFolder) fTrace.getResource();
-                        IFile bookmarksFile = fTrace.getBookmarksFile();
-                        IFile newBookmarksFile = folder.getFile(bookmarksFile.getName().replace(fTrace.getName(), newName));
+                        IFile bookmarksFile = folder.getFile(fTrace.getName() + '_');
+                        IFile newBookmarksFile = folder.getFile(newName + '_');
                         if (bookmarksFile.exists()) {
                             if (!newBookmarksFile.exists()) {
                                 IPath newBookmarksPath = newBookmarksFile.getFullPath();
@@ -246,7 +255,7 @@ public class RenameTraceDialog extends SelectionStatusDialog {
         } catch (InterruptedException exception) {
             return null;
         } catch (InvocationTargetException exception) {
-            MessageDialog.openError(getShell(), "", exception.getTargetException().getMessage()); //$NON-NLS-1$
+            MessageDialog.openError(getShell(), "", NLS.bind("", exception.getTargetException().getMessage())); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         } catch (RuntimeException exception) {
             return null;

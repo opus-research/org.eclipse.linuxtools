@@ -16,14 +16,12 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.linuxtools.tools.launch.core.LaunchCoreConstants;
+import org.eclipse.linuxtools.tools.launch.core.Activator;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
-/**
- * Class used to get information provided in Linux Tools Path Property Page.
- * This class provides the path to be used to run linux tools commands
- */
 public class LinuxtoolsPathProperty {
+	public static final String LINUXTOOLS_PATH_NAME = Activator.PLUGIN_ID + ".LinuxtoolsPath"; //$NON-NLS-1$
+	public static final String LINUXTOOLS_PATH_SYSTEM_NAME = Activator.PLUGIN_ID + ".LinuxtoolsSystemEnvPath"; //$NON-NLS-1$
 	private static final String LINUXTOOLS_PATH_EXT_POINT = "LinuxtoolsPathOptions"; //$NON-NLS-1$
 	private static final String LINUXTOOLS_PATH_OPTION = "option"; //$NON-NLS-1$
 	private static final String LINUXTOOLS_PATH_OPTION_PATH = "path"; //$NON-NLS-1$
@@ -43,7 +41,7 @@ public class LinuxtoolsPathProperty {
 	}
 
 	private LinuxtoolsPathProperty() {
-		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(LaunchCoreConstants.PLUGIN_ID, LINUXTOOLS_PATH_EXT_POINT);
+		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(Activator.UI_PLUGIN_ID, LINUXTOOLS_PATH_EXT_POINT);
 		if (extPoint != null) {
 			IConfigurationElement[] configs = extPoint.getConfigurationElements();
 			for (IConfigurationElement config : configs)
@@ -82,12 +80,12 @@ public class LinuxtoolsPathProperty {
 
 		ScopedPreferenceStore store = new ScopedPreferenceStore(
 				new ProjectScope(project),
-				LaunchCoreConstants.PLUGIN_ID);
+				Activator.PLUGIN_ID);
 
 		//If the value is not stored we use the default
 		boolean systemPathSelected;
-		if (store.contains(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME))
-			systemPathSelected = store.getBoolean(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME);
+		if (store.contains(LINUXTOOLS_PATH_SYSTEM_NAME))
+			systemPathSelected = store.getBoolean(LINUXTOOLS_PATH_SYSTEM_NAME);
 		else
 			systemPathSelected = getLinuxtoolsPathSystemDefault();
 
@@ -95,8 +93,8 @@ public class LinuxtoolsPathProperty {
 			return ""; //$NON-NLS-1$
 
 		String path = null;
-		if (store.contains(LaunchCoreConstants.LINUXTOOLS_PATH_NAME))
-			path = store.getString(LaunchCoreConstants.LINUXTOOLS_PATH_NAME);
+		if (store.contains(LINUXTOOLS_PATH_NAME))
+			path = store.getString(LINUXTOOLS_PATH_NAME);
 
 		if (path == null)
 			return getLinuxtoolsPathDefault();

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 package org.eclipse.linuxtools.tmf.core.uml2sd;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 
 /**
  * <p>
@@ -30,7 +30,7 @@ public class TmfAsyncSequenceDiagramEvent extends TmfSyncSequenceDiagramEvent im
     /**
      * The end time of the sequence diagram event (i.e. time when signal was received).
      */
-    private final ITmfTimestamp fEndTime;
+    final protected ITmfTimestamp fEndTime;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -57,8 +57,9 @@ public class TmfAsyncSequenceDiagramEvent extends TmfSyncSequenceDiagramEvent im
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfAsyncSequenceDiagramEvent#getEndTime()
      */
     @Override
     public ITmfTimestamp getEndTime() {

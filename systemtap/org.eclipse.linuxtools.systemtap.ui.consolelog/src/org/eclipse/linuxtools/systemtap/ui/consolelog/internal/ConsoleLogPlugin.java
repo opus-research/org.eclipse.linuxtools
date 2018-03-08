@@ -11,7 +11,8 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.internal;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.plugin.*;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -19,19 +20,22 @@ import org.osgi.framework.BundleContext;
  */
 public class ConsoleLogPlugin extends AbstractUIPlugin {
 
-	/**
-	 * @since 2.0
-	 */
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.systemtap.ui.consolelog"; //$NON-NLS-1$
-
 	//The shared instance.
 	private static ConsoleLogPlugin plugin;
-
+	
 	/**
 	 * The constructor.
 	 */
 	public ConsoleLogPlugin() {
 		plugin = this;
+	}
+
+	/**
+	 * This method is called upon plug-in activation
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
 	}
 
 	/**
@@ -50,4 +54,14 @@ public class ConsoleLogPlugin extends AbstractUIPlugin {
 		return plugin;
 	}
 
+	/**
+	 * Returns an image descriptor for the image file at the given
+	 * plug-in relative path.
+	 *
+	 * @param path the path
+	 * @return the image descriptor
+	 */
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.consolelog", path);
+	}
 }

@@ -21,12 +21,10 @@ import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.IRemoteProxyManager;
 import org.eclipse.ptp.remote.core.IRemoteConnection;
 import org.eclipse.ptp.remote.core.IRemoteServices;
-import org.eclipse.ptp.remote.core.RemoteServices;
+import org.eclipse.ptp.remote.core.PTPRemoteCorePlugin;
 
 public class RDTProxyManager implements IRemoteProxyManager {
 
-	public final static String SYNC_NATURE = "org.eclipse.ptp.rdt.sync.core.remoteSyncNature"; //$NON-NLS-1$
-	
 	@Override
 	public IRemoteFileProxy getFileProxy(URI uri) throws CoreException {
 		return new RDTFileProxy(uri);
@@ -49,7 +47,7 @@ public class RDTProxyManager implements IRemoteProxyManager {
 
 	@Override
 	public String getOS(URI uri) {
-		IRemoteServices services = RemoteServices.getRemoteServices(uri);
+		IRemoteServices services = PTPRemoteCorePlugin.getDefault().getRemoteServices(uri);
 		IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
 		String os = connection.getProperty(IRemoteConnection.OS_NAME_PROPERTY);
 		if (os == null || os.length() == 0)

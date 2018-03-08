@@ -29,9 +29,9 @@ public class SpecfileContentProvider implements ITreeContentProvider {
 	private IDocumentProvider documentProvider;
 	private Specfile specfile;
 	private SpecfileEditor specEditor;
-	protected static final String SECTION_POSITIONS = "section_positions"; //$NON-NLS-1$
+	protected final static String SECTION_POSITIONS = "section_positions"; //$NON-NLS-1$
 	protected IPositionUpdater positionUpdater = new DefaultPositionUpdater(SECTION_POSITIONS);
-
+	
 	public SpecfileContentProvider(ITextEditor editor) {
 		if (editor instanceof SpecfileEditor) {
 			specEditor = (SpecfileEditor) editor;
@@ -39,8 +39,10 @@ public class SpecfileContentProvider implements ITreeContentProvider {
 		}
 		this.documentProvider = editor.getDocumentProvider();
 	}
-
+	
 	public void dispose() {
+		// TODO Auto-generated method stub
+
 	}
 
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
@@ -67,9 +69,8 @@ public class SpecfileContentProvider implements ITreeContentProvider {
 			{
 				document.addPositionCategory(SECTION_POSITIONS);
 				document.addPositionUpdater(positionUpdater);
-				if (specEditor != null) {
+				if (specEditor != null)
 					specfile = specEditor.getSpecfile();
-				}
 			}
 		}
 	}

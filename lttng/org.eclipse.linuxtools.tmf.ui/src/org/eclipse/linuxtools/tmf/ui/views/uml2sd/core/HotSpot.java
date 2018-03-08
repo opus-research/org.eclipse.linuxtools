@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
@@ -38,15 +39,15 @@ public class HotSpot extends GraphNode {
     /**
      * The execution occurrence the hot spot marker is for.
      */
-    private BasicExecutionOccurrence fExecOcc = null;
+    protected BasicExecutionOccurrence fExecOcc = null;
     /**
      * The occurrence number.
      */
-    private int fOccurrence = 0;
+    protected int fOccurrence = 0;
     /**
      * The marker image to display.
      */
-    private IImage fImage = null;
+    protected IImage fImage = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -56,7 +57,7 @@ public class HotSpot extends GraphNode {
      * Default constructor
      */
     public HotSpot() {
-        setColorPrefId(ISDPreferences.PREF_EXEC);
+        fPrefId = ISDPreferences.PREF_EXEC;
     }
 
     // ------------------------------------------------------------------------
@@ -72,16 +73,10 @@ public class HotSpot extends GraphNode {
         fImage = img;
     }
 
-    /**
-     * Returns the marker image.
-     *
-     * @return the image
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
      */
-    protected IImage getImage() {
-        return fImage;
-    }
-
     @Override
     public int getX() {
         if (fExecOcc != null) {
@@ -90,6 +85,10 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
+     */
     @Override
     public int getY() {
         if (fExecOcc != null){
@@ -98,6 +97,10 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
+     */
     @Override
     public int getWidth() {
         if (fExecOcc != null) {
@@ -106,6 +109,10 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
+     */
     @Override
     public int getHeight() {
         if (fExecOcc != null) {
@@ -151,6 +158,10 @@ public class HotSpot extends GraphNode {
         fOccurrence = occ;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     public void draw(IGC context) {
 
@@ -168,16 +179,28 @@ public class HotSpot extends GraphNode {
         context.drawImage(fImage, getX(), getY(), getWidth(), getHeight());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return GLYPH;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#isVisible(int, int, int, int)
+     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
+     */
     @Override
     public boolean contains(int xValue, int yValue) {
         int x = getX();

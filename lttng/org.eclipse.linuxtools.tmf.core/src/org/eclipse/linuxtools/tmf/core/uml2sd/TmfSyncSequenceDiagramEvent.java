@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 package org.eclipse.linuxtools.tmf.core.uml2sd;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 
 /**
  * <p>
@@ -30,19 +30,19 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     /**
      * The start time of the sequence diagram event (i.e. time when signal was sent).
      */
-    private final ITmfTimestamp fStartTime;
+    final protected ITmfTimestamp fStartTime;
     /**
      * The name of the sender of the signal.
      */
-    private final String fSender;
+    final protected String fSender;
     /**
      * The name of the receiver of the signal.
      */
-    private final String fReceiver;
+    final protected String fReceiver;
     /**
      * The name of the signal
      */
-    private final String fName;
+    final protected String fName;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -76,24 +76,36 @@ public class TmfSyncSequenceDiagramEvent implements ITmfSyncSequenceDiagramEvent
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getSender()
+     */
     @Override
     public String getSender() {
         return fSender;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getReceiver()
+     */
     @Override
     public String getReceiver() {
         return fReceiver;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getName()
+     */
     @Override
     public String getName() {
         return fName;
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent#getStartTime()
      */
     @Override
     public ITmfTimestamp getStartTime() {

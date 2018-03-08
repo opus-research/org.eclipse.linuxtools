@@ -60,9 +60,8 @@ public class RPMBuild {
 	public RPMBuild(IProjectConfiguration config) {
 		IEclipsePreferences node = DefaultScope.INSTANCE
 				.getNode(IRPMConstants.RPM_CORE_ID);
-		if (config.getBuildFolder().getLocation() == null) {
+		if (config.getBuildFolder().getLocation() == null)
 			mainFolder = config.getSourcesFolder().getLocationURI().toString();
-		}
 		rpmBuildCmd = node.get(IRPMConstants.RPMBUILD_CMD, ""); //$NON-NLS-1$
 		String[] tmpMacroDefines = { rpmBuildCmd, "-v" }; //$NON-NLS-1$
 		macroDefines.addAll(Arrays.asList(tmpMacroDefines));
@@ -76,13 +75,12 @@ public class RPMBuild {
 	 *            the spec file
 	 * @param outStream
 	 *            The stream to write the output to.
-	 * @return The return code of the build job.
 	 * @throws CoreException
 	 *             If the operation fails.
 	 */
-	public IStatus buildPrep(IResource specFile, OutputStream outStream)
+	public void buildPrep(IResource specFile, OutputStream outStream)
 			throws CoreException {
-		return build(specFile, outStream, "-bp"); //$NON-NLS-1$
+		build(specFile, outStream, "-bp"); //$NON-NLS-1$
 	}
 
 	/**
@@ -151,11 +149,6 @@ public class RPMBuild {
 	 */
 	public IStatus build(IResource specFile, OutputStream outStream,
 			String buildParameter) throws CoreException {
-		if(specFile == null){
-			throw new CoreException(new Status(IStatus.ERROR,
-					IRPMConstants.RPM_CORE_ID, Messages.Specfile_not_found));
-		}
-
 		List<String> command = new ArrayList<String>();
 		IRemoteProxyManager rmtProxyMgr;
 		IRemoteCommandLauncher rmtCmdLauncher = null;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,37 +18,19 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefin
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 
-/**
- * Trace context for custom text traces.
- *
- * @author Patrick Tassé
- */
 public class CustomTxtTraceContext extends TmfContext {
-
-    /** Regex matcher for the first line of the trace */
     public Matcher firstLineMatcher;
-
-    /** First line of the text file */
     public String firstLine;
-
-    /** Position in the file where the 'current' next line is */
     public long nextLineLocation;
-
-    /** InputLine object for the currently read line */
     public InputLine inputLine;
 
-    /**
-     * Constructor.
-     *
-     * @param location
-     *            Location in the trace
-     * @param rank
-     *            Rank of the event at this location
-     */
     public CustomTxtTraceContext(ITmfLocation location, long rank) {
         super(location, rank);
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -60,6 +42,9 @@ public class CustomTxtTraceContext extends TmfContext {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

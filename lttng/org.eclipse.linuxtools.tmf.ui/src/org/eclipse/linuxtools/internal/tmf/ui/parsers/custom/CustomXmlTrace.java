@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,17 +19,16 @@ import java.io.RandomAccessFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputElement;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -47,11 +46,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-/**
- * Trace object for custom XML trace parsers.
- *
- * @author Patrick Tassé
- */
 public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
 
     private static final TmfLongLocation NULL_LOCATION = new TmfLongLocation((Long) null);
@@ -62,11 +56,6 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
     private final InputElement fRecordInputElement;
     private BufferedRandomAccessFile fFile;
 
-    /**
-     * Basic constructor
-     *
-     * @param definition Trace definition
-     */
     public CustomXmlTrace(final CustomXmlTraceDefinition definition) {
         fDefinition = definition;
         fEventType = new CustomXmlEventType(fDefinition);
@@ -74,23 +63,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
         setCacheSize(DEFAULT_CACHE_SIZE);
     }
 
-    /**
-     * Full constructor
-     *
-     * @param resource
-     *            Trace resource
-     * @param definition
-     *            Trace definition
-     * @param path
-     *            Path to the trace/log file
-     * @param pageSize
-     *            Page size to use
-     * @throws TmfTraceException
-     *             If the trace/log couldn't be opened
-     */
-    public CustomXmlTrace(final IResource resource,
-            final CustomXmlTraceDefinition definition, final String path,
-            final int pageSize) throws TmfTraceException {
+    public CustomXmlTrace(final IResource resource, final CustomXmlTraceDefinition definition, final String path, final int pageSize) throws TmfTraceException {
         this(definition);
         setCacheSize((pageSize > 0) ? pageSize : DEFAULT_CACHE_SIZE);
         initTrace(resource, path, CustomXmlEvent.class);
@@ -377,15 +350,6 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
         }
     }
 
-    /**
-     * Parse an XML element.
-     *
-     * @param parentElement
-     *            The parent element
-     * @param buffer
-     *            The contents to parse
-     * @return The parsed content
-     */
     public static StringBuffer parseElement(final Element parentElement, final StringBuffer buffer) {
         final NodeList nodeList = parentElement.getChildNodes();
         String separator = null;
@@ -417,14 +381,6 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
         return buffer;
     }
 
-    /**
-     * Get an input element if it is a valid record input. If not, we will look
-     * into its children for valid inputs.
-     *
-     * @param inputElement
-     *            The main element to check for.
-     * @return The record element
-     */
     public InputElement getRecordInputElement(final InputElement inputElement) {
         if (inputElement.logEntry) {
             return inputElement;
@@ -439,15 +395,6 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
         return null;
     }
 
-    /**
-     * Extract a trace event from an XML element.
-     *
-     * @param element
-     *            The element
-     * @param inputElement
-     *            The input element
-     * @return The extracted event
-     */
     public CustomXmlEvent extractEvent(final Element element, final InputElement inputElement) {
         final CustomXmlEvent event = new CustomXmlEvent(fDefinition, this, TmfTimestamp.ZERO, "", fEventType,""); //$NON-NLS-1$ //$NON-NLS-2$
         event.setContent(new CustomEventContent(event, new StringBuffer()));
@@ -481,20 +428,15 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
         return;
     }
 
-    /**
-     * Retrieve the trace definition.
-     *
-     * @return The trace definition
-     */
     public CustomTraceDefinition getDefinition() {
         return fDefinition;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(org.eclipse.core.resources.IProject, java.lang.String)
+     */
     @Override
-    public IStatus validate(IProject project, String path) {
-        if (fileExists(path)) {
-            return Status.OK_STATUS;
-        }
-        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CustomTrace_FileNotFound + ": " + path); //$NON-NLS-1$
+    public boolean validate(IProject project, String path) {
+        return fileExists(path);
     }
 }

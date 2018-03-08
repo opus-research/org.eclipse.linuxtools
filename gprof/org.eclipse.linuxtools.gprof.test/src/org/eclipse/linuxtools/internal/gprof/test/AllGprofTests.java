@@ -10,12 +10,21 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.test;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({ GprofAggregatorTest.class, GprofBinaryTest.class,
-		GprofParserTest.class, GprofLaunchTest.class, GprofShortcutTest.class,
-		GprofTest.class })
 public class AllGprofTests {
+
+	public static Test suite() {
+		TestSuite suite = new TestSuite(
+				"Tests for org.eclipse.linuxtools.internal.gprof.test");
+		//$JUnit-BEGIN$
+		suite.addTest(GprofBinaryTest.suite());
+		suite.addTest(GprofTest.suite());
+		suite.addTest(GprofAggregatorTest.suite());
+		suite.addTest(GprofParserTest.suite());
+		//$JUnit-END$
+		return suite;
+	}
+
 }

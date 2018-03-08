@@ -23,12 +23,12 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.releng</groupId>
   <artifactId>linuxtools-releng-parent</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Releng Parent</name>
@@ -49,7 +49,6 @@
 
   <modules>
     <module>org.eclipse.linuxtools.releng-site</module>
-    <module>org.eclipse.linuxtools.license-feature</module>
   </modules>
 
 </project>

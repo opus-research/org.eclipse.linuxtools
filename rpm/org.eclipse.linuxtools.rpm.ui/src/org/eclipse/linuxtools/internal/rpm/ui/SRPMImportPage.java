@@ -12,14 +12,12 @@ package org.eclipse.linuxtools.internal.rpm.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -39,6 +37,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbench;
 
 /**
  * RPM GUI import page. Defines the page the is shown to the user when they
@@ -55,9 +54,13 @@ public class SRPMImportPage extends WizardPage {
 	private RPMDetailsPanel detailsPanel;
 
 	/**
-	 * Constructor for SRPMImportPage class
+	 * @see java.lang.Object#Object()
+	 * 
+	 *      Constructor for SRPMImportPage class
+	 * @param aWorkbench
+	 *            - Workbench
 	 */
-	public SRPMImportPage() {
+	public SRPMImportPage(IWorkbench aWorkbench) {
 		super(
 				Messages.getString("SRPMImportPage.Import_SRPM"), //$NON-NLS-1$
 				Messages.getString("SRPMImportPage.Select_project_to_import"), null); //$NON-NLS-1$
@@ -126,12 +129,11 @@ public class SRPMImportPage extends WizardPage {
 			public void handleEvent(Event event) {
 				FileDialog srpmBrowseDialog = new FileDialog(getContainer()
 						.getShell(), SWT.OPEN);
-				String selectedSRPMName = srpmBrowseDialog.open();
-				if (selectedSRPMName != null) {
-					File testSRPMfilename = new File(selectedSRPMName);
-					if (testSRPMfilename.isFile()) {
-						sourceSRPM.setText(selectedSRPMName);
-					}
+				String selectedSRPM_name = srpmBrowseDialog.open();
+				if (selectedSRPM_name != null) {
+					File testSRPMfilename = new File(selectedSRPM_name);
+					if (testSRPMfilename.isFile())
+						sourceSRPM.setText(selectedSRPM_name);
 				}
 			}
 		});
@@ -162,7 +164,8 @@ public class SRPMImportPage extends WizardPage {
 		// Make sure an srpm name has been provided
 		String sourceSRPMName = sourceSRPM.getText();
 		if (!sourceSRPMName.isEmpty()
-				&& sourceSRPM.getText().lastIndexOf(".src.rpm") == -1) {//$NON-NLS-1$
+				&& sourceSRPM.getText().lastIndexOf(".src.rpm") == -1) //$NON-NLS-1$
+		{
 			setErrorMessage(Messages.getString("SRPMImportPage.No_src_rpm_ext")); //$NON-NLS-1$
 			return false;
 		}
@@ -207,9 +210,9 @@ public class SRPMImportPage extends WizardPage {
 	 * @return boolean
 	 */
 	public boolean finish() {
+		IProject detailedProject = getNewProject();
 		SRPMImportOperation srpmImportOp = null;
 		try {
-			IProject detailedProject = getNewProject();
 			String srpmName = sourceSRPM.getText();
 			if (srpmName.startsWith("http://")) { //$NON-NLS-1$
 				URL sourceRPMURL = new URL(srpmName);
@@ -221,16 +224,7 @@ public class SRPMImportPage extends WizardPage {
 						sourceRPMFile, detailsPanel.getSelectedLayout());
 			}
 			getContainer().run(true, true, srpmImportOp);
-		} catch (InterruptedException e) {
-			setErrorMessage(e.toString());
-			return false;
-		} catch (InvocationTargetException e) {
-			setErrorMessage(e.toString());
-			return false;
-		} catch (MalformedURLException e) {
-			setErrorMessage(e.toString());
-			return false;
-		} catch (CoreException e) {
+		} catch (Exception e) {
 			setErrorMessage(e.toString());
 			return false;
 		}
@@ -253,13 +247,13 @@ public class SRPMImportPage extends WizardPage {
 
 	/**
 	 * Creates a new project.
-	 * @throws CoreException If project creation failed.
 	 */
-	private IProject getNewProject() throws CoreException {
+	private IProject getNewProject() {
 		IPath path = detailsPanel.getLocationPath();
 		RPMProjectCreator projectCreator = new RPMProjectCreator(
 				detailsPanel.getSelectedLayout());
-		return projectCreator.create(getProjectName(path.lastSegment()),
+		projectCreator.create(getProjectName(path.lastSegment()),
 				path.removeLastSegments(1), new NullProgressMonitor());
+		return projectCreator.getLatestProject();
 	}
 }

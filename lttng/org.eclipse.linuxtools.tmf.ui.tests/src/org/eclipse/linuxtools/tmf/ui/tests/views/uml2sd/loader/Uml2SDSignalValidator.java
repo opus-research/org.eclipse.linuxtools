@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,18 +8,17 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.tests.views.uml2sd.loader;
 
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
 /**
  *  Class to implement that certain signals are sent as well as are sent with correct content.
@@ -63,7 +62,7 @@ public class Uml2SDSignalValidator extends TmfComponent implements IUml2SdSignal
         // Set results so that it can be validated in the test case
         setSignalReceived(true);
         setSourceError(getSource() != signal.getSource());
-        setCurrentTimeError(!getCurrentTime().equals(signal.getBeginTime()));
+        setCurrentTimeError(!getCurrentTime().equals(signal.getCurrentTime()));
     }
 
     /**
@@ -74,12 +73,9 @@ public class Uml2SDSignalValidator extends TmfComponent implements IUml2SdSignal
     public void synchToTimeRange(TmfRangeSynchSignal signal) {
         // Set results so that it can be validated in the test case
         setSignalReceived(true);
-        if (getSource() != null) {
-            setSourceError(getSource() != signal.getSource());
-        }
-        if (getCurrentRange() != null) {
-            setRangeError(!getCurrentRange().equals(signal.getCurrentRange()));
-        }
+        setSourceError(getSource() != signal.getSource());
+        setCurrentTimeError(!getCurrentTime().equals(signal.getCurrentTime()));
+        setRangeError(!getCurrentRange().equals(signal.getCurrentRange()));
     }
 
     /**

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.core.control.model.impl;
 
@@ -45,10 +44,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
      * The domains information of this session.
      */
     private final List<IDomainInfo> fDomains = new ArrayList<IDomainInfo>();
-    /**
-     * Flag to indicate whether trace is streamed over network or not.
-     */
-    private boolean fIsStreamedTrace = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -69,7 +64,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         super(other);
         fState = other.fState;
         fSessionPath = other.fSessionPath;
-        fIsStreamedTrace = other.fIsStreamedTrace;
 
         for (Iterator<IDomainInfo> iterator = other.fDomains.iterator(); iterator.hasNext();) {
             IDomainInfo domain = iterator.next();
@@ -84,17 +78,28 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#getSessionState()
+     */
     @Override
     public TraceSessionState getSessionState() {
         return fState;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#setSessionState(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceSessionState)
+     */
     @Override
     public void setSessionState(TraceSessionState state) {
         fState = state;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#setSessionState(java.lang.String)
+     */
     @Override
     public void setSessionState(String stateName) {
         if (TraceSessionState.INACTIVE.getInName().equals(stateName)) {
@@ -104,60 +109,75 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#getSessionPath()
+     */
     @Override
     public String getSessionPath() {
         return fSessionPath;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#setSessionPath(java.lang.String)
+     */
     @Override
     public void setSessionPath(String path) {
         fSessionPath = path;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#getDomains()
+     */
     @Override
     public IDomainInfo[] getDomains() {
         return fDomains.toArray(new IDomainInfo[fDomains.size()]);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#setDomains(java.util.List)
+     */
     @Override
     public void setDomains(List<IDomainInfo> domains) {
-        fDomains.clear();
         for (Iterator<IDomainInfo> iterator = domains.iterator(); iterator.hasNext();) {
             IDomainInfo domainInfo = iterator.next();
             fDomains.add(domainInfo);
         }
     }
 
-    @Override
-    public boolean isStreamedTrace() {
-        return fIsStreamedTrace;
-    }
-
-    @Override
-    public void setStreamedTrace(boolean isStreamedTrace) {
-        fIsStreamedTrace = isStreamedTrace;
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ISessionInfo#addDomain(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IDomainInfo)
+     */
     @Override
     public void addDomain(IDomainInfo domainInfo) {
         fDomains.add(domainInfo);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + fDomains.hashCode();
-        result = prime * result + (fIsStreamedTrace ? 1231 : 1237);
+        result = prime * result + ((fDomains == null) ? 0 : fDomains.hashCode());
         result = prime * result + ((fSessionPath == null) ? 0 : fSessionPath.hashCode());
-        result = prime * result + ((fState == null) ? 0 : fState.hashCode());
+        result = prime * result + ((fState == null) ? 0 : (fState.ordinal() + 1));
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -170,10 +190,11 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
             return false;
         }
         SessionInfo other = (SessionInfo) obj;
-        if (!fDomains.equals(other.fDomains)) {
-            return false;
-        }
-        if (fIsStreamedTrace != other.fIsStreamedTrace) {
+        if (fDomains == null) {
+            if (other.fDomains != null) {
+                return false;
+            }
+        } else if (!fDomains.equals(other.fDomains)) {
             return false;
         }
         if (fSessionPath == null) {
@@ -189,6 +210,10 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {
@@ -197,8 +222,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
             output.append(super.toString());
             output.append(",State=");
             output.append(fState);
-            output.append(",isStreamedTrace=");
-            output.append(fIsStreamedTrace);
             output.append(",Domains=");
             for (Iterator<IDomainInfo> iterator = fDomains.iterator(); iterator.hasNext();) {
                 IDomainInfo domain = iterator.next();

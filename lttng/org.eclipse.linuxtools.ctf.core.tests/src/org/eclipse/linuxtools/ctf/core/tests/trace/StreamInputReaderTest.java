@@ -1,33 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.nio.channels.FileChannel;
 import java.util.Set;
 
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
-import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,9 +30,17 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class StreamInputReaderTest {
 
-    private static final int TRACE_INDEX = 0;
-
     private StreamInputReader fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(StreamInputReaderTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -58,9 +55,16 @@ public class StreamInputReaderTest {
                 getStreamInputReader()));
     }
 
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
+    }
+
     private static StreamInputReader getStreamInputReader() throws CTFReaderException {
-        assumeTrue(CtfTestTraces.tracesExist());
-        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
+        CTFTrace trace = TestParams.createTrace();
         Stream s = trace.getStream((long) 0);
         Set<StreamInput> streamInput = s.getStreamInputs();
         StreamInputReader retVal = null;
@@ -69,7 +73,7 @@ public class StreamInputReaderTest {
              * For the tests, we'll use the stream input corresponding to the
              * CPU 0
              */
-            if (si.getFilename().endsWith("0_0")) {
+            if (si.getFilename().endsWith("0_0")) { //$NON-NLS-1$
                 retVal = new StreamInputReader(si);
                 break;
             }
@@ -95,7 +99,7 @@ public class StreamInputReaderTest {
     @Test(expected = CTFReaderException.class)
     public void testStreamInputReader_invalid() throws CTFReaderException {
         StreamInput streamInput = new StreamInput(
-                new Stream(new CTFTrace("")), (FileChannel) null, CtfTestTraces.getEmptyFile());
+                new Stream(new CTFTrace("")), (FileChannel) null, TestParams.getEmptyFile()); //$NON-NLS-1$
 
         StreamInputReader result = new StreamInputReader(streamInput);
         assertNotNull(result);

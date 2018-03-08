@@ -1,22 +1,23 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ * 
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import java.text.MessageFormat;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -29,9 +30,9 @@ import org.eclipse.ui.IViewPart;
 
 /**
  * Class implementation of the pages dialog.<br>
- *
+ * 
  * It is associated to an SDView and to a ISDAdvancedPagingProvider.<br>
- *
+ * 
  * @version 1.0
  * @author sveyrier
  */
@@ -44,21 +45,17 @@ public class PagesDialog extends Dialog {
     /**
      * viewer and provided are kept here as attributes
      */
-    private ISDAdvancedPagingProvider fProvider = null;
-
-    /** Current page */
-    private TextArea fCurrentPage;
-
-    /** Comment label */
-    private Label fTotalPageComment;
+    protected ISDAdvancedPagingProvider fProvider = null;
+    protected TextArea fCurrentPage;
+    protected Label fTotalPageComment;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
+    
     /**
      * Standard constructor
-     *
+     * 
      * @param view The sequence diagram view reference
      * @param provider The paging provider reference
      */
@@ -72,6 +69,10 @@ public class PagesDialog extends Dialog {
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public Control createDialogArea(Composite parent) {
 
@@ -80,13 +81,13 @@ public class PagesDialog extends Dialog {
         data.grabExcessHorizontalSpace = true;
         data.horizontalAlignment = GridData.FILL;
         ret.setLayoutData(data);
-        ret.setText(Messages.SequenceDiagram_PageNavigation);
+        ret.setText(SDMessages._67);
 
         FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
         ret.setLayout(fillLayout);
 
         Label label = new Label(ret, SWT.NONE);
-        label.setText(Messages.SequenceDiagram_CurrentPage);
+        label.setText(SDMessages._75);
 
         fCurrentPage = new TextArea(ret);
         fCurrentPage.setBounds(1, fProvider.pagesCount());
@@ -97,10 +98,14 @@ public class PagesDialog extends Dialog {
 
         updateComments();
 
-        getShell().setText(Messages.SequenceDiagram_SequenceDiagramPages);
+        getShell().setText(SDMessages._68);
         return ret;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     public void okPressed() {
         int currentPageValue = fCurrentPage.getValue() - 1;
@@ -109,29 +114,28 @@ public class PagesDialog extends Dialog {
     }
 
     /**
-     * Updates the comments texts.
+     * Updates the comments texts. 
      */
-    private void updateComments() {
+    protected void updateComments() {
         int pages = Math.max(0, fProvider.pagesCount());
         StringBuffer totalPageCommentText = new StringBuffer();
-        totalPageCommentText.append(Messages.SequenceDiagram_Total);
+        totalPageCommentText.append(SDMessages._70);
         totalPageCommentText.append(pages);
         totalPageCommentText.append(" "); //$NON-NLS-1$
         if (pages == 0) {
-            totalPageCommentText.append(Messages.SequenceDiagram_pages);
+            totalPageCommentText.append(SDMessages._71);
         } else if (pages == 1) {
-            totalPageCommentText.append(Messages.SequenceDiagram_page);
+            totalPageCommentText.append(SDMessages._72);
         } else {
-            totalPageCommentText.append(Messages.SequenceDiagram_pages);
+            totalPageCommentText.append(SDMessages._73);
         }
         fTotalPageComment.setText(totalPageCommentText.toString());
     }
 
-
+    
     // ------------------------------------------------------------------------
     // Helper classes
     // ------------------------------------------------------------------------
-
     /**
      * This is a Text Control that accepts only digits and ensures that bounds are respected
      */
@@ -139,19 +143,19 @@ public class PagesDialog extends Dialog {
         /**
          * The text field.
          */
-        private Text fText;
+        protected Text fText;
         /**
          * The minimum page value
          */
-        private int fMin;
+        int fMin;
         /**
          * The maximum page value
          */
-        private int fMax;
+        int fMax;
 
         /**
          * Constructor
-         *
+         * 
          * @param parent The paren composite
          */
         public TextArea(Composite parent) {
@@ -161,7 +165,7 @@ public class PagesDialog extends Dialog {
 
         /**
          * Sets the page value.
-         *
+         * 
          * @param page The page value
          */
         public void setValue(int page) {
@@ -171,7 +175,7 @@ public class PagesDialog extends Dialog {
 
         /**
          * Returns the page value.
-         *
+         * 
          * @return the page value
          */
         public int getValue() {
@@ -187,7 +191,7 @@ public class PagesDialog extends Dialog {
 
         /**
          * Sets the minimum and maximum page values.
-         *
+         * 
          * @param min A minimum page value
          * @param max A maximum page value
          */
@@ -197,7 +201,7 @@ public class PagesDialog extends Dialog {
             Integer tab[] = new Integer[2];
             tab[0] = Integer.valueOf(fMin);
             tab[1] = Integer.valueOf(fMax);
-            fText.setToolTipText(MessageFormat.format(Messages.SequenceDiagram_IsInBetween, (Object[]) tab));
+            fText.setToolTipText(MessageFormat.format(SDMessages._69, (Object[]) tab));
         }
     }
 

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -53,7 +52,6 @@ public class AssignEventHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The command execution parameter.
      */
@@ -63,6 +61,10 @@ public class AssignEventHandler extends BaseControlViewHandler {
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -98,9 +100,9 @@ public class AssignEventHandler extends BaseControlViewHandler {
                         TraceChannelComponent channel = dialog.getChannel();
                         if (channel == null) {
                             // enable events on default channel (which will be created by lttng-tools)
-                            dialog.getSession().enableEvents(eventNames, param.isKernel(), dialog.getFilterExpression(), monitor);
+                            dialog.getSession().enableEvents(eventNames, param.isKernel(), monitor);
                         } else {
-                            channel.enableEvents(eventNames, dialog.getFilterExpression(), monitor);
+                            channel.enableEvents(eventNames, monitor);
                         }
 
                     } catch (ExecutionException e) {
@@ -125,6 +127,10 @@ public class AssignEventHandler extends BaseControlViewHandler {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
         ArrayList<BaseEventComponent> events = new ArrayList<BaseEventComponent>();
@@ -199,7 +205,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
     /**
      *  Class containing parameter for the command execution.
      */
-    private static final class Parameter {
+    final static private class Parameter {
 
         /**
          * The list of event components the command is to be executed on.
@@ -214,7 +220,7 @@ public class AssignEventHandler extends BaseControlViewHandler {
         /**
          * Flag for indicating Kernel or UST.
          */
-        private final boolean fIsKernel;
+        final private boolean fIsKernel;
 
         /**
          * Constructor

@@ -51,7 +51,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @return The quark of the attribute (which either existed or just got
      *         created)
      */
-    int getQuarkAbsoluteAndAdd(String... attribute);
+    public int getQuarkAbsoluteAndAdd(String... attribute);
 
     /**
      * "Relative path" quark-getting method. Instead of specifying a full path,
@@ -72,7 +72,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *            "Rest" of the path to get to the final attribute
      * @return The matching quark, either if it's new of just got created.
      */
-    int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath);
+    public int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath);
 
     /**
      * @name State-changing methods
@@ -97,7 +97,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the requested attribute is invalid
      */
-    void updateOngoingState(ITmfStateValue newValue, int attributeQuark)
+    public void updateOngoingState(ITmfStateValue newValue, int attributeQuark)
             throws AttributeNotFoundException;
 
     /**
@@ -119,7 +119,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the inserted state value's type does not match what is
      *             already assigned to this attribute.
      */
-    void modifyAttribute(long t, ITmfStateValue value, int attributeQuark)
+    public void modifyAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException;
 
@@ -140,7 +140,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    void incrementAttribute(long t, int attributeQuark)
+    public void incrementAttribute(long t, int attributeQuark)
             throws StateValueTypeException, TimeRangeException,
             AttributeNotFoundException;
 
@@ -166,7 +166,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the attribute 'attributeQuark' already exists, but is not
      *             of integer type.
      */
-    void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
+    public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException;
 
@@ -191,7 +191,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             type is invalid (not an integer)
      * @since 2.0
      */
-    ITmfStateValue popAttribute(long t, int attributeQuark)
+    public ITmfStateValue popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException;
 
@@ -209,7 +209,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    void removeAttribute(long t, int attributeQuark)
+    public void removeAttribute(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException;
 
     /**
@@ -228,5 +228,5 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             it's earlier than the latest time) and the backend doesn't
      *             know how to handle it.
      */
-    void closeHistory(long endTime) throws TimeRangeException;
+    public void closeHistory(long endTime) throws TimeRangeException;
 }

@@ -72,7 +72,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 		String providerId = null;
 		try {
-			providerId = ProviderFramework.getProviderIdToRun(config.getWorkingCopy(), type);
+			providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(config.getWorkingCopy(), type);
 		} catch (CoreException e1) {
 			e1.printStackTrace();
 		}
@@ -150,13 +150,13 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	protected void setDefaultProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
 
 		// acquire a provider id to run.
-		final String providerId = ProviderFramework.getProviderIdToRun(wc, getProfilingType());
+		final String providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(wc, getProfilingType());
 
 		// get tool name from id.
 		final String providerToolName = ProviderFramework.getProviderToolNameFromId(providerId);
 
 		// get tab group associated with provider id.
-		final ProfileLaunchConfigurationTabGroup tabgroup = ProviderFramework.getTabGroupProviderFromId(providerId);
+		final ProfileLaunchConfigurationTabGroup tabgroup = ProfileLaunchConfigurationTabGroup.getTabGroupProviderFromId(providerId);
 
 		/**
 		 * Certain tabs' setDefaults(ILaunchConfigurationWorkingCopy) may
@@ -249,7 +249,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	/**
 	 * Get name of profiling type that used for this tab.
 	 *
-	 * @param profilingType The type of profiling.
+	 * @return String profiling name.
 	 */
 	private void setProfilingType(String profilingType) {
 		type = profilingType;

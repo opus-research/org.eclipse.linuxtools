@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,17 +12,21 @@
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -50,6 +54,8 @@ import org.eclipse.ui.part.FileEditorInput;
  */
 public class OpenExperimentHandler extends AbstractHandler {
 
+    private static final String BOOKMARKS_HIDDEN_FILE = ".bookmarks"; //$NON-NLS-1$
+
     private TmfExperimentElement fExperiment = null;
 
     // ------------------------------------------------------------------------
@@ -68,9 +74,6 @@ public class OpenExperimentHandler extends AbstractHandler {
         // Get the selection
         final IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         final IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         final ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -89,7 +92,7 @@ public class OpenExperimentHandler extends AbstractHandler {
         }
 
         // We only enable opening from the Traces folder for now
-        return ((fExperiment != null) && (fExperiment.getTraces().size() > 0));
+        return (fExperiment != null);
     }
 
     // ------------------------------------------------------------------------
@@ -112,19 +115,27 @@ public class OpenExperimentHandler extends AbstractHandler {
             public void run() {
 
                 final IFile file;
+
                 try {
-                    file = experimentElement.createBookmarksFile();
+                    final IFile bookmarksFile = experimentElement.getProject().getExperimentsFolder().getResource().getFile(BOOKMARKS_HIDDEN_FILE);
+                    if (!bookmarksFile.exists()) {
+                        final InputStream source = new ByteArrayInputStream(new byte[0]);
+                        bookmarksFile.create(source, true, null);
+                    }
+                    bookmarksFile.setHidden(true);
+
+                    file = experimentElement.getResource().getFile(experimentElement.getName() + '_');
+                    if (!file.exists()) {
+                        file.createLink(bookmarksFile.getLocation(), IResource.REPLACE, null);
+                    }
+                    file.setHidden(true);
+                    file.setPersistentProperty(TmfCommonConstants.TRACETYPE, TmfExperiment.class.getCanonicalName());
+
                 } catch (final CoreException e) {
                     Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$
                     displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
                     return;
                 }
-
-                /* Unlike traces, there is no instanceExperiment, so we call this function
-                 * here alone.  Maybe it would be better to do this on experiment's element
-                 * constructor?
-                 */
-                experimentElement.refreshSupplementaryFolder();
 
                 // Instantiate the experiment's traces
                 final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
@@ -173,10 +184,10 @@ public class OpenExperimentHandler extends AbstractHandler {
                 }
 
                 // Create the experiment
-                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize);
                 experiment.setBookmarksFile(file);
 
-                final String editorId = commonEditorId;
+                final String finalCommonEditorId = commonEditorId;
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
@@ -190,9 +201,9 @@ public class OpenExperimentHandler extends AbstractHandler {
                                 activePage.reuseEditor((IReusableEditor) editor, editorInput);
                                 activePage.activate(editor);
                             } else {
-                                activePage.openEditor(editorInput, editorId);
+                                activePage.openEditor(editorInput, finalCommonEditorId);
                             }
-                            IDE.setDefaultEditor(file, editorId);
+                            IDE.setDefaultEditor(file, finalCommonEditorId);
                             // editor should dispose the experiment on close
                         } catch (final CoreException e) {
                             Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$

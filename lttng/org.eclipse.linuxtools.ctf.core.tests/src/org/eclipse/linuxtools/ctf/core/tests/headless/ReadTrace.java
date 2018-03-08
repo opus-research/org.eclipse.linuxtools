@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
 
 @SuppressWarnings("javadoc")
 public class ReadTrace {
@@ -30,6 +30,7 @@ public class ReadTrace {
     /**
      * @param args
      */
+    @SuppressWarnings("nls")
     public static void main(String[] args) {
         final String TRACE_PATH = "traces/kernel";
 
@@ -107,7 +108,7 @@ public class ReadTrace {
      */
     private static String formatDate(long timestamp) {
         Date d = new Date(timestamp / 1000000);
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss."); //$NON-NLS-1$
         String output = df.format(d) + (timestamp % 1000000000);
         return output;
     }

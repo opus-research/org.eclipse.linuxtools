@@ -2,13 +2,11 @@ package org.eclipse.linuxtools.internal.gcov.test;
 
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.waitForShell;
-import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.util.List;
 import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
@@ -20,17 +18,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.dataviewers.actions.STExportToCSVAction;
 import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.actions.AbstractOpenSourceFileAction;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotRadio;
@@ -52,11 +45,9 @@ public abstract class GcovTest {
 		
 		bot.tree().expandNode("Makefile project").select("Empty Project");
 		bot.textWithLabel("Project name:").setText(projectName);
-		bot.table().select("Linux GCC");
-				
+		
 		bot.button("Next >").click();
 		bot.button("Finish").click();
-		bot.sleep(3000);
 	}
 	
 	public static void populateProject(SWTWorkbenchBot bot, String projectName) throws Exception {
@@ -83,9 +74,9 @@ public abstract class GcovTest {
 
 				@Override
 				public String getFailureMessage() {
-					return ifile + " not yet created after 6000ms";
+					return ifile + " not yet created after 3000ms";
 				}
-			}, 6000);
+			}, 3000);
 		}
 		lnr.close();
 	}
@@ -123,7 +114,8 @@ public abstract class GcovTest {
 		
 		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
 		SWTBotShell wbShell = bot.activeShell();
-
+//		SWTBotShell wbShell = viewBot.shells()[0];
+//		wbShell.activate();
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		treeBot.expandNode(projectName).select(file.getName());
@@ -141,12 +133,12 @@ public abstract class GcovTest {
 		SWTBotView botView = bot.viewByTitle("gcov");
 		// The following cannot be tested on 4.2 because the SWTBot implementation of toolbarButton()
 		// is broken there because it relies PartPane having a method getPane() which is no longer true.
-		botView.toolbarButton("Sort coverage per function").click();
-		dumpCSV(bot, botView, projectName, "function", testProducedReference);
-		botView.toolbarButton("Sort coverage per file").click();
-		dumpCSV(bot, botView, projectName, "file", testProducedReference);
-		botView.toolbarButton("Sort coverage per folder").click();
-		dumpCSV(bot, botView, projectName, "folder", testProducedReference);
+//		botView.toolbarButton("Sort coverage per function").click();
+//		dumpCSV(bot, botView, projectName, "function", testProducedReference);
+//		botView.toolbarButton("Sort coverage per file").click();
+//		dumpCSV(bot, botView, projectName, "file", testProducedReference);
+//		botView.toolbarButton("Sort coverage per folder").click();
+//		dumpCSV(bot, botView, projectName, "folder", testProducedReference);
 		botView.close();
 	}
 	
@@ -158,7 +150,9 @@ public abstract class GcovTest {
 		
 		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
 		SWTBotShell wbShell = bot.activeShell();
-
+//		wbShell.activate();
+//		SWTBotShell wbShell = viewBot.shells()[0];
+//		wbShell.activate();
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		treeBot.expandNode(projectName).select(file.getName());
@@ -181,39 +175,7 @@ public abstract class GcovTest {
 		edt.close();
 	}
 	
-	private static void testGcovLaunchSummary(SWTWorkbenchBot bot, String projectName, String binName) throws Exception {
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-		String binLocation = project.getFile(binName).getLocation().toOSString();
-		IPath binPath = new Path(binLocation);
-		IFile binFile = ResourcesPlugin.getWorkspace().getRoot().getFile(binPath);
-		
-		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
-		SWTBotShell wbShell = bot.activeShell();
-
-		SWTBotTree treeBot = viewBot.tree();
-		treeBot.setFocus();
-		// We need to select the binary, but in the tree, it may have additional info appended to the
-		// name such as [x86_64/le].  So, we look at all nodes of the project and look for the one that
-		// starts with our binary file name.  We can then select the node.
-		List<String> nodes = treeBot.expandNode(projectName).getNodes();
-		String binNodeName = binFile.getName();
-		for (String item: nodes) {
-			if (item.startsWith(binFile.getName())) {
-				binNodeName = item;
-				break;
-			}
-		}
-		treeBot.expandNode(projectName).select(binNodeName);
-		String menuItem = "Profiling Tools";
-		String subMenuItem = "1 Profile Code Coverage";
-		click(contextMenu(treeBot, menuItem, subMenuItem));
-
-		wbShell.activate();
-		SWTBotView botView = bot.viewByTitle("gcov");
-
-		botView.close();
-	}
-	
+	@SuppressWarnings("unused")
 	private static void dumpCSV(SWTWorkbenchBot bot, SWTBotView botView, String projectName, String type,
 			boolean testProducedReference) {
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
@@ -256,27 +218,8 @@ public abstract class GcovTest {
 		}
 	}
 	
-	public static void openGcovSummaryByLaunch(SWTWorkbenchBot bot,
-			String projectName) throws Exception {
-		testGcovLaunchSummary(bot, projectName, "a.out");
-	}
-
-	/**
-	 * Click on the specified MenuItem.
-	 * @param menuItem MenuItem item to click
-	 */
-	private static void click(final MenuItem menuItem) {
-            final Event event = new Event();
-            event.time = (int) System.currentTimeMillis();
-            event.widget = menuItem;
-            event.display = menuItem.getDisplay();
-            event.type = SWT.Selection;
-
-            UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-                    @Override
-					public void run() {
-                            menuItem.notifyListeners(SWT.Selection, event);
-                    }
-            });
-    }
+	
+	
+	
+	
 }

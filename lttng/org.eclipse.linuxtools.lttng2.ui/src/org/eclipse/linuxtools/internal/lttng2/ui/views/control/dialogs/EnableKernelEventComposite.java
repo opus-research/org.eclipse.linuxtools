@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -159,57 +159,92 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
     // ------------------------------------------------------------------------
     // Acessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#isTracpoints()
+     */
     @Override
     public boolean isTracepoints() {
         return fIsTracepoints;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#isAllTracePoints()
+     */
     @Override
     public boolean isAllTracePoints() {
         return fIsAllTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#isSysCalls()
+     */
     @Override
     public boolean isSysCalls() {
         return fIsSysCalls;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#isAllSysCalls()
+     */
     @Override
     public boolean isAllSysCalls() {
         return fIsSysCalls;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#getEventNames()
+     */
     @Override
     public List<String> getEventNames() {
         return new ArrayList<String>(fSelectedEvents);
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#isDynamicProbe()
+     */
     @Override
     public boolean isDynamicProbe() {
         return fIsDynamicProbe;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#getProbeName()
+     */
     @Override
     public String getProbeName() {
         return fProbeString;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#getProbeEventName()
+     */
     @Override
     public String getProbeEventName() {
         return fProbeEventName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#isDynamicFunctionProbe()
+     */
     @Override
     public boolean isDynamicFunctionProbe() {
         return fIsDynamicFunctionProbe;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#getFunctionEventName()
+     */
     @Override
     public String getFunctionEventName() {
         return fFunctionEventName;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableKernelEvents#getFunction()
+     */
     @Override
     public String getFunction() {
         return fFunctionString;
@@ -218,7 +253,6 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
     /**
      * Creates the composite content
      */
@@ -537,7 +571,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
     /**
      * Content provider for the tracepoints tree.
      */
-    public static final class KernelContentProvider extends TraceControlContentProvider {
+    final static public class KernelContentProvider extends TraceControlContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof TraceProviderGroup) {
@@ -554,7 +588,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
     /**
      * Content label for the tracepoints tree.
      */
-    public static final class KernelLabelProvider extends TraceControlLabelProvider {
+    final static public class KernelLabelProvider extends TraceControlLabelProvider {
         @Override
         public Image getImage(Object element) {
             return null;
@@ -571,7 +605,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
     /**
      * Check state listener for the tracepoints tree.
      */
-    public final class KernelCheckListener implements ICheckStateListener {
+    final public class KernelCheckListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
           if (event.getChecked()) {

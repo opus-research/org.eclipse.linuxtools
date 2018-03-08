@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,12 +8,10 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
@@ -117,26 +115,10 @@ public class BaseEventComponent extends TraceControlComponent {
         fEventInfo.setLogLevel(levelName);
     }
 
-    /**
-     * @return a String containing pairs if field name and data type
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
-    public String getFieldString() {
-        IFieldInfo[] fields = fEventInfo.getFields();
-        if ((fields != null) && (fields.length > 0)) {
-            StringBuffer buffer = new StringBuffer();
-            for (int i = 0; i < fields.length; i++) {
-                buffer.append(fields[i].getName());
-                buffer.append("="); //$NON-NLS-1$
-                buffer.append(fields[i].getFieldType());
-                if (i != fields.length-1) {
-                    buffer.append(";"); //$NON-NLS-1$
-                }
-            }
-            return buffer.toString();
-        }
-        return null;
-    }
-
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {

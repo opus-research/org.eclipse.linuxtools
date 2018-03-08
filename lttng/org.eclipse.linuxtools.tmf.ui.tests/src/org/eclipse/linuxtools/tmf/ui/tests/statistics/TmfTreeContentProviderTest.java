@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,41 +9,35 @@
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
  *   Bernd Hufmann - Fixed warnings
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.Arrays;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import junit.framework.TestCase;
+
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfTreeContentProvider;
-import org.junit.Test;
 
 /**
  * TmfTreeContentProvider Test Cases.
  */
-public class TmfTreeContentProviderTest {
+@SuppressWarnings("nls")
+public class TmfTreeContentProviderTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
 
-    private static final String fTestName = "TreeContentProviderTest";
+    private String fTestName = null;
 
     private final String fContext = "UnitTest";
     private final String fTypeId1 = "Some type1";
@@ -63,8 +57,8 @@ public class TmfTreeContentProviderTest {
 
     private final String fReference = "Some reference";
 
-    private final ITmfEvent fEvent1;
-    private final ITmfEvent fEvent2;
+    private final TmfEvent fEvent1;
+    private final TmfEvent fEvent2;
 
     private final TmfEventField fContent1;
     private final TmfEventField fContent2;
@@ -78,13 +72,18 @@ public class TmfTreeContentProviderTest {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * @param name
+     *            of the test
      */
-    public TmfTreeContentProviderTest() {
-        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content", null);
+    public TmfTreeContentProviderTest(final String name) {
+        super(name);
+
+        fTestName = name;
+
+        fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType1, fContent1, fReference);
 
-        fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content", null);
+        fContent2 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some other content");
         fEvent2 = new TmfEvent(null, fTimestamp2, fSource, fType2, fContent2, fReference);
 
         fStatsData = new TmfStatisticsTree();
@@ -97,7 +96,7 @@ public class TmfTreeContentProviderTest {
     }
 
     // ------------------------------------------------------------------------
-    // Test methods
+    // GetChildren
     // ------------------------------------------------------------------------
 
     /**
@@ -105,7 +104,6 @@ public class TmfTreeContentProviderTest {
      * FIXME this test was quickly adapted when we removed the TmfFixedArray,
      * but it could be rewritten to be much more simple...
      */
-    @Test
     public void testGetChildren() {
         Object[] objectArray = treeProvider.getChildren(fStatsData.getOrCreateNode(fTestName, Messages.TmfStatisticsData_EventTypes));
         TmfStatisticsTreeNode[] childrenNode = Arrays.asList(objectArray).toArray(new TmfStatisticsTreeNode[0]);
@@ -145,10 +143,13 @@ public class TmfTreeContentProviderTest {
         return true;
     }
 
+    // ------------------------------------------------------------------------
+    // GetParent
+    // ------------------------------------------------------------------------
+
     /**
      * Test getting of parent.
      */
-    @Test
     public void testGetParent() {
         TmfStatisticsTreeNode parent = (TmfStatisticsTreeNode) treeProvider.getParent(fStatsData.getNode(fTestName));
 
@@ -156,10 +157,12 @@ public class TmfTreeContentProviderTest {
         assertTrue("getParent", parent.getPath().equals(fStatsData.getRootNode().getPath()));
     }
 
+    // ------------------------------------------------------------------------
+    // HasChildren
+    // ------------------------------------------------------------------------
     /**
      * Test checking for children.
      */
-    @Test
     public void testHasChildren() {
         Boolean hasChildren = treeProvider.hasChildren(fStatsData.getRootNode());
         assertTrue("hasChildren", hasChildren);
@@ -174,10 +177,13 @@ public class TmfTreeContentProviderTest {
         assertFalse("hasChildren", hasChildren);
     }
 
+    // ------------------------------------------------------------------------
+    // GetElements
+    // ------------------------------------------------------------------------
+
     /**
      * Test getting of elements.
      */
-    @Test
     public void testGetElements() {
         Object[] objectElements = treeProvider.getElements(fStatsData.getRootNode());
         TmfStatisticsTreeNode[] nodeElements = Arrays.asList(objectElements).toArray(new TmfStatisticsTreeNode[0]);

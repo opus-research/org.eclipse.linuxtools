@@ -20,7 +20,7 @@ import org.eclipse.ui.IStorageEditorInput;
 /**
  * Abstract implementation of <code>IStorageEditorInput</code>.
  */
-public abstract class StorageEditorInput implements IStorageEditorInput {
+abstract public class StorageEditorInput implements IStorageEditorInput {
 
 	/**
 	 * Storage associated with this editor input

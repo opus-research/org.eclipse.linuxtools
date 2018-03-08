@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.signal;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -60,6 +60,9 @@ public class TmfTraceRangeUpdatedSignal extends TmfSignal {
         return fTimeRange;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {

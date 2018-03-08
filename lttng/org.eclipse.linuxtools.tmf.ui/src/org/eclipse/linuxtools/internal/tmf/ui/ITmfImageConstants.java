@@ -1,19 +1,17 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson and others.
+ * Copyright (c)  2011 Ericsson and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
+ * $Id: CommonUIImages.java,v 1.6 2010/05/05 12:32:31 paules Exp $
  *
  * Contributors:
  *     Bernd Hufmann - initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.tmf.ui;
 
-/**
- * Names for generic icons and buttons used in TMF
- */
-@SuppressWarnings({"nls", "javadoc"})
+@SuppressWarnings("nls")
 public interface ITmfImageConstants {
 
     public static final String ICONS_PATH = "icons/"; //$NON-NLS-1$
@@ -51,7 +49,4 @@ public interface ITmfImageConstants {
     public static final String IMG_UI_ZOOM_OUT = ICONS_PATH + "obj16/zoomout_obj.bmp";
     public static final String IMG_UI_ARROW_COLLAPSE_OBJ = ICONS_PATH + "obj16/arrow_colapse.bmp";
     public static final String IMG_UI_ARROW_UP_OBJ = ICONS_PATH + "obj16/arrow_up.bmp";
-
-    /* wizban */
-    public static final String IMG_UI_CONFLICT = ICONS_PATH + "wizban/conflict_stat.gif";
 }

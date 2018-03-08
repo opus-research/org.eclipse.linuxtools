@@ -1,23 +1,25 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.PagesDialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation for paging.
@@ -25,12 +27,11 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
  * @version 1.0
  * @author Bernd Hufmann
  */
-public class OpenSDPagesDialog extends BaseSDAction {
+public class OpenSDPagesDialog extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
-
     /**
      * The action ID.
      */
@@ -39,16 +40,18 @@ public class OpenSDPagesDialog extends BaseSDAction {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
+    /**
+     * The sequence diagram view reference
+     */
+    protected SDView fView;
     /**
      * The advanced paging provider reference.
      */
-    private final ISDAdvancedPagingProvider fProvider;
+    protected ISDAdvancedPagingProvider fProvider;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructor
      *
@@ -58,23 +61,26 @@ public class OpenSDPagesDialog extends BaseSDAction {
      *            The provider
      */
     public OpenSDPagesDialog(SDView view, ISDAdvancedPagingProvider provider) {
-        super(view);
-        setText(Messages.SequenceDiagram_Pages);
+        super(SDMessages._44);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_GOTO_PAGE));
         setId(ID);
+        fView = view;
         fProvider = provider;
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     public void run() {
-        if (getView() == null) {
+        if (fView == null) {
             return;
         }
-        PagesDialog dialog = new PagesDialog(getView(), fProvider);
+        PagesDialog dialog = new PagesDialog(fView, fProvider);
         dialog.open();
     }
 }

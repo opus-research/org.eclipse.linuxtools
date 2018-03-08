@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ * 
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.impl;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont;
@@ -19,21 +20,21 @@ import org.eclipse.swt.widgets.Display;
 
 /**
  * Default implementation of the IFont interface.
- *
+ * 
  * @version 1.0
  * @author sveyrier
- *
+ * 
  */
 public class FontImpl implements IFont {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
+    
     /**
      * The font object
      */
-    private final Font fFont;
+    protected Font fFont = null;
     /**
      * Flag to indicate that this object is managing the resource.
      */
@@ -44,7 +45,7 @@ public class FontImpl implements IFont {
     // ------------------------------------------------------------------------
     /**
      * Default constructor.
-     *
+     * 
      * @param display The display to use
      * @param data A font data
      */
@@ -54,7 +55,7 @@ public class FontImpl implements IFont {
 
     /**
      * Copy constructor
-     *
+     * 
      * @param value A font to copy.
      */
     protected FontImpl(Font value) {
@@ -65,21 +66,28 @@ public class FontImpl implements IFont {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
     /**
      * Returns a font implementation based system font.
-     *
+     *  
      * @return a font implementation based system font.
      */
     public static FontImpl getSystemFont() {
         return new FontImpl(Display.getDefault().getSystemFont());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont#getFont()
+     */
     @Override
     public Object getFont() {
         return fFont;
     }
-
+    
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont#dispose()
+     */
     @Override
     public void dispose() {
         if (fFont != null) {

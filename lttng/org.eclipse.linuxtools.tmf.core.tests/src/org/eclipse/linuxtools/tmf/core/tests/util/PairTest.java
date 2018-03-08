@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,37 +8,46 @@
  *
  * Contributors:
  *  Bernd Hufmann - Initial design and implementation
- *  Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.core.util.Pair;
-import org.junit.Test;
 
 /**
  * Test case for Pair class.
  *
  * @author Bernd Hufmann
  */
-@SuppressWarnings("javadoc")
-public class PairTest {
+@SuppressWarnings({ "nls", "javadoc" })
+public class PairTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Field(s)
     // ------------------------------------------------------------------------
-
     Pair<String, Long> fPair1 = new Pair<String, Long>("String 1", 1L);
     Pair<String, Long> fPair2 = new Pair<String, Long>("String 2", 2L);
+
+    // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     // ------------------------------------------------------------------------
     // to String
     // ------------------------------------------------------------------------
 
-    @Test
     public void testToString() {
         String result = fPair1.toString();
         assertEquals("(String 1, 1)", result);
@@ -48,7 +57,6 @@ public class PairTest {
     // Setters/Getters
     // ------------------------------------------------------------------------
 
-    @Test
     public void testAccessors() {
         Pair<String, Long> myPair = new Pair<String, Long>("String 1", 1L);
         assertEquals("String 1", myPair.getFirst());
@@ -65,7 +73,6 @@ public class PairTest {
     // equals
     // ------------------------------------------------------------------------
 
-    @Test
     public void testEqualsReflexivity() {
         assertTrue("equals", fPair1.equals(fPair1));
         assertTrue("equals", fPair2.equals(fPair2));
@@ -74,7 +81,6 @@ public class PairTest {
         assertTrue("equals", !fPair2.equals(fPair1));
     }
 
-    @Test
     public void testEqualsSymmetry() {
         Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
         Pair<String, Long> info2 = new Pair<String, Long>(fPair2.getFirst(), fPair2.getSecond().longValue());
@@ -86,7 +92,6 @@ public class PairTest {
         assertTrue("equals", fPair2.equals(info2));
     }
 
-    @Test
     public void testEqualsTransivity() {
         Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
         Pair<String, Long> info2 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
@@ -97,13 +102,11 @@ public class PairTest {
         assertTrue("equals", info1.equals(info3));
     }
 
-    @Test
     public void testEqualsNull() {
         assertTrue("equals", !fPair1.equals(null));
         assertTrue("equals", !fPair2.equals(null));
     }
 
-    @Test
     public void testEqualsDifferentObj() {
         Pair<Long, String> info = new Pair<Long, String>(1L, "String1");
         assertTrue("equals", !fPair1.equals(info));
@@ -113,7 +116,6 @@ public class PairTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    @Test
     public void testHashCode() {
         Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
         Pair<String, Long> info2 = new Pair<String, Long>(fPair2.getFirst(), fPair2.getSecond().longValue());
