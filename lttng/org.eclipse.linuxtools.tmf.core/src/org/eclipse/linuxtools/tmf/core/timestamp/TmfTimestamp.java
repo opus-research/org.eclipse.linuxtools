@@ -44,11 +44,13 @@ public class TmfTimestamp implements ITmfTimestamp {
 
     /**
      * A more practical definition of "beginning of time"
+     * @since 2.0
      */
     public static final ITmfTimestamp PROJECT_IS_FUNDED = BIG_BANG;
 
     /**
      * A more practical definition of "end of time"
+     * @since 2.0
      */
     public static final ITmfTimestamp PROJECT_IS_CANNED = BIG_CRUNCH;
 
@@ -287,15 +289,6 @@ public class TmfTimestamp implements ITmfTimestamp {
         final ITmfTimestamp nts = ts.normalize(0, fScale);
         final long value = fValue - nts.getValue();
         return new TmfTimestampDelta(value, fScale, fPrecision + nts.getPrecision());
-    }
-
-    @Override
-    public boolean intersects(TmfTimeRange range) {
-        if (this.compareTo(range.getStartTime()) >= 0 &&
-                this.compareTo(range.getEndTime()) <= 0) {
-            return true;
-        }
-        return false;
     }
 
     // ------------------------------------------------------------------------

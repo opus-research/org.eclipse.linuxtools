@@ -14,8 +14,8 @@ package org.eclipse.linuxtools.systemtap.ui.dashboard.views;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.linuxtools.internal.systemtap.ui.dashboard.structures.DashboardModuleLocator;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleLocator;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -26,7 +26,10 @@ import org.eclipse.ui.IWorkbenchActionConstants;
  * @author Ryan Morse
  */
 public class DashboardModuleBrowserView extends ModuleView {
-
+	public DashboardModuleBrowserView() {
+		super();
+	}
+	
 	/**
 	 * This method sends requests to get all of the modules that are
 	 * avialable on the system.  Once then are found, it will
@@ -35,15 +38,15 @@ public class DashboardModuleBrowserView extends ModuleView {
 	@Override
 	protected void generateModuleTree() {
 		TreeNode modules = DashboardModuleLocator.getModules();
-
+		
 		if(null != modules) {
 			viewer.setInput(modules);
 		} else {
 			viewer.setInput(new TreeNode("", false)); //$NON-NLS-1$
 		}
-
+	
 	}
-
+	
 	/**
 	 * This method builds the actions for the items inside this view.  It adds a
 	 * double click listener to each of the Items so they will be run if they
@@ -63,8 +66,8 @@ public class DashboardModuleBrowserView extends ModuleView {
 		getSite().registerContextMenu(manager, viewer);
 		super.makeActions();
 	}
-
+	
 	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView"; //$NON-NLS-1$
-
+	
 }
 

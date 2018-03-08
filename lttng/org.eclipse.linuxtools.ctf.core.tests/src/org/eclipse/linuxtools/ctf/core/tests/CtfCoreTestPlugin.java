@@ -25,7 +25,7 @@ public class CtfCoreTestPlugin extends Plugin {
     // ------------------------------------------------------------------------
 
     /** The plug-in ID */
-    public static final String PLUGIN_ID = "org.eclipse.linuxtools.ctf.core.tests";
+    public static final String PLUGIN_ID = "org.eclipse.linuxtools.ctf.core.tests"; //$NON-NLS-1$
 
     // The shared instance
     private static CtfCoreTestPlugin fPlugin;
