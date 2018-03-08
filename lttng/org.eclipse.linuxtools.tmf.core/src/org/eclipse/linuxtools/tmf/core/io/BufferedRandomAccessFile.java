@@ -124,7 +124,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
 		if (buf_end == 0) {
 			return -1;
 		}
-        return (buffer[buf_pos++] & 0xff);
+        return buffer[buf_pos++];
 	}
 
 	@Override
