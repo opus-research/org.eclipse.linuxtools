@@ -31,17 +31,12 @@ public interface ITmfCheckpoint extends Comparable<ITmfCheckpoint> {
     // ------------------------------------------------------------------------
 
     /**
-     * @return the timestamp of the event referred to by the context
+     * @return the timestamp of the event referred to by the checkpoint
      */
     public ITmfTimestamp getTimestamp();
 
     /**
-     * @return the location of the event referred to by the context
-     */
-    public ITmfContext getContext();
-
-    /**
-     * @return the location of the event referred to by the context
+     * @return the location of the event referred to by the checkpoint
      */
     public ITmfLocation getLocation();
 
