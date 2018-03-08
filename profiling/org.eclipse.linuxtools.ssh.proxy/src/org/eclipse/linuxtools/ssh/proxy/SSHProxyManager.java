@@ -29,10 +29,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.ssh.proxy.SSHCommandLauncher;
 import org.eclipse.linuxtools.internal.ssh.proxy.SSHFileProxy;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
-import org.eclipse.linuxtools.profiling.launch.IRemoteEnvProxyManager;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.IRemoteProxyManager;
 
-public class SSHProxyManager implements IRemoteEnvProxyManager {
+public class SSHProxyManager implements IRemoteProxyManager {
 
 	@Override
 	public IRemoteFileProxy getFileProxy(URI uri) {

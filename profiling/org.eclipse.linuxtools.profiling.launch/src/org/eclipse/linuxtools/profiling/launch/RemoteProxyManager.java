@@ -29,23 +29,14 @@ import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 public class RemoteProxyManager implements IRemoteProxyManager {
 	
 	private static final String EXT_ATTR_CLASS = "class"; //$NON-NLS-1$
-	/**
-	 * @since 2.1
-	 */
-	protected static final String LOCALSCHEME = "file"; //$NON-NLS-1$
+	private static final String LOCALSCHEME = "file"; //$NON-NLS-1$
 
 	private static RemoteProxyManager manager;
 	private LocalFileProxy lfp;
-	/**
-	 * @since 2.1
-	 */
-	protected RemoteProxyNatureMapping mapping = new RemoteProxyNatureMapping();
+	private RemoteProxyNatureMapping mapping = new RemoteProxyNatureMapping();
 	private Map<String, IRemoteProxyManager> remoteManagers = new HashMap<String, IRemoteProxyManager>();
 	
-	/**
-	 * @since 2.1
-	 */
-	protected RemoteProxyManager() {
+	private RemoteProxyManager() {
 		// do nothing
 	}
 	
@@ -60,10 +51,8 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 			lfp = new LocalFileProxy(uri);
 		return lfp;
 	}
-	/**
-	 * @since 2.1
-	 */
-	protected IRemoteProxyManager getRemoteManager(String schemeId) throws CoreException {
+	
+	private IRemoteProxyManager getRemoteManager(String schemeId) throws CoreException {
 		IRemoteProxyManager remoteManager = remoteManagers.get(schemeId);
 		if (remoteManager == null) {
 			IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, IRemoteProxyManager.EXTENSION_POINT_ID);
@@ -155,5 +144,23 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 		return getOS(projectURI);
 	}
 
+	public Map<String, String> getEnv(IProject project) throws CoreException {
+		String scheme = mapping.getSchemeFromNature(project);
+		if (scheme!=null) {
+			IRemoteProxyManager manager = getRemoteManager(scheme);
+			return manager.getEnv(project);
+		}
+		URI projectURI = project.getLocationURI();
+		return getEnv(projectURI);
+	}
 
+	public Map<String, String> getEnv(URI uri) throws CoreException {
+		String scheme = uri.getScheme();
+		if (scheme != null && !scheme.equals(LOCALSCHEME)){
+			IRemoteProxyManager manager = getRemoteManager(scheme);
+			if (manager != null)
+			  return manager.getEnv(uri);
+		}
+		return System.getenv();
+	}
 }

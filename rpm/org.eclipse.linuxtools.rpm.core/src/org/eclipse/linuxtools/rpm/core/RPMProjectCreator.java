@@ -62,7 +62,7 @@ public class RPMProjectCreator {
 	 * @param monitor
 	 *            Progress monitor to report back status.
 	 * @return The newly created project.
-	 * @throws CoreException If the location is wrong.
+	 * @throws CoreException 
 	 */
 	public IProject create(String projectName, IPath projectPath,
 			IProgressMonitor monitor) throws CoreException {
