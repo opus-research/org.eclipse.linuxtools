@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @author Matthew Khouzam
  */
 public class CtfIterator extends CTFTraceReader implements ITmfContext,
-        Comparable<CtfIterator> {
+        Comparable<CtfIterator>, Cloneable {
 
     private final CtfTmfTrace ctfTmfTrace;
 
@@ -103,8 +103,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     public CtfTmfEvent getCurrentEvent() {
         final StreamInputReader top = super.prio.peek();
         if (top != null) {
-            return CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
-                    top.getFilename(), ctfTmfTrace);
+            return new CtfTmfEvent(top.getCurrentEvent(), top.getFilename(),
+                    ctfTmfTrace);
         }
         return null;
     }

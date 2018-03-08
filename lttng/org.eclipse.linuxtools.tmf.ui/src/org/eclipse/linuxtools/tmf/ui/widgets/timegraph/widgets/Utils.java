@@ -519,8 +519,7 @@ public class Utils {
                 break;
             }
 
-            if (currEvent == null || currEvent.getTime() != nextStartTime ||
-                    (nextStartTime != time && currEvent.getDuration() != nextEvent.getDuration())) {
+            if (currEvent == null || currEvent.getTime() != nextStartTime) {
                 prevEvent = currEvent;
                 currEvent = nextEvent;
             }

@@ -13,15 +13,13 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfContext;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfLightweightContext;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.junit.Before;
@@ -33,13 +31,13 @@ import org.junit.Test;
  * @author Matthew Khouzam
  * @version 1.1
  */
-public class CtfTmfContextTest {
+public class CtfTmfLightweightContextTest {
 
     private static final String PATH = TestParams.getPath();
     private static final long begin = 1332170682440133097L; /* Trace start time */
     private static final long end = 1332170692664579801L; /* Trace end time */
 
-    private CtfTmfTrace trace;
+    private CtfTmfTrace fixture;
 
     private class SeekerThread extends Thread {
         long val;
@@ -57,8 +55,8 @@ public class CtfTmfContextTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        trace = new CtfTmfTrace();
-        trace.initTrace((IResource) null, PATH, CtfTmfEvent.class);
+        fixture = new CtfTmfTrace();
+        fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
     }
 
     /**
@@ -66,11 +64,11 @@ public class CtfTmfContextTest {
      */
     @Test
     public void testIndexing() {
-        CtfTmfContext context = new CtfTmfContext(trace);
+        CtfTmfLightweightContext context = new CtfTmfLightweightContext(fixture);
         context.seek(0);
 
         int count = 0;
-        while (trace.getNext(context) != null) {
+        while (fixture.getNext(context) != null) {
             count++;
         }
         assertTrue(count > 0);
@@ -89,16 +87,16 @@ public class CtfTmfContextTest {
         double increment = (end - begin) / lwcCount;
         final ArrayList<Long> vals = new ArrayList<Long>();
         final ArrayList<Thread> threads = new ArrayList<Thread>();
-        final ArrayList<CtfTmfContext> tooManyContexts = new ArrayList<CtfTmfContext>();
+        final ArrayList<CtfTmfLightweightContext> tooManyContexts = new ArrayList<CtfTmfLightweightContext>();
 
         for (double i = begin; i < end; i += increment) {
             SeekerThread thread = new SeekerThread() {
                 @Override
                 public void run() {
-                    CtfTmfContext lwc = new CtfTmfContext(trace);
+                    CtfTmfLightweightContext lwc = new CtfTmfLightweightContext(fixture);
                     lwc.seek(val);
-                    trace.getNext(lwc);
-                    synchronized(trace){
+                    fixture.getNext(lwc);
+                    synchronized(fixture){
                         if (lwc.getCurrentEvent() != null) {
                             vals.add(lwc.getCurrentEvent().getTimestamp().getValue());
                         }
@@ -119,21 +117,5 @@ public class CtfTmfContextTest {
             assertTrue(val >= begin);
             assertTrue(val <= end);
         }
-    }
-
-    /**
-     * Test for clone method
-     */
-    @Test
-    public void testClone() {
-        CtfTmfContext fixture1 = new CtfTmfContext(trace);
-        CtfTmfContext fixture2 = fixture1.clone();
-        //assertTrue(fixture1.equals(fixture2)); FIXME no .equals() override!
-        assertNotSame(fixture1, fixture2);
-
-        /* Make sure clone() did its job */
-        assertSame(fixture1.getTrace(), fixture2.getTrace());
-        assertSame(fixture1.getLocation(), fixture2.getLocation());
-        assertSame(fixture1.getRank(), fixture2.getRank());
     }
 }

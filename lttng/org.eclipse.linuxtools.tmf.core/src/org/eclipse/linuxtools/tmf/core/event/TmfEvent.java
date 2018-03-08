@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012, 2013 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -7,29 +7,24 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Updated as per TMF Event Model 1.0
- *   Alexandre Montplaisir - Made immutable
+ *   Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
- * A basic implementation of ITmfEvent.
+ * Immutable implementation of ITmfEvent.
  *
- * @version 1.0
- * @author Francois Chouinard
+ * All the fields should be set at the constructor and not be touched again. If
+ * you need to modify the object's fields after the constructor call, look at
+ * extending {@link TmfMutableEvent} instead.
  *
- * @see ITmfTimestamp
- * @see ITmfEventType
- * @see ITmfEventField
- * @see ITmfTrace
-*/
-public class TmfEvent implements ITmfEvent {
+ * @author Alexandre Montplaisir
+ */
+public abstract class TmfEvent implements ITmfEvent {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -48,44 +43,27 @@ public class TmfEvent implements ITmfEvent {
     // ------------------------------------------------------------------------
 
     /**
-     * Default constructor. All fields have their default value (null) and the
-     * event rank is set to TmfContext.UNKNOWN_RANK.
-     */
-    public TmfEvent() {
-        this(null, ITmfContext.UNKNOWN_RANK, null, null, null, null, null);
-    }
-
-    /**
-     * Standard constructor. The event rank will be set to TmfContext.UNKNOWN_RANK.
-     *
-     * @param trace the parent trace
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
-
-     */
-    public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference)
-    {
-        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference);
-    }
-
-    /**
      * Full constructor
      *
-     * @param trace the parent trace
-     * @param rank the event rank (in the trace)
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
+     * @param trace
+     *            The parent trace
+     * @param rank
+     *            The event rank (in the trace)
+     * @param timestamp
+     *            The event timestamp
+     * @param source
+     *            The event source
+     * @param type
+     *            The event type
+     * @param content
+     *            The event content (payload)
+     * @param reference
+     *            The event reference
      */
-    public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference)
-    {
+    public TmfEvent(final ITmfTrace trace, final long rank,
+            final ITmfTimestamp timestamp, final String source,
+            final ITmfEventType type, final ITmfEventField content,
+            final String reference) {
         fTrace = trace;
         fRank = rank;
         fTimestamp = timestamp;
@@ -93,24 +71,6 @@ public class TmfEvent implements ITmfEvent {
         fType = type;
         fContent = content;
         fReference = reference;
-    }
-
-    /**
-     * Copy constructor
-     *
-     * @param event the original event
-     */
-    public TmfEvent(final ITmfEvent event) {
-        if (event == null) {
-            throw new IllegalArgumentException();
-        }
-        fTrace = event.getTrace();
-        fRank = event.getRank();
-        fTimestamp = event.getTimestamp();
-        fSource = event.getSource();
-        fType = event.getType();
-        fContent = event.getContent();
-        fReference = event.getReference();
     }
 
     // ------------------------------------------------------------------------
@@ -233,12 +193,14 @@ public class TmfEvent implements ITmfEvent {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        return getClass().getSimpleName() + " [fTimestamp=" + getTimestamp()
-                + ", fTrace=" + getTrace() + ", fRank=" + getRank()
-                + ", fSource=" + getSource() + ", fType=" + getType()
-                + ", fContent=" + getContent() + ", fReference=" + getReference()
-                + "]";
+        return "TmfEvent [fTimestamp=" + fTimestamp + ", fTrace=" + fTrace + ", fRank=" + fRank
+                + ", fSource=" + fSource + ", fType=" + fType + ", fContent=" + fContent
+                + ", fReference=" + fReference + "]";
     }
+
+    // ------------------------------------------------------------------------
+    // IAdaptable
+    // ------------------------------------------------------------------------
 
     /**
      * @since 2.0
@@ -250,4 +212,5 @@ public class TmfEvent implements ITmfEvent {
         }
         return null;
     }
+
 }

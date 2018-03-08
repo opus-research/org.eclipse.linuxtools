@@ -66,7 +66,6 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 * Updates <code>selection</code> with the current selection whenever the user changes
 	 * the current selection.
 	 */
-	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection incoming) {
 		if (incoming instanceof IStructuredSelection) {
 			selection = (IStructuredSelection) incoming;
@@ -130,7 +129,6 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 		}
 	}
 
-	@Override
 	public void doubleClick(DoubleClickEvent event) {
 		run();
 	}

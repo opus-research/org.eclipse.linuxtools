@@ -193,7 +193,6 @@ public class KernelBrowserView extends BrowserView {
 	 * and runs the <code>updateKernelSourceTree</code> method.
 	 */
 	private final IPropertyChangeListener propertyChangeListener = new IPropertyChangeListener() {
-		@Override
 		public void propertyChange(PropertyChangeEvent event) {
 			if(event.getProperty().equals(IDEPreferenceConstants.P_KERNEL_SOURCE) ||
 				event.getProperty().equals(IDEPreferenceConstants.P_REMOTE_LOCAL_KERNEL_SOURCE) ||

@@ -35,7 +35,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfTimestamp
  * @see ITmfEventType
  * @see ITmfEventField
- * @see TmfEvent
  */
 public interface ITmfEvent extends IAdaptable {
 

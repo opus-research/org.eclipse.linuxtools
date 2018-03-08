@@ -27,7 +27,6 @@ public class SelectGraphWizardPage extends WizardPage implements Listener {
 		setTitle(Localization.getString("SelectGraphWizardPage.SelectGraph")); //$NON-NLS-1$
 	}
 
-	@Override
 	public void createControl(Composite parent) {
 		wizard = (SelectGraphWizard)getWizard();
 
@@ -49,7 +48,6 @@ public class SelectGraphWizardPage extends WizardPage implements Listener {
 		setControl(cmpGraphOpts);
 	}
 
-	@Override
 	public void handleEvent(Event event) {
 		if(event.widget instanceof Button) {
 			Button target = (Button)event.widget;

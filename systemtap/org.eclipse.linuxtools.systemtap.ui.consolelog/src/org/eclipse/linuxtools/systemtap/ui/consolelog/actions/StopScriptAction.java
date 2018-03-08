@@ -32,7 +32,6 @@ public class StopScriptAction extends ConsoleAction implements ScriptConsoleObse
 	@Override
 	public void run() {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				if(null != console && console.isRunning()){
 					console.stop();
@@ -49,7 +48,6 @@ public class StopScriptAction extends ConsoleAction implements ScriptConsoleObse
 		console.addScriptConsoleObserver(this);
 	}
 
-	@Override
 	public void runningStateChanged(boolean running) {
 		setEnabled(running);
 	}

@@ -180,14 +180,12 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 		return new Double(o.toString()).doubleValue();
 	}
 
-	@Override
 	public void handleUpdateEvent() {
 		repaint();
 	}
 
 	protected void repaint() {
 		getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				updateDataSet();
             }

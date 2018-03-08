@@ -42,6 +42,19 @@
       </comments>
     </license>
   </licenses>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>../src.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <modules>
     <module>org.eclipse.linuxtools.callgraph</module>
@@ -58,6 +71,7 @@
     <module>org.eclipse.linuxtools.systemtap.ui.dashboardextension</module>
     <module>org.eclipse.linuxtools.systemtap.ui.doc</module>
     <module>org.eclipse.linuxtools.systemtap.ui.editor</module>
+    <module>org.eclipse.linuxtools.systemtap.ui.graphicalrun</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphing</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests</module>

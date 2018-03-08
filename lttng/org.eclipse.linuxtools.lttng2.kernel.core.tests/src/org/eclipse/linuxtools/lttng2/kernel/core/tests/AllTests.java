@@ -16,7 +16,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Runner for the lttng2.kernel unit tests.
+ * <b><u>AllTests</u></b>
+ * <p>
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

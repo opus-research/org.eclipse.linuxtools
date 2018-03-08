@@ -9,26 +9,33 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse, Anithra P J
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.consolelog.actions;
+package org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun.actions;
 
 import java.util.ArrayList;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
+import org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun.GraphicalRunPlugin;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.ConsoleAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
+import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
+import org.eclipse.linuxtools.systemtap.ui.graphicalrun.structures.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
+import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.ChartStreamDaemon;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
+import org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.WorkbenchException;
 
 /**
  * The action to allow users to change the parsing expression while a script is actively running.
@@ -36,11 +43,11 @@ import org.eclipse.ui.PlatformUI;
  */
 public class ModifyParsingAction extends ConsoleAction {
 
-	public ModifyParsingAction(ScriptConsole fConsole) {
+	ModifyParsingAction(ScriptConsole fConsole) {
 		super(fConsole,
-				Platform.getBundle(ConsoleLogPlugin.PLUGIN_ID).getEntry("icons/actions/regEx.gif"), //$NON-NLS-1$
-				Localization.getString("ModifyParsingAction_name"), //$NON-NLS-1$
-				Localization.getString("ModifyParsingAction_desc")); //$NON-NLS-1$
+				Platform.getBundle(GraphicalRunPlugin.PLUGIN_ID).getEntry("icons/actions/regEx.gif"), //$NON-NLS-1$
+				Messages.ModifyParsingAction_name,
+				Messages.ModifyParsingAction_desc);
 	}
 
 	/**
@@ -52,7 +59,7 @@ public class ModifyParsingAction extends ConsoleAction {
 	 */
 	@Override
 	public void run() {
-		DataSetWizard wizard = new DataSetWizard(GraphingConstants.DataSetMetaData, console.getName());
+		DataSetWizard wizard = new DataSetWizard(GraphingConstants.DataSetMetaData, getFilePath());
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		wizard.init(workbench, null);
 		WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
@@ -90,4 +97,17 @@ public class ModifyParsingAction extends ConsoleAction {
 		wizard.dispose();
 	}
 
+	/**
+	 * Gets the file location of the file open in the editor window.
+	 * @return The path of the file in the active editor window.
+	 */
+	private String getFilePath() {
+		try {
+			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			IEditorPart ed = p.getActiveEditor();
+			PlatformUI.getWorkbench().showPerspective(GraphingPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
+		} catch(WorkbenchException we) {}
+		return null;
+	}
 }
