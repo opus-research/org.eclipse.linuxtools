@@ -613,6 +613,9 @@
                <with
                      variable="selection">
                   <and>
+                     <count
+                           value="1">
+                     </count>
                      <iterate
                            ifEmpty="false"
                            operator="and">
@@ -1090,6 +1093,9 @@
             commandId="org.eclipse.linuxtools.tmf.ui.command.exporttracepkg">
          <activeWhen>
             <and>
+               <count
+                     value="1">
+               </count>
                <iterate
                      operator="and">
                   <instanceof

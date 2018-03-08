@@ -14,14 +14,12 @@ package org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.importex
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -29,9 +27,9 @@ import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
-import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageOperation;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageWizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageElement;
+import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
@@ -235,12 +233,18 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
             // Canceled
         }
 
-        TracePackageElement[] resultElements = op.getResultElement();
-        if (resultElements == null || resultElements.length == 0) {
+        TracePackageElement resultElement = op.getResultElement();
+        if (resultElement == null) {
             return null;
         }
 
-        return resultElements;
+        for (TracePackageElement e : resultElement.getChildren()) {
+            if (e instanceof TracePackageFilesElement) {
+                e.setEnabled(false);
+            }
+        }
+
+        return new TracePackageElement[] { resultElement };
     }
 
     @Override
@@ -309,9 +313,9 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
         saveWidgetValues();
 
-        Object input = getElementViewer().getInput();
-        TracePackageElement[] traceElements = (TracePackageElement[]) input;
-        final TracePackageImportOperation importOperation = new TracePackageImportOperation(fValidatedFilePath, traceElements, fTmfTraceFolder);
+        TracePackageElement[] input = (TracePackageElement[]) getElementViewer().getInput();
+        TracePackageTraceElement traceElement = (TracePackageTraceElement) input[0];
+        final TracePackageImportOperation importOperation = new TracePackageImportOperation(fValidatedFilePath, traceElement, fTmfTraceFolder);
 
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
@@ -335,38 +339,13 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
     }
 
     private boolean checkForOverwrite() {
+        TracePackageTraceElement traceElement = (TracePackageTraceElement) ((TracePackageElement[]) getElementViewer().getInput())[0];
+        String traceName = traceElement.getText();
+
         List<TmfTraceElement> traces = fTmfTraceFolder.getTraces();
-
-        TracePackageElement[] traceElements = (TracePackageElement[]) getElementViewer().getInput();
-        for (TracePackageElement packageElement : traceElements) {
-            TracePackageTraceElement traceElement = (TracePackageTraceElement) packageElement;
-            if (!AbstractTracePackageOperation.isFilesChecked(traceElement)) {
-                continue;
-            }
-
-            for (TmfTraceElement t : traces) {
-                String traceName = traceElement.getText();
-                if (t.getName().equals(traceName)) {
-                    final MessageDialog dialog = new MessageDialog(getContainer()
-                            .getShell(), null, null, MessageFormat.format(Messages.ImportTracePackageWizardPage_AlreadyExists, traceName),
-                            MessageDialog.QUESTION, new String[] {
-                                    IDialogConstants.NO_LABEL,
-                                    IDialogConstants.YES_TO_ALL_LABEL,
-                                    IDialogConstants.YES_LABEL,
-                            }, 2) {
-                        @Override
-                        protected int getShellStyle() {
-                            return super.getShellStyle() | SWT.SHEET;
-                        }
-                    };
-                    int code = dialog.open();
-                    final String[] response = new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.YES_LABEL };
-                    if (response[code].equals(IDialogConstants.YES_TO_ALL_LABEL)) {
-                        return true;
-                    } else if (response[code].equals(IDialogConstants.NO_LABEL)) {
-                        return false;
-                    }
-                }
+        for (TmfTraceElement t : traces) {
+            if (t.getName().equals(traceName)) {
+                return MessageDialog.openQuestion(getContainer().getShell(), null, Messages.ImportTracePackageWizardPage_AlreadyExists);
             }
         }
 

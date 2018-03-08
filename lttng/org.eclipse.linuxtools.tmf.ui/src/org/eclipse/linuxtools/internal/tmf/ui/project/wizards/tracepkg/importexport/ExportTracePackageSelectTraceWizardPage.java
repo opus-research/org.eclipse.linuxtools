@@ -88,7 +88,7 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
         projectViewer.setLabelProvider(new WorkbenchLabelProvider());
         projectViewer.setInput(TraceUtils.getOpenedTmfProjects().toArray(new IProject[] {}));
 
-        fTraceTable = new Table(projectSelectionGroup, SWT.BORDER | SWT.CHECK);
+        fTraceTable = new Table(projectSelectionGroup, SWT.SINGLE | SWT.BORDER);
         fTraceTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         final TableViewer traceViewer = new TableViewer(fTraceTable);
@@ -113,15 +113,11 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
         fTraceTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                TableItem[] items = fTraceTable.getItems();
+                TableItem[] items = fTraceTable.getSelection();
+                TmfTraceElement trace = (TmfTraceElement) items[0].getData();
                 ExportTracePackageWizardPage page = (ExportTracePackageWizardPage) getWizard().getPage(ExportTracePackageWizardPage.PAGE_NAME);
                 ArrayList<TmfTraceElement> traces = new ArrayList<TmfTraceElement>();
-                for (TableItem item : items) {
-                    if (item.getChecked()) {
-                        TmfTraceElement trace = (TmfTraceElement) item.getData();
-                        traces.add(trace);
-                    }
-                }
+                traces.add(trace);
                 page.setSelectedTraces(traces);
             }
         });
