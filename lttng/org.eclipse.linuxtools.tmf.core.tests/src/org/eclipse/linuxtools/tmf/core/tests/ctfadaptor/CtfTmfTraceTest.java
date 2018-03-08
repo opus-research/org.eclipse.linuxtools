@@ -17,11 +17,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocation;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
@@ -48,8 +46,7 @@ import org.junit.Test;
  */
 public class CtfTmfTraceTest {
 
-    private static final int TRACE_INDEX = 0;
-    private static final String PATH = CtfTestTraces.getTestTracePath(TRACE_INDEX);
+    private static final String PATH = TestParams.getPath();
 
     private CtfTmfTrace fixture;
 
@@ -61,7 +58,6 @@ public class CtfTmfTraceTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(CtfTestTraces.tracesExist());
         fixture = new CtfTmfTrace();
         fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
     }
@@ -71,9 +67,7 @@ public class CtfTmfTraceTest {
      */
     @After
     public void tearDown() {
-        if (fixture != null) {
-            fixture.dispose();
-        }
+        fixture.dispose();
     }
 
     /**
