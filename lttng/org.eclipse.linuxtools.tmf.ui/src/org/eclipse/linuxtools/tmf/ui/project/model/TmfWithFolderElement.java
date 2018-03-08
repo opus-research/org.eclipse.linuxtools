@@ -195,7 +195,7 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
         deleteSupplementaryResources(getSupplementaryResources());
     }
 
-    private synchronized void createSupplementaryDirectory() {
+    private void createSupplementaryDirectory() {
         IFolder supplFolder = getTraceSupplementaryFolder(getResourceName());
         if (!supplFolder.exists()) {
             try {

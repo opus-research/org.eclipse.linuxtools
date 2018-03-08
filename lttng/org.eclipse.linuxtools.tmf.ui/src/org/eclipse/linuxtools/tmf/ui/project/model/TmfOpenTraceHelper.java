@@ -13,11 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -64,9 +60,6 @@ import org.eclipse.ui.part.FileEditorInput;
 public class TmfOpenTraceHelper {
 
     private static final String ENDL = System.getProperty("line.separator"); //$NON-NLS-1$
-
-    /* Latch tracking if the state history is done building or not */
-    private static final Map<IResource, CountDownLatch> fOpenLatches = new HashMap<IResource, CountDownLatch>();
 
     /**
      * Opens a trace from a path while importing it to the project
@@ -191,7 +184,6 @@ public class TmfOpenTraceHelper {
      * @return Status.OK_STATUS
      */
     public static IStatus openTraceFromElement(final TmfTraceElement traceElement) {
-        fOpenLatches.put(traceElement.getResource(), new CountDownLatch(1));
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -203,7 +195,6 @@ public class TmfOpenTraceHelper {
                         TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_NoTraceType);
                         trace.dispose();
                     }
-                    fOpenLatches.get(traceElement.getResource()).countDown();
                     return;
                 }
 
@@ -215,7 +206,6 @@ public class TmfOpenTraceHelper {
                 } catch (final TmfTraceException e) {
                     TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
                     trace.dispose();
-                    fOpenLatches.get(traceElement.getResource()).countDown();
                     return;
                 }
 
@@ -226,38 +216,29 @@ public class TmfOpenTraceHelper {
                     Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + traceElement.getName());
                     TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_Error + ENDL + ENDL + e.getMessage());
                     trace.dispose();
-                    fOpenLatches.get(traceElement.getResource()).countDown();
                     return;
                 }
 
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        if (!traceElement.getResource().exists()) {
-                            /* The trace does not exist anymore, just quietly exit */
-                            return;
-                        }
-                        synchronized (traceElement.getResource()) {
-                            try {
-                                final IEditorInput editorInput = new TmfEditorInput(file, trace);
-                                final IWorkbench wb = PlatformUI.getWorkbench();
-                                final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
-                                final IEditorPart editor = activePage.findEditor(new FileEditorInput(file));
-                                if ((editor != null) && (editor instanceof IReusableEditor)) {
-                                    activePage.reuseEditor((IReusableEditor) editor, editorInput);
-                                    activePage.activate(editor);
-                                } else {
-                                    activePage.openEditor(editorInput, editorId);
-                                    IDE.setDefaultEditor(file, editorId);
-                                    // editor should dispose the trace on close
-                                }
-                            } catch (final PartInitException e) {
-                                TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ENDL + ENDL + e.getMessage());
-                                Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + traceElement.getName());
-                                trace.dispose();
-                            } finally {
-                                fOpenLatches.get(traceElement.getResource()).countDown();
+                        try {
+                            final IEditorInput editorInput = new TmfEditorInput(file, trace);
+                            final IWorkbench wb = PlatformUI.getWorkbench();
+                            final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
+                            final IEditorPart editor = activePage.findEditor(new FileEditorInput(file));
+                            if ((editor != null) && (editor instanceof IReusableEditor)) {
+                                activePage.reuseEditor((IReusableEditor) editor, editorInput);
+                                activePage.activate(editor);
+                            } else {
+                                activePage.openEditor(editorInput, editorId);
+                                IDE.setDefaultEditor(file, editorId);
+                                // editor should dispose the trace on close
                             }
+                        } catch (final PartInitException e) {
+                            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ENDL + ENDL + e.getMessage());
+                            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + traceElement.getName());
+                            trace.dispose();
                         }
                     }
                 });
@@ -265,34 +246,6 @@ public class TmfOpenTraceHelper {
         };
         thread.start();
         return Status.OK_STATUS;
-    }
-
-    /**
-     * Wait until a trace is opened
-     *
-     * @param traceElement
-     *            The trace element to wait for
-     * @return Whether the trace was successfully opened
-     * @throws RuntimeException
-     *             if the calling thread may cause a deadlock
-     */
-    public static boolean waitTillOpened(TmfTraceElement traceElement) throws RuntimeException {
-        /*
-         * Verify thread access. Opening a trace requires the main thread to do
-         * some work, this function should not be called from main thread
-         */
-        if (Thread.currentThread() == Display.getDefault().getThread()) {
-            throw new RuntimeException("Invalid thread access: TmfOpenTraceHelper.waitTillOpened should not be called from the main thread"); //$NON-NLS-1$
-        }
-        if (fOpenLatches.get(traceElement.getResource()) != null) {
-            try {
-                fOpenLatches.get(traceElement.getResource()).await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Activator.getDefault().logError(e.getMessage());
-            }
-            return true;
-        }
-        return false;
     }
 
 }
