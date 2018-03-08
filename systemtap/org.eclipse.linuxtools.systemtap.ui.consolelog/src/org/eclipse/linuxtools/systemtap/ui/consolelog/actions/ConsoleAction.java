@@ -11,29 +11,43 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.actions;
 
-import java.net.URL;
-
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IViewActionDelegate;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+
+
 
 /**
  * A basic core class that provides common methods that are needed by any
  * action that makes use of the Console.
  * @author Ryan Morse
  */
-public abstract class ConsoleAction extends Action {
+public abstract class ConsoleAction extends Action implements IWorkbenchWindowActionDelegate, IViewActionDelegate {
 
-	protected ScriptConsole console;
+	public void init(IWorkbenchWindow window) {}
+	public void init(IViewPart part) {}
 
-	protected ConsoleAction(ScriptConsole fConsole,
-			URL imagePath,
-			String text,
-			String toolTip){
-		this.console = fConsole;
-
-		setImageDescriptor(ImageDescriptor.createFromURL(imagePath));
-		setToolTipText(text);
-		setText(toolTip);
+	public void run(IAction action) {
+		run();
 	}
+
+	@Override
+	public abstract void run();
+
+	public void selectionChanged(IAction action, ISelection selection) {
+
+	}
+
+	/**
+	 * Disposes of all internal references held by this class.  No method should be called after
+	 * calling this.
+	 */
+	public void dispose() {
+
+	}
+
 }

@@ -11,10 +11,15 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.actions;
 
+import java.net.URL;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole.ScriptConsoleObserver;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -23,7 +28,9 @@ import org.eclipse.ui.PlatformUI;
  * A class that handles stopping the <code>ScriptConsole</code>.
  * @author Ryan Morse
  */
-public class StopScriptAction extends ConsoleAction implements ScriptConsoleObserver {
+public class StopScriptAction extends Action implements ScriptConsoleObserver {
+
+	private ScriptConsole console;
 
 	/**
 	 * This is the main method of the class. It handles stopping the
@@ -40,12 +47,17 @@ public class StopScriptAction extends ConsoleAction implements ScriptConsoleObse
 		});
 	}
 
-	public StopScriptAction(ScriptConsole fConsole) {
-		super(fConsole,
-				ConsoleLogPlugin.getDefault().getBundle().getEntry("icons/actions/stop_script.gif"), //$NON-NLS-1$
-				Localization.getString("action.stopScript.name"), //$NON-NLS-1$
-				Localization.getString("action.stopScript.desc")); //$NON-NLS-1$
+	public StopScriptAction(IWorkbenchWindow workbenchWindow,
+			ScriptConsole fConsole) {
+
+		this.console = fConsole;
 		console.addScriptConsoleObserver(this);
+
+		URL location = ConsoleLogPlugin.getDefault().getBundle().getEntry("icons/actions/stop_script.gif"); //$NON-NLS-1$
+		setImageDescriptor(ImageDescriptor.createFromURL(location));
+		setText(Localization.getString("action.stopScript.name")); //$NON-NLS-1$
+		setToolTipText(Localization.getString("action.stopScript.desc")); //$NON-NLS-1$
+
 	}
 
 	public void runningStateChanged(boolean running) {

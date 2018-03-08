@@ -16,6 +16,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -41,11 +42,11 @@ public class RunScriptAction extends RunScriptBaseAction {
 		 return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
 		else
 	     return ResourceUtil.getFile(ed.getEditorInput()).getLocation().toString();
-
+		
 	}
-
+	
 	/**
-	 * Checks if the current editor is operating on a file that actually exists and can be
+	 * Checks if the current editor is operating on a file that actually exists and can be 
 	 * used as an argument to stap (as opposed to an unsaved buffer).
 	 * @return True if the file is valid.
 	 */
@@ -58,18 +59,20 @@ public class RunScriptAction extends RunScriptBaseAction {
 				return true;
 		return true;
 	}
-
+	
 	private boolean isValidFile(IEditorPart ed) {
 		if(null == ed) {
-			String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null); //$NON-NLS-1$
-			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
+			String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null);
+			LogManager.logInfo("Initializing", MessageDialog.class); //$NON-NLS-1$
+			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Problem"), msg);
+			LogManager.logInfo("Disposing", MessageDialog.class); //$NON-NLS-1$
 			return false;
 		}
-
+		
 		if(ed.isDirty())
 			ed.doSave(new ProgressMonitorPart(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new FillLayout()));
-
+		
 		return true;
 	}
-
+		
 }
