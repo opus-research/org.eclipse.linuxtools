@@ -30,20 +30,11 @@ public class SamplesProcessor extends XMLProcessor {
 	private static final String SYMBOL_TAG = "symbol";  //$NON-NLS-1$
 	private static final String FILE_TAG = "file";  //$NON-NLS-1$
 	
-	/** 
-	 * The current sample being constructed
-	 */
+	//the current sample being constructed
 	private OpModelSample sample;
-	/**
-	 * A list of all samples (for this symbol)
-	 */
+	//a list of all samples (for this symbol)
 	private ArrayList<OpModelSample> sampleList;
 
-	/**
-	 *  Create a new object oprofile sample and a
-	 *  list of all oprofile samples
-	 *  @param callData call data for the processor 
-	 */
 	@Override
 	public void reset(Object callData) {
 		sample = new OpModelSample();
@@ -69,10 +60,6 @@ public class SamplesProcessor extends XMLProcessor {
 		}
 	}
 	
-	/**
-	 * Return oprofile samples
-	 * @return samples An array of oprofile samples
-	 */
 	public OpModelSample[] getSamples() {
 		OpModelSample[] samples = new OpModelSample[sampleList.size()];
 		sampleList.toArray(samples);
