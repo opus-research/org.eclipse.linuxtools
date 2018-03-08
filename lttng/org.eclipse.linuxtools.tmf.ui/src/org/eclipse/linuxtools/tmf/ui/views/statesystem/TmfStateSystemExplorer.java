@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -136,7 +135,7 @@ public class TmfStateSystemExplorer extends TmfView {
             }
         });
 
-        for (final ITmfTrace currentTrace : TmfTraceManager.getTraceSet(fTrace)) {
+        for (final ITmfTrace currentTrace : fTraceManager.getActiveTraceSet()) {
             /*
              * We will first do all the queries for this trace, then update that
              * sub-tree in the UI thread.
@@ -229,7 +228,7 @@ public class TmfStateSystemExplorer extends TmfView {
      * column as-is, but update the values to the ones at a new timestamp.
      */
     private synchronized void updateTable() {
-        ITmfTrace[] traces = TmfTraceManager.getTraceSet(fTrace);
+        ITmfTrace[] traces = fTraceManager.getActiveTraceSet();
         long ts = fCurrentTimestamp;
 
         /* For each trace... */

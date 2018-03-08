@@ -20,7 +20,7 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * This class describes the find or filter criteria selected by the user in the find or filter dialog box
@@ -348,22 +348,22 @@ public class Criteria {
             }
         } else {
             if (isLifeLineSelected()) {
-                list.add(Messages.SequenceDiagram_Lifeline);
+                list.add(SDMessages._28);
             }
             if (isSyncMessageSelected()) {
-                list.add(Messages.SequenceDiagram_SynchronousMessage);
+                list.add(SDMessages._30);
             }
             if (isSyncMessageReturnSelected()) {
-                list.add(Messages.SequenceDiagram_SynchronousMessageReturn);
+                list.add(SDMessages._31);
             }
             if (isAsyncMessageSelected()) {
-                list.add(Messages.SequenceDiagram_AsynchronousMessage);
+                list.add(SDMessages._32);
             }
             if (isAsyncMessageReturnSelected()) {
-                list.add(Messages.SequenceDiagram_AsynchronousMessageReturn);
+                list.add(SDMessages._33);
             }
             if (isStopSelected()) {
-                list.add(Messages.SequenceDiagram_Stop);
+                list.add(SDMessages._29);
             }
         }
         StringBuffer ret = new StringBuffer();
@@ -372,7 +372,7 @@ public class Criteria {
             String s = i.next();
             ret.append(prefix);
             ret.append(s);
-            prefix = " " + Messages.SequenceDiagram_or + " "; //$NON-NLS-1$ //$NON-NLS-2$
+            prefix = " " + SDMessages._34 + " "; //$NON-NLS-1$ //$NON-NLS-2$
         }
         ret.append("]"); //$NON-NLS-1$
         return ret.toString();
