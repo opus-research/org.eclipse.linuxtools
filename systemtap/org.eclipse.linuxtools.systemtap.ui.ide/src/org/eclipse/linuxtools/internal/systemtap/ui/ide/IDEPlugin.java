@@ -16,11 +16,10 @@ import java.net.URISyntaxException;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScriptAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.ui.IWorkbenchListener;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -57,9 +56,7 @@ public class IDEPlugin extends AbstractUIPlugin {
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
 
-		StopScriptAction ssa = new StopScriptAction();
-		ssa.init(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		ssa.stopAll();
+		ScriptConsole.stopAll();
 
 		plugin.getWorkbench().removeWorkbenchListener(workbenchListener);
 
