@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -9,13 +9,11 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Patrick Tasse - Updated for removal of context clone
- *   Geneviève Bastien - Added the createTimestamp function
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
 
@@ -23,7 +21,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
@@ -35,14 +32,9 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * The CTf trace handler
@@ -51,7 +43,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * @author Matthew khouzam
  */
 public class CtfTmfTrace extends TmfTrace
-        implements ITmfEventParser, ITmfTraceProperties, ITmfPersistentlyIndexable {
+        implements ITmfEventParser, ITmfTraceProperties {
 
     // -------------------------------------------
     // Constants
@@ -60,11 +52,6 @@ public class CtfTmfTrace extends TmfTrace
      * Default cache size for CTF traces
      */
     protected static final int DEFAULT_CACHE_SIZE = 50000;
-
-    /*
-     * The Ctf clock unique identifier field
-     */
-    private static final String CLOCK_HOST_PROPERTY = "uuid"; //$NON-NLS-1$
 
     // -------------------------------------------
     // Fields
@@ -86,7 +73,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param eventType
      *            The type of events that will be read from this trace
      * @throws TmfTraceException
-     *             If something went wrong while reading the trace
+     *             If something when wrong while reading the trace
      */
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> eventType)
@@ -151,7 +138,7 @@ public class CtfTmfTrace extends TmfTrace
         IStatus validTrace = Status.OK_STATUS;
         try {
             final CTFTrace temp = new CTFTrace(path);
-            if (!temp.majorIsSet()) {
+            if (!temp.majortIsSet()) {
                 validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_MajorNotSet);
             } else {
                 CTFTraceReader ctfTraceReader = new CTFTraceReader(temp);
@@ -177,16 +164,12 @@ public class CtfTmfTrace extends TmfTrace
      *
      * @return null, since the trace has no knowledge of the current location
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentLocation()
-     * @since 3.0
      */
     @Override
     public ITmfLocation getCurrentLocation() {
         return null;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public double getLocationRatio(ITmfLocation location) {
         final CtfLocation curLocation = (CtfLocation) location;
@@ -206,7 +189,6 @@ public class CtfTmfTrace extends TmfTrace
      * @param location
      *            ITmfLocation<?>
      * @return ITmfContext
-     * @since 3.0
      */
     @Override
     public synchronized ITmfContext seekEvent(final ITmfLocation location) {
@@ -297,25 +279,6 @@ public class CtfTmfTrace extends TmfTrace
      */
     public CTFTrace getCTFTrace() {
         return fTrace;
-    }
-
-    /**
-     * Ctf traces have a clock with a unique uuid that will be used to identify
-     * the host. Traces with the same clock uuid will be known to have been made
-     * on the same machine.
-     *
-     * Note: uuid is an optional field, it may not be there for a clock.
-     */
-    @Override
-    public String getHostId() {
-        CTFClock clock = getCTFTrace().getClock();
-        if (clock != null) {
-            String clockHost = (String) clock.getProperty(CLOCK_HOST_PROPERTY);
-            if (clockHost != null) {
-                return clockHost;
-            }
-        }
-        return super.getHostId();
     }
 
     // -------------------------------------------
@@ -439,54 +402,6 @@ public class CtfTmfTrace extends TmfTrace
      * @since 2.0
      */
     public CtfIterator createIterator() {
-        try {
-            return new CtfIterator(this);
-        } catch (CTFReaderException e) {
-            Activator.logError(e.getMessage(), e);
-        }
-        return null;
-    }
-
-    // ------------------------------------------------------------------------
-    // Timestamp transformation functions
-    // ------------------------------------------------------------------------
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public CtfTmfTimestamp createTimestamp(long ts) {
-        return new CtfTmfTimestamp(getTimestampTransform().transform(ts));
-    }
-
-    private static int fCheckpointSize = -1;
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public synchronized int getCheckpointSize() {
-        if (fCheckpointSize == -1) {
-            TmfCheckpoint c = new TmfCheckpoint(new CtfTmfTimestamp(0), new CtfLocation(0, 0), 0);
-            ByteBuffer b = ByteBuffer.allocate(ITmfCheckpoint.MAX_SERIALIZE_SIZE);
-            b.clear();
-            c.serialize(b);
-            fCheckpointSize = b.position();
-        }
-
-        return fCheckpointSize;
-    }
-
-    @Override
-    protected ITmfTraceIndexer createIndexer(int interval) {
-        return new TmfBTreeTraceIndexer(this, interval);
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
-        return new CtfLocation(bufferIn);
+        return new CtfIterator(this);
     }
 }
