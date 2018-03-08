@@ -41,13 +41,16 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 	@Override
 	public void addPages() {
 		setWindowTitle(Localization.getString(!edit ? "SelectGraphWizard.CreateGraph" : "SelectGraphWizard.EditGraph"));  //$NON-NLS-1$//$NON-NLS-2$
-		selectGraphPage = new SelectSeriesWizardPage();
+		selectGraphPage = new SelectGraphWizardPage();
 		addPage(selectGraphPage);
+		selectSeriesPage = new SelectSeriesWizardPage();
+		addPage(selectSeriesPage);
 	}
 
 	@Override
 	public boolean canFinish() {
-		if (selectGraphPage.isPageComplete())
+		if (this.getContainer().getCurrentPage() == selectSeriesPage &&
+			selectSeriesPage.isPageComplete())
 			return true;
 		return false;
 	}
@@ -75,10 +78,13 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 	public void dispose() {
 		if(null != selectGraphPage)
 			selectGraphPage.dispose();
+		if(null != selectSeriesPage)
+			selectSeriesPage.dispose();
 		super.dispose();
 	}
 
-	public SelectSeriesWizardPage selectGraphPage;
+	public SelectGraphWizardPage selectGraphPage;
+	public SelectSeriesWizardPage selectSeriesPage;
 	public GraphModel model;
 	private boolean edit;
 }
