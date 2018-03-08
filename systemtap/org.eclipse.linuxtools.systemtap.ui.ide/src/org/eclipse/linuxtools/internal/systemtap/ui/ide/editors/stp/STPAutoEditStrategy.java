@@ -114,11 +114,8 @@ public class STPAutoEditStrategy extends
 			return false;
 		try {
 			ITypedRegion partition= TextUtilities.getPartition(d, fPartitioning, c.offset, false);
-			String partitionType = partition.getType();
 			if (c.offset > 0 && 
-					(STPPartitionScanner.STP_COMMENT.equals(partitionType)
-							|| STPPartitionScanner.STP_MULTILINE_COMMENT.equals(partitionType)
-							|| STPPartitionScanner.STP_STRING.equals(partitionType))) {
+					STPPartitionScanner.STP_COMMENT.equals(partition.getType())) {
 				return true;
 			}
 			IRegion lineInfo = d.getLineInformationOfOffset(c.offset);
