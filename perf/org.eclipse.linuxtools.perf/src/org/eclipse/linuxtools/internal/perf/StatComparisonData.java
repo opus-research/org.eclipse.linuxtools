@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.internal.perf.model.PMStatEntry.Type;
 /**
  * Class containing all functionality for comparting perf statistics data.
  */
-public class StatComparisonData implements IPerfData {
+public class StatComparisonData {
 	// Old stats file.
 	private File oldFile;
 
@@ -45,12 +45,10 @@ public class StatComparisonData implements IPerfData {
 		this.newFile = newFile;
 	}
 
-	@Override
-	public String getPerfData() {
+	public String getResult() {
 		return result;
 	}
 
-	@Override
 	public String getTitle() {
 		return title;
 	}
