@@ -31,12 +31,6 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.viewers.ViewerSorter;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.CheckedTreeSelectionDialog;
-import org.eclipse.ui.dialogs.ContainerCheckedTreeViewer;
-import org.eclipse.ui.dialogs.ISelectionStatusValidator;
-import org.eclipse.ui.dialogs.SelectionStatusDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.SWT;
@@ -53,6 +47,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ContainerCheckedTreeViewer;
+import org.eclipse.ui.dialogs.ISelectionStatusValidator;
+import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Filter dialog for the time graphs
@@ -101,10 +99,6 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      *
      * @param parent
      *            The shell to parent from.
-     * @param labelProvider
-     *            the label provider to render the entries
-     * @param contentProvider
-     *            the content provider to evaluate the tree structure
      */
     public TimeGraphFilterDialog(Shell parent) {
         super(parent);
@@ -147,24 +141,12 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
     }
 
     /**
-     * Sets the sorter used by the tree viewer.
-     *
-     * @param sorter
-     * @deprecated since 3.3, use
-     *             {@link CheckedTreeSelectionDialog#setComparator(ViewerComparator)}
-     *             instead
-     */
-    public void setSorter(ViewerSorter sorter) {
-        fComparator = sorter;
-    }
-
-    /**
      * Sets the comparator used by the tree viewer.
      *
      * @param comparator
-     * @since 3.3
+     *            The comparator
      */
-    public void setComparator(ViewerComparator comparator){
+    public void setComparator(ViewerComparator comparator) {
         fComparator = comparator;
     }
 
@@ -267,10 +249,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         updateStatus(fCurrStatus);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#open()
-     */
+    @Override
     public int open() {
         fIsEmpty = evaluateIfTreeEmpty(fInput);
         super.open();
@@ -281,27 +260,21 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         super.create();
     }
 
-    /**
-     * Handles cancel button pressed event.
-     */
+    @Override
     protected void cancelPressed() {
         setResult(null);
         super.cancelPressed();
     }
 
-    /*
-     * @see SelectionStatusDialog#computeResult()
-     */
+    @Override
     protected void computeResult() {
         setResult(Arrays.asList(fViewer.getCheckedElements()));
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#create()
-     */
+    @Override
     public void create() {
         BusyIndicator.showWhile(null, new Runnable() {
+            @Override
             public void run() {
                 access$superCreate();
                 fViewer.setCheckedElements(getInitialElementSelections()
@@ -314,10 +287,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         });
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
+    @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         Label messageLabel = createMessageArea(composite);
@@ -363,6 +333,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         fViewer.setLabelProvider(fLabelProvider);
         fViewer.addCheckStateListener(new CheckStateListener());
         fViewer.addCheckStateListener(new ICheckStateListener() {
+            @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 updateOKStatus();
             }
@@ -370,7 +341,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         fViewer.setComparator(fComparator);
         if (fFilters != null) {
             for (int i = 0; i != fFilters.size(); i++) {
-                fViewer.addFilter((ViewerFilter) fFilters.get(i));
+                fViewer.addFilter(fFilters.get(i));
             }
         }
         fViewer.setInput(fInput);
@@ -414,6 +385,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 IDialogConstants.SELECT_ALL_ID, Messages.TmfTimeFilterDialog_SELECT_ALL,
                 false);
         SelectionListener listener = new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 Object[] viewerElements = fContentProvider.getElements(fInput);
                 if (fContainerMode) {
@@ -431,6 +403,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 IDialogConstants.DESELECT_ALL_ID, Messages.TmfTimeFilterDialog_DESELECT_ALL,
                 false);
         listener = new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 fViewer.setCheckedElements(new Object[0]);
                 updateOKStatus();
@@ -445,7 +418,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         if (elements.length > 0) {
             if (fFilters != null) {
                 for (int i = 0; i < fFilters.size(); i++) {
-                    ViewerFilter curr = (ViewerFilter) fFilters.get(i);
+                    ViewerFilter curr = fFilters.get(i);
                     elements = curr.filter(fViewer, input, elements);
                 }
             }
@@ -493,5 +466,5 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 checkParent(entry.getParent());
             }
         }
-    };
+    }
 }
