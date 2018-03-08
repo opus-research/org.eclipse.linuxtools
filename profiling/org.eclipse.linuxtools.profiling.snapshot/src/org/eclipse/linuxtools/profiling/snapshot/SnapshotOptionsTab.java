@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -32,7 +31,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 	Combo providerCombo;
 	AbstractLaunchConfigurationTab[] tabs;
 	ILaunchConfiguration initial;
-	String providerId = "";
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
@@ -52,10 +50,9 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 					item.dispose();
 				}
 
-				providerId = providerCombo.getText();
 				// get the tabs associated with the selected ID
 				tabs = ProfileLaunchConfigurationTabGroup
-						.getTabGroupProviderFromId(providerId)
+						.getTabGroupProviderFromId(providerCombo.getText())
 						.getProfileTabs();
 
 				// create the tab item, and load the specified tab inside
@@ -93,11 +90,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 		 *  about them. We get access to this launch configuration to ensure
 		 *  that we can properly load the widgets the first time.
 		 */
-
-		// store current provider id in the configuration
-		if (configuration != null) {
-			setProvider(configuration);
-		}
 		if (initial == null){
 			initial = configuration;
 		}
@@ -118,19 +110,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 
 	public String getName() {
 		return "Snapshot";
-	}
-	/**
-	 * Set the provider attribute in the specified configuration.
-	 * @param configuration a configuration
-	 */
-	public void setProvider(ILaunchConfiguration configuration) {
-		try {
-			ILaunchConfigurationWorkingCopy wc = configuration.getWorkingCopy();
-			wc.setAttribute("provider", providerId);
-			configuration = wc.doSave();
-		} catch (CoreException e1) {
-			e1.printStackTrace();
-		}
 	}
 
 }
