@@ -65,10 +65,9 @@ public abstract class CtfIteratorManager {
      * @param ctx
      *            the context
      * @return the iterator
-     * @since 2.0
      */
     public static synchronized CtfIterator getIterator(final CtfTmfTrace trace,
-            final CtfTmfContext ctx) {
+            final CtfTmfLightweightContext ctx) {
         return map.get(trace).getIterator(ctx);
     }
 }
@@ -87,11 +86,11 @@ class CtfTraceManager {
     /*
      * The map of the cache.
      */
-    private final HashMap<CtfTmfContext, CtfIterator> fMap;
+    private final HashMap<CtfTmfLightweightContext, CtfIterator> fMap;
     /*
      * An array pointing to the same cache. this allows fast "random" accesses.
      */
-    private final ArrayList<CtfTmfContext> fRandomAccess;
+    private final ArrayList<CtfTmfLightweightContext> fRandomAccess;
     /*
      * The parent trace
      */
@@ -102,8 +101,8 @@ class CtfTraceManager {
     private final Random fRnd;
 
     public CtfTraceManager(CtfTmfTrace trace) {
-        fMap = new HashMap<CtfTmfContext, CtfIterator>();
-        fRandomAccess = new ArrayList<CtfTmfContext>();
+        fMap = new HashMap<CtfTmfLightweightContext, CtfIterator>();
+        fRandomAccess = new ArrayList<CtfTmfLightweightContext>();
         fRnd = new Random(System.nanoTime());
         fTrace = trace;
     }
@@ -123,7 +122,7 @@ class CtfTraceManager {
      *            the context to look up
      * @return the iterator refering to the context
      */
-    public CtfIterator getIterator(final CtfTmfContext context) {
+    public CtfIterator getIterator(final CtfTmfLightweightContext context) {
         /*
          * if the element is in the map, we don't need to do anything else.
          */
@@ -162,7 +161,7 @@ class CtfTraceManager {
      * @param elem
      *            the iterator
      */
-    private void addElement(final CtfTmfContext context,
+    private void addElement(final CtfTmfLightweightContext context,
             final CtfIterator elem) {
         fMap.put(context, elem);
         fRandomAccess.add(context);
@@ -176,7 +175,7 @@ class CtfTraceManager {
      * @return the iterator of the removed elements.
      */
     private CtfIterator replaceRandomElement(
-            final CtfTmfContext context) {
+            final CtfTmfLightweightContext context) {
         /*
          * This needs some explanation too: We need to select a random victim
          * and remove it. The order of the elements is not important, so instead
@@ -186,7 +185,7 @@ class CtfTraceManager {
          */
         final int size = fRandomAccess.size();
         final int pos = fRnd.nextInt(size);
-        final CtfTmfContext victim = fRandomAccess.get(pos);
+        final CtfTmfLightweightContext victim = fRandomAccess.get(pos);
         fRandomAccess.set(pos, context);
         final CtfIterator elem = fMap.remove(victim);
         fMap.put(context, elem);
