@@ -353,7 +353,6 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
     protected Composite createSelectionButtons(Composite composite) {
         Composite buttonComposite = new Composite(composite, SWT.RIGHT);
         GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
         layout.marginWidth = 0;
         layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
         buttonComposite.setLayout(layout);
@@ -364,12 +363,16 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         buttonComposite.setLayoutData(data);
 
         /* Create the buttons in the good order to place them as we want */
+        Button checkSubtreeButton = createButton(buttonComposite,
+                IDialogConstants.SELECT_ALL_ID, Messages.TmfTimeFilterDialog_CHECK_SUBTREE,
+                false);
         Button checkAllButton = createButton(buttonComposite,
                 IDialogConstants.SELECT_ALL_ID, Messages.TmfTimeFilterDialog_CHECK_ALL,
                 false);
         Button checkSelectedButton = createButton(buttonComposite,
                 IDialogConstants.CLIENT_ID, Messages.TmfTimeFilterDialog_CHECK_SELECTED,
                 false);
+        new Label(buttonComposite, 0); // Leave an empty cell
         Button uncheckAllButton = createButton(buttonComposite,
                 IDialogConstants.DESELECT_ALL_ID, Messages.TmfTimeFilterDialog_UNCHECK_ALL,
                 false);
@@ -381,10 +384,21 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
          * Apply the layout again after creating the buttons to override
          * createButton messing with the columns
          */
-        layout.numColumns = 2;
+        layout.numColumns = 3;
         buttonComposite.setLayout(layout);
 
         /* Add a listener to each button */
+        checkSubtreeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TreeSelection selection = (TreeSelection) fViewer.getSelection();
+
+                for (Object element : selection.toArray()) {
+                    checkElementAndSubtree(element);
+                }
+            }
+        });
+
         checkAllButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -435,6 +449,12 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         return buttonComposite;
     }
 
+    /**
+     * Check an element and all its parents.
+     *
+     * @param element
+     *            The element to check.
+     */
     private void checkElement(Object element) {
         Object e = element;
         while (e != null) {
@@ -443,6 +463,28 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         }
     }
 
+    /**
+     * Check an element, all its parents and all its children.
+     *
+     * @param element
+     *            The element to check.
+     */
+    private void checkElementAndSubtree(Object element) {
+        Object e = element;
+
+        checkElement(e);
+
+        for (Object child : fContentProvider.getChildren(e)) {
+            checkElementAndSubtree(child);
+        }
+    }
+
+    /**
+     * Uncheck an element and all its children.
+     *
+     * @param element
+     *            The element to uncheck.
+     */
     private void uncheckElement(Object element) {
         Object e = element;
 
