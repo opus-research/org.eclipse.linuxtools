@@ -54,18 +54,18 @@ public class TmfStateStatistics implements ITmfStatistics {
     // ------------------------------------------------------------------------
 
     /**
-     * @deprecated Dot not use, it's been replace by {@link #TOTALS_STATE_ID} and
-     * {@link #TYPES_STATE_ID}
+     * @deprecated Do not use, it's been replaced by {@link #TOTALS_STATE_ID}
+     *              and {@link #TYPES_STATE_ID}
      */
     @Deprecated
     public static final String STATE_ID = "org.eclipse.linuxtools.tmf.statistics"; //$NON-NLS-1$
 
     /** ID for the full statistics state system
-     * @since 2.1*/
+     * @since 2.2 */
     public static final String TOTALS_STATE_ID = "org.eclipse.linuxtools.tmf.statistics.totals"; //$NON-NLS-1$
 
     /** ID for the partial statistics state system
-     * @since 2.1*/
+     * @since 2.2 */
     public static final String TYPES_STATE_ID = "org.eclipse.linuxtools.tmf.statistics.types"; //$NON-NLS-1$
 
     /** Filename the full "statistics state history" file will have */
@@ -149,7 +149,7 @@ public class TmfStateStatistics implements ITmfStatistics {
      *            The location of the types state history file
      * @throws TmfTraceException
      *             If the file could not be written to
-     * @since 2.1
+     * @since 2.2
      */
     public TmfStateStatistics(ITmfTrace trace, File totalsHistoryFile,
             File typesHistoryFile) throws TmfTraceException {
