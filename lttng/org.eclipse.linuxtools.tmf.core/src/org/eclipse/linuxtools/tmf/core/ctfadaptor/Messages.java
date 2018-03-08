@@ -19,12 +19,14 @@ import org.eclipse.osgi.util.NLS;
  * @author Matthew Khouzam
  * @since 2.0
  */
-@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.core.ctfadaptor.messages"; //$NON-NLS-1$
 
+    /** Major version number not set */
     public static String CtfTmfTrace_MajorNotSet;
+
+    /** Reading error */
     public static String CtfTmfTrace_ReadingError;
 
     static {
