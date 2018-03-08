@@ -17,7 +17,7 @@ import junit.framework.TestCase;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfMutableEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
@@ -86,7 +86,7 @@ public class TmfProviderManagerTest extends TestCase {
 		}
 	}
 
-	private class TmfEvent3 extends TmfEvent {
+	private class TmfEvent3 extends TmfMutableEvent {
 		@SuppressWarnings("unused")
         public TmfEvent3(TmfEvent3 other) {
 			super(other);

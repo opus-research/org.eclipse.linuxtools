@@ -12,9 +12,9 @@
 
 package org.eclipse.linuxtools.internal.tmf.ui.parsers.custom;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -44,7 +44,7 @@ public class CustomXmlEvent extends CustomEvent {
      * @param other
      *            Other TmfEvent to copy
      */
-    public CustomXmlEvent(CustomXmlTraceDefinition definition, TmfEvent other) {
+    public CustomXmlEvent(CustomXmlTraceDefinition definition, ITmfEvent other) {
         super(definition, other);
     }
 

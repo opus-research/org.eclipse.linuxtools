@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @version 1.0
  * @since 1.2
 */
-public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
+public class TmfLostEvent extends TmfMutableEvent implements ITmfLostEvent {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -88,17 +88,11 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     // ITmfLostEvent
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent#getTimeRange()
-     */
     @Override
     public TmfTimeRange getTimeRange() {
         return fTimeRange;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent#getNbLostEvents()
-     */
     @Override
     public long getNbLostEvents() {
         return fNbLostEvents;
@@ -123,28 +117,9 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     }
 
     // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public TmfLostEvent clone() {
-        TmfLostEvent clone = null;
-        clone = (TmfLostEvent) super.clone();
-        clone.fTimeRange = fTimeRange;
-        clone.fNbLostEvents = fNbLostEvents;
-        return clone;
-    }
-
-    // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -154,9 +129,6 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -182,9 +154,6 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
