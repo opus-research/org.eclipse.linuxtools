@@ -13,6 +13,8 @@
 
 package org.eclipse.linuxtools.tmf.core.trace.location;
 
+import java.nio.ByteBuffer;
+
 /**
  * The generic trace location in TMF.
  * <p>
@@ -38,5 +40,21 @@ public interface ITmfLocation {
      * @since 2.0
      */
     Comparable<?> getLocationInfo();
+
+    /**
+     * Write the location to the ByteBuffer so that it can be saved to disk.
+     * @param bufferOut the buffer to write to
+     *
+     * @since 3.0
+     */
+    void serializeOut(ByteBuffer bufferOut);
+
+    /**
+     * Read the location from the ByteBuffer. This typically happens when reading from disk.
+     * @param bufferIn the buffer to read from
+     *
+     * @since 3.0
+     */
+    void serializeIn(ByteBuffer bufferIn);
 
 }

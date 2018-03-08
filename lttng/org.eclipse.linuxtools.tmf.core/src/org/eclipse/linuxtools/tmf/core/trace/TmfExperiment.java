@@ -17,6 +17,7 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -42,7 +43,8 @@ import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationManager;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
@@ -153,15 +155,13 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
         setCacheSize(indexPageSize);
         setStreamingInterval(0);
-        setIndexer(new TmfCheckpointIndexer(this, indexPageSize));
         setParser(this);
+        fTraces = traces;
         try {
             super.initialize(resource, path, type);
         } catch (TmfTraceException e) {
             e.printStackTrace();
         }
-
-        fTraces = traces;
 
         if (resource != null) {
             try {
@@ -170,6 +170,14 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
                 Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
             }
         }
+    }
+
+    @Override
+    protected ITmfTraceIndexer createIndexer(int interval) {
+        if (getCheckpointSize() > 0) {
+            return new TmfBTreeTraceIndexer(this, interval);
+        }
+        return super.createIndexer(interval);
     }
 
     /**
@@ -613,6 +621,41 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         if (signal.getTrace() == this) {
             initializeStreamingMonitor();
         }
+    }
+
+    @Override
+    public int getCheckpointSize() {
+        int totalCheckpointSize = 0;
+        try {
+            if (fTraces != null) {
+                for (final ITmfTrace trace : fTraces) {
+                    int currentTraceCheckpointSize = trace.getCheckpointSize();
+                    if (currentTraceCheckpointSize <= 0) {
+                        return 0;
+                    }
+                    totalCheckpointSize += currentTraceCheckpointSize;
+                    totalCheckpointSize += 8; // each entry in the TmfLocationArray has a rank in addition of the location
+                }
+            }
+        } catch (UnsupportedOperationException e) {
+            return 0;
+        }
+
+        return totalCheckpointSize;
+    }
+
+    @Override
+    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
+        ITmfLocation[] locations = new ITmfLocation[fTraces.length];
+        long[] ranks = new long[fTraces.length];
+        for (int i = 0; i < fTraces.length; ++i) {
+            final ITmfTrace trace = fTraces[i];
+            locations[i] = trace.restoreLocation(bufferIn);
+            ranks[i] = bufferIn.getLong();
+        }
+        TmfLocationArray arr = new TmfLocationArray(locations, ranks);
+        TmfExperimentLocation l = new TmfExperimentLocation(arr);
+        return l;
     }
 
 }

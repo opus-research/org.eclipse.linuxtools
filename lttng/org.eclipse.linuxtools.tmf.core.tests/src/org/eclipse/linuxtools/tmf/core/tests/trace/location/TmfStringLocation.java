@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.trace.location;
 
+import java.nio.ByteBuffer;
+
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLocation;
 
 /**
@@ -39,6 +41,22 @@ public class TmfStringLocation extends TmfLocation {
     @Override
     public String getLocationInfo() {
         return (String) super.getLocationInfo();
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeOut(ByteBuffer bufferOut) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeIn(ByteBuffer bufferIn) {
+        throw new UnsupportedOperationException();
     }
 
 }
