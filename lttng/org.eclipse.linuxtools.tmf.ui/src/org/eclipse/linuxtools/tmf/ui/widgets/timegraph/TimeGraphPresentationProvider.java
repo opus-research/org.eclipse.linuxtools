@@ -31,7 +31,7 @@ import org.eclipse.swt.graphics.Rectangle;
  * @author Patrick Tasse
  *
  */
-public class TimeGraphPresentationProvider implements ITimeGraphPresentationProvider2 {
+public class TimeGraphPresentationProvider implements ITimeGraphPresentationProvider {
 
     private ITmfTimeGraphDrawingHelper fDrawingHelper;
     private final String fStateTypeName;

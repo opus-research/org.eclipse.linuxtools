@@ -29,7 +29,6 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTreeExpansionEvent;
@@ -215,9 +214,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     public void setTimeGraphProvider(ITimeGraphPresentationProvider timeGraphProvider) {
         fTimeGraphProvider = timeGraphProvider;
 
-        if (timeGraphProvider instanceof ITimeGraphPresentationProvider2) {
-            ((ITimeGraphPresentationProvider2) timeGraphProvider).setDrawingHelper(this);
-        }
+        timeGraphProvider.setDrawingHelper(this);
 
         if (fEventColorMap != null) {
             for (Color color : fEventColorMap) {
