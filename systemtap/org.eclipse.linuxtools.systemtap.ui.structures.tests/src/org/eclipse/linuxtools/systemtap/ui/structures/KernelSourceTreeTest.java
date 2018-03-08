@@ -11,28 +11,30 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.eclipse.linuxtools.systemtap.ui.structures.KernelSourceTree;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
-public class KernelSourceTreeTest {
 
-	@Before
-	protected void setUp() {
+import junit.framework.TestCase;
+
+public class KernelSourceTreeTest extends TestCase {
+	public KernelSourceTreeTest(String name) {
+		super(name);
+	}
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+
 		kst = new KernelSourceTree();
 	}
 
-	@Test
 	public void testGetTree() {
 		assertNull("Inital tree is null", kst.getTree());
 	}
 	
-	@Test
 	public void testBuildKernelTree() {
 		TreeNode t;
 
@@ -69,5 +71,10 @@ public class KernelSourceTreeTest {
 		kst.dispose();
 	}
 	
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+
 	KernelSourceTree kst;
 }

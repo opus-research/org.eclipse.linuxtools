@@ -1,9 +1,18 @@
 package org.eclipse.linuxtools.systemtap.ui.structures.validators;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.DirectoryValidator;
 
-public class DirectoryValidatorTest {
+import junit.framework.TestCase;
+
+public class DirectoryValidatorTest extends TestCase {
+	public DirectoryValidatorTest(String name) {
+		super(name);
+	}
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
 
 	public void testIsValid() {
 		DirectoryValidator validator = new DirectoryValidator();
@@ -18,4 +27,8 @@ public class DirectoryValidatorTest {
 		assertNull("/blah/bld/ is valid", validator.isValid("/blah/bld/"));
 	}
 	
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
 }
