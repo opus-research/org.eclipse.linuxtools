@@ -594,9 +594,6 @@ public class TimeGraphCombo extends Composite {
     public void setInput(ITimeGraphEntry[] input) {
         fInhibitTreeSelection = true;
         fTreeViewer.setInput(input);
-        for (SelectionListenerWrapper listenerWrapper : fSelectionListenerMap.values()) {
-            listenerWrapper.selection = null;
-        }
         fInhibitTreeSelection = false;
         fTreeViewer.expandAll();
         fTreeViewer.getTree().getVerticalBar().setEnabled(false);

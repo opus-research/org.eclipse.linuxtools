@@ -54,11 +54,6 @@ public class StreamInputPacketIndexEntry {
      */
     private long timestampEnd = 0;
 
-    /**
-     * How many lost events are there?
-     */
-    private long lostEvents = 0;
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -188,17 +183,4 @@ public class StreamInputPacketIndexEntry {
         this.timestampEnd = timestampEnd;
     }
 
-    /**
-     * @return the lostEvents
-     */
-    public long getLostEvents() {
-        return lostEvents;
-    }
-
-    /**
-     * @param lostEvents the lostEvents to set
-     */
-    public void setLostEvents(long lostEvents) {
-        this.lostEvents = lostEvents;
-    }
 }
