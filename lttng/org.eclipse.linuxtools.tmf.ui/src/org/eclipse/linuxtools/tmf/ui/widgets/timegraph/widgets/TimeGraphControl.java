@@ -1,6 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson, École Polytechnique
- *     de Montréal
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +10,6 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
- *   Geneviève Bastien - Move code to provide base classes for time graph view
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -28,7 +26,6 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTreeExpansionEvent;
@@ -73,7 +70,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener {
 
 
     /** Max scrollbar size */
@@ -213,10 +210,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      */
     public void setTimeGraphProvider(ITimeGraphPresentationProvider timeGraphProvider) {
         fTimeGraphProvider = timeGraphProvider;
-
-        if (timeGraphProvider instanceof ITimeGraphPresentationProvider2) {
-            ((ITimeGraphPresentationProvider2)timeGraphProvider).setDrawingHelper(this);
-        }
 
         if (fEventColorMap != null) {
             for (Color color : fEventColorMap) {
@@ -913,9 +906,13 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
+     * Return the x coordinate corresponding to a time
+     *
+     * @param time the time
+     * @return the x coordinate corresponding to the time
+     *
      * @since 2.0
      */
-    @Override
     public int getXForTime(long time) {
         if (null == fTimeProvider) {
             return -1;
@@ -930,9 +927,13 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
+     * Return the time corresponding to an x coordinate
+     *
+     * @param coord The X coordinate
+     * @return The time corresponding to the x coordinate
+     *
      * @since 2.0
      */
-    @Override
     public long getTimeAtX(int coord) {
         if (null == fTimeProvider) {
             return -1;
