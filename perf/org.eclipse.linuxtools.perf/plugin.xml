@@ -137,6 +137,7 @@
       <provider
             default="true"
             delegate="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate"
+            description="Hardware/Software Events Timing"
             id="org.eclipse.linuxtools.perf.provider"
             name="Perf"
             priority="1"
