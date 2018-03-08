@@ -13,14 +13,10 @@
 package org.eclipse.linuxtools.ctf.core.event;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
 
@@ -108,73 +104,8 @@ public class EventDefinition implements IDefinitionScope {
      *
      * @return the context in struct form
      */
-    public StructDefinition getEventContext() {
-        return context;
-    }
-
-    /**
-     * Gets the context of this event
-     *
-     * @return the context in struct form
-     */
     public StructDefinition getContext() {
-        final StructDefinition streamContext = streamInputReader.getPacketReader().getStreamEventContextDef();
-        /*
-         * most common case so far
-         */
-        if (streamContext == null) {
-            return context;
-        }
-        /*
-         * streamContext == something
-         */
-        if (context == null) {
-            return streamContext;
-        }
-        /*
-         * This is probably a slow branch, it is only called in a ToString(), so
-         * I would not worry about it too much
-         */
-        StructDeclaration mergedDeclaration = new StructDeclaration(1);
-
-        HashMap<String, Definition> defs = streamContext.getDefinitions();
-        Iterator<Entry<String, Definition>> it = defs.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, Definition> entry = it.next();
-            /*
-             * Prefix field name to
-             */
-            mergedDeclaration.addField(entry.getKey(),
-                    entry.getValue().getDeclaration());
-        }
-        it = context.getDefinitions().entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, Definition> entry = it.next();
-            /*
-             * Prefix field name to
-             */
-            mergedDeclaration.addField(entry.getKey(),
-                    entry.getValue().getDeclaration());
-        }
-        StructDefinition mergedContext = mergedDeclaration.createDefinition(
-                null, "context"); //$NON-NLS-1$
-        Set<String> keys = mergedContext.getDefinitions().keySet();
-        for (String key : keys) {
-            final Definition lookupDefinition = context.lookupDefinition(key);
-            /*
-             * if the key is in context, add it from context if not it's in the
-             * stream. there is a priority with scoping so if there is a field
-             * like "context" in both stream and context, you display the
-             * context.
-             */
-            if (lookupDefinition != null) {
-                mergedContext.getDefinitions().put(key, lookupDefinition);
-            } else {
-                mergedContext.getDefinitions().put(key,
-                        streamContext.lookupDefinition(key));
-            }
-        }
-        return mergedContext;
+        return context;
     }
 
     /**
