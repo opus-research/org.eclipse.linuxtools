@@ -16,6 +16,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.rpm.core.RPMProject;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.osgi.framework.FrameworkUtil;
@@ -47,7 +50,7 @@ public class RPMExportOperation extends Job {
 	@Override
 	public IStatus run(IProgressMonitor monitor) {
 		IStatus result = null;
-		IOConsole myConsole = RpmConsole.findConsole(rpmProject.getSpecFile().getProject().getName());
+		IOConsole myConsole = findConsole();
 		IOConsoleOutputStream out = myConsole.newOutputStream();
 		myConsole.clearConsole();
 		myConsole.activate();
@@ -86,5 +89,22 @@ public class RPMExportOperation extends Job {
 			break;
 		}
 		return result;
+	}
+
+	private IOConsole findConsole() {
+		ConsolePlugin plugin = ConsolePlugin.getDefault();
+		IConsoleManager conMan = plugin.getConsoleManager();
+		IConsole[] existingConsoles = conMan.getConsoles();
+		for (IConsole console: existingConsoles) {
+			if ((RpmConsole.ID+'('+rpmProject.getSpecFile().getProject().getName()+')').equals(console.getName())) {
+				RpmConsole myConsole = (RpmConsole) console;
+				myConsole.clearConsole();
+				return myConsole;
+			}
+		}
+		// no console found, so create a new one
+		RpmConsole myConsole = new RpmConsole(rpmProject);
+		conMan.addConsoles(new IConsole[] { myConsole });
+		return myConsole;
 	}
 }
