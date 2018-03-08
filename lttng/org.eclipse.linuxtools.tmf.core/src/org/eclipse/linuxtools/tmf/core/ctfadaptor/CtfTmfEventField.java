@@ -16,7 +16,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -118,9 +117,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < arrayDecl.getLength(); i++) {
                     values.add(((IntegerDefinition) arrayDef.getElem(i)).getValue());
                 }
-                long[] valuesArray = convertListToArray(values);
-                field = new CTFIntegerArrayField(fieldName, valuesArray,
-                        ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) arrayDecl.getElementType()).isSigned());
             }
             /* Add other types of arrays here */
@@ -141,9 +138,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 for (int i = 0; i < seqDef.getLength(); i++) {
                     values.add(((IntegerDefinition) seqDef.getElem(i)).getValue());
                 }
-                long[] valuesArray = convertListToArray(values);
-                field = new CTFIntegerArrayField(fieldName, valuesArray,
-                        ((IntegerDeclaration) seqDecl.getElementType()).getBase(),
+                field = new CTFIntegerArrayField(fieldName, values, ((IntegerDeclaration) seqDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) seqDecl.getElementType()).isSigned());
             }
             /* Add other Sequence types here */
@@ -191,68 +186,6 @@ public abstract class CtfTmfEventField extends TmfEventField {
     public String toString() {
         return getName() + '=' + getFormattedValue();
     }
-
-    /**
-     * Print a numeric value as a string in a given base
-     *
-     * @param value
-     *            The value to print as string
-     * @param base
-     *            The base for this value
-     * @param signed
-     *            Is the value signed or not
-     * @return formatted number string
-     * @since 2.0
-     */
-    public final static String formatNumber(long value, int base, boolean signed) {
-        String s;
-
-        /* Format the number correctly according to the integer's base */
-        switch (base) {
-        case 2:
-            s = "0b" + Long.toBinaryString(value); //$NON-NLS-1$
-            break;
-        case 8:
-            s = "0" + Long.toOctalString(value); //$NON-NLS-1$
-
-            break;
-        case 16:
-            s = "0x" + Long.toHexString(value); //$NON-NLS-1$
-            break;
-        case 10:
-        default:
-            /* For non-standard base, we'll just print it as a decimal number */
-            if (!signed && value < 0) {
-                /* Since there are no 'unsigned long', handle this case with BigInteger */
-                BigInteger bigInteger = BigInteger.valueOf(value);
-                /*
-                 * powerOfTwo = 2^64 we add 2^64 to the negative number to get
-                 * the real unsigned value
-                 */
-                BigInteger powerOfTwo = (BigInteger.valueOf(Long.MAX_VALUE)).add(BigInteger.valueOf(1));
-                powerOfTwo = powerOfTwo.multiply(BigInteger.valueOf(2));
-                bigInteger = bigInteger.add(powerOfTwo);
-
-                s = bigInteger.toString();
-            } else {
-                s = Long.toString(value);
-            }
-            break;
-        }
-        return s;
-    }
-
-    /**
-     * We cannot use List.toArray(T[]) for primitives types, so do it manually.
-     */
-    private static long[] convertListToArray(List<Long> list) {
-        long[] array = new long[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = list.get(i);
-        }
-        return array;
-    }
-
 }
 
 /**
@@ -289,7 +222,7 @@ final class CTFIntegerField extends CtfTmfEventField {
 
     @Override
     public String getFormattedValue() {
-        return formatNumber(getValue(), base, signed);
+        return IntegerDefinition.formatNumber(getValue(), base, signed);
     }
 
 }
@@ -341,23 +274,23 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
      * @param signed
      *            Are the values in the array signed or not
      */
-    CTFIntegerArrayField(String name, long[] longValues, int base, boolean signed) {
+    CTFIntegerArrayField(String name, List<Long> longValues, int base, boolean signed) {
         super(name, longValues, null);
         this.base = base;
         this.signed = signed;
     }
 
     @Override
-    public long[] getValue() {
-        return (long[]) super.getValue();
+    public List<Long> getValue() {
+        return (List<Long>) super.getValue();
     }
 
     @Override
     public String getFormattedValue() {
         if (formattedValue == null) {
             List<String> strings = new ArrayList<String>();
-            for (long value : getValue()) {
-                strings.add(formatNumber(value, base, signed));
+            for (Long value : getValue()) {
+                strings.add(IntegerDefinition.formatNumber(value, base, signed));
             }
             formattedValue = strings.toString();
         }
