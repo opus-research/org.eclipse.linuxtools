@@ -67,13 +67,17 @@ public class SourceDisassemblyView extends ViewPart {
 		return;
 	}
 
-	private void setStyledText (String input) {
+	public StyledText getStyledText () {
+		return text;
+	}
+
+	public void setStyledText (String text) {
 		List<StyleRange> styles = new ArrayList<StyleRange> ();
 		int ptr = 0;
 
-		text.setText(input);
+		getStyledText().setText(text);
 
-		StringTokenizer tok = new StringTokenizer(input, "\n"); //$NON-NLS-1$
+		StringTokenizer tok = new StringTokenizer(text, "\n"); //$NON-NLS-1$
 		while (tok.hasMoreTokens()) {
 			String line = tok.nextToken();
 			if (Pattern.matches(ASM, line)) {
@@ -97,10 +101,10 @@ public class SourceDisassemblyView extends ViewPart {
 			// + 1 to skip over the '\n' at EOL that the tokenizer eats
 			ptr += line.length() + 1;
 		}
-		text.setStyleRanges(styles.toArray(new StyleRange [0]));
+		getStyledText().setStyleRanges(styles.toArray(new StyleRange [0]));
 	}
 
-	public static void refreshView () {
+	public static void RefreshView () {
 		Display.getDefault().syncExec(new Runnable() {
 
 			@Override
