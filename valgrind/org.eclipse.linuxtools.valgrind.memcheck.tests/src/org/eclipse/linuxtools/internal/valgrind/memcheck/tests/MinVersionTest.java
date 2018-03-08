@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -24,22 +21,18 @@ import org.eclipse.linuxtools.internal.valgrind.tests.ValgrindStubCommand;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class MinVersionTest extends AbstractMemcheckTest {
 
 	static class ValgrindIncorrectVersion extends ValgrindStubCommand {
 		@Override
 		public String whichVersion(IProject project) {
-			return "valgrind-3.2.1"; //$NON-NLS-1$
+			 return "valgrind-3.2.1"; //$NON-NLS-1$
 		}
 	}
 
 	@Override
-	@Before
-	public void setUp() throws Exception {
+	protected void setUp() throws Exception {
 		super.setUp();
 		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
 
@@ -47,13 +40,11 @@ public class MinVersionTest extends AbstractMemcheckTest {
 	}
 
 	private void saveVersion() {
-		ValgrindLaunchPlugin.getDefault().setValgrindCommand(
-				new ValgrindIncorrectVersion());
+		ValgrindLaunchPlugin.getDefault().setValgrindCommand(new ValgrindIncorrectVersion());
 	}
 
 	@Override
-	@After
-	public void tearDown() throws CoreException {
+	protected void tearDown() throws Exception {
 		restoreVersion();
 
 		deleteProject(proj);
@@ -61,11 +52,9 @@ public class MinVersionTest extends AbstractMemcheckTest {
 	}
 
 	private void restoreVersion() {
-		ValgrindLaunchPlugin.getDefault().setValgrindCommand(
-				new ValgrindCommand());
+		ValgrindLaunchPlugin.getDefault().setValgrindCommand(new ValgrindCommand());
 	}
 
-	@Test
 	public void testLaunchBadVersion() throws Exception {
 		// Put this back so we can make a valid config
 		restoreVersion();
@@ -81,15 +70,13 @@ public class MinVersionTest extends AbstractMemcheckTest {
 
 	}
 
-	@Test
 	public void testTabsBadVersion() throws Exception {
 		Shell testShell = new Shell(Display.getDefault());
 		testShell.setLayout(new GridLayout());
 		ValgrindOptionsTab tab = new ValgrindOptionsTab();
 
-		ILaunchConfiguration config = getLaunchConfigType().newInstance(
-				null,
-				getLaunchManager().generateLaunchConfigurationName(
+		ILaunchConfiguration config = getLaunchConfigType().newInstance(null, getLaunchManager()
+				.generateLaunchConfigurationName(
 						proj.getProject().getName()));
 		ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
 		tab.setDefaults(wc);

@@ -9,7 +9,7 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.structures.tests;
+package org.eclipse.linuxtools.systemtap.structures;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,6 +27,7 @@ public class TreeNodeTest {
 
 		data = new StringBuilder("Object");
 		data2 = "Data";
+		d = "/user/share";
 		s = "String";
 
 		t = new TreeNode(data, s, false);
@@ -233,10 +234,11 @@ public class TreeNodeTest {
 		t.dispose();
 	}
 
-	private TreeNode t;
-	private TreeNode child;
-	private TreeNode child2;
-	private Object data;
-	private String data2;
-	private String s;
+	TreeNode t;
+	TreeNode child;
+	TreeNode child2;
+	Object data;
+	String data2;
+	String s;
+	String d;
 }

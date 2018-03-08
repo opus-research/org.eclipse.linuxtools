@@ -24,7 +24,6 @@ import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.preferences.PreferenceConstants;
@@ -35,7 +34,7 @@ import org.eclipse.linuxtools.rpm.core.utils.Utils;
  *
  */
 public class RpmPackageProposalsList {
-	private Set<String> list = new HashSet<String>();
+	private HashSet<String> list = new HashSet<String>();
 
 	public RpmPackageProposalsList() {
 		setPackagesList();

@@ -9,9 +9,8 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.structures.tests;
+package org.eclipse.linuxtools.systemtap.structures;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -35,14 +34,16 @@ public class CopierTest {
 				lists[i].add(new Integer(j));
 			}
 		}
-
+		
 		ArrayList<String> list2 = Copier.copy(list);
-		for(int i=0; i<list.size(); i++) {
+		for(int i=0; i<list.size(); i++)
 			assertEquals(list2.get(i), list.get(i));
-		}
-
+		
 		ArrayList<?>[] lists2 = Copier.copy(lists);
-		assertArrayEquals(lists, lists2);
+		for(int i=0; i<list.size(); i++) {
+			for(int j=0; j<lists[i].size(); j++)
+				assertEquals(lists2[i].get(j), lists[i].get(j));
+		}
 	}
-
+	
 }
