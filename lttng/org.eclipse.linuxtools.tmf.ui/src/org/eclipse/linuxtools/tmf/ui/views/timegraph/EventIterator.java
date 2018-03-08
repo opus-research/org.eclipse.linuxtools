@@ -10,7 +10,7 @@
  *   Patrick Tasse - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.common;
+package org.eclipse.linuxtools.tmf.ui.views.timegraph;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +21,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 
 /**
  * An iterator for time events
+ * @since 2.0
  */
 public class EventIterator implements Iterator<ITimeEvent> {
 
