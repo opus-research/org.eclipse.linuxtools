@@ -75,7 +75,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
         /* If the target file already exists, do not rebuild it uselessly */
         // TODO for now we assume it's complete. Might be a good idea to check
         // at least if its range matches the trace's range.
-        if (htFile.exists()) {
+        if (fullHistoryFileExists(htFile)) {
             /* Load an existing history */
             final int version = (stateProvider == null) ?
                     ITmfStateProvider.IGNORE_PROVIDER_VERSION :
@@ -244,5 +244,16 @@ public final class TmfStateSystemFactory extends TmfComponent {
         /* 7 */
         HistoryBuilder builder = new HistoryBuilder(realStateProvider, realSS, partialBackend, buildManually);
         return builder.getStateSystemQuerier();
+    }
+
+    /**
+     * Checks if the History Tree File exists
+     *
+     * @param htFile
+     *          the file to check
+     * @return true if it exists else false
+     */
+    public static boolean fullHistoryFileExists(File htFile) {
+        return (htFile.exists());
     }
 }

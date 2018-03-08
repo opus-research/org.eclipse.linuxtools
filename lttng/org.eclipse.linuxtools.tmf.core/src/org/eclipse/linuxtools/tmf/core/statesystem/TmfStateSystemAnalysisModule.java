@@ -104,6 +104,9 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             case FULL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
                 final File htFile = new File(directory + getSsFileName());
+                if (TmfStateSystemFactory.fullHistoryFileExists(htFile)) {
+                    setNotifyRequestNeeded(true);
+                }
                 fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
                 break;
             case PARTIAL:
