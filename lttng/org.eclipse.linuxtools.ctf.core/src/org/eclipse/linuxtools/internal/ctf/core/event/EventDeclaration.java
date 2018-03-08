@@ -12,15 +12,12 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.event;
 
-import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
@@ -102,13 +99,9 @@ public class EventDeclaration implements IEventDeclaration {
      */
     public static synchronized EventDeclaration getLostEventDeclaration() {
         EventDeclaration lostEvent = new EventDeclaration();
-        IntegerDeclaration lostEventsDeclaration = new IntegerDeclaration(32, false, 32, ByteOrder.LITTLE_ENDIAN, Encoding.ASCII, null, 32);
-
         lostEvent.fields = new StructDeclaration(1);
-        lostEvent.fields.addField("Lost events", lostEventsDeclaration); //$NON-NLS-1$
         lostEvent.id = -1L;
         lostEvent.name = "Lost event"; //$NON-NLS-1$
-
         return lostEvent;
     }
 
