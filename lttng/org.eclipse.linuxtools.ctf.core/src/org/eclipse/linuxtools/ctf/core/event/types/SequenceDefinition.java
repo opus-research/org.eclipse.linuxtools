@@ -30,7 +30,7 @@ public class SequenceDefinition extends Definition {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-    private static final Runtime runtime = Runtime.getRuntime();
+
     private final SequenceDeclaration declaration;
     private final IntegerDefinition lengthDefinition;
     private Definition definitions[];
@@ -117,7 +117,6 @@ public class SequenceDefinition extends Definition {
 
     /**
      * Is the sequence a null terminated string?
-     *
      * @return true == is a string, false == is not a string
      */
     public boolean isString() {
@@ -138,27 +137,13 @@ public class SequenceDefinition extends Definition {
 
     @Override
     public void read(BitBuffer input) throws CTFReaderException {
-        final long requestedLength = lengthDefinition.getValue();
-        // poor sanity checks to avoid an oome
-        if (runtime.freeMemory() < requestedLength) {
-            long potentialFreeMemory = runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory();
-            long size = 1;
-            if (getDeclaration().getElementType() instanceof IPrimitiveDeclaration) {
-                size = ((IPrimitiveDeclaration) getDeclaration().getElementType()).getSize();
-            }
-            long requestedBytes = requestedLength * size;
-            if (potentialFreeMemory > requestedBytes) {
-                throw new CTFReaderException("Unsupported sequence size, requested size is " + //$NON-NLS-1$
-                        String.valueOf(requestedBytes) + ", max allowed is " + potentialFreeMemory);
-            }
-        }
-
-        currentLength = (int) requestedLength;
+        currentLength = (int) lengthDefinition.getValue();
 
         if ((definitions == null) || (definitions.length < currentLength)) {
             Definition newDefinitions[] = new Definition[currentLength];
 
             int i = 0;
+
             if (definitions != null) {
                 System.arraycopy(definitions, 0, newDefinitions, 0, definitions.length);
             }
