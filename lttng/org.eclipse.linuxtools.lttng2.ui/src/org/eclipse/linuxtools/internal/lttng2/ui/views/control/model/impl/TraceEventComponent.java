@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
@@ -228,6 +229,18 @@ public class TraceEventComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+
+    /**
+     * Add contexts to given channels and or events
+     *
+     * @param contexts
+     *            - a list of contexts to add
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public void addContexts(List<String> contexts) throws ExecutionException {
+        addContexts(contexts, new NullProgressMonitor());
+    }
 
     /**
      * Add contexts to given channels and or events
