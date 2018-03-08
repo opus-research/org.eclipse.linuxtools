@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -100,6 +100,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
      */
     @Override
     public void setChannels(List<IChannelInfo> channels) {
+        fChannels.clear();
         for (Iterator<IChannelInfo> iterator = channels.iterator(); iterator.hasNext();) {
             IChannelInfo channelInfo = iterator.next();
             fChannels.add(channelInfo);

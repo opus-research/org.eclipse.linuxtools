@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -105,6 +105,7 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
      */
     @Override
     public void setEvents(List<IBaseEventInfo> events) {
+        fEvents.clear();
         for (Iterator<IBaseEventInfo> iterator = events.iterator(); iterator.hasNext();) {
             IBaseEventInfo eventInfo = iterator.next();
             fEvents.add(eventInfo);
