@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -142,7 +143,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         // --------------------
 
         column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
-        column.getColumn().setWidth(COL_WIDTH);
+        column.getColumn().setWidth(500);
         column.getColumn().setText(Messages.ImportTraceWizardImportCaption);
         column.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -152,6 +153,71 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                     return elem.getFile().getPath();
                 }
                 return null;
+            }
+        });
+        // --------------------
+        // Column 3
+        // --------------------
+
+        column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
+
+        column.getColumn().setWidth(80);
+        column.getColumn().setText("Size");
+        column.getColumn().setAlignment(SWT.RIGHT);
+        column.setLabelProvider(new ColumnLabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                if (element instanceof FileAndName) {
+
+                    FileAndName elem = (FileAndName) element;
+                    long len = recurseSize(elem.getFile());
+                    double sizeb10 = Math.log10(len);
+                    DecimalFormat df = new DecimalFormat();
+                    df.setMaximumFractionDigits(2);
+                    df.setMinimumFractionDigits(0);
+                    if (sizeb10 > 12) {
+                        final double tbSize = len / 1024.0 / 1024 / 1024 / 1024;
+                        return df.format(tbSize) + " TB"; //$NON-NLS-1$
+                    }
+                    if (sizeb10 > 9) {
+                        final double gbSize = len / 1024.0 / 1024 / 1024;
+                        return df.format(gbSize) + " GB"; //$NON-NLS-1$
+                    }
+                    if (sizeb10 > 6) {
+                        final double mbSize = len / 1024.0 / 1024;
+                        return df.format(mbSize) + " MB"; //$NON-NLS-1$
+                    }
+                    if (sizeb10 > 3) {
+                        final double kbSize = len / 1024.0;
+                        return df.format(kbSize) + " KB"; //$NON-NLS-1$
+                    }
+                    return Long.toString(len) + " B"; //$NON-NLS-1$
+
+                }
+                return null;
+            }
+
+            private long recurseSize(File dir) {
+                if (dir.isFile() && dir.canRead()) {
+                    return dir.length();
+                }
+                long size = 0;
+                if (dir.exists() && dir.isDirectory() && dir.canRead()) {
+                    final File[] listFiles = dir.listFiles();
+                    if (listFiles != null) {
+                        for (File file : listFiles) {
+                            if (file.isFile() && dir.canRead()) {
+                                size += file.length();
+                            } else if (file.isDirectory()) {
+                                size += recurseSize(file);
+                            } else {
+                                Activator.getDefault().logError("Unknown \"file\" type for " + file + ' ' + file.toString()); //$NON-NLS-1$
+                            }
+                        }
+                    }
+                }
+                return size;
             }
         });
 
