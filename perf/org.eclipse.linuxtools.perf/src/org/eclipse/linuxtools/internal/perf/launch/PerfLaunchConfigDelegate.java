@@ -119,9 +119,11 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				OutputStream outputTo;
 				if (binaryOutCons != null) {
 					outputTo = binaryOutCons.newOutputStream();
-					//Get the printstream for that console
-					print = new PrintStream(outputTo);
+				} else { //This probably shouldn't ever happen...
+					outputTo = System.out;
 				}				
+				//Get the printstream for that console
+				print = new PrintStream(outputTo);
 				for (int i = 0; i < commandArray.length; i++) {
 					print.print(commandArray[i] + " ");
 				}
