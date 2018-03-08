@@ -134,15 +134,11 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
                 return;
             }
         }
-	if (minDelta < 1) minDelta = 1;
         double log = Math.log10(minDelta / unit);
         long pow10 = (long) log;
         double remainder = log - pow10;
         if (remainder < LOG10_1) {
             _timeDelta = (long) Math.pow(10, pow10) * unit;
-            if (_timeDelta == 0) {
-                _timeDelta = 1;
-            }
         } else if (remainder < LOG10_2) {
             _timeDelta = 2 * (long) Math.pow(10, pow10) * unit;
         } else if (remainder < LOG10_3 && unit >= HOUR_IN_NS && unit < YEAR_IN_NS) {
