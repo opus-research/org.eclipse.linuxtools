@@ -23,9 +23,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.FrameworkUtil;
+
 /**
  * Utilities for calling system executables.
  * 
@@ -43,8 +43,12 @@ public class Utils {
 	 */
 	public static BufferedProcessInputStream runCommandToInputStream(String... command)
 			throws IOException {
-		Process p = RuntimeProcessFactory.getFactory().exec(command, null);
-		return new BufferedProcessInputStream(p);
+		BufferedProcessInputStream in = null;
+		ProcessBuilder pBuilder = new ProcessBuilder(command);
+		pBuilder = pBuilder.redirectErrorStream(true);
+		Process child = pBuilder.start();
+		in = new BufferedProcessInputStream(child);
+		return in;
 	}
 
 	/**
@@ -60,8 +64,9 @@ public class Utils {
 	 */
 	public static IStatus runCommand(final OutputStream outStream,
 			String... command) throws IOException {
-		Process child = RuntimeProcessFactory.getFactory().exec(command, null);
-
+		ProcessBuilder pBuilder = new ProcessBuilder(command);
+		pBuilder = pBuilder.redirectErrorStream(true);
+		Process child = pBuilder.start();
 		final BufferedInputStream in = new BufferedInputStream(child
 				.getInputStream());
 		Job readinJob = new Job("") { //$NON-NLS-1$
