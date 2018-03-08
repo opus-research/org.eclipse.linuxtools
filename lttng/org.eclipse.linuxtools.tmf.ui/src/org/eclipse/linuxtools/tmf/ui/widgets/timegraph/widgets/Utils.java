@@ -15,7 +15,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -43,9 +42,7 @@ public class Utils {
         /** Relative to the start of the trace */
         RELATIVE,
         /** Absolute timestamp (ie, relative to the Unix epoch) */
-        ABSOLUTE,
-        /** timestamp displayed as a simple number */
-        NUMBER,
+        ABSOLUTE
     }
 
     static public final int IMG_THREAD_RUNNING = 0;
@@ -263,8 +260,6 @@ public class Utils {
         // if format is absolute (Calendar)
         if (format == TimeFormat.ABSOLUTE) {
             return formatTimeAbs(time, resolution);
-        } else if (format == TimeFormat.NUMBER) {
-            return NumberFormat.getInstance().format(time);
         }
 
         StringBuffer str = new StringBuffer();
