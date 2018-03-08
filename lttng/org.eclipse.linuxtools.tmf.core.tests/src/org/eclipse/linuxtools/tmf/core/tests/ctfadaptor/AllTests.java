@@ -29,14 +29,15 @@ import org.junit.runners.Suite;
     CtfIteratorTest.class,
     CtfLocationDataTest.class,
     CtfLocationTest.class,
-    CtfMipMapProviderTest.class,
     CtfTmfContextTest.class,
     CtfTmfEventFieldTest.class,
     CtfTmfEventTest.class,
     CtfTmfEventTypeTest.class,
+    CtfTmfLostEventsTest.class,
     CtfTmfTimestampTest.class,
     CtfTmfTraceTest.class,
-    EventContextTest.class
+    EventContextTest.class,
+    FunkyTraceTest.class
 })
 public class AllTests {
 

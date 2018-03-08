@@ -361,43 +361,4 @@ public interface ITmfStateSystem {
             long t1, long t2, long resolution, IProgressMonitor monitor)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException;
-
-    /**
-     * Return the maximum value of an attribute into the range using the mipmap
-     *
-     * @param t1
-     *            The start time of the range
-     * @param t2
-     *            The end time of the range
-     * @param quark
-     *            The quark of the attribute
-     * @return The maximum value of the attribute into this range
-     */
-    long queryRangeMipmapMax(long t1, long t2, int quark);
-
-    /**
-     * Return the minimum value of an attribute into the range using the mipmap
-     *
-     * @param t1
-     *            The start time of the range
-     * @param t2
-     *            The end time of the range
-     * @param quark
-     *            The quark of the attribute
-     * @return The minimum value of the attribute into this range
-     */
-    long queryRangeMipmapMin(long t1, long t2, int quark);
-
-    /**
-     * Return the average value of an attribute into the range using the mipmap
-     *
-     * @param t1
-     *            The start time of the range
-     * @param t2
-     *            The end time of the range
-     * @param quark
-     *            The quark of the attribute
-     * @return The average value of the attribute into this range
-     */
-    long queryRangeMipmapAverage(long t1, long t2, int quark);
 }

@@ -9,6 +9,7 @@
  * Contributors: Matthew Khouzam - Initial Design and implementation
  * Contributors: Francis Giraldeau - Initial API and implementation
  * Contributors: Philippe Proulx - Some refinement and optimization
+ * Contributors: Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -46,21 +47,21 @@ public final class BitBuffer {
     // ------------------------------------------------------------------------
 
     private ByteBuffer buf;
-    private int pos;
+    private long pos;
     private ByteOrder byteOrder;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
     /**
-     * Default constructor, makes a bigendian buffer
+     * Default constructor, makes a big-endian buffer
      */
     public BitBuffer() {
         this(null, ByteOrder.BIG_ENDIAN);
     }
 
     /**
-     * Constructor, makes a bigendian buffer
+     * Constructor, makes a big-endian buffer
      *
      * @param buf
      *            the bytebuffer to read
@@ -70,12 +71,12 @@ public final class BitBuffer {
     }
 
     /**
-     * Constructor that is fully parametrisable
+     * Constructor that is fully parameterizable
      *
      * @param buf
      *            the buffer to read
      * @param order
-     *            the byte order (big endian, little endian, network?)
+     *            the byte order (big-endian, little-endian, network?)
      */
     public BitBuffer(ByteBuffer buf, ByteOrder order) {
         setByteBuffer(buf);
@@ -113,42 +114,46 @@ public final class BitBuffer {
      * @return The int value read from the buffer
      */
     public int getInt(int length, boolean signed) {
-        int val = 0;
-        if (!canRead(length)) {
-            throw new BufferOverflowException();
-        }
+
+        /* Nothing to read. */
         if (length == 0) {
             return 0;
         }
+
+        /* Validate that the buffer has enough bits. */
+        if (!canRead(length)) {
+            throw new BufferOverflowException();
+        }
+
+        /* Get the value from the byte buffer. */
+        int val = 0;
         boolean gotIt = false;
 
-        // Fall back to fast ByteBuffer reader if we want to read byte-aligned bytes
+        /* Try a fast read when the position is byte-aligned by using the */
+        /* native methods of ByteBuffer. */
         if (this.pos % BitBuffer.BIT_CHAR == 0) {
             switch (length) {
             case BitBuffer.BIT_CHAR:
                 // Byte
-                if (signed) {
-                    val = this.buf.get(this.pos / 8);
-                } else {
-                    val = (this.buf.get(this.pos / 8)) & 0xff;
+                val = this.buf.get((int) (this.pos / 8));
+                if (!signed) {
+                    val = val & 0xff;
                 }
                 gotIt = true;
                 break;
 
             case BitBuffer.BIT_SHORT:
                 // Word
-                if (signed) {
-                    val = this.buf.getShort(this.pos / 8);
-                } else {
-                    short a = this.buf.getShort(this.pos / 8);
-                    val = a & 0xffff;
+                val = this.buf.getShort((int) (this.pos / 8));
+                if (!signed) {
+                    val = val & 0xffff;
                 }
                 gotIt = true;
                 break;
 
             case BitBuffer.BIT_INT:
                 // Double word
-                val = this.buf.getInt(this.pos / 8);
+                val = this.buf.getInt((int) (this.pos / 8));
                 gotIt = true;
                 break;
 
@@ -156,6 +161,8 @@ public final class BitBuffer {
                 break;
             }
         }
+
+        /* When not byte-aligned, fall-back to a general decoder. */
         if (!gotIt) {
             // Nothing read yet: use longer methods
             if (this.byteOrder == ByteOrder.LITTLE_ENDIAN) {
@@ -169,11 +176,11 @@ public final class BitBuffer {
         return val;
     }
 
-    private int getIntBE(int index, int length, boolean signed) {
+    private int getIntBE(long index, int length, boolean signed) {
         assert ((length > 0) && (length <= BIT_INT));
-        int end = index + length;
-        int startByte = index / BIT_CHAR;
-        int endByte = (end + (BIT_CHAR - 1)) / BIT_CHAR;
+        long end = index + length;
+        int startByte = (int) (index / BIT_CHAR);
+        int endByte = (int) ((end + (BIT_CHAR - 1)) / BIT_CHAR);
         int currByte, lshift, cshift, mask, cmask, cache;
         int value = 0;
 
@@ -193,7 +200,7 @@ public final class BitBuffer {
             value |= cmask;
             return value;
         }
-        cshift = index % BIT_CHAR;
+        cshift = (int) (index % BIT_CHAR);
         if (cshift > 0) {
             mask = ~((~0) << (BIT_CHAR - cshift));
             cmask = cache & mask;
@@ -206,7 +213,7 @@ public final class BitBuffer {
             value <<= BIT_CHAR;
             value |= this.buf.get(currByte) & 0xFF;
         }
-        lshift = end % BIT_CHAR;
+        lshift = (int) (end % BIT_CHAR);
         if (lshift > 0) {
             mask = ~((~0) << lshift);
             cmask = this.buf.get(currByte) & 0xFF;
@@ -221,17 +228,17 @@ public final class BitBuffer {
         return value;
     }
 
-    private int getIntLE(int index, int length, boolean signed) {
+    private int getIntLE(long index, int length, boolean signed) {
         assert ((length > 0) && (length <= BIT_INT));
-        int end = index + length;
-        int startByte = index / BIT_CHAR;
-        int endByte = (end + (BIT_CHAR - 1)) / BIT_CHAR;
+        long end = index + length;
+        int startByte = (int) (index / BIT_CHAR);
+        int endByte = (int) ((end + (BIT_CHAR - 1)) / BIT_CHAR);
         int currByte, lshift, cshift, mask, cmask, cache, mod;
         int value = 0;
 
         currByte = endByte - 1;
         cache = buf.get(currByte) & 0xFF;
-        mod = end % BIT_CHAR;
+        mod = (int) (end % BIT_CHAR);
         lshift = (mod > 0) ? mod : BIT_CHAR;
         boolean isNeg = (cache & (1 << (lshift - 1))) != 0;
         if (signed && isNeg) {
@@ -247,7 +254,7 @@ public final class BitBuffer {
             value |= cmask;
             return value;
         }
-        cshift = end % BIT_CHAR;
+        cshift = (int) (end % BIT_CHAR);
         if (cshift > 0) {
             mask = ~((~0) << cshift);
             cmask = cache & mask;
@@ -259,7 +266,7 @@ public final class BitBuffer {
             value <<= BIT_CHAR;
             value |= buf.get(currByte) & 0xFF;
         }
-        lshift = index % BIT_CHAR;
+        lshift = (int) (index % BIT_CHAR);
         if (lshift > 0) {
             mask = ~((~0) << (BIT_CHAR - lshift));
             cmask = buf.get(currByte) & 0xFF;
@@ -307,7 +314,7 @@ public final class BitBuffer {
      *            The value to write
      */
     public void putInt(int length, int value) {
-        final int curPos = this.pos;
+        final long curPos = this.pos;
 
         if (!canRead(length)) {
             throw new BufferOverflowException();
@@ -323,11 +330,11 @@ public final class BitBuffer {
         this.pos += length;
     }
 
-    private void putIntBE(int index, int length, int value) {
+    private void putIntBE(long index, int length, int value) {
         assert ((length > 0) && (length <= BIT_INT));
-        int end = index + length;
-        int startByte = index / BIT_CHAR;
-        int endByte = (end + (BIT_CHAR - 1)) / BIT_CHAR;
+        long end = index + length;
+        int startByte = (int) (index / BIT_CHAR);
+        int endByte = (int) ((end + (BIT_CHAR - 1)) / BIT_CHAR);
         int currByte, lshift, cshift, mask, cmask;
         int correctedValue = value;
 
@@ -342,15 +349,15 @@ public final class BitBuffer {
 
         /* sub byte */
         if (startByte == (endByte - 1)) {
-            lshift = (BIT_CHAR - (end % BIT_CHAR)) % BIT_CHAR;
+            lshift = (int) ((BIT_CHAR - (end % BIT_CHAR)) % BIT_CHAR);
             mask = ~((~0) << lshift);
             if ((index % BIT_CHAR) > 0) {
                 mask |= (~(0)) << (BIT_CHAR - (index % BIT_CHAR));
             }
             cmask = correctedValue << lshift;
             /*
-             * low bits are cleared because of lshift and high bits are already
-             * cleared
+             * low bits are cleared because of left-shift and high bits are
+             * already cleared
              */
             cmask &= ~mask;
             int b = this.buf.get(startByte) & 0xFF;
@@ -360,7 +367,7 @@ public final class BitBuffer {
 
         /* head byte contains MSB */
         currByte = endByte - 1;
-        cshift = end % BIT_CHAR;
+        cshift = (int) (end % BIT_CHAR);
         if (cshift > 0) {
             lshift = BIT_CHAR - cshift;
             mask = ~((~0) << lshift);
@@ -388,11 +395,11 @@ public final class BitBuffer {
         }
     }
 
-    private void putIntLE(int index, int length, int value) {
+    private void putIntLE(long index, int length, int value) {
         assert ((length > 0) && (length <= BIT_INT));
-        int end = index + length;
-        int startByte = index / BIT_CHAR;
-        int endByte = (end + (BIT_CHAR - 1)) / BIT_CHAR;
+        long end = index + length;
+        int startByte = (int) (index / BIT_CHAR);
+        int endByte = (int) ((end + (BIT_CHAR - 1)) / BIT_CHAR);
         int currByte, lshift, cshift, mask, cmask;
         int correctedValue = value;
 
@@ -407,15 +414,15 @@ public final class BitBuffer {
 
         /* sub byte */
         if (startByte == (endByte - 1)) {
-            lshift = index % BIT_CHAR;
+            lshift = (int) (index % BIT_CHAR);
             mask = ~((~0) << lshift);
             if ((end % BIT_CHAR) > 0) {
                 mask |= (~(0)) << (end % BIT_CHAR);
             }
             cmask = correctedValue << lshift;
             /*
-             * low bits are cleared because of lshift and high bits are already
-             * cleared
+             * low bits are cleared because of left-shift and high bits are
+             * already cleared
              */
             cmask &= ~mask;
             int b = this.buf.get(startByte) & 0xFF;
@@ -425,7 +432,7 @@ public final class BitBuffer {
 
         /* head byte */
         currByte = startByte;
-        cshift = index % BIT_CHAR;
+        cshift = (int) (index % BIT_CHAR);
         if (cshift > 0) {
             mask = ~((~0) << cshift);
             cmask = correctedValue << cshift;
@@ -468,7 +475,7 @@ public final class BitBuffer {
             return false;
         }
 
-        if ((this.pos + length) > (this.buf.capacity() * BIT_CHAR)) {
+        if ((this.pos + length) > (((long) this.buf.capacity()) * BIT_CHAR)) {
             return false;
         }
         return true;
@@ -502,7 +509,7 @@ public final class BitBuffer {
      * @param newPosition
      *            The new position of the buffer.
      */
-    public void position(int newPosition) {
+    public void position(long newPosition) {
         this.pos = newPosition;
     }
 
@@ -512,7 +519,7 @@ public final class BitBuffer {
      *
      * @return order The position of the buffer.
      */
-    public int position() {
+    public long position() {
         return this.pos;
     }
 
@@ -540,7 +547,7 @@ public final class BitBuffer {
     }
 
     /**
-     * resets the bitbuffer.
+     * Resets the bitbuffer.
      */
     public void clear() {
         position(0);

@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 /**
  * A state value containing a variable-sized string
  *
@@ -25,7 +23,6 @@ final class StringStateValue extends TmfStateValue {
     private final String valueStr;
 
     public StringStateValue(String valueAsString) {
-        assert (valueAsString != null);
         this.valueStr = valueAsString;
     }
 
@@ -49,25 +46,12 @@ final class StringStateValue extends TmfStateValue {
         return valueStr;
     }
 
-    @Override
-    public int compareTo(ITmfStateValue value) {
-        if (value.getType() == Type.NULL) {
-            return 0;
-        }
-        try {
-            return this.unboxStr().compareTo(value.unboxStr());
-        } catch (StateValueTypeException e) {
-            return 0;
-        }
-    }
+    // ------------------------------------------------------------------------
+    // Unboxing methods
+    // ------------------------------------------------------------------------
 
     @Override
-    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
-        throw new StateValueTypeException();
-    }
-
-    @Override
-    public ITmfStateValue increment() throws StateValueTypeException {
-        throw new StateValueTypeException();
+    public String unboxStr() {
+        return valueStr;
     }
 }

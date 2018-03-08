@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A state value containing a simple integer.
@@ -22,10 +22,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  */
 final class IntegerStateValue extends TmfStateValue {
 
-    private final int valueInt;
+    private final Integer valueInt;
 
     public IntegerStateValue(int valueAsInt) {
-        this.valueInt = valueAsInt;
+        this.valueInt = new Integer(valueAsInt);
     }
 
     @Override
@@ -44,32 +44,22 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public String toString() {
+    public @Nullable String toString() {
         return String.format("%3d", valueInt); //$NON-NLS-1$
     }
 
+    // ------------------------------------------------------------------------
+    // Unboxing methods
+    // ------------------------------------------------------------------------
+
     @Override
-    public int compareTo(ITmfStateValue value) {
-        if (value.getType() == Type.NULL) {
-            return 0;
-        }
-        try {
-            return Integer.valueOf(this.unboxInt()).compareTo(Integer.valueOf(value.unboxInt()));
-        } catch (StateValueTypeException e) {
-            return 0;
-        }
+    public int unboxInt() {
+        return valueInt;
     }
 
     @Override
-    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
-        if (val.getType() == Type.NULL) {
-            throw new StateValueTypeException();
-        }
-        return TmfStateValue.newValueInt(valueInt + val.unboxInt());
-    }
-
-    @Override
-    public ITmfStateValue increment() throws StateValueTypeException {
-        return TmfStateValue.newValueInt(valueInt + 1);
+    public long unboxLong() {
+        /* It's always safe to up-cast a int into a long */
+        return valueInt;
     }
 }

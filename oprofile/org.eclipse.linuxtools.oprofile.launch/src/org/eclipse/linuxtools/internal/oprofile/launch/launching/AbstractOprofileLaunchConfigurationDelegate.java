@@ -67,6 +67,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		options.loadConfiguration(config);
 		IPath exePath = getExePath(config);
 		options.setBinaryImage(exePath.toOSString());
+		Oprofile.OprofileProject.setProfilingBinary(options.getOprofileComboText());
 
 		//if daemonEvents null or zero size, the default event will be used
 		OprofileDaemonEvent[] daemonEvents = null;
@@ -102,7 +103,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 					process.waitFor();
 				} catch (InterruptedException e){
 					process.destroy();
-					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message"));
+					Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
 					throw new CoreException(status);
 				}
 			}
@@ -110,8 +111,8 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 
 		// Executing operf with the default or specified events,
 		// outputing the profiling data to the project dir/OPROFILE_DATA
-
 		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
+
 			String eventsString=EVENTS;
 			for (int i=0;i<events.size();i++) {
 				eventsString+=events.get(i).getEvent().getText() + ":" + events.get(i).getEvent().getMinCount() + ","; //$NON-NLS-1$ //$NON-NLS-2$
@@ -226,7 +227,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 			} catch (URISyntaxException e) {
 				//Since working directory paths are verified by the launch tab, this exception should never be thrown
 				Status status = new Status(IStatus.ERROR, OprofileCorePlugin.getId(),
-						OprofileLaunchMessages.getString("oprofilelaunch.error.invalidworkingdir.status_message"));
+						OprofileLaunchMessages.getString("oprofilelaunch.error.invalidworkingdir.status_message")); //$NON-NLS-1$
 				throw new CoreException(status);
 			}
 			return uri;
@@ -245,7 +246,18 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 	 * @throws OpcontrolException
 	 */
 	protected boolean oprofileStatus() throws OpcontrolException {
-		return OprofileCorePlugin.getDefault().getOpcontrolProvider().status();
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
+			try {
+				Process p = RuntimeProcessFactory.getFactory().exec(
+						new String [] {"operf", "--version"}, //$NON-NLS-1$ //$NON-NLS-2$
+						OprofileProject.getProject());
+				return (p != null);
+			} catch (IOException e) {
+				return false;
+			}
+		} else {
+			return OprofileCorePlugin.getDefault().getOpcontrolProvider().status();
+		}
 	}
 
 	protected IProject getProject(){

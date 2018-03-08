@@ -21,18 +21,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpointIndex;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
@@ -50,10 +51,9 @@ public class TmfExperimentCheckpointIndexTest {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private static final String DIRECTORY    = "testfiles";
-    private static final String TEST_STREAM1 = "O-Test-10K";
-    private static final String TEST_STREAM2 = "E-Test-10K";
     private static final String EXPERIMENT   = "MyExperiment";
+    private static final TmfTestTrace TEST_TRACE1   = TmfTestTrace.O_TEST_10K;
+    private static final TmfTestTrace TEST_TRACE2   = TmfTestTrace.E_TEST_10K;
     private static int          NB_EVENTS    = 20000;
     private static int          BLOCK_SIZE   = 1000;
 
@@ -82,18 +82,16 @@ public class TmfExperimentCheckpointIndexTest {
     }
 
     private static void setupTraces() {
-        final String path1 = DIRECTORY + File.separator + TEST_STREAM1;
-        final String path2 = DIRECTORY + File.separator + TEST_STREAM2;
 
         fTestTraces = new ITmfTrace[2];
         try {
-            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
+            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE1.getFullPath()), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null, null);
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null);
             fTestTraces[0] = trace1;
-            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
+            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE2.getFullPath()), null);
             test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null, null);
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null);
             fTestTraces[1] = trace2;
         } catch (final TmfTraceException e) {
             e.printStackTrace();
@@ -117,7 +115,7 @@ public class TmfExperimentCheckpointIndexTest {
         assertEquals("getStartTime",   1,          fExperiment.getStartTime().getValue());
         assertEquals("getEndTime",     NB_EVENTS,  fExperiment.getEndTime().getValue());
 
-        List<ITmfCheckpoint> checkpoints = fExperiment.getIndexer().getCheckpoints();
+        ITmfCheckpointIndex checkpoints = fExperiment.getIndexer().getCheckpoints();
         int pageSize = fExperiment.getCacheSize();
         assertTrue("Checkpoints exist",  checkpoints != null);
         assertEquals("Checkpoints size", NB_EVENTS / BLOCK_SIZE, checkpoints.size());
@@ -141,13 +139,13 @@ public class TmfExperimentCheckpointIndexTest {
     public void testGrowingIndex() {
         ITmfTrace[] testTraces = new TmfTraceStub[2];
         try {
-            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM1), null);
+            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE1.getFullPath()), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, false, null, null);
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, false, null);
             testTraces[0] = trace1;
-            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM2), null);
+            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE2.getFullPath()), null);
             test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, false, null, null);
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, false, null);
             testTraces[1] = trace2;
         } catch (final TmfTraceException e) {
             e.printStackTrace();
@@ -165,7 +163,7 @@ public class TmfExperimentCheckpointIndexTest {
         experiment.getIndexer().buildIndex(0, range, true);
 
         // Validate that each checkpoint points to the right event
-        List<ITmfCheckpoint> checkpoints = experiment.getIndexer().getCheckpoints();
+        ITmfCheckpointIndex checkpoints = experiment.getIndexer().getCheckpoints();
         assertTrue("Checkpoints exist",  checkpoints != null);
         assertEquals("Checkpoints size", NB_EVENTS / BLOCK_SIZE / 2, checkpoints.size());
 

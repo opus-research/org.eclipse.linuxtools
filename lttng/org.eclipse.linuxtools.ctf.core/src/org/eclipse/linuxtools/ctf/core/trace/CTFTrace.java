@@ -230,13 +230,6 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * CTFTrace empty constructor for testing purposes
-     * @since 3.0
-     */
-    public CTFTrace(){
-        path = null;
-    }
-    /**
      * Dispose the trace
      *
      * @since 2.0
@@ -538,7 +531,7 @@ public class CTFTrace implements IDefinitionScope {
             fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
-            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int) fc.size(), 4096));
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, (int) Math.min(fc.size(), 4096L));
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
             throw new CTFReaderException(e);

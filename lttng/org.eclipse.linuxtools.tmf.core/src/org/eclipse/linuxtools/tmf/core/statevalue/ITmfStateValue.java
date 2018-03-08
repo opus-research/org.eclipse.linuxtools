@@ -8,8 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API
- *   Jean-Christian Kouamé - make state values comparable;
- *                           add the add operation and the increment operation
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
@@ -22,11 +20,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * @version 1.0
  * @author Alexandre Montplaisir
  */
-public interface ITmfStateValue extends Comparable<ITmfStateValue> {
+public interface ITmfStateValue {
 
     /**
      * The supported types of state values
-     *
      * @since 2.0
      */
     public enum Type {
@@ -34,10 +31,12 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
         NULL,
         /** 32-bit integer value */
         INTEGER,
+        /** 64-bit integer value */
+        LONG,
+        /** IEEE 754 double precision number */
+        DOUBLE,
         /** Variable-length string value */
         STRING,
-        /** 64-bit integer value */
-        LONG
     }
 
     /**
@@ -68,15 +67,6 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
     int unboxInt() throws StateValueTypeException;
 
     /**
-     * Read the contained value as a String
-     *
-     * @return The String contained in the state value
-     * @throws StateValueTypeException
-     *             If the contained value cannot be read as a String
-     */
-    String unboxStr() throws StateValueTypeException;
-
-    /**
      * Read the contained value as a 'long' primitive
      *
      * @return The long contained in the state value
@@ -87,38 +77,20 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
     long unboxLong() throws StateValueTypeException;
 
     /**
-     * @since 3.0
+     * Read the contained value as a 'double' primitive
+     *
+     * @return The double contained in the state value
+     * @throws StateValueTypeException
+     *             If the contained value cannot be read as a double
      */
-    @Override
-    public int compareTo(ITmfStateValue value);
+    double unboxDouble() throws StateValueTypeException;
 
     /**
-     * return a new state value whose value is (this + val)
+     * Read the contained value as a String
      *
-     * @param val
-     *            The state value to be added
-     * @return a new state value whose value is (this + val)
+     * @return The String contained in the state value
      * @throws StateValueTypeException
-     *          <ul>
-     *             <li>if it is a null state value</li>
-     *             <li>if the contained value is a string</li>
-     *             <li>if the contained value cannot be read</li>
-     *          </ul>
-     * @since 3.0
+     *             If the contained value cannot be read as a String
      */
-    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException;
-
-    /**
-     * Increment the contained value by one
-     *
-     * @return a new state value whose value is (this + 1)
-     * @throws StateValueTypeException
-     *             <ul>
-     *             <li>if it is a null state value</li>
-     *             <li>if the contained value is a string</li>
-     *             <li>if the contained value cannot be read</li>
-     *             </ul>
-     * @since 3.0
-     */
-    public ITmfStateValue increment() throws StateValueTypeException;
+    String unboxStr() throws StateValueTypeException;
 }

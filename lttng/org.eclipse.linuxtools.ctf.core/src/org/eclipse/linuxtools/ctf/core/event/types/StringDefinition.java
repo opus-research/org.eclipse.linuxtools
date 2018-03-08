@@ -41,9 +41,13 @@ public class StringDefinition extends Definition {
 
     /**
      * Constructor
-     * @param declaration the parent declaration
-     * @param definitionScope the parent scope
-     * @param fieldName the field name
+     *
+     * @param declaration
+     *            the parent declaration
+     * @param definitionScope
+     *            the parent scope
+     * @param fieldName
+     *            the field name
      */
     public StringDefinition(StringDeclaration declaration,
             IDefinitionScope definitionScope, String fieldName) {
@@ -65,7 +69,9 @@ public class StringDefinition extends Definition {
 
     /**
      * Sets the string declaration
-     * @param declaration the declaration
+     *
+     * @param declaration
+     *            the declaration
      */
     public void setDeclaration(StringDeclaration declaration) {
         this.declaration = declaration;
@@ -73,6 +79,7 @@ public class StringDefinition extends Definition {
 
     /**
      * Gets the string
+     *
      * @return the stringbuilder
      */
     public StringBuilder getString() {
@@ -81,7 +88,9 @@ public class StringDefinition extends Definition {
 
     /**
      * Sets a stringbuilder for the definition
-     * @param string the stringbuilder
+     *
+     * @param string
+     *            the stringbuilder
      */
     public void setString(StringBuilder string) {
         this.string = string;
@@ -89,6 +98,7 @@ public class StringDefinition extends Definition {
 
     /**
      * Gets the string (value)
+     *
      * @return the string
      */
     public String getValue() {
@@ -101,8 +111,9 @@ public class StringDefinition extends Definition {
 
     @Override
     public void read(BitBuffer input) {
+        /* Offset the buffer position wrt the current alignment */
+        alignRead(input, this.declaration);
         string.setLength(0);
-
         char c = (char) input.getInt(8, false);
         while (c != 0) {
             string.append(c);

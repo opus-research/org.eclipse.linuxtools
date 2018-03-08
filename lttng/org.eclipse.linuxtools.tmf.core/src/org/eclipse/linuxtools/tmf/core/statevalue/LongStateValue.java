@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A state value containing a long integer (8 bytes).
@@ -22,10 +22,10 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  */
 final class LongStateValue extends TmfStateValue {
 
-    private final long valueLong;
+    private final Long valueLong;
 
     public LongStateValue(long valueAsLong) {
-        this.valueLong = valueAsLong;
+        this.valueLong = new Long(valueAsLong);
     }
 
     @Override
@@ -44,32 +44,16 @@ final class LongStateValue extends TmfStateValue {
     }
 
     @Override
-    public String toString() {
+    public @Nullable String toString() {
         return String.format("%3d", valueLong); //$NON-NLS-1$
     }
 
-    @Override
-    public int compareTo(ITmfStateValue value) {
-        if (value.getType() == Type.NULL) {
-            return 0;
-        }
-        try {
-            return Long.valueOf(this.unboxLong()).compareTo(Long.valueOf(value.unboxLong()));
-        } catch (StateValueTypeException e) {
-            return 0;
-        }
-    }
+    // ------------------------------------------------------------------------
+    // Unboxing methods
+    // ------------------------------------------------------------------------
 
     @Override
-    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
-        if (val.getType() == Type.NULL) {
-            throw new StateValueTypeException();
-        }
-        return TmfStateValue.newValueLong(valueLong + val.unboxLong());
-    }
-
-    @Override
-    public ITmfStateValue increment() throws StateValueTypeException {
-        return TmfStateValue.newValueLong(valueLong + 1);
+    public long unboxLong() {
+        return valueLong;
     }
 }

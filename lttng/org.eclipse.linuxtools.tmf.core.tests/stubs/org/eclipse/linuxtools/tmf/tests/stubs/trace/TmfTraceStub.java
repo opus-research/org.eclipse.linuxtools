@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
@@ -25,13 +26,19 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
@@ -40,7 +47,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
+public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -85,7 +92,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     public TmfTraceStub(final String path,
             final int cacheSize,
             final long interval) throws TmfTraceException {
-        super(null, ITmfEvent.class, path, cacheSize, interval, null, null);
+        super(null, ITmfEvent.class, path, cacheSize, interval, null);
         setupTrace(path);
         setParser(new TmfEventParserStub(this));
     }
@@ -100,8 +107,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
      *            The cache size
      * @param waitForCompletion
      *            Do we block the caller until the trace is indexed, or not.
-     * @param indexer
-     *            The trace indexer to use
      * @param parser
      *            The trace parser. If left 'null', it will use a
      *            {@link TmfEventParserStub}.
@@ -111,9 +116,8 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     public TmfTraceStub(final String path,
             final int cacheSize,
             final boolean waitForCompletion,
-            final ITmfTraceIndexer indexer,
             final ITmfEventParser parser) throws TmfTraceException {
-        super(null, ITmfEvent.class, path, cacheSize, 0, indexer, null);
+        super(null, ITmfEvent.class, path, cacheSize, 0, null);
         setupTrace(path);
         setParser((parser != null) ? parser : new TmfEventParserStub(this));
         if (waitForCompletion) {
@@ -347,4 +351,39 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
     }
 
+    private static int fCheckpointSize = -1;
+
+    @Override
+    public synchronized int getCheckpointSize() {
+        if (fCheckpointSize == -1) {
+            TmfCheckpoint c = new TmfCheckpoint(new TmfTimestamp(0L), new TmfLongLocation(0L), 0);
+            ByteBuffer b = ByteBuffer.allocate(ITmfCheckpoint.MAX_SERIALIZE_SIZE);
+            b.clear();
+            c.serialize(b);
+            fCheckpointSize = b.position();
+        }
+
+        return fCheckpointSize;
+    }
+
+    @Override
+    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
+        return new TmfLongLocation(bufferIn);
+    }
+
+    /**
+     * Simulate trace opening, to be called by tests who need an actively opened
+     * trace
+     */
+    public void openTrace() {
+        TmfSignalManager.dispatchSignal(new TmfTraceOpenedSignal(this, this, null));
+        selectTrace();
+    }
+
+    /**
+     * Simulate selecting the trace
+     */
+    public void selectTrace() {
+        TmfSignalManager.dispatchSignal(new TmfTraceSelectedSignal(this, this));
+    }
 }
