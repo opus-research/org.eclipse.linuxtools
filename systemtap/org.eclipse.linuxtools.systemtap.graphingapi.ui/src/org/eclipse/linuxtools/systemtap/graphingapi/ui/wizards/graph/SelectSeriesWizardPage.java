@@ -54,6 +54,7 @@ public class SelectSeriesWizardPage extends WizardPage {
 		Label lblTitle = new Label(comp, SWT.NONE);
 		lblTitle.setText(Localization.getString("SelectSeriesWizardPage.Title")); //$NON-NLS-1$
 		txtTitle = new Text(comp, SWT.BORDER);
+		txtTitle.setText(model.getGraphData().title);
 		txtTitle.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
@@ -149,6 +150,7 @@ public class SelectSeriesWizardPage extends WizardPage {
 		lblKey = new Label(comp, SWT.NONE);
 		lblKey.setText(Localization.getString("SelectSeriesWizardPage.KeyFilter")); //$NON-NLS-1$
 		txtKey = new Text(comp, SWT.BORDER);
+		txtKey.setText(model.getGraphData().key);
 
 		if(null != txtKey) {
 			txtKey.addModifyListener(new ModifyListener() {
