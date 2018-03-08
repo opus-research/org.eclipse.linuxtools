@@ -80,11 +80,6 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
     }
 
     @Override
-    public CtfKernelStateInput getNewInstance() {
-        return new CtfKernelStateInput((CtfTmfTrace) this.getTrace());
-    }
-
-    @Override
     protected void eventHandle(ITmfEvent ev) {
         /*
          * AbstractStateChangeInput should have already checked for the correct

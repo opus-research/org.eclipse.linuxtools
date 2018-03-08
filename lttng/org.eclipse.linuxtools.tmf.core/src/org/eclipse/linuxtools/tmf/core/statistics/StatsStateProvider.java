@@ -65,11 +65,6 @@ class StatsStateProvider extends AbstractStateChangeInput {
     }
 
     @Override
-    public StatsStateProvider getNewInstance() {
-        return new StatsStateProvider(this.getTrace());
-    }
-
-    @Override
     protected void eventHandle(ITmfEvent event) {
         int quark;
 
