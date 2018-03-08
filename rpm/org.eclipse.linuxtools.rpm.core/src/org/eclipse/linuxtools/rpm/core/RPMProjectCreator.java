@@ -34,7 +34,6 @@ import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
  */
 public class RPMProjectCreator {
 	private RPMProjectLayout layout;
-	private IProject latest;
 
 	/**
 	 * Creates the utility class and sets the layout that will be used.
@@ -62,8 +61,9 @@ public class RPMProjectCreator {
 	 *            The parent location of the project.
 	 * @param monitor
 	 *            Progress monitor to report back status.
+	 * @return The newly created project.
 	 */
-	public void create(String projectName, IPath projectPath,
+	public IProject create(String projectName, IPath projectPath,
 			IProgressMonitor monitor) {
 		try {
 			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -93,40 +93,13 @@ public class RPMProjectCreator {
 				if (layout.equals(RPMProjectLayout.RPMBUILD)) {
 					createDirsRemote(monitor, project, parsedIPathString);
 				}
-			} else {
-				if (layout.equals(RPMProjectLayout.RPMBUILD)) {
-					createDirs(monitor, project);
-				}
-			}
-			latest = project;
+			} 
+			return project;
 
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Returns the latest project created.
-	 * 
-	 * @return The last created project.
-	 */
-	public IProject getLatestProject() {
-		return latest;
-	}
-
-	private void createDirs(IProgressMonitor monitor, IProject project)
-			throws CoreException {
-
-		project.getFolder(IRPMConstants.SPECS_FOLDER).create(true, true,
-				monitor);
-		project.getFolder(IRPMConstants.SOURCES_FOLDER).create(true, true,
-				monitor);
-		project.getFolder(IRPMConstants.BUILD_FOLDER).create(true, true,
-				monitor);
-		project.getFolder(IRPMConstants.RPMS_FOLDER)
-				.create(true, true, monitor);
-		project.getFolder(IRPMConstants.SRPMS_FOLDER).create(true, true,
-				monitor);
+		return null;
 	}
 
 	private void createDirsRemote(IProgressMonitor monitor, IProject project,

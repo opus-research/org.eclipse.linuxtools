@@ -69,6 +69,9 @@ public class DeleteTraceHandler extends AbstractHandler {
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
+        if (part == null) {
+            return false;
+        }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -137,14 +140,13 @@ public class DeleteTraceHandler extends AbstractHandler {
 
                     IPath path = resource.getLocation();
                     if (path != null && (trace.getParent() instanceof TmfTraceFolder)) {
-                        String location = path.toString();
                         TmfExperimentFolder experimentFolder = trace.getProject().getExperimentsFolder();
 
                         // Propagate the removal to traces
                         for (ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
                             List<ITmfProjectModelElement> toRemove = new LinkedList<ITmfProjectModelElement>();
                             for (ITmfProjectModelElement child : experiment.getChildren()) {
-                                if (child.getResource().getLocation().toString().equals(location)) {
+                                if (child.getName().equals(trace.getName())) {
                                     toRemove.add(child);
                                 }
                             }

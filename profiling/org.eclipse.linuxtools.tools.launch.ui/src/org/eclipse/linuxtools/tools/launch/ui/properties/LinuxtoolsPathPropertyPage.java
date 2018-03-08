@@ -28,16 +28,30 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 import org.eclipse.linuxtools.tools.launch.ui.Activator;
 import org.eclipse.linuxtools.tools.launch.ui.Messages;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+/**
+ * <p>
+ * Preference page and property page implementation for configuring the Linuxtools Path property.
+ * </p>
+ *
+ * <p>
+ * In this property page, it is possible to change the PATH used to run LinuxTools commands.
+ * This is necessary for users that want to use tools not located in system PATH.
+ * With this page you can, for example, have 2 different versions of valgrind installed in your
+ * system and select which one will be used to profile your application.
+ * </p>
+ *
+ * @author Otavio Pontes
+ */
 public class LinuxtoolsPathPropertyPage extends PropertyPage {
 	private static final String CORE_PLUGIN_ID = "org.eclipse.linuxtools.tools.launch.core"; //$NON-NLS-1$
 	public static final String LINUXTOOLS_PATH_COMBO_NAME = CORE_PLUGIN_ID + ".LinuxtoolsPathCombo"; //$NON-NLS-1$
@@ -100,14 +114,10 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		systemEnvButton = new Button(radios, SWT.RADIO);
 		systemEnvButton.setText(Messages.LINUXTOOLS_PATH_SYSTEM_ENV);
 		systemEnvButton.setSelection(systemPathSelected);
-		systemEnvButton.addSelectionListener(new SelectionListener() {
+		systemEnvButton.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					updateOptionsEnable();
-				}
-
-				@Override
-				public void widgetDefaultSelected(SelectionEvent e) {
 				}
 		});
 
