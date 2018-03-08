@@ -47,7 +47,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -582,32 +581,6 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
 
     /**
-     * Trace is closed: clear the data structures and the view
-     *
-     * @param signal the signal received
-     */
-    @TmfSignalHandler
-    @Override
-    public void traceClosed(final TmfTraceClosedSignal signal) {
-        synchronized (fBuildThreadMap) {
-            BuildThread buildThread = fBuildThreadMap.remove(signal.getTrace());
-            if (buildThread != null) {
-                buildThread.cancel();
-            }
-        }
-        synchronized (fEntryListMap) {
-            fEntryListMap.remove(signal.getTrace());
-        }
-        fSelectedThreadMap.remove(signal.getTrace());
-        if (signal.getTrace() == fTrace) {
-            fTrace = null;
-            fStartTime = 0;
-            fEndTime = 0;
-            refresh();
-        }
-    }
-
-    /**
      * Handler for the TimeSynch signal
      *
      * @param signal
@@ -704,6 +677,7 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
+
     @Override
     protected void loadTrace() {
         synchronized (fEntryListMap) {
@@ -720,6 +694,23 @@ public class CallStackView extends TmfView {
                 refresh();
             }
         }
+    }
+
+    @Override
+    protected void closeTrace() {
+        synchronized (fBuildThreadMap) {
+            BuildThread buildThread = fBuildThreadMap.remove(fTrace);
+            if (buildThread != null) {
+                buildThread.cancel();
+            }
+        }
+        synchronized (fEntryListMap) {
+            fEntryListMap.remove(fTrace);
+        }
+        fSelectedThreadMap.remove(fTrace);
+        fStartTime = 0;
+        fEndTime = 0;
+        refresh();
     }
 
     private void buildThreadList(final ITmfTrace trace, IProgressMonitor monitor) {

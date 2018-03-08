@@ -41,7 +41,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -426,33 +425,6 @@ public class ControlFlowView extends TmfView {
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
-    /**
-     * Trace is closed: clear the data structures and the view
-     *
-     * @param signal the signal received
-     */
-    @TmfSignalHandler
-    @Override
-    public void traceClosed(final TmfTraceClosedSignal signal) {
-        synchronized (fBuildThreadMap) {
-            BuildThread buildThread = fBuildThreadMap.remove(signal.getTrace());
-            if (buildThread != null) {
-                buildThread.cancel();
-            }
-        }
-        synchronized (fEntryListMap) {
-            fEntryListMap.remove(signal.getTrace());
-        }
-        if (signal.getTrace() == fTrace) {
-            fTrace = null;
-            fStartTime = 0;
-            fEndTime = 0;
-            if (fZoomThread != null) {
-                fZoomThread.cancel();
-            }
-            refresh();
-        }
-    }
 
     /**
      * Handler for the synch signal
@@ -578,6 +550,26 @@ public class ControlFlowView extends TmfView {
                 refresh();
             }
         }
+    }
+
+    @Override
+    protected void closeTrace() {
+        synchronized (fBuildThreadMap) {
+            BuildThread buildThread = fBuildThreadMap.remove(fTrace);
+            if (buildThread != null) {
+                buildThread.cancel();
+            }
+        }
+        synchronized (fEntryListMap) {
+            fEntryListMap.remove(fTrace);
+        }
+
+        fStartTime = 0;
+        fEndTime = 0;
+        if (fZoomThread != null) {
+            fZoomThread.cancel();
+        }
+        refresh();
     }
 
     private void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {

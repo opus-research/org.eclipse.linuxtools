@@ -154,7 +154,7 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
      * @since 2.0
      */
     @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
+    public final void traceOpened(TmfTraceOpenedSignal signal) {
         fTrace = signal.getTrace();
         loadTrace();
     }
@@ -182,7 +182,7 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
      * @since 2.0
      */
     @TmfSignalHandler
-    public void traceClosed(final TmfTraceClosedSignal signal) {
+    public final void traceClosed(final TmfTraceClosedSignal signal) {
         if (signal.getTrace() == fTrace) {
             closeTrace();
             fTrace = null;
@@ -194,8 +194,7 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
      * Sub-classes need to override this method to add the view specific implementation.
      * @since 2.0
      */
-    protected void loadTrace() {
-    }
+    protected abstract void loadTrace();
 
 
     /**
@@ -203,6 +202,5 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
      * Sub-classes need to override this method to add the view specific implementation.
      * @since 2.0
      */
-    protected void closeTrace() {
-    }
+    protected abstract void closeTrace();
 }
