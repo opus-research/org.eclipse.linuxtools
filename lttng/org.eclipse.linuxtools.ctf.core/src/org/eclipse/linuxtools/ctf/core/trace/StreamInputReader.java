@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntr
 
 /**
  * A CTF trace event reader. Reads the events of a trace file.
- * 
+ *
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
@@ -57,8 +57,6 @@ public class StreamInputReader {
 
     private CTFTraceReader parent;
 
-    @SuppressWarnings("unused")
-    private final long prevIndex;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -77,8 +75,6 @@ public class StreamInputReader {
          * Get the iterator on the packet index.
          */
         this.packetIndex = 0;
-
-        this.prevIndex = 0;
         /*
          * Make first packet the current one.
          */
@@ -184,7 +180,7 @@ public class StreamInputReader {
             }
         }
 
-        /*autogenerate javadoc getter setter
+        /*
          * If an event is available, read it.
          */
         if (this.packetReader.hasMoreEvents()) {

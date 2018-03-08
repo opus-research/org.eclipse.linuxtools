@@ -12,6 +12,9 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.trace;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <b><u>StreamInputPacketIndexEntry</u></b>
  * <p>
@@ -22,7 +25,6 @@ public class StreamInputPacketIndexEntry {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
 
     /**
      * Offset of the packet in the file, in bytes
@@ -58,6 +60,18 @@ public class StreamInputPacketIndexEntry {
      * How many lost events are there?
      */
     private long lostEvents = 0;
+
+    /**
+     * Which target is being traced
+     */
+    private String target ;
+    private long targetID;
+
+    /**
+     * Attributes of this index entry
+     */
+    private final Map<String, Object> attributes = new HashMap<String, Object>();
+
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -200,5 +214,53 @@ public class StreamInputPacketIndexEntry {
      */
     public void setLostEvents(long lostEvents) {
         this.lostEvents = lostEvents;
+    }
+
+    /**
+     * Add an attribute to this index entry
+     *
+     * @param field
+     *            The name of the atrribute
+     * @param value
+     *            The value to insert
+     */
+    public void addAttribute(String field, Object value) {
+        attributes.put(field, value);
+    }
+
+    /**
+     * Retrieve the value of an existing attribute
+     *
+     * @param field
+     *            The name of the attribute
+     * @return The value that was stored, or null if it wasn't found
+     */
+    public Object lookupAttribute(String field){
+        return attributes.get(field);
+    }
+
+    /**
+     * @return The target that is being traced
+     */
+    public String getTarget() {
+        return target;
+    }
+
+    /**
+     * Assign a target to this index entry
+     *
+     * @param target
+     *            The target to assign
+     */
+    public void setTarget(String target) {
+        this.target = target;
+        this.targetID = Integer.parseInt(target.replaceAll("[\\D]", "")); //$NON-NLS-1$ //$NON-NLS-2$ // slow
+    }
+
+    /**
+     * @return The ID of the target
+     */
+    public long getTargetId(){
+        return targetID;
     }
 }

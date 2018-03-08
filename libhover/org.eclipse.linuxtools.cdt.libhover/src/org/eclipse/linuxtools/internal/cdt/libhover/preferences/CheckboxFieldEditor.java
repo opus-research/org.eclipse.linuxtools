@@ -82,7 +82,6 @@ public class CheckboxFieldEditor extends FieldEditor {
 
 
 	@Override
-	// TODO Auto-generated method stub
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.preference.FieldEditor#doFillIntoGrid(org.eclipse.swt.widgets.Composite, int)
 	 */
@@ -362,7 +361,7 @@ public class CheckboxFieldEditor extends FieldEditor {
 	private void save() {
 		boolean inRange = true;
 		int i = 0;
-		String outString = new String();
+		String outString = "";
 		String del = "";
 		while (inRange) {
 			TableData t;
