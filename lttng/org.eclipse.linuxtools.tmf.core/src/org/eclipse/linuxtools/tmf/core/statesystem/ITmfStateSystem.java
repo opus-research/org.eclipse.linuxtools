@@ -206,6 +206,15 @@ public interface ITmfStateSystem {
             throws AttributeNotFoundException;
 
     /**
+     * Get the size of the ongoing states. This can be useful to validate that a
+     * specific quark exist and is valid.
+     *
+     * @return The current size of ongoingStateInfo
+     * @since 3.0
+     */
+    int getOngoingStateInfoSize();
+
+    /**
      * Get the start time of the current ongoing state, for the specified
      * attribute.
      *
