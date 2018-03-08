@@ -43,6 +43,7 @@
   <modules>
     <module>org.eclipse.linuxtools.rpm.core</module>
     <module>org.eclipse.linuxtools.rpm.core.tests</module>
+    <module>org.eclipse.linuxtools.rpm.createrepo</module>
     <module>org.eclipse.linuxtools.rpm-feature</module>
     <module>org.eclipse.linuxtools.rpm.rpmlint</module>
     <module>org.eclipse.linuxtools.rpm.ui</module>
