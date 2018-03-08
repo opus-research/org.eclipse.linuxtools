@@ -37,23 +37,54 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 		if (data == null || data.length == 0 || data[0].length == 0)
 			return;
 
-		int start = 0, len = Math.min(this.maxItems, data.length);
+		int start = 0, len = Math.min(this.maxItems, data.length), leny = data[0].length-1;
 		if (this.maxItems < data.length) {
 			start = data.length - this.maxItems;
 		}
 
-		double[][] values = new double[len][data[0].length-1];
-		String[] labels = new String[len];
+		Double[][] all_values = new Double[len][leny];
+		String[] all_labels = new String[len];
 
-		for (int i = 0; i < labels.length; i++) {
+		for (int i = 0; i < all_labels.length; i++) {
 			if (data[i].length < 2)
 				return;
-			labels[i] = data[start + i][0].toString();
-			for (int j = 1; j < data[start + i].length; j++)
-				values[i][j-1] = getDoubleValue(data[start + i][j]);
+			Object label = data[start + i][0];
+			if (label != null) {
+				all_labels[i] = data[start + i][0].toString();
+				for (int j = 1; j < data[start + i].length; j++) {
+					Double val = getDoubleValue(data[start + i][j]);
+					if (val != null) {
+						all_values[i][j-1] = val;
+					} else {
+						all_labels[i] = null;
+						break;
+					}
+				}
+			}
 		}
 
-		((PieChart)this.chart).addPieChartSeries(labels, values);
+		double[][] values = new double[len][leny];
+		String[] labels = new String[len];
+		int len_trim = 0;
+		for (int i = 0; i < len; i++) {
+			if (all_labels[i] != null) {
+				labels[len_trim] = all_labels[i];
+				for (int j = 0; j < leny; j++) {
+					values[len_trim][j] = all_values[i][j];
+				}
+				len_trim++;
+			}
+		}
+		double[][] values_trim = new double[len_trim][leny];
+		String[] labels_trim = new String[len_trim];
+		for (int i = 0; i < len_trim; i++) {
+			labels_trim[i] = labels[i];
+			for (int j = 0; j < leny; j++) {
+				values_trim[i][j] = values[i][j];
+			}
+		}
+
+		((PieChart)this.chart).addPieChartSeries(labels_trim, values_trim);
 		chart.redraw();
 	}
 
