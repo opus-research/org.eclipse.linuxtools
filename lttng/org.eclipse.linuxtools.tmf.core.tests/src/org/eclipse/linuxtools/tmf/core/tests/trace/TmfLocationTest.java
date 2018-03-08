@@ -189,69 +189,6 @@ public class TmfLocationTest extends TestCase {
         }
     }
 
-    private static class MyUnCloneableClass implements Comparable<MyUnCloneableClass> {
-        private String fName;
-
-        public MyUnCloneableClass(String name) {
-            fName = name;
-        }
-
-        @Override
-        public String toString() {
-            return fName;
-        }
-
-        @Override
-        public Object clone() throws CloneNotSupportedException {
-            throw new CloneNotSupportedException();
-        }
-
-        @Override
-        public int compareTo(MyUnCloneableClass o) {
-            return fName.compareTo(o.fName);
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((fName == null) ? 0 : fName.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof MyUnCloneableClass)) {
-                return false;
-            }
-            MyUnCloneableClass other = (MyUnCloneableClass) obj;
-            if (fName == null) {
-                if (other.fName != null) {
-                    return false;
-                }
-            } else if (!fName.equals(other.fName)) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    public void testCloneUncloneable() {
-        try {
-            MyUnCloneableClass myClass = new MyUnCloneableClass("myUncloneableClass");
-            TmfLocation<MyUnCloneableClass> myLocation = new TmfLocation<MyUnCloneableClass>(myClass);
-            myLocation.clone();
-            fail("clone an uncloneable class");
-        } catch (InternalError e) {
-        }
-    }
-
     // ------------------------------------------------------------------------
     // hashCode
     // ------------------------------------------------------------------------

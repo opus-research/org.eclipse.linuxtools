@@ -13,13 +13,12 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.lang.reflect.Method;
 
 /**
  * A convenience implementation on of ITmfLocation. The generic class (L) must
  * be comparable.
  *
- * @param <L> The trace lcoation type
+ * @param <L> The trace location type. It should be an immutable object type.
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -30,18 +29,11 @@ public class TmfLocation<L extends Comparable<L>> implements ITmfLocation<L>, Cl
     // Attributes
     // ------------------------------------------------------------------------
 
-    private L fLocation;
+    private final L fLocation;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
-    /**
-     * Default constructor (for the 'null' location)
-     */
-    @SuppressWarnings("unused")
-    private TmfLocation() {
-    }
 
     /**
      * Standard constructor.
@@ -81,25 +73,8 @@ public class TmfLocation<L extends Comparable<L>> implements ITmfLocation<L>, Cl
      * @see java.lang.Object#clone()
      */
     @Override
-    @SuppressWarnings("unchecked")
     public TmfLocation<L> clone() {
-        TmfLocation<L> clone = null;
-        try {
-            clone = (TmfLocation<L>) super.clone();
-            if (fLocation != null) {
-                final Class<?> clazz = fLocation.getClass();
-                final Method method = clazz.getMethod("clone", new Class[0]); //$NON-NLS-1$
-                final Object copy = method.invoke(this.fLocation, new Object[0]);
-                clone.fLocation = (L) copy;
-            } else {
-                clone.fLocation = null;
-            }
-        } catch (final CloneNotSupportedException e) {
-        } catch (final NoSuchMethodException e) {
-        } catch (final Exception e) {
-            throw new InternalError(e.toString());
-        }
-        return clone;
+        return new TmfLocation<L>(fLocation);
     }
 
     // ------------------------------------------------------------------------

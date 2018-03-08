@@ -211,7 +211,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         }
         if (currentLocation.getLocation() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
+            currentLocation = new CtfLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
         if(context.getRank() != 0) {
