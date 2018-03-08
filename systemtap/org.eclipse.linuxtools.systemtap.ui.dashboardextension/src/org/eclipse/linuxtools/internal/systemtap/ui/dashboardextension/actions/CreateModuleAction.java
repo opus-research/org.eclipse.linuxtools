@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewPart;
@@ -98,10 +99,9 @@ public class CreateModuleAction extends Action implements IWorkbenchWindowAction
 				return;
 			
 			ExportScriptDialog exportDialog = new ExportScriptDialog(fWindow.getShell(), dataSet);
-			exportDialog.open();
+			exportDialog.create();
 			
-			exportDialog.dispose();
-			if(!exportDialog.isCanceled()) {
+			if(exportDialog.open() == Window.OK) {
 				String category = exportDialog.getCategory();
 				String display = exportDialog.getDisplay();
 				String description = exportDialog.getDescription();
