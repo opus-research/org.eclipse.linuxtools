@@ -102,6 +102,7 @@ public class Subscription extends Thread {
 	        pos.flush();
 	    	}catch (IOException e) {
 				new ErrorMessage("Could not subscribe!", "See stderr for more details").open();
+				e.printStackTrace();
 			}
 
 			inputGobbler = new StreamGobbler(pis);

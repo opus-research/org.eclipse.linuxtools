@@ -34,7 +34,7 @@ public class ViewFactory {
 	 */
 	public static SystemTapView createView(final String viewID) {
 		Display.getDefault().syncExec(new Runnable() {
-
+			
 			@Override
 			public void run() {
 				try {
@@ -42,8 +42,7 @@ public class ViewFactory {
 					.getActiveWorkbenchWindow().getActivePage().
 					showView(viewID);
 					if (!(view instanceof SystemTapView))
-						return;
-					
+						throw new RuntimeException("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
 					newView = ((SystemTapView) view);
 					newView.setViewID();
 				} catch (PartInitException e) {
@@ -51,7 +50,7 @@ public class ViewFactory {
 				}
 			}
 		});
-
+		
 		addView(newView);
 		return newView;
 	}
@@ -70,7 +69,7 @@ public class ViewFactory {
 					IViewPart view = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage().showView(viewID, secondaryID, IWorkbenchPage.VIEW_VISIBLE);
 					if (!(view instanceof SystemTapView))
-						return;
+						throw new RuntimeException("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
 					newView = ((SystemTapView) view);
 					newView.setViewID();
 				} catch (PartInitException e) {

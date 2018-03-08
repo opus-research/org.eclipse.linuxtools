@@ -269,6 +269,8 @@ public abstract class SystemTapParser extends Job {
 	 * by a real-time-parser immediately before its main polling loop. By default,
 	 * this method will attempt to create a bufferedReader around File(filePath)
 	 * @throws FileNotFoundException
+	 *
+	 * @throws Exception
 	 */
 	protected void setInternalData() throws FileNotFoundException {
 		File file = new File(sourcePath);
