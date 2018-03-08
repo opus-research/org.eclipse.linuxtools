@@ -90,12 +90,17 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
      *
      * @param selection
      *            the current object selection
-     * @param selectedTraces
-     *            the selected traces from the selection
      */
-    public ExportTracePackageWizardPage(IStructuredSelection selection, List<TmfTraceElement> selectedTraces) {
+    public ExportTracePackageWizardPage(IStructuredSelection selection) {
         super(PAGE_NAME, Messages.ExportTracePackageWizardPage_Title, Activator.getDefault().getImageDescripterFromPath(ICON_PATH), selection);
-        fSelectedTraces = selectedTraces;
+
+        Object[] selectedElements = getSelection().toArray();
+        fSelectedTraces = new ArrayList<TmfTraceElement>();
+        for (Object selectedElement : selectedElements) {
+            if (selectedElement instanceof TmfTraceElement) {
+                fSelectedTraces.add(((TmfTraceElement) selectedElement).getElementUnderTraceFolder());
+            }
+        }
     }
 
     /**
@@ -137,16 +142,6 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
         updatePageCompletion();
 
         setControl(composite);
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (visible) {
-            updatePageCompletion();
-        } else {
-            setPageComplete(false);
-        }
     }
 
     /**
@@ -304,6 +299,8 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
             List<TracePackageElement> children = new ArrayList<TracePackageElement>();
             TracePackageFilesElement filesElement = new TracePackageFilesElement(traceElement, tmfTraceElement.getResource());
             filesElement.setChecked(true);
+            // Always export the files
+            filesElement.setEnabled(false);
             children.add(filesElement);
 
             // Supplementary files
