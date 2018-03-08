@@ -37,10 +37,12 @@ public class TmfStateStatisticsTest extends TmfStatisticsTest {
     public static void setUpClass() {
         assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            File htFile = File.createTempFile("stats-test", ".ht");
-            htFile.deleteOnExit();
+            File fullFile = File.createTempFile("stats-test-full", ".ht");
+            File partialFile = File.createTempFile("stats-tests-partial", ".ht");
+            fullFile.deleteOnExit();
+            partialFile.deleteOnExit();
             CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
-            backend = new TmfStateStatistics(trace, htFile);
+            backend = new TmfStateStatistics(trace, fullFile, partialFile);
         } catch (TmfTraceException e) {
             e.printStackTrace();
         } catch (IOException e) {
