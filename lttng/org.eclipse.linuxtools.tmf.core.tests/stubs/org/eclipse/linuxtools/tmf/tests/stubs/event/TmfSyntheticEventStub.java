@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.tests.stubs.event;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 
 /**
  * <b><u>TmfSyntheticEventStub</u></b>
@@ -20,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  * TODO: Implement me. Please.
  */
 @SuppressWarnings("javadoc")
-public class TmfSyntheticEventStub extends TmfEventStub {
+public class TmfSyntheticEventStub extends TmfEvent {
 
 
     public TmfSyntheticEventStub(final ITmfEvent event) {
