@@ -10,39 +10,41 @@
  *   Matthew Khouzam - Initial API and implementation
  **********************************************************************/
 
-package org.eclipse.linuxtools.internal.tmf.ui.commands;
+package org.eclipse.linuxtools.internal.tracing.rcp.ui.commands;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tracing.rcp.ui.TracingRcpPlugin;
+import org.eclipse.linuxtools.internal.tracing.rcp.ui.messages.Messages;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * Open file handler, used to open files (not directories)
+ * Open a directory, not a file
  *
  * @author Matthew Khouzam
  */
-public class OpenFileHandler extends AbstractHandler {
+public class OpenDirHandler extends AbstractHandler{
 
     @Override
     public Object execute(ExecutionEvent event) {
+        // Open a directory
         final Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-        FileDialog fd = new FileDialog(shell);
-        fd.setText(Messages.OpenFileHandler_SelectTraceFile);
-        String filePath = fd.open();
-        if (filePath == null) {
+        DirectoryDialog dd = new DirectoryDialog(shell);
+        dd.setText(Messages.OpenDirHandler_SelectTraceType);
+        String dir = dd.open();
+        if (dir == null) {
             return null;
         }
         TmfOpenTraceHelper oth = new TmfOpenTraceHelper();
         try {
-            oth.openTraceFromPath(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME, filePath, shell);
+            oth.openTraceFromPath(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME, dir, shell);
         } catch (CoreException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
+            TracingRcpPlugin.getDefault().logError(e.getMessage(), e);
         }
         return null;
     }
