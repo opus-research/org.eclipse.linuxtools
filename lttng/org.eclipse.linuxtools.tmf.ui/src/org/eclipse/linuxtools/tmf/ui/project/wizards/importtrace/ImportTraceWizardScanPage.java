@@ -13,14 +13,15 @@
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -65,9 +66,11 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     private CheckboxTreeViewer traceTypeViewer;
 
     // private int position = 0;
-    final ScanRunnable fRunnable = new ScanRunnable("Scan Job"); //$NON-NLS-1$
+    final ScanRunnable fRunnable = new ScanRunnable();
     final private BlockingQueue<TraceValidationHelper> fTracesToScan = new ArrayBlockingQueue<TraceValidationHelper>(MAX_TRACES);
     private volatile boolean fCanRun = true;
+
+    Job backgroundJob;
 
     // --------------------------------------------------------------------------------
     // Constructor and destructor
@@ -155,7 +158,20 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         init();
         getBatchWizard().setTracesToScan(fTracesToScan);
-        fRunnable.schedule();
+        getBatchWizard().setTraceFolder(fTargetFolder);
+        backgroundJob= new Job("Scan job") { //$NON-NLS-1$
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    fRunnable.run(monitor);
+                } catch (InvocationTargetException e) {
+                } catch (InterruptedException e) {
+                }
+                return null;
+            }
+        };
+        backgroundJob.schedule();
         setErrorMessage(Messages.ImportTraceWizardScanPage_SelectAtleastOne);
     }
 
@@ -349,20 +365,15 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         }
     }
 
-    private final class ScanRunnable extends Job {
-
+    private final class ScanRunnable implements IRunnableWithProgress {
         private IProgressMonitor fMonitor;
-
-        public ScanRunnable(String name) {
-            super(name);
-        }
 
         private synchronized IProgressMonitor getMonitor() {
             return fMonitor;
         }
 
         @Override
-        public IStatus run(IProgressMonitor monitor) {
+        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             fMonitor = monitor;
             final Control control = traceTypeViewer.getControl();
             control.getDisplay().syncExec(new Runnable() {
@@ -389,76 +400,54 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         }
                     });
                 }
-                try {
-                    final TraceValidationHelper traceToScan = fTracesToScan.take();
+                final TraceValidationHelper traceToScan = fTracesToScan.take();
 
-                    if (!getBatchWizard().hasScanned(traceToScan)) {
-                        getBatchWizard().addResult(traceToScan, TmfTraceType.getInstance().validate(traceToScan));
+                if (!getBatchWizard().hasScanned(traceToScan)) {
+                    getBatchWizard().addResult(traceToScan, TmfTraceType.getInstance().validate(traceToScan));
+                }
+                validCombo = getBatchWizard().getResult(traceToScan);
+                if (validCombo) {
+                    // Synched on it's parent
+
+                    getBatchWizard().getScannedTraces().addCandidate(traceToScan.getTraceType(), new File(traceToScan.getTraceToScan()));
+                    updated = true;
+                }
+                // position++;
+
+                if (updated) {
+                    if (!control.isDisposed()) {
+                        control.getDisplay().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!control.isDisposed()) {
+                                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
+                                    getMonitor().subTask(traceToScan.getTraceToScan());
+                                    getMonitor().worked(1);
+                                }
+                            }
+                        }
+                                );
                     }
-                    validCombo = getBatchWizard().getResult(traceToScan);
-                    if (validCombo) {
-                        // Synched on it's parent
+                }
 
-                        getBatchWizard().getScannedTraces().addCandidate(traceToScan.getTraceType(), new File(traceToScan.getTraceToScan()));
-                        updated = true;
-                    }
-                    // position++;
+                final boolean editing = traceTypeViewer.isCellEditorActive();
+                if (updated && !editing)
+                {
+                    if (!control.isDisposed()) {
+                        control.getDisplay().asyncExec(new Runnable() {
 
-                    if (updated) {
-                        if (!control.isDisposed()) {
-                            control.getDisplay().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (!control.isDisposed()) {
-                                        getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
-                                        getMonitor().subTask(traceToScan.getTraceToScan());
-                                        getMonitor().worked(1);
+                            @Override
+                            public void run() {
+                                if (!control.isDisposed()) {
+                                    if (!traceTypeViewer.isCellEditorActive()) {
+                                        traceTypeViewer.refresh();
                                     }
                                 }
                             }
-                                    );
-                        }
+                        });
                     }
-
-                    final boolean editing = traceTypeViewer.isCellEditorActive();
-                    if (updated && !editing)
-                    {
-                        if (!control.isDisposed()) {
-                            control.getDisplay().asyncExec(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    if (!control.isDisposed()) {
-                                        if (!traceTypeViewer.isCellEditorActive()) {
-                                            traceTypeViewer.refresh();
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    return new Status(IStatus.CANCEL, Activator.PLUGIN_ID, null);
                 }
             }
-            return Status.OK_STATUS;
-        }
-    }
-
-    /**
-     * Refresh the view and the corresponding model.
-     */
-    public void refresh() {
-        final Control control = traceTypeViewer.getControl();
-        if (!control.isDisposed()) {
-            control.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (!control.isDisposed()) {
-                        traceTypeViewer.refresh();
-                    }
-                }
-            });
         }
     }
 }
