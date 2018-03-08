@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -49,7 +49,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     //-------------------------------------------
 
     /** Reference to the state system assigned to this trace */
-    protected ITmfStateSystem ss = null;
+    protected IStateSystemQuerier ss = null;
 
     /* Reference to the CTF Trace */
     private CTFTrace fTrace;
@@ -211,13 +211,13 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         }
         if (currentLocation.getLocationInfo() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
+            currentLocation = new CtfLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
         if (location == null) {
             CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
             if (event != null) {
-                currentLocation.setLocation(event.getTimestamp().getValue(), 0);
+                currentLocation = new CtfLocation(event.getTimestamp().getValue(), 0);
             }
         }
         if(context.getRank() != 0) {
@@ -285,7 +285,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      *
      * @return IStateSystemQuerier
      */
-    public ITmfStateSystem getStateSystem() {
+    public IStateSystemQuerier getStateSystem() {
         return this.ss;
     }
 
