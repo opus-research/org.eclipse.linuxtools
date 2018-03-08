@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.tests.project.model;
 
-import static org.junit.Assume.assumeTrue;
-
 import java.io.File;
 
 import org.eclipse.core.resources.IFolder;
@@ -53,8 +51,6 @@ public class ProjectModelTestData {
      */
     public static TmfProjectElement getFilledProject() throws CoreException {
 
-        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
-
         IProject project = TmfProjectRegistry.createProject(PROJECT_NAME, null, null);
         IFolder traceFolder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
 
@@ -67,7 +63,7 @@ public class ProjectModelTestData {
             return null;
         }
         linkedTrace.setPersistentProperty(TmfCommonConstants.TRACETYPE,
-                "org.eclipse.linuxtools.tmf.tests.ctf.tracetype");
+                "org.eclipse.linuxtools.tmf.ui.type.ctf");
 
         final TmfProjectElement projectElement = TmfProjectRegistry.getProject(project, true);
         TmfTraceElement traceElement = projectElement.getTracesFolder().getTraces().get(0);
@@ -93,8 +89,10 @@ public class ProjectModelTestData {
      *
      * @param project
      *            Project to delete
+     * @throws CoreException
+     *             Thrown by the resource deletion
      */
-    public static void deleteProject(TmfProjectElement project) {
+    public static void deleteProject(TmfProjectElement project) throws CoreException {
         /* Delete experiments */
         for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
@@ -111,11 +109,7 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the experiment */
-                try {
-                    resource.delete(true, null);
-                } catch (CoreException e) {
-                    e.printStackTrace();
-                }
+                resource.delete(true, null);
             }
         }
 
@@ -135,20 +129,12 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the trace */
-                try {
-                    resource.delete(true, new NullProgressMonitor());
-                } catch (CoreException e) {
-                    e.printStackTrace();
-                }
+                resource.delete(true, new NullProgressMonitor());
             }
         }
 
         /* Delete the project itself */
-        try {
-            project.getResource().delete(true, null);
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
+        project.getResource().delete(true, null);
     }
 
     /**
