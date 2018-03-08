@@ -8,7 +8,6 @@
  *
  * Contributors:
  *     Alexandre Montplaisir - Initial API and implementation
- *     Bernd Hufmann - Updated for new call site interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -180,12 +179,11 @@ public final class CtfTmfEvent extends TmfEvent {
     }
 
     /**
-     * Get the call site for this event.
+     * Get the callsite for this event.
      *
-     * @return the call site information, or null if there is none
+     * @return the callsite information, or null if there is none
      * @since 2.0
      */
-    @Override
     public CtfTmfCallsite getCallsite() {
         CTFCallsite callsite = null;
         if (getTrace() == null) {

@@ -10,7 +10,6 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
  *   Alexandre Montplaisir - Made immutable
- *   Bernd Hufmann - Added call site
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
@@ -44,7 +43,6 @@ public class TmfEvent implements ITmfEvent {
     private final ITmfEventType fType;
     private final ITmfEventField fContent;
     private final String fReference;
-    private final ITmfCallsite fCallsite;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -59,8 +57,7 @@ public class TmfEvent implements ITmfEvent {
     }
 
     /**
-     * Constructor. The event rank will be set to TmfContext.UNKNOWN_RANK and the
-     * event call site will be null.
+     * Standard constructor. The event rank will be set to TmfContext.UNKNOWN_RANK.
      *
      * @param trace the parent trace
      * @param timestamp the event timestamp
@@ -69,49 +66,12 @@ public class TmfEvent implements ITmfEvent {
      * @param content the event content (payload)
      * @param reference the event reference
      * @since 2.0
+
      */
     public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
     {
-        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference, null);
-    }
-
-    /**
-     * Constructor. The event rank will be set to TmfContext.UNKNOWN_RANK.
-     *
-     * @param trace the parent trace
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
-     * @param callsite the call site implementation
-     * @since 2.0
-     */
-    public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference, final ITmfCallsite callsite)
-    {
-        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference, callsite);
-    }
-
-
-    /**
-     * Constructor without call site.
-     *
-     * @param trace the parent trace
-     * @param rank the event rank (in the trace)
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
-     * @since 2.0
-     */
-
-    public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference)
-    {
-        this(trace, rank, timestamp, source, type, content, reference, null);
+        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference);
     }
 
     /**
@@ -124,11 +84,10 @@ public class TmfEvent implements ITmfEvent {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
-     * @param callsite the call site implementation
      * @since 2.0
      */
     public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference, final ITmfCallsite callsite)
+            final ITmfEventType type, final ITmfEventField content, final String reference)
     {
         fTrace = trace;
         fRank = rank;
@@ -137,7 +96,6 @@ public class TmfEvent implements ITmfEvent {
         fType = type;
         fContent = content;
         fReference = reference;
-        fCallsite = callsite;
     }
 
     /**
@@ -156,7 +114,6 @@ public class TmfEvent implements ITmfEvent {
         fType = event.getType();
         fContent = event.getContent();
         fReference = event.getReference();
-        fCallsite = event.getCallsite();
     }
 
     // ------------------------------------------------------------------------
@@ -201,14 +158,6 @@ public class TmfEvent implements ITmfEvent {
         return fReference;
     }
 
-    /**
-     * @since 2.0
-     */
-    @Override
-    public ITmfCallsite getCallsite() {
-        return fCallsite;
-    }
-
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
@@ -224,7 +173,6 @@ public class TmfEvent implements ITmfEvent {
         result = prime * result + ((fType == null) ? 0 : fType.hashCode());
         result = prime * result + ((fContent == null) ? 0 : fContent.hashCode());
         result = prime * result + ((fReference == null) ? 0 : fReference.hashCode());
-        result = prime * result + ((fCallsite == null) ? 0 : fCallsite.hashCode());
         return result;
     }
 
@@ -285,13 +233,6 @@ public class TmfEvent implements ITmfEvent {
         } else if (!fReference.equals(other.fReference)) {
             return false;
         }
-        if (fCallsite == null) {
-            if (other.fCallsite != null) {
-                return false;
-            }
-        } else if (!fCallsite.equals(other.fCallsite)) {
-            return false;
-        }
         return true;
     }
 
@@ -302,7 +243,6 @@ public class TmfEvent implements ITmfEvent {
                 + ", fTrace=" + getTrace() + ", fRank=" + getRank()
                 + ", fSource=" + getSource() + ", fType=" + getType()
                 + ", fContent=" + getContent() + ", fReference=" + getReference()
-                + ((fCallsite == null) ? "" : ", fCallsite=" + getCallsite().toString())
                 + "]";
     }
 
