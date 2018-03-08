@@ -1,26 +1,28 @@
 /*******************************************************************************
  * Copyright (c) 2012 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
+import java.util.Set;
+
 /**
  * The generic event type in TMF. It contains a reference to the full field structure
  * for that event type.
  * <p>
  * Types are unique within their context space.
- * 
+ *
  * @version 1.0
  * @author Francois Chouinard
- * 
+ *
  * @see ITmfEvent
  * @see ITmfEventField
  */
@@ -61,14 +63,9 @@ public interface ITmfEventType {
 
     /**
      * @return the event field names (labels)
+     * @since 2.0
      */
-    public String[] getFieldNames();
-
-    /**
-     * @param index the event field index
-     * @return the corresponding event field label
-     */
-    public String getFieldName(int index);
+    public Set<String> getFieldNames();
 
     /**
      * @return a clone of the event type
