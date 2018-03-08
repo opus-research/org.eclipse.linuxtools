@@ -22,7 +22,7 @@ package org.eclipse.linuxtools.tmf.core.timestamp;
  *
  * @see ITmfTimestamp
  */
-public class TmfTimeRange {
+public final class TmfTimeRange {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -31,7 +31,8 @@ public class TmfTimeRange {
     /**
      * The full possible time range
      */
-    public static final TmfTimeRange ETERNITY = new EternityTimeRange();
+    public static final TmfTimeRange ETERNITY =
+            new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
 
     /**
      * The null time range
@@ -192,30 +193,4 @@ public class TmfTimeRange {
         return "TmfTimeRange [fStartTime=" + fStartTime + ", fEndTime=" + fEndTime + "]";
     }
 
-}
-
-/**
- * "Eternity" time range, representing the largest time range possible, which
- * includes any other time range or timestamp.
- */
-class EternityTimeRange extends TmfTimeRange {
-
-    public EternityTimeRange() {
-        super(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
-    }
-
-    @Override
-    public boolean contains(ITmfTimestamp ts) {
-        return true;
-    }
-
-    @Override
-    public boolean contains(TmfTimeRange range) {
-        return true;
-    }
-
-    @Override
-    public TmfTimeRange getIntersection(TmfTimeRange range) {
-        return range;
-    }
 }
