@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, others
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   François Rajotte - Filter implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
@@ -289,28 +288,28 @@ public class TimeGraphCombo extends Composite {
     }
 
     /**
-     * This filter simply keeps a list of elements that should be filtered out.
-     * All the other elements will be shown.
+     * This filter simply keeps a list of elements that should be shown.
+     * All the other elements will be filtered.
      * By default and when the list is set to null, all elements are shown.
      */
     private class RawViewerFilter extends ViewerFilter {
 
-        private List<Object> fFiltered = null;
+        private List<Object> fNonFiltered = null;
 
-        public void setFiltered(List<Object> objects) {
-            fFiltered = objects;
+        public void setNonFiltered(List<Object> objects) {
+            fNonFiltered = objects;
         }
 
-        public List<Object> getFiltered() {
-            return fFiltered;
+        public List<Object> getNonFiltered() {
+            return fNonFiltered;
         }
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (fFiltered == null) {
+            if (fNonFiltered == null) {
                 return true;
             }
-            return !fFiltered.contains(element);
+            return fNonFiltered.contains(element);
         }
     }
 
@@ -635,10 +634,8 @@ public class TimeGraphCombo extends Composite {
             fFilterDialog.setTitle(Messages.TmfTimeFilterDialog_WINDOW_TITLE);
             fFilterDialog.setMessage(Messages.TmfTimeFilterDialog_MESSAGE);
             fFilterDialog.setExpandedElements(allElements.toArray());
-            if (fFilter.getFiltered() != null) {
-                ArrayList<? extends ITimeGraphEntry> nonFilteredElements = new ArrayList<ITimeGraphEntry>(allElements);
-                nonFilteredElements.removeAll(fFilter.getFiltered());
-                fFilterDialog.setInitialElementSelections(nonFilteredElements);
+            if (fFilter.getNonFiltered() != null) {
+                fFilterDialog.setInitialElementSelections(fFilter.getNonFiltered());
             } else {
                 fFilterDialog.setInitialElementSelections(allElements);
             }
@@ -648,11 +645,9 @@ public class TimeGraphCombo extends Composite {
             if (fFilterDialog.getResult() != null) {
                 fInhibitTreeSelection = true;
                 if (fFilterDialog.getResult().length != allElements.size()) {
-                    ArrayList<Object> filteredElements = new ArrayList<Object>(allElements);
-                    filteredElements.removeAll(Arrays.asList(fFilterDialog.getResult()));
-                    fFilter.setFiltered(filteredElements);
+                    fFilter.setNonFiltered(new ArrayList<Object>(Arrays.asList(fFilterDialog.getResult())));
                 } else {
-                    fFilter.setFiltered(null);
+                    fFilter.setNonFiltered(null);
                 }
                 fTreeViewer.refresh();
                 fTreeViewer.expandAll();
@@ -786,7 +781,7 @@ public class TimeGraphCombo extends Composite {
      */
     public void setInput(ITimeGraphEntry[] input) {
         fTopInput = new ArrayList<ITimeGraphEntry>(Arrays.asList(input));
-        fFilter.setFiltered(null);
+        fFilter.setNonFiltered(null);
         fInhibitTreeSelection = true;
         fTreeViewer.setInput(input);
         for (SelectionListenerWrapper listenerWrapper : fSelectionListenerMap.values()) {
