@@ -11,10 +11,7 @@
 
 package org.eclipse.linuxtools.rpm.ui.editor.parser;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.UiUtils;
-import org.eclipse.linuxtools.rpm.core.utils.RPMQuery;
 
 public class SpecfileElement {
 	private Specfile specfile;
@@ -77,20 +74,12 @@ public class SpecfileElement {
 	}
 
 	public String resolve(String toResolve) {
-		String str = ""; //$NON-NLS-1$
-		try {
-			if (specfile == null || toResolve.equals("")) {//$NON-NLS-1$
-				if (toResolve.length() > 2
-						&& toResolve.substring(2, toResolve.length() - 1)
-								.equals(name)) {
-					return toResolve;
-				}
+		if (specfile == null || toResolve.equals("")) {//$NON-NLS-1$
+			if (toResolve.length()>2 && toResolve.substring(2, toResolve.length() - 1).equals(name)) { 
+				return toResolve;
 			}
-			str = RPMQuery.eval(UiUtils.resolveDefines(specfile, toResolve)).trim();
-		} catch (CoreException e) {
-			SpecfileLog.logError("Unable to evaluate " + toResolve, e); //$NON-NLS-1$
 		}
-		return str;
+		return UiUtils.resolveDefines(specfile, toResolve);
 	}
 
 }
