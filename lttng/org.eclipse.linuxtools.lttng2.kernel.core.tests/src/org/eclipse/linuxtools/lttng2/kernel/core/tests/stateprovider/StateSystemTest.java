@@ -56,6 +56,7 @@ public abstract class StateSystemTest {
     /* Offset in the trace + start time of the trace */
     static final long interestingTimestamp1 = 18670067372290L + 1331649577946812237L;
     static final long interestingTimestamp2 = 1331668248014135800L;
+    static final int interestingQuark = 233;
 
     @Test
     public void testFullQuery1() {
@@ -414,7 +415,7 @@ public abstract class StateSystemTest {
     public void testFirstIntervalIsConsidered() {
         List<ITmfStateInterval> list;
         ITmfStateInterval interval;
-        int quark = 233, valueInt;
+        int quark = interestingQuark, valueInt;
         try {
             list = ssq.queryFullState(interestingTimestamp2);
             interval = list.get(quark);
