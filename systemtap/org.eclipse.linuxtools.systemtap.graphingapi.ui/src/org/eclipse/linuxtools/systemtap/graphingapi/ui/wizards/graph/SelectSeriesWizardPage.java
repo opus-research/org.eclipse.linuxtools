@@ -39,6 +39,7 @@ public class SelectSeriesWizardPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
+		edit = ((SelectGraphWizard)super.getWizard()).edit;
 		model = ((SelectGraphWizard)super.getWizard()).model;
 
 		//Set the layout data
@@ -54,7 +55,9 @@ public class SelectSeriesWizardPage extends WizardPage {
 		Label lblTitle = new Label(comp, SWT.NONE);
 		lblTitle.setText(Localization.getString("SelectSeriesWizardPage.Title")); //$NON-NLS-1$
 		txtTitle = new Text(comp, SWT.BORDER);
-		txtTitle.setText(model.getGraphData().title);
+		if (edit) {
+			txtTitle.setText(model.getGraphData().title);
+		}
 		txtTitle.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
@@ -104,7 +107,6 @@ public class SelectSeriesWizardPage extends WizardPage {
 		cboXItem = new Combo(cmpGraphOpts, SWT.DROP_DOWN);
 		cboXItem.addSelectionListener(new ComboSelectionListener());
 		cboXItem.add(Localization.getString("SelectSeriesWizardPage.RowID")); //$NON-NLS-1$
-		cboXItem.select(0);
 
 		new Label(cmpGraphOpts, SWT.NONE);	//Spacer
 
@@ -116,7 +118,6 @@ public class SelectSeriesWizardPage extends WizardPage {
 
 			if(i>0) {
 				cboYItems[i].add(Localization.getString("SelectSeriesWizardPage.NA")); //$NON-NLS-1$
-				cboYItems[i].select(0);
 				cboYItems[i].setVisible(false);
 				lblYItems[i].setVisible(false);
 			}
@@ -124,10 +125,18 @@ public class SelectSeriesWizardPage extends WizardPage {
 
 		for(int j,i=0; i<labels.length; i++) {
 			cboXItem.add(labels[i]);
-			for(j=0; j<lblYItems.length; j++)
+			for(j=0; j<lblYItems.length; j++) {
 				cboYItems[j].add(labels[i]);
+			}
 		}
 
+		cboXItem.select(edit && model.getXSeries() != GraphModel.ROW_X ? model.getXSeries() : 0);
+		if (edit) {
+			cboYItems[0].select(model.getYSeries()[0]);
+		}
+		for(int i=1; i<cboYItems.length; i++) {
+			cboYItems[i].select(edit ? model.getYSeries()[i] : 0);
+		}
 
 		//Add the key filter wigets
 		btnKey = new Button(comp, SWT.CHECK);
@@ -150,7 +159,8 @@ public class SelectSeriesWizardPage extends WizardPage {
 		lblKey = new Label(comp, SWT.NONE);
 		lblKey.setText(Localization.getString("SelectSeriesWizardPage.KeyFilter")); //$NON-NLS-1$
 		txtKey = new Text(comp, SWT.BORDER);
-		txtKey.setText(model.getGraphData().key);
+		if (edit && model.getGraphData().key != null)
+			txtKey.setText(model.getGraphData().key);
 
 		if(null != txtKey) {
 			txtKey.addModifyListener(new ModifyListener() {
@@ -337,4 +347,5 @@ public class SelectSeriesWizardPage extends WizardPage {
 	private Combo[] cboYItems;
 	private Label[] lblYItems;
 	private GraphModel model;
+	private boolean edit;
 }

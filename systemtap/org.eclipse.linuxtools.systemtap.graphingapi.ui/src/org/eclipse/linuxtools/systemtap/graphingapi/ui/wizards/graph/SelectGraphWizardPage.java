@@ -45,8 +45,9 @@ public class SelectGraphWizardPage extends WizardPage implements Listener {
 			btnGraphs[i].setData(graphIDs[i]);
 			btnGraphs[i].setToolTipText(GraphFactory.getGraphName(btnGraphs[i].getData().toString()) + "\n\n" + //$NON-NLS-1$
 					GraphFactory.getGraphDescription(btnGraphs[i].getData().toString()));
-			if (graphIDs[i].equals(wizard.model.getGraphID()))
+			if (wizard.edit && graphIDs[i].equals(wizard.model.getGraphID())) {
 				btnGraphs[i].setSelection(true);
+			}
 		}
 		setControl(cmpGraphOpts);
 	}

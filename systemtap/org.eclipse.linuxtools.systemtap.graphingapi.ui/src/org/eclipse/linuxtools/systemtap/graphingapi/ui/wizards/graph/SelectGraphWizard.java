@@ -39,10 +39,11 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 
 	@Override
 	public void addPages() {
-		if (!edit)
+		if (!edit) {
 			setWindowTitle(Localization.getString("SelectGraphWizard.CreateGraph")); //$NON-NLS-1$
-		else
+		} else {
 			setWindowTitle(Localization.getString("SelectGraphWizard.EditGraph")); //$NON-NLS-1$
+		}
 		selectGraphPage = new SelectGraphWizardPage();
 		addPage(selectGraphPage);
 		selectSeriesPage = new SelectSeriesWizardPage();
@@ -84,5 +85,5 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 	public SelectGraphWizardPage selectGraphPage;
 	public SelectSeriesWizardPage selectSeriesPage;
 	public GraphModel model;
-	private Boolean edit;
+	protected Boolean edit;
 }

@@ -17,11 +17,13 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 
 public class GraphModel {
+	public static final int ROW_X = -1;
+	
 	public GraphModel(IDataSet d) {
 		graph = new GraphData();
 		graph.graphID = ""; //$NON-NLS-1$
 		graph.title = ""; //$NON-NLS-1$
-		graph.xSeries = -1;
+		graph.xSeries = ROW_X;
 		graph.ySeries = null;
 		data = d;
 	}
