@@ -101,7 +101,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     private final Color fLastEventColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED);
     private final Color fHistoBarColor = new Color(Display.getDefault(), 74, 112, 139);
     private final Color fLostEventColor = new Color(Display.getCurrent(), 208, 62, 120);
-    private final Color fFillColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
     // Drag states
     /**
@@ -702,8 +701,8 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             drawDelimiter(imageGC, fLastEventColor, height, delimiterIndex);
 
             // Fill the area to the right of delimiter with background color
-            imageGC.setBackground(fFillColor);
-            imageGC.fillRectangle(delimiterIndex + 1, 0, width - (delimiterIndex + 1), height);
+            imageGC.setBackground(fComposite.getParent().getBackground());
+            imageGC.fillRectangle(delimiterIndex + 1, 0, width - delimiterIndex + 1, height);
 
         } catch (final Exception e) {
             // Do nothing
