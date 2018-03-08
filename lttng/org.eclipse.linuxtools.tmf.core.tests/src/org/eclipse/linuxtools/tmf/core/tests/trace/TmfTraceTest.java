@@ -452,14 +452,22 @@ public class TmfTraceTest {
     @Test
     public void testGetModulesByClass() {
         /* There should not be any modules at this point */
-        Map<String, IAnalysisModule> modules = fTrace.getAnalysisModules();
-        assertTrue(modules.isEmpty());
+        TmfTraceStub trace = (TmfTraceStub) TmfTestTrace.E_TEST_10K.getTrace();
+        Map<String, IAnalysisModule> modules = trace.getAnalysisModules();
+        boolean modulesEmpty = modules.isEmpty();
 
-        /* Open the trace, the modules should be populated */
-        fTrace.openTrace();
-        modules = fTrace.getAnalysisModules();
+        /*
+         * Open the trace, the modules should be populated, then dispose of it
+         * before doing the asserts, to make sure it is not left in the trace
+         * manager if an asserts fails
+         */
+        trace.openTrace();
+        modules = trace.getAnalysisModules();
+        Map<String, TestAnalysis> testModules = trace.getAnalysisModules(TestAnalysis.class);
+        TmfTestTrace.A_TEST_10K.dispose();
+
+        assertTrue(modulesEmpty);
         assertFalse(modules.isEmpty());
-        Map<String, TestAnalysis> testModules = fTrace.getAnalysisModules(TestAnalysis.class);
         assertFalse(testModules.isEmpty());
 
         /* Make sure all modules of type TestAnalysis are returned in the second call */
@@ -468,6 +476,7 @@ public class TmfTraceTest {
                 assertTrue(testModules.containsKey(module.getKey()));
             }
         }
+
     }
 
     // ------------------------------------------------------------------------
