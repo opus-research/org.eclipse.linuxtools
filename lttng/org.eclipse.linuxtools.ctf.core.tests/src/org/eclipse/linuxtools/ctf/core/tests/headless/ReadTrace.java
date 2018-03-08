@@ -29,10 +29,10 @@ public class ReadTrace {
      * @param args
      */
     public static void main(String[] args) {
-        final String TRACE_PATH = "/home/ematkho/lttng-traces/synthetic";
+        final String TRACE_PATH = "traces/kernel";
 
         // Change this to enable text output
-        final boolean USE_TEXT = true;
+        final boolean USE_TEXT = false;
 
         final int LOOP_COUNT = 1;
 
