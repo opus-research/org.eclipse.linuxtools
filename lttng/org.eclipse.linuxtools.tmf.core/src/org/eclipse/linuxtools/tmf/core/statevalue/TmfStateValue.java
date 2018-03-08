@@ -43,6 +43,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      */
     protected abstract Object getValue();
 
+    private final static int INT_CACHE_SIZE = 128;  // Must be a power of 2
+    private final static IntegerStateValue intCache[] = new IntegerStateValue[INT_CACHE_SIZE];
+
     @Override
     public boolean equals(@Nullable Object other) {
         if (this == other) {
@@ -107,7 +110,18 @@ public abstract class TmfStateValue implements ITmfStateValue {
         if (intValue == -1) {
             return nullValue();
         }
-        return new IntegerStateValue(intValue);
+
+        /* Lookup in cache for the existence of the same value. */
+        int offset = intValue & (INT_CACHE_SIZE-1);
+        IntegerStateValue cached = intCache[offset];
+        if (cached != null && cached.unboxInt() == intValue) {
+            return cached;
+        }
+
+        /* Not in cache, create a new value and cache it. */
+        IntegerStateValue new_value = new IntegerStateValue(intValue);
+        intCache[offset] = new_value;
+        return new_value;
     }
 
     /**
