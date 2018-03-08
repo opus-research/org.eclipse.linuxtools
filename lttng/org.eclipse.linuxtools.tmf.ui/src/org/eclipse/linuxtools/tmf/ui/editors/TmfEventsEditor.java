@@ -94,6 +94,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     private ITmfTrace fTrace;
     private Composite fParent;
     private ListenerList fSelectionChangedListeners = new ListenerList();
+    private boolean fTraceSelected;
 
     @Override
     public void doSave(final IProgressMonitor monitor) {
@@ -140,7 +141,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                             int cacheSize = Integer.MAX_VALUE;
                             final ITmfTrace[] traces = new ITmfTrace[nbTraces];
                             for (int i = 0; i < nbTraces; i++) {
-                                final TmfTraceElement traceElement = traceEntries.get(i);
+                                final TmfTraceElement traceElement = traceEntries.get(i).getElementUnderTraceFolder();
                                 final ITmfTrace trace = traceElement.instantiateTrace();
                                 final ITmfEvent traceEvent = traceElement.instantiateEvent();
                                 if ((trace == null) || (traceEvent == null)) {
@@ -257,6 +258,12 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                 fEventsTable.addSelectionChangedListener(this);
                 fEventsTable.setTrace(fTrace, true);
                 fEventsTable.refreshBookmarks(fFile);
+
+                /* ensure start time is set */
+                final ITmfContext context = fTrace.seekEvent(0);
+                fTrace.getNext(context);
+                context.dispose();
+
                 broadcast(new TmfTraceOpenedSignal(this, fTrace, fFile));
             } else {
                 fEventsTable = new TmfEventsTable(fParent, 0);
@@ -618,6 +625,10 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     @Override
     public void partActivated(IWorkbenchPart part) {
         if (part == this && fTrace != null) {
+            if (fTraceSelected) {
+                return;
+            }
+            fTraceSelected = true;
             broadcast(new TmfTraceSelectedSignal(this, fTrace));
         }
     }
@@ -631,6 +642,13 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
      */
     @Override
     public void partBroughtToTop(IWorkbenchPart part) {
+        if (part == this && fTrace != null) {
+            if (fTraceSelected) {
+                return;
+            }
+            fTraceSelected = true;
+            broadcast(new TmfTraceSelectedSignal(this, fTrace));
+        }
     }
 
     /*
@@ -689,8 +707,12 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
      */
     @TmfSignalHandler
     public void traceSelected(final TmfTraceSelectedSignal signal) {
-        if ((signal.getSource() != this) && signal.getTrace().equals(fTrace)) {
-            getSite().getPage().bringToTop(this);
+        if ((signal.getSource() != this)) {
+            if (signal.getTrace().equals(fTrace)) {
+                getSite().getPage().bringToTop(this);
+            } else {
+                fTraceSelected = false;
+            }
         }
     }
 

@@ -15,7 +15,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.GraphingPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -24,36 +23,21 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 public class GraphingPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public GraphingPreferencePage() {
 		super(GRID);
-		LogManager.logDebug("Start GraphingPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(GraphingPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("GraphingPreferencePage.GraphDisplayPreferences"));
-		LogManager.logDebug("End GraphingPreferencePage:", this); //$NON-NLS-1$
+		setDescription(Localization.getString("GraphingPreferencePage.GraphDisplayPreferences")); //$NON-NLS-1$
 	}
 	
 	@Override
 	public void createFieldEditors() {
-		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
-
 		addField(
 				new IntegerFieldEditor(
 				GraphingPreferenceConstants.P_GRAPH_UPDATE_DELAY,
-				Localization.getString("GraphingPreferencePage.RefreshDelay"),
+				Localization.getString("GraphingPreferencePage.RefreshDelay"), //$NON-NLS-1$
 				getFieldEditorParent()));
-		
-		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
 	}
 
+	@Override
 	public void init(IWorkbench workbench) {
-		LogManager.logDebug("Start init:", this); //$NON-NLS-1$
-		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
-		LogManager.logDebug("End init:", this); //$NON-NLS-1$
 	}
 	
-	@Override
-	public void dispose() {
-		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
-		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
-		super.dispose();
-		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
-	}
 }

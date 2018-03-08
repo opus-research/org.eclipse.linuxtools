@@ -16,9 +16,12 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.HistoryBuilder;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree.HistoryTreeBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree.ThreadedHistoryTreeBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.ThreadedHistoryTreeBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
@@ -48,11 +51,6 @@ public abstract class StateSystemManager extends TmfComponent {
      *            The IStateChangeInput to use for building the history file. It
      *            may be required even if we are opening an already-existing
      *            history (ie, for partial histories).
-     * @param id
-     *            The ID, or name, to give to the state system we will build.
-     *            The signal that when be sent when the construction is finished
-     *            will carry this ID. It has no effect if the file already
-     *            exists.
      * @param buildManually
      *            If false, the construction will wait for a signal before
      *            starting. If true, it will build everything right now and
@@ -65,9 +63,8 @@ public abstract class StateSystemManager extends TmfComponent {
      * @since 2.0
      */
     public static ITmfStateSystem loadStateHistory(File htFile,
-            IStateChangeInput htInput, String id, boolean buildManually)
+            IStateChangeInput htInput, boolean buildManually)
             throws TmfTraceException {
-        ITmfStateSystem ss;
         IStateHistoryBackend htBackend;
 
         /* If the target file already exists, do not rebuild it uselessly */
@@ -77,7 +74,7 @@ public abstract class StateSystemManager extends TmfComponent {
             /* Load an existing history */
             try {
                 htBackend = new HistoryTreeBackend(htFile);
-                ss = HistoryBuilder.openExistingHistory(htBackend);
+                ITmfStateSystem ss = HistoryBuilder.openExistingHistory(htBackend);
                 return ss;
             } catch (IOException e) {
                 /*
@@ -95,9 +92,10 @@ public abstract class StateSystemManager extends TmfComponent {
             return null;
         }
         try {
-            htBackend = new ThreadedHistoryTreeBackend(htFile,
-                    htInput.getStartTime(), QUEUE_SIZE);
-            builder = new HistoryBuilder(htInput, htBackend, id, buildManually);
+            htBackend = new ThreadedHistoryTreeBackend(htFile, htInput.getStartTime(), QUEUE_SIZE);
+            StateSystem ss = new StateSystem(htBackend);
+            htInput.assignTargetStateSystem(ss);
+            builder = new HistoryBuilder(htInput, ss, htBackend, buildManually);
         } catch (IOException e) {
             /*
              * If it fails here however, it means there was a problem writing to
@@ -105,6 +103,54 @@ public abstract class StateSystemManager extends TmfComponent {
              */
             throw new TmfTraceException(e.toString(), e);
         }
+        return builder.getStateSystemQuerier();
+    }
+
+    /**
+     * Create a new state system using a null history back-end. This means that
+     * no history intervals will be saved anywhere, and as such only
+     * {@link ITmfStateSystem#queryOngoingState} will be available.
+     *
+     * This has to be built "manually" (which means you should call
+     * input.processEvent() to update the ongoing state of the state system).
+     *
+     * @param input
+     *            The input plugin to build the history
+     * @return Reference to the history-less state system that got built
+     * @since 2.0
+     */
+    public static ITmfStateSystem newNullHistory(IStateChangeInput input) {
+        IStateHistoryBackend backend = new NullBackend();
+        StateSystem ss = new StateSystem(backend);
+        input.assignTargetStateSystem(ss);
+
+        HistoryBuilder builder = new HistoryBuilder(input, ss, backend, true);
+        return builder.getStateSystemQuerier();
+    }
+
+    /**
+     * Create a new state system using in-memory interval storage. This should
+     * only be done for very small state system, and will be naturally limited
+     * to 2^31 intervals.
+     *
+     * This will block the caller while the construction is ongoing.
+     *
+     * @param input
+     *            The state change input to use
+     * @param buildManually
+     *            Set to true to block the caller and build without using TMF
+     *            signals (for test programs most of the time). Use false if you
+     *            are using the TMF facilities (experiments, etc.)
+     * @return Reference to the state system that just got built
+     * @since 2.0
+     */
+    public static ITmfStateSystem newInMemHistory(IStateChangeInput input,
+            boolean buildManually) {
+        IStateHistoryBackend backend = new InMemoryBackend(input.getStartTime());
+        StateSystem ss = new StateSystem(backend);
+        input.assignTargetStateSystem(ss);
+
+        HistoryBuilder builder = new HistoryBuilder(input, ss, backend, buildManually);
         return builder.getStateSystemQuerier();
     }
 }

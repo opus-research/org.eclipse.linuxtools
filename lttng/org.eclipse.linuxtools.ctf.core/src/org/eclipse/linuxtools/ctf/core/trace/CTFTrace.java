@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -37,18 +37,16 @@ import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
-import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
+import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
-import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
-import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
 
 /**
@@ -140,8 +138,8 @@ public class CTFTrace implements IDefinitionScope {
      */
     private final Map<String, CTFClock> clocks = new HashMap<String, CTFClock>();
 
-    /** FileChannels to the streams */
-    private final List<FileChannel> streamFileChannels = new LinkedList<FileChannel>();
+    /** FileInputStreams to the streams */
+    private final List<FileInputStream> fileInputStreams = new LinkedList<FileInputStream>();
 
     /** Handlers for the metadata files */
     private final static FileFilter metadataFileFilter = new MetadataFileFilter();
@@ -149,7 +147,7 @@ public class CTFTrace implements IDefinitionScope {
                                                                                          // fieldJavadoc
 
     /** map of all the event types */
-    private final Map<Long,HashMap<Long, EventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,EventDeclaration>>();
+    private final Map<Long,HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,IEventDeclaration>>();
     /** map of all the event types */
     private final Map<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
     /** map of all the indexes */
@@ -225,12 +223,12 @@ public class CTFTrace implements IDefinitionScope {
                 /*
                  * Copy the events
                  */
-                Iterator<Entry<Long, EventDeclaration>> it = s.getStream()
+                Iterator<Entry<Long, IEventDeclaration>> it = s.getStream()
                         .getEvents().entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<Long, EventDeclaration> pairs = it.next();
+                    Entry<Long, IEventDeclaration> pairs = it.next();
                     Long eventNum = pairs.getKey();
-                    EventDeclaration eventDec = pairs.getValue();
+                    IEventDeclaration eventDec = pairs.getValue();
                     getEvents(s.getStream().getId()).put(eventNum, eventDec);
                 }
 
@@ -242,20 +240,21 @@ public class CTFTrace implements IDefinitionScope {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        /* If this trace gets closed, release the descriptors to the streams */
-        for (FileChannel fc : streamFileChannels) {
-            if (fc != null) {
+    /**
+     * Dispose the trace
+     * @since 2.0
+     */
+    public void dispose() {
+        for (FileInputStream fis : fileInputStreams) {
+            if (fis != null) {
                 try {
-                    fc.close();
+                    fis.close();
                 } catch (IOException e) {
                     // do nothing it's ok, we tried to close it.
                 }
             }
         }
-        super.finalize();
-
+        System.gc(); // Invoke GC to release MappedByteBuffer objects (Java bug JDK-4724038)
     }
 
     // ------------------------------------------------------------------------
@@ -269,7 +268,7 @@ public class CTFTrace implements IDefinitionScope {
      *            The ID of the stream from which to read
      * @return The Hash map with the event declarations
      */
-    public HashMap<Long, EventDeclaration> getEvents(Long streamId) {
+    public HashMap<Long, IEventDeclaration> getEvents(Long streamId) {
         return eventDecs.get(streamId);
     }
 
@@ -278,7 +277,7 @@ public class CTFTrace implements IDefinitionScope {
      * @param id the StreamInput
      * @return The index
      */
-    public StreamInputPacketIndex getIndex(StreamInput id){
+    StreamInputPacketIndex getIndex(StreamInput id){
         if(! indexes.containsKey(id)){
             indexes.put(id, new StreamInputPacketIndex());
         }
@@ -289,6 +288,7 @@ public class CTFTrace implements IDefinitionScope {
      * Gets an event Declaration hashmap for a given StreamInput
      * @param id the StreamInput
      * @return the hashmap with the event definitions
+     * @since 2.0
      */
     public HashMap<Long, EventDefinition> getEventDefs(StreamInput id) {
         if(! eventDefs.containsKey(id)){
@@ -305,8 +305,9 @@ public class CTFTrace implements IDefinitionScope {
      * @param id
      *            the ID of the event
      * @return the event declaration
+     * @since 2.0
      */
-    public EventDeclaration getEventType(long streamId, long id) {
+    public IEventDeclaration getEventType(long streamId, long id) {
         return getEvents(streamId).get(id);
     }
 
@@ -316,6 +317,7 @@ public class CTFTrace implements IDefinitionScope {
      * @param id
      *            Long the id of the stream
      * @return Stream the stream that we need
+     * @since 2.0
      */
     public Stream getStream(Long id) {
         return streams.get(id);
@@ -527,8 +529,9 @@ public class CTFTrace implements IDefinitionScope {
 
         try {
             /* Open the file and get the FileChannel */
-            fc = new FileInputStream(streamFile).getChannel();
-            streamFileChannels.add(fc);
+            FileInputStream fis = new FileInputStream(streamFile);
+            fileInputStreams.add(fis);
+            fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
             byteBuffer = fc.map(MapMode.READ_ONLY, 0, 4096);
@@ -617,6 +620,7 @@ public class CTFTrace implements IDefinitionScope {
      *            A stream object.
      * @throws ParseException
      *             If there was some problem reading the metadata
+     * @since 2.0
      */
     public void addStream(Stream stream) throws ParseException {
 
@@ -643,12 +647,13 @@ public class CTFTrace implements IDefinitionScope {
 
         /* It should be ok now. */
         streams.put(stream.getId(), stream);
-        eventDecs.put(stream.getId(), new HashMap<Long,EventDeclaration>());
+        eventDecs.put(stream.getId(), new HashMap<Long,IEventDeclaration>());
     }
 
     /**
      * gets the Environment variables from the trace metadata (See CTF spec)
      * @return the environment variables in a map form (key value)
+     * @since 2.0
      */
     public Map<String, String> getEnvironment() {
         return environment;
@@ -759,6 +764,7 @@ public class CTFTrace implements IDefinitionScope {
      * @param cycles
      *            clock cycles since boot
      * @return time in nanoseconds UTC offset
+     * @since 2.0
      */
     public long timestampCyclesToNanos(long cycles) {
         long retVal = cycles + getOffset();
@@ -776,6 +782,7 @@ public class CTFTrace implements IDefinitionScope {
      * @param nanos
      *            time in nanoseconds UTC offset
      * @return clock cycles since boot.
+     * @since 2.0
      */
     public long timestampNanoToCycles(long nanos) {
         long retVal;
@@ -805,10 +812,10 @@ public class CTFTrace implements IDefinitionScope {
      * @param id the id of a stream
      * @return the hashmap containing events.
      */
-    public HashMap<Long, EventDeclaration> createEvents(Long id){
-        HashMap<Long, EventDeclaration> value = eventDecs.get(id);
+    public HashMap<Long, IEventDeclaration> createEvents(Long id){
+        HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
         if( value == null ) {
-            value = new HashMap<Long, EventDeclaration>();
+            value = new HashMap<Long, IEventDeclaration>();
             eventDecs.put(id, value);
         }
         return value;
