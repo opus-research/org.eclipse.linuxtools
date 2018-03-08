@@ -172,6 +172,14 @@ public abstract class AbstractTest extends TestCase {
 		return proj;
 	}
 
+	protected IProject createExternalProjectAndBuild(Bundle bundle,
+			String projname, String absProjectPath, String sourceFile) throws CoreException, URISyntaxException,
+			InvocationTargetException, InterruptedException, IOException {
+		IProject proj = createExternalProject(bundle, projname, absProjectPath, sourceFile);
+		buildProject(proj);
+		return proj;
+	}
+
 	protected ICProject createProjectAndBuild(Bundle bundle, String projname)
 			throws CoreException, URISyntaxException,
 			InvocationTargetException, InterruptedException, IOException {
@@ -278,7 +286,7 @@ public abstract class AbstractTest extends TestCase {
 			}			
 		}, null);
 	}
-	
+
 	protected ILaunchConfiguration createConfiguration(IProject proj) throws CoreException {
 		String projectName = proj.getName();
 		IResource bin = proj.findMember(new Path(BIN_DIR).append(projectName));
@@ -309,5 +317,12 @@ public abstract class AbstractTest extends TestCase {
 	protected abstract ILaunchConfigurationType getLaunchConfigType();
 	
 	protected abstract void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) throws CoreException;
+
+	@SuppressWarnings("unused")
+	protected IProject createExternalProject(Bundle bundle, String projname,
+			String absProjectPath, String sourceFile) throws CoreException, URISyntaxException,
+			IOException, InvocationTargetException, InterruptedException {
+		return null;
+	}
 	
 }
