@@ -99,7 +99,7 @@ public class TmfTimestampTest {
     @Test
     public void testCopyNullConstructor() {
         try {
-            new TmfTimestamp((TmfTimestamp)null);
+            new TmfTimestamp(null);
             fail("TmfTimestamp: null argument");
         } catch (final IllegalArgumentException e) {
         }
