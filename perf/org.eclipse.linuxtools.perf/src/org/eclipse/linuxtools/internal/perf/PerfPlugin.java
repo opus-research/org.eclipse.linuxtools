@@ -84,7 +84,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String PERF_DEFAULT_DATA = "perf.data";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 	
-	  
 	
 	// The shared instance
 	private static PerfPlugin plugin;

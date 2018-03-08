@@ -8,7 +8,7 @@
  * Contributors:
  *    Thavidu Ranatunga (IBM) - Initial implementation.
  *******************************************************************************/ 
-package org.eclipse.linuxtools.internal.perf.ui;
+package org.eclipse.linuxtools.internal.perf.actions;
 
 import java.util.HashMap;
 import java.util.Map;

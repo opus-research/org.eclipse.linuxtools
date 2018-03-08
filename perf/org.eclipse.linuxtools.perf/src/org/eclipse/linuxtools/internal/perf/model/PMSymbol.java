@@ -53,4 +53,18 @@ public class PMSymbol extends TreeParent {
 	public boolean conflicted() {
 		return pathConflictFound;
 	}
+
+	public static int comparePercentages(PMSymbol symbol1, PMSymbol symbol2) {
+		int ret = 0;
+		if (symbol1 == null && symbol2 != null) {
+			ret = -1;
+		} else if (symbol1 != null && symbol2 == null) {
+			ret = 1;
+		} else if (symbol1 == null && symbol2 == null) {
+			ret = 0;
+		} else {
+			ret = (symbol1.getPercent() < symbol2.getPercent()) ? -1 : 1;
+		}
+		return ret;
+	}
 }
