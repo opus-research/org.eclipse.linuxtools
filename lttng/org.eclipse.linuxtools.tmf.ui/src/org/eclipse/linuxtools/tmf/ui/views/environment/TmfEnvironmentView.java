@@ -9,15 +9,17 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Bernd Hufmann - Updated to use Tree with columns to be able to group traces
+ *   Alexandre Montplaisir - Display info for any ITmfEnvironmentVariables trace
  *******************************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.environment;
 
 import java.util.Map;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEnvironmentVariables;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
@@ -80,14 +82,12 @@ public class TmfEnvironmentView extends TmfView {
         }
 
         for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
-            // FIXME This should be replaced with a method in ITmfTrace maybe?
-            // Other trace types might want to supply environment variables.
-            if (trace instanceof CtfTmfTrace) {
+            if (trace instanceof ITmfEnvironmentVariables) {
                 TreeItem item = new TreeItem(fTree, SWT.NONE);
                 item.setText(0, trace.getName());
 
-                CtfTmfTrace ctfTrace = (CtfTmfTrace) trace;
-                Map <String, String> env = ctfTrace.getEnvironment();
+                ITmfEnvironmentVariables evTrace = (ITmfEnvironmentVariables) trace;
+                Map <String, String> env = evTrace.getEnvironment();
                 for (Map.Entry<String, String> entry : env.entrySet()) {
                     TreeItem subItem = new TreeItem(item, SWT.NONE);
                     subItem.setText(0, entry.getKey()); // Variable name
