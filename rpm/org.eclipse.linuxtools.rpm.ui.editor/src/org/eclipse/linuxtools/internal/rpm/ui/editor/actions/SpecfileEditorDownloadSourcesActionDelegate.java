@@ -55,7 +55,7 @@ public class SpecfileEditorDownloadSourcesActionDelegate extends AbstractHandler
 		for (final SpecfileSource sourceurls : sourceURLList) {
 			try {
 				String rawURL = sourceurls.getFileName().toString();
-				String resolvedURL = UiUtils.resolveDefines(specfile, rawURL.toString());
+				String resolvedURL = UiUtils.resolveDefines(specfile, rawURL);
 				URL url = null;
 				try {
 					url = new URL(resolvedURL);

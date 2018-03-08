@@ -22,6 +22,7 @@ public final class Messages extends NLS {
 	public static String DownloadSources_cannotConnectToURL;
 
 	// SpecfileEditorPrepareSourcesActionDelegate
+	public static String PrepareSources_error;
 	public static String PrepareSources_downloadSourcesMalformedURL;
 	public static String PrepareSources_downloadCancelled;
 	public static String PrepareSources_downloadConnectionFail;
