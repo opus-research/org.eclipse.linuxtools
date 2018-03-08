@@ -119,6 +119,10 @@ public class ImportRPMsPage extends FormPage {
 				toolkit).addSelectionListener(new RemoveButtonListener());
 		createSpace(buttonList);
 
+		createPushButton(buttonList, Messages.ImportRPMsPage_buttonDeleteRPMs,
+				toolkit).addSelectionListener(new DeleteButtonListener());
+		createSpace(buttonList);
+
 		createPushButton(buttonList, Messages.ImportRPMsPage_buttonCreateRepo,
 				toolkit).addSelectionListener(new CreaterepoButtonListener());
 
@@ -237,6 +241,25 @@ public class ImportRPMsPage extends FormPage {
 	 * Handle the remove button execution on the Import RPMs page.
 	 */
 	public class RemoveButtonListener extends SelectionAdapter {
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetSelected(SelectionEvent e) { }
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) { }
+	}
+
+	/**
+	 * Handle the delete button execution on the Import RPMs page.
+	 */
+	public class DeleteButtonListener extends SelectionAdapter {
 		/*
 		 * (non-Javadoc)
 		 * @see org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse.swt.events.SelectionEvent)
