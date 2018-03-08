@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
  * Abstract class to extend to match certain type of events in a trace
@@ -35,7 +35,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     /**
      * The array of traces to match
      */
-    protected TmfTrace[] fTraces;
+    protected ITmfTrace[] fTraces;
 
     /**
      * The class to call once a match is found
@@ -54,7 +54,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      *            The trace in which to match events
      *
      */
-    public TmfEventMatching(TmfTrace trace) {
+    public TmfEventMatching(ITmfTrace trace) {
         this(trace, new TmfEventMatches());
     }
 
@@ -64,7 +64,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @param traces
      *            The set of traces for which to match events
      */
-    public TmfEventMatching(TmfTrace[] traces) {
+    public TmfEventMatching(ITmfTrace[] traces) {
         this(traces, new TmfEventMatches());
     }
 
@@ -76,7 +76,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @param tmfEventMatches
      *            The match processing class
      */
-    public TmfEventMatching(TmfTrace[] traces, TmfEventMatches tmfEventMatches) {
+    public TmfEventMatching(ITmfTrace[] traces, TmfEventMatches tmfEventMatches) {
         fTraces = traces;
         fMatches = tmfEventMatches;
     }
@@ -89,8 +89,8 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @param tmfEventMatches
      *            The match processing class
      */
-    public TmfEventMatching(TmfTrace trace, TmfEventMatches tmfEventMatches) {
-        TmfTrace[] traces = new TmfTrace[1];
+    public TmfEventMatching(ITmfTrace trace, TmfEventMatches tmfEventMatches) {
+        ITmfTrace[] traces = new ITmfTrace[1];
         traces[0] = trace;
         fTraces = traces;
         fMatches = tmfEventMatches;
@@ -135,13 +135,25 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      */
     @SuppressWarnings("nls")
     @Override
-    public String printMatchingStats() {
+    public String toString() {
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < fTraces.length; i++) {
             b.append("Trace " + i + ": " + fUnmatched.get(i).size() + " unmatched events");
         }
         return b.toString();
     }
+
+    /**
+     * Matches one event
+     *
+     * @param event
+     *            The event to match
+     * @param traceno
+     *            The number of the trace this event belongs to
+     *
+     * @return A pair of event if a match was found, false otherwise
+     */
+    protected abstract TmfEventDependency matchEvent(ITmfEvent event, int traceno);
 
     /**
      * Method that start the process of matching events
@@ -159,13 +171,16 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
         // TODO Start a new thread here? maybe
         initMatching();
 
-        /* For each trace, get the events and for each event, call the
+        /*
+         * For each trace, get the events and for each event, call the
          * MatchEvent method
          */
         TmfEventDependency dep;
         for (int i = 0; i < fTraces.length; i++) {
             Iterator<ITmfEvent> it = fTraces[i].iterator();
             while (it.hasNext()) {
+                // Does not work because ITmfTrace is not an iterable
+                // for (ITmfEvent event : fTraces[i]) {
                 dep = matchEvent(it.next(), i);
                 /* For each match returned, call fMatches.addMatch */
                 if (dep != null) {
