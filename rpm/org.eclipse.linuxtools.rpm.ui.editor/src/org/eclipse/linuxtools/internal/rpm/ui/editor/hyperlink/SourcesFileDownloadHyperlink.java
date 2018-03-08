@@ -52,6 +52,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkRegion()
 	 */
+	@Override
 	public IRegion getHyperlinkRegion() {
 		return region;
 	}
@@ -59,13 +60,15 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
+	@Override
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_1, fileName);
+		return Messages.SourcesFileHyperlink_1 + ' ' + fileName;
 	}
 
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getTypeLabel()
 	 */
+	@Override
 	public String getTypeLabel() {
 		return null;
 	}
@@ -76,6 +79,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
+	@Override
 	public void open() {
 		IContainer container = original.getParent();
 		IResource saveFolder = container.getParent().findMember(
