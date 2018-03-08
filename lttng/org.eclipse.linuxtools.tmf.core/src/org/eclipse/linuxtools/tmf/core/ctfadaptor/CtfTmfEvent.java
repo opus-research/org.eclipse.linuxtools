@@ -77,7 +77,6 @@ public final class CtfTmfEvent extends TmfEvent
         sourceCPU = cpu;
         typeId = declaration.getId();
         eventName = declaration.getName();
-
     }
 
     /**
