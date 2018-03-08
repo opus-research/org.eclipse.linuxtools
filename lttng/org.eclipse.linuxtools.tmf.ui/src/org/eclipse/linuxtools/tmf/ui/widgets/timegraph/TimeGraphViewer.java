@@ -918,6 +918,12 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         _time1_extSynch = _time1;
     }
 
+    @Override
+    @Deprecated
+    public boolean isCalendarFormat() {
+        return timeFormat == TimeFormat.CALENDAR;
+    }
+
     /**
      * @since 2.0
      */
