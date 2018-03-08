@@ -11,52 +11,43 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences;
 
-import org.eclipse.jface.preference.*;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 
 
 public class StapOptionsPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public StapOptionsPreferencePage() {
 		super(GRID);
-		LogManager.logDebug("Start StapOptionsPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("StapOptionsPreferencePage.StapOptions"));
-		LogManager.logDebug("End StapOptionsPreferencePage:", this); //$NON-NLS-1$
+		setDescription(Localization.getString("StapOptionsPreferencePage.StapOptions")); //$NON-NLS-1$
 	}
 
 	@Override
 	public void createFieldEditors() {
-		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
 		for(int i=0; i<IDEPreferenceConstants.P_STAP.length; i++) {
 			addField(
 					new BooleanFieldEditor(
 						IDEPreferenceConstants.P_STAP[i][2],
-						IDEPreferenceConstants.P_STAP[i][0] + "\t" + IDEPreferenceConstants.P_STAP[i][1],
+						IDEPreferenceConstants.P_STAP[i][0] + "\t" + IDEPreferenceConstants.P_STAP[i][1], //$NON-NLS-1$
 						getFieldEditorParent()));
 			
 			if(2 < IDEPreferenceConstants.P_STAP[i][0].length()) {
 				StringFieldEditor sfe = new StringFieldEditor(
 					IDEPreferenceConstants.P_STAP_OPTS[i-IDEPreferenceConstants.P_STAP.length+IDEPreferenceConstants.P_STAP_OPTS.length],
-					"\t",
+					"\t", //$NON-NLS-1$
 					getFieldEditorParent());
 				
 				addField(sfe);
 			}
 		}
-		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
-	}
-
-	public void init(IWorkbench workbench) {
-		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 
 	@Override
-	public void dispose() {
-		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
-		super.dispose();
+	public void init(IWorkbench workbench) {
 	}
 }

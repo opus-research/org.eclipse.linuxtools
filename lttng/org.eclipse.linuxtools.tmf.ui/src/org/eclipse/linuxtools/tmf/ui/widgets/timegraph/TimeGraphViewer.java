@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
@@ -32,6 +33,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphTooltipHandler;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -89,9 +91,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     ArrayList<ITimeGraphTimeListener> fTimeListeners = new ArrayList<ITimeGraphTimeListener>();
     ArrayList<ITimeGraphRangeListener> fRangeListeners = new ArrayList<ITimeGraphRangeListener>();
 
-    // Calender Time format, using Epoch reference or Relative time
-    // format(default
-    private boolean calendarTimeFormat = false;
+    // Time format, using Epoch reference, Relative time format(default) or Number
+    private TimeFormat timeFormat = TimeFormat.RELATIVE;
     private int borderWidth = 0;
     private int timeScaleHeight = 22;
 
@@ -132,19 +133,21 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Sets or clears the input for this time graph viewer.
      * The input array should only contain top-level elements.
      *
-     * @param input the input of this time graph viewer, or <code>null</code> if none
+     * @param input The input of this time graph viewer, or <code>null</code> if none
      */
     public void setInput(ITimeGraphEntry[] input) {
-        if (null != _stateCtrl) {
-            if (null == input) {
-                input = new ITimeGraphEntry[0];
+        ITimeGraphEntry[] realInput = input;
+
+        if (_stateCtrl != null) {
+            if (realInput == null) {
+                realInput = new ITimeGraphEntry[0];
             }
-            setTimeRange(input);
+            setTimeRange(realInput);
             _verticalScrollBar.setEnabled(true);
             setTopIndex(0);
             _selectedTime = 0;
             _selectedEntry = null;
-            refreshAllData(input);
+            refreshAllData(realInput);
         }
     }
 
@@ -203,15 +206,18 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         }
     }
 
+    /**
+     * @return The string representing the view type
+     */
     protected String getViewTypeStr() {
         return "viewoption.threads"; //$NON-NLS-1$
     }
 
-    int getMarginWidth(int idx) {
+    int getMarginWidth() {
         return 0;
     }
 
-    int getMarginHeight(int idx) {
+    int getMarginHeight() {
         return 0;
     }
 
@@ -226,6 +232,15 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         Utils.saveIntOption(getPreferenceString("namewidth"), _nameWidth); //$NON-NLS-1$
     }
 
+    /**
+     * Create a data viewer.
+     *
+     * @param parent
+     *            Parent composite
+     * @param style
+     *            Style to use
+     * @return The new data viewer
+     */
     protected Control createDataViewer(Composite parent, int style) {
         loadOptions();
         _colors = new TimeGraphColorScheme();
@@ -259,7 +274,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         });
         _verticalScrollBar.setEnabled(false);
 
-        _stateCtrl = createTimeGraphControl();
+        _stateCtrl = createTimeGraphControl(_dataViewer, _colors);
 
         _stateCtrl.setTimeProvider(this);
         _stateCtrl.addSelectionListener(this);
@@ -305,8 +320,19 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         _colors.dispose();
     }
 
-    protected TimeGraphControl createTimeGraphControl() {
-        return new TimeGraphControl(_dataViewer, _colors);
+    /**
+     * Create a new time graph control.
+     *
+     * @param parent
+     *            The parent composite
+     * @param colors
+     *            The color scheme
+     * @return The new TimeGraphControl
+     * @since 2.0
+     */
+    protected TimeGraphControl createTimeGraphControl(Composite parent,
+            TimeGraphColorScheme colors) {
+        return new TimeGraphControl(parent, colors);
     }
 
     /**
@@ -382,19 +408,21 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * @param end
      */
     void updateInternalData(ITimeGraphEntry[] traces, long start, long end) {
-        if (null == traces) {
-            traces = new ITimeGraphEntry[0];
+        ITimeGraphEntry[] realTraces = traces;
+
+        if (null == realTraces) {
+            realTraces = new ITimeGraphEntry[0];
         }
         if ((start == 0 && end == 0) || start < 0 || end < 0) {
             // Start and end time are unspecified and need to be determined from
             // individual processes
-            setTimeRange(traces);
+            setTimeRange(realTraces);
         } else {
             _beginTime = start;
             _endTime = end;
         }
 
-        refreshAllData(traces);
+        refreshAllData(realTraces);
     }
 
     /**
@@ -471,9 +499,9 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     @Override
     public void setNameSpace(int width) {
         _nameWidth = width;
-        width = _stateCtrl.getClientArea().width;
-        if (_nameWidth > width - 6) {
-            _nameWidth = width - 6;
+        int w = _stateCtrl.getClientArea().width;
+        if (_nameWidth > w - 6) {
+            _nameWidth = w - 6;
         }
         if (_nameWidth < 6) {
             _nameWidth = 6;
@@ -586,7 +614,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
 
     @Override
     public void resetStartFinishTime() {
-        setStartFinishTimeNotify(_time0_, _time1_);
+        setStartFinishTime(_time0_, _time1_);
         _timeRangeFixed = false;
     }
 
@@ -895,18 +923,19 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * Set the calendar format
-     *
-     * @param toAbsoluteCaltime
-     *            True for absolute time, false for relative
+     * @since 2.0
      */
-    public void setTimeCalendarFormat(boolean toAbsoluteCaltime) {
-        calendarTimeFormat = toAbsoluteCaltime;
+    @Override
+    public TimeFormat getTimeFormat() {
+        return timeFormat;
     }
 
-    @Override
-    public boolean isCalendarFormat() {
-        return calendarTimeFormat;
+    /**
+     * @param tf the {@link TimeFormat} used to display timestamps
+     * @since 2.0
+     */
+    public void setTimeFormat(TimeFormat tf) {
+        this.timeFormat = tf;
     }
 
     /**
@@ -1042,6 +1071,30 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
+     * Return the x coordinate corresponding to a time
+     *
+     * @param time the time
+     * @return the x coordinate corresponding to the time
+     *
+     * @since 2.0
+     */
+    public int getXForTime(long time) {
+        return _stateCtrl.getXForTime(time);
+    }
+
+    /**
+     * Return the time corresponding to an x coordinate
+     *
+     * @param x the x coordinate
+     * @return the time corresponding to the x coordinate
+     *
+     * @since 2.0
+     */
+    public long getTimeAtX(int x) {
+        return _stateCtrl.getTimeAtX(x);
+    }
+
+    /**
      * Get the selection provider
      *
      * @return the selection provider
@@ -1112,6 +1165,26 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
+     * Collapses all nodes of the viewer's tree, starting with the root.
+     *
+     * @since 2.0
+     */
+    public void collapseAll() {
+        _stateCtrl.collapseAll();
+        adjustVerticalScrollBar();
+    }
+
+    /**
+     * Expands all nodes of the viewer's tree, starting with the root.
+     *
+     * @since 2.0
+     */
+    public void expandAll() {
+        _stateCtrl.expandAll();
+        adjustVerticalScrollBar();
+    }
+
+    /**
      * Get the number of sub-elements when expanded
      *
      * @return The element count
@@ -1161,6 +1234,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
                 @Override
                 public void run() {
                     resetStartFinishTime();
+                    notifyStartFinishTime();
                 }
             };
             resetScale.setText(Messages.TmfTimeGraphViewer_ResetScaleActionNameText);
@@ -1372,6 +1446,22 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         _stateCtrl.removeTimeEventMenuListener(listener);
     }
 
+    /**
+     * @param filter The filter object to be attached to the view
+     * @since 2.0
+     */
+    public void addFilter(ViewerFilter filter) {
+        _stateCtrl.addFilter(filter);
+        refresh();
+    }
 
+    /**
+     * @param filter The filter object to be attached to the view
+     * @since 2.0
+     */
+    public void removeFilter(ViewerFilter filter) {
+        _stateCtrl.removeFilter(filter);
+        refresh();
+    }
 
 }

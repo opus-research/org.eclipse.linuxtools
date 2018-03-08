@@ -20,7 +20,7 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
  * TODO: Implement me. Please.
  */
 @SuppressWarnings({"nls","javadoc"})
-public class TmfDataProviderStub extends TmfDataProvider<TmfEvent> {
+public class TmfDataProviderStub extends TmfDataProvider {
 
     private static final String DIRECTORY   = "testfiles";
     private static final String TEST_STREAM = "M-Test-10K";
@@ -42,7 +42,7 @@ public class TmfDataProviderStub extends TmfDataProvider<TmfEvent> {
     private TmfTraceStub fTrace;
 
     public TmfDataProviderStub(final String path) throws IOException {
-        super("TmfDataProviderStub", TmfEvent.class);
+        super("TmfDataProviderStub", ITmfEvent.class);
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
         try {
             final File test = new File(FileLocator.toFileURL(location).toURI());
@@ -63,21 +63,21 @@ public class TmfDataProviderStub extends TmfDataProvider<TmfEvent> {
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfContext armRequest(final ITmfDataRequest<TmfEvent> request) {
-        if (request instanceof ITmfEventRequest<?>) {
-            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest<?>) request).getRange().getStartTime());
+    public ITmfContext armRequest(final ITmfDataRequest request) {
+        if (request instanceof ITmfEventRequest) {
+            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
             return context;
         }
         return null;
     }
 
     @Override
-    public TmfEvent getNext(final ITmfContext context) {
+    public ITmfEvent getNext(final ITmfContext context) {
         return fTrace.getNext(context);
     }
 
     @Override
-    public boolean isCompleted(final ITmfDataRequest<TmfEvent> request, final TmfEvent data, final int nbRead) {
+    public boolean isCompleted(final ITmfDataRequest request, final ITmfEvent data, final int nbRead) {
         return false;
     }
 

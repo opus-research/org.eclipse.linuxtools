@@ -1,19 +1,19 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2012 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
+ *   Alexandre Montplaisir - Removed Cloneable, made immutable
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,40 +22,33 @@ import java.util.Map;
  * <p>
  * Non-value fields are structural (i.e. used to represent the event structure
  * including optional fields) while the valued fields are actual event fields.
- * 
+ *
  * @version 1.0
  * @author Francois Chouinard
- * 
+ *
  * @see ITmfEvent
  * @see ITmfEventType
  */
-public class TmfEventField implements ITmfEventField, Cloneable {
+public class TmfEventField implements ITmfEventField {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private String fName;
-    private Object fValue;
-    private ITmfEventField[] fFields;
+    private final String fName;
+    private final Object fValue;
+    private final ITmfEventField[] fFields;
 
-    private String[] fFieldNames;
-    private Map<String, ITmfEventField> fNameMapping;
+    private final String[] fFieldNames;
+    private final Map<String, ITmfEventField> fNameMapping;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Default constructor
-     */
-    @SuppressWarnings("unused")
-    private TmfEventField() {
-    }
-
-    /**
      * Constructor for a structural field
-     * 
+     *
      * @param name the event field id
      * @param fields the list of subfields
      */
@@ -65,7 +58,7 @@ public class TmfEventField implements ITmfEventField, Cloneable {
 
     /**
      * Constructor for a terminal field (no subfields)
-     * 
+     *
      * @param name the event field id
      * @param value the event field value
      */
@@ -75,7 +68,7 @@ public class TmfEventField implements ITmfEventField, Cloneable {
 
     /**
      * Full constructor
-     * 
+     *
      * @param name the event field id
      * @param value the event field value
      * @param fields the list of subfields
@@ -86,13 +79,23 @@ public class TmfEventField implements ITmfEventField, Cloneable {
         }
         fName = name;
         fValue = value;
-        fFields = (fields != null) ? Arrays.copyOf(fields, fields.length) : null;
-        populateStructs();
+        fFields = fields;
+
+        /* Fill the fFieldNames and fNameMapping structures */
+        final int nbFields = (fFields != null) ? fFields.length : 0;
+        fFieldNames = new String[nbFields];
+        fNameMapping = new HashMap<String, ITmfEventField>();
+
+        for (int i = 0; i < nbFields; i++) {
+            final String curName = fFields[i].getName();
+            fFieldNames[i] = curName;
+            fNameMapping.put(curName, fFields[i]);
+        }
     }
 
     /**
      * Copy constructor
-     * 
+     *
      * @param field the other event field
      */
     public TmfEventField(final TmfEventField field) {
@@ -103,7 +106,7 @@ public class TmfEventField implements ITmfEventField, Cloneable {
         fValue = field.fValue;
         fFields = field.fFields;
         fFieldNames = field.fFieldNames;
-        populateStructs();
+        fNameMapping = field.fNameMapping;
     }
 
     // ------------------------------------------------------------------------
@@ -131,7 +134,7 @@ public class TmfEventField implements ITmfEventField, Cloneable {
      */
     @Override
     public String[] getFieldNames() {
-        return Arrays.copyOf(fFieldNames, fFieldNames.length);
+        return fFieldNames;
     }
 
     /* (non-Javadoc)
@@ -151,7 +154,7 @@ public class TmfEventField implements ITmfEventField, Cloneable {
      */
     @Override
     public ITmfEventField[] getFields() {
-        return (fFields != null) ? Arrays.copyOf(fFields, fFields.length) : new ITmfEventField[0];
+        return (fFields != null) ? fFields : new ITmfEventField[0];
     }
 
     /* (non-Javadoc)
@@ -174,26 +177,12 @@ public class TmfEventField implements ITmfEventField, Cloneable {
     }
 
     // ------------------------------------------------------------------------
-    // Convenience setters
-    // ------------------------------------------------------------------------
-
-    /**
-     * @param value new field raw value
-     * @param fields the corresponding fields
-     */
-    protected void setValue(final Object value, final ITmfEventField[] fields) {
-        fValue = value;
-        fFields = (fields != null) ? Arrays.copyOf(fields, fields.length) : null;
-        populateStructs();
-    }
-
-    // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
     /**
      * Create a root field from a list of labels.
-     * 
+     *
      * @param labels the list of labels
      * @return the (flat) root list
      */
@@ -204,41 +193,6 @@ public class TmfEventField implements ITmfEventField, Cloneable {
         }
         // Return a new root field;
         return new TmfEventField(ITmfEventField.ROOT_FIELD_ID, fields);
-    }
-
-    /*
-     * Populate the subfield names and the name map
-     */
-    private void populateStructs() {
-        final int nbFields = (fFields != null) ? fFields.length : 0;
-        fFieldNames = new String[nbFields];
-        fNameMapping = new HashMap<String, ITmfEventField>();
-        for (int i = 0; i < nbFields; i++) {
-            final String name = fFields[i].getName();
-            fFieldNames[i] = name;
-            fNameMapping.put(name, fFields[i]);
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public TmfEventField clone() {
-        TmfEventField clone = null;
-        try {
-            clone = (TmfEventField) super.clone();
-            clone.fName = fName;
-            clone.fValue = fValue;
-            clone.fFields = (fFields != null) ? fFields.clone() : null;
-            clone.populateStructs();
-        } catch (final CloneNotSupportedException e) {
-        }
-        return clone;
     }
 
     // ------------------------------------------------------------------------
@@ -289,9 +243,43 @@ public class TmfEventField implements ITmfEventField, Cloneable {
      * @see java.lang.Object#toString()
      */
     @Override
-    @SuppressWarnings("nls")
     public String toString() {
-        return "TmfEventField [fFieldId=" + fName + ", fValue=" + fValue + "]";
+        StringBuilder ret = new StringBuilder();
+        if (fName.equals(ITmfEventField.ROOT_FIELD_ID)) {
+            /*
+             * If this field is a top-level "field container", we will print its
+             * sub-fields directly.
+             */
+            appendSubFields(ret);
+
+        } else {
+            /* The field has its own values */
+            ret.append(fName);
+            ret.append('=');
+            ret.append(fValue);
+
+            if (fFields != null && fFields.length > 0) {
+                /*
+                 * In addition to its own name/value, this field also has
+                 * sub-fields.
+                 */
+                ret.append(" ["); //$NON-NLS-1$
+                appendSubFields(ret);
+                ret.append(']');
+            }
+        }
+        return ret.toString();
+    }
+
+    private void appendSubFields(StringBuilder sb) {
+        ITmfEventField field;
+        for (int i = 0; i < getFields().length; i++) {
+            field = getFields()[i];
+            if (i != 0) {
+                sb.append(", ");//$NON-NLS-1$
+            }
+            sb.append(field.toString());
+        }
     }
 
 }
