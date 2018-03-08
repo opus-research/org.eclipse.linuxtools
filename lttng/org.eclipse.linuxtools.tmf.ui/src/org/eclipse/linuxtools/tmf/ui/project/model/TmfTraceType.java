@@ -488,9 +488,7 @@ public final class TmfTraceType {
         if (traceTypeName != null && !"".equals(traceTypeName) && //$NON-NLS-1$
                 !traceTypeName.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY) && !traceTypeName.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY)) {
             for (File trace : traces) {
-                if (!validate(traceTypeName, trace.getAbsolutePath())) {
-                    return false;
-                }
+                validate(traceTypeName, trace.getAbsolutePath());
             }
         }
         return true;
