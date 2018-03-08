@@ -288,6 +288,12 @@ public class TapsetParser implements Runnable {
  		st.nextToken(); //skip the stap command itself
 	 	while(st.hasMoreTokens()){
 	 		String tokenString = st.nextToken();
+
+			// If the token starts with '_' or '__' it is a private probe so
+			// skip it.
+ 			if (tokenString.startsWith("_")) //$NON-NLS-1$
+ 				continue;
+
 	 		int firstDotIndex = tokenString.indexOf('.');
  			String groupName = tokenString;
 	 		if (firstDotIndex > 0){
@@ -309,7 +315,7 @@ public class TapsetParser implements Runnable {
 
 	 		StringTokenizer probe = new StringTokenizer(tokenString);
  			prev.setLength(0);
- 			
+
  			// The first token is the probe name
  			token = probe.nextToken();
  			currentProbe = new TreeDefinitionNode("probe " + token, token, null, true); //$NON-NLS-1$
@@ -368,7 +374,10 @@ public class TapsetParser implements Runnable {
 					String[] test = secondp.split(s);
 					i = 0;
 					for(String t : test) {
-						if(i == 1) {
+						// If i== 1 this is a function name.
+						// Ignore ALL_CAPS functions; they are not meant for end
+						// user use.
+						if(i == 1 && !t.matches("[A-Z_1-9]*")) { //$NON-NLS-1$
 							functions.add(new TreeNode(t, t, true));
 						}
 						else if(i > 1 && t.length() >= 1) {
