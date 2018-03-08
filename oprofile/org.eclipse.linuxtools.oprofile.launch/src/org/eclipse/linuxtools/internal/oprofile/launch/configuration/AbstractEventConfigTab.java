@@ -1027,9 +1027,7 @@ public abstract class AbstractEventConfigTab extends
 			public void setEnabled(boolean enabled) {
 				if (unitMaskButtons != null) {
 					for (Button b : unitMaskButtons) {
-						if (!b.isDisposed()) {
-							b.setEnabled(enabled);
-						}
+						b.setEnabled(enabled);
 					}
 				}
 			}

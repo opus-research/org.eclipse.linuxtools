@@ -68,14 +68,12 @@ public class CreateModuleAction extends Action implements
 	// private static String scriptFileName = "/script.stp";
 	public String script = null;
 
-	@Override
 	public void init(IWorkbenchWindow window) {
 		fWindow = window;
 	}
 
 	protected IWorkbenchWindow fWindow = null;
 
-	@Override
 	public void run(IAction action) {
 		ScriptDetails sd = new ScriptDetails(fWindow.getShell());
 		sd.create();
@@ -303,13 +301,11 @@ public class CreateModuleAction extends Action implements
 		}
 	}
 
-	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
 	public void dispose() {
 		// TODO Auto-generated method stub
 
