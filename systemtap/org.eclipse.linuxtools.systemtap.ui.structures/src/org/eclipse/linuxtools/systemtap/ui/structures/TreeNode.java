@@ -123,7 +123,7 @@ public class TreeNode {
 		data = null;
 		display = null;
 	}
-
+	
 	private ArrayList<TreeNode> children;
 	private Object data;
 	private String display;

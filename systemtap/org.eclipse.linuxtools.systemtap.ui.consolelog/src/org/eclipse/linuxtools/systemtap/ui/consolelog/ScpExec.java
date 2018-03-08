@@ -1,20 +1,13 @@
 package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.ErrorMessage;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobbler;
-
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
+import java.io.*;
+import java.util.ArrayList;
 
 public class ScpExec implements Runnable {
 	
@@ -151,9 +144,9 @@ public class ScpExec implements Runnable {
 
         }
 
-    }catch (JSchException e) {
-    	e.printStackTrace();
-	}
+    }
+    catch(Exception e){
+    }
   }
     
     /* Stops the process from running and stops the <code>StreamGobblers</code> from monitering
