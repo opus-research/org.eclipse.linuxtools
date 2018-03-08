@@ -51,18 +51,10 @@ public final class DataSetFactory {
 		return null;
 	}
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	public static String[] getIDs() {
 		return ids;
 	}
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	public static String getName(String id) {
 		int index = getIndex(id);
 		if(index >= 0) {
@@ -71,10 +63,6 @@ public final class DataSetFactory {
 		return null;
 	}
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	public static String getDescription(String id) {
 		int index = getIndex(id);
 		if(index >= 0) {
@@ -83,10 +71,6 @@ public final class DataSetFactory {
 		return null;
 	}
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	public static ParsingWizardPage getParsingWizardPage(String id) {
 		ParsingWizardPage page = null;
 
@@ -108,10 +92,6 @@ public final class DataSetFactory {
 		return null;
 	}
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	private static int getIndex(String id) {
 		for(int i=0; i<ids.length; i++) {
 			if(id.equals(ids[i])) {
@@ -121,28 +101,16 @@ public final class DataSetFactory {
 		return -1;
 	}
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	private static final String[] ids = {
 		RowDataSet.ID,
 		TableDataSet.ID
 	};
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	private static final String[] names = {
 		Localization.getString("DataSetFactory.RowDataSet"), //$NON-NLS-1$
 		Localization.getString("DataSetFactory.TableDataSet") //$NON-NLS-1$
 	};
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	private static final String[] descriptions = {
 		Localization.getString("DataSetFactory.RowDataSetDescription") + //$NON-NLS-1$
 		Localization.getString("DataSetFactory.DataSetExample") + //$NON-NLS-1$
@@ -167,10 +135,6 @@ public final class DataSetFactory {
 		"-------------------\n" //$NON-NLS-1$
 	};
 
-	/**
-	 * TODO remove in 3.0
-	 */
-	@Deprecated
 	private static final ParsingWizardPage[] dataSetWizards = new ParsingWizardPage[] {
 		new SelectRowParsingWizardPage(),
 		new SelectTableParsingWizardPage()

@@ -23,7 +23,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -96,10 +95,9 @@ public class EnumDefinitionTest {
 
     /**
      * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testRead() throws CTFReaderException {
+    public void testRead() {
         fixture.setIntegerValue(1L);
         BitBuffer input = new BitBuffer(ByteBuffer.allocateDirect(128));
 

@@ -17,6 +17,11 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.messages"; //$NON-NLS-1$
 
+	public static String ParsingWizardPage_Title;
+	public static String ParsingWizardPage_Delimiter;
+	public static String ParsingWizardPage_NumberOfColumns;
+	public static String ParsingWizardPage_RegularExpression;
+
 	public static String SystemTapScriptGraphOptionsTab_0;
 	public static String SystemTapScriptGraphOptionsTab_1;
 	public static String SystemTapScriptGraphOptionsTab_2;
@@ -25,8 +30,6 @@ public class Messages extends NLS {
 	public static String SystemTapScriptGraphOptionsTab_5;
 	public static String SystemTapScriptGraphOptionsTab_6;
 	public static String SystemTapScriptGraphOptionsTab_7;
-	public static String SystemTapScriptGraphOptionsTab_8;
-	public static String SystemTapScriptGraphOptionsTab_9;
 
 	public static String SystemTapScriptGraphOptionsTab_AddGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_AddGraphButtonToolTip;
@@ -35,26 +38,16 @@ public class Messages extends NLS {
 	public static String SystemTapScriptGraphOptionsTab_EditGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_EditGraphButtonToolTip;
 
-	public static String SystemTapScriptGraphOptionsTab_columnTitle;
 	public static String SystemTapScriptGraphOptionsTab_extractedValueLabel;
-	public static String SystemTapScriptGraphOptionsTab_defaultColumnTitleBase;
 	public static String SystemTapScriptGraphOptionsTab_RemoveGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_RemoveGraphButtonToolTip;
-	public static String SystemTapScriptGraphOptionsTab_invalidGraph;
+	public static String SystemTapScriptGraphOptionsTab_graphsTitle;
 
-	public static String SystemTapScriptGraphOptionsTab_regexLabel;
 	public static String SystemTapScriptGraphOptionsTab_regexTooltip;
-	public static String SystemTapScriptGraphOptionsTab_regexAddNew;
-	public static String SystemTapScriptGraphOptionsTab_regexRemove;
-	public static String SystemTapScriptGraphOptionsTab_graphSetTitleBase;
-
-	public static String SystemTapScriptGraphOptionsTab_removeRegexTitle;
-	public static String SystemTapScriptGraphOptionsTab_removeRegexAsk;
 
 	public static String SystemTapScriptGraphOptionsTab_sampleOutputLabel;
+
 	public static String SystemTapScriptGraphOptionsTab_sampleOutputTooltip;
-	public static String SystemTapScriptGraphOptionsTab_sampleOutputNoMatch;
-	public static String SystemTapScriptGraphOptionsTab_sampleOutputIsEmpty;
 
 	public static String SystemTapScriptLaunchConfigurationTab_0;
 	public static String SystemTapScriptLaunchConfigurationTab_1;
@@ -74,8 +67,6 @@ public class Messages extends NLS {
 	public static String SystemTapScriptLaunchConfigurationTab_runWithChart;
 	public static String SystemTapScriptLaunchShortcut_couldNotFindConfig;
 	public static String SystemTapScriptLaunchShortcut_couldNotLaunchScript;
-	public static String SystemTapScriptLaunchConfigurationTab_couldNotFindFile;
-	public static String SystemTapScriptLaunchConfigurationTab_fileNotStp;
 	public static String SystemTapScriptOptionsTab_0;
 	public static String SystemTapScriptOptionsTab_1;
 	public static String SystemTapScriptOptionsTab_2;

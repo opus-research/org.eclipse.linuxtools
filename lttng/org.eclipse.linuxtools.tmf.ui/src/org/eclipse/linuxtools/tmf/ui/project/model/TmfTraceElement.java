@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
@@ -591,46 +589,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     }
 
     /**
-     * Delete the trace resource, remove it from experiments and delete its
-     * supplementary files
-     *
-     * @param progressMonitor
-     *            a progress monitor, or null if progress reporting is not
-     *            desired
-     *
-     * @throws CoreException
-     *             thrown when IResource.delete fails
-     * @since 2.2
-     */
-    public void delete(IProgressMonitor progressMonitor) throws CoreException {
-        closeEditors();
-
-        IPath path = fResource.getLocation();
-        if (path != null && (getParent() instanceof TmfTraceFolder)) {
-            TmfExperimentFolder experimentFolder = getProject().getExperimentsFolder();
-
-            // Propagate the removal to traces
-            for (ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
-                List<ITmfProjectModelElement> toRemove = new LinkedList<ITmfProjectModelElement>();
-                for (ITmfProjectModelElement child : experiment.getChildren()) {
-                    if (child.getName().equals(getName())) {
-                        toRemove.add(child);
-                    }
-                }
-                for (ITmfProjectModelElement child : toRemove) {
-                    ((TmfExperimentElement) experiment).removeTrace((TmfTraceElement) child);
-                }
-            }
-
-            // Delete supplementary files
-            deleteSupplementaryFolder();
-        }
-
-        // Finally, delete the trace
-        fResource.delete(true, progressMonitor);
-    }
-
-    /**
      * Get the instantiated trace associated with this element.
      *
      * @return The instantiated trace or null if trace is not (yet) available
@@ -717,8 +675,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      */
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
-        IResource resource = signal.getTrace().getResource();
-        if ((resource == null) || !resource.equals(getResource())) {
+        if (!signal.getTrace().getResource().equals(getResource())) {
             return;
         }
 
