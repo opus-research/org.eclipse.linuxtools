@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.util.Arrays;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF array definition
@@ -128,7 +127,7 @@ public class ArrayDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         for (Definition definition : definitions) {
             definition.read(input);
         }
