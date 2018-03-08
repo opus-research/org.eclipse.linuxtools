@@ -9,6 +9,7 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Alexandre Montplaisir - Refactoring, performance tweaks
+ *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
@@ -24,7 +25,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -63,7 +63,6 @@ public class TmfStateSystemExplorer extends TmfView {
     private static final int END_TIME_COL = 4;
     private static final int ATTRIBUTE_FULLPATH_COL = 5;
 
-    private ITmfTrace fTrace;
     private Tree fTree;
     private volatile long fCurrentTimestamp = -1L;
 
@@ -381,41 +380,20 @@ public class TmfStateSystemExplorer extends TmfView {
     // Signal handlers
     // ------------------------------------------------------------------------
 
-    /**
-     * Handler for the trace selected signal. This will make the view display
-     * the information for the newly-selected trace.
-     *
-     * @param signal
-     *            The incoming signal
-     */
-    @TmfSignalHandler
-    public void traceSelected(TmfTraceSelectedSignal signal) {
-        ITmfTrace trace = signal.getTrace();
-        if (trace != fTrace) {
-            fTrace = trace;
-            Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
-                @Override
-                public void run() {
-                    createTable();
-                }
-            };
-            thread.start();
-        }
+    @Override
+    protected void loadTrace() {
+        Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
+            @Override
+            public void run() {
+                createTable();
+            }
+        };
+        thread.start();
     }
 
-    /**
-     * Handler for the trace closed signal. This will clear the view.
-     *
-     * @param signal
-     *            the incoming signal
-     */
-    @TmfSignalHandler
-    public void traceClosed(TmfTraceClosedSignal signal) {
-        // delete the tree at the trace closed
-        if (signal.getTrace() == fTrace) {
-            fTrace = null;
-            fTree.setItemCount(0);
-        }
+    @Override
+    public void closeTrace() {
+        fTree.setItemCount(0);
     }
 
     /**
