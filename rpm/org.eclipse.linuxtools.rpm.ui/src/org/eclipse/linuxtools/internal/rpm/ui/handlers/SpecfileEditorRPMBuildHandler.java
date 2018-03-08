@@ -41,16 +41,17 @@ import org.eclipse.ui.part.EditorPart;
  *
  * @since 1.0.0
  */
-public abstract class AbstractSpecfileEditorBuildDelegate extends AbstractHandler {
+public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
 
-	protected abstract BuildType getBuildType();
 	protected RPMProject rpj;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IResource resource = getResource(event);
+		final String eventBuildType = event.getParameter("buildType"); //$NON-NLS-1$
+		final BuildType buildType = BuildType.valueOf(eventBuildType); 
 		rpj = getRPMProject(resource);
-		Job job = new RPMExportOperation(rpj, getBuildType());
+		Job job = new RPMExportOperation(rpj, buildType);
 		job.setUser(true);
 		job.schedule();
 		return null;
