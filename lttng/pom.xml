@@ -46,15 +46,6 @@
   
 <profiles>
   <profile>
-    <id>tracingRcp</id>
-      <modules>
-        <module>org.eclipse.linuxtools.tracing.rcp</module>
-        <module>org.eclipse.linuxtools.tracing.rcp.help</module>
-        <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
-        <module>org.eclipse.linuxtools.tracing.rcp.product</module>
-      </modules>
-  </profile>
-  <profile>
     <id>lttngPackage</id>
       <properties>
           <lttngPackageDestination>/var/www/technology/linuxtools/lttng/update-nightly/</lttngPackageDestination>
@@ -63,7 +54,7 @@
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
   </profile> 
-
+	
 </profiles>
 
   <modules>
@@ -92,12 +83,6 @@
     <module>org.eclipse.linuxtools.lttng2.kernel.ui</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.ui.tests</module>
 
-    <module>org.eclipse.linuxtools.lttng2.ust</module>
-    <module>org.eclipse.linuxtools.lttng2.ust.core</module>
-    <module>org.eclipse.linuxtools.lttng2.ust.core.tests</module>
-    <module>org.eclipse.linuxtools.lttng2.ust.ui</module>
-    <module>org.eclipse.linuxtools.lttng2.ust.ui.tests</module>
-
     <module>org.eclipse.linuxtools.gdbtrace</module>
     <module>org.eclipse.linuxtools.gdbtrace.core</module>
     <module>org.eclipse.linuxtools.gdbtrace.core.tests</module>
@@ -105,51 +90,5 @@
     <module>org.eclipse.linuxtools.gdbtrace.ui.tests</module>
     <module>org.eclipse.linuxtools.gdbtrace.help</module>
   </modules>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>target-platform-configuration</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <environments>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                    </environments>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-maven-plugin</artifactId>
-                <version>${tycho-version}</version>
-                <extensions>true</extensions>
-            </plugin>
-        </plugins>
-    </build>
-
 
 </project>

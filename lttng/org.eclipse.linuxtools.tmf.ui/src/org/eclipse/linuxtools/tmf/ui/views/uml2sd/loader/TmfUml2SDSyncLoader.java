@@ -462,7 +462,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         fLock.lock();
         try {
             if ((signal.getSource() != this) && (fFrame != null) && (fCheckPoints.size() > 0)) {
-                fCurrentTime = signal.getBeginTime();
+                fCurrentTime = signal.getCurrentTime();
                 fIsSelect = true;
                 moveToMessage();
             }
@@ -623,7 +623,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                     fFindResults.addAll(msgs);
                 }
 
-                List<GraphNode> selection = fView.getSDWidget().getSelection();
+                @SuppressWarnings("rawtypes")
+                List selection = fView.getSDWidget().getSelection();
                 if ((selection != null) && (selection.size() == 1)) {
                     fCurrentFindIndex = fFindResults.indexOf(selection.get(0)) + 1;
                 } else {
@@ -651,8 +652,9 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         cancelOngoingRequests();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean filter(List<FilterCriteria> filters) {
+    public boolean filter(List<?> filters) {
         fLock.lock();
         try {
             cancelOngoingRequests();
@@ -660,7 +662,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             if (filters == null) {
                 fFilterCriteria =  new ArrayList<FilterCriteria>();
             } else {
-                List<FilterCriteria> list = filters;
+                List<FilterCriteria> list = (List<FilterCriteria>)filters;
                 fFilterCriteria =  new ArrayList<FilterCriteria>(list);
             }
 
@@ -1103,7 +1105,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
         if (notifyAll) {
             TmfTimeRange timeRange = getSignalTimeRange(window.getStartTime());
-            broadcast(new TmfRangeSynchSignal(this, timeRange));
+            broadcast(new TmfRangeSynchSignal(this, timeRange, timeRange.getStartTime()));
         }
     }
 

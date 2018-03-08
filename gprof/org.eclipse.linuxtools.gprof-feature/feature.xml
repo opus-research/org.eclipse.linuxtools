@@ -3,9 +3,7 @@
       id="org.eclipse.linuxtools.gprof.feature"
       label="%featureName"
       version="2.0.0.qualifier"
-      provider-name="%provider"
-      license-feature="org.eclipse.linuxtools.license.feature"
-      license-feature-version="1.0.0.qualifier">
+      provider-name="%provider">
 
    <description>
       %description

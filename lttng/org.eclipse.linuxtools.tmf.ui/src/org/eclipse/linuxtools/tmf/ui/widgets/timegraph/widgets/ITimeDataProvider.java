@@ -28,10 +28,7 @@ public interface ITimeDataProvider {
 
     /**
      * @return The selected time
-     *
-     * @deprecated As of 2.1, replaced by {@link ITimeDataProvider2#getSelectionBegin()} and {@link ITimeDataProvider2#getSelectionEnd()}
      */
-    @Deprecated
     long getSelectedTime();
 
     /**
