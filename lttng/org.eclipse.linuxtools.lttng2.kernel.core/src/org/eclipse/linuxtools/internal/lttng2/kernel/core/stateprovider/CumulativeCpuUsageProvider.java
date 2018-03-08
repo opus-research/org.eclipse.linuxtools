@@ -32,7 +32,8 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.util.Pair;
 
 /**
- * A state provider for the cpu usage view. It stores the cumulative cpu usage per pid.
+ * A state provider for the cpu usage view. It stores the cumulative cpu usage
+ * per pid.
  *
  * @author Jean Christian Kouamé
  *
@@ -51,7 +52,7 @@ public class CumulativeCpuUsageProvider extends AbstractTmfStateProvider {
      *            the trace
      */
     public CumulativeCpuUsageProvider(CtfTmfTrace trace) {
-        super(trace, CtfTmfEvent.class, Messages.CumulativeCpuUsageProvider_CpuUsage);
+        super(trace, CtfTmfEvent.class, "LTTng Kernel CPU Usage"); //$NON-NLS-1$
 
     }
 
@@ -63,14 +64,28 @@ public class CumulativeCpuUsageProvider extends AbstractTmfStateProvider {
 
     @Override
     protected void eventHandle(ITmfEvent ev) {
+        if (ev == null || !(ev instanceof CtfTmfEvent)) {
+            return;
+        }
         CtfTmfEvent event = (CtfTmfEvent) ev;
         if (event.getEventName().equals(LttngStrings.SCHED_SWITCH)) {
             final ITmfEventField content = event.getContent();
 
+            if (content == null) {
+                return;
+            }
+
             final long ts = event.getTimestamp().getValue();
 
-            int prevTid = ((Long) content.getField(LttngStrings.PREV_TID).getValue()).intValue();
-            int nextTid = ((Long) content.getField(LttngStrings.NEXT_TID).getValue()).intValue();
+            final ITmfEventField prevTidField = content.getField(LttngStrings.PREV_TID);
+            final ITmfEventField nextTidField = content.getField(LttngStrings.NEXT_TID);
+
+            if (prevTidField == null || nextTidField == null) {
+                return;
+            }
+
+            int prevTid = ((Long) prevTidField.getValue()).intValue();
+            int nextTid = ((Long) nextTidField.getValue()).intValue();
 
             int formerThreadExectimeNode = ss.getQuarkRelativeAndAdd(threadNode,
                     Integer.toString(prevTid),
@@ -109,17 +124,14 @@ public class CumulativeCpuUsageProvider extends AbstractTmfStateProvider {
                 }
                 pidExecTime.put(nextTid, new Pair<Integer, Long>(StateValues.PROCESS_STATUS_RUN_USERMODE, nanoTime));
                 cumulUsage.put(nextTid, nextTidUsage);
-                /*
-                 * HACK : Create a new interval with a fake value in order to
-                 * close the previous one at the right timestamp.
-                 */
+
                 ss.modifyAttribute(ts, TmfStateValue.newValueLong(RUN_MODE), newCurrentThreadExectimeNode);
             } catch (TimeRangeException e) {
-                Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_TimeRangeExceptionMessage, e);
+                Activator.getDefault().logError("TimeRangeException thrown into the state system", e); //$NON-NLS-1$
             } catch (AttributeNotFoundException e) {
-                Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_AttributeNotFoundMessage, e);
+                Activator.getDefault().logError("AttributeNotFoundException thrown into the state system", e); //$NON-NLS-1$
             } catch (StateValueTypeException e) {
-                Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_StateValueTypeMessage, e);
+                Activator.getDefault().logError("StateValueTypeException thrown into the state system", e); //$NON-NLS-1$
             }
         }
     }
@@ -131,7 +143,7 @@ public class CumulativeCpuUsageProvider extends AbstractTmfStateProvider {
             for (Map.Entry<Integer, Pair<Integer, Long>> entry : pidExecTime.entrySet()) {
                 TmfStateValue value;
                 long delta = 0;
-                if (entry.getValue().getFirst() == StateValues.PROCESS_STATUS_RUN_USERMODE) {
+                if (entry.getValue().getFirst().equals(StateValues.PROCESS_STATUS_RUN_USERMODE)) {
                     delta = ss.getCurrentEndTime() - entry.getValue().getSecond().longValue();
                 }
                 value = TmfStateValue.newValueLong(cumulUsage.get(entry.getKey()) + delta);
@@ -139,7 +151,7 @@ public class CumulativeCpuUsageProvider extends AbstractTmfStateProvider {
                 ss.updateOngoingState(value, entryNode);
             }
         } catch (AttributeNotFoundException e) {
-            Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_AttributeNotFoundMessage, e);
+            Activator.getDefault().logError("AttributeNotFoundException thrown into the state system", e); //$NON-NLS-1$
         }
         super.dispose();
 

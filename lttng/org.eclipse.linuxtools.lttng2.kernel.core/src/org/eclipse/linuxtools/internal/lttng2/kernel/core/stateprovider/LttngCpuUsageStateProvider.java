@@ -116,11 +116,11 @@ public class LttngCpuUsageStateProvider extends AbstractTmfStateProvider {
                 quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.STATUS);
                 ss.modifyAttribute(ts, value, quark);
             } catch (TimeRangeException e) {
-                Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_TimeRangeExceptionMessage, e);
+                Activator.getDefault().logError("TimeRangeException thrown into the state system", e); //$NON-NLS-1$
             } catch (AttributeNotFoundException e) {
-                Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_AttributeNotFoundMessage, e);
+                Activator.getDefault().logError("AttributeNotFoundException thrown into the state system", e); //$NON-NLS-1$
             } catch (StateValueTypeException e) {
-                Activator.getDefault().logError(Messages.CumulativeCpuUsageProvider_TimeRangeExceptionMessage, e);
+                Activator.getDefault().logError("StateValueTypeException thrown into the state system", e); //$NON-NLS-1$
             }
         }
     }

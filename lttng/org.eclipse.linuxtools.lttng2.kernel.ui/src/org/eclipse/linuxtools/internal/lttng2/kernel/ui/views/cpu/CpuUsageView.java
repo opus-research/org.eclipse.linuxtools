@@ -1,7 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2012 École Polytechnique de Montréal
- * Copyright (c) 2012 Matthew Khouzam <matthew.khouzam@ericsson.com>
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -73,7 +72,7 @@ public class CpuUsageView extends TmfView {
      */
     public static final String ID = "org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.cpu"; //$NON-NLS-1$
 
-    private static final String CPU_USAGE_VISUALIZER_THREAD_NAME = Messages.CpuUsageView_ThreadName;
+    private static final String CPU_USAGE_VISUALIZER_THREAD_NAME = "CPU usage visualizer construction"; //$NON-NLS-1$
 
     private static final String CPU_USAGE = Messages.CpuUsageView_ViewTitle;
 
@@ -184,7 +183,7 @@ public class CpuUsageView extends TmfView {
      */
     @TmfSignalHandler
     public void timeRangeUpdated(TmfRangeSynchSignal signal) {
-        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID);
+        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
         ITmfStateSystem cumulativeTimeSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CUMUL_CPU_ID);
         if (cpuUsageSS == null || cumulativeTimeSS == null) {
             return;
@@ -272,7 +271,7 @@ public class CpuUsageView extends TmfView {
      *            request
      */
     private void updateView(TmfTimeRange signal, IProgressMonitor monitor) {
-        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID);
+        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
         IProgressMonitor mon = monitor;
         if (mon == null) {
             mon = new NullProgressMonitor();
@@ -484,7 +483,7 @@ public class CpuUsageView extends TmfView {
 
     private List<Process> globalCPUUsage(List<Integer> pidQuarks, long start, long end, IProgressMonitor monitor) {
         List<Process> names = new ArrayList<CpuUsageView.Process>();
-        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID);
+        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
         for (int pidQuark : pidQuarks) {
             if (monitor.isCanceled()) {
                 return names;
@@ -524,7 +523,7 @@ public class CpuUsageView extends TmfView {
         final double step = (endTime - startTime) / numRequests;
         final double factor = 100.0 / step / numberOfCPUS;
         int pids[] = new int[pidQuarkList.size()];
-        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID);
+        ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
 
         for (int i = 0; i < pidQuarkList.size(); i++) {
             if (monitor.isCanceled()) {
@@ -599,7 +598,7 @@ public class CpuUsageView extends TmfView {
     private List<Integer> getPids() {
         List<Integer> children = new ArrayList<Integer>();
         try {
-            ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID);
+            ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
             int threadQuark = cpuUsageSS.getQuarkAbsolute(Attributes.THREADS);
             children = cpuUsageSS.getSubAttributes(threadQuark, false);
         } catch (AttributeNotFoundException e) {
@@ -611,7 +610,7 @@ public class CpuUsageView extends TmfView {
     private long getExectime(String pid, int pidQuark, long sTime, long eTime) {
         long toReturn = 0L;
         try {
-            ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID);
+            ITmfStateSystem cpuUsageSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
             ITmfStateSystem cumulativeCpuTimeSS = fCurrentTrace.getStateSystems().get(LttngKernelTrace.CUMUL_CPU_ID);
             /* get the exec time for this pid */
             int execTimeQuark = cumulativeCpuTimeSS.getQuarkAbsolute(Attributes.THREADS, pid, Attributes.EXEC_TIME);
@@ -724,7 +723,7 @@ public class CpuUsageView extends TmfView {
 
                 /* Clear the graph, in case a trace was previously using it */
                 getDisplay().asyncExec(new ViewClear());
-                fCurrentTrace.getStateSystems().get(LttngKernelTrace.CPU_ID).waitUntilBuilt();
+                fCurrentTrace.getStateSystems().get(LttngKernelTrace.STATE_ID).waitUntilBuilt();
                 fCurrentTrace.getStateSystems().get(LttngKernelTrace.CUMUL_CPU_ID).waitUntilBuilt();
                 updateView(fTimeRange, fMonitor);
                 if (Thread.interrupted()) {

@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Activator;
-import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngCpuUsageStateProvider;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CumulativeCpuUsageProvider;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
@@ -42,14 +41,12 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
  */
 public class LttngKernelTrace extends CtfTmfTrace {
 
-
-
-    /**
-     * The file name of the CPU Tree
-     *
-     * @since 3.0
-     */
-    private final static String CPU_TREE_FILE_NAME = "cpuHistory.ht"; //$NON-NLS-1$
+//    /**
+//     * The file name of the CPU Tree
+//     *
+//     * @since 3.0
+//     */
+//    private final static String CPU_TREE_FILE_NAME = "cpuHistory.ht"; //$NON-NLS-1$
 
     /**
      * The file name of the CPU Tree
@@ -70,12 +67,12 @@ public class LttngKernelTrace extends CtfTmfTrace {
      * */
     public static final String STATE_ID = "org.eclipse.linuxtools.lttng2.kernel"; //$NON-NLS-1$
 
-    /**
-     * ID of the state system we will build
-     *
-     * @since 3.0
-     * */
-    public static final String CPU_ID = "org.eclipse.linuxtools.lttng2.cpu"; //$NON-NLS-1$
+//    /**
+//     * ID of the state system we will build
+//     *
+//     * @since 3.0
+//     * */
+//    public static final String CPU_ID = "org.eclipse.linuxtools.lttng2.cpu"; //$NON-NLS-1$
 
     /**
      * ID of cumulative state system
@@ -138,21 +135,11 @@ public class LttngKernelTrace extends CtfTmfTrace {
         try {
             ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
             fStateSystems.put(STATE_ID, ss);
-        } catch (TmfTraceException e) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-        }
-
-        final File cpuFile = new File(directory + CPU_TREE_FILE_NAME);
-        final ITmfStateProvider cpuInput = new LttngCpuUsageStateProvider(this);
-        try {
-            registerStateSystem(CPU_ID, TmfStateSystemFactory.newFullHistory(cpuFile, cpuInput, false));
-        } catch (TmfTraceException e) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
-        }
-
-        final File cumulCpuFile = new File(directory + CUMUL_CPU_TREE_FILE_NAME);
-        final ITmfStateProvider cumulCpuProvider = new CumulativeCpuUsageProvider(this);
-        try {
+//            final File cpuFile = new File(directory + CPU_TREE_FILE_NAME);
+//            final ITmfStateProvider cpuInput = new LttngCpuUsageStateProvider(this);
+//            registerStateSystem(CPU_ID, TmfStateSystemFactory.newFullHistory(cpuFile, cpuInput, false));
+            final File cumulCpuFile = new File(directory + CUMUL_CPU_TREE_FILE_NAME);
+            final ITmfStateProvider cumulCpuProvider = new CumulativeCpuUsageProvider(this);
             registerStateSystem(CUMUL_CPU_ID, TmfStateSystemFactory.newFullHistory(cumulCpuFile, cumulCpuProvider, false));
         } catch (TmfTraceException e) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
