@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
@@ -116,8 +115,7 @@ public final class TmfTraceType {
      */
     public static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
 
-    // default trace icon
-    private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
+
     // The mapping of available trace type IDs to their corresponding
     // configuration element
     private final Map<String, IConfigurationElement> fTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
@@ -403,65 +401,6 @@ public final class TmfTraceType {
         return fTraceTypeAttributes.get(traceType);
     }
 
-    /**
-     * Sets the type to a trace resource
-     *
-     * @param traceTypeId
-     *            The trace type, like org.eclipse.linuxtools.tmf.ctf
-     * @param traceResource
-     *            the trace resource like L/project/trace/
-     * @return true if it succeeded.
-     * @since 2.0
-     */
-    public boolean setTraceType(final String traceTypeId, final IResource traceResource) {
-        boolean retVal = false;
-        if (traceResource != null) {
-            try {
-                // Set the trace properties for this resource
-                boolean traceTypeOK = false;
-                String traceBundle = null, traceIcon = null;
-                IConfigurationElement ce = getTraceAttributes(traceTypeId);
-                if ((ce != null) && (ce.getContributor() != null)) {
-                    traceTypeOK = true;
-                    traceBundle = ce.getContributor().getName();
-                    traceIcon = ce.getAttribute(TmfTraceType.ICON_ATTR);
-                }
-                final String traceType = traceTypeId;
-                if (!traceTypeOK &&
-                        (traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY) ||
-                        traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY))) {
-                    // do custom trace stuff here
-                    traceTypeOK = true;
-                    traceBundle =
-                            Activator.getDefault().getBundle().getSymbolicName();
-                    traceIcon = DEFAULT_TRACE_ICON_PATH;
-                }
-                if (traceTypeOK) {
-                    traceResource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE,
-                            traceBundle);
-                    traceResource.setPersistentProperty(TmfCommonConstants.TRACETYPE,
-                            traceTypeId);
-                    traceResource.setPersistentProperty(TmfCommonConstants.TRACEICON,
-                            traceIcon);
-                }
-                TmfProjectElement tmfProject =
-                        TmfProjectRegistry.getProject(traceResource.getProject());
-                if (tmfProject != null) {
-                    for (TmfTraceElement traceElement : tmfProject.getTracesFolder().getTraces()) {
-                        if (traceElement.getName().equals(traceResource.getName())) {
-                            traceElement.refreshTraceType();
-                            break;
-                        }
-                    }
-                }
-                retVal = true;
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error importing trace resource " + traceResource.getName(), e); //$NON-NLS-1$
-                retVal = false;
-            }
-        }
-        return retVal;
-    }
 
     /**
      * Validate a trace type

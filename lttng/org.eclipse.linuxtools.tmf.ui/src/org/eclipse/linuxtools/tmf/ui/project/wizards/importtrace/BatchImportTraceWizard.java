@@ -24,11 +24,11 @@ import java.util.concurrent.BlockingQueue;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,12 +42,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceValidationHelper;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
@@ -114,6 +108,11 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         }
         setDialogSettings(section);
         setNeedsProgressMonitor(true);
+        List<IProject> x = TmfProjectUtils.getInstance().getProjects();
+        for( IProject y:  x){
+            y.getName();
+        }
+
     }
 
     @Override
@@ -239,7 +238,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         for (FileAndName traceToImport : fTraces) {
             try {
                 if (fLinked) {
-                    createLink(fTargetFolder, Path.fromOSString(traceToImport.getFile().getAbsolutePath()), traceToImport.getName());
+                    createLink(fTargetFolder, traceToImport.getFile(), traceToImport.getName());
                     setTraceType(traceToImport);
                     success = true;
                 }
@@ -263,38 +262,19 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         return success;
     }
 
-    private static void createLink(IFolder parentFolder, IPath location, String targetName) {
-        File source = new File(location.toString());
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        try {
-
-            if (source.isDirectory()) {
-                IFolder folder = parentFolder.getFolder(targetName);
-                IStatus result = workspace.validateLinkLocation(folder, location);
-                if (result.isOK()) {
-                    folder.createLink(location, IResource.REPLACE, null);
-                } else {
-                    Activator.getDefault().logError(result.getMessage());
-                }
-            } else {
-                IFile file = parentFolder.getFile(targetName);
-                IStatus result = workspace.validateLinkLocation(file, location);
-                if (result.isOK()) {
-                    file.createLink(location, IResource.REPLACE, null);
-                } else {
-                    Activator.getDefault().logError(result.getMessage());
-                }
+    private void createLink(IFolder parentFolder, File source, String targetName) {
+            try {
+                TmfProjectUtils.getInstance().importTrace(targetName, source, parentFolder.getProject(), true, this.fOverwrite);
+            } catch (CoreException e) {
+                //consume since we are batch importing
             }
-        } catch (CoreException e) {
-
-        }
     }
 
     private void setTraceType(FileAndName traceToImport) {
         IPath path = fTargetFolder.getFullPath().append(traceToImport.getName());
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         if (resource != null) {
-            TmfTraceType.getInstance().setTraceType(traceToImport.getTraceTypeId(), resource);
+            TmfProjectUtils.getInstance().setTraceType(traceToImport.getTraceTypeId(), resource);
         }
     }
 

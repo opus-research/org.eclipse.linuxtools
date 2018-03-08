@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -47,6 +47,7 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.TmfProjectUtils;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -113,7 +114,8 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             operation = DND.DROP_COPY;
         }
 
-        // If target is a trace, use its parent (either trace folder or experiment)
+        // If target is a trace, use its parent (either trace folder or
+        // experiment)
         if (targetToUse instanceof TmfTraceElement) {
             targetToUse = ((TmfTraceElement) targetToUse).getParent();
         }
@@ -144,7 +146,8 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
                 }
                 if (source instanceof TmfTraceElement) {
                     TmfTraceElement sourceTrace = (TmfTraceElement) source;
-                    // If source trace is under an experiment, use the original trace from the traces folder
+                    // If source trace is under an experiment, use the original
+                    // trace from the traces folder
                     sourceTrace = sourceTrace.getElementUnderTraceFolder();
                     if (targetToUse instanceof TmfExperimentElement) {
                         TmfExperimentElement targetExperiment = (TmfExperimentElement) targetToUse;
@@ -183,13 +186,15 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         return (ok ? Status.OK_STATUS : Status.CANCEL_STATUS);
     }
 
-
     /**
      * Drop a trace by copying/linking a trace element in a target experiment
      *
-     * @param sourceTrace the source trace element to copy
-     * @param targetExperiment the target experiment
-     * @param operation the drop operation (DND.DROP_COPY | DND.DROP_LINK)
+     * @param sourceTrace
+     *            the source trace element to copy
+     * @param targetExperiment
+     *            the target experiment
+     * @param operation
+     *            the drop operation (DND.DROP_COPY | DND.DROP_LINK)
      * @return true if successful
      */
     private static boolean drop(TmfTraceElement sourceTrace,
@@ -200,7 +205,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         IResource targetResource = drop(sourceResource, targetExperiment, operation);
 
         if (targetResource != null) {
-            if (! sourceTrace.getProject().equals(targetExperiment.getProject())) {
+            if (!sourceTrace.getProject().equals(targetExperiment.getProject())) {
                 IFolder destinationSupplementaryFolder = targetExperiment.getTraceSupplementaryFolder(targetResource.getName());
                 sourceTrace.copySupplementaryFolder(destinationSupplementaryFolder);
             }
@@ -212,9 +217,12 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
     /**
      * Drop a trace by copying/linking a resource in a target experiment
      *
-     * @param sourceResource the source resource
-     * @param targetExperiment the target experiment
-     * @param operation the drop operation (DND.DROP_COPY | DND.DROP_LINK)
+     * @param sourceResource
+     *            the source resource
+     * @param targetExperiment
+     *            the target experiment
+     * @param operation
+     *            the drop operation (DND.DROP_COPY | DND.DROP_LINK)
      * @return the target resource or null if unsuccessful
      */
     private static IResource drop(IResource sourceResource,
@@ -246,7 +254,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
                     sourceResource.copy(destination, false, null);
                     cleanupBookmarks(destination);
                 } else {
-                    createLink(targetExperiment.getProject().getTracesFolder().getResource(), sourceResource, targetName);
+                    TmfProjectUtils.getInstance().importTrace(targetName, sourceResource.getFullPath().toFile() , targetExperiment.getProject().getTracesFolder().getResource().getProject(),true, false);
                 }
                 // use the copied resource for the experiment
                 if (sourceResource.getType() == IResource.FILE) {
@@ -260,7 +268,11 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             }
         }
         if (traceResource != null && traceResource.exists()) {
-            createLink(targetExperiment.getResource(), traceResource, traceResource.getName());
+            try {
+                TmfProjectUtils.getInstance().importTrace(traceResource.getName(), traceResource.getFullPath().toFile(), targetExperiment.getResource().getProject(), true, false);
+            } catch (CoreException e) {
+                return null;
+            }
             return traceResource;
         }
         return null;
@@ -269,9 +281,12 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
     /**
      * Drop a trace by copying/linking a trace element in a trace folder
      *
-     * @param sourceTrace the source trace
-     * @param traceFolder the target trace folder
-     * @param operation the drop operation (DND.DROP_COPY | DND.DROP_LINK)
+     * @param sourceTrace
+     *            the source trace
+     * @param traceFolder
+     *            the target trace folder
+     * @param operation
+     *            the drop operation (DND.DROP_COPY | DND.DROP_LINK)
      * @return true if successful
      */
     private static boolean drop(TmfTraceElement sourceTrace,
@@ -292,9 +307,12 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
     /**
      * Drop a trace by copying/linking a resource in a trace folder
      *
-     * @param sourceResource the source resource
-     * @param traceFolder the target trace folder
-     * @param operation the drop operation (DND.DROP_COPY | DND.DROP_LINK)
+     * @param sourceResource
+     *            the source resource
+     * @param traceFolder
+     *            the target trace folder
+     * @param operation
+     *            the drop operation (DND.DROP_COPY | DND.DROP_LINK)
      * @return the target resource or null if unsuccessful
      */
     private static IResource drop(IResource sourceResource,
@@ -332,9 +350,12 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
     /**
      * Drop a trace by importing/linking a path in a target experiment
      *
-     * @param path the source path
-     * @param targetExperiment the target experiment
-     * @param operation the drop operation (DND.DROP_COPY | DND.DROP_LINK)
+     * @param path
+     *            the source path
+     * @param targetExperiment
+     *            the target experiment
+     * @param operation
+     *            the drop operation (DND.DROP_COPY | DND.DROP_LINK)
      * @return true if successful
      */
     private static boolean drop(Path path,
@@ -381,12 +402,36 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         return false;
     }
 
+    private static void createLink(IFolder resource, Path pathToUse, String targetName) {
+        try {
+            TmfProjectUtils.getInstance().importTrace(targetName, pathToUse.toFile(), resource.getProject(), true, false);
+        } catch (CoreException e) {
+        }
+    }
+
+    private static void importTrace(IFolder resource, Path pathToUse, String targetName) {
+        try {
+            TmfProjectUtils.getInstance().importTrace(targetName, pathToUse.toFile(), resource.getProject(), false, false);
+        } catch (CoreException e) {
+        }
+    }
+
+    private static void createLink(IFolder resource, IResource pathToUse, String targetName) {
+        try {
+            TmfProjectUtils.getInstance().importTrace(targetName, pathToUse.getFullPath().toFile(), resource.getProject(), true, false);
+        } catch (CoreException e) {
+        }
+    }
+
     /**
      * Drop a trace by importing/linking a path in a trace folder
      *
-     * @param path the source path
-     * @param traceFolder the target trace folder
-     * @param operation the drop operation (DND.DROP_COPY | DND.DROP_LINK)
+     * @param path
+     *            the source path
+     * @param traceFolder
+     *            the target trace folder
+     * @param operation
+     *            the drop operation (DND.DROP_COPY | DND.DROP_LINK)
      * @return true if successful
      */
     private static boolean drop(Path path,
@@ -403,148 +448,19 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
                 break;
             }
         }
-        if (operation == DND.DROP_COPY) {
-            importTrace(traceFolder.getResource(), path, targetName);
-        } else {
-            createLink(traceFolder.getResource(), path, targetName);
+        try {
+            TmfProjectUtils.getInstance().importTrace(targetName, path.toFile(), traceFolder.getResource().getProject(), (operation == DND.DROP_COPY), false);
+        } catch (CoreException e) {
+            return false;
         }
         return true;
     }
 
     /**
-     * Import a trace to the trace folder
-     *
-     * @param folder the trace folder resource
-     * @param path the path to the trace to import
-     * @param targetName the target name
-     */
-    private static void importTrace(final IFolder folder, final Path path, final String targetName) {
-        final File source = new File(path.toString());
-        if (source.isDirectory()) {
-            IPath containerPath = folder.getFullPath().addTrailingSeparator().append(targetName);
-            IOverwriteQuery overwriteImplementor = new IOverwriteQuery() {
-                @Override
-                public String queryOverwrite(String pathString) {
-                    return IOverwriteQuery.NO_ALL;
-                }
-            };
-            List<File> filesToImport = Arrays.asList(source.listFiles());
-            ImportOperation operation = new ImportOperation(
-                    containerPath,
-                    source,
-                    FileSystemStructureProvider.INSTANCE,
-                    overwriteImplementor,
-                    filesToImport);
-            operation.setCreateContainerStructure(false);
-            try {
-                operation.run(new NullProgressMonitor());
-            } catch (InvocationTargetException e) {
-                displayException(e);
-            } catch (InterruptedException e) {
-                displayException(e);
-            }
-        } else {
-            IRunnableWithProgress runnable = new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        InputStream inputStream = new FileInputStream(source);
-                        IFile targetFile = folder.getFile(targetName);
-                        targetFile.create(inputStream, IResource.NONE, monitor);
-                    } catch (CoreException e) {
-                        displayException(e);
-                    } catch (FileNotFoundException e) {
-                        displayException(e);
-                    }
-                }
-            };
-            WorkspaceModifyDelegatingOperation operation = new WorkspaceModifyDelegatingOperation(runnable);
-            try {
-                operation.run(new NullProgressMonitor());
-            } catch (InvocationTargetException e) {
-                displayException(e);
-            } catch (InterruptedException e) {
-                displayException(e);
-            }
-        }
-    }
-
-    /**
-     * Create a link to the actual trace and set the trace type
-     *
-     * @param parentFolder the parent folder
-     * @param resource the resource
-     * @param targetName the target name
-     */
-    private static void createLink(IFolder parentFolder, IResource resource, String targetName) {
-        IPath location = resource.getLocation();
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        try {
-            Map<QualifiedName, String> properties = resource.getPersistentProperties();
-            String bundleName = properties.get(TmfCommonConstants.TRACEBUNDLE);
-            String traceType = properties.get(TmfCommonConstants.TRACETYPE);
-            String iconUrl = properties.get(TmfCommonConstants.TRACEICON);
-            String supplFolder = properties.get(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER);
-
-            if (resource instanceof IFolder) {
-                IFolder folder = parentFolder.getFolder(targetName);
-                if (workspace.validateLinkLocation(folder, location).isOK()) {
-                    folder.createLink(location, IResource.REPLACE, null);
-                    setProperties(folder, bundleName, traceType, iconUrl, supplFolder);
-
-                } else {
-                    Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
-                }
-            } else {
-                IFile file = parentFolder.getFile(targetName);
-                if (workspace.validateLinkLocation(file, location).isOK()) {
-                    file.createLink(location, IResource.REPLACE, null);
-                    setProperties(file, bundleName, traceType, iconUrl, supplFolder);
-                } else {
-                    Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
-                }
-            }
-        } catch (CoreException e) {
-            displayException(e);
-        }
-    }
-
-    /**
-     * Create a link to a file or folder
-     *
-     * @param parentFolder the parent folder
-     * @param source the file or folder
-     * @param targetName the target name
-     */
-    private static void createLink(IFolder parentFolder, IPath location, String targetName) {
-        File source = new File(location.toString());
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        try {
-
-            if (source.isDirectory()) {
-                IFolder folder = parentFolder.getFolder(targetName);
-                if (workspace.validateLinkLocation(folder, location).isOK()) {
-                    folder.createLink(location, IResource.REPLACE, null);
-                } else {
-                    Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
-                }
-            } else {
-                IFile file = parentFolder.getFile(targetName);
-                if (workspace.validateLinkLocation(file, location).isOK()) {
-                    file.createLink(location, IResource.REPLACE, null);
-                } else {
-                    Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
-                }
-            }
-        } catch (CoreException e) {
-            displayException(e);
-        }
-    }
-
-    /**
      * Prompts the user to rename a trace
      *
-     * @param trace the existing trace
+     * @param trace
+     *            the existing trace
      * @return the new name to use or null if rename is canceled
      */
     private static String promptRename(TmfTraceElement trace) {
@@ -584,28 +500,10 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
     }
 
     /**
-     * Set the trace persistent properties
-     *
-     * @param resource the trace resource
-     * @param bundleName the bundle name
-     * @param traceType the trace type
-     * @param iconUrl the icon URL
-     * @param supplFolder the directory of the directory for supplementary information or null to ignore the property
-     * @throws CoreException
-     */
-    private static void setProperties(IResource resource, String bundleName,
-            String traceType, String iconUrl, String supplFolder)
-            throws CoreException {
-        resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE, bundleName);
-        resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceType);
-        resource.setPersistentProperty(TmfCommonConstants.TRACEICON, iconUrl);
-        resource.setPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, supplFolder);
-    }
-
-    /**
      * Display an exception in a message box
      *
-     * @param e the exception
+     * @param e
+     *            the exception
      */
     private static void displayException(Exception e) {
         MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
