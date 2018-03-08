@@ -19,7 +19,6 @@ import org.eclipse.linuxtools.tmf.core.component.ITmfComponent;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -37,18 +36,12 @@ import org.eclipse.ui.part.ViewPart;
 public abstract class TmfView extends ViewPart implements ITmfComponent {
 
     private final String fName;
-
     /**
      * Action class for pinning of TmfView.
+     *
      * @since 2.0
      */
     protected PinTmfViewAction fPinAction;
-
-    /**
-     * Reference to the trace manager
-     * @since 2.0
-     */
-    protected final TmfTraceManager tm;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -63,7 +56,6 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
     public TmfView(String viewName) {
         super();
         fName = viewName;
-        tm = TmfTraceManager.getInstance();
         TmfSignalManager.register(this);
     }
 
