@@ -117,8 +117,7 @@ public class GprofTest extends TestCase {
 
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-CALLGRAPH") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_cg_RefFile, view_cg_DumpFile,
 									CallGraphContentProvider.sharedInstance, false);
 						}
@@ -126,8 +125,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-CALLGRAPH-TIMED") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_cg2_RefFile, view_cg2_DumpFile,
 									CallGraphContentProvider.sharedInstance, true);
 						}
@@ -135,8 +133,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-FILE") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_samplesFile_RefFile,
 									view_samplesFile_DumpFile,
 									FileHistogramContentProvider.sharedInstance, false);
@@ -145,8 +142,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-FILE-TIMED") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_samplesFileT_RefFile,
 									view_samplesFileT_DumpFile,
 									FileHistogramContentProvider.sharedInstance, true);
@@ -155,8 +151,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-FUNCTION") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_samplesFunction_RefFile,
 									view_samplesFunction_DumpFile,
 									FunctionHistogramContentProvider.sharedInstance, false);
@@ -165,8 +160,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-FUNCTION-TIMED") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_samplesFunctionT_RefFile,
 									view_samplesFunctionT_DumpFile,
 									FunctionHistogramContentProvider.sharedInstance, true);
@@ -175,8 +169,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-FLAT") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_samplesFlat_RefFile,
 									view_samplesFlat_DumpFile,
 									FlatHistogramContentProvider.sharedInstance, false);
@@ -185,8 +178,7 @@ public class GprofTest extends TestCase {
 			);
 			ats.addTest(
 					new TestCase(testDir.getName() + ":CSV-FLAT-TIMED") {
-						@Override
-						public void runTest() {
+						public void runTest() throws Throwable {
 							testView(gmonFile, gd, view_samplesFlatT_RefFile,
 									view_samplesFlatT_DumpFile,
 									FlatHistogramContentProvider.sharedInstance, true);
@@ -216,7 +208,7 @@ public class GprofTest extends TestCase {
 
 	public static void testView(File gmonFile, GmonDecoder gd,
 			File refFile, File dumpFile,
-			ITreeContentProvider contentProvider, boolean timeMode) {
+			ITreeContentProvider contentProvider, boolean timeMode) throws Exception {
 		GmonView view = GmonView.displayGprofView(gd, gmonFile.getAbsolutePath());
 		SwitchContentProviderAction action = new SwitchContentProviderAction("testAction",
 				"icons/ch_callees.png" /*to avoid error*/, view.getSTViewer().getViewer(),

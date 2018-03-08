@@ -1,26 +1,23 @@
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.datasets.row;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataEntry;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.row.FilteredRowDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.row.RowDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.row.RowEntry;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.RangeFilter;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.SortFilter;
-import org.junit.Before;
-import org.junit.Test;
 
-public class FilteredRowDataSetTest  {
+import junit.framework.TestCase;
 
-	@Before
-	public void setUp() {
+public class FilteredRowDataSetTest extends TestCase {
+	public FilteredRowDataSetTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+		
 		data = new RowDataSet(new String[] {"a", "b", "c"});
 		fdata = new FilteredRowDataSet(data);
 		new FilteredRowDataSet(data.getTitles());
@@ -34,7 +31,6 @@ public class FilteredRowDataSetTest  {
 	}
 	
 	//Overwrite methods to insure data is removed from the original DataSet
-	@Test
 	public void testAppend() {
 		assertEquals(2, data.getEntryCount());
 		RowEntry entry = new RowEntry();
@@ -43,7 +39,6 @@ public class FilteredRowDataSetTest  {
 		assertEquals(3, data.getEntryCount());
 	}
 	
-	@Test
 	public void testRemove() {
 		assertFalse(fdata.remove(null));
 		assertFalse(fdata.remove(new RowEntry()));
@@ -60,7 +55,6 @@ public class FilteredRowDataSetTest  {
 	//End overwrite methods to insure data is removed from the original DataSet
 	
  	//Overwrite to ensure the data returned has all the filters applied
-	@Test
 	public void testGetColumn() {
 		assertNull(fdata.getColumn(-3));
 		assertNull(fdata.getColumn(10));
@@ -76,7 +70,7 @@ public class FilteredRowDataSetTest  {
 		assertSame("1", col[0]);
 		assertSame("4", col[1]);
 		
-		col = fdata.getColumn(IDataSet.COL_ROW_NUM);
+		col = fdata.getColumn(RowDataSet.COL_ROW_NUM);
 		assertEquals(2, col.length);
 		assertEquals("1", col[0].toString());
 		assertEquals("2", col[1].toString());
@@ -86,7 +80,6 @@ public class FilteredRowDataSetTest  {
 		assertSame("2", col[0]);
 	}
 
-	@Test
 	public void testGetRow() {
 		assertNull(fdata.getRow(-3));
 		assertNull(fdata.getRow(10));
@@ -96,7 +89,6 @@ public class FilteredRowDataSetTest  {
 		assertSame("5", row[1]);
 	}
 	
-	@Test
 	public void testGetHistoricalData() {
 		assertNull(fdata.getHistoricalData(null, -3));
 		assertNull(fdata.getHistoricalData(null, 10));
@@ -112,7 +104,7 @@ public class FilteredRowDataSetTest  {
 		assertSame("1", col[0]);
 		assertSame("4", col[1]);
 		
-		col = fdata.getHistoricalData(null, IDataSet.COL_ROW_NUM);
+		col = fdata.getHistoricalData(null, RowDataSet.COL_ROW_NUM);
 		assertEquals(2, col.length);
 		assertEquals("1", col[0].toString());
 		assertEquals("2", col[1].toString());
@@ -122,12 +114,10 @@ public class FilteredRowDataSetTest  {
 		assertSame("2", col[0]);
 	}
 	
-	@Test
 	public void testGetEntryCount() {
 		assertEquals(2, fdata.getEntryCount());
 	}
 	
-	@Test
 	public void testGetEntry() {
 		assertNull(fdata.getEntry(-1));
 		assertNull(fdata.getEntry(20));
@@ -136,7 +126,6 @@ public class FilteredRowDataSetTest  {
  	//End overwrite to ensure the data returned has all the filters applied
 
 	//IFilteredDataSet Methods
-	@Test
 	public void testAddFilter() {
 		data.remove(0);
 		data.remove(0);
@@ -183,7 +172,6 @@ public class FilteredRowDataSetTest  {
 		assertEquals(3, ((Integer)row[2]).intValue());
 	}
 	
-	@Test
 	public void testRemoveFilter() {
 		data.remove(0);
 		data.remove(0);
@@ -222,7 +210,6 @@ public class FilteredRowDataSetTest  {
 		assertEquals(3, ((Integer)row[2]).intValue());
 	}
 	
-	@Test
 	public void testClearFilters() {
 		data.remove(0);
 		data.remove(0);
@@ -260,7 +247,7 @@ public class FilteredRowDataSetTest  {
 		assertEquals(4, ((Integer)row[0]).intValue());
 		assertEquals(3, ((Integer)row[2]).intValue());
 	}
-	@Test
+	
 	public void testGetFilters() {
 		assertEquals(0, fdata.getFilters().length);
 
@@ -272,6 +259,10 @@ public class FilteredRowDataSetTest  {
 		
 		IDataSetFilter[] filters = fdata.getFilters();
 		assertEquals(2, filters.length);
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 	
 	private RowDataSet data;

@@ -40,7 +40,6 @@ public class GprofParserTest extends TestCase{
 			final File parserDumpFile = new File(testDir, "testParse.dump");
 			ats.addTest(
 					new TestCase(testDir.getName() + ":Parser") {
-						@Override
 						public void runTest() throws Throwable {
 							testProcessGmonFile(logFile, binaryFile, parserRefFile, parserDumpFile);
 						}

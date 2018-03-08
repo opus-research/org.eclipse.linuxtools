@@ -9,7 +9,6 @@ public class NumberValidatorTest extends TestCase {
 		super(name);
 	}
 
-	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
@@ -26,7 +25,6 @@ public class NumberValidatorTest extends TestCase {
 		assertNull("Double is a number", validator.isValid(".3"));
 	}
 	
-	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

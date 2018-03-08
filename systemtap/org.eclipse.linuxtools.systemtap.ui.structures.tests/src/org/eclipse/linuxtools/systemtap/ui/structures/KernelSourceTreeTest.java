@@ -24,7 +24,6 @@ public class KernelSourceTreeTest extends TestCase {
 		super(name);
 	}
 
-	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 
@@ -71,7 +70,6 @@ public class KernelSourceTreeTest extends TestCase {
 		kst.dispose();
 	}
 	
-	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

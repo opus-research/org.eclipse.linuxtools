@@ -19,7 +19,6 @@ import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
-	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = LoggingPlugin.getDefault().getPreferenceStore();
 

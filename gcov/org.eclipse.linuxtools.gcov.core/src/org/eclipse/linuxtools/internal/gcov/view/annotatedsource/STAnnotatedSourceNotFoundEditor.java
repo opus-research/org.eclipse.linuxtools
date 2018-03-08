@@ -36,7 +36,6 @@ public class STAnnotatedSourceNotFoundEditor extends
 	/* (non-Javadoc)
 	 * @see org.eclipse.linuxtools.binutils.link2source.STCSourceNotFoundEditor#openSourceFileAtLocation(org.eclipse.core.resources.IProject, org.eclipse.core.runtime.IPath, int)
 	 */
-	@Override
 	protected void openSourceFileAtLocation(IProject project, IPath sourceLoc,
 			int lineNumber) {
 		IEditorInput input = this.getEditorInput();

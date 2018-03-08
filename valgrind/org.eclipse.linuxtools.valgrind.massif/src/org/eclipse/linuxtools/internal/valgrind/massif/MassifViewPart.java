@@ -321,14 +321,8 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 	}
 
 	protected String getInputName(String description) {
-		String launchName;
-		try {
-			launchName = description.substring(0, description
-					.indexOf("[massif")); //$NON-NLS-1$
-		}
-		catch(IndexOutOfBoundsException e) {
-			launchName = "(No chart title)";
-		}
+		String launchName = description.substring(0, description
+				.indexOf("[massif")); //$NON-NLS-1$
 		return launchName.trim();
 	}
 
@@ -420,7 +414,7 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		return treeViewer;
 	}
 
-	protected static class MassifLabelProvider extends LabelProvider implements
+	protected class MassifLabelProvider extends LabelProvider implements
 	ITableLabelProvider, IFontProvider {
 
 		public Image getColumnImage(Object element, int columnIndex) {

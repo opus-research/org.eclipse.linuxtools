@@ -1,5 +1,6 @@
 package org.eclipse.linuxtools.systemtap.ui.tests;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -23,7 +24,7 @@ public class SystemtapGuiMockProcess extends Process {
 	public InputStream getErrorStream() {
 		return new InputStream() {
 			@Override
-			public int read() {
+			public int read() throws IOException {
 				return -1;
 			}			
 		};
@@ -33,7 +34,7 @@ public class SystemtapGuiMockProcess extends Process {
 	public InputStream getInputStream() {
 		return new InputStream() {
 			@Override
-			public int read() {
+			public int read() throws IOException {
 				return -1;
 			}			
 		};
@@ -42,14 +43,13 @@ public class SystemtapGuiMockProcess extends Process {
 	@Override
 	public OutputStream getOutputStream() {
 		return new OutputStream() {
-			@Override
-			public void write(int b) {
+			public void write(int b) throws IOException {
 			}			
 		};
 	}
 
 	@Override
-	public int waitFor() {
+	public int waitFor() throws InterruptedException {
 		return exitcode;
 	}
 

@@ -9,7 +9,6 @@ public class ConditionalExpressionValidatorTest extends TestCase {
 		super(name);
 	}
 
-	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
@@ -30,7 +29,6 @@ public class ConditionalExpressionValidatorTest extends TestCase {
 		assertNotNull("if(a)b not valid", validator.isValid("if(a)d"));
 	}
 	
-	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

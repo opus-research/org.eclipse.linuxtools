@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.massif.tests;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.viewers.TableViewer;
@@ -41,31 +42,31 @@ public class SortTest extends AbstractMassifTest {
 		super.tearDown();
 	}
 
-	public void testSortSnapshots() {
+	public void testSortSnapshots() throws Exception {
 		checkSortColumn(0);
 	}
 
-	public void testSortTime() {
+	public void testSortTime() throws Exception {
 		checkSortColumn(1);
 	}
 
-	public void testSortTotal() {
+	public void testSortTotal() throws Exception {
 		checkSortColumn(2);
 	}
 
-	public void testSortUseful() {
+	public void testSortUseful() throws Exception {
 		checkSortColumn(3);
 	}
 
-	public void testSortExtra() {
+	public void testSortExtra() throws Exception {
 		checkSortColumn(4);
 	}
 
-	public void testSortStacks() {
+	public void testSortStacks() throws Exception {
 		checkSortColumn(5);
 	}
 
-	private void checkSortColumn(int column) {
+	private void checkSortColumn(int column) throws CoreException, Exception {
 		MassifViewPart view = (MassifViewPart) ValgrindUIPlugin.getDefault()
 				.getView().getDynamicView();
 		TableViewer viewer = view.getTableViewer();
