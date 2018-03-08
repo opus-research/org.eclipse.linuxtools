@@ -67,4 +67,9 @@ public interface ITmfEventType {
      */
     public Set<String> getFieldNames();
 
+    /**
+     * @return a clone of the event type
+     */
+    public ITmfEventType clone();
+
 }

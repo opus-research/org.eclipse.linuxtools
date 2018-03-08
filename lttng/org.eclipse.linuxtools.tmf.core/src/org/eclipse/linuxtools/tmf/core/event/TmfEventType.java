@@ -25,15 +25,15 @@ import java.util.Set;
  * @see ITmfEvent
  * @see ITmfEventField
  */
-public class TmfEventType implements ITmfEventType {
+public class TmfEventType implements ITmfEventType, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final String fContext;
-    private final String fTypeId;
-    private final ITmfEventField fRootField;
+    private String fContext;
+    private String fTypeId;
+    private ITmfEventField fRootField;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -107,6 +107,24 @@ public class TmfEventType implements ITmfEventType {
             return new LinkedHashSet<String>();
         }
         return fRootField.getFields().keySet();
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    @Override
+    public TmfEventType clone() {
+        TmfEventType clone = null;
+        try {
+            clone = (TmfEventType) super.clone();
+            clone.fContext = fContext;
+            clone.fTypeId = fTypeId;
+            clone.fRootField = fRootField;
+        }
+        catch (final CloneNotSupportedException e) {
+        }
+        return clone;
     }
 
     // ------------------------------------------------------------------------
