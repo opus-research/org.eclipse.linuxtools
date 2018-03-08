@@ -67,9 +67,6 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 	protected static final String YES = "yes"; //$NON-NLS-1$
 	protected static final String EQUALS = "="; //$NON-NLS-1$
 
-	// 3.8.0 specific
-	public static final String OPT_CUSTOM_MALLOC = "--soname-synonyms=somalloc"; //$NON-NLS-1$
-
 	protected static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
 	protected static final FileFilter LOG_FILTER = new FileFilter() {
 		@Override
@@ -218,7 +215,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 
 			if (results.length == 0){
 				results = new IValgrindMessage[1];
-				results[0] = new ValgrindInfo(null, Messages.getString("ValgrindOutputView.No_output"), launch);
+				results[0] = new ValgrindInfo(null, Messages.getString("ValgrindOutputView.No_output"), launch); //$NON-NLS-1$
 			}
 			messages.addAll(Arrays.asList(results));
 			createMarkers(results);
@@ -359,19 +356,6 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
 			if (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) != LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL)
 				opts.add(CommandLineConstants.OPT_DSYMUTIL + EQUALS + (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) ? YES : NO));
-		}
-
-		// 3.8.0 specific
-		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
-			boolean useCustomMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL);
-			if (useCustomMalloc) {
-				boolean dynamicMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL);
-				if(dynamicMalloc){
-					opts.add(OPT_CUSTOM_MALLOC + EQUALS + config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC));
-				} else {
-					opts.add(OPT_CUSTOM_MALLOC + EQUALS + CommandLineConstants.OPT_CUSTOM_MALLOC_STATIC);
-				}
-			}
 		}
 
 		List<?> suppFiles = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, LaunchConfigurationConstants.DEFAULT_GENERAL_SUPPFILES);
