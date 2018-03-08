@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -11,7 +11,6 @@
  *   Thomas Gatterweh	- Updated scaling / synchronization
  *   Francois Chouinard - Refactoring to align with TMF Event Model 1.0
  *   Francois Chouinard - Implement augmented interface
- *   Geneviève Bastien  - Added copy constructor with new value
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
@@ -131,24 +130,6 @@ public class TmfTimestamp implements ITmfTimestamp {
             throw new IllegalArgumentException();
         }
         fValue = timestamp.getValue();
-        fScale = timestamp.getScale();
-        fPrecision = timestamp.getPrecision();
-    }
-
-    /**
-     * Copies a timestamp but with a new time value
-     *
-     * @param timestamp
-     *            The timestamp to copy
-     * @param newvalue
-     *            The value the new timestamp will have
-     * @since 3.0
-     */
-    public TmfTimestamp(ITmfTimestamp timestamp, long newvalue) {
-        if (timestamp == null) {
-            throw new IllegalArgumentException();
-        }
-        fValue = newvalue;
         fScale = timestamp.getScale();
         fPrecision = timestamp.getPrecision();
     }
