@@ -38,7 +38,9 @@ public class CtfTmfTimestampTest {
         CtfTmfTimestamp result = new CtfTmfTimestamp(timestamp);
 
         assertNotNull(result);
-        //assertEquals("00:00:00.000 000 001", result.toString()); //$NON-NLS-1$
+
+        /* Strip the hours, those get formatted depending on the time zone */
+        assertEquals(":00:00.000 000 001", result.toString().substring(2)); //$NON-NLS-1$
         assertEquals(0, result.getPrecision());
         assertEquals(-9, result.getScale());
         assertEquals(1L, result.getValue());
