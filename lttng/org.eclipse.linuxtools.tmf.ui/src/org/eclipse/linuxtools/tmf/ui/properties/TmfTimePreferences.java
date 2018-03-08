@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.properties;
 
-import java.util.TimeZone;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
@@ -36,7 +34,6 @@ public class TmfTimePreferences {
     static final String TIME_FORMAT_PREF = "org.eclipse.linuxtools.tmf.ui.prefs.time.format"; //$NON-NLS-1$
     static final String DATIME = TIME_FORMAT_PREF + ".datime";   //$NON-NLS-1$
     static final String SUBSEC = TIME_FORMAT_PREF + ".subsec";   //$NON-NLS-1$
-    static final String TIME_ZONE = TIME_FORMAT_PREF + ".timezone"; //$NON-NLS-1$
 
     static final String DATE_DELIMITER = TIME_FORMAT_PREF + ".date.delimiter";   //$NON-NLS-1$
     static final String TIME_DELIMITER = TIME_FORMAT_PREF + ".time.delimiter";   //$NON-NLS-1$
@@ -80,14 +77,11 @@ public class TmfTimePreferences {
     private static IPreferenceStore fPreferenceStore;
     private static String fTimestampPattern;
     private static String fIntervalPattern;
-    private static String fStaticTimeZone;
-
 
     private String fDatimeFormat;
     private String fDateFormat;
     private String fTimeFormat;
     private String fSSecFormat;
-    private String fTimezone;
 
     private String fDateFieldSep = "-"; //$NON-NLS-1$
     private String fTimeFieldSep = ":"; //$NON-NLS-1$
@@ -104,7 +98,6 @@ public class TmfTimePreferences {
         fPreferenceStore.setDefault(TmfTimePreferences.DATE_DELIMITER, DELIMITER_DASH);
         fPreferenceStore.setDefault(TmfTimePreferences.TIME_DELIMITER, DELIMITER_COLON);
         fPreferenceStore.setDefault(TmfTimePreferences.SSEC_DELIMITER, DELIMITER_SPACE);
-        fPreferenceStore.setDefault(TmfTimePreferences.TIME_ZONE, TimeZone.getDefault().getID());
 
         // Create the singleton and initialize format preferences
         getInstance();
@@ -129,7 +122,7 @@ public class TmfTimePreferences {
      */
     private TmfTimePreferences() {
         initPatterns();
-        setTimePattern(fTimestampPattern, fStaticTimeZone);
+        setTimePattern(fTimestampPattern);
     }
 
     // ------------------------------------------------------------------------
@@ -144,22 +137,13 @@ public class TmfTimePreferences {
     }
 
     /**
-     * @return the timezone string
-     */
-    public static String getTimeZoneString(){
-        return fStaticTimeZone;
-    }
-
-    /**
      * Sets the timestamp pattern and updates TmfTimestampFormat
      *
      * @param timePattern the new timestamp pattern
      */
-    static void setTimePattern(String timePattern, String tz) {
+    static void setTimePattern(String timePattern) {
         fTimestampPattern = timePattern;
-        fStaticTimeZone = tz;
-        TmfTimestampFormat.setDefaultTimeFormat(fTimestampPattern, fStaticTimeZone);
-        TmfTimestampFormat.setTimeZonePattern(fStaticTimeZone);
+        TmfTimestampFormat.setDefaultTimeFormat(fTimestampPattern);
         TmfTimestampFormat.setDefaultIntervalFormat(fIntervalPattern);
     }
 
@@ -185,10 +169,6 @@ public class TmfTimePreferences {
      */
     void setSSecFieldSep(String pattern) {
         fSSecFieldSep = pattern;
-    }
-
-    void setTimezone(String tz){
-        fTimezone = tz;
     }
 
     /**
@@ -218,14 +198,6 @@ public class TmfTimePreferences {
         fSSecFormat = pattern;
     }
 
-    /**
-     * Get the timezone
-     * @return the timezone
-     */
-    public TimeZone getTimeZone(){
-        return TimeZone.getTimeZone(fTimezone);
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -236,7 +208,6 @@ public class TmfTimePreferences {
         fDateFieldSep = fPreferenceStore.getString(DATE_DELIMITER);
         fTimeFieldSep = fPreferenceStore.getString(TIME_DELIMITER);
         fSSecFieldSep = fPreferenceStore.getString(SSEC_DELIMITER);
-        fTimezone = fPreferenceStore.getString(TIME_ZONE);
         updatePatterns();
     }
 
@@ -244,7 +215,7 @@ public class TmfTimePreferences {
         String dateFmt = fDateFormat.replaceAll("-", fDateFieldSep); //$NON-NLS-1$
         String timeFmt = fTimeFormat.replaceAll(":", fTimeFieldSep); //$NON-NLS-1$
         String ssecFmt = fSSecFormat.replaceAll(" ", fSSecFieldSep); //$NON-NLS-1$
-        fStaticTimeZone = fTimezone;
+
         fTimestampPattern = dateFmt + timeFmt + "." + ssecFmt; //$NON-NLS-1$
         fIntervalPattern = "TTT." + ssecFmt; //$NON-NLS-1$
     }
@@ -255,7 +226,6 @@ public class TmfTimePreferences {
         setDateFieldSep(TmfTimePreferences.DELIMITER_DASH);
         setTimeFieldSep(TmfTimePreferences.DELIMITER_COLON);
         setSSecFieldSep(TmfTimePreferences.DELIMITER_SPACE);
-        setTimezone(TimeZone.getDefault().getID());
         updatePatterns();
     }
 
