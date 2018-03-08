@@ -57,6 +57,11 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     // ------------------------------------------------------------------------
 
     /**
+     * The dialog composite.
+     */
+    private Composite fDialogComposite;
+
+    /**
      * A tree viewer for displaying and selection of available contexts.
      */
     private CheckboxTreeViewer fContextsViewer;
@@ -115,13 +120,13 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     protected Control createDialogArea(Composite parent) {
 
         // Main dialog panel
-        Composite dialogComposite = new Composite(parent, SWT.NONE);
+        fDialogComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        dialogComposite.setLayout(layout);
-        dialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fDialogComposite.setLayout(layout);
+        fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Contexts list
-        Group contextGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
+        Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.TraceControl_AddContextAvailableContextsLabel);
         layout = new GridLayout(1, true);
         contextGroup.setLayout(layout);
@@ -138,7 +143,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
 
         getShell().setMinimumSize(new Point(500, 450));
 
-        return dialogComposite;
+        return fDialogComposite;
     }
 
     @Override
@@ -400,21 +405,21 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
         /**
          * @return The name of this component
          */
-        String getName();
+        public String getName();
 
         /**
          * @return The parent component
          */
-        Object getParent();
+        public Object getParent();
 
         /**
          * @return The array of children of this component
          */
-        Object[] getChildren();
+        public Object[] getChildren();
 
         /**
          * @return If this component has children or not
          */
-        boolean hasChildren();
+        public boolean hasChildren();
     }
 }
