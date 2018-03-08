@@ -19,8 +19,8 @@ package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
  * traces
  *
  * @version 2.0
- * @since 2.0
  * @author Mathieu Denis
+ * @since 2.0
  */
 public class TmfStatistics {
     /**
