@@ -102,7 +102,7 @@ public class CtfTmfTraceTest {
     public void testParseEvent() {
         ITmfContext ctx = fixture.seekEvent(0);
         fixture.getNext(ctx);
-        CtfTmfEvent event = (CtfTmfEvent) fixture.parseEvent(ctx);
+        CtfTmfEvent event = fixture.parseEvent(ctx);
         assertNotNull(event);
     }
 
@@ -239,7 +239,7 @@ public class CtfTmfTraceTest {
     @Test
     public void testGetNext() {
         ITmfContext context = fixture.seekEvent(0);
-        CtfTmfEvent result = (CtfTmfEvent) fixture.getNext(context);
+        CtfTmfEvent result = fixture.getNext(context);
         assertNotNull(result);
     }
 
@@ -294,7 +294,7 @@ public class CtfTmfTraceTest {
     @Test
     public void testReadNextEvent() {
         ITmfContext context = fixture.seekEvent(0);
-        CtfTmfEvent result = (CtfTmfEvent) fixture.getNext(context);
+        CtfTmfEvent result = fixture.getNext(context);
         assertNotNull(result);
     }
 
@@ -364,4 +364,14 @@ public class CtfTmfTraceTest {
         assertTrue(fixture.hasAtLeastOneOfEvents(names));
         assertFalse(fixture.hasAllEvents(names));
     }
+
+    /**
+     * Run the String getHostId() method test
+     */
+    @Test
+    public void testCtfHostId() {
+        String a = fixture.getHostId();
+        assertEquals("\"84db105b-b3f4-4821-b662-efc51455106a\"", a);
+    }
+
 }
