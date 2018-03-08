@@ -123,11 +123,6 @@ public class TmfStatisticsViewer extends TmfViewer {
     protected final Object fStatisticsUpdateSyncObj = new Object();
 
     /**
-     * Update range synchronization object.
-     */
-    protected final Object fStatisticsRangeUpdateSyncObj = new Object();
-
-    /**
      * Indicates to process all events
      */
     private boolean fProcessAll;
@@ -248,18 +243,16 @@ public class TmfStatisticsViewer extends TmfViewer {
             return;
         }
 
-        synchronized (fStatisticsRangeUpdateSyncObj) {
-            // Sends the time range request only once from this method.
-            if (fSendRangeRequest) {
-                fSendRangeRequest = false;
-                // Calculate the selected time range to request
-                long startTime = signal.getRange().getStartTime().normalize(0, TIME_SCALE).getValue();
-                TmfTimestamp startTS = new TmfTimestamp(startTime, TIME_SCALE);
-                TmfTimestamp endTS = new TmfTimestamp(startTime + INITIAL_WINDOW_SPAN, TIME_SCALE);
-                TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
+        // Sends the time range request only once in this method.
+        if (fSendRangeRequest) {
+            fSendRangeRequest = false;
+            // Calculate the selected time range to request
+            long startTime = signal.getRange().getStartTime().normalize(0, TIME_SCALE).getValue();
+            TmfTimestamp startTS = new TmfTimestamp(startTime, TIME_SCALE);
+            TmfTimestamp endTS = new TmfTimestamp(startTime + INITIAL_WINDOW_SPAN, TIME_SCALE);
+            TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
 
-                requestTimeRangeData(experiment, timeRange);
-            }
+            requestTimeRangeData(experiment, timeRange);
         }
         requestData(experiment, signal.getRange());
     }
@@ -387,15 +380,6 @@ public class TmfStatisticsViewer extends TmfViewer {
                 }
             }
         });
-    }
-
-    /**
-     * Will force a request on the partial event count if one is needed.
-     */
-    public void sendPartialRequestOnNextUpdate() {
-        synchronized (fStatisticsRangeUpdateSyncObj) {
-            fSendRangeRequest = true;
-        }
     }
 
     /**
