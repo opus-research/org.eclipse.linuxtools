@@ -139,15 +139,15 @@ public class PagesDialog extends Dialog {
         /**
          * The text field.
          */
-        private Text fText;
+        protected Text fText;
         /**
          * The minimum page value
          */
-        private int fMin;
+        int fMin;
         /**
          * The maximum page value
          */
-        private int fMax;
+        int fMax;
 
         /**
          * Constructor
