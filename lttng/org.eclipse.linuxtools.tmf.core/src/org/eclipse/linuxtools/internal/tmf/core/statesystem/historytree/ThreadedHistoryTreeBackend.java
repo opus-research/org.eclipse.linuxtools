@@ -10,7 +10,7 @@
  *
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree;
+package org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree;
 
 import java.io.File;
 import java.io.IOException;
