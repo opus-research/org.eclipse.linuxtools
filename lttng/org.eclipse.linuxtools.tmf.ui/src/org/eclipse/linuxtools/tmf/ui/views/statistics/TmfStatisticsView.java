@@ -87,7 +87,7 @@ public class TmfStatisticsView extends TmfView {
     /**
      *  Stores the request to the experiment
      */
-    protected ITmfEventRequest fRequest = null;
+    protected ITmfEventRequest<ITmfEvent> fRequest = null;
     /**
      *  Update synchronization parameter (used for streaming): Update busy indicator
      */
@@ -225,11 +225,12 @@ public class TmfStatisticsView extends TmfView {
         fTreeViewer.getTree().setSortDirection(SWT.DOWN);
 
         // Read current data if any available
-        TmfExperiment experiment = TmfExperiment.getCurrentExperiment();
+        TmfExperiment<?> experiment = TmfExperiment.getCurrentExperiment();
         if (experiment != null) {
             fRequestData = true;
             // Insert the statistics data into the tree
-            TmfExperimentSelectedSignal signal = new TmfExperimentSelectedSignal(this, experiment);
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            TmfExperimentSelectedSignal<?> signal = new TmfExperimentSelectedSignal(this, experiment);
             experimentSelected(signal);
          }
     }
@@ -287,8 +288,7 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Called when an experiment request has failed or has been cancelled.
-     * Remove the data retrieved from the experiment from the statistics tree.
+     * Called when an experiment request has failed or has been canceled Remove the data retrieved from the experiment from the statistics tree.
      *
      * @param name The experiment name
      */
@@ -312,7 +312,7 @@ public class TmfStatisticsView extends TmfView {
      * @param signal The disposed signal
      */
     @TmfSignalHandler
-    public void experimentDisposed(TmfExperimentDisposedSignal signal) {
+    public void experimentDisposed(TmfExperimentDisposedSignal<? extends ITmfEvent> signal) {
         if (signal.getExperiment() != TmfExperiment.getCurrentExperiment()) {
             return;
         }
@@ -326,15 +326,16 @@ public class TmfStatisticsView extends TmfView {
      * @param signal Contains the information about the selection.
      */
     @TmfSignalHandler
-    public void experimentSelected(TmfExperimentSelectedSignal signal) {
+    public void experimentSelected(TmfExperimentSelectedSignal<? extends ITmfEvent> signal) {
         if (signal != null) {
-            TmfExperiment experiment = signal.getExperiment();
+            TmfExperiment<?> experiment = signal.getExperiment();
             String experimentName = experiment.getName();
 
             if (TmfStatisticsTreeRootFactory.containsTreeRoot(getTreeID(experimentName))) {
                 // The experiment root is already present
                 TmfStatisticsTreeNode experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(getTreeID(experimentName));
 
+                @SuppressWarnings("rawtypes")
                 ITmfTrace[] traces = experiment.getTraces();
 
                 // check if there is partial data loaded in the experiment
@@ -390,9 +391,10 @@ public class TmfStatisticsView extends TmfView {
      * Handles the signal about new experiment range.
      * @param signal The experiment range updated signal
      */
+    @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
-        TmfExperiment experiment = signal.getExperiment();
+        TmfExperiment<ITmfEvent> experiment = (TmfExperiment<ITmfEvent>) signal.getExperiment();
         // validate
         if (! experiment.equals(TmfExperiment.getCurrentExperiment())) {
             return;
@@ -406,11 +408,11 @@ public class TmfStatisticsView extends TmfView {
      * in case the indexing is not coalesced with a statistics request.
      * @param signal The experiment updated signal
      *
-     * @since 2.0
+     * @since 1.1
      */
     @TmfSignalHandler
     public void experimentUpdated(TmfExperimentUpdatedSignal signal) {
-        TmfExperiment experiment = signal.getExperiment();
+        TmfExperiment<?> experiment = signal.getExperiment();
         if (! experiment.equals(TmfExperiment.getCurrentExperiment())) {
             return;
         }
@@ -510,7 +512,8 @@ public class TmfStatisticsView extends TmfView {
      * @param experiment experiment for which we need the statistics data.
      * @param timeRange to request
      */
-    protected void requestData(final TmfExperiment experiment, TmfTimeRange timeRange) {
+    @SuppressWarnings("unchecked")
+    protected void requestData(final TmfExperiment<?> experiment, TmfTimeRange timeRange) {
         if (experiment != null) {
 
             // Check if update is already ongoing
@@ -524,7 +527,7 @@ public class TmfStatisticsView extends TmfView {
             }
 
             // Preparation of the event request
-            fRequest = new TmfEventRequest(ITmfEvent.class, timeRange, index, TmfDataRequest.ALL_DATA, getIndexPageSize(), ExecutionType.BACKGROUND) {
+            fRequest = new TmfEventRequest<ITmfEvent>(ITmfEvent.class, timeRange, index, TmfDataRequest.ALL_DATA, getIndexPageSize(), ExecutionType.BACKGROUND) {
 
                 private final AbsTmfStatisticsTree statisticsData = TmfStatisticsTreeRootFactory.getStatTree(getTreeID(experiment.getName()));
 
@@ -570,7 +573,7 @@ public class TmfStatisticsView extends TmfView {
                     modelIncomplete(experiment.getName());
                 }
             };
-            experiment.sendRequest(fRequest);
+            ((TmfExperiment<ITmfEvent>) experiment).sendRequest(fRequest);
             waitCursor(true);
         }
     }

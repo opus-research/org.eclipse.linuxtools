@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -114,7 +115,7 @@ public class ControlFlowView extends TmfView {
     private TimeGraphCombo fTimeGraphCombo;
 
     // The selected experiment
-    private TmfExperiment fSelectedExperiment;
+    private TmfExperiment<ITmfEvent> fSelectedExperiment;
 
     // The timegraph entry list
     private ArrayList<ControlFlowEntry> fEntryList;
@@ -411,7 +412,7 @@ public class ControlFlowView extends TmfView {
      *            The signal that's received
      */
     @TmfSignalHandler
-    public void experimentSelected(final TmfExperimentSelectedSignal signal) {
+    public void experimentSelected(final TmfExperimentSelectedSignal<? extends ITmfEvent> signal) {
         if (signal.getExperiment().equals(fSelectedExperiment)) {
             return;
         }
@@ -439,7 +440,7 @@ public class ControlFlowView extends TmfView {
         final long time = signal.getCurrentTime().normalize(0, -9).getValue();
 
         int thread = -1;
-        for (ITmfTrace trace : fSelectedExperiment.getTraces()) {
+        for (ITmfTrace<?> trace : fSelectedExperiment.getTraces()) {
             if (thread > 0) {
                 break;
             }
@@ -532,11 +533,11 @@ public class ControlFlowView extends TmfView {
      */
     @TmfSignalHandler
     public void stateSystemBuildCompleted (final TmfStateSystemBuildCompleted signal) {
-        final TmfExperiment selectedExperiment = fSelectedExperiment;
+        final TmfExperiment<?> selectedExperiment = fSelectedExperiment;
         if (selectedExperiment == null || selectedExperiment.getTraces() == null) {
             return;
         }
-        for (ITmfTrace trace : selectedExperiment.getTraces()) {
+        for (ITmfTrace<?> trace : selectedExperiment.getTraces()) {
             if (trace == signal.getTrace() && trace instanceof CtfKernelTrace) {
                 final Thread thread = new Thread("ControlFlowView build") { //$NON-NLS-1$
                     @Override
@@ -554,12 +555,13 @@ public class ControlFlowView extends TmfView {
     // Internal
     // ------------------------------------------------------------------------
 
-    private void selectExperiment(TmfExperiment experiment) {
+    @SuppressWarnings("unchecked")
+    private void selectExperiment(TmfExperiment<?> experiment) {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
-        fSelectedExperiment = experiment;
+        fSelectedExperiment = (TmfExperiment<ITmfEvent>) experiment;
         ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace trace : experiment.getTraces()) {
+        for (ITmfTrace<?> trace : experiment.getTraces()) {
             if (trace instanceof CtfKernelTrace) {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;

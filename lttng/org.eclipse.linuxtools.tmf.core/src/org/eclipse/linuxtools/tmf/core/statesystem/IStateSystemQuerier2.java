@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
  *
  * @version 1.1
  * @author Patrick Tasse
- * @since 2.0
+ * @since 1.1
  */
 public interface IStateSystemQuerier2 extends IStateSystemQuerier {
 

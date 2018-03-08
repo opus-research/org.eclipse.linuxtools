@@ -26,23 +26,37 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
-public class TmfUml2SDTestTrace implements ITmfEventParser {
+/**
+ * Parser implementation for Uml2SD Test Traces.
+ *
+ */
+public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
 
-    ITmfTrace fEventStream;
+    ITmfTrace<TmfEvent> fEventStream;
 
+    /**
+     * Default Constructor
+     */
     public TmfUml2SDTestTrace() {
     }
 
-    public TmfUml2SDTestTrace(ITmfTrace eventStream) {
+    /**
+     * Constructor
+     * @param eventStream ITmfTrace implementation
+     */
+    public TmfUml2SDTestTrace(ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
     }
 
-    public void setTrace(ITmfTrace eventStream) {
+    /**
+     * @param eventStream ITmfTrace implementation to set
+     */
+    public void setTrace(ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "nls" })
+    @SuppressWarnings({ "nls" })
     public TmfEvent parseEvent(ITmfContext context) {
         if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
