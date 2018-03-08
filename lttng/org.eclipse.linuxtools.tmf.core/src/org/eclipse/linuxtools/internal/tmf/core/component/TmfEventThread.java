@@ -138,13 +138,6 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The request execution state
      */
-    public boolean isPaused(){
-        return isPaused;
-    }
-
-    /**
-     * @return The request execution state
-     */
     public boolean isCompleted() {
         return isCompleted;
     }
@@ -247,4 +240,5 @@ public class TmfEventThread implements Runnable {
             fRequest.cancel();
         }
     }
+
 }
