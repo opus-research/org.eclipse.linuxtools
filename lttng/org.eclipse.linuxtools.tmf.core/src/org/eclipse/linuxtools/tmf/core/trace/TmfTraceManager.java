@@ -13,10 +13,8 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -208,6 +206,7 @@ public final class TmfTraceManager {
         fCurrentTrace = trace;
     }
 
+
     /**
      * Handler for the TmfTraceSelectedSignal.
      *
@@ -301,15 +300,6 @@ public final class TmfTraceManager {
         }
     }
 
-    /**
-     * get the opened trace and return them into a unmodifiable set
-     *
-     * @return a set containing the opened trace
-     */
-    public synchronized Set<ITmfTrace> getOpenedTraces() {
-        return Collections.unmodifiableSet(fTraces.keySet());
-    }
-
     // ------------------------------------------------------------------------
     // Private utility methods
     // ------------------------------------------------------------------------
@@ -367,8 +357,8 @@ public final class TmfTraceManager {
      */
     private static String getTemporaryDir(ITmfTrace trace) {
         return System.getProperty("java.io.tmpdir") + //$NON-NLS-1$
-                File.separator +
-                trace.getName() +
-                File.separator;
+            File.separator +
+            trace.getName() +
+            File.separator;
     }
 }

@@ -15,8 +15,8 @@ package org.eclipse.linuxtools.tmf.core.trace;
 import java.util.Map;
 
 /**
- * Interface for trace types to implement when they can provide trace-wide
- * environment variables.
+ * Interface for trace types to implement when they can provide additional
+ * trace-wide properties.
  *
  * This information will be displayed in the trace's Properties View, among
  * other things.
@@ -24,12 +24,12 @@ import java.util.Map;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public interface ITmfEnvironmentVariables {
+public interface ITmfTraceProperties {
 
     /**
-     * Get the environment variables related to this trace.
+     * Get the properties related to this trace.
      *
-     * @return The map of environment variables, <name, value>
+     * @return The map of properties, <name, value>
      */
-    public Map<String, String> getEnvironment();
+    public Map<String, String> getTraceProperties();
 }
