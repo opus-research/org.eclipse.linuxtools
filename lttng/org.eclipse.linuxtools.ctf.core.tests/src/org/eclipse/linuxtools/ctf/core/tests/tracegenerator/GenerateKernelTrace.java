@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -148,11 +149,21 @@ class GenerateKernelTrace {
     private final int fNbChans;
     private File fPath;
 
+    private static final String[] sfProcesses = {
+        "IDLE",
+        "gnuplot",
+        "starcraft 2:pt3",
+        "bash",
+        "smash",
+        "thrash",
+        "fireball",
+        "Half-life 3",
+        "ST: The game"
+};
+
     /**
      * Make a kernel trace
      *
-     * @param processes
-     *            the processes in the list, 0 is idle
      * @param duration
      *            the duration of the trace
      * @param events
@@ -160,8 +171,8 @@ class GenerateKernelTrace {
      * @param nbChannels
      *            the number of channels in the trace
      */
-    public GenerateKernelTrace(List<String> processes, long duration, long events, int nbChannels) {
-        fProcesses = processes;
+    public GenerateKernelTrace(long duration, long events, int nbChannels) {
+        fProcesses = Arrays.asList(sfProcesses);
         fDuration = duration;
         fNbEvents = events;
         fNbChans = nbChannels;
@@ -177,7 +188,9 @@ class GenerateKernelTrace {
         if (!fPath.exists()) {
             fPath.mkdir();
         }
+        fPath.deleteOnExit();
         File metadataFile = new File(fPath.getPath() + File.separator + "metadata");
+        metadataFile.deleteOnExit();
         File[] streams = new File[fNbChans];
         FileChannel[] channels = new FileChannel[fNbChans];
         FileOutputStream fos = null;
@@ -186,6 +199,7 @@ class GenerateKernelTrace {
             for (int i = 0; i < fNbChans; i++) {
                 streams[i] = new File(fPath.getPath() + File.separator + "channel" + i);
                 channels[i] = new FileOutputStream(streams[i]).getChannel();
+                streams[i].deleteOnExit();
             }
         } catch (FileNotFoundException e) {
         }

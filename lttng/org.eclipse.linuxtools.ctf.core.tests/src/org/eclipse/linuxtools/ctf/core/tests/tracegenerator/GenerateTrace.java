@@ -13,8 +13,6 @@
 package org.eclipse.linuxtools.ctf.core.tests.tracegenerator;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Trace generator
@@ -24,17 +22,6 @@ import java.util.List;
 public class GenerateTrace {
 
     private static final String PATH = System.getProperty("java.io.tmpdir") + File.separator + "synthetic-trace";
-    private static final String[] sfProcesses = {
-            "IDLE",
-            "gnuplot",
-            "starcraft 2:pt3",
-            "bash",
-            "smash",
-            "thrash",
-            "fireball",
-            "Half-life 3",
-            "ST: The game"
-    };
 
     /**
      * Main, not always needed
@@ -60,12 +47,8 @@ public class GenerateTrace {
      * Generate a trace
      */
     public static void generateTrace() {
-        List<String> processes = new ArrayList<String>();
-        for (String s : sfProcesses) {
-            processes.add(s);
-        }
         final int cpus = 25;
-        GenerateKernelTrace gt = new GenerateKernelTrace(processes, 2l * Integer.MAX_VALUE - 100, 500000, cpus);
+        GenerateKernelTrace gt = new GenerateKernelTrace(2l * Integer.MAX_VALUE - 100, 500000, cpus);
         gt.writeTrace(PATH);
     }
 
