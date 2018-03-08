@@ -10,7 +10,7 @@
  *   Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.ctf.core.tests.tracegenerator;
+package org.eclipse.linuxtools.ctf.core.tests.synthetictraces;
 
 import java.io.File;
 
@@ -19,9 +19,10 @@ import java.io.File;
  *
  * @author Matthew Khouzam
  */
-public class GenerateTrace {
+public class CtfTraceGenerator {
 
-    private static final String PATH = System.getProperty("java.io.tmpdir") + File.separator + "synthetic-trace";
+    private static final String FILE_NAME = "synthetic-trace";
+    private static final String PATH = System.getProperty("java.io.tmpdir") + File.separator + FILE_NAME;
 
     /**
      * Main, not always needed
@@ -30,7 +31,16 @@ public class GenerateTrace {
      *            args
      */
     public static void main(String[] args) {
-        generateTrace();
+        generateLttngKernelTrace();
+    }
+
+    /**
+     * Gets the name of the trace (top directory name)
+     *
+     * @return the name of the trace
+     */
+    public static String getName() {
+        return FILE_NAME;
     }
 
     /**
@@ -38,17 +48,16 @@ public class GenerateTrace {
      *
      * @return the path
      */
-    public static String generateTraceAndPath() {
-        generateTrace();
+    public static String getPath() {
         return PATH;
     }
 
     /**
      * Generate a trace
      */
-    public static void generateTrace() {
+    public static void generateLttngKernelTrace() {
         final int cpus = 25;
-        GenerateKernelTrace gt = new GenerateKernelTrace(2l * Integer.MAX_VALUE - 100, 500000, cpus);
+        LttngKernelTraceGenerator gt = new LttngKernelTraceGenerator(2l * Integer.MAX_VALUE - 100, 500000, cpus);
         gt.writeTrace(PATH);
     }
 

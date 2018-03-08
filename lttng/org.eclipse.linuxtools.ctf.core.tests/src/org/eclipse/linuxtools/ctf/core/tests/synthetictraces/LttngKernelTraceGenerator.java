@@ -10,7 +10,7 @@
  *   Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.ctf.core.tests.tracegenerator;
+package org.eclipse.linuxtools.ctf.core.tests.synthetictraces;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,7 +28,7 @@ import java.util.Random;
  *
  * @author Matthew Khouzam
  */
-class GenerateKernelTrace {
+class LttngKernelTraceGenerator {
     private static final String metadata = "/* CTF 1.8 */ \n" +
             "typealias integer { size = 8; align = 8; signed = false; } := uint8_t;\n" +
             "typealias integer { size = 16; align = 8; signed = false; } := uint16_t;\n" +
@@ -150,16 +150,16 @@ class GenerateKernelTrace {
     private File fPath;
 
     private static final String[] sfProcesses = {
-        "IDLE",
-        "gnuplot",
-        "starcraft 2:pt3",
-        "bash",
-        "smash",
-        "thrash",
-        "fireball",
-        "Half-life 3",
-        "ST: The game"
-};
+            "IDLE",
+            "gnuplot",
+            "starcraft 2:pt3",
+            "bash",
+            "smash",
+            "thrash",
+            "fireball",
+            "Half-life 3",
+            "ST: The game"
+    };
 
     /**
      * Make a kernel trace
@@ -171,7 +171,7 @@ class GenerateKernelTrace {
      * @param nbChannels
      *            the number of channels in the trace
      */
-    public GenerateKernelTrace(long duration, long events, int nbChannels) {
+    public LttngKernelTraceGenerator(long duration, long events, int nbChannels) {
         fProcesses = Arrays.asList(sfProcesses);
         fDuration = duration;
         fNbEvents = events;
@@ -180,14 +180,27 @@ class GenerateKernelTrace {
 
     /**
      * Write the trace to a file
+     *
      * @param path
      *            the path to write the trace to
      */
     public void writeTrace(String path) {
         fPath = new File(path);
+
         if (!fPath.exists()) {
             fPath.mkdir();
+        } else {
+            if (fPath.isFile()) {
+                fPath.delete();
+                fPath.mkdir();
+            }else{
+                // the ctf parser doesn't recurse, so we don't need to.
+                for( File child : fPath.listFiles()){
+                    child.delete();
+                }
+            }
         }
+
         fPath.deleteOnExit();
         File metadataFile = new File(fPath.getPath() + File.separator + "metadata");
         metadataFile.deleteOnExit();
@@ -259,7 +272,7 @@ class GenerateKernelTrace {
                 }
                 final int shrunkenTimestamp = ts - offsetTime;
                 final int tsMask = (1 << 27) - 1;
-                if (shrunkenTimestamp > ((1<<27)+tsMask)) {
+                if (shrunkenTimestamp > ((1 << 27) + tsMask)) {
                     new Object();
                     System.err.println("PROBLEM");
                 }
@@ -322,7 +335,7 @@ class GenerateKernelTrace {
                 bIn[i] = temp[i];
             }
 
-            int timestamp = ts  << 5;
+            int timestamp = ts << 5;
 
             data.putInt(timestamp);
             data.put(bOut);
