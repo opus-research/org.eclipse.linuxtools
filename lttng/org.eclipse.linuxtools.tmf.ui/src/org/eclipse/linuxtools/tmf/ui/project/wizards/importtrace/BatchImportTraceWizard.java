@@ -85,7 +85,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     private final List<String> fTraceTypesToScan = new ArrayList<String>();
     private final Set<String> fParentFilesToScan = new HashSet<String>();
 
-    private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider(fTraceTypesToScan, fParentFilesToScan);
+    private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider();
 
     private final Map<TraceValidationHelper, Boolean> fResults = new HashMap<TraceValidationHelper, Boolean>();
     private boolean fOverwrite = true;
@@ -128,6 +128,14 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         fScanPage = new ImportTraceWizardScanPage(workbench, selection);
         fSelectTypePage = new ImportTraceWizardSelectTraceTypePage(workbench, selection);
         // keep in case it's called later
+        Iterator<?> iter = selection.iterator();
+        while (iter.hasNext()) {
+            Object selected = iter.next();
+            if (selected instanceof TmfTraceFolder) {
+                fTargetFolder = ((TmfTraceFolder) selected).getResource();
+                break;
+            }
+        }
         fResults.clear();
     }
 
@@ -540,6 +548,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     }
 
     private void updateTracesToScan(final List<String> added) {
+        // Treeset is used instead of a hashset since the traces should be read
+        // in the order they were added.
         final Set<String> filesToScan = new TreeSet<String>();
         for (String name : fParentFiles.keySet()) {
             filesToScan.addAll(fParentFiles.get(name));
@@ -549,7 +559,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             updateScanQueue(pm, filesToScan, added);
         } catch (InterruptedException e) {
         }
-
     }
 
     /*
@@ -616,14 +625,12 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         fTracesToScan.put(tv);
                         monitor.subTask(tv.getTraceToScan());
                         if (monitor.isCanceled()) {
-                            ((ImportTraceWizardScanPage) fScanPage).refresh();
                             return CANCEL_STATUS;
                         }
                     }
                 }
             }
         }
-        ((ImportTraceWizardScanPage) fScanPage).refresh();
         return Status.OK_STATUS;
     }
 
