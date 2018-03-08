@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,6 +71,17 @@ public class CtfTmfEventTest {
         int result = nullEvent.getCPU();
 
         assertEquals(-1, result);
+    }
+
+    /**
+     * Run the String getChannelName() method test.
+     */
+    @Test
+    public void testGetChannelName() {
+        CtfTmfEvent nullEvent = CtfTmfEvent.getNullEvent();
+        String result = nullEvent.getChannelName();
+
+        assertEquals("No stream", result); //$NON-NLS-1$
     }
 
     /**
@@ -129,6 +139,15 @@ public class CtfTmfEventTest {
     }
 
     /**
+     * Test the clone method
+     */
+    @Test
+    public void testClone() {
+        CtfTmfEvent other = CtfTmfEvent.getNullEvent().clone();
+        assertNotNull(other);
+    }
+
+    /**
      * Run the CTFEvent getNullEvent() method test.
      */
     @Test
@@ -138,7 +157,7 @@ public class CtfTmfEventTest {
         assertNotNull(nullEvent);
         assertEquals(-1, nullEvent.getCPU());
         assertEquals("Empty CTF event", nullEvent.getEventName()); //$NON-NLS-1$
-        assertEquals("No stream", nullEvent.getReference()); //$NON-NLS-1$
+        assertEquals("No stream", nullEvent.getChannelName()); //$NON-NLS-1$
         assertArrayEquals(new ITmfEventField[0], nullEvent.getContent().getFields());
         assertEquals(-1L, nullEvent.getID());
         assertEquals(-1L, nullEvent.getTimestamp().getValue());
@@ -157,17 +176,19 @@ public class CtfTmfEventTest {
     }
 
     /**
-     * Test the getters for the reference, source and type.
+     * Test the getters for the channel name, reference, source and type.
      */
     @Test
     public void testGetters() {
         long rank = fixture.getRank();
         CtfTmfTrace trace = fixture.getTrace();
+        String channelName = fixture.getChannelName();
         String reference = fixture.getReference();
         String source = fixture.getSource();
         ITmfEventType type = fixture.getType();
-        assertEquals(rank, ITmfContext.UNKNOWN_RANK);
+        assertEquals(rank, 0);
         assertEquals(trace.getName(), "test"); //$NON-NLS-1$
+        assertEquals(channelName, "channel0_1"); //$NON-NLS-1$
         assertEquals(reference,"channel0_1"); //$NON-NLS-1$
         assertEquals(source, "1"); //$NON-NLS-1$
         assertEquals(type.toString(), "lttng_statedump_vm_map"); //$NON-NLS-1$
