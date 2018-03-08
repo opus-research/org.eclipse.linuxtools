@@ -109,9 +109,8 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 	 * 
 	 * @param type
 	 * @return array of launch provider configuration elements in prioritized order
-	 * @since 1.2
 	 */
-	public static ArrayList<IConfigurationElement> getOrderedConfigElements(String type) {
+	private static ArrayList<IConfigurationElement> getOrderedConfigElements(String type) {
 		IExtensionPoint extPoint = Platform.getExtensionRegistry()
 				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, "launchProvider"); //$NON-NLS-1$
 		IConfigurationElement[] configs = extPoint.getConfigurationElements();
@@ -120,7 +119,9 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentType = config.getAttribute("type"); //$NON-NLS-1$
-				if (currentType != null && currentType.equals(type)) {
+				String shortcut = config.getAttribute("shortcut"); //$NON-NLS-1$
+				if (currentType != null && shortcut != null
+						&& currentType.equals(type)) {
 
 					String priority = config.getAttribute("priority");
 					if (priority != null) {
