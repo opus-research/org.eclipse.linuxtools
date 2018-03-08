@@ -9,7 +9,7 @@
  *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
+package org.eclipse.linuxtools.systemtap.ui.ide.actions;
 
 import org.eclipse.osgi.util.NLS;
 
