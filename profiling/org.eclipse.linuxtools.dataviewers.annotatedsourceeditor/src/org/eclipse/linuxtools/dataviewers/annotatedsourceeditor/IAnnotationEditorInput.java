@@ -8,10 +8,23 @@
  * Contributors:
  *    Marzia Maugeri <marzia.maugeri@st.com> - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.dataviewers.listeners;
+package org.eclipse.linuxtools.dataviewers.annotatedsourceeditor;
 
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.graphics.Color;
 
-public interface ISpecialDrawerListener extends Listener {
-    String getValue(Object obj);
+public interface IAnnotationEditorInput {
+    /**
+     * gets the background column of a editor line
+     *
+     * @param line
+     * @return
+     */
+    Color getColor(int line);
+
+    /**
+     * gets the ISTAnnotationColumn objects list
+     *
+     * @return
+     */
+    ISTAnnotationColumn getColumn();
 }
