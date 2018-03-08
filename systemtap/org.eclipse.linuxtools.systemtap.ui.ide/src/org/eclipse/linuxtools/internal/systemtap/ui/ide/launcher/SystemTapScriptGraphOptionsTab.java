@@ -109,7 +109,7 @@ public class SystemTapScriptGraphOptionsTab extends
 
 	public static IDataSetParser createDatasetParser(ILaunchConfiguration configuration) {
 		try {
-			return new LineParser("^" + configuration.getAttribute(REGULARE_EXPRESSION, "") + "$"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			return new LineParser(configuration.getAttribute(REGULARE_EXPRESSION, "").concat("\\n")); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (CoreException e) {
 			ExceptionErrorDialog.openError(Messages.SystemTapScriptGraphOptionsTab_0, e);
 		}
@@ -423,10 +423,9 @@ public class SystemTapScriptGraphOptionsTab extends
 		}
 
 		// Set values
-		boolean matches = matcher.matches();
 		Control[] children = textFieldsComposite.getChildren();
 		for (int i = 0; i < numberOfVisibleColumns; i++) {
-			if (!matches){
+			if (!matcher.matches()){
 				((Label)children[i*2+1]).setText(""); //$NON-NLS-1$
 			} else {
 				((Label)children[i*2+1]).setText(" " +matcher.group(i+1)); //$NON-NLS-1$
