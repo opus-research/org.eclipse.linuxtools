@@ -129,15 +129,13 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	/*
 	 * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#createAnnotationModel(java.lang.Object)
 	 */
-	@Override
-	protected IAnnotationModel createAnnotationModel(Object element) {
+	protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
 		return null;
 	}
 
 	/*
 	 * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#doSaveDocument(org.eclipse.core.runtime.IProgressMonitor, java.lang.Object, org.eclipse.jface.text.IDocument, boolean)
 	 */
-	@Override
 	protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
 		if (element instanceof IPathEditorInput) {
 			IPathEditorInput pei= (IPathEditorInput) element;

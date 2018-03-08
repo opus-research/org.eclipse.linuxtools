@@ -836,6 +836,7 @@ public class CallgraphView extends SystemTapView {
 		//Opens from specified location
 		open_file = new Action(Messages.getString("CallgraphView.Open")){ //$NON-NLS-1$
 			public void run(){
+				try {
 				FileDialog dialog = new FileDialog(new Shell(), SWT.DEFAULT);
 				String filePath =  dialog.open();
 				if (filePath != null){
@@ -843,6 +844,9 @@ public class CallgraphView extends SystemTapView {
 					new_parser.setSourcePath(filePath);
 						new_parser.setViewID(CallGraphConstants.viewID);
 					new_parser.schedule();					
+				}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
 		};	
@@ -855,9 +859,13 @@ public class CallgraphView extends SystemTapView {
 		//Opens from the default location
 		open_default = new Action(Messages.getString("CallgraphView.OpenLastRun")){ //$NON-NLS-1$
 			public void run(){
+				try {
 				StapGraphParser new_parser = new StapGraphParser();
 				new_parser.setViewID(CallGraphConstants.viewID);
 				new_parser.schedule();					
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		};
 		

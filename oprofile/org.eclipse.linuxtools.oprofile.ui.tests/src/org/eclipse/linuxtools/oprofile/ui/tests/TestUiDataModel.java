@@ -45,7 +45,7 @@ public class TestUiDataModel extends TestCase {
 	}
 	
 	@Override
-	protected void setUp() {
+	protected void setUp() throws Exception {
 		_uiModelRoot = new TestingUiModelRoot();
 		_uiModelRoot.refreshModel();
 		

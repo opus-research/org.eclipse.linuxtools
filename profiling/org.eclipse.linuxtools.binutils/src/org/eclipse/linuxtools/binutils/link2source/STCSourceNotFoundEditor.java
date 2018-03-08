@@ -166,7 +166,7 @@ public class STCSourceNotFoundEditor extends CommonSourceNotFoundEditor {
 		}
 	}
 
-	private void addSourceMappingToDirector(IPath missingPath, IPath newSourcePath, AbstractSourceLookupDirector director) {
+	private void addSourceMappingToDirector(IPath missingPath, IPath newSourcePath, AbstractSourceLookupDirector director) throws CoreException {
 
 		ArrayList<ISourceContainer> containerList = new ArrayList<ISourceContainer>(Arrays.asList(
 				director.getSourceContainers()

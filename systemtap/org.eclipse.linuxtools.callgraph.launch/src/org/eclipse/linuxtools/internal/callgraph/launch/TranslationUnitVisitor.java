@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.callgraph.launch;
 
 import org.eclipse.cdt.core.model.ICElement;
 import org.eclipse.cdt.core.model.ICElementVisitor;
+import org.eclipse.core.runtime.CoreException;
 
 public class TranslationUnitVisitor implements ICElementVisitor{
 	private String functions;
@@ -22,7 +23,7 @@ public class TranslationUnitVisitor implements ICElementVisitor{
 	}
 	private long time;
 	@Override
-	public boolean visit(ICElement arg0) {
+	public boolean visit(ICElement arg0) throws CoreException {
 		if (arg0.getElementType() == ICElement.C_FUNCTION) {
 			functions+=arg0.getElementName() + " "; //$NON-NLS-1$
 			return false;
