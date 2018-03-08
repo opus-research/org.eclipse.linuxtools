@@ -261,8 +261,8 @@ public class STPMetadataSingleton {
 
 		try {
 			String a;
-			Process p = RuntimeProcessFactory.getFactory().exec(
-					"stap -L " + tapset + ".*", null);
+			Process p = Runtime.getRuntime().exec(
+					"stap -L " + tapset + ".*");
 			BufferedReader in = new BufferedReader(new InputStreamReader(p
 					.getInputStream()), 5000);
 			while ((a = in.readLine()) != null) {

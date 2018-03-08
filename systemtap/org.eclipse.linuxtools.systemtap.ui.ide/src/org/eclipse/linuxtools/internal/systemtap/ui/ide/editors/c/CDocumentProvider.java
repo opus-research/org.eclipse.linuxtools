@@ -11,6 +11,8 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.c;
 
+import org.eclipse.core.runtime.CoreException;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
@@ -29,7 +31,6 @@ import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
  * @author Ryan Morse
  */
 public class CDocumentProvider extends SimpleDocumentProvider {
-	@Override
 	protected void setupDocument(IDocument document) {
 		LogManager.logDebug("Start setupDocument: document-" + document, this); //$NON-NLS-1$
 		if (document != null) {
@@ -43,8 +44,7 @@ public class CDocumentProvider extends SimpleDocumentProvider {
 		LogManager.logDebug("End setupDocument:", this); //$NON-NLS-1$
 	}
 
-	@Override
-	protected IAnnotationModel createAnnotationModel(Object element) {
+	protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
 		LogManager.logDebug("Start/End createAnnotationModel: element-" + element, this); //$NON-NLS-1$
 		return new AnnotationModel();
 	}

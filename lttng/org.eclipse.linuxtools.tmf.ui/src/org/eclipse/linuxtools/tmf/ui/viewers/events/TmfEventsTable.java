@@ -1283,7 +1283,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         protected long rank;
         protected long foundRank = -1;
         protected TmfDataRequest<ITmfEvent> request;
-        private ITmfTimestamp foundTimestamp = null;
 
         public SearchThread(final ITmfFilterTreeNode searchFilter, final ITmfFilterTreeNode eventFilter, final int startIndex,
                 final long currentRank, final int direction) {
@@ -1316,7 +1315,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     rank = event.rank;
                     if (searchFilter.matches(event.event) && ((eventFilter == null) || eventFilter.matches(event.event))) {
                         foundRank = event.rank;
-                        foundTimestamp = event.event.getTimestamp();
                         break;
                     }
                     if (direction == Direction.FORWARD) {
@@ -1354,7 +1352,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         super.handleData(event);
                         if (searchFilter.matches(event) && ((eventFilter == null) || eventFilter.matches(event))) {
                             foundRank = currentRank;
-                            foundTimestamp = event.getTimestamp();
                             if (direction == Direction.FORWARD) {
                                 done();
                                 return;
@@ -1418,10 +1415,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     }
                     fTable.setSelection(selection);
                     fSelectedRank = foundRank;
-                    fRawViewer.selectAndReveal(fSelectedRank);
-                    if (foundTimestamp != null) {
-                        broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, foundTimestamp));
-                    }
                     synchronized (fSearchSyncObj) {
                         fSearchThread = null;
                     }
@@ -1848,7 +1841,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     // Get the rank of the selected event in the table
                     final ITmfContext context = fTrace.seekEvent(timestamp);
                     final long rank = context.getRank();
-                    context.dispose();
                     fSelectedRank = rank;
 
                     fTable.getDisplay().asyncExec(new Runnable() {

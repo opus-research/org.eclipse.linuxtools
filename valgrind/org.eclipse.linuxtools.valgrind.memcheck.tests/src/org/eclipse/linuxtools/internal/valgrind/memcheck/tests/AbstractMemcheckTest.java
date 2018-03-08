@@ -22,7 +22,6 @@ public abstract class AbstractMemcheckTest extends AbstractValgrindTest {
 		return FrameworkUtil.getBundle(AbstractMemcheckTest.class);
 	}
 	
-	@Override
 	public String getToolID() {
 		return MemcheckPlugin.TOOL_ID;
 	}

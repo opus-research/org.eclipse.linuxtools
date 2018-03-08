@@ -1,13 +1,18 @@
 package org.eclipse.linuxtools.systemtap.ui.structures.validators;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.IntegerValidator;
 
-import org.junit.Test;
+import junit.framework.TestCase;
 
-public class IntegerValidatorTest {
+public class IntegerValidatorTest extends TestCase {
+	public IntegerValidatorTest(String name) {
+		super(name);
+	}
 
-	@Test
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+
 	public void testIsValid() {
 		IntegerValidator validator = new IntegerValidator();
 
@@ -20,5 +25,8 @@ public class IntegerValidatorTest {
 		assertNull("Integer is valid", validator.isValid("3"));
 		assertNull("Integer is valid", validator.isValid("343"));
 	}
-
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
 }

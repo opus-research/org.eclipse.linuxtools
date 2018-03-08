@@ -16,9 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -35,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -44,7 +40,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 public class PerfEventsTab extends AbstractLaunchConfigurationTab {
-	private static final String EMPTY_STRING = "";
 	protected Button _chkDefaultEvent;
 	protected TabItem[] _eventTabItems;
 	protected Table[] _eventTabLists;
@@ -53,9 +48,6 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 	private int bpTabIndex = 0;
 	protected Text _rawText;
 	protected Text _bpText;
-	private Composite top;
-	private IProject previousProject = null;
-
 	
 	/**
 	 * @see ILaunchConfigurationTab#getImage()
@@ -71,12 +63,25 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		Composite top = new Composite(parent, SWT.NONE);
 		setControl(top);
 		top.setLayout(new GridLayout());
-		this.top = top;
-	}
 
-	private void createEventTabs(Composite top, ILaunchConfiguration config){
+		createVerticalSpacer(top, 1);
+		
+		//Default event checkbox
+		_chkDefaultEvent = new Button(top, SWT.CHECK);
+		_chkDefaultEvent.setText("Default Event"); //$NON-NLS-1$
+		_chkDefaultEvent.setLayoutData(new GridData());
+		_chkDefaultEvent.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent se) {
+				refreshDefaultEnabled();
+				updateLaunchConfigurationDialog();
+			}
+		});
+
+		createVerticalSpacer(top, 1);
+
 		//Maybe not the best place to load the event list but we'll see.
-		HashMap<String,ArrayList<String>> events = PerfCore.getEventList(config);
+		HashMap<String,ArrayList<String>> events = PerfCore.getEventList();
 		
 		//tabs for each of the counters
 		//String[] tabNames = new String[]{"Hardware Event","Software Event","Hardware Cache Event","Tracepoint Event",  "Raw hardware event descriptor","Hardware breakpoint"};
@@ -230,33 +235,9 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 	
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
-		IProject project = getProject(config);
-
+		//if (PerfPlugin.DEBUG_ON) System.out.println("Initializing eventsTab from previous config.");
+		
 		try {
-			if(previousProject == null || (previousProject != null && !previousProject.equals(project))){
-				Control[] children = top.getChildren();
-
-				for (Control control : children) {
-					control.dispose();
-				}
-
-				createVerticalSpacer(top, 1);
-
-				//Default event checkbox
-				_chkDefaultEvent = new Button(top, SWT.CHECK);
-				_chkDefaultEvent.setText("Default Event"); //$NON-NLS-1$
-				_chkDefaultEvent.setLayoutData(new GridData());
-				_chkDefaultEvent.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent se) {
-						refreshDefaultEnabled();
-						updateLaunchConfigurationDialog();
-					}
-				});
-
-				createEventTabs(top, config);
-			}
-
 			//restore whether things are default event/enabled or not.
 			_chkDefaultEvent.setSelection(config.getAttribute(PerfPlugin.ATTR_DefaultEvent, PerfPlugin.ATTR_DefaultEvent_default));
 			refreshDefaultEnabled();
@@ -292,27 +273,25 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 			//tick all the boxes that are checked (the events i mean)			
 			//This is a little inefficient, I guess. TODO Check more efficiently?
 			List<?> selectedEvents = config.getAttribute(PerfPlugin.ATTR_SelectedEvents, PerfPlugin.ATTR_SelectedEvents_default);
-
-			if(selectedEvents != null){
-				for (int i = 0; i < _eventTabLists.length; i++) {
-					for(TableItem event : _eventTabLists[i].getItems()) {
-						if(selectedEvents.contains(event.getText())){
-							event.setChecked(true);
-						} else {
-							event.setChecked(false);
+			if (selectedEvents != null) {
+				for(Object s : selectedEvents) {
+					for (int i = 0; i < _eventTabLists.length; i++) {
+						for(TableItem x : _eventTabLists[i].getItems()) {
+							if (x.getText().equals(s))
+								x.setChecked(true);
 						}
 					}
 				}
 			}
-			previousProject = project;
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy wconfig) {
+		//if (PerfPlugin.DEBUG_ON) System.out.println("Saving eventsTab values.");
 		//Store default event checkbox
 		wconfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, _chkDefaultEvent.getSelection());
 		
@@ -324,12 +303,8 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 					selectedEvents.add(x.getText());				
 			}
 		}
-
-		if (selectedEvents.size() == 0) {
-			wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, (String) null);
-		} else {
-			wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, selectedEvents);
-		}
+		//if (PerfPlugin.DEBUG_ON) System.out.println("Selected events:" + selectedEvents.toString());
+		wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, selectedEvents);
 		
 		//Flag for multiple events
 		if ((_chkDefaultEvent.getSelection() == false) && (selectedEvents.size() >= 1)) {
@@ -365,29 +340,30 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		}
 		if (rawhwe.size() == 0) { rawhwe = null; } //to match with default value.
 		wconfig.setAttribute(PerfPlugin.ATTR_RawHwEvents, rawhwe);
+		
+		try {
+			if (this.canSave())
+				wconfig.doSave();
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy wconfig) {
+		//if (PerfPlugin.DEBUG_ON) System.out.println("Initializing eventsTab from default values.");
 		wconfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, PerfPlugin.ATTR_DefaultEvent_default);
-		wconfig.setAttribute(PerfPlugin.ATTR_MultipleEvents, PerfPlugin.ATTR_MultipleEvents_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, PerfPlugin.ATTR_SelectedEvents_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_HwBreakpointEvents, PerfPlugin.ATTR_HwBreakpointEvents_default);
 		wconfig.setAttribute(PerfPlugin.ATTR_RawHwEvents, PerfPlugin.ATTR_RawHwEvents_default);
-	}
-
-	protected IProject getProject(ILaunchConfiguration config){
-		String name = null;
 		try {
-			name = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
+			if (this.canSave())
+				wconfig.doSave();
 		} catch (CoreException e) {
-			return null;
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if (name.equals(EMPTY_STRING)){
-			return null;
-		}
-
-		return ResourcesPlugin.getWorkspace().getRoot().getProject(name);
 	}
 
 }

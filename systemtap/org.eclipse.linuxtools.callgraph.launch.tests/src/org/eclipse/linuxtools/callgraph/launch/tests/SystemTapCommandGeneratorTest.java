@@ -15,7 +15,6 @@ import java.io.IOException;
 
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapCommandGenerator;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 
 import junit.framework.TestCase;
 
@@ -86,8 +85,9 @@ public class SystemTapCommandGeneratorTest extends TestCase{
 
 	
 	public void killStap() {
+		Runtime run = Runtime.getRuntime();
 		try {
-			RuntimeProcessFactory.getFactory().exec("kill stap", null);			
+			run.exec("kill stap");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

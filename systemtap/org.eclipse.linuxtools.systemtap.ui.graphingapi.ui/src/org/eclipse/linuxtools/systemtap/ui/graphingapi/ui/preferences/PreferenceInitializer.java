@@ -18,7 +18,6 @@ import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.GraphingAPIUI
 
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
-	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = GraphingAPIUIPlugin.getDefault().getPreferenceStore();
 

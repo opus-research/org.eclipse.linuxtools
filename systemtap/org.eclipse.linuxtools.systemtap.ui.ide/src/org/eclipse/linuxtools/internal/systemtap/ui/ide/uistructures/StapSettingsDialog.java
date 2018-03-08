@@ -43,7 +43,6 @@ public class StapSettingsDialog extends Dialog {
 		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 	
-	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		LogManager.logDebug("Start configureShell: shell-" + shell, this); //$NON-NLS-1$
@@ -52,7 +51,6 @@ public class StapSettingsDialog extends Dialog {
 		LogManager.logDebug("End configureShell:", this); //$NON-NLS-1$
 	}
 
-	@Override
 	protected Control createDialogArea(Composite parent) {
 		LogManager.logDebug("Start createDialogArea: parent-" + parent, this); //$NON-NLS-1$
 		Composite comp = (Composite) super.createDialogArea(parent);
@@ -124,18 +122,21 @@ public class StapSettingsDialog extends Dialog {
 		return comp;
 	}
   
-	@Override
-	protected void okPressed() {
-		cmdOpts = new boolean[checkBox.length];
-		cmdOptVals = new String[text.length];
-
-		for (int i = 0; i < cmdOpts.length; i++)
-			cmdOpts[i] = checkBox[i].getSelection();
-
-		for (int i = 0; i < cmdOptVals.length; i++)
-			cmdOptVals[i] = text[i].getText();
-
-		super.okPressed();
+	protected void buttonPressed(int buttonID) {
+		LogManager.logDebug("Start buttonPressed: buttonID-" + buttonID, this); //$NON-NLS-1$
+		if(0 == buttonID) {	//OK
+			cmdOpts = new boolean[checkBox.length];
+			cmdOptVals = new String[text.length];
+			
+			for(int i=0; i<cmdOpts.length; i++)
+				cmdOpts[i] = checkBox[i].getSelection();
+			
+			for(int i=0; i<cmdOptVals.length; i++)
+				cmdOptVals[i] = text[i].getText();
+		}
+		
+		super.buttonPressed(buttonID);
+		LogManager.logDebug("End buttonPressed:", this); //$NON-NLS-1$
 	}
 	
 	public boolean[] getStapOpts() {

@@ -11,17 +11,23 @@
 
 package org.eclipse.linuxtools.systemtap.ui.ide.test.structures;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
-import org.junit.Test;
 
-public class StapErrorParserTest {
+import junit.framework.TestCase;
 
-	@Test
+public class StapErrorParserTest extends TestCase {
+
+	public static void main(String[] args) {
+	}
+
+	public StapErrorParserTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+	
 	public void testStapErrorParser() {
 		String[][] output;
 
@@ -55,5 +61,9 @@ public class StapErrorParserTest {
 		assertEquals(3, output.length);
 		assertTrue("semantic error:".equals(output[0][0]));
 		assertTrue(output[0][3].startsWith("22:6"));
+	}
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 }

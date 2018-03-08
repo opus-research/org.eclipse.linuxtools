@@ -15,12 +15,17 @@ import java.net.URI;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
+import org.eclipse.core.runtime.CoreException;
 
 public class SSHFileSystem extends FileSystem {
 
 	@Override
 	public IFileStore getStore(URI uri) {
 		SSHProxyManager proxy = new SSHProxyManager();
-		return proxy.getFileProxy(uri).getResource(uri.getPath());
+		try {
+			return proxy.getFileProxy(uri).getResource(uri.getPath());
+		} catch (CoreException e) {
+			return null;
+		}
 	}
 }

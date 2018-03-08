@@ -6,7 +6,6 @@ import org.eclipse.linuxtools.internal.callgraph.launch.SystemTapLaunchShortcut;
 
 public class LaunchSleepingThreads extends SystemTapLaunchShortcut {
 	
-	@Override
 	public void launch(IBinary bin, String mode) {
 		try {
 			name = "sleeping threads";
@@ -30,7 +29,6 @@ public class LaunchSleepingThreads extends SystemTapLaunchShortcut {
 		return "org.eclipse.linuxtools.sleepingthreadparser";
 	}
 	
-	@Override
 	public String setViewID() {
 		return "org.eclipse.linuxtools.sleepingthreads.xmlview";
 	}

@@ -23,7 +23,7 @@
 	-->
 
 	<property name="downloads.project.root" value="/linuxtools" />
-	<property name="repo.name" value="${mirror-repo-name}" />
+	<property name="repo.name" value="update-1.1" />
 	<property name="build.root" value="${project.build.directory}" />
 	<antversion property="antversion" />
 

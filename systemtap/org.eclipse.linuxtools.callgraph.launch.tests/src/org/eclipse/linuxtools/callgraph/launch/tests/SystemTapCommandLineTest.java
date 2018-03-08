@@ -25,7 +25,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.linuxtools.internal.callgraph.core.LaunchConfigurationConstants;
 import org.eclipse.linuxtools.internal.callgraph.launch.LaunchStapGraph;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 
 public class SystemTapCommandLineTest extends TestCase {
 	File tmpfile = new File("");
@@ -42,6 +41,7 @@ public class SystemTapCommandLineTest extends TestCase {
 	
 	//FOR TESTING RAW STAP SCRIPT OUTPUT
 	public String getCommandOutput(String command, boolean needsBinary){
+		Runtime rt = Runtime.getRuntime();
 		try {
 			//CREATE/ACCESS A TEMPORARY FILE TO HOLD THE SCRIPT
 			File file = new File(scriptPath);
@@ -54,26 +54,26 @@ public class SystemTapCommandLineTest extends TestCase {
 			
 			//EXECUTE THE COMMAND
 			Process pr = null;
-			RuntimeProcessFactory.getFactory().exec("kill stap", null);
+			rt.exec("kill stap");
 			if (needsBinary){
-				pr = RuntimeProcessFactory.getFactory().exec("stap -c '"+binaryPath+ "' "+ scriptPath + " " + binaryPath, null);
+				pr = rt.exec("stap -c '"+binaryPath+ "' "+ scriptPath + " " + binaryPath);
 			}else{
-				pr = RuntimeProcessFactory.getFactory().exec("stap "+scriptPath, null);
+				pr = rt.exec("stap "+scriptPath);				
 			}
 			pr.waitFor();
 			
 			InputStream inpstr = pr.getInputStream();
 			BufferedReader rbuff = new BufferedReader (new InputStreamReader(inpstr));
 			String line = "";
-			StringBuilder text = new StringBuilder();
+			String text = "";
 			
 			//READ THE STANDARD OUTPUT OF COMMAND
 			while ((line = rbuff.readLine()) != null){
-				text.append(line);
+				text += line;
 			}
 			
 			rbuff.close();
-			return text.toString();
+			return text;
 			
 		} catch (IOException e) {
 			e.printStackTrace();

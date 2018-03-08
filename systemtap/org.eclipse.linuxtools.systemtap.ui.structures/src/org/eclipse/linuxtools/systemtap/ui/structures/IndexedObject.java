@@ -20,7 +20,6 @@ public class IndexedObject implements Comparable{
 		val = v;
 	}
 
-	@Override
 	public String toString() {
 		return val.toString();
 	}

@@ -24,21 +24,20 @@ public class DashboardPreferencePage extends FieldEditorPreferencePage implement
 		super(GRID);
 		LogManager.logDebug("Start DashboardPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(DashboardPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("DashboardPreferencePage.DashboardPreferences")); //$NON-NLS-1$
+		setDescription(Localization.getString("DashboardPreferencePage.DashboardPreferences"));
 		LogManager.logDebug("End DashboardPreferencePage:", this); //$NON-NLS-1$
 	}
 	
-	@Override
 	public void createFieldEditors() {
 		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
 		addField(new PathEditor(DashboardPreferenceConstants.P_MODULE_FOLDERS,
-				Localization.getString("DashboardPreferencePage.AdditionalDirectories"), Localization.getString("DashboardPreferencePage.ModuleDirectory"), getFieldEditorParent())); //$NON-NLS-1$ //$NON-NLS-2$
+				Localization.getString("DashboardPreferencePage.AdditionalDirectories"), Localization.getString("DashboardPreferencePage.ModuleDirectory"), getFieldEditorParent()));
 		
 		addField(new IntegerFieldEditor(DashboardPreferenceConstants.P_DASHBOARD_UPDATE_DELAY,
-				Localization.getString("DashboardPreferencePage.RefreshDelay"), getFieldEditorParent())); //$NON-NLS-1$
+				Localization.getString("DashboardPreferencePage.RefreshDelay"), getFieldEditorParent()));
 		
 		addField(new StringFieldEditor(DashboardPreferenceConstants.P_DASHBOARD_EXAMPLES_DIR,
-				Localization.getString("DashboardPreferencePage.ExamplesDir"),  getFieldEditorParent())); //$NON-NLS-1$
+				Localization.getString("DashboardPreferencePage.ExamplesDir"),  getFieldEditorParent()));
 		
 		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
 	}
@@ -49,7 +48,6 @@ public class DashboardPreferencePage extends FieldEditorPreferencePage implement
 		LogManager.logDebug("End init:", this); //$NON-NLS-1$
 	}
 	
-	@Override
 	public void dispose() {
 		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$

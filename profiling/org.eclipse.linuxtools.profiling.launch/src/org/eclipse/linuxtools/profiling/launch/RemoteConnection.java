@@ -256,8 +256,8 @@ public class RemoteConnection {
 	public static String[] envMapToEnvArray(Map<String, String> envMap) {
 		String envArray[] = new String[envMap.size()];
 		int idx = 0;
-		for (Map.Entry<String, String> entry : envMap.entrySet()) {
-			envArray[idx++] = entry.getKey() + "=" + entry.getValue();
+		for (String key : envMap.keySet()) {
+			envArray[idx++] = key + "=" + envMap.get(key);
 		}
 		return envArray;
 	}

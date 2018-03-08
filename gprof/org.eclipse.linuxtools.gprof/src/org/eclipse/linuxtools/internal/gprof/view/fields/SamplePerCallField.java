@@ -36,7 +36,6 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#compare(java.lang.Object, java.lang.Object)
 	 */
-	@Override
 	public int compare(Object obj1, Object obj2) {
 		TreeElement e1 = (TreeElement) obj1;
 		TreeElement e2 = (TreeElement) obj2;
@@ -54,7 +53,6 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getColumnHeaderText()
 	 */
-	@Override
 	public String getColumnHeaderText() {
 		String prefix = "";
 		Object o = viewer.getInput();
@@ -73,7 +71,6 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getColumnHeaderTooltip()
 	 */
-	@Override
 	public String getColumnHeaderTooltip() {
 		Object o = viewer.getInput();
 		if (o instanceof GmonDecoder) {
@@ -93,7 +90,6 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getValue(java.lang.Object)
 	 */
-	@Override
 	public String getValue(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getSamples();
@@ -111,12 +107,10 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getBackground(java.lang.Object)
 	 */
-	@Override
 	public Color getBackground(Object element) {
 		return GmonView.getBackground(element);
 	}
 
-	@Override
 	public Number getNumber(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getSamples();

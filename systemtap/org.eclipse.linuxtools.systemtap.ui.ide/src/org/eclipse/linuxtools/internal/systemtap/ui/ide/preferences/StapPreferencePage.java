@@ -29,7 +29,6 @@ public class StapPreferencePage extends FieldEditorPreferencePage implements IWo
 	}
 	
 	//TODO: Add content to this page
-	@Override
 	public void createFieldEditors() {
 		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
 		LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
@@ -39,7 +38,6 @@ public class StapPreferencePage extends FieldEditorPreferencePage implements IWo
 		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 
-	@Override
 	public void dispose() {
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();

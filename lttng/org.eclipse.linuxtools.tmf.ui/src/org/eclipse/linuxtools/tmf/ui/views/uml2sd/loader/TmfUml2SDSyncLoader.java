@@ -59,7 +59,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressConstants;
 
@@ -269,6 +268,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      *
      * @param signal The experiment selected signal
      */
+    @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void experimentSelected(TmfExperimentSelectedSignal<ITmfEvent> signal) {
 
@@ -428,7 +428,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     public void synchToTime(TmfTimeSynchSignal signal) {
         fLock.lock();
         try {
-            if ((signal.getSource() != this) && (fFrame != null) && (fCheckPoints.size() > 0)) {
+            if ((signal.getSource() != this) && (fFrame != null)) {
+
                 fCurrentTime = signal.getCurrentTime();
                 fIsSelect = true;
                 moveToMessage();
@@ -449,7 +450,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     public void synchToTimeRange(TmfRangeSynchSignal signal) {
         fLock.lock();
         try {
-            if ((signal.getSource() != this) && (fFrame != null) && !fIsSignalSent && (fCheckPoints.size() > 0)) {
+            if ((signal.getSource() != this) && (fFrame != null) && !fIsSignalSent) {
                 TmfTimeRange newTimeRange = signal.getCurrentRange();
                 ITmfTimestamp delta = newTimeRange.getEndTime().getDelta(newTimeRange.getStartTime());
                 fInitialWindow = delta.getValue();
@@ -469,6 +470,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader#setViewer(org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView)
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void setViewer(SDView viewer) {
 
@@ -509,11 +511,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
        super.dispose();
        fLock.lock();
        try {
-           IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-           // During Eclipse shutdown the active workbench window is null
-           if (window != null) {
-               window.getSelectionService().removePostSelectionListener(this);
-           }
+           PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().removePostSelectionListener(this);
            fView.setSDFindProvider(null);
            fView.setSDPagingProvider(null);
            fView.setSDFilterProvider(null);
@@ -654,12 +652,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         try {
             cancelOngoingRequests();
 
-            if (filters == null) {
-                fFilterCriteria =  new ArrayList<FilterCriteria>();
-            } else {
-                List<FilterCriteria> list = (List<FilterCriteria>)filters;
-                fFilterCriteria =  new ArrayList<FilterCriteria>(list);
-            }
+            List<FilterCriteria> list = (List<FilterCriteria>)filters;
+            fFilterCriteria =  new ArrayList<FilterCriteria>(list);
 
             fillCurrentPage(fEvents);
 

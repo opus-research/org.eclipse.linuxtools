@@ -35,8 +35,7 @@ public class ListEditor extends org.eclipse.jface.preference.ListEditor {
 	 * 
 	 * @return Returns the StringBuffer.
 	 */
-	 @Override
-	protected String createList(String[] items) {
+	 protected String createList(String[] items) {
         StringBuffer path = new StringBuffer("");
 
         for (int i = 0; i < items.length; i++) {
@@ -46,8 +45,7 @@ public class ListEditor extends org.eclipse.jface.preference.ListEditor {
         return path.toString();
     }
     
-    @Override
-	protected String getNewInputObject() {
+    protected String getNewInputObject() {
     	InputDialog dialog = new InputDialog(getShell(), dialogTitle, null, initialVal, validator);
     	dialog.open();
     	
@@ -61,14 +59,13 @@ public class ListEditor extends org.eclipse.jface.preference.ListEditor {
 	 * 
 	 * @return Returns the array of strings.
 	 */
-	 @Override
-	protected String[] parseString(String stringList) {
+	 protected String[] parseString(String stringList) {
         StringTokenizer st = new StringTokenizer(stringList, File.pathSeparator + "\n\r");
         ArrayList<Object> v = new ArrayList<Object>();
         while (st.hasMoreElements()) {
             v.add(st.nextElement());
         }
-        return v.toArray(new String[v.size()]);
+        return (String[]) v.toArray(new String[v.size()]);
     }
     
     private String dialogTitle;
