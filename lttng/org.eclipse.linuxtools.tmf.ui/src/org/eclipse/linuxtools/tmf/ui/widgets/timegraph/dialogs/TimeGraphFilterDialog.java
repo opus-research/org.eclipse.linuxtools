@@ -12,7 +12,8 @@
  *      Lubomir Marinov <lubomir.marinov@gmail.com> - Fix for bug 182122 -[Dialogs]
  *          CheckedTreeSelectionDialog#createSelectionButtons(Composite) fails to
  *          align the selection buttons to the right
- *      François Rajotte - Support for multiple columns + selection control
+ *      François Rajotte, École Polytechnique de Montréal - Support for multiple
+ *          columns + selection control
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs;
