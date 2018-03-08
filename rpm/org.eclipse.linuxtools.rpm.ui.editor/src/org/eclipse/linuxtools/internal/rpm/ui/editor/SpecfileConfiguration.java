@@ -242,8 +242,8 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 					// filter using target id and not instance of URLHyperlinkDetector
 					// so that an option to open url with unresolved macros won't show
 					// however, allow URLHyperlinkWithMacroDetector
-					if (hdd.getTargetId().equals(entry.getKey()) && (!(ahld instanceof URLHyperlinkDetector)
-							|| (ahld instanceof URLHyperlinkDetector && ahld instanceof URLHyperlinkWithMacroDetector))) {
+					if (hdd.getTargetId().equals(entry.getKey()) &&
+							(!(ahld instanceof URLHyperlinkDetector) || ahld instanceof URLHyperlinkWithMacroDetector)) {
 						ahld.setContext((IAdaptable)entry.getValue());
 						tempHDList.add(ahld);
 					}
