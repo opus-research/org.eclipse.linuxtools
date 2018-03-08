@@ -23,13 +23,12 @@ import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
 
 /**
- * Base class for the statistics storage.
+ * Base class for the statistics storage. It allow to implement a tree structure
+ * while avoiding the need to run through the tree each time you need to add a
+ * node at a given place.
  *
- * It allow to implement a tree structure while avoiding the need to run through
- * the tree each time you need to add a node at a given place.
- *
- *  @version 1.0
- *  @author Mathieu Denis
+ * @version 1.0
+ * @author Mathieu Denis
  */
 public abstract class AbsTmfStatisticsTree {
 
@@ -45,7 +44,8 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Function to merge many string with more efficacy.
      *
-     * @param strings Strings to merge.
+     * @param strings
+     *            Strings to merge.
      * @return A new string containing all the strings.
      */
     public synchronized static String mergeString(String... strings) {
@@ -53,15 +53,12 @@ public abstract class AbsTmfStatisticsTree {
         for (String s : strings) {
             fBuilder.append(s);
         }
-                return fBuilder.toString();
+        return fBuilder.toString();
     }
 
     /**
-     * Define what child a node can have.
-     *
-     * The management and usage of this map is done by subclass.
-     *
-     * HashSet are always faster than TreeSet.
+     * Define what child a node can have. The management and usage of this map
+     * is done by subclass. HashSet are always faster than TreeSet.
      */
     protected Map<String, Set<String>> fKeys;
     /**
@@ -80,7 +77,8 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Get a node.
      *
-     * @param path Path to the node.
+     * @param path
+     *            Path to the node.
      * @return The node or null.
      */
     public TmfStatisticsTreeNode get(final TmfFixedArray<String> path) {
@@ -90,15 +88,18 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Get the children of a node.
      *
-     * @param path Path to the node.
+     * @param path
+     *            Path to the node.
      * @return Collection containing the children.
      */
     public abstract Collection<TmfStatisticsTreeNode> getChildren(final TmfFixedArray<String> path);
 
     /**
-     * Get every children of a node, even if it doesn't have any registered events, as opposed to getChildren.
+     * Get every children of a node, even if it doesn't have any registered
+     * events, as opposed to getChildren
      *
-     * @param path Path to the node.
+     * @param path
+     *            Path to the node.
      * @return Collection containing all the children.
      */
     public abstract Collection<TmfStatisticsTreeNode> getAllChildren(final TmfFixedArray<String> path);
@@ -115,7 +116,8 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Get or create a node.
      *
-     * @param path Path to the node.
+     * @param path
+     *            Path to the node.
      * @return The node.
      */
     public TmfStatisticsTreeNode getOrCreate(final TmfFixedArray<String> path) {
@@ -131,7 +133,8 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Get the parent of a node.
      *
-     * @param path Path to the node.
+     * @param path
+     *            Path to the node.
      * @return Parent node or null.
      */
     public TmfStatisticsTreeNode getParent(final TmfFixedArray<String> path) {
@@ -149,9 +152,12 @@ public abstract class AbsTmfStatisticsTree {
      *
      * This method must be implemented by subclass.
      *
-     * @param event Current event.
-     * @param extraInfo Extra information to pass along with the event.
-     * @param values Values desired.
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
+     * @param values
+     *            Values desired.
      */
     public abstract void increase(ITmfEvent event, ITmfExtraEventInfo extraInfo, int values);
 
@@ -160,28 +166,21 @@ public abstract class AbsTmfStatisticsTree {
      *
      * This method must be implemented by subclass.
      *
-     * @param event Current event.
-     * @param extraInfo Extra information to pass along with the event.
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
      */
     public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
 
     /**
-     * Register an event within a time range.
-     *
-     * This method must be implemented by subclass.
-     *
-     * @param event Current event.
-     * @param extraInfo Extra information to pass along with the event.
-     * @since 1.1
-     */
-    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo);
-
-    /**
      * Register that a new node was created.
      *
-     * Must make sure the {@link #getChildren(TmfFixedArray)} on the parent node will return the newly created node.
+     * Must make sure the {@link #getChildren(TmfFixedArray)} on the parent node
+     * will return the newly created node.
      *
-     * @param path Path of the new node.
+     * @param path
+     *            Path of the new node.
      */
     protected abstract void registerName(final TmfFixedArray<String> path);
 
@@ -190,27 +189,13 @@ public abstract class AbsTmfStatisticsTree {
      *
      * Work recursively.
      *
-     * @param path Path to the node.
+     * @param path
+     *            Path to the node.
      */
     public void reset(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getAllChildren(path)) {
             reset(node.getPath());
             fNodes.remove(node.getPath());
-        }
-    }
-
-    /**
-     * Reset the time range value of a node.
-     *
-     * Work recursively.
-     *
-     * @param path Path to the node.
-     * @since 1.1
-     */
-    public void resetTimeRangeValue(final TmfFixedArray<String> path) {
-        for (TmfStatisticsTreeNode node : getChildren(path)) {
-            resetTimeRangeValue(node.getPath());
-            node.resetTimeRangeValue();
         }
     }
 }

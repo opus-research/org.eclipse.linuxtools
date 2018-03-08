@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnData.IT
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
+
 @SuppressWarnings("nls")
 public class TmfBaseColumnDataProviderTest extends TestCase {
 
@@ -58,7 +59,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     private final TmfTimestamp fTimestamp2 = new TmfTimestamp(12350, (byte) 2, 5);
     private final TmfTimestamp fTimestamp3 = new TmfTimestamp(12355, (byte) 2, 5);
 
-    private final String       fSource = "Source";
+    private final String fSource = "Source";
 
     private final TmfEventType fType1 = new TmfEventType(fContext, fTypeId1, TmfEventField.makeRoot(fLabels));
     private final TmfEventType fType2 = new TmfEventType(fContext, fTypeId1, TmfEventField.makeRoot(fLabels));

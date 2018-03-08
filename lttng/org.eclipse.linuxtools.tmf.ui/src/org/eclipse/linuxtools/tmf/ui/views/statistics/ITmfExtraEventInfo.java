@@ -24,6 +24,7 @@ public interface ITmfExtraEventInfo {
 
     /**
      * Returns the trace name.
+     *
      * @return the name of the trace.
      */
     public String getTraceName();

@@ -153,8 +153,10 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     /**
      * Get the event types paths.
      *
-     * @param event Event to get the path for.
-     * @param extraInfo Extra information to pass along with the event
+     * @param event
+     *            Event to get the path for.
+     * @param extraInfo
+     *            Extra information to pass along with the event
      * @return Array of FixedArray representing the paths.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -172,8 +174,10 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     /**
      * Get the standard paths for an event.
      *
-     * @param event Event to get the path for.
-     * @param extraInfo Extra information to pass along with the event
+     * @param event
+     *            Event to get the path for.
+     * @param extraInfo
+     *            Extra information to pass along with the event
      * @return Array of FixedArray representing the paths.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -208,21 +212,6 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
         for (TmfFixedArray<String> path : paths) {
             ++(getOrCreate(path).getValue().nbEvents);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree#registerEventInTimeRange(org.eclipse.linuxtools.tmf.core.event.ITmfEvent, org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo)
-     */
-    @Override
-    public void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo) {
-        TmfFixedArray<String>[] paths = getNormalPaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths)
-            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
-
-        paths = getTypePaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths)
-            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
     }
 
     /*

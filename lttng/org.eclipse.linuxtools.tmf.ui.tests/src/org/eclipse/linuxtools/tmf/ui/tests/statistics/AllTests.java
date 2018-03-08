@@ -18,16 +18,16 @@ import junit.framework.TestSuite;
 @SuppressWarnings("nls")
 public class AllTests {
 
-	public static Test suite() {
-		TestSuite suite = new TestSuite(AllTests.class.getName()); //$NON-NLS-1$);
-		//$JUnit-BEGIN$
-		suite.addTestSuite(TmfBaseColumnDataProviderTest.class);
-		suite.addTestSuite(TmfBaseColumnDataTest.class);
-		suite.addTestSuite(TmfBaseStatisticsDataTest.class);
-		suite.addTestSuite(TmfStatisticsTreeNodeTest.class);
-		suite.addTestSuite(TmfStatisticsTreeRootFactoryTest.class);
-		suite.addTestSuite(TmfTreeContentProviderTest.class);
-		//$JUnit-END$
-		return suite;
-	}
+    public static Test suite() {
+        TestSuite suite = new TestSuite(AllTests.class.getName()); //$NON-NLS-1$);
+        // $JUnit-BEGIN$
+        suite.addTestSuite(TmfBaseColumnDataProviderTest.class);
+        suite.addTestSuite(TmfBaseColumnDataTest.class);
+        suite.addTestSuite(TmfBaseStatisticsDataTest.class);
+        suite.addTestSuite(TmfStatisticsTreeNodeTest.class);
+        suite.addTestSuite(TmfStatisticsTreeRootFactoryTest.class);
+        suite.addTestSuite(TmfTreeContentProviderTest.class);
+        // $JUnit-END$
+        return suite;
+    }
 }

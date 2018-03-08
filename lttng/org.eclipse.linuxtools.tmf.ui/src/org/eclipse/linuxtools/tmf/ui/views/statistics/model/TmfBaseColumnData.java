@@ -41,7 +41,8 @@ public class TmfBaseColumnData implements ITmfStatisticsColumnData {
      */
     protected final String fTooltip;
     /**
-     * Adapts a StatisticsTreeNode into the content of it's corresponding cell for that column.
+     * Adapts a StatisticsTreeNode into the content of it's corresponding cell
+     * for that column.
      */
     protected final ColumnLabelProvider fLabelProvider;
     /**
@@ -61,7 +62,8 @@ public class TmfBaseColumnData implements ITmfStatisticsColumnData {
         /**
          * Percentage provider
          *
-         * @param node The statistics tree node
+         * @param node
+         *            The statistics tree node
          * @return The value as a percentage
          */
         public double getPercentage(TmfStatisticsTreeNode node);
@@ -70,13 +72,23 @@ public class TmfBaseColumnData implements ITmfStatisticsColumnData {
     /**
      * Constructor with parameters
      *
-     * @param h Header of the column. The name will be shown at the top of the column.
-     * @param w Width of the column.
-     * @param a Alignment of the text
-     * @param t Text to shown as a tooltip when the cursor comes over the header
-     * @param l Provide all the column element
-     * @param c Used to compare element between them to be able to classify the content of the columns
-     * @param p Provide the percentage of a specific element
+     * @param h
+     *            header of the column. The name will be shown at the top of the
+     *            column.
+     * @param w
+     *            width of the column.
+     * @param a
+     *            alignment of the text
+     * @param t
+     *            text to shown as a tooltip when the cursor comes over the
+     *            header
+     * @param l
+     *            provide all the column element
+     * @param c
+     *            used to compare element between them to be able to classify
+     *            the content of the columns
+     * @param p
+     *            provide the percentage of a specific element
      */
     public TmfBaseColumnData(String h, int w, int a, String t,
             ColumnLabelProvider l, ViewerComparator c,

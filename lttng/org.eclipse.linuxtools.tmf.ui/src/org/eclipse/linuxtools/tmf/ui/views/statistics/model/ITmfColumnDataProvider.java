@@ -15,9 +15,9 @@ package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
 import java.util.List;
 
 /**
- * Basic methods that must be implemented in a column data provider.
- * The <code>TmfStatisticsView</code> uses classes implementing this
- * interface to define the columns in the statistics tree viewer.
+ * Basic methods that must be implemented in a column data provider. The
+ * <code>TmfStatisticsView</code> uses classes implementing this interface to
+ * define the columns in the statistics tree viewer.
  *
  * @version 1.0
  * @author Mathieu Denis
@@ -25,6 +25,7 @@ import java.util.List;
 public interface ITmfColumnDataProvider {
     /**
      * Return a list of the column created for the view
+     *
      * @return columns list
      */
     public List<TmfBaseColumnData> getColumnData();

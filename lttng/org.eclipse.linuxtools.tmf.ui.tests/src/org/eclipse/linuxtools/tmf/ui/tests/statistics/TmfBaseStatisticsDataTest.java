@@ -37,7 +37,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
-    private       String   fTestName = null;
+    private       String fTestName = null;
 
     private final String fContext = "UnitTest";
     private final String fTypeId1 = "Some type1";
@@ -77,7 +77,8 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // ------------------------------------------------------------------------
 
     /**
-     * @param name of the test
+     * @param name
+     *            of the test
      */
     public TmfBaseStatisticsDataTest(final String name) {
         super(name);
@@ -135,8 +136,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
             temp = iterChild.next();
             if (keyExpected.contains(temp.getKey())) {
                 keyExpected.removeElement(temp.getKey());
-            }
-            else {
+            } else {
                 fail();
             }
         }
@@ -166,7 +166,10 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         Vector<String> keyExpected = new Vector<String>();
         keyExpected.add(fEvent1.getType().toString());
         keyExpected.add(fEvent3.getType().toString());
-        // It should return the eventType even though the number of events equals 0
+        /*
+         * It should return the eventType even though the number of events
+         * equals 0
+         */
         fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().toString())).reset();
         // Getting children of a category
         childrenTreeNode = fStatsData.get(treeNode.getPath()).getAllChildren();
@@ -178,8 +181,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
             temp = iterChild.next();
             if (keyExpected.contains(temp.getKey())) {
                 keyExpected.removeElement(temp.getKey());
-            }
-            else {
+            } else {
                 fail();
             }
         }
@@ -201,8 +203,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         for (TmfStatisticsTreeNode child : childrenTreeNode) {
             if (child.getKey().compareTo(fEvent1.getType().toString()) == 0) {
                 assertEquals("registerEvent", 2, child.getValue().nbEvents);
-            }
-            else if (child.getKey().compareTo(fEvent3.getType().toString()) == 0) {
+            } else if (child.getKey().compareTo(fEvent3.getType().toString()) == 0) {
                 assertEquals("registerEvent", 1, child.getValue().nbEvents);
             }
         }
