@@ -271,6 +271,12 @@ public class CtfTmfTrace extends TmfTrace
         return event;
     }
 
+    @Override
+    protected void buildStateSystem() throws TmfTraceException {
+        /* Nothing special is done for basic CTF traces */
+        return;
+    }
+
     /**
      * gets the CTFtrace that this is wrapping
      *

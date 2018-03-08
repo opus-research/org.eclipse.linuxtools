@@ -262,21 +262,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     /**
      * Build the state system(s) associated with this trace type.
      *
-     * Suppressing the warning, because the 'throws' will usually happen in
-     * sub-classes.
-     *
      * @throws TmfTraceException
      *             If there is a problem during the build
      * @since 2.0
      */
-    @SuppressWarnings("unused")
-    protected void buildStateSystem() throws TmfTraceException {
-        /*
-         * Nothing is done in the base implementation, please specify
-         * how/if to register a new state system in derived classes.
-         */
-        return;
-    }
+    protected abstract void buildStateSystem() throws TmfTraceException;
 
     /**
      * Clears the trace
