@@ -55,8 +55,8 @@ public class SelectTraceExecutableDialog extends SelectionStatusDialog {
     private final IStatus PATH_ERROR_STATUS = new Status(IStatus.ERROR, GdbTraceUIPlugin.PLUGIN_ID, Messages.SelectTraceExecutableDialog_Message);
     private final IStatus BINARY_ERROR_STATUS = new Status(IStatus.ERROR, GdbTraceUIPlugin.PLUGIN_ID, Messages.SelectTraceExecutableDialog_BinaryError);
 
-    Text fExecutableNameEntry;
-    IPath fExecutablePath;
+    private Text fExecutableNameEntry;
+    private IPath fExecutablePath;
 
     /**
      * Creates a SelectTraceExecutableDialog
@@ -137,9 +137,6 @@ public class SelectTraceExecutableDialog extends SelectionStatusDialog {
         Button browseExecutableButton = new Button(composite, SWT.NONE);
         browseExecutableButton.setText(Messages.SelectTraceExecutableDialog_Browse);
         browseExecutableButton.addSelectionListener(new SelectionAdapter() {
-            /**
-             * @param event the selected event, unused
-             */
             @Override
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dlg = new FileDialog(shell);
@@ -158,7 +155,7 @@ public class SelectTraceExecutableDialog extends SelectionStatusDialog {
     /**
      * Checks whether the executable location is valid.
      */
-    boolean validateExecutableName() {
+    private boolean validateExecutableName() {
         if (fExecutablePath != null) {
             File file = new File(fExecutablePath.toOSString());
             return file.exists() && file.isFile();
@@ -177,9 +174,7 @@ public class SelectTraceExecutableDialog extends SelectionStatusDialog {
                 return true;
             }
         } catch (CoreException e) {
-            // catch block
         } catch (IOException e) {
-            // catch block
         }
         return false;
     }
