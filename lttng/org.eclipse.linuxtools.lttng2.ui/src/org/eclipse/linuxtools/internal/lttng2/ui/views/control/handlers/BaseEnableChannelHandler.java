@@ -75,10 +75,6 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
      */
     abstract public TraceDomainComponent getDomain(CommandParameter param);
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         fLock.lock();

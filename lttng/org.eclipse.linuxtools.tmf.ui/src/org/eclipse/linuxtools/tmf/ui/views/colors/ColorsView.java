@@ -142,9 +142,6 @@ public class ColorsView extends TmfView {
         super("Colors"); //$NON-NLS-1$
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(Composite)
-     */
     @Override
     public void createPartControl(Composite parent) {
         fShell = parent.getShell();
@@ -205,9 +202,6 @@ public class ColorsView extends TmfView {
         fillToolBar();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         fScrolledComposite.setFocus();

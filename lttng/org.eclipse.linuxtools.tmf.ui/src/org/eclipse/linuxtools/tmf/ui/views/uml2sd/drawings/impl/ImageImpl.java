@@ -72,19 +72,11 @@ public class ImageImpl implements IImage {
         return createResourceImage(name);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage#getImage()
-     */
     @Override
     public Object getImage() {
         return fImage;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage#dispose()
-     */
     @Override
     public void dispose() {
         if (fImage != null) {

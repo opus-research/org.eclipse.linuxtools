@@ -92,12 +92,6 @@ public class TmfStatisticsView extends TmfView {
         this(TMF_STATISTICS_VIEW);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     public void createPartControl(Composite parent) {
         fStatsViewers.setParent(parent);
@@ -109,11 +103,6 @@ public class TmfStatisticsView extends TmfView {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#dispose()
-     */
     @Override
     public void dispose() {
         super.dispose();
@@ -210,11 +199,6 @@ public class TmfStatisticsView extends TmfView {
         fStatsViewers.layout();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         fStatsViewers.setFocus();

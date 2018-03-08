@@ -48,6 +48,7 @@ public class NewConnectionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
+
     /**
      * The trace control system type defined for LTTng version 2.0 and later.
      */
@@ -56,15 +57,12 @@ public class NewConnectionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * The parent trace control component the new node will be added to.
      */
     private ITraceControlComponent fRoot = null;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         assert (fRoot != null);
@@ -165,10 +163,6 @@ public class NewConnectionHandler extends BaseControlViewHandler {
         return result.toArray(new IHost[result.size()]);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
 

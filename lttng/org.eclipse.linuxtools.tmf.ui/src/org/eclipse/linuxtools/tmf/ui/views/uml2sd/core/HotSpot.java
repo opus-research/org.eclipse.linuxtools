@@ -72,10 +72,6 @@ public class HotSpot extends GraphNode {
         fImage = img;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getX()
-     */
     @Override
     public int getX() {
         if (fExecOcc != null) {
@@ -84,10 +80,6 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getY()
-     */
     @Override
     public int getY() {
         if (fExecOcc != null){
@@ -96,10 +88,6 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getWidth()
-     */
     @Override
     public int getWidth() {
         if (fExecOcc != null) {
@@ -108,10 +96,6 @@ public class HotSpot extends GraphNode {
         return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getHeight()
-     */
     @Override
     public int getHeight() {
         if (fExecOcc != null) {
@@ -157,10 +141,6 @@ public class HotSpot extends GraphNode {
         fOccurrence = occ;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
-     */
     @Override
     public void draw(IGC context) {
 
@@ -178,28 +158,16 @@ public class HotSpot extends GraphNode {
         context.drawImage(fImage, getX(), getY(), getWidth(), getHeight());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#getArrayId()
-     */
     @Override
     public String getArrayId() {
         return GLYPH;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#isVisible(int, int, int, int)
-     */
     @Override
     public boolean isVisible(int x, int y, int width, int height) {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode#contains(int, int)
-     */
     @Override
     public boolean contains(int xValue, int yValue) {
         int x = getX();

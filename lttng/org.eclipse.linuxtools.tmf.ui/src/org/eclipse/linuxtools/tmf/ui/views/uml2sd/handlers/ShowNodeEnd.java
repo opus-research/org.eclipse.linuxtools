@@ -67,10 +67,7 @@ public class ShowNodeEnd extends Action {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.action.Action#run()
-     */
+
     @Override
     @SuppressWarnings("rawtypes")
     public void run() {

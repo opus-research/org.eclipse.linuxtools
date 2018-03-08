@@ -29,6 +29,7 @@ public class TmfSyncMessage extends SyncMessage implements ITmfSyncSequenceDiagr
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * A synchronous sequence diagram event implementation
      */
@@ -37,6 +38,7 @@ public class TmfSyncMessage extends SyncMessage implements ITmfSyncSequenceDiagr
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
+
     /**
      * Standard constructor
      *
@@ -53,19 +55,12 @@ public class TmfSyncMessage extends SyncMessage implements ITmfSyncSequenceDiagr
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getSender()
-     */
+
     @Override
     public String getSender() {
         return fSdEvent.getSender();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getReceiver()
-     */
     @Override
     public String getReceiver() {
         return fSdEvent.getReceiver();

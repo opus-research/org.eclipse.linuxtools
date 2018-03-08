@@ -104,11 +104,6 @@ public class StreamInputPacketIndexEntry {
         return (ts >= timestampBegin) && (ts <= timestampEnd);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return "StreamInputPacketIndexEntry [offsetBytes=" + offsetBytes //$NON-NLS-1$

@@ -116,10 +116,6 @@ public class TraceChannelPropertySource extends BasePropertySource {
     // Operations
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyDescriptors()
-     */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
         return new IPropertyDescriptor[] {
@@ -133,10 +129,6 @@ public class TraceChannelPropertySource extends BasePropertySource {
                 new ReadOnlyTextPropertyDescriptor(TRACE_CHANNEL_OUTPUT_TYPE_PROPERTY_ID, TRACE_CHANNEL_OUTPUT_TYPEPROPERTY_NAME)};
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.property.BasePropertySource#getPropertyValue(java.lang.Object)
-     */
     @Override
     public Object getPropertyValue(Object id) {
         if(TRACE_CHANNEL_NAME_PROPERTY_ID.equals(id)) {

@@ -33,6 +33,7 @@ public class SortSyncMessageComparator implements Comparator<GraphNode>, Seriali
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
+
     /**
      * Serial version UID
      */
@@ -41,10 +42,7 @@ public class SortSyncMessageComparator implements Comparator<GraphNode>, Seriali
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-     */
+
     @Override
     public int compare(GraphNode arg0, GraphNode arg1) {
         if (arg0 instanceof SyncMessage && arg1 instanceof SyncMessage) {

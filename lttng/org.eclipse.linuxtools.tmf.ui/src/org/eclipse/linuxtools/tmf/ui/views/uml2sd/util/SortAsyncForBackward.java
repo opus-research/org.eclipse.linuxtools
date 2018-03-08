@@ -44,10 +44,6 @@ public class SortAsyncForBackward implements Comparator<GraphNode>, Serializable
     // Methods
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-     */
     @Override
     public int compare(GraphNode arg0, GraphNode arg1) {
         if (arg0 instanceof AsyncMessage && arg1 instanceof AsyncMessage) {

@@ -36,6 +36,7 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     private final IHost fHost;
 
     // ------------------------------------------------------------------------
@@ -55,9 +56,7 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#getShellService(org.eclipse.rse.core.model.IHost)
-     */
+
     @Override
     public IShellService getShellService() {
         ISubSystem ss = getShellServiceSubSystem();
@@ -67,9 +66,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#getTerminalService()
-     */
     @Override
     public ITerminalService getTerminalService() {
         ISubSystem ss = getTerminalServiceSubSystem();
@@ -79,9 +75,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#getShellServiceSubSystem()
-     */
     @Override
     public ISubSystem getShellServiceSubSystem() {
         if (fHost == null) {
@@ -101,9 +94,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#getTerminalServiceSubSystem()
-     */
     @Override
     public ISubSystem getTerminalServiceSubSystem() {
         if (fHost == null) {
@@ -123,10 +113,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy#getFileServiceSubSystem()
-     */
     @Override
     public IFileServiceSubSystem getFileServiceSubSystem() {
         if (fHost == null) {
@@ -141,9 +127,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#connect(org.eclipse.rse.core.model.IRSECallback)
-     */
     @Override
     public void connect(IRSECallback callback) throws ExecutionException {
         ISubSystem shellSubSystem = getShellServiceSubSystem();
@@ -163,9 +146,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#disconnect()
-     */
     @Override
     public void disconnect() throws ExecutionException {
             ISubSystem shellSubSystem = getShellServiceSubSystem();
@@ -178,9 +158,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
             }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#createCommandShell()
-     */
     @Override
     public ICommandShell createCommandShell() throws ExecutionException {
         ICommandShell shell = new CommandShell(this);
@@ -188,9 +165,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         return shell;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#addCommunicationListener(org.eclipse.rse.core.subsystems.ICommunicationsListener)
-     */
     @Override
     public void addCommunicationListener(ICommunicationsListener listener) {
         IConnectorService[] css = fHost.getConnectorServices();
@@ -199,9 +173,6 @@ public class RemoteSystemProxy implements IRemoteSystemProxy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.util.IRemoteSystemProxy#removeCommunicationListener(org.eclipse.rse.core.subsystems.ICommunicationsListener)
-     */
     @Override
     public void removeCommunicationListener(ICommunicationsListener listener) {
         IConnectorService[] css = fHost.getConnectorServices();

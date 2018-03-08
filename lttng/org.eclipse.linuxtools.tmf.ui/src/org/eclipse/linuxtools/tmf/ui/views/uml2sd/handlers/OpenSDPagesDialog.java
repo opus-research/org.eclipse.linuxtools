@@ -31,6 +31,7 @@ public class OpenSDPagesDialog extends Action {
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
+
     /**
      * The action ID.
      */
@@ -39,6 +40,7 @@ public class OpenSDPagesDialog extends Action {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * The sequence diagram view reference
      */
@@ -51,6 +53,7 @@ public class OpenSDPagesDialog extends Action {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
+
     /**
      * Constructor
      *
@@ -70,10 +73,7 @@ public class OpenSDPagesDialog extends Action {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.action.Action#run()
-     */
+
     @Override
     public void run() {
         if (fView == null) {

@@ -286,10 +286,6 @@ public class HistogramDataModel implements IHistogramDataModel {
     // Operations
     // ------------------------------------------------------------------------
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.ui.views.distribution.model.IBaseDistributionModel#complete()
-     */
     @Override
     public void complete() {
         fireModelUpdateNotification();

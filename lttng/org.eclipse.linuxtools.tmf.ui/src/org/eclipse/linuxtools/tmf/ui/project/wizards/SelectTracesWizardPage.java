@@ -75,10 +75,7 @@ public class SelectTracesWizardPage extends WizardPage {
     // ------------------------------------------------------------------------
     // Dialog
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
-     */
+
     @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);

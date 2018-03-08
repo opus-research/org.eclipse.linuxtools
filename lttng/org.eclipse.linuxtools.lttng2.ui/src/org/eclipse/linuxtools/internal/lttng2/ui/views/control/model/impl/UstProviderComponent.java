@@ -93,10 +93,6 @@ public class UstProviderComponent extends TraceControlComponent {
         fProviderInfo.setPid(pid);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
-     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -105,10 +101,4 @@ public class UstProviderComponent extends TraceControlComponent {
         return null;
     }
 
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
-
 }
-
-

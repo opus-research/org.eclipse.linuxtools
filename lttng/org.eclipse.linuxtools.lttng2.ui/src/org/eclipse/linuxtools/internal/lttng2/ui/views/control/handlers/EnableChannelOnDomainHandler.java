@@ -41,10 +41,7 @@ public class EnableChannelOnDomainHandler extends BaseEnableChannelHandler {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseCreateChannelHandler#enableChannel(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter, java.util.List, org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IChannelInfo, boolean, org.eclipse.core.runtime.IProgressMonitor)
-     */
+
     @Override
     public void enableChannel(CommandParameter param, List<String> channelNames, IChannelInfo info, boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
         if (param instanceof DomainCommandParameter) {
@@ -52,10 +49,6 @@ public class EnableChannelOnDomainHandler extends BaseEnableChannelHandler {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.BaseCreateChannelHandler#getDomain(org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers.CommandParameter)
-     */
     @Override
     public TraceDomainComponent getDomain(CommandParameter param) {
         if (param instanceof DomainCommandParameter) {
@@ -64,10 +57,6 @@ public class EnableChannelOnDomainHandler extends BaseEnableChannelHandler {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
 
