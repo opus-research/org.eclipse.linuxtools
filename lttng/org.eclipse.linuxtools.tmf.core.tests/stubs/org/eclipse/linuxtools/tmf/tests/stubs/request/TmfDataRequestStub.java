@@ -26,7 +26,7 @@ public class TmfDataRequestStub extends TmfDataRequest {
      * @param dataType the request data type
      */
     public TmfDataRequestStub(final Class<? extends ITmfEvent> dataType) {
-        super(dataType, 0, ALL_DATA, ExecutionType.FOREGROUND);
+        super(dataType);
     }
 
     /**
@@ -34,7 +34,7 @@ public class TmfDataRequestStub extends TmfDataRequest {
      * @param index the initial event index
      */
     public TmfDataRequestStub(final Class<? extends ITmfEvent> dataType, final int index) {
-        super(dataType, index, ALL_DATA, ExecutionType.FOREGROUND);
+        super(dataType, index);
     }
 
     /**
@@ -42,9 +42,18 @@ public class TmfDataRequestStub extends TmfDataRequest {
      * @param index the initial event index
      * @param nbRequested the number of events requested
      */
-    public TmfDataRequestStub(final Class<? extends ITmfEvent> dataType,
-            final int index, final int nbRequested) {
-        super(dataType, index, nbRequested, ExecutionType.FOREGROUND);
+    public TmfDataRequestStub(final Class<? extends ITmfEvent> dataType, final int index, final int nbRequested) {
+        super(dataType, index, nbRequested);
+    }
+
+    /**
+     * @param dataType the request data type
+     * @param index the initial event index
+     * @param nbRequested the number of events requested
+     * @param blockSize the event block size
+     */
+    public TmfDataRequestStub(final Class<? extends ITmfEvent> dataType, final int index, final int nbRequested, final int blockSize) {
+        super(dataType, index, nbRequested, blockSize);
     }
 
     @Override
