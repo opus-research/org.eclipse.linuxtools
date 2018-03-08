@@ -35,7 +35,9 @@ public enum CtfTmfTestTrace {
     /** Trace synchronization: source trace */
     SYNC_SRC,
     /** Trace synchronization: destination trace */
-    SYNC_DEST;
+    SYNC_DEST,
+    /** UST trace with lttng-ust-cyg-profile events (aka -finstrument-functions) */
+    FINSTRUMENT;
 
 
     private final String fPath;

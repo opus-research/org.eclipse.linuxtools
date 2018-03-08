@@ -1,6 +1,8 @@
 *.bz2
+*.gz
 *.tar
 /ctf-testsuite
+/glxgears-finstrument-functions
 /kernel
 /kernel_vm
 /synctraces
