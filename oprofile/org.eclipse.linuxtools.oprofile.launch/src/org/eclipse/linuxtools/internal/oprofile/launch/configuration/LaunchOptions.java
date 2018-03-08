@@ -7,8 +7,8 @@
  *
  * Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation
- *    Kent Sebastian <ksebasti@redhat.com> -
- *******************************************************************************/
+ *    Kent Sebastian <ksebasti@redhat.com> - 
+ *******************************************************************************/ 
 
 package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
@@ -36,10 +36,10 @@ public class LaunchOptions {
 
 	public LaunchOptions() {
 		options = new OprofileDaemonOptions();
-		oprofileComboText = OprofileProject.OPERF_BINARY;
+		oprofileComboText = OprofileProject.OPCONTROL_BINARY;
 		executionsNumber = 1;
 	}
-
+	
 	/**
 	 * Determines whether the global oprofile options represented by this
 	 * object are valid
@@ -58,7 +58,7 @@ public class LaunchOptions {
 			IFileStore fileStore = proxy.getResource(options.getKernelImageFile());
 			return (fileStore.fetchInfo().exists() && !fileStore.fetchInfo().isDirectory());
 		}
-
+		
 		return true;
 	}
 
@@ -80,7 +80,7 @@ public class LaunchOptions {
 		config.setAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, options.getSeparateProfilesMask());
 		config.setAttribute(OprofileLaunchPlugin.ATTR_EXECUTIONS_NUMBER, getExecutionsNumber());
 		try {
-			if (config.getType().getIdentifier().equals("org.eclipse.linuxtools.oprofile.launch.oprofile.manual")) { //$NON-NLS-1$
+			if (config.getType().getIdentifier().equals("org.eclipse.linuxtools.oprofile.launch.oprofile.manual")) {
 				config.setAttribute(OprofileLaunchPlugin.ATTR_OPROFILE_COMBO_TEXT, OprofileProject.OPCONTROL_BINARY);
 				OprofileProject.setProfilingBinary(OprofileProject.OPCONTROL_BINARY);
 			} else {
@@ -91,7 +91,7 @@ public class LaunchOptions {
 			e.printStackTrace();
 		}
 	}
-
+	
 	/**
 	 * Loads this object with the global options in the given launch
 	 * configuration
@@ -102,11 +102,11 @@ public class LaunchOptions {
 			options.setKernelImageFile(config.getAttribute(OprofileLaunchPlugin.ATTR_KERNEL_IMAGE_FILE, "")); //$NON-NLS-1$
 			options.setSeparateProfilesMask(config.getAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, OprofileDaemonOptions.SEPARATE_NONE));
 			setExecutionsNumber(config.getAttribute(OprofileLaunchPlugin.ATTR_EXECUTIONS_NUMBER, 1));
-			setOprofileComboText(config.getAttribute(OprofileLaunchPlugin.ATTR_OPROFILE_COMBO_TEXT, OprofileProject.OPERF_BINARY));
+			setOprofileComboText(config.getAttribute(OprofileLaunchPlugin.ATTR_OPROFILE_COMBO_TEXT, OprofileProject.OPCONTROL_BINARY));
 		} catch (CoreException e) {
 		}
 	}
-
+	
 	/**
 	 * Get the daemon launch options
 	 * @return the OprofileDaemonOption
@@ -114,7 +114,7 @@ public class LaunchOptions {
 	public OprofileDaemonOptions getOprofileDaemonOptions() {
 		return options;
 	}
-
+	
 	/**
 	 * Method getKernelImageFile.
 	 * @return the kernel image file
@@ -122,7 +122,7 @@ public class LaunchOptions {
 	public String getKernelImageFile() {
 		return options.getKernelImageFile();
 	}
-
+	
 	/**
 	 * Sets the kernel image file
 	 * @param image	the kernel image file
@@ -146,7 +146,7 @@ public class LaunchOptions {
 	public void setSeparateSamples(int how) {
 		options.setSeparateProfilesMask(how);
 	}
-
+	
 	/**
 	 * Returns the path of the binary to profile.
 	 * @return the full path to the binary being profile

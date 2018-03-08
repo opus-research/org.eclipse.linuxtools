@@ -112,10 +112,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     private Text fSessionPathText = null;
     /**
-     * The button widget to select a snapshot session
-     */
-    private Button fSnapshotButton = null;
-    /**
      * The Group for stream configuration.
      */
     private Group fMainStreamingGroup = null;
@@ -188,10 +184,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     private String fSessionPath = null;
     /**
-     * The  session path string.
-     */
-    private boolean fIsSnapshot = false;
-    /**
      * Flag whether default location (path) shall be used or not
      */
     private boolean fIsDefaultPath = true;
@@ -228,7 +220,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     public CreateSessionDialog(Shell shell) {
         super(shell);
-        setShellStyle(SWT.RESIZE | getShellStyle());
+        setShellStyle(SWT.RESIZE);
     }
 
     // ------------------------------------------------------------------------
@@ -256,7 +248,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
        fStreamingComposite = null;
        fSessionName = null;
        fSessionPath = null;
-       fIsSnapshot = false;
        fIsDefaultPath = true;
        fIsStreamedTrace = false;
        fNetworkUrl = null;
@@ -280,10 +271,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     public String getDataUrl() {
         return fDataUrl;
     }
-    @Override
-    public boolean isSnapshot() {
-        return fIsSnapshot;
-    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -329,15 +317,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         fSessionPathLabel.setText(Messages.TraceControl_CreateSessionPathLabel);
         fSessionPathText = new Text(sessionGroup, SWT.NONE);
         fSessionPathText.setToolTipText(Messages.TraceControl_CreateSessionPathTooltip);
-
-        if (fParent.isSnapshotSupported()) {
-            fSnapshotButton = new Button(sessionGroup, SWT.CHECK);
-            fSnapshotButton.setText(Messages.TraceControl_CreateSessionSnapshotLabel);
-            fSnapshotButton.setToolTipText(Messages.TraceControl_CreateSessionSnapshotTooltip);
-            GridData data = new GridData(GridData.FILL_HORIZONTAL);
-            data.horizontalSpan = 4;
-            fSnapshotButton.setData(data);
-        }
 
         // layout widgets
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -655,10 +634,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                 }
             }
             fIsDefaultPath = false;
-        }
-
-        if(fParent.isSnapshotSupported()) {
-            fIsSnapshot = fSnapshotButton.getSelection();
         }
 
         fNetworkUrl = null;

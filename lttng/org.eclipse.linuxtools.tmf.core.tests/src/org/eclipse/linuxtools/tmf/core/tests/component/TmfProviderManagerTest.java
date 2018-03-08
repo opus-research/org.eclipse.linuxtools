@@ -17,11 +17,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+
 import org.junit.Test;
 
 /**
@@ -33,13 +34,13 @@ public class TmfProviderManagerTest {
     // Dummy Providers
     // ------------------------------------------------------------------------
 
-    private class TestProvider1 extends TmfEventProvider {
+    private class TestProvider1 extends TmfDataProvider {
         public TestProvider1(Class<ITmfEvent> type) {
             super("TestProvider1", type);
         }
 
         @Override
-        public ITmfContext armRequest(ITmfEventRequest request) {
+        public ITmfContext armRequest(ITmfDataRequest request) {
             return null;
         }
 
@@ -49,18 +50,18 @@ public class TmfProviderManagerTest {
         }
 
         @Override
-        public boolean isCompleted(ITmfEventRequest request, ITmfEvent data, int nbRead) {
+        public boolean isCompleted(ITmfDataRequest request, ITmfEvent data, int nbRead) {
             return false;
         }
     }
 
-    private class TestProvider2 extends TmfEventProvider {
+    private class TestProvider2 extends TmfDataProvider {
         public TestProvider2(Class<ITmfEvent> type) {
             super("TestProvider2", type);
         }
 
         @Override
-        public ITmfContext armRequest(ITmfEventRequest request) {
+        public ITmfContext armRequest(ITmfDataRequest request) {
             return null;
         }
 
@@ -70,7 +71,7 @@ public class TmfProviderManagerTest {
         }
 
         @Override
-        public boolean isCompleted(ITmfEventRequest request, ITmfEvent data, int nbRead) {
+        public boolean isCompleted(ITmfDataRequest request, ITmfEvent data, int nbRead) {
             return false;
         }
     }
@@ -78,13 +79,13 @@ public class TmfProviderManagerTest {
     private class TmfEvent3 extends TmfEvent {
     }
 
-    private class TestProvider3 extends TmfEventProvider {
+    private class TestProvider3 extends TmfDataProvider {
         public TestProvider3(Class<TmfEvent3> type) {
             super("TestProvider3", type);
         }
 
         @Override
-        public ITmfContext armRequest(ITmfEventRequest request) {
+        public ITmfContext armRequest(ITmfDataRequest request) {
             return null;
         }
 
@@ -94,7 +95,7 @@ public class TmfProviderManagerTest {
         }
 
         @Override
-        public boolean isCompleted(ITmfEventRequest request, ITmfEvent data, int nbRead) {
+        public boolean isCompleted(ITmfDataRequest request, ITmfEvent data, int nbRead) {
             return false;
         }
     }
@@ -108,7 +109,7 @@ public class TmfProviderManagerTest {
      */
     @Test
     public void testRegister_0() {
-        TmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
+        TmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
         assertEquals("getProviders", 0, providers.length);
 
         providers = TmfProviderManager.getProviders(ITmfEvent.class, TestProvider1.class);
@@ -124,7 +125,7 @@ public class TmfProviderManagerTest {
         // Register a single provider
         TestProvider1 testProvider1 = new TestProvider1(ITmfEvent.class);
 
-        TmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
+        TmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
         assertEquals("getProviders", 1, providers.length);
         assertEquals("getProviders", testProvider1, providers[0]);
 
@@ -152,7 +153,7 @@ public class TmfProviderManagerTest {
         TestProvider1 testProvider1 = new TestProvider1(ITmfEvent.class);
         TestProvider2 testProvider2 = new TestProvider2(ITmfEvent.class);
 
-        TmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
+        TmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
         assertEquals("getProviders", 2, providers.length);
         assertTrue(providers.length == 2);
         if (providers[0] == testProvider1) {
@@ -209,7 +210,7 @@ public class TmfProviderManagerTest {
         TestProvider2 testProvider2 = new TestProvider2(ITmfEvent.class);
         TestProvider3 testProvider3 = new TestProvider3(TmfEvent3.class);
 
-        TmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
+        TmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class);
         assertEquals("getProviders", 2, providers.length);
         if (providers[0] == testProvider1) {
             assertEquals("getProviders", testProvider2, providers[1]);
@@ -219,7 +220,7 @@ public class TmfProviderManagerTest {
             assertEquals("getProviders", testProvider1, providers[1]);
         }
 
-        TmfEventProvider[] providers3 = TmfProviderManager.getProviders(TmfEvent3.class);
+        TmfDataProvider[] providers3 = TmfProviderManager.getProviders(TmfEvent3.class);
         assertEquals("getProviders", 1, providers3.length);
         assertEquals("getProviders", testProvider3, providers3[0]);
 
@@ -307,7 +308,7 @@ public class TmfProviderManagerTest {
         TestProvider2 testProvider2 = new TestProvider2(ITmfEvent.class);
         TestProvider3 testProvider3 = new TestProvider3(TmfEvent3.class);
 
-        TmfEventProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, null);
+        TmfDataProvider[] providers = TmfProviderManager.getProviders(ITmfEvent.class, null);
         assertEquals("getProviders", 2, providers.length);
         if (providers[0] == testProvider1) {
             assertEquals("getProviders", testProvider2, providers[1]);

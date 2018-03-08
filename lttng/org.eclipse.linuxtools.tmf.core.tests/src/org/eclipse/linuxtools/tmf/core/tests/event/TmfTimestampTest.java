@@ -96,9 +96,13 @@ public class TmfTimestampTest {
         assertEquals("getPrecision", 5, copy.getPrecision());
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void testCopyNullConstructor() {
-        new TmfTimestamp((TmfTimestamp) null);
+        try {
+            new TmfTimestamp(null);
+            fail("TmfTimestamp: null argument");
+        } catch (final IllegalArgumentException e) {
+        }
     }
 
     @Test

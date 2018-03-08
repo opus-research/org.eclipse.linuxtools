@@ -77,11 +77,6 @@ public interface ICreateSessionDialog {
      */
     String getDataUrl();
 
-    /**
-     * @return <code>true</code> if is a snapshot session else <code>false</code>
-     */
-    boolean isSnapshot();
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------

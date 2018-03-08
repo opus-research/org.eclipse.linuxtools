@@ -30,9 +30,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * @since 2.1
- */
 public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listener {
 	public SelectGraphAndSeriesWizardPage() {
 		super("selectGraphAndSeries"); //$NON-NLS-1$
@@ -96,14 +93,20 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			@Override
 			public void modifyText(ModifyEvent e) {
 				getWizard().getContainer().updateButtons();
-				checkErrors();
+				if(txtTitle.getText().length() == 0) {
+					setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
+					setMessage(null);
+				} else {
+					setErrorMessage(null);
+					setMessage(""); //$NON-NLS-1$
+				}
 			}
 		});
 
 		//Add the data series widgets
 		String[] labels = model.getSeries();
 
-		cboYItems = new Combo[!edit ? labels.length : Math.max(labels.length, model.getYSeries().length)];
+		cboYItems = new Combo[labels.length];
 		lblYItems = new Label[cboYItems.length];
 
 		Label lblXItem = new Label(cmpGraphOptsSeries, SWT.NONE);
@@ -135,38 +138,17 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 				cboYItems[j].add(labels[i]);
 		}
 
-		int selected;
+		cboXItem.select(edit ? model.getXSeries() + 1 : 0);
 		boolean cvisible = edit;
-		if (!edit) {
-			cboXItem.select(0);
-		} else {
-			selected = model.getXSeries();
-			if (selected < labels.length){
-				cboXItem.select(selected + 1);
-			} else {
-				cboXItem.setText(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted")); //$NON-NLS-1$
-			}
-			selected = model.getYSeries()[0];
-			if (selected < labels.length) {
-				cboYItems[0].select(selected);
-			} else {
-				cboYItems[0].setText(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted")); //$NON-NLS-1$
-			}
+		if (edit) {
+			cboYItems[0].select(model.getYSeries()[0]);
 		}
 		for(int i=1; i<cboYItems.length; i++) {
-			if (!edit || model.getYSeries().length <= i) {
-				cboYItems[i].select(selected = 0);
-			} else {
-				selected = model.getYSeries()[i];
-				if (selected < labels.length){
-					cboYItems[i].select(selected + 1);
-				} else {
-					cboYItems[i].setText(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted")); //$NON-NLS-1$
-				}
-			}
+			int index = edit && model.getYSeries().length > i ? model.getYSeries()[i] + 1 : 0;
+			cboYItems[i].select(index);
 			cboYItems[i].setVisible(cvisible);
 			lblYItems[i].setVisible(cvisible);
-			cvisible = (selected > 0);
+			cvisible = (index > 0);
 		}
 
 		//Select one of the graph types by default, rather than blank choice
@@ -179,7 +161,6 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		}
 
 		setControl(comp);
-		checkErrors();
 	}
 
 	@Override
@@ -225,15 +206,14 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			model.setXSeries(cboXItem.getSelectionIndex()-1);
 
 			int i, count;
-			for(i=1, count=1; i<cboYItems.length && 0 != cboYItems[i].getSelectionIndex(); i++) {
-				count++;
-			}
+			for(i=1, count=1; i<cboYItems.length; i++)
+				if(0 != cboYItems[i].getSelectionIndex())
+					count++;
 
 			int[] ySeries = new int[count];
 			ySeries[0] = cboYItems[0].getSelectionIndex();
-			for(i=1; i<count; i++) {
+			for(i=1; i<count; i++)
 				ySeries[i] = cboYItems[i].getSelectionIndex()-1;
-			}
 			model.setYSeries(ySeries);
 			return true;
 		}
@@ -246,21 +226,12 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	 * @return True if there is no conflict, false otherwise.
 	 */
 	private boolean isSeriesUnique() {
-		if("".equals(txtTitle.getText().trim())) { //$NON-NLS-1$
+		if("".equals(txtTitle.getText().trim())) //$NON-NLS-1$
 			return false;
-		}
-		if(null != txtKey && txtKey.isEnabled() && txtKey.getText().length() <= 0) {
+		if(null != txtKey && txtKey.isEnabled() && txtKey.getText().length() <= 0)
 			return false;
-		}
-
-		if (cboXItem.getText().contentEquals(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"))) { //$NON-NLS-1$
-			return false;
-		}
 
 		for(int j,i=0; i<cboYItems.length; i++) {
-			if (cboYItems[i].getText().contentEquals(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"))) { //$NON-NLS-1$
-				return false;
-			}
 			if(cboYItems[i].isVisible()) {
 				for(j=i+1; j<cboYItems.length; j++) {
 					if(cboYItems[j].isVisible()) {
@@ -350,22 +321,19 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 				}
 			}
 
-			checkErrors();
-			getWizard().getContainer().updateButtons();
-		}
-	}
+			if(!isSeriesUnique()) {
+				setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesNotSelected")); //$NON-NLS-1$
+				setMessage(null);
+			} else {
+				setErrorMessage(null);
+				setMessage(""); //$NON-NLS-1$
+			}
+			if(txtTitle.getText().length() == 0) {
+				setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
+				setMessage(null);
+			}
 
-	private void checkErrors(){
-		if(!isSeriesUnique()) {
-			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesNotSelected")); //$NON-NLS-1$
-			setMessage(null);
-		} else {
-			setErrorMessage(null);
-			setMessage(""); //$NON-NLS-1$
-		}
-		if(txtTitle.getText().length() == 0) {
-			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
-			setMessage(null);
+			getWizard().getContainer().updateButtons();
 		}
 	}
 

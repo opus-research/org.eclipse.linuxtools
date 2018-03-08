@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007 Alphonse Van Assche and others.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,12 +7,10 @@
  *
  * Contributors:
  *    Alphonse Van Assche - initial API and implementation
- *    Red Hat Inc. - ongoing maintenance
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.rpmlint.builder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -22,12 +20,11 @@ import org.eclipse.linuxtools.internal.rpm.rpmlint.parser.RpmlintParser;
 
 public class RpmlintDeltaVisitor implements IResourceDeltaVisitor {
 
-	private List<String> paths = new ArrayList<String>();
+	private ArrayList<String> paths = new ArrayList<String>();
 
 	/**
 	 * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
 	 */
-	@Override
 	public boolean visit(IResourceDelta delta) {
 		IResource resource = delta.getResource();
 		if (Activator.SPECFILE_EXTENSION.equals(resource.getFileExtension())
@@ -40,15 +37,15 @@ public class RpmlintDeltaVisitor implements IResourceDeltaVisitor {
 				paths.add(resource.getLocation().toOSString());
 				break;
 			case IResourceDelta.CHANGED:
-				RpmlintParser.deleteMarkers(resource);
+				RpmlintParser.getInstance().deleteMarkers(resource);
 				paths.add(resource.getLocation().toOSString());
 				break;
 			}
 		}
 		return true;
 	}
-
-	public List<String> getVisitedPaths() {
+	
+	public ArrayList<String> getVisitedPaths() {
 		return paths;
 	}
 

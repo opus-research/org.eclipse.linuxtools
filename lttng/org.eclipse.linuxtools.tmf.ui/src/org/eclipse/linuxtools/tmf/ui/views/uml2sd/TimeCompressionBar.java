@@ -356,9 +356,14 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         Arrays.sort(temp, new TimeEventComparator());
         fNodeList = Arrays.asList(temp);
 
-        Image dbuffer = new Image(getDisplay(), getClientArea().width, getClientArea().height);
-        GC gcim = new GC(dbuffer);
-
+        Image dbuffer = null;
+        GC gcim = null;
+        try {
+            dbuffer = new Image(getDisplay(), getClientArea().width, getClientArea().height);
+        } catch (Exception e) {
+            Activator.getDefault().logError("Error creating image", e); //$NON-NLS-1$
+        }
+        gcim = new GC(dbuffer);
         for (int i = 0; i < fNodeList.size() - 1; i++) {
             SDTimeEvent m1 = fNodeList.get(i);
             SDTimeEvent m2 = fNodeList.get(i + 1);
@@ -443,7 +448,9 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             Activator.getDefault().logError("Error drawing image", e); //$NON-NLS-1$
         }
         gcim.dispose();
-        dbuffer.dispose();
+        if (dbuffer != null) {
+            dbuffer.dispose();
+        }
         gc.dispose();
     }
 

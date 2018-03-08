@@ -62,6 +62,7 @@ public class TestModelDataPreParse {
 			FileInputStream inp = new FileInputStream(file);
 			mda = new ModelDataAdapter(inp);
 			mda.process();
+			System.out.println(mda.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
