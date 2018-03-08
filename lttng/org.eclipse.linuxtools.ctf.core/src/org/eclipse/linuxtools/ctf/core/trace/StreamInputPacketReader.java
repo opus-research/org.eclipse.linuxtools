@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntr
 
 /**
  * CTF trace packet reader. Reads the events of a packet of a trace file.
- *
+ * 
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
@@ -102,8 +102,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
     private int lostEvents;
 
     private int lostSoFar;
-
-    private int lostEventsInThisPacket;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -306,13 +304,10 @@ public class StreamInputPacketReader implements IDefinitionScope {
                 Definition lostEventsdef = getStreamPacketContextDef()
                         .lookupDefinition("events_discarded"); //$NON-NLS-1$
                 if (cpuiddef instanceof IntegerDefinition) {
-                    int totalLostEvents = (int) ((IntegerDefinition) lostEventsdef)
+                    lostEvents = (int) ((IntegerDefinition) lostEventsdef)
                             .getValue();
-                    lostEventsInThisPacket = totalLostEvents - lostEvents;
-                    lostEvents = totalLostEvents;
-                    currentPacket.setLostEvents(lostEventsInThisPacket);
-                    lostSoFar = 0;
                 }
+
             }
 
             /*
@@ -353,7 +348,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
         Long eventID = null;
         long timestamp = 0;
 
-        if (lostEventsInThisPacket > lostSoFar) {
+        if (lostEvents > lostSoFar) {
             EventDefinition eventDef = EventDeclaration
                     .getLostEventDeclaration().createDefinition(
                             streamInputReader);
