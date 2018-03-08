@@ -187,7 +187,7 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        fEventList = new ArrayList<ITimeEvent>(eventList);
+        fEventList = eventList;
     }
 
     /**
@@ -199,7 +199,7 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+        fZoomedEventList = eventList;
     }
 
     /**

@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventList;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
@@ -42,12 +43,6 @@ public class ResourcesView extends AbstractTimeGraphView {
 
     /** View ID. */
     public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.views.resources"; //$NON-NLS-1$
-
-    /**
-     * Default value for events with no other value. Since value in this case is
-     * often a CPU number, this constant should be <0
-     */
-    public static final int NO_VALUE_EVENT = -999;
 
     private static final String PROCESS_COLUMN = Messages.ControlFlowView_processColumn;
 
@@ -192,7 +187,7 @@ public class ResourcesView extends AbstractTimeGraphView {
             if (resourcesEntry.getType().equals(Type.CPU)) {
                 int statusQuark = ssq.getQuarkRelative(quark, Attributes.STATUS);
                 List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
+                eventList = new EventList(statusIntervals.size(), realStart, realEnd);
                 long lastEndTime = -1;
                 for (ITmfStateInterval statusInterval : statusIntervals) {
                     if (monitor.isCanceled()) {
@@ -206,16 +201,12 @@ public class ResourcesView extends AbstractTimeGraphView {
                             eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                         }
                         eventList.add(new TimeEvent(entry, time, duration, status));
-                        lastEndTime = time + duration;
-                    } else {
-                        if (true) {// includeNull) {
-                            eventList.add(new TimeEvent(entry, time, duration, NO_VALUE_EVENT));
-                        }
                     }
+                    lastEndTime = time + duration;
                 }
             } else if (resourcesEntry.getType().equals(Type.IRQ)) {
                 List<ITmfStateInterval> irqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new ArrayList<ITimeEvent>(irqIntervals.size());
+                eventList = new EventList(irqIntervals.size(), realStart, realEnd);
                 long lastEndTime = -1;
                 boolean lastIsNull = true;
                 for (ITmfStateInterval irqInterval : irqIntervals) {
@@ -232,8 +223,6 @@ public class ResourcesView extends AbstractTimeGraphView {
                         if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
                             /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
                             eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
-                        } else {
-                            eventList.add(new TimeEvent(entry, time, duration, NO_VALUE_EVENT));
                         }
                         lastIsNull = true;
                     }
@@ -241,7 +230,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             } else if (resourcesEntry.getType().equals(Type.SOFT_IRQ)) {
                 List<ITmfStateInterval> softIrqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new ArrayList<ITimeEvent>(softIrqIntervals.size());
+                eventList = new EventList(softIrqIntervals.size(), realStart, realEnd);
                 long lastEndTime = -1;
                 boolean lastIsNull = true;
                 for (ITmfStateInterval softIrqInterval : softIrqIntervals) {
@@ -257,8 +246,6 @@ public class ResourcesView extends AbstractTimeGraphView {
                         if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
                             /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
                             eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
-                        } else {
-                            eventList.add(new TimeEvent(entry, time, duration, NO_VALUE_EVENT));
                         }
                         lastIsNull = true;
                     }
