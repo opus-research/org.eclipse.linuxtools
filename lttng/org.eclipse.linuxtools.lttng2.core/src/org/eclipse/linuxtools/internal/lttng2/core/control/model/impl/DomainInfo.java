@@ -36,6 +36,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
      */
     private final List<IChannelInfo> fChannels = new ArrayList<IChannelInfo>();
     private boolean fIsKernel = false;
+    private BufferType fBufferType = BufferType.BUFFER_TYPE_UNKNOWN;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -62,6 +63,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
             }
         }
         fIsKernel = other.fIsKernel;
+        fBufferType = other.fBufferType;
     }
 
     @Override
@@ -103,6 +105,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
         int result = super.hashCode();
         result = prime * result + fChannels.hashCode();
         result = prime * result + (fIsKernel ? 1231 : 1237);
+        result = prime * result + ((fBufferType == null) ? 0 : (fBufferType.ordinal() + 1));
         return result;
     }
 
@@ -124,7 +127,23 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
         if (fIsKernel != other.fIsKernel) {
             return false;
         }
+        if (fBufferType != other.fBufferType) {
+            return false;
+        }
         return true;
+    }
+
+    @Override
+    public BufferType getBufferType() {
+        if (fIsKernel) {
+            return BufferType.BUFFER_SHARED;
+        }
+        return fBufferType;
+    }
+
+    @Override
+    public void setBufferType(BufferType bufferType) {
+        fBufferType = bufferType;
     }
 
     @SuppressWarnings("nls")
@@ -144,8 +163,11 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
             }
             output.append(",isKernel=");
             output.append(String.valueOf(fIsKernel));
+            if ((fBufferType != null) && !fBufferType.equals(BufferType.BUFFER_TYPE_UNKNOWN) && !fBufferType.equals(BufferType.BUFFER_SHARED)) {
+                output.append(",BufferType=");
+                output.append(fBufferType);
+            }
             output.append(")]");
             return output.toString();
     }
-
 }

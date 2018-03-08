@@ -17,10 +17,8 @@ import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 
 /**
@@ -35,14 +33,11 @@ public class TmfStateStatisticsTest extends TmfStatisticsTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
+        assumeTrue(testTrace.exists());
         try {
-            File fullFile = File.createTempFile("stats-test-full", ".ht");
-            File partialFile = File.createTempFile("stats-tests-partial", ".ht");
-            fullFile.deleteOnExit();
-            partialFile.deleteOnExit();
-            CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
-            backend = new TmfStateStatistics(trace, fullFile, partialFile);
+            File htFile = File.createTempFile("stats-test", ".ht");
+            htFile.deleteOnExit();
+            backend = new TmfStateStatistics(testTrace.getTrace(), htFile);
         } catch (TmfTraceException e) {
             e.printStackTrace();
         } catch (IOException e) {
