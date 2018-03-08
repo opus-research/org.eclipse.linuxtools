@@ -521,8 +521,8 @@ public class Utils {
 
             if (currEvent == null || currEvent.getTime() != nextStartTime) {
                 prevEvent = currEvent;
-                currEvent = nextEvent;
             }
+            currEvent = nextEvent;
         }
 
         if (n == -1) { //previous
