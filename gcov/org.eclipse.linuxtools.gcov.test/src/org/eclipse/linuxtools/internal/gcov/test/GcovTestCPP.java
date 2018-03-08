@@ -9,10 +9,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.junit.FixMethodOrder;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class GcovTestCPP {
 
