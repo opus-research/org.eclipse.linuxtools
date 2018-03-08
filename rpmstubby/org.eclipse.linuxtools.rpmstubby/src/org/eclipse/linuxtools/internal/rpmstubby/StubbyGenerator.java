@@ -49,7 +49,7 @@ public class StubbyGenerator extends AbstractGenerator {
 		parse(featureFile);
 		specfileName = model.getPackageName().toLowerCase() + ".spec";
 		projectName = featureFile.getProject().getName();
-		pomExists = new RPMStubbyUtils().findPom(featureFile.getParent());
+		pomExists = new RPMStubbyUtils().findPom(featureFile.getParent().getLocation());
 	}
 
 	private void parse(IFile featureFile) {
