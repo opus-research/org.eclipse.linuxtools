@@ -247,6 +247,9 @@
             <contentExtension
                   pattern="org.eclipse.ui.navigator.resources.filters.*">
             </contentExtension>
+            <contentExtension
+                  pattern="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper">
+            </contentExtension>
          </includes>
       </viewerContentBinding>
    </extension>
@@ -300,14 +303,6 @@
    </extension>
    <extension
          point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="menu:org.eclipse.ui.navigator.ProjectExplorer">
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
-               id="org.eclipse.linuxtools.tmf.ui.menu.managecustomparsers"
-               style="push">
-         </command>
-      </menuContribution>
       <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <command
@@ -552,6 +547,27 @@
                name="org.eclipse.linuxtools.tmf.ui.separator3"
                visible="true">
          </separator>
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
+               icon="icons/etool16/customparser_wizard.gif"
+               id="org.eclipse.linuxtools.tmf.ui.menu.managecustomparsers"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
          <menu
                label="%command.select_trace_type"
                mnemonic="%command.select_trace_type.mnemonic"
@@ -560,6 +576,15 @@
                   class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTraceTypeContributionItem"
                   id="org.eclipse.linuxtools.tmf.ui.command.select_trace_type.dynamic">
             </dynamic>
+            <separator
+                  name="org.eclipse.linuxtools.tmf.ui.separator6"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
+                  icon="icons/etool16/customparser_wizard.gif"
+                  style="push">
+            </command>
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -1137,6 +1162,26 @@
             name="%tracetype.type.ctf"
             trace_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace">
       </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.linkHelper">
+      <linkHelper
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper"
+            id="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper">
+         <editorInputEnablement>
+             <instanceof value="org.eclipse.ui.IFileEditorInput"/>
+         </editorInputEnablement>
+         <selectionEnablement>
+             <or>
+                <instanceof
+                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+                </instanceof>
+                <instanceof
+                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                </instanceof>
+             </or>
+         </selectionEnablement>
+      </linkHelper>
    </extension>
 
 </plugin>

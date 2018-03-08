@@ -19,8 +19,6 @@ import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.Activator;
-import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
-import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputReaderTimestampComparator;
 
 /**
@@ -113,6 +111,19 @@ public class CTFTraceReader {
         newReader.startTime = this.startTime;
         newReader.setEndTime(this.endTime);
         return newReader;
+    }
+
+    /**
+     * Dispose the CTFTraceReader
+     * @since 2.0
+     */
+    public void dispose() {
+        for (StreamInputReader reader : streamInputReaders) {
+            if (reader != null) {
+                reader.dispose();
+            }
+        }
+        streamInputReaders.clear();
     }
 
     // ------------------------------------------------------------------------
