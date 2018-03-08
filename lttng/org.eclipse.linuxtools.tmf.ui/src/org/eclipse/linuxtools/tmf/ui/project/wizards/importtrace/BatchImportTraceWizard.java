@@ -555,10 +555,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             for (String name : parentFiles) {
                 final File fileToAdd = new File(name);
                 recurse(filesToScan, fileToAdd, monitor, step);
-                if( monitor.isCanceled()){
-
-                    return new Status(IStatus.CANCEL, Activator.PLUGIN_ID, "");
-                }
             }
 
             for (String fileToScan : filesToScan) {
@@ -569,9 +565,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         if (!fTracesToScan.contains(tv)) {
                             fTracesToScan.put(tv);
                             monitor.subTask(tv.getTraceToScan());
-                            if( monitor.isCanceled()){
-                                return new Status(IStatus.CANCEL, Activator.PLUGIN_ID, "");
-                            }
                         }
                     }
                 }
