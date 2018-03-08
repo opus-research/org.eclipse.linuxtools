@@ -17,6 +17,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -76,7 +77,13 @@ public class TmfEnvironmentView extends TmfView {
             return;
         }
 
-        ITmfTrace[] traces = fTrace.getTraces();
+        ITmfTrace[] traces;
+        if (fTrace instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) fTrace;
+            traces = experiment.getTraces();
+        } else {
+            traces = new ITmfTrace[] { fTrace };
+        }
 
         for (ITmfTrace trace : traces) {
             if (trace instanceof CtfTmfTrace) {
