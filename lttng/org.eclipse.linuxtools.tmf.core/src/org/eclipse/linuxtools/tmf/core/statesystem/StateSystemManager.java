@@ -57,7 +57,6 @@ public abstract class StateSystemManager extends TmfComponent {
      * @throws TmfTraceException
      *             If there was a problem reading or writing one of the files.
      *             See the contents of this exception for more info.
-     * @since 2.0
      */
     public static ITmfStateSystem loadStateHistory(File htFile,
             IStateChangeInput htInput, boolean buildManually)
