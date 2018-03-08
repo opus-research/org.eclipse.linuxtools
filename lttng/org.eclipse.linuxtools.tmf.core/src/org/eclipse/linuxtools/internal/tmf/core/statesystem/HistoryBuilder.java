@@ -29,7 +29,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * This is the high-level wrapper around the State History and its provider and
@@ -192,16 +192,10 @@ public class HistoryBuilder extends TmfComponent {
      * this trace.
      */
     private boolean signalIsForUs(ITmfTrace sender) {
-        if (sender instanceof TmfExperiment) {
-            /* Yeah doing a lazy instanceof check here, but it's a special case! */
-            TmfExperiment exp = (TmfExperiment) sender;
-            for (ITmfTrace childTrace : exp.getTraces()) {
-                if (childTrace == sp.getTrace()) {
-                    return true;
-                }
+        for (ITmfTrace childtrace : TmfTraceManager.getTraceSet(sender)) {
+            if (sp.getTrace() == childtrace) {
+                return true;
             }
-        } else if (sender == sp.getTrace()) {
-            return true;
         }
         return false;
     }
@@ -247,8 +241,12 @@ class StateSystemBuildRequest extends TmfEventRequest {
     @Override
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
-        if (event != null && event.getTrace() == trace) {
-            sci.processEvent(event);
+        if (event != null) {
+            for (ITmfTrace subTrace : TmfTraceManager.getTraceSet(trace)) {
+                if (event.getTrace() == subTrace) {
+                    sci.processEvent(event);
+                }
+            }
         }
     }
 
