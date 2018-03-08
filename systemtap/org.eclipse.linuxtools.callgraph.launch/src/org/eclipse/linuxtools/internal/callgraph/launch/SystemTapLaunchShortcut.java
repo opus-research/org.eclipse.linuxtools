@@ -109,7 +109,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	protected ILaunchConfiguration config;
 
 	private static final String USER_SELECTED_ALL = "ALL"; //$NON-NLS-1$
-	private static final String MAIN_FUNC_NAME = "main"; //$NON-NLS-1$
 
 	protected String name;
 	protected String binaryPath;
@@ -638,7 +637,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 							if (!(validElement(c))) {
 								continue;
 							}
-							if (c.getElementName().contains(MAIN_FUNC_NAME) && !output.contains(c)) {
+							if (c.getElementName().contains("main") && !output.contains(c)) {
 								output.add(c);
 							}
 						}
@@ -802,7 +801,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 *
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unused")
 	public String generateScript() throws IOException {
 		return null;
 	}
