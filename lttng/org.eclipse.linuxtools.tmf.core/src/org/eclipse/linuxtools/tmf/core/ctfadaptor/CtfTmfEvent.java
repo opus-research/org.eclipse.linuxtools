@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 /**
  * A wrapper class around CTF's Event Definition/Declaration that maps all
  * types of Declaration to native Java types.
- *
+ * 
  * @version 1.0
  * @author Alexandre Montplaisir
  */
@@ -64,11 +64,9 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
      * the StreamInputReader).
      *
      * @param eventDef
-     *            CTF EventDefinition object corresponding to this trace event
-     * @param fileName
-     *            The path to the trace file
-     * @param originTrace
-     *            The trace from which this event originates
+
+     * @param fileName String
+     * @param originTrace CtfTmfTrace
      */
     public CtfTmfEvent(EventDefinition eventDef, String fileName,
             CtfTmfTrace originTrace) {
@@ -85,7 +83,8 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
         }
 
         /* Read the base event info */
-        this.timestamp = this.getTrace().getCTFTrace().timestampCyclesToNanos(eventDef.getTimestamp());
+        Long offset = originTrace.getCTFTrace().getOffset();
+        this.timestamp = eventDef.getTimestamp() + offset;
         this.sourceCPU = eventDef.getCPU();
         this.typeId = eventDef.getDeclaration().getId();
         this.eventName = eventDef.getDeclaration().getName();
@@ -101,8 +100,8 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
      * mess, and put them into something ITmfEventField can cope with.
      *
      * @param eventDef
-     *            CTF EventDefinition to read
-     * @return CtfTmfEventField[] The array of fields that were read
+
+     * @return CtfTmfEventField[]
      */
     public static CtfTmfEventField[] parseFields(EventDefinition eventDef) {
         List<CtfTmfEventField> fields = new ArrayList<CtfTmfEventField>();
@@ -128,7 +127,6 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
      * Copy constructor
      *
      * @param other
-     *            CtfTmfEvent to copy
      */
     public CtfTmfEvent(CtfTmfEvent other) {
         this.fTrace = other.getTrace();
@@ -143,7 +141,6 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
 
         /* Copy the fields over */
         this.fContent = (CtfTmfContent) other.fContent.clone();
-        this.fTimestamp = other.fTimestamp.clone();
     }
 
     /**

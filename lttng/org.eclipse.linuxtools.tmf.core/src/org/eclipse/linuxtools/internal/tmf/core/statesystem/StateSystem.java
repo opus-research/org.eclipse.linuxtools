@@ -12,176 +12,77 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
- * This is the core class of the Generic State System. It contains all the
- * methods to build and query a state history. It's exposed externally through
- * the IStateSystemQuerier and IStateSystemBuilder interfaces, depending if the
- * user needs read-only access or read-write access.
+ * This is the base class for the StateHistorySystem. It contains all the
+ * current-state-updating methods.
  *
- * When building, DON'T FORGET to call .closeHistory() when you are done
- * inserting intervals, or the storage backend will have no way of knowing it
- * can close and write itself to disk, and its thread will keep running.
+ * It's not abstract, as it can be used by itself: in this case, no History tree
+ * will be built underneath (no information will be saved to disk) and it will
+ * only be able to respond to queries to the current, latest time.
+ *
+ * (See IStateSystemQuerier and IStateSystemBuilder for the Javadoc.)
  *
  * @author alexmont
  *
  */
-public class StateSystem implements IStateSystemBuilder {
+@SuppressWarnings("javadoc") // the javadoc is in the IStateSystem* interfaces
+public class StateSystem {
 
     /* References to the inner structures */
-    private final AttributeTree attributeTree;
-    private final TransientState transState;
-    private final IStateHistoryBackend backend;
+    protected AttributeTree attributeTree;
+    protected TransientState transState;
 
     /**
-     * General constructor
-     *
-     * @param backend
-     *            The "state history storage" backend to use.
-     * @param newFile
-     *            Put true if this is a new history started from scratch. It is
-     *            used to tell the state system where to get its attribute tree.
-     * @throws IOException
-     *             If there was a problem creating the new history file
+     * Constructor. No configuration needed!
      */
-    public StateSystem(IStateHistoryBackend backend, boolean newFile)
-            throws IOException {
-        this.backend = backend;
-        this.transState = new TransientState(backend);
+    public StateSystem() {
+        attributeTree = new AttributeTree(this);
 
-        if (newFile) {
-            attributeTree = new AttributeTree(this);
-        } else {
-            /* We're opening an existing file */
-            this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
-            transState.setInactive();
-        }
+        /* This will tell the builder to discard the intervals */
+        transState = new TransientState(null);
     }
 
-    //--------------------------------------------------------------------------
-    //        General methods related to the attribute tree
-    //--------------------------------------------------------------------------
-
-    /**
-     * Method used by the attribute tree when creating new attributes, to keep
-     * the attribute count in the transient state in sync.
-     */
-    void addEmptyAttribute() {
-        transState.addEmptyEntry();
-    }
-
-    @Override
     public int getNbAttributes() {
         return attributeTree.getNbAttributes();
     }
 
-    @Override
-    public boolean isLastAttribute(int quark) {
-        return (quark == getNbAttributes() - 1) ? true : false;
-    }
+    /**
+     * @name Quark-retrieving methods
+     */
 
-    @Override
-    public String getAttributeName(int attributeQuark) {
-        return attributeTree.getAttributeName(attributeQuark);
-    }
-
-    @Override
-    public String getFullAttributePath(int attributeQuark) {
-        return attributeTree.getFullAttributeName(attributeQuark);
-    }
-
-    //--------------------------------------------------------------------------
-    //        Methods related to the storage backend
-    //--------------------------------------------------------------------------
-
-    @Override
-    public long getStartTime() {
-        return backend.getStartTime();
-    }
-
-    @Override
-    public long getCurrentEndTime() {
-        return backend.getEndTime();
-    }
-
-    @Override
-    public void closeHistory(long endTime) throws TimeRangeException {
-        File attributeTreeFile;
-        long attributeTreeFilePos;
-        long realEndTime = endTime;
-
-        if (realEndTime < backend.getEndTime()) {
-            /*
-             * This can happen (empty nodes pushing the border further, etc.)
-             * but shouldn't be too big of a deal.
-             */
-            realEndTime = backend.getEndTime();
-        }
-        transState.closeTransientState(realEndTime);
-        backend.finishedBuilding(realEndTime);
-
-        attributeTreeFile = backend.supplyAttributeTreeWriterFile();
-        attributeTreeFilePos = backend.supplyAttributeTreeWriterFilePosition();
-        if (attributeTreeFile != null) {
-            /*
-             * If null was returned, we simply won't save the attribute tree,
-             * too bad!
-             */
-            attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-    //        Quark-retrieving methods
-    //--------------------------------------------------------------------------
-
-    @Override
     public int getQuarkAbsolute(String... attribute)
             throws AttributeNotFoundException {
         return attributeTree.getQuarkDontAdd(-1, attribute);
     }
 
-    @Override
     public int getQuarkAbsoluteAndAdd(String... attribute) {
         return attributeTree.getQuarkAndAdd(-1, attribute);
     }
 
-    @Override
     public int getQuarkRelative(int startingNodeQuark, String... subPath)
             throws AttributeNotFoundException {
         return attributeTree.getQuarkDontAdd(startingNodeQuark, subPath);
     }
 
-    @Override
     public int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath) {
         return attributeTree.getQuarkAndAdd(startingNodeQuark, subPath);
     }
 
-    @Override
     public List<Integer> getSubAttributes(int quark, boolean recursive)
             throws AttributeNotFoundException {
         return attributeTree.getSubAttributes(quark, recursive);
     }
 
-    @Override
     public List<Integer> getQuarks(String... pattern) {
         List<Integer> quarks = new LinkedList<Integer>();
         List<String> prefix = new LinkedList<String>();
@@ -266,18 +167,16 @@ public class StateSystem implements IStateSystemBuilder {
         return quarks;
     }
 
-    //--------------------------------------------------------------------------
-    //        Methods related to insertions in the history
-    //--------------------------------------------------------------------------
+    /**
+     * @name External methods related to insertions in the history -
+     */
 
-    @Override
     public void modifyAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
         transState.processStateChange(t, value, attributeQuark);
     }
 
-    @Override
     public void incrementAttribute(long t, int attributeQuark)
             throws StateValueTypeException, TimeRangeException,
             AttributeNotFoundException {
@@ -290,7 +189,6 @@ public class StateSystem implements IStateSystemBuilder {
                 attributeQuark);
     }
 
-    @Override
     public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
@@ -321,29 +219,26 @@ public class StateSystem implements IStateSystemBuilder {
         }
 
         stackDepth++;
-        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, stackDepth.toString());
+        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark,
+                stackDepth.toString());
 
-        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
     }
 
-    @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public void popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
-        /* These are the state values of the stack-attribute itself */
-        ITmfStateValue previousSV = queryOngoingState(attributeQuark);
+        Integer stackDepth;
+        int subAttributeQuark;
+        ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
-            /*
-             * Trying to pop an empty stack. This often happens at the start of
-             * traces, for example when we see a syscall_exit, without having
-             * the corresponding syscall_entry in the trace. Just ignore
-             * silently.
-             */
-            return null;
+            /* Same as if stackDepth == 0, see below */
+            return;
         }
-        if (previousSV.getType() != ITmfStateValue.TYPE_INTEGER) {
+        if (previousSV.getType() != 0) {
             /*
              * The existing value was a string, this doesn't look like a valid
              * stack attribute.
@@ -351,37 +246,35 @@ public class StateSystem implements IStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        Integer stackDepth = previousSV.unboxInt();
+        stackDepth = previousSV.unboxInt();
 
-        if (stackDepth <= 0) {
+        if (stackDepth == 0) {
+            /*
+             * Trying to pop an empty stack. This often happens at the start of
+             * traces, for example when we see a syscall_exit, without having
+             * the corresponding syscall_entry in the trace. Just ignore
+             * silently.
+             */
+            return;
+        }
+
+        if (stackDepth < 0) {
             /* This on the other hand should not happen... */
-            /* the case where == -1 was handled previously by .isNull() */
-            String message = "A top-level stack attribute cannot " + //$NON-NLS-1$
-                    "have a value of 0 or less (except -1/null)."; //$NON-NLS-1$
+            String message = "A top-level stack attribute " + //$NON-NLS-1$
+                    "cannot have a negative integer value."; //$NON-NLS-1$
             throw new StateValueTypeException(message);
         }
 
-        /* The attribute should already exist at this point */
-        int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
-        ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
+        /* The attribute should already exist... */
+        subAttributeQuark = getQuarkRelative(attributeQuark,
+                stackDepth.toString());
 
-        /* Update the state value of the stack-attribute */
-        ITmfStateValue nextSV;
-        if (--stackDepth == 0 ) {
-            /* Jump over "0" and store -1 (a null state value) */
-            nextSV = TmfStateValue.nullValue();
-        } else {
-            nextSV = TmfStateValue.newValueInt(stackDepth);
-        }
-        modifyAttribute(t, nextSV, attributeQuark);
-
-        /* Delete the sub-attribute that contained the user's state value */
+        stackDepth--;
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         removeAttribute(t, subAttributeQuark);
-
-        return poppedValue;
     }
 
-    @Override
     public void removeAttribute(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException {
         assert (attributeQuark >= 0);
@@ -409,206 +302,26 @@ public class StateSystem implements IStateSystemBuilder {
         }
     }
 
-    //--------------------------------------------------------------------------
-    //        "Current" query/update methods
-    //--------------------------------------------------------------------------
+    /**
+     * @name "Current" query/update methods -
+     */
 
-    @Override
     public ITmfStateValue queryOngoingState(int attributeQuark)
             throws AttributeNotFoundException {
         return transState.getOngoingStateValue(attributeQuark);
     }
 
-    @Override
     public void updateOngoingState(ITmfStateValue newValue, int attributeQuark)
             throws AttributeNotFoundException {
         transState.changeOngoingStateValue(attributeQuark, newValue);
     }
 
-
-
-    //--------------------------------------------------------------------------
-    //        Regular query methods (sent to the back-end)
-    //--------------------------------------------------------------------------
-
-    @Override
-    public synchronized List<ITmfStateInterval> queryFullState(long t)
-            throws TimeRangeException {
-        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
-                attributeTree.getNbAttributes());
-
-        /* Bring the size of the array to the current number of attributes */
-        for (int i = 0; i < attributeTree.getNbAttributes(); i++) {
-            stateInfo.add(null);
-        }
-
-        /* Query the storage backend */
-        backend.doQuery(stateInfo, t);
-
-        /*
-         * If we are currently building the history, also query the "ongoing"
-         * states for stuff that might not yet be written to the history.
-         */
-        if (transState.isActive()) {
-            transState.doQuery(stateInfo, t);
-        }
-
-        /*
-         * We should have previously inserted an interval for every attribute.
-         * If we do happen do see a 'null' object here, just replace it with a a
-         * dummy internal with a null value, to avoid NPE's further up.
-         */
-        for (int i = 0; i < stateInfo.size(); i++) {
-            if (stateInfo.get(i) == null) {
-                //logMissingInterval(i, t);
-                stateInfo.set(i, new TmfStateInterval(t, t, i, TmfStateValue.nullValue()));
-            }
-        }
-        return stateInfo;
+    public String getAttributeName(int attributeQuark) {
+        return attributeTree.getAttributeName(attributeQuark);
     }
 
-    @Override
-    public ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException {
-        ITmfStateInterval ret;
-
-        if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
-            ret = transState.getOngoingInterval(attributeQuark);
-        } else {
-            ret = backend.doSingularQuery(t, attributeQuark);
-        }
-
-        /*
-         * Return a fake interval if we could not find anything in the history.
-         * We do NOT want to return 'null' here.
-         */
-        if (ret == null) {
-            //logMissingInterval(attributeQuark, t);
-            return new TmfStateInterval(t, this.getCurrentEndTime(),
-                    attributeQuark, TmfStateValue.nullValue());
-        }
-        return ret;
-    }
-
-    @Override
-    public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
-            throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException {
-        Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
-
-        if (curStackDepth == -1) {
-            /* There is nothing stored in this stack at this moment */
-            return null;
-        } else if (curStackDepth < -1 || curStackDepth == 0) {
-            /*
-             * This attribute is an integer attribute, but it doesn't seem like
-             * it's used as a stack-attribute...
-             */
-            throw new StateValueTypeException();
-        }
-
-        int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
-        ITmfStateInterval ret = querySingleState(t, subAttribQuark);
-        return ret;
-    }
-
-    @Override
-    public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2) throws TimeRangeException,
-            AttributeNotFoundException {
-        List<ITmfStateInterval> intervals;
-        ITmfStateInterval currentInterval;
-        long ts, tEnd;
-
-        /* Make sure the time range makes sense */
-        if (t2 <= t1) {
-            throw new TimeRangeException();
-        }
-
-        /* Set the actual, valid end time of the range query */
-        if (t2 > this.getCurrentEndTime()) {
-            tEnd = this.getCurrentEndTime();
-        } else {
-            tEnd = t2;
-        }
-
-        /* Get the initial state at time T1 */
-        intervals = new ArrayList<ITmfStateInterval>();
-        currentInterval = querySingleState(t1, attributeQuark);
-        intervals.add(currentInterval);
-
-        /* Get the following state changes */
-        ts = currentInterval.getEndTime();
-        while (ts != -1 && ts < tEnd) {
-            ts++; /* To "jump over" to the next state in the history */
-            currentInterval = querySingleState(ts, attributeQuark);
-            intervals.add(currentInterval);
-            ts = currentInterval.getEndTime();
-        }
-        return intervals;
-    }
-
-    @Override
-    public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException {
-        List<ITmfStateInterval> intervals;
-        ITmfStateInterval currentInterval;
-        long ts, tEnd;
-
-        if (monitor == null) {
-            monitor = new NullProgressMonitor();
-        }
-
-        /* Make sure the time range makes sense */
-        if (t2 < t1 || resolution <= 0) {
-            throw new TimeRangeException();
-        }
-
-        /* Set the actual, valid end time of the range query */
-        if (t2 > this.getCurrentEndTime()) {
-            tEnd = this.getCurrentEndTime();
-        } else {
-            tEnd = t2;
-        }
-
-        /* Get the initial state at time T1 */
-        intervals = new ArrayList<ITmfStateInterval>();
-        currentInterval = querySingleState(t1, attributeQuark);
-        intervals.add(currentInterval);
-
-        /*
-         * Iterate over the "resolution points". We skip unneeded queries in the
-         * case the current interval is longer than the resolution.
-         */
-        for (ts = t1; (currentInterval.getEndTime() != -1) && (ts < tEnd);
-                ts += resolution) {
-            if (monitor.isCanceled()) {
-                return intervals;
-            }
-            if (ts <= currentInterval.getEndTime()) {
-                continue;
-            }
-            currentInterval = querySingleState(ts, attributeQuark);
-            intervals.add(currentInterval);
-        }
-
-        /* Add the interval at t2, if it wasn't included already. */
-        if (currentInterval.getEndTime() < tEnd) {
-            currentInterval = querySingleState(tEnd, attributeQuark);
-            intervals.add(currentInterval);
-        }
-        return intervals;
-    }
-
-    //--------------------------------------------------------------------------
-    //        Debug methods
-    //--------------------------------------------------------------------------
-
-    static void logMissingInterval(int attribute, long timestamp) {
-        Tracer.traceInfo("No data found in history for attribute " + //$NON-NLS-1$
-                attribute + " at time " + timestamp + //$NON-NLS-1$
-                ", returning dummy interval"); //$NON-NLS-1$
+    public String getFullAttributePath(int attributeQuark) {
+        return attributeTree.getFullAttributeName(attributeQuark);
     }
 
     /**
@@ -620,7 +333,6 @@ public class StateSystem implements IStateSystemBuilder {
     public void debugPrint(PrintWriter writer) {
         attributeTree.debugPrint(writer);
         transState.debugPrint(writer);
-        backend.debugPrint(writer);
     }
 
 }

@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfLocationArray;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -40,7 +41,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 /**
  * Test suite for the TmfCheckpointIndexTest class.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings({ "nls" })
 public class TmfExperimentCheckpointIndexTest extends TestCase {
 
     // ------------------------------------------------------------------------
@@ -54,17 +55,14 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
     private static int          NB_EVENTS    = 20000;
     private static int          BLOCK_SIZE   = 1000;
 
-    private static ITmfTrace[] fTestTraces;
-    private static TmfExperimentStub fExperiment;
+    private static ITmfTrace<TmfEvent>[] fTestTraces;
+    private static TmfExperimentStub<TmfEvent> fExperiment;
 
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    /**
-     * @param name the test name
-     */
-    public TmfExperimentCheckpointIndexTest(final String name) {
+    public TmfExperimentCheckpointIndexTest(final String name) throws Exception {
         super(name);
     }
 
@@ -73,7 +71,7 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
         super.setUp();
         if (fExperiment == null) {
             setupTrace(DIRECTORY + File.separator + TEST_STREAM1, DIRECTORY + File.separator + TEST_STREAM2);
-            fExperiment = new TmfExperimentStub(EXPERIMENT, fTestTraces, BLOCK_SIZE);
+            fExperiment = new TmfExperimentStub<TmfEvent>(EXPERIMENT, fTestTraces, BLOCK_SIZE);
             fExperiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
         }
     }
@@ -86,7 +84,8 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
         fTestTraces = null;
     }
 
-    private synchronized static ITmfTrace[] setupTrace(final String path1, final String path2) {
+    @SuppressWarnings("unchecked")
+    private synchronized static ITmfTrace<?>[] setupTrace(final String path1, final String path2) {
         if (fTestTraces == null) {
             fTestTraces = new ITmfTrace[2];
             try {
@@ -113,8 +112,7 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
     // Verify checkpoints
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("null")
-    public void testTmfTraceIndexing() {
+    public void testTmfTraceIndexing() throws Exception {
         assertEquals("getCacheSize",   BLOCK_SIZE, fExperiment.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fExperiment.getNbEvents());
         assertEquals("getRange-start", 1,          fExperiment.getTimeRange().getStartTime().getValue());
@@ -148,10 +146,9 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
     // Streaming
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("null")
-    public void testGrowingIndex() {
+    public void testGrowingIndex() throws Exception {
 
-        ITmfTrace[] testTraces = new TmfTraceStub[2];
+        ITmfTrace<TmfEvent>[] testTraces = new TmfTraceStub[2];
         try {
             URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM1), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
@@ -169,7 +166,7 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
             e.printStackTrace();
         }
 
-        TmfExperimentStub experiment = new TmfExperimentStub(EXPERIMENT, testTraces, BLOCK_SIZE);
+        TmfExperimentStub<TmfEvent> experiment = new TmfExperimentStub<TmfEvent>(EXPERIMENT, testTraces, BLOCK_SIZE);
         int pageSize = experiment.getCacheSize();
 
         // Build the first half of the index

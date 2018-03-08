@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
  * @author alexmont
  *
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("nls")
 public class VerifyHistoryFile {
 
     // Enter the .ht file name to test here

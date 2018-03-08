@@ -175,8 +175,6 @@ public interface IStateSystemBuilder extends IStateSystemQuerier {
      *            Timestamp of the state change
      * @param attributeQuark
      *            Quark of the stack-attribute to pop
-     * @return The state value that was popped, or 'null' if nothing was
-     *         actually removed from the stack.
      * @throws AttributeNotFoundException
      *             If the attribute is invalid
      * @throws TimeRangeException
@@ -184,9 +182,8 @@ public interface IStateSystemBuilder extends IStateSystemQuerier {
      * @throws StateValueTypeException
      *             If the target attribute already exists, but its state value
      *             type is invalid (not an integer)
-     * @since 2.0
      */
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public void popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException;
 
