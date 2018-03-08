@@ -20,7 +20,6 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -166,18 +165,19 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 if (status == StateValues.CPU_STATUS_IRQ) {
                     // In IRQ state get the IRQ that caused the interruption
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+                    ITmfStateSystem ssq = entry.getTrace().getStateSystem();
                     int cpu = entry.getId();
 
+                    ITmfStateSystem ss = entry.getTrace().getStateSystem();
                     try {
                         List<ITmfStateInterval> fullState = ss.queryFullState(event.getTime());
                         List<Integer> irqQuarks = ss.getQuarks(Attributes.RESOURCES, Attributes.IRQS, "*"); //$NON-NLS-1$
 
                         for (int irqQuark : irqQuarks) {
                             if (fullState.get(irqQuark).getStateValue().unboxInt() == cpu) {
-                                ITmfStateInterval value = ss.querySingleState(event.getTime(), irqQuark);
+                                ITmfStateInterval value = ssq.querySingleState(event.getTime(), irqQuark);
                                 if (!value.getStateValue().isNull()) {
-                                    int irq = Integer.parseInt(ss.getAttributeName(irqQuark));
+                                    int irq = Integer.parseInt(ssq.getAttributeName(irqQuark));
                                     retMap.put(Messages.ResourcesView_attributeIrqName, String.valueOf(irq));
                                 }
                                 break;
@@ -195,18 +195,19 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (status == StateValues.CPU_STATUS_SOFTIRQ) {
                     // In SOFT_IRQ state get the SOFT_IRQ that caused the interruption
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+                    ITmfStateSystem ssq = entry.getTrace().getStateSystem();
                     int cpu = entry.getId();
 
+                    ITmfStateSystem ss = entry.getTrace().getStateSystem();
                     try {
                         List<ITmfStateInterval> fullState = ss.queryFullState(event.getTime());
                         List<Integer> softIrqQuarks = ss.getQuarks(Attributes.RESOURCES, Attributes.SOFT_IRQS, "*"); //$NON-NLS-1$
 
                         for (int softIrqQuark : softIrqQuarks) {
                             if (fullState.get(softIrqQuark).getStateValue().unboxInt() == cpu) {
-                                ITmfStateInterval value = ss.querySingleState(event.getTime(), softIrqQuark);
+                                ITmfStateInterval value = ssq.querySingleState(event.getTime(), softIrqQuark);
                                 if (!value.getStateValue().isNull()) {
-                                    int softIrq = Integer.parseInt(ss.getAttributeName(softIrqQuark));
+                                    int softIrq = Integer.parseInt(ssq.getAttributeName(softIrqQuark));
                                     retMap.put(Messages.ResourcesView_attributeSoftIrqName, String.valueOf(softIrq));
                                 }
                                 break;
@@ -224,7 +225,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (status == StateValues.CPU_STATUS_RUN_USERMODE || status == StateValues.CPU_STATUS_RUN_SYSCALL){
                     // In running state get the current tid
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+                    ITmfStateSystem ssq = entry.getTrace().getStateSystem();
 
                     try {
                         retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.ABSOLUTE, Resolution.NANOSEC));

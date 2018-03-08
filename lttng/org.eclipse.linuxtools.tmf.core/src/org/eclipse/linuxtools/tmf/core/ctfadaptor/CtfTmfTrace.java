@@ -19,6 +19,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -44,6 +45,9 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     //-------------------------------------------
     //        Fields
     //-------------------------------------------
+
+    /** Reference to the state system assigned to this trace */
+    protected ITmfStateSystem ss = null;
 
     /* Reference to the CTF Trace */
     private CTFTrace fTrace;
@@ -162,9 +166,14 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      * @return ITmfContext
      */
     @Override
-    public ITmfContext seekEvent(final ITmfLocation location) {
+    public synchronized ITmfContext seekEvent(final ITmfLocation location) {
         CtfLocation currentLocation = (CtfLocation) location;
         CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        if (fTrace == null) {
+            context.setLocation(null);
+            context.setRank(ITmfContext.UNKNOWN_RANK);
+            return context;
+        }
         /*
          * The rank is set to 0 if the iterator seeks the beginning. If not, it
          * will be set to UNKNOWN_RANK, since CTF traces don't support seeking
@@ -192,8 +201,13 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
 
 
     @Override
-    public ITmfContext seekEvent(double ratio) {
+    public synchronized ITmfContext seekEvent(double ratio) {
         CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        if (fTrace == null) {
+            context.setLocation(null);
+            context.setRank(ITmfContext.UNKNOWN_RANK);
+            return context;
+        }
         final long end = this.getEndTime().getValue();
         final long start = this.getStartTime().getValue();
         final long diff = end - start;
@@ -230,6 +244,14 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         }
 
         return event;
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public ITmfStateSystem getStateSystem() {
+        return this.ss;
     }
 
     /**

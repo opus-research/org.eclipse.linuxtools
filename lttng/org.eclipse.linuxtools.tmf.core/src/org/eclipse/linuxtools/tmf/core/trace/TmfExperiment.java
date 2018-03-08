@@ -202,7 +202,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#armRequest(org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest)
      */
     @Override
-    protected synchronized ITmfContext armRequest(final ITmfDataRequest request) {
+    public synchronized ITmfContext armRequest(final ITmfDataRequest request) {
 
         // Make sure we have something to read from
         if (fTraces == null) {
@@ -382,6 +382,28 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         }
 
         return event;
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#getInitialRangeOffset()
+     */
+    /**
+     * @since 2.0
+     */
+    @Override
+    public ITmfTimestamp getInitialRangeOffset() {
+        if ((fTraces == null) || (fTraces.length == 0)) {
+            return super.getInitialRangeOffset();
+        }
+
+        ITmfTimestamp initTs = TmfTimestamp.BIG_CRUNCH;
+        for (int i = 0; i < fTraces.length; i++) {
+            ITmfTimestamp ts = fTraces[i].getInitialRangeOffset();
+            if (ts.compareTo(initTs) < 0) {
+                initTs = ts;
+            }
+        }
+        return initTs;
     }
 
     /* (non-Javadoc)
