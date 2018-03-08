@@ -39,41 +39,31 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.2</version>
           <executions>
             <execution>
               <id>prepare</id>
               <phase>validate</phase>
               <configuration>
                 <tasks>
-                  <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.plugin.classpath" />
-
-                  <echo message="Attempting to download test traces" />
-
+                  <echo message="prepare phase" />
                   <!-- Download traces -->
-                  <get src="http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2" dest="traces/sample-ctf-trace-20120412.tar.bz2" skipexisting="true" ignoreerrors="true"/>
-                  <get src="http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2" dest="traces/trace2.tar.bz2" skipexisting="true" ignoreerrors="true"/>
+                  <get src="http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2" dest="traces/sample-ctf-trace-20120412.tar.bz2"/>
+                  <get src="http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2" dest="traces/trace2.tar.bz2"/>
 
-                  <!-- Unzip and extract traces, if they are present -->
-                  <if>
-                    <and>
-                      <available file="traces/sample-ctf-trace-20120412.tar.bz2" />
-                      <available file="traces/trace2.tar.bz2" />
-                    </and>
-                    <then>
-                      <bunzip2 src="traces/sample-ctf-trace-20120412.tar.bz2" dest="traces/" />
-                      <bunzip2 src="traces/trace2.tar.bz2" dest="traces/" />
+                  <!-- Unzip Traces -->
+                  <bunzip2 src="traces/sample-ctf-trace-20120412.tar.bz2" dest="traces/" />
+                  <bunzip2 src="traces/trace2.tar.bz2" dest="traces/" />
 
-                      <untar src="traces/sample-ctf-trace-20120412.tar" dest="traces/" />
-                      <untar src="traces/trace2.tar" dest="traces/" />
+                  <!-- Extract traces -->
+                  <untar src="traces/sample-ctf-trace-20120412.tar" dest="traces/" />
+                  <untar src="traces/trace2.tar" dest="traces/" />
 
-                      <echo message="Traces extracted successfully" />
-                    </then>
-                    <else>
-                      <echo message="Traces not found, nothing was extracted" />
-                    </else>
-                  </if>
-
-                <!-- Leave the unextracted files on the server, so they don't get redownloaded again -->
+                  <!-- Delete unnecessary files -->
+                  <delete>
+                    <fileset dir="traces" includes="**/*.tar.bz2"/>
+                    <fileset dir="traces" includes="**/*.tar"/>
+                  </delete>
                 </tasks>
               </configuration>
               <goals>
@@ -81,13 +71,6 @@
               </goals>
             </execution>
           </executions>
-          <dependencies>
-            <dependency>
-              <groupId>ant-contrib</groupId>
-              <artifactId>ant-contrib</artifactId>
-              <version>20020829</version>
-            </dependency>
-        </dependencies>
         </plugin>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
