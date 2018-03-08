@@ -30,7 +30,11 @@ public enum CtfTestTrace {
     /** Another kernel trace */
     TRACE2("../org.eclipse.linuxtools.ctf.core.tests/traces/trace2"),
     /** Kernel trace with event contexts */
-    KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm");
+    KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"),
+    /** Trace synchronization: source trace */
+    SYNC_SRC("../org.eclipse.linuxtools.ctf.core.tests/traces/synctraces/scp_src"),
+    /** Trace synchronization: destination trace */
+    SYNC_DEST("../org.eclipse.linuxtools.ctf.core.tests/traces/synctraces/scp_dest");
 
 
     private final String fPath;
