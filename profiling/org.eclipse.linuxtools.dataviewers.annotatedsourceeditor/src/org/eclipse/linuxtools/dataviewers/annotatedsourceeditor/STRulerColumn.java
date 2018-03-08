@@ -41,8 +41,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.TextLayout;
-import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -784,23 +782,6 @@ public class STRulerColumn implements IVerticalRulerColumn {
      */
     protected CompositeRuler getParentRuler() {
         return fParentRuler;
-    }
-
-    protected void paintHyperLink(int line, int y, int x, int lineheight, GC gc, Display display) {
-        String str = annotationColumn.getAnnotation(line);
-        final TextStyle styledString = new TextStyle(gc.getFont(), null, null);
-        styledString.foreground = display.getSystemColor(SWT.COLOR_BLUE);
-        styledString.underline = true;
-        TextLayout tl = new TextLayout(display);
-        tl.setText(str);
-        tl.setStyle(styledString, 0, str.length());
-        y += lineheight / 2 - gc.stringExtent(str).y / 2;
-        tl.draw(gc, x, y);
-        if (line == 0) {
-            int baselineBias = getBaselineBias(gc, line);
-            String s = "";
-            gc.drawString(s, x + tl.getWidth() + 8, y + baselineBias, true);
-        }
     }
 
 }
