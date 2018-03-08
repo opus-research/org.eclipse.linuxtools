@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -46,7 +45,7 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 	public IDocument getDocument(Object element) {
 		IDocument document = super.getDocument(element);
 		if (document != null && document.getDocumentPartitioner() == null) {
-			FastPartitioner partitioner = new FastPartitioner(
+			SpecfilePartitioner partitioner = new SpecfilePartitioner(
 					new SpecfilePartitionScanner(),
 					SpecfilePartitionScanner.SPEC_PARTITION_TYPES);
 			partitioner.connect(document, false);
