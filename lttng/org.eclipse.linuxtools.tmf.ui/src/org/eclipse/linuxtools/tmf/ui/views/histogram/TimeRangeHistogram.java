@@ -17,9 +17,6 @@ package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -114,22 +111,14 @@ public class TimeRangeHistogram extends Histogram {
 
     @Override
     public void mouseDown(MouseEvent event) {
-        if (fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
-            if (event.button == 2 || (event.button == 1 && (event.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL)) {
-                fDragState = DRAG_RANGE;
-                fDragButton = event.button;
-                fStartPosition = event.x;
-                fMaxOffset = (int) ((fRangeStartTime - fFullRangeStartTime) / fScaledData.fBucketDuration);
-                fMinOffset = (int) ((fRangeStartTime + fRangeDuration - fFullRangeEndTime) / fScaledData.fBucketDuration);
-                return;
-            } else if (event.button == 3) {
-                fDragState = DRAG_ZOOM;
-                fDragButton = event.button;
-                fRangeStartTime = Math.min(getTimestamp(event.x), getEndTime());
-                fRangeDuration = 0;
-                fCanvas.redraw();
-                return;
-            }
+        if ((event.button == 2 || (event.button == 1 && (event.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL)) &&
+                fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
+            fDragState = DRAG_RANGE;
+            fDragButton = event.button;
+            fStartPosition = event.x;
+            fMaxOffset = (int) ((fRangeStartTime - fFullRangeStartTime) / fScaledData.fBucketDuration);
+            fMinOffset = (int) ((fRangeStartTime + fRangeDuration - fFullRangeEndTime) / fScaledData.fBucketDuration);
+            return;
         }
         super.mouseDown(event);
     }
@@ -148,21 +137,6 @@ public class TimeRangeHistogram extends Histogram {
                 setOffset(0);
             }
             return;
-        } else if (fDragState == DRAG_ZOOM && event.button == fDragButton) {
-            fDragState = DRAG_NONE;
-            fDragButton = 0;
-            if (fRangeDuration < 0) {
-                fRangeStartTime = fRangeStartTime + fRangeDuration;
-                fRangeDuration = -fRangeDuration;
-            }
-            if (fRangeDuration > 0) {
-                ((HistogramView) fParentView).updateTimeRange(fRangeStartTime, fRangeStartTime + fRangeDuration);
-            } else {
-                fRangeStartTime = fZoom.getStartTime();
-                fRangeDuration = fZoom.getDuration();
-                fCanvas.redraw();
-            }
-            return;
         }
         super.mouseUp(event);
     }
@@ -178,38 +152,8 @@ public class TimeRangeHistogram extends Histogram {
             setOffset(offset);
             fCanvas.redraw();
             return;
-        } else if (fDragState == DRAG_ZOOM) {
-            long endTime = Math.max(getStartTime(), Math.min(getEndTime(), getTimestamp(event.x)));
-            fRangeDuration = endTime - fRangeStartTime;
-            fCanvas.redraw();
-            return;
         }
         super.mouseMove(event);
-    }
-
-    // ------------------------------------------------------------------------
-    // PaintListener
-    // ------------------------------------------------------------------------
-
-    @Override
-    public void paintControl(PaintEvent event) {
-        super.paintControl(event);
-
-        if (fDragState == DRAG_ZOOM) {
-            Image image = (Image) fCanvas.getData(IMAGE_KEY);
-            assert image != null;
-
-            Image rangeRectangleImage = new Image(image.getDevice(), image, SWT.IMAGE_COPY);
-            GC rangeWindowGC = new GC(rangeRectangleImage);
-
-            drawTimeRangeWindow(rangeWindowGC, fRangeStartTime, fRangeDuration);
-
-            // Draws the buffer image onto the canvas.
-            event.gc.drawImage(rangeRectangleImage, 0, 0);
-
-            rangeWindowGC.dispose();
-            rangeRectangleImage.dispose();
-        }
     }
 
 }
