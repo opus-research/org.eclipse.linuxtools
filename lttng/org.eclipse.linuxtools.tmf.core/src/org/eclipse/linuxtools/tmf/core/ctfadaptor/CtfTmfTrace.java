@@ -122,9 +122,11 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     }
 
     /**
-     * Helper function to get the environment variables from a trace.
-     * This proves that the metadata parsed and the first events were read.
-     * @param path the path of the trace directory
+     * Helper function to get the environment variables from a trace. This
+     * proves that the metadata parsed and the first events were read.
+     *
+     * @param path
+     *            the path of the trace directory
      * @return the map, either empty or not, or null if the trace failed
      * @since 2.0
      */
@@ -243,12 +245,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         return context;
     }
 
-    /**
-     * Method readNextEvent.
-     * @param context ITmfContext
-     * @return CtfTmfEvent
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getNext(ITmfContext)
-     */
     @Override
     public synchronized CtfTmfEvent getNext(final ITmfContext context) {
         if (fTrace == null) {

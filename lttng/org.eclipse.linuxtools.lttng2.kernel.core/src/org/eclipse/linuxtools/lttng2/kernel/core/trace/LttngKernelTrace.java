@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012-2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Matthew Khouzam - Changed to LTTngKernelTrace from ctfKernelTrace
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.trace;
@@ -34,7 +35,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
  *
  * @version 1.0
  * @author Alexandre Montplaisir
- * @author ematkho - rename
+ * @author Matthew Khouzam
  * @since 2.0
  */
 public class LttngKernelTrace extends CtfTmfTrace {
