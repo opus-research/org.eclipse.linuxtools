@@ -59,4 +59,10 @@ public class Messages extends NLS {
      * outside of the SS's range.
      */
     public static String OutOfRangeMsg;
+
+    /** Label for the Highlight button  */
+    public static String HighlightChange;
+
+    /** Label for the Filter button  */
+    public static String FilterButton;
 }
