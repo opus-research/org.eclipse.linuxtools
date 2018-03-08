@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Patrick Tasse - Fix javadoc
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statistics;
@@ -27,16 +26,16 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * should work with any trace type for which we can use the state system.
  *
  * The resulting attribute tree will look like this:
- *<pre>
- * (root)
+ *
+ * <root>
  *   |-- total
  *   \-- event_types
- *        |-- (event name 1)
- *        |-- (event name 2)
- *        |-- (event name 3)
+ *        |-- <event name 1>
+ *        |-- <event name 2>
+ *        |-- <event name 3>
  *       ...
- *</pre>
- * And each (event name)'s value will be an integer, representing how many times
+ *
+ * And each <event name>'s value will be an integer, representing how many times
  * this particular event type has been seen in the trace so far.
  *
  * @author Alexandre Montplaisir
@@ -52,7 +51,7 @@ class StatsStateProvider extends AbstractStateChangeInput {
 
     /**
      * Constructor
-     *
+    *
      * @param trace
      *            The trace for which we build this state system
      */
