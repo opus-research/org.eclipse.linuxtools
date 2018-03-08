@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
@@ -38,7 +38,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public class CtfKernelStateProvider extends AbstractTmfStateProvider {
+public class CtfKernelStateInput extends AbstractStateChangeInput {
 
     /**
      * Version number of this state provider. Please bump this if you modify the
@@ -59,7 +59,7 @@ public class CtfKernelStateProvider extends AbstractTmfStateProvider {
      * @param trace
      *            The LTTng 2.0 kernel trace directory
      */
-    public CtfKernelStateProvider(CtfTmfTrace trace) {
+    public CtfKernelStateInput(CtfTmfTrace trace) {
         super(trace, CtfTmfEvent.class, "LTTng Kernel"); //$NON-NLS-1$
         knownEventNames = fillEventNames();
     }
@@ -80,8 +80,8 @@ public class CtfKernelStateProvider extends AbstractTmfStateProvider {
     }
 
     @Override
-    public CtfKernelStateProvider getNewInstance() {
-        return new CtfKernelStateProvider((CtfTmfTrace) this.getTrace());
+    public CtfKernelStateInput getNewInstance() {
+        return new CtfKernelStateInput((CtfTmfTrace) this.getTrace());
     }
 
     @Override
