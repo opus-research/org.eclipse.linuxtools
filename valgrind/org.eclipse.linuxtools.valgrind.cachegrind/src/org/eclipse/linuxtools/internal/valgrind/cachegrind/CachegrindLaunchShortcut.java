@@ -1,28 +1,33 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2012 Red Hat, Inc.
+ * Copyright (c) 2012 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *    Red Hat Inc. - modification to use code in this plug-in
+ *    Red Hat Inc - initial API and implementation
  *******************************************************************************/ 
-package org.eclipse.linuxtools.internal.gcov.launch;
+package org.eclipse.linuxtools.internal.valgrind.cachegrind;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.linuxtools.gcov.launch.GcovLaunchPlugin;
+import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
+import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
-public class GcovLaunchShortcut extends ProfileLaunchShortcut {
+public class CachegrindLaunchShortcut extends ProfileLaunchShortcut {
 
 
 	@Override
 	protected void setDefaultProfileAttributes(
 			ILaunchConfigurationWorkingCopy wc) throws CoreException {
+		ValgrindOptionsTab tab = new ValgrindOptionsTab();
+		tab.setDefaults(wc);
+		ILaunchConfigurationTab defaultTab = ValgrindLaunchPlugin.getDefault().getToolPage(CachegrindPlugin.TOOL_ID);
+		defaultTab.setDefaults(wc);
 	}
 
 	/**
@@ -31,7 +36,7 @@ public class GcovLaunchShortcut extends ProfileLaunchShortcut {
 	 */
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
-		return getLaunchManager().getLaunchConfigurationType(GcovLaunchPlugin.LAUNCH_ID);
+		return getLaunchManager().getLaunchConfigurationType(ValgrindLaunchPlugin.LAUNCH_ID);
 	}
 
 }
