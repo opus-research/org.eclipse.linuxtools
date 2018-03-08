@@ -169,9 +169,32 @@ public class STPCompletionProcessorTest {
 		assertTrue(proposalsContain(proposals, "No completion data found."));
 	}
 
+	@Test
+	public void testFunctionCompletion() throws BadLocationException {
+		assumeTrue(stapInstalled());
+
+		Document testDocument = new Document(TEST_STP_SCRIPT);
+		@SuppressWarnings("unused")
+		MockSTPEditor editor = new MockSTPEditor(testDocument);
+
+		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
+		String prefix = "probe syscall.write{user_}";
+		testDocument.replace(offset, 0, prefix);
+		offset += prefix.length() - 1;
+
+		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+		ICompletionProposal[] proposals = completionProcessor
+				.computeCompletionProposals(testDocument,
+						offset);
+
+		assertTrue(proposalsContain(proposals, "user_int16"));
+		assertTrue(proposalsContain(proposals, "user_int32"));
+		assertTrue(proposalsContain(proposals, "user_int64"));
+	}
+
 	private boolean proposalsContain(ICompletionProposal[] proposals, String proposal){
 		for (ICompletionProposal p : proposals) {
-			if (p.getDisplayString().equals(proposal))
+			if (p.getDisplayString().contains(proposal))
 				return true;
 		}
 		return false;

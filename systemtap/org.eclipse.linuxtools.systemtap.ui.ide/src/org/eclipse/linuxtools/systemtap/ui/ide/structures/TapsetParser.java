@@ -15,14 +15,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
@@ -350,7 +351,10 @@ public class TapsetParser implements Runnable {
 					String[] test = secondp.split(s);
 					i = 0;
 					for(String t : test) {
-						if(i == 1) {
+						// If i== 1 this is a function name.
+						// Ignore ALL_CAPS functions; they are not meant for end
+						// user use.
+						if(i == 1 && !t.matches("[A-Z_1-9]*")) { //$NON-NLS-1$
 							functions.add(new TreeNode(t, t, true));
 						}
 						else if(i > 1 && t.length() >= 1) {
