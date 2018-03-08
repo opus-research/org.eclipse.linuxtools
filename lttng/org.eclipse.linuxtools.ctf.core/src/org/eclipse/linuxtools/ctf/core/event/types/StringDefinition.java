@@ -103,7 +103,7 @@ public class StringDefinition extends Definition {
     public void read(BitBuffer input) {
         /* Offset the buffer position wrt the current alignment */
         int align = (int) declaration.getAlignment();
-        int pos = input.position() + ((align - (input.position() % align)) % align);
+        long pos = input.position() + ((align - (input.position() % align)) % align);
         input.position(pos);
 
         string.setLength(0);
