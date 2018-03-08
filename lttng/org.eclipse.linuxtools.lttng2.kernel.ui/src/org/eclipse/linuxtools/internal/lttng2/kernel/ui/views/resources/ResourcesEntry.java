@@ -42,7 +42,7 @@ public class ResourcesEntry implements ITimeGraphEntry {
     private final int fQuark;
     private final CtfKernelTrace fTrace;
     private ITimeGraphEntry fParent = null;
-    private final List<ITimeGraphEntry> children = null;
+    private final ITimeGraphEntry[] children = null;
     private final String fName;
     private final Type fType;
     private final int fId;
@@ -79,11 +79,11 @@ public class ResourcesEntry implements ITimeGraphEntry {
 
     @Override
     public boolean hasChildren() {
-        return children != null && children.size() > 0;
+        return children != null && children.length > 0;
     }
 
     @Override
-    public List<ITimeGraphEntry> getChildren() {
+    public ITimeGraphEntry[] getChildren() {
         return children;
     }
 
