@@ -16,13 +16,17 @@ import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
@@ -83,8 +87,18 @@ public class AbstractProviderPreferencesPage extends
 				ProviderProfileConstants.PREFS_KEY,
 				Messages.ProviderPreferencesPage_1, 1, providerList,
 				getFieldEditorParent());
-			addField(editor);
+		addField(editor);
 
+		Control[] providerOptions = editor.getRadioBoxControl(
+				getFieldEditorParent()).getChildren();
+		// Set tool tip text on field editors
+		for (Control control : providerOptions) {
+			String providerId = (String) control.getData();
+			String toolDescription = getToolDescriptionFromId(providerId);
+			if (toolDescription != null && !toolDescription.equals("")) {
+				control.setToolTipText(toolDescription);
+			}
+		}
 	}
 
 	/**
@@ -94,5 +108,30 @@ public class AbstractProviderPreferencesPage extends
 	 */
 	private void setProfilingType(String profilingType) {
 		type = profilingType;
+	}
+	
+	/**
+	 * Get description of tool from the tool id.
+	 *
+	 * @param toolId String unique id of the tool.
+	 * @return String description of tool.
+	 */
+	public static String getToolDescriptionFromId(String toolId) {
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
+						"launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
+		for (IConfigurationElement config : configs) {
+			if (config.getName().equals("provider")) { //$NON-NLS-1$
+				String currentId = config.getAttribute("id"); //$NON-NLS-1$
+				String currentToolDescription = config
+						.getAttribute("description"); //$NON-NLS-1$
+				if (currentId != null && currentToolDescription != null
+						&& currentId.equals(toolId)) {
+					return currentToolDescription;
+				}
+			}
+		}
+		return null;
 	}
 }
