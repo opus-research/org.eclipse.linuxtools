@@ -14,6 +14,7 @@
 package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -348,4 +349,29 @@ public class CtfTmfTraceTest {
         IStatus result = fixture.validate(project, path);
         assertTrue(result.isOK());
     }
+
+    /**
+     * Run the boolean hasEvent(final String) method test
+     */
+    @Test
+    public void testEventLookup() {
+        assertTrue(fixture.hasEvent("sched_switch"));
+        assertFalse(fixture.hasEvent("Sched_switch"));
+        String[] events = { "sched_switch", "sched_wakeup", "timer_init" };
+        assertTrue(fixture.hasAllEvents(events));
+        assertTrue(fixture.hasAtLeastOneOfEvents(events));
+        String[] names = { "inexistent", "sched_switch", "SomeThing" };
+        assertTrue(fixture.hasAtLeastOneOfEvents(names));
+        assertFalse(fixture.hasAllEvents(names));
+    }
+
+    /**
+     * Run the String getHostId() method test
+     */
+    @Test
+    public void testCtfHostId() {
+        String a = fixture.getHostId();
+        assertEquals("\"84db105b-b3f4-4821-b662-efc51455106a\"", a);
+    }
+
 }
