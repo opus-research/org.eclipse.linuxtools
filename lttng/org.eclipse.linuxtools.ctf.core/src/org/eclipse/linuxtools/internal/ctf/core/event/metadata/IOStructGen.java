@@ -380,7 +380,7 @@ public class IOStructGen {
         String left = concatenateUnaryStrings(leftStrings);
 
         if (left.equals(MetadataStrings.MAJOR)) {
-            if (trace.majortIsSet()) {
+            if (trace.majorIsSet()) {
                 throw new ParseException("major is already set"); //$NON-NLS-1$
             }
 
@@ -2070,7 +2070,6 @@ public class IOStructGen {
     private void parseVariantDeclaration(CommonTree declaration,
             VariantDeclaration variant) throws ParseException {
 
-
         /* Get the type specifier list node */
         CommonTree typeSpecifierListNode = (CommonTree) declaration.getFirstChildWithType(CTFParser.TYPE_SPECIFIER_LIST);
 
@@ -2323,13 +2322,7 @@ public class IOStructGen {
 
         long intval;
         try {
-            if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_DEC) {
-                intval = Long.parseLong(strval, 10);
-            } else if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_HEX) {
-                intval = Long.parseLong(strval, 0x10);
-            } else { /* unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_OCT */
-                intval = Long.parseLong(strval, 010); // 010 == 0x08 == 8
-            }
+            intval = Long.decode(strval);
         } catch (NumberFormatException e) {
             throw new ParseException("Invalid integer format: " + strval); //$NON-NLS-1$
         }
