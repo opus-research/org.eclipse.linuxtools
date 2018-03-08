@@ -39,17 +39,17 @@ public class SpecFileHeaderPage extends AbstractRPMPropertyPage {
 		Label rpmDescriptionLabel = new Label(composite, SWT.NONE);
 		rpmDescriptionLabel.setText(Messages
 				.getString("SpecFileHeaderPage.info")); //$NON-NLS-1$
-		Text rpmQiText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY
+		Text rpm_qiText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY
 				| SWT.V_SCROLL | SWT.WRAP);
 		GridData gdQI = new GridData();
 		gdQI.widthHint = convertWidthInCharsToPixels(QI_FIELD_WIDTH);
 		gdQI.heightHint = convertWidthInCharsToPixels(QI_FIELD_HEIGHT);
-		rpmQiText.setLayoutData(gdQI);
+		rpm_qiText.setLayoutData(gdQI);
 
 		// Populate RPM text field
 		try {
 			String rpm_qi = RPMQuery.getHeaderInfo((IFile) getElement());
-			rpmQiText.setText(rpm_qi);
+			rpm_qiText.setText(rpm_qi);
 		} catch (CoreException e) {
 			StatusManager.getManager().handle(new StatusAdapter(e.getStatus()),
 					StatusManager.LOG | StatusManager.SHOW);
