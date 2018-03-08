@@ -83,7 +83,7 @@ public class TmfEventParserStub implements ITmfEventParser {
 
         long location = 0;
         if (context != null && context.getLocation() != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocationData();
+            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
             try {
                 stream.seek(location);
 
