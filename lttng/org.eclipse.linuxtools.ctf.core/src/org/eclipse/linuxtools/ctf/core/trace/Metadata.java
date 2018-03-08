@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import org.antlr.runtime.ANTLRReaderStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.MismatchedTokenException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.eclipse.linuxtools.ctf.parser.CTFLexer;
@@ -175,9 +174,11 @@ public class Metadata {
             tempException = new CTFReaderException(e);
         } catch (ParseException e) {
             tempException = new CTFReaderException(e);
-        } catch (MismatchedTokenException e) {
-            tempException = new CTFReaderException(e);
         } catch (RecognitionException e) {
+            /*
+             * We don't want to expose this ANTLR-specific exception type to the
+             * outside..
+             */
             tempException = new CTFReaderException(e);
         }
 
@@ -249,7 +250,8 @@ public class Metadata {
         try {
             metadataFileChannel.read(magicByteBuffer, 0);
         } catch (IOException e) {
-            throw new CTFReaderException("Unable to read metadata file channel."); //$NON-NLS-1$
+            throw new CTFReaderException(
+                    "Unable to read metadata file channel."); //$NON-NLS-1$
         }
 
         /* Get the first int from the file */
@@ -351,7 +353,8 @@ public class Metadata {
         try {
             metadataFileChannel.read(payloadByteBuffer);
         } catch (IOException e) {
-            throw new CTFReaderException("Error reading metadata packet payload."); //$NON-NLS-1$
+            throw new CTFReaderException(
+                    "Error reading metadata packet payload."); //$NON-NLS-1$
         }
         payloadByteBuffer.rewind();
 
