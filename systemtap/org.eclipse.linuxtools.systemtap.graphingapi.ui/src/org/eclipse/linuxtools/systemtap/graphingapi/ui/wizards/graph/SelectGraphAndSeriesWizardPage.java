@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph;
 
-import java.text.MessageFormat;
-
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.Localization;
 import org.eclipse.swt.SWT;
@@ -74,8 +72,14 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			}
 		}
 
+		//Add the title widgets
+		//data1 = new FormData();
+		//data1.top = new FormAttachment(cmpGraphOptsGraph, 10);
+
 		Group cmpGraphOptsSeries = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//rowLayout = new RowLayout(SWT.VERTICAL);
+		//rowLayout.fill = true;
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		cmpGraphOptsSeries.setLayout(layout);
@@ -113,7 +117,7 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		for(int i=0; i<cboYItems.length; i++) {
 			lblYItems[i] = new Label(cmpGraphOptsSeries, SWT.NONE);
 			lblYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-			lblYItems[i].setText(MessageFormat.format(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries"), new Integer(i))); //$NON-NLS-1$
+			lblYItems[i].setText(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries") + i + ":"); //$NON-NLS-1$ //$NON-NLS-2$
 			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
 			cboYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			cboYItems[i].addSelectionListener(new ComboSelectionListener());
