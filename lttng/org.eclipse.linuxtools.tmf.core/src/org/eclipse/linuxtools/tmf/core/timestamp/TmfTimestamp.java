@@ -16,6 +16,8 @@
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
 
+import java.nio.ByteBuffer;
+
 /**
  * A generic timestamp implementation. The timestamp is represented by the
  * tuple { value, scale, precision }. By default, timestamps are scaled in
@@ -66,17 +68,17 @@ public class TmfTimestamp implements ITmfTimestamp {
     /**
      * The timestamp raw value (mantissa)
      */
-    private final long fValue;
+    private long fValue;
 
     /**
      * The timestamp scale (magnitude)
      */
-    private final int fScale;
+    private int fScale;
 
     /**
      * The value precision (tolerance)
      */
-    private final int fPrecision;
+    private int fPrecision;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -354,6 +356,32 @@ public class TmfTimestamp implements ITmfTimestamp {
         catch (ArithmeticException e) {
             return format.format(0);
         }
+    }
+
+    /**
+     * Write the time stamp to the ByteBuffer so that it can be saved to disk.
+     * @param bufferOut the buffer to write to
+     *
+     * @since 3.0
+     */
+    public void serializeOut(ByteBuffer bufferOut) {
+        bufferOut.putLong(fValue);
+        bufferOut.putInt(fScale);
+        bufferOut.putInt(fPrecision);
+    }
+
+    /**
+     * Create a new TmfTimestamp and serialize it in.
+     *
+     * @param bufferIn the buffer to read the time stamp from
+     * @return the created time stamp
+     * @since 3.0
+     */
+    public static TmfTimestamp newAndSerialize(ByteBuffer bufferIn) {
+        long value = bufferIn.getLong();
+        int scale = bufferIn.getInt();
+        int precision = bufferIn.getInt();
+        return new TmfTimestamp(value, scale, precision);
     }
 
 }

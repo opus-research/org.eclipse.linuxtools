@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,14 +7,16 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Bernd Hufmann - Initial API and implementation
+ *   Francois Chouinard - Initial API and implementation
+ *   Francois Chouinard - Adapted for TMF Trace Model 1.0
  *   Alexandre Montplaisir - Port to JUnit4
+ *   Marc-Andre Laperle - Test BTree indexer
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace.indexer.checkpoint;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -28,9 +30,12 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndex;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfEmptyTraceStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
@@ -38,22 +43,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test suite for the TmfCheckpointIndexer class (events with same
- * timestamp around checkpoint).
+ * Test suite for the TmfBTreeTraceIndexer class.
  */
 @SuppressWarnings("javadoc")
-public class TmfCheckpointIndexTest2 {
+public class TmfBTreeIndexTest {
 
     // ------------------------------------------------------------------------
     // Variables
     // ------------------------------------------------------------------------
 
     private static final String    DIRECTORY   = "testfiles";
-    // Trace has 3 events at t=101 at rank 99, 100, 101
-    // Trace has events with same timestamp (ts=102) for ranks 102..702 -> 2 checkpoints with same timestamp are created
-    private static final String    TEST_STREAM = "A-Test-10K-2";
+    private static final String    TEST_STREAM = "A-Test-10K";
     private static final int       BLOCK_SIZE  = 100;
-    private static final int       NB_EVENTS   = 702;
+    private static final int       NB_EVENTS   = 10000;
     private static TestTrace       fTrace      = null;
     private static EmptyTestTrace  fEmptyTrace = null;
 
@@ -68,17 +70,30 @@ public class TmfCheckpointIndexTest2 {
 
     @After
     public void tearDown() {
-        fTrace.dispose();
-        fTrace = null;
-        fEmptyTrace.dispose();
-        fEmptyTrace = null;
+        String directory = TmfTraceManager.getSupplementaryFileDir(fTrace);
+        try {
+            fTrace.dispose();
+            fTrace = null;
+            fEmptyTrace.dispose();
+            fEmptyTrace = null;
+        } finally {
+            File dir = new File(directory);
+            if (dir.exists()) {
+                File[] files = dir.listFiles();
+                for (File file : files) {
+                    file.delete();
+                }
+                dir.delete();
+            }
+        }
+
     }
 
     // ------------------------------------------------------------------------
     // Helper classes
     // ------------------------------------------------------------------------
 
-    private static class TestIndexer extends TmfCheckpointIndexer {
+    private static class TestIndexer extends TmfBTreeTraceIndexer {
         @SuppressWarnings({ })
         public TestIndexer(TestTrace testTrace) {
             super(testTrace, BLOCK_SIZE);
@@ -121,10 +136,7 @@ public class TmfCheckpointIndexTest2 {
     private synchronized void setupTrace(final String path) {
         if (fTrace == null) {
             try {
-                final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
-                final File test = new File(FileLocator.toFileURL(location).toURI());
-                fTrace = new TestTrace(test.toURI().getPath(), BLOCK_SIZE);
-                fTrace.indexTrace(true);
+                fTrace = createTrace(path);
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
             } catch (final URISyntaxException e) {
@@ -140,84 +152,80 @@ public class TmfCheckpointIndexTest2 {
         }
     }
 
+    private TestTrace createTrace(final String path) throws URISyntaxException, IOException, TmfTraceException {
+        final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
+        final File test = new File(FileLocator.toFileURL(location).toURI());
+        TestTrace trace = new TestTrace(test.toURI().getPath(), BLOCK_SIZE);
+        trace.indexTrace(true);
+        return trace;
+    }
+
     // ------------------------------------------------------------------------
     // Verify checkpoints
     // ------------------------------------------------------------------------
 
     @Test
-    public void testTmfTraceMultiTimestamps() {
+    public void testTmfTraceIndexing() {
+        verifyIndexContent();
+    }
+
+    private static void verifyIndexContent() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());
         assertEquals("getRange-start", 1,          fTrace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end",   102,        fTrace.getTimeRange().getEndTime().getValue());
+        assertEquals("getRange-end",   NB_EVENTS,  fTrace.getTimeRange().getEndTime().getValue());
         assertEquals("getStartTime",   1,          fTrace.getStartTime().getValue());
-        assertEquals("getEndTime",     102,        fTrace.getEndTime().getValue());
+        assertEquals("getEndTime",     NB_EVENTS,  fTrace.getEndTime().getValue());
 
         ITmfTraceIndex checkpoints = fTrace.getIndexer().getCheckpoints();
+        int pageSize = fTrace.getCacheSize();
         assertTrue("Checkpoints exist",  checkpoints != null);
-        assertEquals("Checkpoints size", NB_EVENTS / BLOCK_SIZE + 1, checkpoints.size());
+        assertEquals("Checkpoints size", NB_EVENTS / BLOCK_SIZE, checkpoints.size());
 
-        // Trace has 3 events with same timestamp (ts=101) at rank 99, 100, 101
-
-        // Verify that the event at rank=99 is returned when seeking to ts=101 (first event with this timestamp)
-        // and not the event at checkpoint boundary
-        TmfTimestamp seekTs = new TmfTimestamp(101, -3, 0);
-        ITmfContext ctx = fTrace.seekEvent(seekTs);
-        ITmfEvent event = fTrace.getNext(ctx);
-
-        assertEquals(99, ctx.getRank());
-        assertEquals(0, seekTs.compareTo(event.getTimestamp(), false));
-
-        event = fTrace.getNext(ctx);
-
-        assertEquals(100, ctx.getRank());
-        assertEquals(0, seekTs.compareTo(event.getTimestamp(), false));
-
-        event = fTrace.getNext(ctx);
-
-        assertEquals(101, ctx.getRank());
-        assertEquals(0, seekTs.compareTo(event.getTimestamp(), false));
-
-        // Trace has events with same timestamp (ts=102) for ranks 102..702 -> 2 checkpoints with same timestamp are created
-        // Verify that the event at rank=102 is returned when seeking to ts=102 (first event with this timestamp)
-        // and not the event at checkpoint boundary
-        seekTs = new TmfTimestamp(102, -3, 0);
-        ctx = fTrace.seekEvent(seekTs);
-        event = fTrace.getNext(ctx);
-
-        assertEquals(102, ctx.getRank());
-        assertEquals(0, seekTs.compareTo(event.getTimestamp(), false));
-
-        // Verify seek to first checkpoint
-        seekTs = new TmfTimestamp(1, -3, 0);
-        ctx = fTrace.seekEvent(seekTs);
-        event = fTrace.getNext(ctx);
-
-        assertEquals(1, ctx.getRank());
-        assertEquals(0, seekTs.compareTo(event.getTimestamp(), false));
-
-        // Verify seek to timestamp before first event
-        seekTs = new TmfTimestamp(0, -3, 0);
-        ctx = fTrace.seekEvent(seekTs);
-        event = fTrace.getNext(ctx);
-
-        assertEquals(1, ctx.getRank());
-        assertEquals(0, new TmfTimestamp(1, -3, 0).compareTo(event.getTimestamp(), false));
-
-        // Verify seek to timestamp between first and second checkpoint
-        seekTs = new TmfTimestamp(50, -3, 0);
-        ctx = fTrace.seekEvent(seekTs);
-        event = fTrace.getNext(ctx);
-
-        assertEquals(50, ctx.getRank());
-        assertEquals(0, seekTs.compareTo(event.getTimestamp(), false));
-
-        // Verify seek to timestamp after last event in trace
-        seekTs = new TmfTimestamp(103, -3, 0);
-        ctx = fTrace.seekEvent(seekTs);
-        event = fTrace.getNext(ctx);
-
-        assertEquals(-1, ctx.getRank());
-        assertNull(event);
+        // Validate that each checkpoint points to the right event
+        for (int i = 0; i < checkpoints.size(); i++) {
+            ITmfCheckpoint checkpoint = checkpoints.get(i);
+            TmfContext context = new TmfContext(checkpoint.getLocation(), i * pageSize);
+            ITmfEvent event = fTrace.parseEvent(context);
+            assertTrue(context.getRank() == i * pageSize);
+            assertTrue((checkpoint.getTimestamp().compareTo(event.getTimestamp(), false) == 0));
+        }
     }
+
+    @Test
+    public void testEmptyTmfTraceIndexing() {
+        assertEquals("getCacheSize",   ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, fEmptyTrace.getCacheSize());
+        assertEquals("getTraceSize",   0,  fEmptyTrace.getNbEvents());
+        assertEquals("getRange-start", TmfTimestamp.BIG_BANG, fEmptyTrace.getTimeRange().getStartTime());
+        assertEquals("getRange-end",   TmfTimestamp.BIG_BANG, fEmptyTrace.getTimeRange().getEndTime());
+        assertEquals("getStartTime",   TmfTimestamp.BIG_BANG, fEmptyTrace.getStartTime());
+        assertEquals("getEndTime",     TmfTimestamp.BIG_BANG, fEmptyTrace.getEndTime());
+
+        ITmfTraceIndex checkpoints = fEmptyTrace.getIndexer().getCheckpoints();
+        int pageSize = fEmptyTrace.getCacheSize();
+        assertTrue("Checkpoints exist",  checkpoints != null);
+        assertEquals("Checkpoints size", 0, checkpoints.size());
+
+        // Validate that each checkpoint points to the right event
+        for (int i = 0; i < checkpoints.size(); i++) {
+            ITmfCheckpoint checkpoint = checkpoints.get(i);
+            TmfContext context = new TmfContext(checkpoint.getLocation(), i * pageSize);
+            ITmfEvent event = fEmptyTrace.parseEvent(context);
+            assertTrue(context.getRank() == i * pageSize);
+            assertTrue((checkpoint.getTimestamp().compareTo(event.getTimestamp(), false) == 0));
+        }
+    }
+
+    @Test
+    public void testReopenIndex() throws Exception {
+        fTrace.dispose();
+        fTrace = createTrace(DIRECTORY + File.separator + TEST_STREAM);
+        assertFalse(fTrace.getIndexer().getCheckpoints().isCreatedFromScratch());
+        long currentTimeMillis = System.currentTimeMillis();
+        fTrace.indexTrace(true);
+        System.out.println("indexing time: " + (System.currentTimeMillis() - currentTimeMillis));
+
+        verifyIndexContent();
+    }
+
 }

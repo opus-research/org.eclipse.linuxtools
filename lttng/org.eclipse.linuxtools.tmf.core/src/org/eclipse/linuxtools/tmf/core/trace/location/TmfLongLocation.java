@@ -13,6 +13,8 @@
 package org.eclipse.linuxtools.tmf.core.trace.location;
 
 
+import java.nio.ByteBuffer;
+
 /**
  * A concrete implementation of TmfLocation based on Long:s
  *
@@ -39,9 +41,44 @@ public final class TmfLongLocation extends TmfLocation {
         super(other.getLocationInfo());
     }
 
+    /**
+     * Empty constructor. Useful for serialization.
+     */
+    protected TmfLongLocation() {
+    }
+
     @Override
     public Long getLocationInfo() {
         return (Long) super.getLocationInfo();
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeOut(ByteBuffer bufferOut) {
+        bufferOut.putLong(getLocationInfo().longValue());
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeIn(ByteBuffer bufferIn) {
+        this.fLocationInfo = bufferIn.getLong();
+    }
+
+    /**
+     * Create a new TmfLongLocation and serialize it in.
+     *
+     * @param bufferIn the buffer to read the TmfLongLocation from
+     * @return the created TmfLongLocation
+     * @since 3.0
+     */
+    public static ITmfLocation newAndserialize(ByteBuffer bufferIn) {
+        TmfLongLocation location = new TmfLongLocation();
+        location.serializeIn(bufferIn);
+        return location;
     }
 
 }
