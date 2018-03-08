@@ -32,6 +32,11 @@ import org.eclipse.ui.IWorkbenchActionConstants;
  * @author Ryan Morse
  */
 public class ProbeAliasBrowserView extends BrowserView {
+	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView";
+	private ProbeAliasAction doubleClickAction;
+	private IDoubleClickListener dblClickListener;
+	private Menu menu;
+
 	public ProbeAliasBrowserView() {
 		super();
 		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
@@ -40,6 +45,7 @@ public class ProbeAliasBrowserView extends BrowserView {
 	/**
 	 * Creates the UI on the given <code>Composite</code>
 	 */
+	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 		super.createPartControl(parent);
@@ -53,6 +59,7 @@ public class ProbeAliasBrowserView extends BrowserView {
 	/**
 	 * Refreshes the list of probe aliases in the viewer.
 	 */
+	@Override
 	public void refresh() {
 		LogManager.logDebug("Start refresh:", this); //$NON-NLS-1$
 		super.viewer.setInput(TapsetLibrary.getProbes());
@@ -82,6 +89,7 @@ public class ProbeAliasBrowserView extends BrowserView {
 		LogManager.logDebug("End makeActions:", this); //$NON-NLS-1$
 	}
 	
+	@Override
 	public void dispose() {
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();
@@ -95,9 +103,4 @@ public class ProbeAliasBrowserView extends BrowserView {
 			menu.dispose();
 		menu = null;
 	}
-
-	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView";
-	private ProbeAliasAction doubleClickAction;
-	private IDoubleClickListener dblClickListener;
-	private Menu menu;
 }

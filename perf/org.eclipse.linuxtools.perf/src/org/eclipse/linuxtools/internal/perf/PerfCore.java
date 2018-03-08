@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.cdt.core.parser.util.ArrayUtil;
+import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -60,24 +61,67 @@ public class PerfCore {
 		if (!str.trim().equals("")) {
 			if (print != null) {
 				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
-			} else {
-				System.out.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
 			}
 		}
 		return str;
 	}
+	// Maps event lists to host names for caching
+	private static HashMap<String,HashMap<String, ArrayList<String>>> eventsHostMap = null;
 	private static HashMap<String,ArrayList<String>> eventList = null;
 	public static HashMap<String,ArrayList<String>> getEventList() { 
 		return getEventList(null);
 	}
+
+	/**
+	 * Gets the list of events for a given launch configuration. Uses a cache for each host
+	 * @param config
+	 * @return
+	 */
 	public static HashMap<String,ArrayList<String>> getEventList(ILaunchConfiguration config) {
-		//cache'ing
-		if (eventList == null) {
-			//if (PerfPlugin.DEBUG_ON) System.out.println("Event list cache empty, loading new event list.");
+		String projectHost = getHostName(config);
+
+		if(eventsHostMap == null){
+			eventsHostMap = new HashMap<String, HashMap<String,ArrayList<String>>>();
+		}
+
+		// local projects have null hosts
+		if(projectHost == null){
+			projectHost = "local";
+		}
+
+		eventList = eventsHostMap.get(projectHost);
+
+		if(eventList == null){
 			eventList = loadEventList(config);
+			eventsHostMap.put(projectHost, eventList);
 		}
 		return eventList;
 	}
+
+
+	/**
+	 *
+	 * @param config
+	 * @return the name of the host in which the config's project is stored
+	 */
+	private static String getHostName(ILaunchConfiguration config){
+		String projectName = null;
+		try {
+			projectName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
+		} catch (CoreException e) {
+			return null;
+		}
+		if (projectName.equals("")) {
+			return null;
+		}
+		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+		if(project == null){
+			return null;
+		}
+		return project.getLocationURI().getHost();
+
+	}
+
 	public static HashMap<String,ArrayList<String>> loadEventList(ILaunchConfiguration config) {
 		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		IProject project = null;
@@ -88,7 +132,12 @@ public class PerfCore {
 		} else {
 			ConfigUtils configUtils = new ConfigUtils(config);
 			try {
-				project = ConfigUtils.getProject(configUtils.getProjectName());
+				String projectName = configUtils.getProjectName();
+				// an empty string is not a legal path to file argument for ConfigUtils.getProject
+				if(projectName != null && !projectName.equals("")){
+					project = ConfigUtils.getProject(projectName);
+				}
+
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
@@ -188,7 +237,7 @@ public class PerfCore {
 
 		//p.waitFor();
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		return spitStream(input, "Perf --version STDOUT", null);
+		return spitStream(input, "Perf --version", null);
 	}
 
 	public static boolean checkPerfInPath()
@@ -309,7 +358,6 @@ public class PerfCore {
 		}
 
 		//(Annotate string per symbol)
-		//if (PerfPlugin.DEBUG_ON) System.out.println(Arrays.toString( (String[])base.toArray( new String[base.size()] ) ));
 		return base.toArray( new String[base.size()] );
 	}
 	//Runs Perf Record on the given binary and records into perf.data before calling Report() to feed in the results. 
@@ -331,7 +379,7 @@ public class PerfCore {
 			}
 			error = new BufferedReader(new InputStreamReader(perfRecord.getErrorStream()));
 			perfRecord.waitFor();			
-			spitStream(error,"Perf Record STDERR", null);
+			spitStream(error,"Perf Record", null);
 		} catch( IOException e ) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -502,7 +550,7 @@ public class PerfCore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		spitStream(error,"Perf Report STDERR", print);
+		spitStream(error,"Perf Report", print);
 
 		boolean SourceLineNumbers = PerfPlugin.ATTR_SourceLineNumbers_default;
 		boolean Kernel_SourceLineNumbers = PerfPlugin.ATTR_Kernel_SourceLineNumbers_default;
@@ -558,7 +606,7 @@ public class PerfCore {
 						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {
 							currentDso.removeChild(currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols));
 						}
-						spitStream(error,"Perf Annotate STDERR", print);
+						spitStream(error,"Perf Annotate", print);
 					}
 				}
 			}

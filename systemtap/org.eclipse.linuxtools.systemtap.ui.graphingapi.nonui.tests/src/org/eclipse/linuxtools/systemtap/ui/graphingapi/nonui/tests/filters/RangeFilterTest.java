@@ -11,30 +11,31 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.filters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.RangeFilter;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.MockDataSet;
 import org.eclipse.ui.XMLMemento;
+import org.junit.Before;
+import org.junit.Test;
 
-
-import junit.framework.TestCase;
-
-public class RangeFilterTest extends TestCase {
-	public RangeFilterTest(String name) {
-		super(name);
+public class RangeFilterTest {
+	
+	@Before
+	public void setUp() {
+		filter = new RangeFilter(0, 1, 2, RangeFilter.INSIDE_BOUNDS | RangeFilter.INCLUSIVE);
 	}
-
-	protected void setUp() throws Exception {
-		super.setUp();
-		filter = new RangeFilter(0, new Integer(1), new Integer(2), RangeFilter.INSIDE_BOUNDS | RangeFilter.INCLUSIVE);
-	}
-
+	@Test
 	public void testRangeFilter() {
-		RangeFilter filter = new RangeFilter(-1, new Integer(3), new Integer(5), RangeFilter.INSIDE_BOUNDS);
+		RangeFilter filter = new RangeFilter(-1, 3, 5, RangeFilter.INSIDE_BOUNDS);
 		assertNotNull(filter);
 	}
-	
+	@Test
 	public void testFilter() {
 		int width = 4;
 		int height = 10;
@@ -60,7 +61,7 @@ public class RangeFilterTest extends TestCase {
 		assertEquals(data[2].get(5), data2[2].get(3));
 
 
-		filter = new RangeFilter(0, new Integer(0), new Integer(2), RangeFilter.INSIDE_BOUNDS);
+		filter = new RangeFilter(0, 0, 2, RangeFilter.INSIDE_BOUNDS);
 		data2 = filter.filter(data);
 
 		assertEquals(width, data.length);
@@ -76,7 +77,7 @@ public class RangeFilterTest extends TestCase {
 		assertEquals(data[2].get(7), data2[2].get(2));
 
 
-		filter = new RangeFilter(0, new Integer(0), new Integer(2), RangeFilter.OUTSIDE_BOUNDS | RangeFilter.INCLUSIVE);
+		filter = new RangeFilter(0, 0, 2, RangeFilter.OUTSIDE_BOUNDS | RangeFilter.INCLUSIVE);
 		data2 = filter.filter(data);
 
 		assertEquals(width, data.length);
@@ -94,7 +95,7 @@ public class RangeFilterTest extends TestCase {
 		assertEquals(data[2].get(5), data2[2].get(3));
 
 
-		filter = new RangeFilter(0, new Integer(0), new Integer(2), RangeFilter.INSIDE_BOUNDS);
+		filter = new RangeFilter(0, 0, 2, RangeFilter.INSIDE_BOUNDS);
 		data2 = filter.filter(data);
 
 		assertEquals(width, data.length);
@@ -110,7 +111,7 @@ public class RangeFilterTest extends TestCase {
 		assertEquals(data[2].get(7), data2[2].get(2));
 		
 
-		filter = new RangeFilter(0, new Integer(0), new Integer(2), RangeFilter.OUTSIDE_BOUNDS);
+		filter = new RangeFilter(0, 0, 2, RangeFilter.OUTSIDE_BOUNDS);
 		data2 = filter.filter(data);
 
 		assertEquals(width, data.length);
@@ -119,20 +120,16 @@ public class RangeFilterTest extends TestCase {
 		assertEquals(0, data2[0].size());
 		
 		
-		filter = new RangeFilter(-1, new Integer(1), new Integer(3), 0);
+		filter = new RangeFilter(-1, 1, 3, 0);
 		assertNull(filter.filter(data));
 	}
-	
+	@Test
 	public void testGetID() {
 		assertTrue(RangeFilter.ID.equals(filter.getID()));
 	}
-
+	@Test
 	public void testWriteXML() {
 		filter.writeXML(XMLMemento.createWriteRoot("test"));
-	}
-	
-	protected void tearDown() throws Exception {
-		super.tearDown();
 	}
 	
 	RangeFilter filter;

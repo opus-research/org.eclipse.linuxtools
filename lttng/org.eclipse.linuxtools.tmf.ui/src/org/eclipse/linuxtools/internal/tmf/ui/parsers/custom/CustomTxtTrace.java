@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *******************************************************************************/
@@ -124,7 +124,7 @@ public class CustomTxtTrace extends TmfTrace<CustomTxtEvent> implements ITmfEven
             return new CustomTxtTraceContext(NULL_LOCATION, ITmfContext.UNKNOWN_RANK);
         }
         try {
-            long pos = (long) (ratio * fFile.length());
+            long pos = Math.round(ratio * fFile.length());
             while (pos > 0) {
                 fFile.seek(pos - 1);
                 if (fFile.read() == '\n') {
@@ -171,7 +171,7 @@ public class CustomTxtTrace extends TmfTrace<CustomTxtEvent> implements ITmfEven
 
     @Override
     public synchronized CustomTxtEvent getNext(final ITmfContext context) {
-        final ITmfContext savedContext = context.clone();
+        final ITmfContext savedContext = new TmfContext(context.getLocation(), context.getRank());
         final CustomTxtEvent event = parse(context);
         if (event != null) {
             updateAttributes(savedContext, event.getTimestamp());

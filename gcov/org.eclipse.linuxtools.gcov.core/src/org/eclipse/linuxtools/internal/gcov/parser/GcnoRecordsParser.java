@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.utils.BEDataInputStream;
@@ -76,7 +77,7 @@ public class GcnoRecordsParser {
 				stream = new LEDataInputStream((DataInputStream) stream);
 			}else{
 				String message = magic + " :desn't correspond to a correct note file header\n";
-				Status status = new Status(Status.ERROR, Activator.PLUGIN_ID, message);
+				Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 				throw new CoreException(status);
 			}
 		}
@@ -102,7 +103,7 @@ public class GcnoRecordsParser {
 				int length=stream.readInt();
 
 				// parse gcno data
-				if ((int)tag ==  GCOV_TAG_FUNCTION){
+				if (tag ==  GCOV_TAG_FUNCTION){
 					// before parse new function, add current function to functions list
 					if (parseFirstFnctn == true) fnctns.add(fnctn);
 					
@@ -110,7 +111,7 @@ public class GcnoRecordsParser {
 					long fnctnChksm = (stream.readInt()&MasksGenerator.UNSIGNED_INT_MASK);
 					/*
 					 * danielhb, 2012-08-06: Gcov versions 4.7.0 or
-					 * later (long value = 875575105) has different format for
+					 * later (long value = 875575082) has different format for
 					 * the data file:
 					 * 
 					 * prior format:
@@ -126,7 +127,7 @@ public class GcnoRecordsParser {
 					 * TL;DR Need to consume the extra long value.
 					 * 
 					 */
-					if (version >= 875575105)
+					if (version >= 875575082)
 					{
 						// long cfgChksm = (stream.readInt()&MasksGenerator.UNSIGNED_INT_MASK);
 						stream.readInt();
@@ -145,7 +146,7 @@ public class GcnoRecordsParser {
 					continue;
 				}
 				
-				else if ((int)tag ==  GCOV_TAG_BLOCKS){
+				else if (tag ==  GCOV_TAG_BLOCKS){
 					blocks = new ArrayList<Block>();
 					for (int i = 0; i < length; i++) {
 						long BlckFlag = stream.readInt()& MasksGenerator.UNSIGNED_INT_MASK;
@@ -186,7 +187,7 @@ public class GcnoRecordsParser {
 							if (a.getSrcBlock() != null ) {
 								 // Exceptional exit from this function, the 
 								 // 	source block must be a call.
-								srcBlk = blocks.get((int)srcBlockIndice);		
+								srcBlk = blocks.get(srcBlockIndice);		
 								srcBlk.setCallSite(true);
 								a.setCallNonReturn(true);
 							} else {
@@ -232,10 +233,10 @@ public class GcnoRecordsParser {
 						}
 					} while (true);
 					
-					fnctn.getFunctionBlocks().get(((int)numBlock))
+					fnctn.getFunctionBlocks().get((numBlock))
 					.setEncoding(lineNos);
 				
-					fnctn.getFunctionBlocks().get(((int)numBlock))
+					fnctn.getFunctionBlocks().get((numBlock))
 					.setNumLine(ix);
 					
 					continue;
