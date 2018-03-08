@@ -34,6 +34,5 @@ public abstract class SystemTapLCTG extends ProfileLaunchConfigurationTabGroup {
 		setTabs(tabs.toArray(new AbstractLaunchConfigurationTab[tabs.size()]));
 	}
 	
-	@Override
 	public abstract AbstractLaunchConfigurationTab[] getProfileTabs();
 }
