@@ -175,12 +175,21 @@ public class CtfTmfTraceTest {
     }
 
     /**
-     * Run the String getEnvironment method test.
+     * Run the String[] getEnvNames() method test.
+     */
+    @Test
+    public void testGetEnvNames() {
+        String[] result = fixture.getEnvNames();
+        assertNotNull(result);
+    }
+
+    /**
+     * Run the String getEnvValue(String) method test.
      */
     @Test
     public void testGetEnvValue() {
         String key = "tracer_name";
-        String result = fixture.getEnvironment().get(key);
+        String result = fixture.getEnvValue(key);
         assertEquals("\"lttng-modules\"",result);
     }
 
@@ -219,7 +228,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetNbEnvVars() {
-        int result = fixture.getEnvironment().size();
+        int result = fixture.getNbEnvVars();
         assertEquals(8, result);
     }
 
