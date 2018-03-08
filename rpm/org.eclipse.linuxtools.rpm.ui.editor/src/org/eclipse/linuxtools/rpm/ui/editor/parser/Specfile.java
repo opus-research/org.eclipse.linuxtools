@@ -190,9 +190,8 @@ public class Specfile {
 		int oldPatchNumber = -1;
 		Map<Integer, SpecfileSource> newPatches = new HashMap<Integer, SpecfileSource>();
 		for (SpecfileSource thisPatch: patches) {
-			if (thisPatch.getSpecfile() == null) {
+			if (thisPatch.getSpecfile() == null)
 				thisPatch.setSpecfile(this);
-			}
 			oldPatchNumber = thisPatch.getNumber();
 			thisPatch.setNumber(newPatchNumber);
 			thisPatch.changeDeclaration(oldPatchNumber);
@@ -220,9 +219,8 @@ public class Specfile {
 	public int getLineLength(int lineNumber) throws BadLocationException {
 		int length = document.getLineLength(lineNumber);
 		String lineDelimiter = document.getLineDelimiter(lineNumber);
-		if (lineDelimiter != null) {
+		if (lineDelimiter != null)
 			length = length - lineDelimiter.length();
-		}
 		return length;
 	}
 
@@ -258,9 +256,8 @@ public class Specfile {
 	}
 
 	public void addPackage(SpecfilePackage subPackage) {
-		if (! packages.contains(subPackage)) {
+		if (! packages.contains(subPackage))
 			packages.addPackage(subPackage);
-		}
 	}
 
 	public void modifyDefine(String defineName, SpecfilePackage rpmPackage,
