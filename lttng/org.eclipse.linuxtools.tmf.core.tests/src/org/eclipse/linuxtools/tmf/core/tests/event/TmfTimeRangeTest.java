@@ -27,7 +27,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfTimeRange class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls", "javadoc"})
 public class TmfTimeRangeTest {
 
     // ------------------------------------------------------------------------

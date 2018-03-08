@@ -54,6 +54,7 @@ import org.osgi.framework.FrameworkUtil;
  * The class <code>TraceControlUstSessionTests</code> contains UST
  * session/channel/event handling test cases.
  */
+@SuppressWarnings("nls")
 public class TraceControlUstSessionTests {
 
     // ------------------------------------------------------------------------

@@ -35,6 +35,7 @@ import org.junit.Test;
  *
  * @author Bernd Hufmann
  */
+@SuppressWarnings("nls")
 public class TmfUml2SDSyncLoaderFilterTest {
 
     private static Uml2SDTestFacility fFacility;
@@ -62,7 +63,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
 
         criteria = new Criteria();
         criteria.setSyncMessageSelected(true);
-        criteria.setExpression("BALL_.*");
+        criteria.setExpression("BALL_.*"); //$NON-NLS-1$
         filterToSave.add(new FilterCriteria(criteria, false, false));
     }
 
