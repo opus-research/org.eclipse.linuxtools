@@ -10,23 +10,32 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.piechart;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.swtchart.ISeries;
 
 public class PieChartPaintListener implements PaintListener {
 
     private PieChart chart;
     private Control plotArea;
+    private String[] seriesNames;
     private static final int X_GAP = 10;
 
-    public PieChartPaintListener(PieChart chart, Control plotArea) {
+    protected static final Color WHITE = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+	protected static final Color BLACK = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
+
+    public PieChartPaintListener(PieChart chart, Control plotArea, String[] seriesNames) {
         this.chart = chart;
         this.plotArea = plotArea;
+        this.seriesNames = seriesNames;
     }
 
     @Override
@@ -39,16 +48,28 @@ public class PieChartPaintListener implements PaintListener {
 			bounds = plotArea.getBounds();
 		}
         double[][] series = this.getPieSeriesArray();
+        if (series.length == 0) {
+            Rectangle allBounds = chart.getBounds();
+            Font font = new Font(Display.getDefault(), "Arial", 15, SWT.BOLD); //$NON-NLS-1$
+            gc.setForeground(BLACK);
+            gc.setFont(font);
+            String text = "No data"; //$NON-NLS-1$
+            Point textSize = e.gc.textExtent(text);
+            gc.drawText(text, (allBounds.width - textSize.x) / 2, (allBounds.height -  textSize.y) / 2);
+            font.dispose();
+            return;
+        }
         int width = (bounds.width - bounds.x) / series.length;
         int x = bounds.x;
 
-        for (double s[] : series) {
-            drawPieChart(e, s, new Rectangle(x, bounds.y, width, bounds.height));
+        for (int i = 0; i < series.length; i++) {
+            double[] s = series[i];
+            drawPieChart(e, i, s, new Rectangle(x, bounds.y, width, bounds.height));
             x += width;
         }
     }
 
-    private void drawPieChart(PaintEvent e, double series[], Rectangle bounds) {
+    private void drawPieChart(PaintEvent e, int chartnum, double series[], Rectangle bounds) {
         int nelemSeries = series.length;
         double sumTotal = 0;
 
@@ -84,6 +105,14 @@ public class PieChartPaintListener implements PaintListener {
                 initialAngle += (-sweepAngle);
             }
         }
+        Font font = new Font(Display.getDefault(), "Arial", 15, SWT.BOLD); //$NON-NLS-1$
+        gc.setForeground(BLACK);
+        gc.setBackground(WHITE);
+        gc.setFont(font);
+        String text = seriesNames[chartnum];
+        Point textSize = e.gc.textExtent(text);
+        gc.drawText(text, pieX + (pieWidth - textSize.x) / 2, pieY + pieWidth + textSize.y);
+        font.dispose();
     }
 
     private double[][] getPieSeriesArray() {
