@@ -33,174 +33,165 @@ import org.swtchart.LineStyle;
  * A utility class that handles the charts creation (pie chart & bar chart)
  * 
  * @author Marzia Maugeri <marzia.maugeri@st.com>
- * 
+ *
  */
 public class ChartFactory {
+	
+	/** 
+	 * Produces a pie chart from the input objects.
+	 * 
+	 * @param objects the input data
+	 * @param nameField the field used to get the labels of the objects (colored parts in the pie).
+	 * @param valField the field providing the values for the pie parts.
+	 * @return a new pie chart
+	 */
+	public static final Chart producePieChart(Object[] objects, ISTDataViewersField nameField, List<IChartField> valFields, String title)
+	{
 
-    /**
-     * Produces a pie chart from the input objects.
-     * 
-     * @param objects
-     *            the input data
-     * @param nameField
-     *            the field used to get the labels of the objects (colored parts in the pie).
-     * @param valField
-     *            the field providing the values for the pie parts.
-     * @return a new pie chart
-     */
-    public static final Chart producePieChart(Object[] objects, ISTDataViewersField nameField,
-            List<IChartField> valFields, String title) {
+		ChartView view;
+		try {
 
-        ChartView view;
-        try {
+			final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
+			final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
+			final Color GRAD = new Color(Display.getDefault(), 225, 225, 225);
 
-            final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
-            final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
-            final Color GRAD = new Color(Display.getDefault(), 225, 225, 225);
+			view = (ChartView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ChartView.VIEW_ID, ""+(ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
+			PieChart chart = new PieChart(view.getParent(), SWT.NONE);
 
-            view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(ChartView.VIEW_ID, "" + (ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
-            PieChart chart = new PieChart(view.getParent(), SWT.NONE);
+			chart.setBackground(WHITE);
+			chart.setBackgroundInPlotArea(GRAD);
 
-            chart.setBackground(WHITE);
-            chart.setBackgroundInPlotArea(GRAD);
+			chart.getTitle().setText(title);
+			chart.getTitle().setForeground(BLACK);
 
-            chart.getTitle().setText(title);
-            chart.getTitle().setForeground(BLACK);
+			chart.getLegend().setPosition(SWT.RIGHT);
 
-            chart.getLegend().setPosition(SWT.RIGHT);
+			String [] valueLabels = new String [objects.length];
+			for (int i = 0; i < objects.length; i++) {
+				valueLabels[i] = nameField.getValue(objects[i]);
+			}
 
-            String[] valueLabels = new String[objects.length];
-            for (int i = 0; i < objects.length; i++) {
-                valueLabels[i] = nameField.getValue(objects[i]);
-            }
+			/*String [] pieChartNames = new String [valFields.size()];
+			for (int i = 0; i < valFields.size(); i++) {
+				pieChartNames[i] = valFields.get(i).getColumnHeaderText();
+			}*/
 
-            /*
-             * String [] pieChartNames = new String [valFields.size()]; for (int i = 0; i < valFields.size(); i++) {
-             * pieChartNames[i] = valFields.get(i).getColumnHeaderText(); }
-             */
+			// pie chart data is grouped by columns
+			// row size is the number of pie charts
+			// column size is the number of data per pie chart
+			double [][] doubleValues = new double [objects.length][valFields.size()];
 
-            // pie chart data is grouped by columns
-            // row size is the number of pie charts
-            // column size is the number of data per pie chart
-            double[][] doubleValues = new double[objects.length][valFields.size()];
+			// data
+			for (int i = 0; i < valFields.size(); i++) {
+				for (int j = 0; j < objects.length; j++) {
+					Number num = valFields.get(i).getNumber(objects[j]);
+					double longVal = num.doubleValue();
+					doubleValues[j][i] = longVal + 1;
+				}
+			}
 
-            // data
-            for (int i = 0; i < valFields.size(); i++) {
-                for (int j = 0; j < objects.length; j++) {
-                    Number num = valFields.get(i).getNumber(objects[j]);
-                    double longVal = num.doubleValue();
-                    doubleValues[j][i] = longVal + 1;
-                }
-            }
+			chart.addPieChartSeries(valueLabels, doubleValues);
+			chart.getAxisSet().adjustRange();
 
-            chart.addPieChartSeries(valueLabels, doubleValues);
-            chart.getAxisSet().adjustRange();
+			return chart;
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+		
+	/** 
+	 * Produces a 2D bar chart from the input objects.
+	 * 
+	 * @param objects the input data
+	 * @param nameField the field used to get the labels of the objects (the labels of the series groups).
+	 * @param valFields the fields providing the values for the different bars in a series group.
+	 * @param horizontal if true the bars are displayed horizontally, else vertically.
+	 * @return a new 2D bar chart
+	 */
+	
+	public static final Chart produceBarChart( Object[] objects, final ISTDataViewersField nameField, List<IChartField> valFields, String title,boolean horizontal)
+	{
+		ChartView view;
+		try {
+			
+			final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
+			final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
+			final Color GRAD = new Color(Display.getDefault(), 225, 225, 225);
+			
+			view = (ChartView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ChartView.VIEW_ID, ""+(ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
+			Chart chart = new Chart(view.getParent(), SWT.NONE);
 
-            return chart;
-        } catch (PartInitException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+			chart.setBackground(WHITE);
+			chart.setBackgroundInPlotArea(GRAD);
 
-    /**
-     * Produces a 2D bar chart from the input objects.
-     * 
-     * @param objects
-     *            the input data
-     * @param nameField
-     *            the field used to get the labels of the objects (the labels of the series groups).
-     * @param valFields
-     *            the fields providing the values for the different bars in a series group.
-     * @param horizontal
-     *            if true the bars are displayed horizontally, else vertically.
-     * @return a new 2D bar chart
-     */
+			chart.getTitle().setText(title);
+			chart.getTitle().setForeground(BLACK);
 
-    public static final Chart produceBarChart(Object[] objects, final ISTDataViewersField nameField,
-            List<IChartField> valFields, String title, boolean horizontal) {
-        ChartView view;
-        try {
+			// this is correct (refers to orientation of x-axis, not bars)
+			if (horizontal){
+				chart.setOrientation(SWT.VERTICAL);
+			}else{
+				chart.setOrientation(SWT.HORIZONTAL);
+			}
 
-            final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
-            final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
-            final Color GRAD = new Color(Display.getDefault(), 225, 225, 225);
+			chart.getLegend().setPosition(SWT.RIGHT);
+			
+			String [] textLabels = new String [objects.length];
+			for (int i = 0; i < objects.length; i++) {
+				textLabels[i] = nameField.getValue(objects[i]);
+			}
+			
+			// x-axis
+			IAxis xAxis = chart.getAxisSet().getXAxis(0);
+			xAxis.getGrid().setStyle(LineStyle.NONE);
+			xAxis.getTick().setForeground(BLACK);
+			ITitle xTitle = xAxis.getTitle();
+			xTitle.setForeground(BLACK);
+			xTitle.setText(nameField.getColumnHeaderText());
+			xAxis.setCategorySeries(textLabels);
+			xAxis.enableCategory(true);
 
-            view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(ChartView.VIEW_ID, "" + (ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
-            Chart chart = new Chart(view.getParent(), SWT.NONE);
+			// y-axis
+			IAxis yAxis = chart.getAxisSet().getYAxis(0);
+			yAxis.getGrid().setStyle(LineStyle.NONE);
+			yAxis.getTick().setForeground(BLACK);
+			yAxis.getTitle().setVisible(false);
 
-            chart.setBackground(WHITE);
-            chart.setBackgroundInPlotArea(GRAD);
+			// data
+			for (IChartField field : valFields) {
+				final IBarSeries bs = (IBarSeries) chart.getSeriesSet().
+						createSeries(SeriesType.BAR, field.getColumnHeaderText());
+				bs.setBarColor(new Color(Display.getDefault(), getRC(), getRC(), getRC()));
+				double [] doubleValues = new double [objects.length];
 
-            chart.getTitle().setText(title);
-            chart.getTitle().setForeground(BLACK);
+				for (int i = 0; i < objects.length; i++) {
+					Number num = field.getNumber(objects[i]);
+					double longVal = num.doubleValue();
+					doubleValues[i] = longVal;
+				}
 
-            // this is correct (refers to orientation of x-axis, not bars)
-            if (horizontal) {
-                chart.setOrientation(SWT.VERTICAL);
-            } else {
-                chart.setOrientation(SWT.HORIZONTAL);
-            }
+				bs.setYSeries(doubleValues);
+			}
 
-            chart.getLegend().setPosition(SWT.RIGHT);
+			chart.getAxisSet().adjustRange();
 
-            String[] textLabels = new String[objects.length];
-            for (int i = 0; i < objects.length; i++) {
-                textLabels[i] = nameField.getValue(objects[i]);
-            }
+			return chart;
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-            // x-axis
-            IAxis xAxis = chart.getAxisSet().getXAxis(0);
-            xAxis.getGrid().setStyle(LineStyle.NONE);
-            xAxis.getTick().setForeground(BLACK);
-            ITitle xTitle = xAxis.getTitle();
-            xTitle.setForeground(BLACK);
-            xTitle.setText(nameField.getColumnHeaderText());
-            xAxis.setCategorySeries(textLabels);
-            xAxis.enableCategory(true);
-
-            // y-axis
-            IAxis yAxis = chart.getAxisSet().getYAxis(0);
-            yAxis.getGrid().setStyle(LineStyle.NONE);
-            yAxis.getTick().setForeground(BLACK);
-            yAxis.getTitle().setVisible(false);
-
-            // data
-            for (IChartField field : valFields) {
-                final IBarSeries bs = (IBarSeries) chart.getSeriesSet().createSeries(SeriesType.BAR,
-                        field.getColumnHeaderText());
-                bs.setBarColor(new Color(Display.getDefault(), getRC(), getRC(), getRC()));
-                double[] doubleValues = new double[objects.length];
-
-                for (int i = 0; i < objects.length; i++) {
-                    Number num = field.getNumber(objects[i]);
-                    double longVal = num.doubleValue();
-                    doubleValues[i] = longVal;
-                }
-
-                bs.setYSeries(doubleValues);
-            }
-
-            chart.getAxisSet().adjustRange();
-
-            return chart;
-        } catch (PartInitException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static int getRC() {
-        return (int) (Math.random() * 255);
-    }
-
-    /**
-     * @param viewer
-     * @return the field used to provide the labels to the series
-     */
-    public ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
-        return viewer.getAllFields()[0];
-    }
+	private static int getRC () {
+		return (int) (Math.random() * 255);
+	}
+	
+	/**
+	 * @param viewer
+	 * @return the field used to provide the labels to the series
+	 */
+	public ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
+		return viewer.getAllFields()[0];
+	}
 }
