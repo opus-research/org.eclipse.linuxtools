@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.nio.BufferOverflowException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -86,6 +85,9 @@ public class CtfTmfTrace extends TmfTrace
 
         super.initTrace(resource, path, eventType);
 
+        @SuppressWarnings("unused")
+        CtfTmfEventType type;
+
         try {
             this.fTrace = new CTFTrace(path);
             CtfIteratorManager.addTrace(this);
@@ -152,10 +154,7 @@ public class CtfTmfTrace extends TmfTrace
             temp.dispose();
         } catch (final CTFReaderException e) {
             validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
-        } catch (final BufferOverflowException e){
-            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + Messages.CtfTmfTrace_BufferOverflowErrorMessage); //$NON-NLS-1$
         }
-
         return validTrace;
     }
 
@@ -317,7 +316,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param eventName
      *            The name of the event to check
      * @return Whether the event is in the metadata or not
-     * @since 2.1
+     * @since 3.0
      */
     public boolean hasEvent(final String eventName) {
         Map<Long, IEventDeclaration> events = fTrace.getEvents(0L);
@@ -337,7 +336,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param names
      *            The array of events to check for
      * @return Whether all events are in the metadata
-     * @since 2.1
+     * @since 3.0
      */
     public boolean hasAllEvents(String[] names) {
         for (String name : names) {
@@ -355,7 +354,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param names
      *            The array of event names of check for
      * @return Whether one of the event is present in trace metadata
-     * @since 2.1
+     * @since 3.0
      */
     public boolean hasAtLeastOneOfEvents(String[] names) {
         for (String name : names) {
