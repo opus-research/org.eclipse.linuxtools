@@ -13,6 +13,7 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import java.nio.BufferOverflowException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -31,9 +33,9 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * The CTf trace handler
@@ -51,6 +53,11 @@ public class CtfTmfTrace extends TmfTrace
      * Default cache size for CTF traces
      */
     protected static final int DEFAULT_CACHE_SIZE = 50000;
+
+    /*
+     * The Ctf clock unique identifier field
+     */
+    private static final String CLOCK_HOST_PROPERTY = "uuid"; //$NON-NLS-1$
 
     // -------------------------------------------
     // Fields
@@ -132,8 +139,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param path
      *            String
      * @return IStatus IStatus.error or Status.OK_STATUS
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(IProject,
-     *      String)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(IProject, String)
      * @since 2.0
      */
     @Override
@@ -146,8 +152,7 @@ public class CtfTmfTrace extends TmfTrace
             } else {
                 CTFTraceReader ctfTraceReader = new CTFTraceReader(temp);
                 if (!ctfTraceReader.hasMoreEvents()) {
-                    // TODO: This will need an additional check when we support
-                    // live traces
+                    // TODO: This will need an additional check when we support live traces
                     // because having no event is valid for a live trace
                     validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_NoEvent);
                 }
@@ -155,8 +160,11 @@ public class CtfTmfTrace extends TmfTrace
             }
             temp.dispose();
         } catch (final CTFReaderException e) {
-            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError + ": " + e.toString()); //$NON-NLS-1$
+            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
+        } catch (final BufferOverflowException e){
+            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + Messages.CtfTmfTrace_BufferOverflowErrorMessage); //$NON-NLS-1$
         }
+
         return validTrace;
     }
 
@@ -165,12 +173,16 @@ public class CtfTmfTrace extends TmfTrace
      *
      * @return null, since the trace has no knowledge of the current location
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentLocation()
+     * @since 3.0
      */
     @Override
     public ITmfLocation getCurrentLocation() {
         return null;
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
     public double getLocationRatio(ITmfLocation location) {
         final CtfLocation curLocation = (CtfLocation) location;
@@ -190,6 +202,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param location
      *            ITmfLocation<?>
      * @return ITmfContext
+     * @since 3.0
      */
     @Override
     public synchronized ITmfContext seekEvent(final ITmfLocation location) {
@@ -280,6 +293,25 @@ public class CtfTmfTrace extends TmfTrace
      */
     public CTFTrace getCTFTrace() {
         return fTrace;
+    }
+
+    /**
+     * Ctf traces have a clock with a unique uuid that will be used to identify
+     * the host. Traces with the same clock uuid will be known to have been made
+     * on the same machine.
+     *
+     * Note: uuid is an optional field, it may not be there for a clock.
+     */
+    @Override
+    public String getHostId() {
+        CTFClock clock = getCTFTrace().getClock();
+        if (clock != null) {
+            String clockHost = (String) clock.getProperty(CLOCK_HOST_PROPERTY);
+            if (clockHost != null) {
+                return clockHost;
+            }
+        }
+        return super.getHostId();
     }
 
     // -------------------------------------------

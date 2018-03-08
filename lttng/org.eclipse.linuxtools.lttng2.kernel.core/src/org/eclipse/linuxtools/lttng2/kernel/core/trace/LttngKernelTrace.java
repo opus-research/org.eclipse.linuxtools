@@ -14,6 +14,7 @@
 package org.eclipse.linuxtools.lttng2.kernel.core.trace;
 
 import java.io.File;
+import java.nio.BufferOverflowException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
@@ -75,6 +76,9 @@ public class LttngKernelTrace extends CtfTmfTrace {
         } catch (NullPointerException e){
             validStatus = new Status(IStatus.ERROR,  Activator.PLUGIN_ID, e.toString(), e);
             return validStatus;
+        } catch (final BufferOverflowException e) {
+            validStatus = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngKernelTrace_TraceReadError + ": " + Messages.LttngKernelTrace_MalformedTrace); //$NON-NLS-1$
+            return validStatus;
         }
 
         /* Make sure the domain is "kernel" in the trace's env vars */
@@ -87,8 +91,11 @@ public class LttngKernelTrace extends CtfTmfTrace {
         return validStatus;
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
-    protected void buildStateSystem() throws TmfTraceException {
+    protected IStatus buildStateSystem() {
         super.buildStateSystem();
 
         /* Build the state system specific to LTTng kernel traces */
@@ -96,8 +103,13 @@ public class LttngKernelTrace extends CtfTmfTrace {
         final File htFile = new File(directory + HISTORY_TREE_FILE_NAME);
         final ITmfStateProvider htInput = new LttngKernelStateProvider(this);
 
-        ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
-        fStateSystems.put(STATE_ID, ss);
+        try {
+            ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
+            fStateSystems.put(STATE_ID, ss);
+        } catch (TmfTraceException e) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+        }
+        return Status.OK_STATUS;
     }
 
 }
