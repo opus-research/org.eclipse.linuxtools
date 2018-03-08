@@ -8,7 +8,7 @@
  * Contributors:
  *      Alexander Kurtakov (Red Hat) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.rpm.core.utils;
+package org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -22,39 +22,23 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.rpm.core.IRPMConstants;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.osgi.util.NLS;
 
-/**
- * Eclipse job to ease downloading remote files.
- *
- */
 public class DownloadJob extends Job {
 	private IFile file;
 	private URLConnection content;
 	private boolean fileOverride;
 
-	/**
-	 * Creates the download job.
-	 * @param file The file to store the remote content.
-	 * @param content The URLConnection to the remote file.
-	 * @param override Flag to override file if it exists.
-	 */
 	public DownloadJob(IFile file, URLConnection content, boolean override) {
-		super(NLS.bind(Messages.DownloadJob_0, file.getName()));
+		super(NLS.bind(Messages.SourcesFileDownloadHyperlink_4, file.getName()));
 		this.file = file;
 		this.content = content;
 		this.fileOverride = override;
 	}
 
-	/**
-	 * Creates the download job.
-	 * @param file The file to store the remote content.
-	 * @param content URLConnection to the remote file.
-	 */
 	public DownloadJob(IFile file, URLConnection content) {
 		this(file, content, false);
 	}
@@ -62,7 +46,7 @@ public class DownloadJob extends Job {
 	@Override
 	public IStatus run(IProgressMonitor monitor) {
 		monitor.beginTask(
-				NLS.bind(Messages.DownloadJob_0,
+				NLS.bind(Messages.SourcesFileDownloadHyperlink_4,
 						file.getName()), content.getContentLength());
 		try {
 			File tempFile = File.createTempFile(file.getName(), ""); //$NON-NLS-1$
@@ -91,10 +75,10 @@ public class DownloadJob extends Job {
 			}
 			tempFile.delete();
 		} catch (CoreException e) {
-			Platform.getLog(Platform.getBundle(IRPMConstants.RPM_CORE_ID)).log(new Status(IStatus.ERROR, IRPMConstants.RPM_CORE_ID, e.getMessage(), e));
+			SpecfileLog.logError(e);
 			return Status.CANCEL_STATUS;
 		} catch (IOException e) {
-			Platform.getLog(Platform.getBundle(IRPMConstants.RPM_CORE_ID)).log(new Status(IStatus.ERROR, IRPMConstants.RPM_CORE_ID, e.getMessage(), e));
+			SpecfileLog.logError(e);
 			return Status.CANCEL_STATUS;
 		}
 		monitor.done();
