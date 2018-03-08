@@ -29,7 +29,7 @@ public class TreeParent {
 		this(name, percent);
 		this.samples = samples;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
