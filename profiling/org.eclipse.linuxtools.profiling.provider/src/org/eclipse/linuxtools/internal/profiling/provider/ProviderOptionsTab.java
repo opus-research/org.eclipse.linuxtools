@@ -20,7 +20,6 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
-import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.swt.SWT;
@@ -78,9 +77,9 @@ public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 		ProfileLaunchConfigurationTabGroup tabGroupConfig;
 
 		if (curProviderId == null || "".equals(curProviderId)) {
-			// get the id of a provider
-			curProviderId = ProviderLaunchConfigurationDelegate
-					.getProviderIdToRun(getProfilingType());
+			// get id of highest priority provider
+			curProviderId = ProfileLaunchConfigurationTabGroup
+					.getHighestProviderId(getProfilingType());
 		}
 		tabGroupConfig = ProfileLaunchConfigurationTabGroup
 				.getTabGroupProviderFromId(curProviderId);
@@ -141,7 +140,7 @@ public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 					// load provider corresponding to specified id
 					loadTabGroupItems(tabgroup, providerId);
 				} else {
-					// find a provider to load if none found
+					// load highest priority provider if none found
 					loadTabGroupItems(tabgroup, null);
 				}
 			} catch (CoreException e) {
