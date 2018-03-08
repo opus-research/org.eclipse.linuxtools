@@ -1124,7 +1124,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			}
 		}
 		config.setAttribute(
-				ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, projectDir + IPath.SEPARATOR + path);
+				ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, projectDir+path);
 
 		if (!renamed) {
 			String name = getLaunchConfigurationDialog().generateName(
