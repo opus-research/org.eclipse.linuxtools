@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
  * array ({@link TmfFixedArray}) of String. The elements of the array represent
  * the path from the root to this node.
  *
- * @version 1.0
+ * @version 2.0
  * @author Mathieu Denis
  */
 public class TmfStatisticsTreeNode {
@@ -153,5 +153,14 @@ public class TmfStatisticsTreeNode {
     public void reset() {
         fValue = new TmfStatistics();
         fNodes.reset(fPath);
+    }
+
+    /**
+     * Reset the number of events in the time range.
+     * @since 2.0
+     */
+    public void resetTimeRangeValue() {
+        getValue().nbEventsInTimeRange = 0;
+        fNodes.resetTimeRangeValue(fPath);
     }
 }
