@@ -50,45 +50,13 @@ final class IntegerStateValue extends TmfStateValue {
 
     @Override
     public int compareTo(ITmfStateValue value) {
-        int result;
-        int returnValue = 0;
         if (value.getType() == Type.NULL) {
-            returnValue = 1;
-        } else {
-            try {
-                result = this.unboxInt() - value.unboxInt();
-                if (result > 0) {
-                    returnValue = 1;
-                } else if (result == 0) {
-                    returnValue = 0;
-                } else {
-                    returnValue = -1;
-                }
-            } catch (StateValueTypeException e) {
-                return returnValue;
-            }
+            return 0;
         }
-        return returnValue;
-    }
-
-    @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) {
         try {
-            if (stateValue.getType() == Type.NULL) {
-                return null;
-            }
-            return TmfStateValue.newValueInt(this.unboxInt() + stateValue.unboxInt());
+            return Integer.valueOf(this.unboxInt()).compareTo(Integer.valueOf(value.unboxInt()));
         } catch (StateValueTypeException e) {
-            return null;
+            return 0;
         }
-    }
-
-    @Override
-    public ITmfStateValue increment() {
-        try {
-            return TmfStateValue.newValueInt(this.unboxInt() + 1);
-        } catch (StateValueTypeException e) {
-        }
-        return null;
     }
 }

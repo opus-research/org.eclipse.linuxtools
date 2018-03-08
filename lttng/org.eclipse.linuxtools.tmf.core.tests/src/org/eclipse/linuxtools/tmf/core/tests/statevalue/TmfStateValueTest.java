@@ -7,15 +7,13 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   jean-Christian Kouame - Initial API and implementation
+ *   jean-Christian Kouamé - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.statevalue;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.junit.Test;
@@ -23,298 +21,184 @@ import org.junit.Test;
 /**
  * Test for the {@link ITmfStateValue}.
  *
- * @author ekadkou
- *
+ * @author Jean-Christian Kouamé
  */
 public class TmfStateValueTest {
 
-    private final static int greater = 1;
-    private final static int EqualOrDifferentType = 0;
-    private final static int lower = -1;
+    private final static int GREATER = 1;
+    private final static int EQUAL_OR_DIFFERENT_TYPE = 0;
+    private final static int LOWER = -1;
 
     /* State values that will be used */
-    private final static ITmfStateValue value1 = TmfStateValue.newValueString("guitare");
-    private final static ITmfStateValue value2 = TmfStateValue.newValueInt(10);
-    private final static ITmfStateValue value3 = TmfStateValue.nullValue();
-    private final static ITmfStateValue value4 = TmfStateValue.newValueString("guitaro");
-    private final static ITmfStateValue value5 = TmfStateValue.newValueLong(Long.MAX_VALUE);
-    private final static ITmfStateValue value6 = TmfStateValue.newValueInt(20);
-    private final static ITmfStateValue value7 = TmfStateValue.nullValue();
-    private final static ITmfStateValue value8 = TmfStateValue.newValueLong(9978375435753453L);
+    private final static ITmfStateValue VALUE1 = TmfStateValue.newValueString("guitare");
+    private final static ITmfStateValue VALUE2 = TmfStateValue.newValueInt(10);
+    private final static ITmfStateValue VALUE3 = TmfStateValue.nullValue();
+    private final static ITmfStateValue VALUE4 = TmfStateValue.newValueString("guitaro");
+    private final static ITmfStateValue VALUE5 = TmfStateValue.newValueLong(Long.MAX_VALUE);
+    private final static ITmfStateValue VALUE6 = TmfStateValue.newValueInt(20);
+    private final static ITmfStateValue VALUE7 = TmfStateValue.nullValue();
+    private final static ITmfStateValue VALUE8 = TmfStateValue.newValueLong(9978375435753453L);
 
     /**
-     * test comparing stateValues
+     * Test comparing a string state value to an integer state value
      */
     @Test
-    public void testValue1CompareTo() {
+    public void testCompareStringToInt() {
+        int returnValue = VALUE1.compareTo(VALUE2);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
+    }
+
+    /**
+     * Test comparing a string state value to a long state value
+     */
+    @Test
+    public void testCompareStringToLong() {
+        int returnValue = VALUE1.compareTo(VALUE5);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
+    }
+
+    /**
+     * Test comparing a string state value to an other string state value
+     */
+    @Test
+    public void testCompareStringToString() {
         int returnValue;
-        returnValue = value1.compareTo(value1);
-        assertEquals(EqualOrDifferentType, returnValue);
-        returnValue = value1.compareTo(value2);
-        assertEquals(EqualOrDifferentType, returnValue);
-        returnValue = value1.compareTo(value3);
-        assertEquals(greater, returnValue);
-        returnValue = value1.compareTo(value4);
-        assertEquals(lower, returnValue);
-        returnValue = value1.compareTo(value5);
-        assertEquals(EqualOrDifferentType, returnValue);
+        returnValue = VALUE1.compareTo(VALUE1);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
+
+        returnValue = VALUE1.compareTo(VALUE4);
+        assertEquals(true, returnValue < 0);
+
+        returnValue = VALUE4.compareTo(VALUE1);
+        assertEquals(true, returnValue > 0);
     }
 
     /**
-     * test comparing stateValues
+     * Test comparing a string state value to a null state value
      */
     @Test
-    public void testValue2CompareTo() {
-        int returnValue = value2.compareTo(value1);
-        assertEquals(EqualOrDifferentType, returnValue);
-
-        returnValue = value2.compareTo(value2);
-        assertEquals(EqualOrDifferentType, returnValue);
-
-        returnValue = value2.compareTo(value3);
-        assertEquals(greater, returnValue);
-
-        returnValue = value2.compareTo(value6);
-        assertEquals(lower, returnValue);
-
-        returnValue = value2.compareTo(value8);
-        assertEquals(EqualOrDifferentType, returnValue);
+    public void testCompareStringToNull() {
+        int returnValue = VALUE1.compareTo(VALUE3);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * test comparing stateValues
+     * Test comparing an integer state value to an other integer state value
      */
     @Test
-    public void testValue3CompareTo() {
-        int returnValue = value3.compareTo(value1);
-        assertEquals(lower, returnValue);
+    public void testCompareIntToInt() {
+        int returnValue = VALUE2.compareTo(VALUE6);
+        assertEquals(LOWER, returnValue);
 
-        returnValue = value3.compareTo(value2);
-        assertEquals(lower, returnValue);
+        returnValue = VALUE6.compareTo(VALUE2);
+        assertEquals(GREATER, returnValue);
 
-        returnValue = value3.compareTo(value7);
-        assertEquals(EqualOrDifferentType, returnValue);
-
-        returnValue = value3.compareTo(value4);
-        assertEquals(lower, returnValue);
+        returnValue = VALUE2.compareTo(VALUE2);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * test comparing stateValues
+     * Test comparing an integer state value to a long state value
      */
     @Test
-    public void testValue5CompareTo() {
-        int returnValue = value5.compareTo(value1);
-        assertEquals(EqualOrDifferentType, returnValue);
-
-        returnValue = value5.compareTo(value2);
-        assertEquals(EqualOrDifferentType, returnValue);
-
-        returnValue = value5.compareTo(value3);
-        assertEquals(greater, returnValue);
-
-        returnValue = value5.compareTo(value5);
-        assertEquals(EqualOrDifferentType, returnValue);
-
-        returnValue = value5.compareTo(value8);
-        assertEquals(greater, returnValue);
+    public void testCompareIntToLong() {
+        int returnValue = VALUE2.compareTo(VALUE8);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding an integer state value to an integer state value
+     * Test comparing an integer state value to a string state value
      */
     @Test
-    public void testAddIntToInt() {
-        try {
-            ITmfStateValue sv = value2.add(value6);
-            assertEquals(30, sv.unboxInt());
-        } catch (StateValueTypeException e) {
-            fail();
-        }
+    public void testCompareIntToString() {
+        int returnValue = VALUE2.compareTo(VALUE1);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a long state value to an integer state value
+     * Test comparing an integer state value to a null state value
      */
     @Test
-    public void testAddLongToInt() {
-        ITmfStateValue sv = value2.add(value8);
-        assertEquals(null, sv);
+    public void testCompareIntToNull() {
+        int returnValue = VALUE2.compareTo(VALUE3);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a string state value to an integer state value
+     * Test comparing a null state value to an integer state value
      */
     @Test
-    public void testAddStringToInt() {
-        ITmfStateValue sv = value2.add(value1);
-        assertEquals(null, sv);
+    public void testCompareNullToInt() {
+        int returnValue = VALUE3.compareTo(VALUE2);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a null state value to an integer state value
+     * Test comparing a null state value to a long state value
      */
     @Test
-    public void testAddNullToInt() {
-        ITmfStateValue sv = value2.add(value3);
-        assertEquals(null, sv);
+    public void testCompareNullToLong() {
+        int returnValue = VALUE3.compareTo(VALUE8);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding an integer state value to a long state value
+     * Test comparing a null state value to a string state value
      */
     @Test
-    public void testAddIntToLong() {
-        ITmfStateValue sv = value8.add(value2);
-        assertEquals(null, sv);
+    public void testCompareNullToString() {
+        int returnValue = VALUE3.compareTo(VALUE1);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a long state value to a long state value
+     * Test comparing a null state value to another null state value
      */
     @Test
-    public void testAddLongToLong() {
-        try {
-            ITmfStateValue long1 = TmfStateValue.newValueLong(1l);
-            ITmfStateValue long2 = TmfStateValue.newValueLong(9L);
-            ITmfStateValue result = long1.add(long2);
-            assertEquals(10L, result.unboxLong());
-        } catch (StateValueTypeException e) {
-            fail();
-        }
+    public void testCompareNullToNull() {
+        int returnValue = VALUE3.compareTo(VALUE7);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a string state value to a long state value
+     * Test comparing a long state value to an integer state value
      */
     @Test
-    public void testAddStringToLong() {
-        ITmfStateValue sv = value8.add(value1);
-        assertEquals(null, sv);
+    public void testCompareLongToInt() {
+        int returnValue = VALUE5.compareTo(VALUE2);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a null state value to a long state value
+     * Test comparing a long state value to another long state value
      */
     @Test
-    public void testAddNullToLong() {
-        ITmfStateValue sv = value8.add(value7);
-        assertEquals(null, sv);
+    public void testCompareLongToLong() {
+        int returnValue = VALUE5.compareTo(VALUE8);
+        assertEquals(GREATER, returnValue);
+
+        returnValue = VALUE8.compareTo(VALUE5);
+        assertEquals(LOWER, returnValue);
+
+        returnValue = VALUE8.compareTo(VALUE8);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding an integer state value to a string state value
+     * Test comparing a long state value to string state value
      */
     @Test
-    public void testAddIntToString() {
-        ITmfStateValue sv = value1.add(value2);
-        assertEquals(null, sv);
+    public void testCompareLongToString() {
+        int returnValue = VALUE5.compareTo(VALUE1);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 
     /**
-     * Test adding a long state value to a string state value
+     * Test comparing a long state value to a null state value
      */
     @Test
-    public void testAddLongToString() {
-        ITmfStateValue sv = value1.add(value8);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test adding a string state value to a string state value
-     */
-    @Test
-    public void testAddStringToString() {
-        ITmfStateValue sv = value1.add(value4);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test adding a null state value to a string state value
-     */
-    @Test
-    public void testAddNullToString() {
-        ITmfStateValue sv = value1.add(value7);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test adding an integer state value to a null state value
-     */
-    @Test
-    public void testAddIntToNull() {
-        ITmfStateValue sv = value3.add(value2);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test adding a long state value to a null state value
-     */
-    @Test
-    public void testAddLongToNull() {
-        ITmfStateValue sv = value3.add(value8);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test adding a string state value to a null state value
-     */
-    @Test
-    public void testAddStringToNull() {
-        ITmfStateValue sv = value3.add(value1);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test adding a null state value to a null state value
-     */
-    @Test
-    public void testAddNullToNull() {
-        ITmfStateValue sv = value3.add(value7);
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test increment an integer state value
-     */
-    @Test
-    public void testIncrementInt() {
-        try {
-            ITmfStateValue sv = value2.increment();
-            assertEquals(value2.unboxInt() + 1, sv.unboxInt());
-        } catch (StateValueTypeException e) {
-            fail();
-        }
-    }
-
-    /**
-     * Test increment a long state value
-     */
-    @Test
-    public void testIncrementLong() {
-        try {
-            ITmfStateValue sv = value8.increment();
-            assertEquals(value8.unboxLong() + 1, sv.unboxLong());
-        } catch (StateValueTypeException e) {
-            fail();
-        }
-    }
-
-    /**
-     * Test increment a string state value
-     */
-    @Test
-    public void testIncrementString() {
-        ITmfStateValue sv = value1.increment();
-        assertEquals(null, sv);
-    }
-
-    /**
-     * Test increment a null state value
-     */
-    @Test
-    public void testIncrementNull() {
-        ITmfStateValue sv = value3.increment();
-        assertEquals(null, sv);
+    public void testCompareLongToNull() {
+        int returnValue = VALUE5.compareTo(VALUE3);
+        assertEquals(EQUAL_OR_DIFFERENT_TYPE, returnValue);
     }
 }

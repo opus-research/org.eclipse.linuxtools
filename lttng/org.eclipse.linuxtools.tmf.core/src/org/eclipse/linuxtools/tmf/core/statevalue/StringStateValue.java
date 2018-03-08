@@ -51,34 +51,13 @@ final class StringStateValue extends TmfStateValue {
 
     @Override
     public int compareTo(ITmfStateValue value) {
-        int result;
-        int returnValue = 0;
         if (value.getType() == Type.NULL) {
-            returnValue = 1;
-        } else {
-            try {
-                result = this.unboxStr().compareTo(value.unboxStr());
-                if (result > 0) {
-                    returnValue = 1;
-                } else if (result == 0) {
-                    returnValue = 0;
-                } else {
-                    returnValue = -1;
-                }
-            } catch (StateValueTypeException e) {
-                return returnValue;
-            }
+            return 0;
         }
-        return returnValue;
-    }
-
-    @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) {
-        return null;
-    }
-
-    @Override
-    public ITmfStateValue increment() {
-        return null;
+        try {
+            return this.unboxStr().compareTo(value.unboxStr());
+        } catch (StateValueTypeException e) {
+            return 0;
+        }
     }
 }

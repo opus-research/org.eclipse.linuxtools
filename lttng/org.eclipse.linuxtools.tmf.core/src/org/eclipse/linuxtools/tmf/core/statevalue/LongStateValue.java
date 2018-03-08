@@ -50,45 +50,13 @@ final class LongStateValue extends TmfStateValue {
 
     @Override
     public int compareTo(ITmfStateValue value) {
-        long result;
-        int returnValue = 0;
         if (value.getType() == Type.NULL) {
-            returnValue = 1;
-        } else {
-            try {
-                result = this.unboxLong() - value.unboxLong();
-                if (result > 0) {
-                    returnValue = 1;
-                } else if (result == 0) {
-                    returnValue = 0;
-                } else {
-                    returnValue = -1;
-                }
-            } catch (StateValueTypeException e) {
-                return returnValue;
-            }
+            return 0;
         }
-        return returnValue;
-    }
-
-    @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) {
         try {
-            if (stateValue.getType() == Type.NULL) {
-                return null;
-            }
-            return TmfStateValue.newValueLong(this.unboxLong() + stateValue.unboxLong());
+            return Long.valueOf(this.unboxLong()).compareTo(Long.valueOf(value.unboxLong()));
         } catch (StateValueTypeException e) {
-            return null;
+            return 0;
         }
-    }
-
-    @Override
-    public ITmfStateValue increment() {
-        try {
-            return TmfStateValue.newValueLong(this.unboxLong() + 1);
-        } catch (StateValueTypeException e) {
-        }
-        return null;
     }
 }

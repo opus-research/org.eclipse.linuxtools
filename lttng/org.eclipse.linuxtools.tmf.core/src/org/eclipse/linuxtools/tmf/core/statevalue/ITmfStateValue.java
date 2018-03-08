@@ -8,8 +8,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API
- *   Jean-Christian Kouamé - Implement state values to be comparable
- *   Jean-Christian kouame - add the add operation and the increment operation
+ *   Jean-Christian Kouamé - make state values comparable
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
@@ -87,43 +86,8 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
     long unboxLong() throws StateValueTypeException;
 
     /**
-     * compare the value of two state Values
-     *
-     * @return the value 0 if both state values are equal or if the two state
-     *         values are not from the same type; the value -1 if the value of
-     *         this state value is numerically less than the state value it is
-     *         compared with; 1 if the value of this state value is numerically
-     *         greater than the state value it is compared with. (Signed
-     *         comparison for number and lexicographic comparison for strings).
      * @since 3.0
      */
     @Override
     public int compareTo(ITmfStateValue value);
-
-    /**
-     * return a state value whose value is (this + val)
-     *
-     * @param val
-     *            The state value to be added
-     * @return This + val; null if the contained value of the parameter cannot
-     *         be read.
-     *         <p>
-     *         note: This operation is not supported by string state value and
-     *         null state value and will return null.
-     *         </p>
-     * @since 3.0
-     */
-    public ITmfStateValue add(ITmfStateValue val);
-
-    /**
-     * Increment the contained value by one
-     *
-     * @return this + 1; null otherwise
-     *         <p>
-     *         note: This operation is not supported by string state value and
-     *         null state value and will return null.
-     *         </p>
-     * @since 3.0
-     */
-    public ITmfStateValue increment();
 }

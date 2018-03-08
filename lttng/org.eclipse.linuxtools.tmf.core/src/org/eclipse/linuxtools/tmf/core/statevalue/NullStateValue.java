@@ -45,28 +45,6 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public int compareTo(ITmfStateValue value) {
-        int returnValue = 0;
-        switch (value.getType()) {
-        case LONG:
-        case INTEGER:
-        case STRING:
-            returnValue = -1;
-            break;
-        case NULL:
-        default:
-            returnValue = 0;
-            break;
-        }
-        return returnValue;
-    }
-
-    @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) {
-        return null;
-    }
-
-    @Override
-    public ITmfStateValue increment() {
-        return null;
+        return 0;
     }
 }
