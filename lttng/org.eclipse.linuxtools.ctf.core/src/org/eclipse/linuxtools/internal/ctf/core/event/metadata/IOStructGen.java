@@ -793,6 +793,8 @@ public class IOStructGen {
         } else if (left.equals(CTFStrings.LOGLEVEL2)) {
             long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0));
             event.setLogLevel(logLevel);
+        } else if (left.equals(CTFStrings.MODEL_URI)) {
+            /* Unused for now */
         } else {
             throw new ParseException("Unknown event attribute : " + left); //$NON-NLS-1$
         }
