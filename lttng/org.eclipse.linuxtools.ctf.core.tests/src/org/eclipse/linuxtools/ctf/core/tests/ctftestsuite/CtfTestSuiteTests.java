@@ -31,8 +31,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Parameterized test class running the CTF Test Suite
- *
+ * Parametrized test class running the CTF Test Suite
  * (from https://github.com/efficios/ctf-testsuite).
  *
  * @author Alexandre Montplaisir
@@ -42,7 +41,7 @@ public class CtfTestSuiteTests {
 
     /** Time-out tests after 10 seconds. */
     @Rule
-    public TestRule globalTimeout = new Timeout(10000);
+    public TestRule globalTimeout= new Timeout(10000);
 
     private static final String basePath = "traces/ctf-testsuite/tests/1.8/";
 
@@ -86,10 +85,8 @@ public class CtfTestSuiteTests {
             return;
         }
         for (File traceDir : traceDirs) {
-            if (traceDir.isDirectory()) {
-                Object array[] = new Object[] { traceDir.getPath(), expectSuccess };
-                dirs.add(array);
-            }
+            Object array[] = new Object[] { traceDir.getPath(), expectSuccess };
+            dirs.add(array);
         }
     }
 
@@ -132,11 +129,13 @@ public class CtfTestSuiteTests {
                 assertNotNull(reader.getCurrentEventDef());
             }
 
-            checkIfWeShoudlSucceed();
+            if (!fExpectSuccess) {
+                fail("Trace was expected to fail parsing: " + fTracePath);
+            }
         } catch (CTFReaderException e) {
-            checkIfWeShouldFail(e);
-        } catch (OutOfMemoryError e) {
-            checkIfWeShouldFail(e);
+            if (fExpectSuccess) {
+                fail("Trace was expected to succeed, but failed parsing: " + fTracePath);
+            }
         } finally {
             if (reader != null) {
                 reader.dispose();
@@ -145,19 +144,6 @@ public class CtfTestSuiteTests {
                 trace.dispose();
             }
 
-        }
-    }
-
-    private void checkIfWeShoudlSucceed() {
-        if (!fExpectSuccess) {
-            fail("Trace was expected to fail parsing: " + fTracePath);
-        }
-    }
-
-    private void checkIfWeShouldFail(Throwable e) {
-        if (fExpectSuccess) {
-            fail("Trace was expected to succeed, but failed parsing: " +
-                    fTracePath + " (" + e.getMessage() + ")");
         }
     }
 }

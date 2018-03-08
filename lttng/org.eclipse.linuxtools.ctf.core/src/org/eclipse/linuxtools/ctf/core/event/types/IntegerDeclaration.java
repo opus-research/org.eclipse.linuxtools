@@ -82,7 +82,6 @@ public class IntegerDeclaration implements IDeclaration {
 
     /**
      * Is the integer signed?
-     *
      * @return the is the integer signed
      */
     public boolean isSigned() {
@@ -91,7 +90,6 @@ public class IntegerDeclaration implements IDeclaration {
 
     /**
      * Get the integer base commonly decimal or hex
-     *
      * @return the integer base
      */
     public int getBase() {
@@ -99,8 +97,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Get the byte order
-     *
+     * Gets the byte order
      * @return the byte order
      */
     public ByteOrder getByteOrder() {
@@ -109,7 +106,6 @@ public class IntegerDeclaration implements IDeclaration {
 
     /**
      * Get encoding, chars are 8 bit ints
-     *
      * @return the encoding
      */
     public Encoding getEncoding() {
@@ -118,36 +114,32 @@ public class IntegerDeclaration implements IDeclaration {
 
     /**
      * Is the integer a character (8 bits and encoded?)
-     *
      * @return is the integer a char
      */
-    public boolean isCharacter() {
+   public boolean isCharacter() {
         return (length == 8) && (encoding != Encoding.NONE);
     }
 
-    /**
-     * Get the length in bits for this integer
-     *
-     * @return the length of the integer
-     */
+   /**
+    * How many bits is this int
+    * @return the length of the int
+    */
     public int getLength() {
         return length;
     }
 
     @Override
-    public long getAlignment() {
+    public long getAlignment(){
         return alignment;
     }
 
     /**
      * The integer's clock, since timestamps are stored in ints
-     *
      * @return the integer's clock, can be null. (most often it is)
      */
-    public String getClock() {
+    public String getClock(){
         return clock;
     }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -171,16 +163,9 @@ public class IntegerDeclaration implements IDeclaration {
      * @since 2.0
      */
     public BigInteger getMaxValue() {
-        /*
-         * Compute the number of bits able to represent an unsigned number,
-         * ignoring sign bit.
-         */
-        int significant_bits = length - (signed ? 1 : 0);
-        /*
-         * For a given N significant bits, compute the maximal value which is
-         * (1 << N) - 1.
-         */
-        return BigInteger.ONE.shiftLeft(significant_bits).subtract(BigInteger.ONE);
+        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
+        BigInteger max = signed ? capacity.divide(BigInteger.valueOf(2)) : capacity;
+        return max.subtract(BigInteger.ONE);
     }
 
     /**
@@ -194,16 +179,8 @@ public class IntegerDeclaration implements IDeclaration {
             return BigInteger.ZERO;
         }
 
-        /*
-         * Compute the number of bits able to represent an unsigned number,
-         * without the sign bit.
-         */
-        int significant_bits = length - 1;
-        /*
-         * For a given N significant bits, compute the minimal value which is
-         * - (1 << N).
-         */
-        return BigInteger.ONE.shiftLeft(significant_bits).negate();
+        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
+        return capacity.divide(BigInteger.valueOf(2)).negate();
     }
 
 }

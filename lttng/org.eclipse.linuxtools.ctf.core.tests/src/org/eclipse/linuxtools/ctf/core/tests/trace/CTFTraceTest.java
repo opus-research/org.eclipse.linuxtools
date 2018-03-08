@@ -230,11 +230,11 @@ public class CTFTraceTest {
     }
 
     /**
-     * Run the boolean majorIsSet() method test.
+     * Run the boolean majortIsSet() method test.
      */
     @Test
-    public void testMajorIsSet() {
-        boolean result = fixture.majorIsSet();
+    public void testMajortIsSet() {
+        boolean result = fixture.majortIsSet();
         assertTrue(result);
     }
 
