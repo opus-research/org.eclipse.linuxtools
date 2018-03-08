@@ -73,9 +73,6 @@ public class TimeChartDecorationProvider {
     public void refreshBookmarks() {
         try {
             fBookmarksSet.clear();
-            if (fBookmarksFile == null) {
-                return;
-            }
             for (IMarker bookmark : fBookmarksFile.findMarkers(
                     IMarker.BOOKMARK, false, IResource.DEPTH_ZERO)) {
                 int location = bookmark.getAttribute(IMarker.LOCATION, -1);
