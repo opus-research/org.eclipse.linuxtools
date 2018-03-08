@@ -104,9 +104,8 @@ public class SpecfileParser {
 
 		// remove all existing markers, if a SpecfileErrorHandler is
 		// instantiated.
-		if (errorHandler != null) {
+		if (errorHandler != null)
 			errorHandler.removeExistingMarkers();
-		}
 		if (taskHandler != null) {
 			taskHandler.removeExistingMarkers();
 		}
@@ -190,9 +189,8 @@ public class SpecfileParser {
 	public SpecfileElement parseLine(String lineText, Specfile specfile,
 			int lineNumber) {
 
-		if (lineText.startsWith("%")) {//$NON-NLS-1$
+		if (lineText.startsWith("%")) //$NON-NLS-1$
 			return parseMacro(lineText, specfile, lineNumber);
-		}
 
 		for (String simpleDefinition : simpleDefinitions) {
 			if (lineText.startsWith(simpleDefinition + DEFINE_SEPARATOR)) {
@@ -377,9 +375,8 @@ public class SpecfileParser {
 		for (String section : sections) {
 			if (lineText.startsWith(section)) {
 				lastSection = parseSection(lineText, specfile, lineNumber);
-				if (lastSection != null) {
+				if (lastSection != null)
 					lastSection.setSectionEndLine(lineNumber + 1);
-				}
 				return lastSection;
 			}
 		}
@@ -441,9 +438,8 @@ public class SpecfileParser {
 							defineStringValue = lineText.substring(lineText
 									.indexOf(defineStringValue));
 							// Eat up the rest of the tokens
-							while (iter.hasNext()) {
+							while (iter.hasNext())
 								iter.next();
-							}
 						}
 						int defineIntValue = -1;
 						try {
@@ -453,10 +449,9 @@ public class SpecfileParser {
 							toReturn = new SpecfileDefine(defineName,
 									defineStringValue, specfile, null);
 						}
-						if (toReturn == null) {
+						if (toReturn == null)
 							toReturn = new SpecfileDefine(defineName,
 									defineIntValue, specfile, null);
-						}
 					} else {
 						errorHandler.handleError(new SpecfileParseException(defineName+
 								Messages.getString("SpecfileParser.14"), //$NON-NLS-1$
@@ -530,9 +525,8 @@ public class SpecfileParser {
 					firstToken = false;
 				} else {
 					// toReturn should never be null but check just in case
-					if (toReturn != null) {
+					if (toReturn != null)
 						toReturn.setFileName(token);
-					}
 					if (iter.hasNext()) {
 						errorHandler.handleError(new SpecfileParseException(
 								Messages.getString("SpecfileParser.12"), //$NON-NLS-1$

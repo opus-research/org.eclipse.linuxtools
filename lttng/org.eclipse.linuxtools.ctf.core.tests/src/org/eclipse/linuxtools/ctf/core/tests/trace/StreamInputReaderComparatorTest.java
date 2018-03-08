@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputReaderComparator;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,11 +30,29 @@ public class StreamInputReaderComparatorTest {
     private StreamInputReaderComparator fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(StreamInputReaderComparatorTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new StreamInputReaderComparator();
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**

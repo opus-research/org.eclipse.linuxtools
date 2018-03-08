@@ -53,9 +53,8 @@ public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
 				if (linesContentCommentChar(content)) {
 					if (selection.getStartLine() == selection.getEndLine()) {
 						selectedContent = ISpecfileSpecialSymbols.COMMENT_START + content;
-					} else {
+					} else
 						selectedContent = ISpecfileSpecialSymbols.COMMENT_START + content.replaceAll("\n", "\n#"); //$NON-NLS-1$ //$NON-NLS-2$
-					}
 				} else {
 					selectedContent = content.replaceFirst(ISpecfileSpecialSymbols.COMMENT_START, "").replaceAll( //$NON-NLS-1$
 							"\n#", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -88,11 +87,10 @@ public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
 		boolean ret = false;
 		try {
 			while ((line = reader.readLine()) != null) {
-				if (line.startsWith(ISpecfileSpecialSymbols.COMMENT_START)) {
+				if (line.startsWith(ISpecfileSpecialSymbols.COMMENT_START))
 					ret = false;
-				} else {
+				else
 					return true;
-				}
 			}
 		} catch (IOException e) {
 			SpecfileLog.logError(e);
