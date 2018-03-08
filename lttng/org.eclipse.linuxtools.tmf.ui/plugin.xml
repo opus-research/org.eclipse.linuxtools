@@ -336,16 +336,6 @@
       <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <command
-               commandId="org.eclipse.linuxtools.tmf.ui.openFile"
-               label="%command.OpenFile.label"
-               style="push">
-         </command>
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.openDir"
-               label="%command.OpenDirectory.label"
-               style="push">
-         </command>
-         <command
                commandId="org.eclipse.linuxtools.tmf.ui.batch_import"
                label="%command.batch_import"
                mnemonic="%command.batch_import.mnemonic"
@@ -940,20 +930,6 @@
             description="%command.export_to_text.description"
             id="org.eclipse.linuxtools.tmf.ui.exportToText"
             name="%command.export_to_text">
-      </command>
-      <command
-            categoryId="org.eclipse.ui.category.file"
-            defaultHandler="org.eclipse.linuxtools.internal.tmf.ui.commands.OpenFileHandler"
-            description="%command.OpenFile.description"
-            id="org.eclipse.linuxtools.tmf.ui.openFile"
-            name="%command.OpenFile.name">
-      </command>
-      <command
-            categoryId="org.eclipse.ui.category.file"
-            defaultHandler="org.eclipse.linuxtools.internal.tmf.ui.commands.OpenDirHandler"
-            description="%command.OpenDirectory.description"
-            id="org.eclipse.linuxtools.tmf.ui.openDir"
-            name="%command.OpenDirectory.name">
       </command>
    </extension>
    <extension
