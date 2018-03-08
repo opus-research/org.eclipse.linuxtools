@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,7 +21,6 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.core;
  * should do a mapping in the viewer itself.
  *
  * @author alexmont
- *
  */
 @SuppressWarnings({"javadoc", "nls"})
 public interface LttngStrings {
@@ -34,6 +33,8 @@ public interface LttngStrings {
     static final String SOFTIRQ_EXIT = "softirq_exit";
     static final String SOFTIRQ_RAISE = "softirq_raise";
     static final String SCHED_SWITCH = "sched_switch";
+    static final String SCHED_WAKEUP = "sched_wakeup";
+    static final String SCHED_WAKEUP_NEW = "sched_wakeup_new";
     static final String SCHED_PROCESS_FORK = "sched_process_fork";
     static final String SCHED_PROCESS_EXIT = "sched_process_exit";
     static final String SCHED_PROCESS_FREE = "sched_process_free";
@@ -42,6 +43,7 @@ public interface LttngStrings {
     /* System call names */
     static final String SYSCALL_PREFIX = "sys_";
     static final String COMPAT_SYSCALL_PREFIX = "compat_sys_";
+    static final String SYS_CLONE = "sys_clone";
 
     /* Field names */
     static final String IRQ = "irq";
