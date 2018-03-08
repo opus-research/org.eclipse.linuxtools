@@ -20,11 +20,10 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProvider;
@@ -104,7 +103,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
         Map<String, String> retMap = new LinkedHashMap<String, String>();
         if (event instanceof ControlFlowEvent) {
             ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-            ITmfStateSystem ssq = entry.getTrace().getStateSystem();
+            IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
             int tid = entry.getThreadId();
 
             try {
@@ -130,8 +129,6 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                 e.printStackTrace();
             } catch (StateValueTypeException e) {
                 e.printStackTrace();
-            } catch (StateSystemDisposedException e) {
-                /* Ignored */
             }
             int status = ((ControlFlowEvent) event).getStatus();
             if (status == StateValues.PROCESS_STATUS_RUN_SYSCALL) {
@@ -147,8 +144,6 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                     e.printStackTrace();
                 } catch (TimeRangeException e) {
                     e.printStackTrace();
-                } catch (StateSystemDisposedException e) {
-                    /* Ignored */
                 }
             }
         }

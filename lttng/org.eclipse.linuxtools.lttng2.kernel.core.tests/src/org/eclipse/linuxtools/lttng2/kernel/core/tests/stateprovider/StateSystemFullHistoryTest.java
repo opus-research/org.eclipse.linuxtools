@@ -22,13 +22,12 @@ import java.util.List;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,13 +47,10 @@ public class StateSystemFullHistoryTest {
     static File stateFileBenchmark;
 
     static IStateChangeInput input;
-    static ITmfStateSystem ssq;
+    static IStateSystemQuerier ssq;
 
     /* Offset in the trace + start time of the trace */
     private final static long interestingTimestamp1 = 18670067372290L + 1331649577946812237L;
-
-    /* ID we give to the state system we build */
-    private static final String STATE_ID = "test-ss";
 
     protected static String getTestFileName() {
         return "/tmp/statefile.ht"; //$NON-NLS-1$
@@ -66,7 +62,7 @@ public class StateSystemFullHistoryTest {
         stateFileBenchmark = new File(getTestFileName() + ".benchmark"); //$NON-NLS-1$
         try {
             input = new CtfKernelStateInput(CtfTestFiles.getTestTrace());
-            ssq = StateSystemManager.loadStateHistory(stateFile, input, STATE_ID, true);
+            ssq = StateSystemManager.loadStateHistory(stateFile, input, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -93,10 +89,10 @@ public class StateSystemFullHistoryTest {
     @Test
     public void testBuild() throws TmfTraceException {
         IStateChangeInput input2;
-        ITmfStateSystem ssb2;
+        IStateSystemQuerier ssb2;
 
         input2 = new CtfKernelStateInput(CtfTestFiles.getTestTrace());
-        ssb2 = StateSystemManager.loadStateHistory(stateFileBenchmark, input2, STATE_ID, true);
+        ssb2 = StateSystemManager.loadStateHistory(stateFileBenchmark, input2, true);
 
         assertEquals(CtfTestFiles.startTime, ssb2.getStartTime());
         assertEquals(CtfTestFiles.endTime, ssb2.getCurrentEndTime());
@@ -104,10 +100,10 @@ public class StateSystemFullHistoryTest {
 
     @Test
     public void testOpenExistingStateFile() throws TmfTraceException {
-        ITmfStateSystem ssb2;
+        IStateSystemQuerier ssb2;
 
         /* 'newStateFile' should have already been created */
-        ssb2 = StateSystemManager.loadStateHistory(stateFile, null, STATE_ID, true);
+        ssb2 = StateSystemManager.loadStateHistory(stateFile, null, true);
 
         assertNotNull(ssb2);
         assertEquals(CtfTestFiles.startTime, ssb2.getStartTime());
@@ -116,8 +112,7 @@ public class StateSystemFullHistoryTest {
 
     @Test
     public void testFullQuery1() throws StateValueTypeException,
-            AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
+            AttributeNotFoundException, TimeRangeException {
 
         List<ITmfStateInterval> list;
         ITmfStateInterval interval;
@@ -154,8 +149,7 @@ public class StateSystemFullHistoryTest {
 
     @Test
     public void testSingleQuery1() throws AttributeNotFoundException,
-            TimeRangeException, StateValueTypeException,
-            StateSystemDisposedException {
+            TimeRangeException, StateValueTypeException {
 
         long timestamp = interestingTimestamp1;
         int quark;
@@ -183,8 +177,7 @@ public class StateSystemFullHistoryTest {
      */
     @Test
     public void testRangeQuery1() throws AttributeNotFoundException,
-            TimeRangeException, StateValueTypeException,
-            StateSystemDisposedException {
+            TimeRangeException, StateValueTypeException {
 
         long time1 = interestingTimestamp1;
         long time2 = time1 + 1L * CtfTestFiles.NANOSECS_PER_SEC;
@@ -204,7 +197,7 @@ public class StateSystemFullHistoryTest {
      */
     @Test
     public void testRangeQuery2() throws TimeRangeException,
-            AttributeNotFoundException, StateSystemDisposedException {
+            AttributeNotFoundException {
 
         List<ITmfStateInterval> intervals;
 
@@ -223,8 +216,7 @@ public class StateSystemFullHistoryTest {
      */
     @Test
     public void testRangeQuery3() throws AttributeNotFoundException,
-            TimeRangeException, StateValueTypeException,
-            StateSystemDisposedException {
+            TimeRangeException, StateValueTypeException {
 
         long time1 = interestingTimestamp1;
         long time2 = time1 + 1L * CtfTestFiles.NANOSECS_PER_SEC;
@@ -233,7 +225,7 @@ public class StateSystemFullHistoryTest {
         List<ITmfStateInterval> intervals;
 
         quark = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
-        intervals = ssq.queryHistoryRange(quark, time1, time2, resolution, null);
+        intervals = ssq.queryHistoryRange(quark, time1, time2, resolution);
         assertEquals(126, intervals.size()); /* Number of context switches! */
         assertEquals(1452, intervals.get(50).getStateValue().unboxInt());
         assertEquals(1331668248815698779L, intervals.get(100).getEndTime());
@@ -241,25 +233,26 @@ public class StateSystemFullHistoryTest {
 
     /**
      * Ask for a time range outside of the trace's range
+     *
+     * @throws TimeRangeException
      */
     @Test(expected = TimeRangeException.class)
-    public void testFullQueryInvalidTime1() throws TimeRangeException,
-            StateSystemDisposedException {
+    public void testFullQueryInvalidTime1() throws TimeRangeException {
         long ts = CtfTestFiles.startTime + 20L * CtfTestFiles.NANOSECS_PER_SEC;
         ssq.queryFullState(ts);
+
     }
 
     @Test(expected = TimeRangeException.class)
-    public void testFullQueryInvalidTime2() throws TimeRangeException,
-            StateSystemDisposedException {
+    public void testFullQueryInvalidTime2() throws TimeRangeException {
         long ts = CtfTestFiles.startTime - 20L * CtfTestFiles.NANOSECS_PER_SEC;
         ssq.queryFullState(ts);
+
     }
 
     @Test(expected = TimeRangeException.class)
     public void testSingleQueryInvalidTime1()
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
+            throws AttributeNotFoundException, TimeRangeException {
 
         int quark = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
         long ts = CtfTestFiles.startTime + 20L * CtfTestFiles.NANOSECS_PER_SEC;
@@ -268,8 +261,7 @@ public class StateSystemFullHistoryTest {
 
     @Test(expected = TimeRangeException.class)
     public void testSingleQueryInvalidTime2()
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
+            throws AttributeNotFoundException, TimeRangeException {
 
         int quark = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
         long ts = CtfTestFiles.startTime - 20L * CtfTestFiles.NANOSECS_PER_SEC;
@@ -278,7 +270,7 @@ public class StateSystemFullHistoryTest {
 
     @Test(expected = TimeRangeException.class)
     public void testRangeQueryInvalidTime1() throws AttributeNotFoundException,
-            TimeRangeException, StateSystemDisposedException {
+            TimeRangeException {
 
         int quark = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
         long ts1 = CtfTestFiles.startTime - 20L * CtfTestFiles.NANOSECS_PER_SEC; /* invalid */
@@ -289,7 +281,7 @@ public class StateSystemFullHistoryTest {
 
     @Test(expected = TimeRangeException.class)
     public void testRangeQueryInvalidTime2() throws TimeRangeException,
-            AttributeNotFoundException, StateSystemDisposedException {
+            AttributeNotFoundException {
 
         int quark = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
         long ts1 = CtfTestFiles.startTime - 1L * CtfTestFiles.NANOSECS_PER_SEC; /* invalid */
@@ -311,11 +303,14 @@ public class StateSystemFullHistoryTest {
 
     /**
      * Query but with the wrong State Value type
+     *
+     * @throws StateValueTypeException
+     * @throws AttributeNotFoundException
+     * @throws TimeRangeException
      */
     @Test(expected = StateValueTypeException.class)
     public void testQueryInvalidValuetype1() throws StateValueTypeException,
-            AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
+            AttributeNotFoundException, TimeRangeException {
         List<ITmfStateInterval> list;
         ITmfStateInterval interval;
         int quark;
@@ -330,8 +325,7 @@ public class StateSystemFullHistoryTest {
 
     @Test(expected = StateValueTypeException.class)
     public void testQueryInvalidValuetype2() throws StateValueTypeException,
-            AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
+            AttributeNotFoundException, TimeRangeException {
         List<ITmfStateInterval> list;
         ITmfStateInterval interval;
         int quark;
