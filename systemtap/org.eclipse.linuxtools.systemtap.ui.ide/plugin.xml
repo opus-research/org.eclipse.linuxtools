@@ -205,18 +205,8 @@
 				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScript"
 				icon="icons/actions/run/run_exc.gif"
 				toolbarPath="org.eclipse.ui.workbench.file/build.group"
-				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptLocallyAction"
 				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScript"
-				style="push"
-				state="false"/>
-			<action
-				label="%action.stop.name"
-				tooltip="%action.stop.desc"
-				id="org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScript"
-				icon="icons/actions/terminate_co.gif"
-				toolbarPath="org.eclipse.ui.workbench.file/stop.ext"
-				class="org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScriptAction"
-				definitionId="org.eclipse.linuxtools.systemtap.ui.consolelog.commands.StopScript"
 				style="push"
 				state="false"/>
 		</actionSet>

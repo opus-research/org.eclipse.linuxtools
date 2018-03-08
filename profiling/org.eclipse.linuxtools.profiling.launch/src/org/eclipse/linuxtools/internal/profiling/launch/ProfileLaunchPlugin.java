@@ -24,6 +24,9 @@ public class ProfileLaunchPlugin extends AbstractUIPlugin {
 	// The shared instance
 	private static ProfileLaunchPlugin plugin;
 
+	// The launch mode this plug-in supports
+	public static final String LAUNCH_MODE = "linuxtools"; //$NON-NLS-1$
+
 	
 	/**
 	 * The constructor
@@ -109,5 +112,12 @@ public class ProfileLaunchPlugin extends AbstractUIPlugin {
 	public static void log(Throwable e) {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, e.getMessage(), e));
 	}
-
+	
+	public static void log(int status, String msg, Throwable e) {
+		plugin.getLog().log(new Status(status, PLUGIN_ID, IStatus.OK, msg, e));
+	}
+	
+	public static void log(int status, String msg) {
+		log(status, msg, null);
+	}
 }

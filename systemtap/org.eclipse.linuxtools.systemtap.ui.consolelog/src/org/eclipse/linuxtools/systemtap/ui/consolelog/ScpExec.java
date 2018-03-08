@@ -1,52 +1,46 @@
 package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
-import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.ErrorMessage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobbler;
-import com.jcraft.jsch.*;
-import java.io.*;
-import java.util.ArrayList;
+import org.eclipse.ui.PlatformUI;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 
 public class ScpExec implements Runnable {
-	
+
 	private Session session;
 	private Channel channel;
-//	private String moduleName;
-  
-	public ScpExec(String cmd[], String moduleName) {
-	//	this.moduleName = moduleName;
-		this.command = "";
-		
-		try{
-			
-		this.command = cmd[0];
-		
-		for (int i = 1; i<cmd.length; i++)
-		{
-			this.command = this.command + " " + cmd[i];
+
+	public ScpExec(String cmds[], String moduleName) {
+		this.command = cmds[0];
+		for (String cmd:cmds) {
+			this.command = this.command + " " + cmd; //$NON-NLS-1$
 		}
-		
-		
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		
 	}
-	
+
 	/**
 	 * Starts the <code>Thread</code> that the new <code>Process</code> will run in.
 	 * This must be called in order to get the process to start running.
 	 */
 	public void start() {
-		if(init()) {
+		if(init().isOK()) {
 			Thread t = new Thread(this, command);
 			t.start();
 		} else {
 			stop();
-		//	returnVal = Integer.MIN_VALUE;
 		}
 	}
 
@@ -57,103 +51,84 @@ public class ScpExec implements Runnable {
 	 * @since 1.2
 	 */
 	protected void transferListeners(){
-		int i;
-		for(i=0; i<inputListeners.size(); i++)
-			inputGobbler.addDataListener(inputListeners.get(i));
-		for(i=0; i<errorListeners.size(); i++)
-			errorGobbler.addDataListener(errorListeners.get(i));
+		for(IGobblerListener listener :inputListeners) {
+			inputGobbler.addDataListener(listener);
+		}
+		for(IGobblerListener listener: errorListeners) {
+			errorGobbler.addDataListener(listener);
+		}
 	}
 
-	protected boolean init()
-	{
-	  String user=ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_USER);
-      String host=ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.HOST_NAME);
-      try{
-      JSch jsch=new JSch();
-      
-      session=jsch.getSession(user, host, 22);
+	protected IStatus init() {
+		String user = ConsoleLogPlugin.getDefault().getPreferenceStore()
+				.getString(ConsoleLogPreferenceConstants.SCP_USER);
+		String host = ConsoleLogPlugin.getDefault().getPreferenceStore()
+				.getString(ConsoleLogPreferenceConstants.HOST_NAME);
+		try {
+			JSch jsch = new JSch();
 
-      session.setPassword(ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_PASSWORD));
-      
-      java.util.Properties config = new java.util.Properties();
-                      config.put("StrictHostKeyChecking", "no");
-      session.setConfig(config); 
-      session.connect();
-      channel=session.openChannel("exec");
-      ((ChannelExec)channel).setCommand(command);
+			session = jsch.getSession(user, host, 22);
 
-      // get I/O streams for remote scp
-    // channel.
-      channel.setInputStream(null,true);
-      channel.setOutputStream(System.out,true);
-      channel.setExtOutputStream(System.err,
-    		  true);
-    //  InputStream in=channel.getInputStream();
-   
-		errorGobbler = new StreamGobbler(channel.getExtInputStream());            
-		inputGobbler = new StreamGobbler(channel.getInputStream());
+			session.setPassword(ConsoleLogPlugin.getDefault()
+					.getPreferenceStore()
+					.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD));
 
-		this.transferListeners();
-		return true;
+			java.util.Properties config = new java.util.Properties();
+			config.put("StrictHostKeyChecking", "no"); //$NON-NLS-1$//$NON-NLS-2$
+			session.setConfig(config);
+			session.connect();
+			channel = session.openChannel("exec"); //$NON-NLS-1$
+			((ChannelExec) channel).setCommand(command);
 
-      }catch(Exception e)
-      {
-    	  e.printStackTrace();
-    	  new ErrorMessage("Error in connection", "File Transfer failed.\n See stderr for more details").open();
-    	  return false;
-      }
-    }
-	
-    public void run() {
-      try {
- //     Channel channel=session.openChannel("exec");
-  //    ((ChannelExec)channel).setCommand(cmd);
+			channel.setInputStream(null, true);
+			channel.setOutputStream(System.out, true);
+			channel.setExtOutputStream(System.err, true);
 
-      // get I/O streams for remote scp
-      
-  //    channel.setInputStream(null,true);
-  //    channel.setOutputStream(System.out,true);
-  //    channel.setExtOutputStream(System.err,
-   // 		  true);
-   //   InputStream in=channel.getInputStream();
-      channel.connect();
-      
-  	  errorGobbler.start();
-	  inputGobbler.start();
+			errorGobbler = new StreamGobbler(channel.getExtInputStream());
+			inputGobbler = new StreamGobbler(channel.getInputStream());
 
-     // Thread.sleep(1000);
-      //  while (true) {
-		while(!stopped) {
-        if (session.isConnected() == false) {
-    	                          throw new
-    	  RuntimeException("Connection Timed Out");
-    	                      }
+			this.transferListeners();
+			return Status.OK_STATUS;
 
-    /*	   while (in.available() > 0) {
-                 int i = in.read(tmp, 0, 1024);
-                    if (i < 0) {
-    	                              break;
-    	                          }
-                   output = output + new String(tmp, 0, i);
-    	                      }*/
-    	    if (channel.isClosed() || (channel.getExitStatus() != -1) ) 
-    	         {
-    	    		stop();
-    	                          break;
-    	                      }
+		} catch (JSchException e) {
+			IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e);
+			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.ScpExec_Error, e.getMessage(), status);
+			return status; 
+		} catch (IOException e) {
+			IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e);
+			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.ScpExec_Error, e.getMessage(), status);
+			return status;
+		}
+	}
 
-        }
+	public void run() {
+		try {
+			channel.connect();
 
-    }
-    catch(Exception e){
-    }
-  }
-    
+			errorGobbler.start();
+			inputGobbler.start();
+
+			while (!stopped) {
+				if (session.isConnected() == false) {
+					throw new RuntimeException(Messages.ScpExec_ConnTimedOut);
+				}
+
+				if (channel.isClosed() || (channel.getExitStatus() != -1)) {
+					stop();
+					break;
+				}
+			}
+
+		} catch (JSchException e) {
+			e.printStackTrace();
+		}
+	}
+
     /* Stops the process from running and stops the <code>StreamGobblers</code> from monitering
 	 * the dead process.
 	 */
 	public synchronized void stop() {
-		
+
 		if(!stopped) {
 			stopped = true;
 			if(null != errorGobbler)
@@ -164,7 +139,7 @@ public class ScpExec implements Runnable {
             session.disconnect();
 		}
 	}
-	
+
 	/**
 	 * Method to check whether or not the process in running.
 	 * @return The execution status.
@@ -172,7 +147,7 @@ public class ScpExec implements Runnable {
 	public boolean isRunning() {
 		return !stopped;
 	}
-	
+
 	/**
 	 * Method to check if this class has already been disposed.
 	 * @return Status of the class.
@@ -180,7 +155,7 @@ public class ScpExec implements Runnable {
 	public boolean isDisposed() {
 		return disposed;
 	}
-	
+
 	/**
 	 * Registers the provided <code>IGobblerListener</code> with the InputStream
 	 * @param listener A listener to monitor the InputStream from the Process
@@ -191,7 +166,7 @@ public class ScpExec implements Runnable {
 		else
 			inputListeners.add(listener);
 	}
-	
+
 	/**
 	 * Registers the provided <code>IGobblerListener</code> with the ErrorStream
 	 * @param listener A listener to monitor the ErrorStream from the Process
@@ -202,7 +177,7 @@ public class ScpExec implements Runnable {
 		else
 			errorListeners.add(listener);
 	}
-	
+
 	/**
 	 * Returns the list of everything that is listening the the InputStream
 	 * @return List of all <code>IGobblerListeners</code> that are monitoring the stream.
@@ -213,7 +188,7 @@ public class ScpExec implements Runnable {
 		else
 			return inputListeners;
 	}
-	
+
 	/**
 	 * Returns the list of everything that is listening the the ErrorStream
 	 * @return List of all <code>IGobblerListeners</code> that are monitoring the stream.
@@ -224,7 +199,7 @@ public class ScpExec implements Runnable {
 		else
 			return errorListeners;
 	}
-	
+
 	/**
 	 * Removes the provided listener from those monitoring the InputStream.
 	 * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
@@ -235,7 +210,7 @@ public class ScpExec implements Runnable {
 		else
 			inputListeners.remove(listener);
 	}
-	
+
 	/**
 	 * Removes the provided listener from those monitoring the ErrorStream.
 	 * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
@@ -246,7 +221,7 @@ public class ScpExec implements Runnable {
 		else
 			errorListeners.remove(listener);
 	}
-	
+
 	/**
 	 * Disposes of all internal components of this class. Nothing in the class should be
 	 * referenced after this is called.
@@ -261,52 +236,44 @@ public class ScpExec implements Runnable {
 			if(null != inputGobbler)
 				inputGobbler.dispose();
 			inputGobbler = null;
-			
+
 			if(null != errorGobbler)
 				errorGobbler.dispose();
 			errorGobbler = null;
 		}
 	}
 
-  static int checkAck(InputStream in) throws IOException{
-    int b=in.read();
-    // b may be 0 for success,
-    //          1 for error,
-    //          2 for fatal error,
-    //          -1
-    if(b==0) return b;
-    if(b==-1) return b;
+	static int checkAck(InputStream in) throws IOException {
+		int b = in.read();
+		// b may be 0 for success,
+		// 1 for error,
+		// 2 for fatal error,
+		// -1
+		if (b == 0)
+			return b;
+		if (b == -1)
+			return b;
 
-    if(b==1 || b==2){
-      StringBuffer sb=new StringBuffer();
-      int c;
-      do {
-	c=in.read();
-	sb.append((char)c);
-      }
-      while(c!='\n');
-      if(b==1){ // error
-	//System.out.print(sb.toString());
-      }
-      if(b==2){ // fatal error
-	//System.out.print(sb.toString());
-      }
-    }
-    return b;
-  }
+		if (b == 1 || b == 2) {
+			StringBuilder sb = new StringBuilder();
+			int c;
+			do {
+				c = in.read();
+				sb.append((char) c);
+			} while (c != '\n');
+		}
+		return b;
+	}
 
-  
    protected boolean stopped = false;
-	private boolean disposed = false;
-	protected StreamGobbler inputGobbler = null;
-	protected StreamGobbler errorGobbler = null;
-	protected ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
-	protected ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
-	//private int returnVal = Integer.MAX_VALUE;
-	private String command;
+   private boolean disposed = false;
+   protected StreamGobbler inputGobbler = null;
+   protected StreamGobbler errorGobbler = null;
+   protected ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+   protected ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+   private String command;
 
-	
-	public static final int ERROR_STREAM = 0;
-	public static final int INPUT_STREAM = 1;
+   public static final int ERROR_STREAM = 0;
+   public static final int INPUT_STREAM = 1;
 
 }

@@ -25,14 +25,16 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputElement;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,9 +46,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEventParser<CustomXmlEvent> {
+/**
+ * Trace object for custom XML trace parsers.
+ *
+ * @author Patrick Tassé
+ */
+public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
 
-    private static final TmfLocation<Long> NULL_LOCATION = new TmfLocation<Long>((Long) null);
+    private static final TmfLongLocation NULL_LOCATION = new TmfLongLocation((Long) null);
     private static final int DEFAULT_CACHE_SIZE = 100;
 
     private final CustomXmlTraceDefinition fDefinition;
@@ -54,6 +61,11 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
     private final InputElement fRecordInputElement;
     private BufferedRandomAccessFile fFile;
 
+    /**
+     * Basic constructor
+     *
+     * @param definition Trace definition
+     */
     public CustomXmlTrace(final CustomXmlTraceDefinition definition) {
         fDefinition = definition;
         fEventType = new CustomXmlEventType(fDefinition);
@@ -61,21 +73,36 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         setCacheSize(DEFAULT_CACHE_SIZE);
     }
 
-    public CustomXmlTrace(final IResource resource, final CustomXmlTraceDefinition definition, final String path, final int pageSize) throws TmfTraceException {
+    /**
+     * Full constructor
+     *
+     * @param resource
+     *            Trace resource
+     * @param definition
+     *            Trace definition
+     * @param path
+     *            Path to the trace/log file
+     * @param pageSize
+     *            Page size to use
+     * @throws TmfTraceException
+     *             If the trace/log couldn't be opened
+     */
+    public CustomXmlTrace(final IResource resource,
+            final CustomXmlTraceDefinition definition, final String path,
+            final int pageSize) throws TmfTraceException {
         this(definition);
         setCacheSize((pageSize > 0) ? pageSize : DEFAULT_CACHE_SIZE);
         initTrace(resource, path, CustomXmlEvent.class);
     }
 
     @Override
-    public void initTrace(final IResource resource, final String path, final Class<CustomXmlEvent> eventType) throws TmfTraceException {
+    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> eventType) throws TmfTraceException {
         super.initTrace(resource, path, eventType);
         try {
             fFile = new BufferedRandomAccessFile(getPath(), "r"); //$NON-NLS-1$
         } catch (IOException e) {
             throw new TmfTraceException(e.getMessage(), e);
         }
-        indexTrace(false);
     }
 
     @Override
@@ -92,7 +119,12 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
     }
 
     @Override
-    public synchronized TmfContext seekEvent(final ITmfLocation<?> location) {
+    public ITmfTraceIndexer getIndexer() {
+        return super.getIndexer();
+    }
+
+    @Override
+    public synchronized TmfContext seekEvent(final ITmfLocation location) {
         final CustomXmlTraceContext context = new CustomXmlTraceContext(NULL_LOCATION, ITmfContext.UNKNOWN_RANK);
         if (NULL_LOCATION.equals(location) || fFile == null) {
             return context;
@@ -100,8 +132,8 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         try {
             if (location == null) {
                 fFile.seek(0);
-            } else if (location.getLocation() instanceof Long) {
-                fFile.seek((Long) location.getLocation());
+            } else if (location.getLocationInfo() instanceof Long) {
+                fFile.seek((Long) location.getLocationInfo());
             }
             String line;
             final String recordElementStart = "<" + fRecordInputElement.elementName; //$NON-NLS-1$
@@ -110,7 +142,7 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
             while ((line = fFile.getNextLine()) != null) {
                 final int idx = line.indexOf(recordElementStart);
                 if (idx != -1) {
-                    context.setLocation(new TmfLocation<Long>(rawPos + idx));
+                    context.setLocation(new TmfLongLocation(rawPos + idx));
                     return context;
                 }
                 rawPos = fFile.getFilePointer();
@@ -137,7 +169,7 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
                 }
                 pos--;
             }
-            final ITmfLocation<?> location = new TmfLocation<Long>(pos);
+            final ITmfLocation location = new TmfLongLocation(pos);
             final TmfContext context = seekEvent(location);
             context.setRank(ITmfContext.UNKNOWN_RANK);
             return context;
@@ -148,13 +180,13 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
     }
 
     @Override
-    public synchronized double getLocationRatio(final ITmfLocation<?> location) {
+    public synchronized double getLocationRatio(final ITmfLocation location) {
         if (fFile == null) {
             return 0;
         }
         try {
-            if (location.getLocation() instanceof Long) {
-                return (double) ((Long) location.getLocation()) / fFile.length();
+            if (location.getLocationInfo() instanceof Long) {
+                return (double) ((Long) location.getLocationInfo()) / fFile.length();
             }
         } catch (final IOException e) {
             Activator.getDefault().logError("Error getting location ration. File: " + getPath(), e); //$NON-NLS-1$
@@ -163,7 +195,7 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
     }
 
     @Override
-    public ITmfLocation<?> getCurrentLocation() {
+    public ITmfLocation getCurrentLocation() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -194,15 +226,15 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         }
 
         final CustomXmlTraceContext context = (CustomXmlTraceContext) tmfContext;
-        if (!(context.getLocation().getLocation() instanceof Long) || NULL_LOCATION.equals(context.getLocation())) {
+        if (context.getLocation() == null || !(context.getLocation().getLocationInfo() instanceof Long) || NULL_LOCATION.equals(context.getLocation())) {
             return null;
         }
 
         CustomXmlEvent event = null;
         try {
-            if (fFile.getFilePointer() != (Long)context.getLocation().getLocation() + 1)
+            if (fFile.getFilePointer() != (Long)context.getLocation().getLocationInfo() + 1)
             {
-                fFile.seek((Long)context.getLocation().getLocation() + 1); // +1 is for the <
+                fFile.seek((Long)context.getLocation().getLocationInfo() + 1); // +1 is for the <
             }
             final StringBuffer elementBuffer = new StringBuffer("<"); //$NON-NLS-1$
             readElement(elementBuffer, fFile);
@@ -218,7 +250,7 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
             while ((line = fFile.getNextLine()) != null) {
                 final int idx = line.indexOf(recordElementStart);
                 if (idx != -1) {
-                    context.setLocation(new TmfLocation<Long>(rawPos + idx));
+                    context.setLocation(new TmfLongLocation(rawPos + idx));
                     return event;
                 }
                 rawPos = fFile.getFilePointer();
@@ -344,6 +376,15 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         }
     }
 
+    /**
+     * Parse an XML element.
+     *
+     * @param parentElement
+     *            The parent element
+     * @param buffer
+     *            The contents to parse
+     * @return The parsed content
+     */
     public static StringBuffer parseElement(final Element parentElement, final StringBuffer buffer) {
         final NodeList nodeList = parentElement.getChildNodes();
         String separator = null;
@@ -375,6 +416,14 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         return buffer;
     }
 
+    /**
+     * Get an input element if it is a valid record input. If not, we will look
+     * into its children for valid inputs.
+     *
+     * @param inputElement
+     *            The main element to check for.
+     * @return The record element
+     */
     public InputElement getRecordInputElement(final InputElement inputElement) {
         if (inputElement.logEntry) {
             return inputElement;
@@ -389,6 +438,15 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         return null;
     }
 
+    /**
+     * Extract a trace event from an XML element.
+     *
+     * @param element
+     *            The element
+     * @param inputElement
+     *            The input element
+     * @return The extracted event
+     */
     public CustomXmlEvent extractEvent(final Element element, final InputElement inputElement) {
         final CustomXmlEvent event = new CustomXmlEvent(fDefinition, this, TmfTimestamp.ZERO, "", fEventType,""); //$NON-NLS-1$ //$NON-NLS-2$
         event.setContent(new CustomEventContent(event, new StringBuffer()));
@@ -422,6 +480,11 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         return;
     }
 
+    /**
+     * Retrieve the trace definition.
+     *
+     * @return The trace definition
+     */
     public CustomTraceDefinition getDefinition() {
         return fDefinition;
     }

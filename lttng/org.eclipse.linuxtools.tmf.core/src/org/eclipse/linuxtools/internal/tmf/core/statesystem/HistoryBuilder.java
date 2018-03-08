@@ -20,14 +20,13 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
@@ -42,6 +41,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
  * @author alexmont
  *
  */
+@SuppressWarnings("deprecation")
 public class HistoryBuilder extends TmfComponent {
 
     private final IStateChangeInput sci;
@@ -59,8 +59,8 @@ public class HistoryBuilder extends TmfComponent {
      * @param buildManually
      *            Should we build this history in-band or not. True means we
      *            will start the building ourselves and block the caller until
-     *            construction is done. False (out-of-band) means we will
-     *            start listening for the signal and return immediately. Another
+     *            construction is done. False (out-of-band) means we will start
+     *            listening for the signal and return immediately. Another
      *            signal will be sent when finished.
      * @throws IOException
      *             Is thrown if anything went wrong (usually with the storage
@@ -99,7 +99,7 @@ public class HistoryBuilder extends TmfComponent {
      * @throws IOException
      *             If there was something wrong.
      */
-    public static IStateSystemBuilder openExistingHistory(
+    public static ITmfStateSystemBuilder openExistingHistory(
             IStateHistoryBackend hb) throws IOException {
         return new StateSystem(hb, false);
     }
@@ -110,7 +110,7 @@ public class HistoryBuilder extends TmfComponent {
      *
      * @return Reference to the state system, with access to everything.
      */
-    public IStateSystemBuilder getStateSystemBuilder() {
+    public ITmfStateSystemBuilder getStateSystemBuilder() {
         return ss;
     }
 
@@ -120,7 +120,7 @@ public class HistoryBuilder extends TmfComponent {
      * @return Reference to the state system, but only with the query methods
      *         available.
      */
-    public IStateSystemQuerier getStateSystemQuerier() {
+    public ITmfStateSystem getStateSystemQuerier() {
         return ss;
     }
 
@@ -146,30 +146,66 @@ public class HistoryBuilder extends TmfComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Listen to the "experiment selected" signal to start the state history
+     * Listen to the "trace range updated" signal to start the state history
      * construction.
      *
      * @param signal
-     *            The "experiment range updated" signal. Listening to this
+     *            The "trace range updated" signal. Listening to this
      *            signal will coalesce this request with the one from the
      *            indexer and histogram.
      */
     @TmfSignalHandler
-    public void experimentRangeUpdated(final TmfExperimentRangeUpdatedSignal signal) {
-        StateSystemBuildRequest request;
-        TmfExperiment<ITmfEvent> exp;
+    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
+        ITmfTrace trace = signal.getTrace();
+        if (signal.getTrace() instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
+            for (ITmfTrace expTrace : experiment.getTraces()) {
+                if (expTrace == sci.getTrace()) {
+                    trace = expTrace;
+                    break;
+                }
+            }
+        }
+        if (trace != sci.getTrace()) {
+            return;
+        }
+        /* the signal is for this trace or for an experiment containing this trace */
 
         if (!started) {
             started = true;
-            request = new StateSystemBuildRequest(this);
-            exp = (TmfExperiment<ITmfEvent>) TmfExperiment.getCurrentExperiment();
-            if (exp == null) {
-                return;
-            }
-            exp.sendRequest(request);
+            StateSystemBuildRequest request = new StateSystemBuildRequest(this);
+            trace = signal.getTrace();
+            trace.sendRequest(request);
         }
     }
 
+    /**
+     * Listen to the "trace closed" signal to clean up if necessary.
+     *
+     * @param signal
+     *            The "trace closed" signal.
+     */
+    @TmfSignalHandler
+    public void traceClosed(TmfTraceClosedSignal signal) {
+        ITmfTrace trace = signal.getTrace();
+        if (signal.getTrace() instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
+            for (ITmfTrace expTrace : experiment.getTraces()) {
+                if (expTrace == sci.getTrace()) {
+                    trace = expTrace;
+                    break;
+                }
+            }
+        }
+        if (trace != sci.getTrace()) {
+            return;
+        }
+        /* the signal is for this trace or for an experiment containing this trace */
+
+        if (!started) {
+            close(true);
+        }
+    }
 
     // ------------------------------------------------------------------------
     // Methods reserved for the request object below
@@ -181,33 +217,26 @@ public class HistoryBuilder extends TmfComponent {
     }
 
     void close(boolean deleteFiles) {
-        TmfSignal doneSig;
-
         sci.dispose();
         if (deleteFiles) {
             hb.removeFiles();
-            /* We won't broadcast the signal if the request was cancelled */
-        } else {
-            /* Broadcast the signal saying the history is done building */
-            doneSig = new TmfStateSystemBuildCompleted(this, sci.getTrace());
-            TmfSignalManager.dispatchSignal(doneSig);
         }
-
-        TmfSignalManager.deregister(this);
+        dispose();
     }
 }
 
-class StateSystemBuildRequest extends TmfEventRequest<ITmfEvent> {
+class StateSystemBuildRequest extends TmfEventRequest {
 
     /** The amount of events queried at a time through the requests */
     private final static int chunkSize = 50000;
 
     private final HistoryBuilder builder;
     private final IStateChangeInput sci;
-    private final ITmfTrace<ITmfEvent> trace;
+    private final ITmfTrace trace;
 
+    @SuppressWarnings("deprecation")
     StateSystemBuildRequest(HistoryBuilder builder) {
-        super((Class<ITmfEvent>) builder.getInputPlugin().getExpectedEventType().getClass(),
+        super(builder.getInputPlugin().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
                 TmfDataRequest.ALL_DATA,
                 chunkSize,
@@ -218,6 +247,7 @@ class StateSystemBuildRequest extends TmfEventRequest<ITmfEvent> {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
         if (event != null) {

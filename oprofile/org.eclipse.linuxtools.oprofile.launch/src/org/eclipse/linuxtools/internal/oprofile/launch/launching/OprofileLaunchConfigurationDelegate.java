@@ -11,13 +11,11 @@
 package org.eclipse.linuxtools.internal.oprofile.launch.launching;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchesListener2;
-import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider;
 import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider2;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
@@ -70,7 +68,7 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 
 			//add a listener for termination of the launch prior to execution of launch
 			ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
-			lmgr.addLaunchListener(new LaunchTerminationWatcher(launch, options.getExecutionsNumber()));
+			lmgr.addLaunchListener(new LaunchTerminationWatcher(launch));
 		} catch (OpcontrolException oe) {
 			OprofileCorePlugin.showErrorDialog("opcontrolProvider", oe); //$NON-NLS-1$
 			return false;
@@ -87,11 +85,8 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 	// run some functions when it is finished. 
 	class LaunchTerminationWatcher implements ILaunchesListener2 {
 		private ILaunch launch;
-		private int executions;
-		
-		public LaunchTerminationWatcher(ILaunch il, int executions) {
+		public LaunchTerminationWatcher(ILaunch il) {
 			launch = il;
-			this.executions = executions;
 		}
 		public void launchesTerminated(ILaunch[] launches) {
 			try {
@@ -102,7 +97,7 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 					 * activate the OProfile view (open it if it isn't already),
 					 * refresh the view (which parses the data/ui model and displays it).
 					 */
-					if (l.equals(launch) && l.getProcesses().length == executions) {
+					if (l.equals(launch)) {
 						oprofileDumpSamples();
 						oprofileShutdown();
 
