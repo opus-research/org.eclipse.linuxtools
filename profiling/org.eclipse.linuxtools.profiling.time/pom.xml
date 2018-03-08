@@ -17,28 +17,10 @@
     <version>1.2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.eclipse.linuxtools.profiling.memory</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <artifactId>org.eclipse.linuxtools.profiling.time</artifactId>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Linux Tools Profiling Memory Launch Plug-in</name>
-
- <build>
-     <!-- workaround for https://issues.sonatype.org/browse/TYCHO-168 -->
-     <resources>
-      <resource>
-        <directory>src</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-source-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
+  <name>Linux Tools Profiling Time Launch Plug-in</name>
 
 </project>

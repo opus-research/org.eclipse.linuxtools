@@ -8,26 +8,24 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.profiling.memory;
+package org.eclipse.linuxtools.profiling.time;
 
 import java.util.ArrayList;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.internal.profiling.provider.ProviderLaunchConfigurationTabGroup;
 
 /**
- * 
- * Special version of ProfileLaunchConfigurationTabGroup that accesses the tab group from
- * the chosen memory profiling provider.
+ * The tab group for this plug-in's launch configuration dialog menu.
  *
  */
-public class MemoryLaunchConfigurationTabGroup extends
-		ProfileLaunchConfigurationTabGroup {
+public class TimeLaunchConfigurationTabGroup extends
+		ProviderLaunchConfigurationTabGroup {
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
 		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
-		tabs.add(new MemoryOptionsTab());
+		tabs.add(new TimeOptionsTab());
 
 		return tabs.toArray(new AbstractLaunchConfigurationTab [] {});
 	}

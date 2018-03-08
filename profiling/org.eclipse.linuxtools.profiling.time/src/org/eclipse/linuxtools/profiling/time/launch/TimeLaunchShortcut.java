@@ -8,15 +8,20 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
+package org.eclipse.linuxtools.profiling.time.launch;
 
-package org.eclipse.linuxtools.profiling.memory;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut;
+import org.eclipse.linuxtools.profiling.time.TimeConstants;
 
-import org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage;
-
-public class MemoryPreferencesPage extends AbstractProviderPreferencesPage {
+/**
+ * The launch shortcut for time profiling type plug-ins.
+ *
+ */
+public class TimeLaunchShortcut extends ProviderLaunchShortcut {
 
 	@Override
-	public String getProfilingType() {
-		return Activator.PROFILING_TYPE;
+	protected String getLaunchConfigID() {
+		return TimeConstants.PLUGIN_CONFIG_ID;
 	}
+
 }

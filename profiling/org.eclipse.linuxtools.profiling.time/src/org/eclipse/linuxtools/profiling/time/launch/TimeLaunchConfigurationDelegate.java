@@ -8,23 +8,26 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.profiling.memory;
+package org.eclipse.linuxtools.profiling.time.launch;
 
-import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.profiling.time.TimeConstants;
 
 /**
- * The options tab used for this plug-in's launch configuration tab group.
- * 
+ * The launch configuration delegate for time profiling plug-ins.
+ *
  */
-public class MemoryOptionsTab extends ProviderOptionsTab {
+public class TimeLaunchConfigurationDelegate extends
+		ProviderLaunchConfigurationDelegate {
 
-	public String getName() {
-		return Activator.PLUGIN_NAME;
+	@Override
+	protected String getPluginID() {
+		return TimeConstants.PLUGIN_ID;
 	}
 
 	@Override
-	protected String getProfilingType() {
-		return Activator.PROFILING_TYPE;
+	public String getProfilingType() {
+		return TimeConstants.PROFILING_TYPE;
 	}
 
 }

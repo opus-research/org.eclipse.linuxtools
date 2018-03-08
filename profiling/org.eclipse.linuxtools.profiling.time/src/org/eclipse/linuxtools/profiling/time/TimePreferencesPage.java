@@ -8,20 +8,19 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.profiling.memory.launch;
+package org.eclipse.linuxtools.profiling.time;
 
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage;
 
-public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.profiling.memory.launch.messages"; //$NON-NLS-1$
-	public static String MemoryLaunchShortcut_0;
-	public static String MemoryPreferencesPage_0;
-	public static String MemoryPreferencesPage_1;
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-	}
+/**
+ * The preferences page for this plug-in, contributing to the global profiling
+ * preference page.
+ *
+ */
+public class TimePreferencesPage extends AbstractProviderPreferencesPage {
 
-	private Messages() {
+	@Override
+	protected String getProfilingType() {
+		return TimeConstants.PROFILING_TYPE;
 	}
 }
