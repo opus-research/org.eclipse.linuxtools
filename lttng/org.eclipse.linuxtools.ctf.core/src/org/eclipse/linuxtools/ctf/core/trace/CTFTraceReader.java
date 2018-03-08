@@ -75,10 +75,8 @@ public class CTFTraceReader {
      *
      * @param trace
      *            The trace to read from.
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    public CTFTraceReader(CTFTrace trace) throws CTFReaderException {
+    public CTFTraceReader(CTFTrace trace) {
         this.trace = trace;
         streamInputReaders.clear();
 
@@ -107,9 +105,8 @@ public class CTFTraceReader {
      * Copy constructor
      *
      * @return The new CTFTraceReader
-     * @throws CTFReaderException if an error occurs
      */
-    public CTFTraceReader copyFrom() throws CTFReaderException {
+    public CTFTraceReader copyFrom() {
         CTFTraceReader newReader = null;
 
         newReader = new CTFTraceReader(this.trace);
@@ -120,7 +117,6 @@ public class CTFTraceReader {
 
     /**
      * Dispose the CTFTraceReader
-     *
      * @since 2.0
      */
     public void dispose() {
@@ -165,17 +161,15 @@ public class CTFTraceReader {
         return prio;
     }
 
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
     /**
      * Creates one trace file reader per trace file contained in the trace.
-     *
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    private void createStreamInputReaders() throws CTFReaderException {
+    private void createStreamInputReaders() {
         Collection<Stream> streams = this.trace.getStreams().values();
 
         /*
@@ -210,11 +204,8 @@ public class CTFTraceReader {
     /**
      * Initializes the priority queue used to choose the trace file with the
      * lower next event timestamp.
-     *
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    private void populateStreamInputReaderHeap() throws CTFReaderException {
+    private void populateStreamInputReaderHeap() {
         if (this.streamInputReaders.isEmpty()) {
             this.prio = new PriorityQueue<StreamInputReader>();
             return;
@@ -264,13 +255,8 @@ public class CTFTraceReader {
      * Go to the next event.
      *
      * @return True if an event was read.
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    public boolean advance() throws CTFReaderException {
-        /*
-         * Index the
-         */
+    public boolean advance() {
         /*
          * Remove the reader from the top of the priority queue.
          */
@@ -308,11 +294,8 @@ public class CTFTraceReader {
 
     /**
      * Go to the last event in the trace.
-     *
-     * @throws CTFReaderException
-     *             if an error occurs
      */
-    public void goToLastEvent() throws CTFReaderException {
+    public void goToLastEvent() {
         seek(this.getEndTime());
         while (this.prio.size() > 1) {
             this.advance();
@@ -320,19 +303,18 @@ public class CTFTraceReader {
     }
 
     /**
-     * Seeks to a given timestamp It will go to the event just after the
-     * timestamp or the timestamp itself. if a if a trace is 10 20 30 40 and
-     * you're looking for 19, it'll give you 20, it you want 20, you'll get 20,
-     * if you want 21, you'll get 30. You want -inf, you'll get the first
-     * element, you want +inf, you'll get the end of the file with no events.
+     * Seeks to a given timestamp. It will seek to the nearest event greater or
+     * equal to timestamp. If a trace is [10 20 30 40] and you are looking for
+     * 19, it will give you 20. If you want 20, you will get 20, if you want 21,
+     * you will get 30. The value -inf will seek to the first element and the
+     * value +inf will seek to the end of the file (past the last event).
      *
      * @param timestamp
      *            the timestamp to seek to
-     * @return true if the trace has more events following the timestamp
-     * @throws CTFReaderException
-     *             if an error occurs
+     * @return true if there are events above or equal the seek timestamp,
+     *         false if seek at the end of the trace (no valid event).
      */
-    public boolean seek(long timestamp) throws CTFReaderException {
+    public boolean seek(long timestamp) {
         /*
          * Remove all the trace readers from the priority queue
          */
@@ -346,19 +328,15 @@ public class CTFTraceReader {
             /*
              * Add it to the priority queue if there is a current event.
              */
-
-        }
-        for (StreamInputReader streamInputReader : this.streamInputReaders) {
             if (streamInputReader.getCurrentEvent() != null) {
                 this.prio.add(streamInputReader);
-
             }
         }
         return hasMoreEvents();
     }
 
     /**
-     * gets the stream with the oldest event
+     * Gets the stream with the oldest event
      *
      * @return the stream with the oldest event
      */
@@ -421,7 +399,7 @@ public class CTFTraceReader {
     }
 
     /**
-     * gets the last event timestamp that was read. This is NOT necessarily the
+     * Gets the last event timestamp that was read. This is NOT necessarily the
      * last event in a trace, just the last one read so far.
      *
      * @return the last event
