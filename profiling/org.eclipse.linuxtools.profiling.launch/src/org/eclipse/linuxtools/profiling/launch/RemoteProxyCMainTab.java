@@ -136,6 +136,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse
 	 * .swt.widgets.Composite)
 	 */
+	@Override
 	public void createControl(Composite parent) {
 		Composite comp = new Composite(parent, SWT.NONE);
 		setControl(comp);
@@ -200,6 +201,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * org.eclipse.debug.ui.ILaunchConfigurationTab#initializeFrom(org.eclipse
 	 * .debug.core.ILaunchConfiguration)
 	 */
+	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 		filterPlatform = getPlatform(config);
 		updateProjectFromConfig(config);
@@ -397,6 +399,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		fProjText.setLayoutData(gd);
 		fProjText.addModifyListener(new ModifyListener() {
 
+			@Override
 			public void modifyText(ModifyEvent evt) {
 				// if project changes, invalidate program name cache
 				fPreviouslyCheckedProgram = null;
@@ -496,6 +499,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 
 		copyFromExeText = copyFromExeSelector.getURIText();
 		copyFromExeText.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -518,6 +522,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				2, "C/C++ executable", null); //$NON-NLS-1$
 		fProgText = exeSelector.getURIText();
 		fProgText.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -562,6 +567,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				2, "Working directory", null); //$NON-NLS-1$
 		workingDirText = workingDirSelector.getURIText();
 		workingDirText.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -608,7 +614,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			if (!exePath.isAbsolute() && exeURI != null && !exeURI.isAbsolute()) {
 				URI projectURI = project.getLocationURI();
 				exeURI = new URI(projectURI.getScheme(),
-						projectURI.getAuthority(), projectURI.getRawPath() + "/"
+						projectURI.getAuthority(), projectURI.getRawPath() + '/'
 								+ exePath.toString(), EMPTY_STRING);
 			}
 			if (exeURI != null) {
@@ -704,7 +710,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			if (!exePath.isAbsolute() && exeURI != null && !exeURI.isAbsolute()) {
 				URI projectURI = project.getLocationURI();
 				exeURI = new URI(projectURI.getScheme(),
-						projectURI.getAuthority(), projectURI.getRawPath() + "/"
+						projectURI.getAuthority(), projectURI.getRawPath() + '/'
 								+ exePath.toString(), EMPTY_STRING);
 			}
 			if (exeURI != null) {
@@ -803,7 +809,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			if (!wdPath.isAbsolute() && wdURI != null && !wdURI.isAbsolute()) {
 				URI projectURI = project.getLocationURI();
 				wdURI = new URI(projectURI.getScheme(),
-						projectURI.getAuthority(), projectURI.getRawPath() + "/"
+						projectURI.getAuthority(), projectURI.getRawPath() + '/'
 								+ wdPath.toString(), EMPTY_STRING);
 			}
 			if (wdURI != null) {
@@ -1003,6 +1009,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.
 	 * debug.core.ILaunchConfigurationWorkingCopy)
 	 */
+	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		// We set empty attributes for project & program so that when one config
 		// is
@@ -1119,6 +1126,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 *
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
 	 */
+	@Override
 	public String getName() {
 		return LaunchMessages.CMainTab_Main;
 	}

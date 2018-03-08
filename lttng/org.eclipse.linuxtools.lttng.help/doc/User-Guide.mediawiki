@@ -524,7 +524,6 @@ The Histogram View displays the trace events distribution with respect to time. 
 
 [[Image:images/HistogramView.png]]
 
-The '''Hide lost events''' button [[Image:images/HV_toolbar_lost_events.png]] in the local toolbar allows to hide the bars of lost events or not.
 
 On the top left, there are two data controls:
 
@@ -958,34 +957,39 @@ By default the domain '''Kernel''' is selected. To create a UST channel, select 
 If required update the following channel information and then press '''Ok'''.
 
 * '''Channel Name''': The name of the channel.
-* '''Number of Sub Buffers''': The number of sub-buffers of the channel.
-* '''Overwrite Mode''': The channel overwrite mode ('''true''' or '''false''')
-* '''Read Timer Interval''': The read timer interval.
 * '''Sub Buffer size''': The size of the sub-buffers of the channel (in bytes).
+* '''Number of Sub Buffers''': The number of sub-buffers of the channel.
 * '''Switch Timer Interval''': The switch timer interval.
+* '''Read Timer Interval''': The read timer interval.
+* '''Discard Mode''': '''Overwrite''' events in buffer or '''Discard''' new events when buffer is full.
 
 Upon successful operation, the requested domain will be created under the session tree node as well as the requested channel will be added under the domain. The channel will be '''ENABLED'''.
 
-==== Trace file rotation ====
+==== Configuring Trace File Rotation ====
 
-Since LTTng Tools v2.2.0 it is possible to set the maximum size of trace files and the maximum number of them. These options are located in the same dialog box that is used to enabling channels.
+Since LTTng Tools v2.2.0 it is possible to set the maximum size of trace files and the maximum number of them. These options are located in the same dialog box that is used for enabling channels.
 
 [[Image:images/LTTng2CreateChannelDialogFileRotation.png]]
 
 * '''Maximum size of trace files''': The maximum size of trace files
 * '''Maximum number of trace files''': The maximum number of trace files
 
-==== Per UID buffers ====
+==== Configuring per UID and per PID Buffers (UST only) ====
 
-Since LTTng Tools v2.2.0 it is possible to have one buffer per UID for UST traces. It can be activated in the dialog box when enabling channels.
+Since LTTng Tools v2.2.0 it is possible to configure the type of buffers for '''UST''' application. It is now possible to choose between per '''UID''' buffers (per user ID) and per '''PID''' buffers (per process ID) using the dialog box for enabling channels.
 
 [[Image:images/LTTng2CreateChannelDialogPerUIDBuffers.png]]
 
-* '''Per UID buffers''': To activate the per UID buffers option for UST channel only
+* '''Per PID buffers''': To activate the per PID buffers option for UST channels
+* '''Per UID buffers''': To activate the per UID buffers option for UST channels
 
-==== Periodical flush for metadata ====
+If no buffer type is selected then the default value of the tracer will be configured.
 
-Since LTTng Tools v2.2.0 it is possible to configure periodical flush for the metadata channel. To set this, use the checkbox '''Configure metadata channel''' then use the switcher timer interval for the interval.
+Note that '''Global shared buffers''' is only for kernel channel and is pre-selected when '''Kernel''' is selected in the dalog box.
+
+==== Configuring Periodical Flush for metadata Channel ====
+
+Since LTTng Tools v2.2.0 it is possible to configure periodical flush for the metadata channel. To set this, use the checkbox '''Configure metadata channel''' then fill the switch timer interval.
 
 [[Image:images/LTTng2CreateChannelDialogMetadataFlush.png]]
 
@@ -995,11 +999,7 @@ Once a domain is available, channels can be enabled directly using the domain. T
 
 [[Image:images/LTTng2CreateChannelOnDomainAction.png]]
 
-The dialog box for enabling channel will open for entering information about the channel to be created. Note that the domain is pre-selected and cannot be changed.
-
-[[Image:images/LTTng2CreateChannelOnDomainDialog.png]]
-
-Fill the relevant information and press '''Ok'''.
+The dialog box for enabling channel will open for entering information about the channel to be created. Note that the domain is pre-selected and cannot be changed. Fill the relevant information and press '''Ok'''.
 
 ==== Enabling and Disabling Channels ====
 
@@ -1246,7 +1246,9 @@ A new display will open for selecting the traces to import.
 
 [[Image:images/LTTng2ImportDialog.png]]
 
-Select the trace to be imported by selecting the relevant traces in the tree viewer, select a tracing project from the '''Available Projects''' combo box and select the Overwrite button ('''Overwrite existing trace without warning''') if required. Then press button '''Ok'''. Upon successful import operation the the selected traces will be stored in the '''Traces''' directory of the specified tracing project. From the '''Project Explorer''' view, the trace can be analyzed further.
+By default all traces are selected. Also, a default project with the name '''Remote''' is selected which will be created if necessary. Update the list of traces to be imported, if necessary, by selecting and deselecting the relevant traces in the tree viewer. Also if needed, change the tracing project from the '''Available Projects''' combo box. Select the Overwrite button ('''Overwrite existing trace without warning''') if required. Then press button '''Ok'''. Upon successful import operation the selected traces will be stored in the '''Traces''' directory of the specified tracing project. For '''Kernel''' traces the trace type '''LTTng Kernel''' and for '''UST''' traces the trace type '''Generic CTF Trace''' will be set. From the '''Project Explorer''' view, the trace can be analyzed further.
+
+'''Note''': The trace will be imported with a name constructed with information about session, whether it is a kernel or ust trace, ust buffer type (per UID or per PID) and snapshot details. 
 
 '''Note''': If the overwrite button ('''Overwrite existing trace without warning''') was not selected and a trace with the same name of a trace to be imported already exists in the project, then a new confirmation dialog box will open.
 
@@ -1260,11 +1262,7 @@ If the existing trace should not be overwritten select, then select the '''Renam
 
 ==== Importing Network Traces to a Tracing Project ====
 
-Since LTTng Tools v2.1.0 it is possible to store traces over the network. To import network traces, execute the '''Import''' action as described in chapter [[#Importing Session Traces to a Tracing Project|Importing Session Traces to a Tracing Project]]. For network traces a dialog will open for selecting a  project from the list of available tracing projects within the current Eclipse workspace.
-
-[[Image:images/LTTng2ImportSelectTracingProjectDialog.png]]
-
-Select a tracing project from the drop-down menu and then click on '''Next...'''. This will open the default dialog box for importing traces to a tracing project. Follow the instructions in chapter [[#Importing Traces in a Project|Importing Traces in a Project]] to import the network traces of the current session.
+Since LTTng Tools v2.1.0 it is possible to store traces over the network. To import network traces, execute the '''Import''' action as described in chapter [[#Importing Session Traces to a Tracing Project|Importing Session Traces to a Tracing Project]]. For network traces the '''Batch Import Trace Wizard''' will be displayed. Follow the instructions in chapter [[#Batch Importing|Batch Importing]] to import the network traces of the current session. 
 
 === Properties View ===
 
@@ -1353,7 +1351,7 @@ The perspective can be opened from the Eclipse Open Perspective dialog ('''Windo
 
 == Control Flow View ==
 
-The '''''Control Flow View''''' is a LTTng-specific view that shows per-process events graphically. To enable it, select ''Control Flow'' under ''LTTng'' within the ''Show View'' window ('''Window''' -> '''Show View''' -> '''Other...'''):
+The '''''Control Flow''''' view is a LTTng-specific view that shows per-process events graphically. To enable it, select ''Control Flow'' under ''LTTng'' within the ''Show View'' window ('''Window''' -> '''Show View''' -> '''Other...'''):
 
 [[Image:images/Cfv_show_view.png]]
 
@@ -1361,11 +1359,11 @@ You should get something like this:
 
 [[Image:images/Cfv_global.png]]
 
-The view is divided into the following important sections: '''<span style="color: #C84545;">process tree</span>''', '''<span style="color: #A1C81A;">process TID, PTID and birth time</span>''', '''<span style="color: #67A3DC;">states flow</span>''' and the '''<span style="color: #AD77D7;">toolbar</span>'''.
+The view is divided into the following important sections: '''process tree and information''', '''control flow''' and the '''toolbar'''.
 
 The following sections provide detailed information for each part of the Control Flow View.
 
-=== Process tree and informations ===
+=== Process tree and information ===
 
 Processes are organized as a tree within this view. This way, child and parent processes are easy to identify.
 
@@ -1373,11 +1371,11 @@ Processes are organized as a tree within this view. This way, child and parent p
 
 The layout is based on the states computed from the trace events.
 
-A given process may be shown at different places within the tree since the nodes are '''unique (TID, birth time) couples'''. This means that if process B of parent A dies, you'll still see it in the tree. If process A forks process B again, it will be shown as a different node since it won't have the same birth time (and probably not the same TID). This has the advantage that the tree, once loaded, never changes: horizontal scrolling within the [[#States flow|states flow]] remains possible.
+A given process may be shown at different places within the tree since the nodes are '''unique (TID, birth time) couples'''. This means that if process B of parent A dies, you'll still see it in the tree. If process A forks process B again, it will be shown as a different node since it won't have the same birth time (and probably not the same TID). This has the advantage that the tree, once loaded, never changes: horizontal scrolling within the [[#Control flow|control flow]] remains possible.
 
 The TID column shows the process node's '''thread ID''' and the PTID column shows its '''parent thread ID''' (nothing is shown if the process has no parent).
 
-=== States flow ===
+=== Control flow ===
 
 This part of the Control Flow View is probably the most interesting one. Using the mouse, you can navigate through the trace (go left, right) and zoom on a specific region to inspect its details.
 
@@ -1387,7 +1385,11 @@ The colored bars you see represent '''states''' for the associated process node.
 
 This dark yellow is what you'll see most of the time since scheduling puts processes on hold while others run.
 
-The vertical blue line is the '''current selection indicator'''. When a time range is selected, the region between the begin and end time of the selection will be shaded.
+The vertical blue line with T1 above it is the '''current selection indicator'''. When a time range is selected, the region between the begin and end time of the selection will be shaded and two lines with T1 and T2 above will be displayed. The time stamps corresponding to T1, T2 and their delta are shown in the status line when the mouse is hovering over the control flow.
+
+Arrows can be displayed that follow the execution of each CPU across processes. The arrows indicate when the scheduler switches from one process to another for a given CPU. The CPU being followed is indicated on the state tooltip. When the scheduler switches to and from the idle process, the arrow skips to the next process which executes on the CPU after the idle process. Note that an appropriate zoom level is required for all arrows to be displayed.
+
+The display of arrows is optional and can be toggled using the '''Hide Arrows''' toolbar button. It is also possible to follow a CPU's execution across state changes and the scheduler's process switching using the '''Follow CPU Forward/Backward''' toolbar buttons.
 
 ==== Using the mouse ====
 
@@ -1437,6 +1439,8 @@ The tooltip indicates:
 
 * the process name
 * the pointed state name
+* the CPU (if applicable)
+* the system call name (if applicable)
 * the pointed state date and start/stop times
 * the pointed state duration (seconds)
 
@@ -1444,17 +1448,58 @@ The tooltip indicates:
 
 The Control Flow View '''toolbar''', located at the top right of the view, has shortcut buttons to perform common actions:
 
-[[Image:images/Cfv_toolbar.png]]
-
-The '''Previous event''' and '''Next event''' buttons update the current time indicator so that it's on the previous or next event.
-
-The '''Previous process''' and '''Next process''' buttons select the previous and next process node within the process tree.
-
-The '''Process filter''' buttons opens a new dialog box for configuring the processes to show.
-
-[[Image:images/LTTng2_CFV_Filter.png]]
+{|
+| [[Image:images/filter_items.gif]]
+| Show View Filter
+| Opens the process filter dialog
+|-
+| [[Image:images/show_legend.gif]]
+| Show Legend
+| Displays the states legend
+|-
+| [[Image:images/home_nav.gif]]
+| Reset the Time Scale to Default
+| Resets the zoom window to the full range
+|-
+| [[Image:images/prev_event.gif]]
+| Select Previous Event
+| Selects the previous state for the selected process
+|-
+| [[Image:images/next_event.gif]]
+| Select Next Event
+| Selects the next state for the selected process
+|-
+| [[Image:images/prev_menu.gif]]
+| Select Previous Process
+| Selects the previous process
+|-
+| [[Image:images/next_menu.gif]]
+| Select Next Process
+| Selects the next process
+|-
+| [[Image:images/zoomin_nav.gif]]
+| Zoom In
+| Zooms in on the selection by 50%
+|-
+| [[Image:images/zoomout_nav.gif]]
+| Zoom Out
+| Zooms out on the selection by 50%
+|-
+| [[Image:images/hide_arrows.gif]]
+| Hide Arrows
+| Toggles the display of arrows on or off
+|-
+| [[Image:images/follow_arrow_bwd.gif]]
+| Follow CPU Backward
+| Selects the previous state following CPU execution across processes
+|-
+| [[Image:images/follow_arrow_fwd.gif]]
+| Follow CPU Forward
+| Selects the next state following CPU execution across processes
+|}
 
 == Resources View ==
+
 This view is specific to kernel trace. To open it, go in '''Window''' -> '''Show View''' -> '''Other...''' and select '''LTTng/Resources''' in the list.
 
 [[Image:images/Rv_example.png| Example of resources view with all trace points and syscalls enabled]]
@@ -1490,11 +1535,39 @@ See Control Flow View's '''[[#Incomplete_regions|Incomplete regions]]'''.
 
 The Resources View '''toolbar''', located at the top right of the view, has shortcut buttons to perform common actions:
 
-[[Image:images/Rv_toolbar.png]]
-
-The '''Previous event''' and '''Next event''' buttons update the current time indicator so that it's on the previous or next event.
-
-The '''Previous resource''' and '''Next resource''' buttons select the previous and next resource node within the resource tree.
+{|
+| [[Image:images/show_legend.gif]]
+| Show Legend
+| Displays the states legend
+|-
+| [[Image:images/home_nav.gif]]
+| Reset the Time Scale to Default
+| Resets the zoom window to the full range
+|-
+| [[Image:images/prev_event.gif]]
+| Select Previous Event
+| Selects the previous state for the selected resource
+|-
+| [[Image:images/next_event.gif]]
+| Select Next Event
+| Selects the next state for the selected resource
+|-
+| [[Image:images/prev_menu.gif]]
+| Select Previous Resource
+| Selects the previous resource
+|-
+| [[Image:images/next_menu.gif]]
+| Select Next Resource
+| Selects the next resource
+|-
+| [[Image:images/zoomin_nav.gif]]
+| Zoom In
+| Zooms in on the selection by 50%
+|-
+| [[Image:images/zoomout_nav.gif]]
+| Zoom Out
+| Zooms out on the selection by 50%
+|}
 
 == LTTng Kernel Events Editor ==
 
