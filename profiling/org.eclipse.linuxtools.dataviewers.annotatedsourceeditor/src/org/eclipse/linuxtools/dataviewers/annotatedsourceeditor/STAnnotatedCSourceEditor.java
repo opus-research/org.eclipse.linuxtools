@@ -50,32 +50,36 @@ import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 
 public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundListener {
-    /**
-     * @since 4.2
-     */
-    public final static String ST_RULER = "STRuler"; //$NON-NLS-1$
+	/**
+	 * @since 4.2
+	 */
+	public final static String ST_RULER = "STRuler"; //$NON-NLS-1$
 
     private STColumnSupport fColumnSupport;
 
     private STContributedRulerColumn fColumn;
 
-    private IAnnotationProvider fAnnotationProvider;
+    private IAnnotationEditorInput fInput;
+
+    private ISTAnnotationColumn fAnnotatedColumn;
 
     private STChangeRulerColumn fSTChangeRulerColumn;
 
     @Override
     public void createPartControl(Composite parent) {
-        super.createPartControl(parent);
-        if (fAnnotationProvider == null) {
+    	super.createPartControl(parent);
+        if (fInput == null) {
             return;
         }
 
         STColumnSupport columnSupport = getSTColumnSupport();
         RulerColumnRegistry registry = RulerColumnRegistry.getDefault();
 
-        RulerColumnDescriptor abstractSTColumnDescriptor = registry.getColumnDescriptor(STContributedRulerColumn.ID);
-        columnSupport.addSTColumn((CompositeRuler) getVerticalRuler(), abstractSTColumnDescriptor,
-                fAnnotationProvider.getColumn());
+		RulerColumnDescriptor abstractSTColumnDescriptor = registry
+				.getColumnDescriptor(STContributedRulerColumn.ID);
+		columnSupport.addSTColumn((CompositeRuler) getVerticalRuler(),
+				abstractSTColumnDescriptor, fAnnotatedColumn);
+
 
         CompositeRuler vr = (CompositeRuler) super.getVerticalRuler();
         for (Iterator<?> iter = vr.getDecoratorIterator(); iter.hasNext();) {
@@ -98,10 +102,10 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
     }
 
     private STColumnSupport getSTColumnSupport() {
-        if (fColumnSupport == null) {
-            fColumnSupport = new STColumnSupport(this, RulerColumnRegistry.getDefault());
-        }
-        return fColumnSupport;
+    	if (fColumnSupport == null) {
+          fColumnSupport = new STColumnSupport(this, RulerColumnRegistry.getDefault());
+    	}
+    	return fColumnSupport;
     }
 
     protected class STColumnSupport extends AbstractDecoratedTextEditor.ColumnSupport {
@@ -163,7 +167,8 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
                     // this is a workaround...
                     STChangeRulerColumn fDelegate = null;
                     if (fColumns != null && fColumns.size() > 0) {
-                        fDelegate = createSTRulerColumn(fColumns.get(fColumns.size() - 1));
+                    	 fDelegate = createSTRulerColumn(fColumns.get(fColumns
+                                 .size() - 1));
                     }
                     fColumn.setSTColumn(fDelegate);
                 }
@@ -181,23 +186,25 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
 
     @Override
     public void lineGetBackground(LineBackgroundEvent event) {
-        if (fAnnotationProvider != null) {
+        if (fInput != null) {
             StyledTextContent c = (StyledTextContent) event.data;
             int line = c.getLineAtOffset(event.lineOffset);
-            event.lineBackground = fAnnotationProvider.getColor(line);
+            event.lineBackground = fInput.getColor(line);
         }
     }
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
         super.doSetInput(input);
-        if (input != null && input instanceof IEditorInputWithAnnotations) {
-            fAnnotationProvider = ((IEditorInputWithAnnotations) input).createAnnotationProvider();
+
+        if (input != null && input instanceof IAnnotationEditorInput) {
+            fInput = (IAnnotationEditorInput) input;
+            fAnnotatedColumn = fInput.getColumn();
         }
     }
 
     private static class ToolTipSupport extends DefaultToolTip {
-        private final STContributedRulerColumn control;
+        private STContributedRulerColumn control;
 
         static class ToolTipArea {
             final int line;
@@ -256,14 +263,14 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
 
         for (int i = 0; i < lines; i++) {
             try {
-                Color color = fAnnotationProvider.getColor(i);
+                Color color = fInput.getColor(i);
                 int r = color.getRed();
                 int g = color.getGreen();
                 int b = color.getBlue();
                 if (r != 255 || g != 255 || b != 255) {
                     int offset = doc.getLineOffset(i);
                     String type = STAnnotatedSourceEditorActivator.ANNOTATION_TYPE;
-                    Annotation annotation = new Annotation(type, true, ""); //$NON-NLS-1$
+                    Annotation annotation = new Annotation(type, true, "");
                     or.setAnnotationColor(annotation, color);
                     am.addAnnotation(annotation, new Position(offset));
                 }
@@ -274,17 +281,4 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
             }
         }
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.cdt.internal.ui.editor.CEditor#dispose()
-     */
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (fAnnotationProvider != null)
-            fAnnotationProvider.dispose();
-    }
-
 }

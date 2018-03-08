@@ -21,6 +21,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.test.stub.model.EventImpl
 /**
  * Time Graph Presentation Provider Stub.
  */
+@SuppressWarnings("nls")
 public class TsfImplProvider extends TimeGraphPresentationProvider {
 
 	// ========================================================================

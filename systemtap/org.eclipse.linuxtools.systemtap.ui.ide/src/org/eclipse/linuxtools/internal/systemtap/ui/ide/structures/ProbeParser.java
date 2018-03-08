@@ -25,8 +25,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
 /**
  * Runs stap -vp1 & stap -up2 in order to get all of the probes/functions
@@ -92,7 +92,7 @@ public class ProbeParser extends TapsetParser {
 		String[] options;
 		if(null == script) {
 			script = "**"; //$NON-NLS-1$
-			options = new String[] {"-L"};   //$NON-NLS-1$
+			options = new String[] {"-L"};   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 		} else {
 			options = null;
 		}

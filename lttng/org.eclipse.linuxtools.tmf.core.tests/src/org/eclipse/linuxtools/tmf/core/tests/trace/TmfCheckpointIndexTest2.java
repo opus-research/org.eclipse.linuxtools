@@ -42,7 +42,7 @@ import org.junit.Test;
  * Test suite for the TmfCheckpointIndexer class (events with same
  * timestamp around checkpoint).
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfCheckpointIndexTest2 {
 
     // ------------------------------------------------------------------------
@@ -146,6 +146,7 @@ public class TmfCheckpointIndexTest2 {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testTmfTraceMultiTimestamps() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());

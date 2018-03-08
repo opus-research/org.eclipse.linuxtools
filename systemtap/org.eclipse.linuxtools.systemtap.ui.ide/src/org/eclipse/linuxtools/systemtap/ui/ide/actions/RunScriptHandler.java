@@ -16,7 +16,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,12 +31,12 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -68,12 +67,7 @@ public class RunScriptHandler extends AbstractHandler {
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private List<String> cmdList;
 
-
-	public RunScriptHandler(){
-		this.cmdList = new ArrayList<String>();
-	}
 
 	/**
 	 * @since 2.0
@@ -182,9 +176,8 @@ public class RunScriptHandler extends AbstractHandler {
 			return false;
 		}
 
-		if(ed.isDirty()) {
+		if(ed.isDirty())
 			ed.doSave(new ProgressMonitorPart(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new FillLayout()));
-		}
 
 		return true;
 	}
@@ -213,15 +206,6 @@ public class RunScriptHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Adds the given String to the list of commands to be
-	 * passed to systemtap when running the command
-	 * @param option
-	 */
-	public void addComandLineOptions(String option){
-		this.cmdList.add(option);
-	}
-
-	/**
 	 * The command line argument generation method used by <code>RunScriptAction</code>. This generates
 	 * a stap command line that includes the tapsets specified in user preferences, a guru mode flag
 	 * if necessary, and the path to the script on disk.
@@ -229,14 +213,18 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 	protected String[] buildStandardScript() {
+	//FixMe: Take care of this in the next release. For now only the guru mode is sent
+		ArrayList<String> cmdList = new ArrayList<String>();
+		String[] script;
+
 		getImportedTapsets(cmdList);
 
 		if(isGuru())
-		 {
 			cmdList.add("-g"); //$NON-NLS-1$
-		}
 
-		return finalizeScript(cmdList);
+		script = finalizeScript(cmdList);
+
+		return script;
 	}
 
 	/**
@@ -245,7 +233,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 
-	protected void getImportedTapsets(List<String> cmdList) {
+	protected void getImportedTapsets(ArrayList<String> cmdList) {
 		IPreferenceStore preferenceStore = IDEPlugin.getDefault().getPreferenceStore();
 		String[] tapsets = preferenceStore.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
 
@@ -276,9 +264,9 @@ public class RunScriptHandler extends AbstractHandler {
 			boolean inLineComment = false;
 			boolean inBlockComment = false;
 			while(-1 != (curr = fr.read())) {
-				if(!inLineComment && !inBlockComment && '%' == prev && '{' == curr) {
+				if(!inLineComment && !inBlockComment && '%' == prev && '{' == curr)
 					front = true;
-				} else if(!inLineComment && !inBlockComment && '%' == prev && '}' == curr && front) {
+				else if(!inLineComment && !inBlockComment && '%' == prev && '}' == curr && front) {
 					imbedded = true;
 					break;
 				} else if(!inBlockComment && (('/' == prev && '/' == curr) || '#' == curr)) {
@@ -293,9 +281,8 @@ public class RunScriptHandler extends AbstractHandler {
 				prev = curr;
 			}
 			fr.close();
-			if(imbedded) {
+			if(imbedded)
 				return true;
-			}
 		} catch (FileNotFoundException fnfe) {
 			fnfe.printStackTrace();
 		} catch (IOException ie) {
@@ -313,18 +300,17 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @return An array suitable to pass to <code>Runtime.exec</code> to start stap on this file.
 	 * @since 2.0
 	 */
-	protected String[] finalizeScript(List<String> cmdList) {
+	protected String[] finalizeScript(ArrayList<String> cmdList) {
 
 		String[] script;
 
 		script = new String[cmdList.size() + 4];
 		script[0] = "stap"; //$NON-NLS-1$
 
-		if(getRunLocal() == false) {
+		if(getRunLocal() == false)
 			script[script.length-1] = tmpfileName;
-		} else {
+		else
 			script[script.length-1] = fileName;
-		}
 
 		for(int i=0; i< cmdList.size(); i++) {
 			script[i+1] = cmdList.get(i).toString();
@@ -345,21 +331,17 @@ public class RunScriptHandler extends AbstractHandler {
 		}
 
 		// Make sure script name only contains underscores and/or alphanumeric characters.
-		Pattern validModName = Pattern.compile("^[a-z0-9_A-Z]+$"); //$NON-NLS-1$
+		Pattern validModName = Pattern.compile("^[a-z0-9_]+$"); //$NON-NLS-1$
 		Matcher modNameMatch = validModName.matcher(modname);
 		if (!modNameMatch.matches()) {
 			continueRun = false;
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
 
-					Shell parent = PlatformUI.getWorkbench().getDisplay()
-							.getActiveShell();
-					MessageDialog.openError(parent,
-							Messages.ScriptRunAction_InvalidScriptTitle,
-							Messages.ScriptRunAction_InvalidScriptTMessage);
-				}
-			});
+			Shell parent = PlatformUI.getWorkbench().getDisplay()
+					.getActiveShell();
+			MessageDialog.openError(parent,
+					Messages.ScriptRunAction_InvalidScriptTitle,
+					Messages.ScriptRunAction_InvalidScriptTMessage);
+
 			return new String[0];
 		}
 

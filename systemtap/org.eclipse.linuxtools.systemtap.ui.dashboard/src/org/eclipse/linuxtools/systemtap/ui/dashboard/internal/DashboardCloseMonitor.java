@@ -11,15 +11,18 @@
 
 package org.eclipse.linuxtools.systemtap.ui.dashboard.internal;
 
+import java.text.MessageFormat;
+
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
+
 /**
- * This listener is responsible for monitoring workbench close actions.  It is used
+ * This listener is responsible for monitoring workbench close actions.  It is used 
  * to veto a shutdown if there are modules still running and the user does not really
  * want to shutdown.
  * @author Ryan Morse
@@ -31,18 +34,19 @@ public class DashboardCloseMonitor implements IWorkbenchListener {
 		if(!forced) {
 			IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 			IViewPart ivp = window.getActivePage().findView(ActiveModuleBrowserView.ID);
-
+			
 			if (ivp != null){
 				ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 				if(ambv.anyRunning()) {
-					close = MessageDialog.openQuestion(window.getShell(), Localization.getString("DashboardCloseMonitor.Closing"), Localization.getString("DashboardCloseMonitor.StillRunning")); //$NON-NLS-1$ //$NON-NLS-2$
+					String msg = MessageFormat.format(Localization.getString("DashboardCloseMonitor.StillRunning"), (Object[])null); //$NON-NLS-1$
+					close = MessageDialog.openQuestion(window.getShell(), "Closing...", msg);
 				}
 			}
-
+			
 		}
 		return close;
 	}
-
+	
 	@Override
 	public void postShutdown(IWorkbench workbench) {}
 }

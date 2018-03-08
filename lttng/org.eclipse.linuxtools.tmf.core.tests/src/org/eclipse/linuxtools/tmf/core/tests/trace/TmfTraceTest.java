@@ -55,7 +55,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfTrace class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfTraceTest {
 
     // ------------------------------------------------------------------------
@@ -1441,6 +1441,7 @@ public class TmfTraceTest {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testCurrentTimeValues() throws TmfTraceException {
 
         TmfTraceStub trace = null;
