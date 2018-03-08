@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph;
 
-import java.text.MessageFormat;
-
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.Localization;
 import org.eclipse.swt.SWT;
@@ -74,8 +72,14 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			}
 		}
 
+		//Add the title widgets
+		//data1 = new FormData();
+		//data1.top = new FormAttachment(cmpGraphOptsGraph, 10);
+
 		Group cmpGraphOptsSeries = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//rowLayout = new RowLayout(SWT.VERTICAL);
+		//rowLayout.fill = true;
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		cmpGraphOptsSeries.setLayout(layout);
@@ -101,12 +105,11 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 
 		cboYItems = new Combo[!edit ? labels.length : Math.max(labels.length, model.getYSeries().length)];
 		lblYItems = new Label[cboYItems.length];
-		deleted = new boolean[cboYItems.length + 1];
 
 		Label lblXItem = new Label(cmpGraphOptsSeries, SWT.NONE);
 		lblXItem.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		lblXItem.setText(Localization.getString("SelectGraphAndSeriesWizardPage.XSeries")); //$NON-NLS-1$
-		cboXItem = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN|SWT.READ_ONLY);
+		cboXItem = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
 		cboXItem.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		cboXItem.addSelectionListener(new ComboSelectionListener());
 		cboXItem.add(Localization.getString("SelectGraphAndSeriesWizardPage.RowID")); //$NON-NLS-1$
@@ -114,8 +117,8 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		for(int i=0; i<cboYItems.length; i++) {
 			lblYItems[i] = new Label(cmpGraphOptsSeries, SWT.NONE);
 			lblYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-			lblYItems[i].setText(MessageFormat.format(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries"), new Integer(i))); //$NON-NLS-1$
-			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN|SWT.READ_ONLY);
+			lblYItems[i].setText(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries") + i + ":"); //$NON-NLS-1$ //$NON-NLS-2$
+			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
 			cboYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			cboYItems[i].addSelectionListener(new ComboSelectionListener());
 
@@ -141,17 +144,13 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			if (selected < labels.length){
 				cboXItem.select(selected + 1);
 			} else {
-				cboXItem.add(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"), 0); //$NON-NLS-1$
-				cboXItem.select(0);
-				deleted[0] = true;
+				cboXItem.setText(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted")); //$NON-NLS-1$
 			}
 			selected = model.getYSeries()[0];
 			if (selected < labels.length) {
 				cboYItems[0].select(selected);
 			} else {
-				cboYItems[0].add(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"), 0); //$NON-NLS-1$
-				cboYItems[0].select(0);
-				deleted[1] = true;
+				cboYItems[0].setText(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted")); //$NON-NLS-1$
 			}
 		}
 		for(int i=1; i<cboYItems.length; i++) {
@@ -162,9 +161,7 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 				if (selected < labels.length){
 					cboYItems[i].select(selected + 1);
 				} else {
-					cboYItems[i].add(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"), 0); //$NON-NLS-1$
-					cboYItems[i].select(0);
-					deleted[i+1] = true;
+					cboYItems[i].setText(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted")); //$NON-NLS-1$
 				}
 			}
 			cboYItems[i].setVisible(cvisible);
@@ -243,49 +240,12 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		return false;
 	}
 
-	private void markAsDuplicate(Combo item, Boolean bad) {
-		item.setForeground(item.getDisplay().getSystemColor(bad ? SWT.COLOR_RED : SWT.COLOR_BLACK));
-	}
-
-	private void findDuplicates() {
-		// Undo duplicate marking, as it is to be updated.
-		markAsDuplicate(cboXItem, false);
-		for (int i = 0; i < cboYItems.length; i++) {
-			markAsDuplicate(cboYItems[i], false);
-		}
-
-		for(int j,i=0; i<cboYItems.length; i++) {
-			if(cboYItems[i].isVisible() && !deleted[i+1]) {
-				for(j=i+1; j<cboYItems.length; j++) {
-					try {
-						if(!deleted[j+1] && cboYItems[j].isVisible() && cboYItems[i].getItem(cboYItems[i].getSelectionIndex())
-								.equals(cboYItems[j].getItem(cboYItems[j].getSelectionIndex()))) {
-								markAsDuplicate(cboYItems[i], true);
-								markAsDuplicate(cboYItems[j], true);
-						}
-					} catch (Exception e) {
-						// If a cboYItem has no item selected, don't mark any duplicates. Ignore.
-					}
-				}
-				try {
-					if(!deleted[0] && cboYItems[i].getItem(cboYItems[i].getSelectionIndex()).equals(cboXItem.getItem(cboXItem.getSelectionIndex()))) {
-						markAsDuplicate(cboYItems[i], true);
-						markAsDuplicate(cboXItem, true);
-					}
-				} catch (Exception e) {
-					// Ignore for same reason as above.
-				}
-			}
-		}
-	}
-
 	/**
 	 * Checks for conflicts in data selection. (An example of a conflict
 	 * is two Y-series fields set to the same output value.)
 	 * @return True if there is no conflict, false otherwise.
 	 */
 	private boolean isSeriesUnique() {
-		findDuplicates();
 		if("".equals(txtTitle.getText().trim())) { //$NON-NLS-1$
 			return false;
 		}
@@ -293,35 +253,31 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			return false;
 		}
 
-		for (int i = 0; i < deleted.length; i++) {
-			if (deleted[i]) {
-				return false;
-			}
+		if (cboXItem.getText().contentEquals(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"))) { //$NON-NLS-1$
+			return false;
 		}
 
 		for(int j,i=0; i<cboYItems.length; i++) {
+			if (cboYItems[i].getText().contentEquals(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"))) { //$NON-NLS-1$
+				return false;
+			}
 			if(cboYItems[i].isVisible()) {
 				for(j=i+1; j<cboYItems.length; j++) {
 					if(cboYItems[j].isVisible()) {
-						try {
-							if(cboYItems[i].getItem(cboYItems[i].getSelectionIndex())
-									.equals(cboYItems[j].getItem(cboYItems[j].getSelectionIndex()))) {
-								return false;
-							}
-						} catch (Exception e) {
-							// Exception thrown if getting the selection of a cboItem failed.
-							// This happens when nothing is selected, which is an invalid state.
+						if(0 > cboYItems[i].getSelectionIndex())
+							return false;
+						else if(0 > cboYItems[j].getSelectionIndex())
+							return false;
+						else if(cboYItems[i].getItem(cboYItems[i].getSelectionIndex()).equals(cboYItems[j].getItem(cboYItems[j].getSelectionIndex()))) {
 							return false;
 						}
 					}
 				}
-				try {
-					if(cboYItems[i].getItem(cboYItems[i].getSelectionIndex())
-							.equals(cboXItem.getItem(cboXItem.getSelectionIndex()))) {
-						return false;
-					}
-				} catch (Exception e) {
-					// Exception thrown for same reason as above.
+				if(0 > cboYItems[i].getSelectionIndex())
+					return false;
+				else if(0 > cboXItem.getSelectionIndex())
+					return false;
+				else if(cboYItems[i].getItem(cboYItems[i].getSelectionIndex()).equals(cboXItem.getItem(cboXItem.getSelectionIndex()))) {
 					return false;
 				}
 			}
@@ -380,32 +336,13 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 
 		@Override
 		public void widgetSelected(SelectionEvent e) {
-			Combo source = (Combo) e.getSource();
-			if(cboXItem.equals(source)) {
-				if (deleted[0] && cboXItem.getSelectionIndex() != 0) {
-					cboXItem.remove(0);
-					deleted[0] = false;
-				}
-			}
-			else {
-				for (int i = 0; i < cboYItems.length; i++) {
-					if (deleted[i+1] && cboYItems[i].equals(source) && cboYItems[i].getSelectionIndex() != 0) {
-						cboYItems[i].remove(0);
-						deleted[i+1] = false;
-						break;
-					}
-				}
+			if(!cboXItem.equals(e.getSource())) {
 				boolean setVisible = true;
 				if(GraphFactory.isMultiGraph(model.getGraphID())) {
 					for(int i=1; i<cboYItems.length; i++) {
 						cboYItems[i].setVisible(setVisible);
 						lblYItems[i].setVisible(setVisible);
-						if (!setVisible && deleted[i+1]) {
-							cboYItems[i].remove(0);
-							deleted[i+1] = false;
-							cboYItems[i].select(0);
-						}
-						if(deleted[i+1] || (cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible()))
+						if(cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible())
 							setVisible = true;
 						else
 							setVisible = false;
@@ -443,6 +380,5 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	private Combo[] cboYItems;
 	private Label[] lblYItems;
 	private GraphModel model;
-	private boolean[] deleted;
 	private boolean edit;
 }
