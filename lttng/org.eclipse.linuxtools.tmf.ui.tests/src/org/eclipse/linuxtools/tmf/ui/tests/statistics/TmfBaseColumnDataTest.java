@@ -17,6 +17,7 @@ import junit.framework.TestCase;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
@@ -93,7 +94,7 @@ public class TmfBaseColumnDataTest extends TestCase {
 
         TmfBaseStatisticsTree baseData = new TmfBaseStatisticsTree();
         fTraceName = "trace1";
-        fTreeNode = new TmfStatisticsTreeNode(baseData, fTraceName);
+        fTreeNode = new TmfStatisticsTreeNode(new TmfFixedArray<String>(fTraceName), baseData);
 
         fBaseColumnData = new TmfBaseColumnData(fHeader, fWidth, fAlignment, fToolTip, fLabelProvider, fComparator, fPercentageProvider);
     }

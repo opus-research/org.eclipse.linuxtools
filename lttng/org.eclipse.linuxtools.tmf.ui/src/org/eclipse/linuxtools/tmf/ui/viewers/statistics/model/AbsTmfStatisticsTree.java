@@ -13,12 +13,12 @@
 
 package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
 
 /**
  * Base class for the statistics storage. It allow to implement a tree structure
@@ -39,7 +39,7 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * Identification of the root.
      */
-    public static final String[] ROOT = new String[] { "root" }; //$NON-NLS-1$
+    public static final TmfFixedArray<String> ROOT = new TmfFixedArray<String>("root"); //$NON-NLS-1$
 
     /**
      * Function to merge many string more efficiently.
@@ -65,13 +65,13 @@ public abstract class AbsTmfStatisticsTree {
     /**
      * The nodes in the tree.
      */
-    protected Map<List<String>, TmfStatisticsTreeNode> fNodes;
+    protected HashMap<TmfFixedArray<String>, TmfStatisticsTreeNode> fNodes;
 
     /**
      * Constructor.
      */
     public AbsTmfStatisticsTree() {
-        fNodes = new HashMap<List<String>, TmfStatisticsTreeNode>();
+        fNodes = new HashMap<TmfFixedArray<String>, TmfStatisticsTreeNode>();
         fKeys = new HashMap<String, Set<String>>();
     }
 
@@ -82,9 +82,8 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @return The node or null.
      */
-    public TmfStatisticsTreeNode get(String... path) {
-        List<String> pathAsList = Arrays.asList(path);
-        return fNodes.get(pathAsList);
+    public TmfStatisticsTreeNode get(final TmfFixedArray<String> path) {
+        return fNodes.get(path);
     }
 
     /**
@@ -94,7 +93,7 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @return Collection containing the children.
      */
-    public abstract Collection<TmfStatisticsTreeNode> getChildren(final String... path);
+    public abstract Collection<TmfStatisticsTreeNode> getChildren(final TmfFixedArray<String> path);
 
     /**
      * Get every children of a node, even if it doesn't have any registered
@@ -104,7 +103,7 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @return Collection containing all the children.
      */
-    public abstract Collection<TmfStatisticsTreeNode> getAllChildren(final String... path);
+    public abstract Collection<TmfStatisticsTreeNode> getAllChildren(final TmfFixedArray<String> path);
 
     /**
      * Get the map of existing elements of path classified by parent.
@@ -122,14 +121,12 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @return The node.
      */
-    public TmfStatisticsTreeNode getOrCreate(String... path) {
-        List<String> pathAsList = Arrays.asList(path);
-        TmfStatisticsTreeNode current = fNodes.get(pathAsList);
-
+    public TmfStatisticsTreeNode getOrCreate(final TmfFixedArray<String> path) {
+        TmfStatisticsTreeNode current = fNodes.get(path);
         if (current == null) {
             registerName(path);
-            current = new TmfStatisticsTreeNode(this, path);
-            fNodes.put(pathAsList, current);
+            current = new TmfStatisticsTreeNode(path, this);
+            fNodes.put(path, current);
         }
         return current;
     }
@@ -141,17 +138,14 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @return Parent node or null.
      */
-    public TmfStatisticsTreeNode getParent(final String... path) {
-        if (path.length == 1) {
+    public TmfStatisticsTreeNode getParent(final TmfFixedArray<String> path) {
+        if (path.size() == 1) {
             if (path.equals(ROOT)) {
                 return null;
             }
             return get(ROOT);
         }
-
-        String[] parentPath = new String[path.length - 1];
-        System.arraycopy(path, 0, parentPath, 0, parentPath.length);
-        return get(parentPath);
+        return get(path.subArray(0, path.size() - 1));
     }
 
     /**
@@ -194,7 +188,7 @@ public abstract class AbsTmfStatisticsTree {
      * @param path
      *            Path of the new node.
      */
-    protected abstract void registerName(final String... path);
+    protected abstract void registerName(final TmfFixedArray<String> path);
 
     /**
      * Resets a node.
@@ -204,11 +198,10 @@ public abstract class AbsTmfStatisticsTree {
      * @param path
      *            Path to the node.
      */
-    public void reset(final String... path) {
+    public void reset(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getAllChildren(path)) {
             reset(node.getPath());
-            List<String> nodePathList = Arrays.asList(node.getPath());
-            fNodes.remove(nodePathList);
+            fNodes.remove(node.getPath());
         }
     }
 
@@ -221,7 +214,7 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @since 2.0
      */
-    public void resetGlobalValue(final String... path) {
+    public void resetGlobalValue(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getChildren(path)) {
             node.resetGlobalValue();
         }
@@ -236,7 +229,7 @@ public abstract class AbsTmfStatisticsTree {
      *            Path to the node.
      * @since 2.0
      */
-    public void resetTimeRangeValue(final String... path) {
+    public void resetTimeRangeValue(final TmfFixedArray<String> path) {
         for (TmfStatisticsTreeNode node : getChildren(path)) {
             node.resetTimeRangeValue();
         }
