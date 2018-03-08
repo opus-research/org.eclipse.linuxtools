@@ -39,18 +39,19 @@ public class Messages extends NLS {
     /**
      * The column header for the traces (select traces wizard page).
      */
-	public static String SelectTracesWizardPage_TraceColumnHeader;
-	/**
-	 * The title of select traces wizard page.
-	 */
-	public static String SelectTracesWizardPage_WindowTitle;
-	/**
-	 * The description of the select traces wizard page.
-	 */
-	public static String SelectTracesWizardPage_Description;
-	/**
-	 * The error message when no name was entered in a dialog box (new trace or experiment dialog)
-	 */
+    public static String SelectTracesWizardPage_TraceColumnHeader;
+    /**
+     * The title of select traces wizard page.
+     */
+    public static String SelectTracesWizardPage_WindowTitle;
+    /**
+     * The description of the select traces wizard page.
+     */
+    public static String SelectTracesWizardPage_Description;
+    /**
+     * The error message when no name was entered in a dialog box (new trace or
+     * experiment dialog)
+     */
     public static String Dialog_EmptyNameError;
     /**
      * The error message when name of trace or experiment already exists
