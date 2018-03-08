@@ -30,15 +30,12 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpUnitMask;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
-import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -58,11 +55,9 @@ import org.eclipse.swt.widgets.Text;
 
 public abstract class AbstractEventConfigTab extends
 AbstractLaunchConfigurationTab {
-	private static final String EMPTY_STRING = "";
 	protected Button defaultEventCheck;
 	protected OprofileCounter[] counters = null;
 	protected CounterSubTab[] counterSubTabs;
-	private Boolean hasPermissions = null;
 	private Composite top;
 
 	/**
@@ -70,6 +65,7 @@ AbstractLaunchConfigurationTab {
 	 * checkbox and an appropriate number of counter tabs.
 	 * @param parent the parent composite
 	 */
+	@Override
 	public void createControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
 		setControl(top);
@@ -104,23 +100,6 @@ AbstractLaunchConfigurationTab {
 	}
 
 	/**
-	 * Disposes all widgets and creates the timer mode Event tab
-	 * @since 1.1
-	 * @param top
-	 */
-	private void createTimerModeTab(Composite top){
-		Control[] children = top.getChildren();
-		for (Control control : children) {
-			control.dispose();
-		}
-		counterSubTabs = null;
-		defaultEventCheck = null;
-
-		Label timerModeLabel = new Label(top, SWT.LEFT);
-		timerModeLabel.setText(OprofileLaunchMessages.getString("tab.event.timermode.no.options")); //$NON-NLS-1$
-	}
-
-	/**
 	 * @since 1.1
 	 */
 	private Composite getTabFolderComposite(){
@@ -139,21 +118,13 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#initializeFrom(ILaunchConfiguration)
 	 */
+	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
-		setPermissions(null);
 
 		IProject previousProject = getOprofileProject();
 		IProject project = getProject(config);
 		setOprofileProject(project);
 
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			if(!hasPermissions(project)){
-				OpcontrolException e = new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null));
-				OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
-				createTimerModeTab(top);
-				return;
-			}
-		}
 		updateOprofileInfo();
 
 		String previousHost = null;
@@ -229,12 +200,6 @@ AbstractLaunchConfigurationTab {
 		IProject project = getProject(config);
 		setOprofileProject(project);
 
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			if(!hasPermissions(project)){
-				return false;
-			}
-		}
-
 		if (getOprofileTimerMode() || counterSubTabs == null) {
 			return true;		//no options to check for validity
 		} else {
@@ -302,13 +267,8 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#performApply(ILaunchConfigurationWorkingCopy)
 	 */
+	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
-		IProject project = getProject(config);
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			if (!hasPermissions(project)) {
-				return;
-			}
-		}
 		if (getOprofileTimerMode() || counterSubTabs == null) {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 		} else {
@@ -322,17 +282,11 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#setDefaults(ILaunchConfigurationWorkingCopy)
 	 */
+	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		boolean useDefault = true;
 		IProject project = getProject(config);
 		setOprofileProject(project);
-		if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
-			if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-				if(!hasPermissions(project)){
-					return;
-				}
-			}
-		}
 
 		counters = getOprofileCounters(config);
 
@@ -350,6 +304,7 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#getName()
 	 */
+	@Override
 	public String getName() {
 		return OprofileLaunchMessages.getString("tab.event.name"); //$NON-NLS-1$
 	}
@@ -394,24 +349,6 @@ AbstractLaunchConfigurationTab {
 	 */
 	protected abstract boolean checkEventSetupValidity(int counter, String name, int maskValue);
 
-	protected Boolean getPermissions(){
-		return hasPermissions;
-	}
-
-	/**
-	 * Checks if user has permission to run remote opcontrol as root.
-	 * @param project
-	 */
-	protected abstract boolean hasPermissions(IProject project);
-
-	/**
-	 * Sets user opcontrol permissions.
-	 * @param bool
-	 */
-	protected void setPermissions(Boolean bool){
-		hasPermissions = bool;
-	};
-
 	/**
 	 *
 	 * @param config
@@ -421,11 +358,11 @@ AbstractLaunchConfigurationTab {
 	protected IProject getProject(ILaunchConfiguration config){
 		String name = null;
 		try {
-			name = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
+			name = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""); //$NON-NLS-1$
 		} catch (CoreException e) {
 			return null;
 		}
-		if (name.equals(EMPTY_STRING)) {
+		if (name.isEmpty()) {
 			return null;
 		}
 
@@ -615,12 +552,13 @@ AbstractLaunchConfigurationTab {
 		private void createLeftCell(Composite parent) {
 			// Text box used to filter the event list
 			eventFilterText = new Text(parent, SWT.BORDER | SWT.SINGLE | SWT.ICON_CANCEL | SWT.SEARCH);
-			eventFilterText.setMessage(OprofileLaunchMessages.getString("tab.event.eventfilter.message"));
+			eventFilterText.setMessage(OprofileLaunchMessages.getString("tab.event.eventfilter.message")); //$NON-NLS-1$
 			GridData eventFilterLayout = new GridData();
 			eventFilterLayout.horizontalAlignment = SWT.FILL;
 			eventFilterLayout.grabExcessHorizontalSpace = true;
 			eventFilterText.setLayoutData(eventFilterLayout);
 			eventFilterText.addModifyListener(new ModifyListener() {
+				@Override
 				public void modifyText(ModifyEvent e) {
 					eventList.refresh(false);
 				}
@@ -630,23 +568,32 @@ AbstractLaunchConfigurationTab {
 			eventList.getList().setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
 
 			eventList.setLabelProvider(new ILabelProvider(){
+				@Override
 				public String getText(Object element) {
 					OpEvent e = (OpEvent) element;
 					return e.getText();
 				}
+				@Override
 				public Image getImage(Object element) { return null; }
+				@Override
 				public void addListener(ILabelProviderListener listener) { }
+				@Override
 				public void dispose() { }
+				@Override
 				public boolean isLabelProperty(Object element, String property) { return false; }
+				@Override
 				public void removeListener(ILabelProviderListener listener) { }
 			});
 
 			eventList.setContentProvider(new IStructuredContentProvider() {
+				@Override
 				public Object[] getElements(Object inputElement) {
 					OprofileCounter ctr = (OprofileCounter) inputElement;
 					return ctr.getValidEvents();
 				}
+				@Override
 				public void dispose() { }
+				@Override
 				public void inputChanged(Viewer arg0, Object arg1, Object arg2) { }
 			});
 
@@ -654,6 +601,7 @@ AbstractLaunchConfigurationTab {
 			eventList.setInput(counter);
 
 			eventList.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
 				public void selectionChanged(SelectionChangedEvent sce) {
 					handleEventListSelectionChange();
 				}
@@ -691,6 +639,7 @@ AbstractLaunchConfigurationTab {
 			countText = new Text(parent, SWT.SINGLE | SWT.BORDER);
 			countText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			countText.addModifyListener(new ModifyListener() {
+				@Override
 				public void modifyText(ModifyEvent me) {
 					handleCountTextModify();
 				}
@@ -723,7 +672,7 @@ AbstractLaunchConfigurationTab {
 
 				@Override
 				public boolean select(Viewer viewer, Object parentElement, Object element) {
-					String[] filterTerms = eventFilterText.getText().trim().toLowerCase().split(" ");
+					String[] filterTerms = eventFilterText.getText().trim().toLowerCase().split(" "); //$NON-NLS-1$
 					String eventName = ((OpEvent)element).getText().toLowerCase();
 					String eventDescription = ((OpEvent)element).getTextDescription().toLowerCase();
 
@@ -834,7 +783,7 @@ AbstractLaunchConfigurationTab {
 				}
 			} else {
 				counter.setEvent(null);
-				eventDescText.setText("");
+				eventDescText.setText(""); //$NON-NLS-1$
 				if(unitMaskViewer != null){
 					unitMaskViewer.displayEvent(null);
 				}

@@ -18,7 +18,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
@@ -38,13 +38,12 @@ public class TmfSchedulerBenchmark {
     private static final int NUM_LOOPS = 10;
     private static final int NANOSECONDS_IN_MILLISECONDS = 1000000;
     private static final int NANOSECONDS_IN_SECONDS = 1000000000;
-    private static final int TRACE_INDEX = 0;
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private static CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
+    private static CtfTmfTrace trace = CtfTmfTestTrace.KERNEL.getTrace();
     private static ForegroundRequest lastForegroundRequest = null;
     private static BackgroundRequest lastBackgroundRequest = null;
 
@@ -226,6 +225,7 @@ public class TmfSchedulerBenchmark {
     // ------------------------------------------------------------------------
 
     private static class BackgroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private long startTime;
         private long endTimeLatency = -1;
         private long completedTime = 0;
@@ -236,10 +236,9 @@ public class TmfSchedulerBenchmark {
         private boolean isWaiting = false;
 
         BackgroundRequest(TmfTimeRange timeRange) {
-            super(trace.getEventType(),
-                    timeRange,
-                    0,
+            super(trace.getEventType(), timeRange,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.BACKGROUND);
             startTime = System.nanoTime();
         }
@@ -291,6 +290,7 @@ public class TmfSchedulerBenchmark {
     }
 
     private static class ForegroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private long startTime = 0;
         private long endTimeLatency = -1;
         private long completedTime = 0;
@@ -301,10 +301,9 @@ public class TmfSchedulerBenchmark {
         private boolean isWaiting = false;
 
         ForegroundRequest(TmfTimeRange timeRange) {
-            super(trace.getEventType(),
-                    timeRange,
-                    0,
+            super(trace.getEventType(), timeRange,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.FOREGROUND);
             startTime = System.nanoTime();
         }
