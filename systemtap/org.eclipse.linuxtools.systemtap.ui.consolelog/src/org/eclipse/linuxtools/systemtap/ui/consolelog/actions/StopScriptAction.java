@@ -26,7 +26,7 @@ import org.eclipse.ui.console.IConsole;
  */
 public class StopScriptAction extends ConsoleAction {
 	/**
-	 * This is the main method of the class. It handles stopping the 
+	 * This is the main method of the class. It handles stopping the
 	 * currently active <code>ScriptConsole</code>.
 	 */
 	@Override
@@ -34,19 +34,18 @@ public class StopScriptAction extends ConsoleAction {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			public void run() {
 				ScriptConsole console = getActive();
-				if(null != console && console.isRunning()){
+				if(null != console && console.isRunning())
 					console.stop();
-				}
 			}
 		});
 	}
-	
+
 	@Override
 	public void selectionChanged(IAction a, ISelection s) {
 				a.setEnabled(anyRunning());
 			}
-		
-	
+
+
 	/**
 	 * This method will stop the i'th <code>ScriptConsole</code> if it is running.
 	 * @param i The index value of the console that will be stopped.
@@ -55,7 +54,7 @@ public class StopScriptAction extends ConsoleAction {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		if (ic[i] instanceof ScriptConsole){
 			ScriptConsole console = (ScriptConsole)ic[i];
-			
+
 			if(console.isRunning())
 				console.stop();
 		}
@@ -67,7 +66,7 @@ public class StopScriptAction extends ConsoleAction {
 	public void stopAll() {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		ScriptConsole console;
-		
+
 		for(int i=0; i<ic.length; i++) {
 			if (ic[i] instanceof ScriptConsole){
 				console = (ScriptConsole)ic[i];
@@ -76,7 +75,7 @@ public class StopScriptAction extends ConsoleAction {
 			}
 		}
 	}
-	
+
 	/**
 	 * This method will check to see if any scripts are currently running.
 	 * @return - boolean indicating whether any scripts are running
@@ -84,7 +83,7 @@ public class StopScriptAction extends ConsoleAction {
 	public boolean anyRunning() {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		ScriptConsole console;
-		
+
 		for(int i=0; i<ic.length; i++) {
 			if (ic[i] instanceof ScriptConsole){
 				console = (ScriptConsole)ic[i];

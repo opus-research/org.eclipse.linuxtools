@@ -11,24 +11,36 @@
 
 package org.eclipse.linuxtools.systemtap.ui.ide.structures;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Runs stap -vp1 & stap -up2 in order to get all of the probes/functions
@@ -58,8 +70,9 @@ public class TapsetParser implements Runnable {
 		probes = new TreeNode("", false);
 
 		String s = readPass1(null);
-		parseLevel1(s);
-		cleanupTrees();
+		s = addStaticProbes(s);
+		parseProbes(s);
+		sortTrees();
 	}
 
 	/**
@@ -208,7 +221,10 @@ public class TapsetParser implements Runnable {
 			else
 				uri = new URI(Path.ROOT.toOSString());
 			IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(uri);
-			launcher.execute(new Path("stap"), args, null, null, null); //$NON-NLS-1$
+			Process process = launcher.execute(new Path("stap"), args, null, null, null); //$NON-NLS-1$
+			if(process == null){
+				displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
+			}
 			launcher.waitAndRead(str, strErr, new NullProgressMonitor());
 		} catch (URISyntaxException e) {
 			LogManager.logCritical("URISyntaxException runStap: " + e.getMessage(), this); //$NON-NLS-1$
@@ -262,65 +278,67 @@ public class TapsetParser implements Runnable {
 	 * 	Root->Files->Functions
 	 * @param s The entire output from running stap -v -p1 -L.
 	 */
-	private void parseLevel1(String s) {
-		String prev = null;
-		StringBuilder token = new StringBuilder("");
-		TreeNode parent;
-		TreeNode item;
+	private void parseProbes(String s) {
+		String token = null;
+		StringBuilder prev = new StringBuilder(""); //$NON-NLS-1$
+		TreeNode currentProbe = null;
+		TreeNode group = null;
 
-		TreeNode child;
-	
-	 	StringTokenizer st = new StringTokenizer(s, "\n", false);
+	 	StringTokenizer st = new StringTokenizer(s, "\n", false); //$NON-NLS-1$
  		st.nextToken(); //skip the stap command itself
 	 	while(st.hasMoreTokens()){
-	 		StringTokenizer next_level = new StringTokenizer(st.nextToken());
- 			token.setLength(0);
- 			int total = next_level.countTokens();
-	 		for(int i = 0; i < total; i++){
-	 			prev = next_level.nextToken();
-	 			if(i == 0) {
-	 				probes.add(new TreeNode(prev, prev, true));
-	 				parent = probes.getChildAt(probes.getChildCount()-1);
-	 				parent.add(new TreeDefinitionNode("probe " + prev, prev, parent.getData().toString(), true));
+	 		String tokenString = st.nextToken();
+	 		int firstDotIndex = tokenString.indexOf('.');
+ 			String groupName = tokenString;
+	 		if (firstDotIndex > 0){
+	 			groupName = tokenString.substring(0, firstDotIndex);
+	 		}
+
+			// If the current probe belongs to a group other than
+			// the most recent group. This should rarely be needed because the
+			// probe list is sorted... mostly.
+	 		if(group == null || !group.getData().equals(groupName)){
+	 			group = probes.getChildByName(groupName);
+	 		}
+
+	 		// Create a new group and add it
+	 		if(group == null){
+	 			group = new TreeNode(groupName, groupName, true);
+	 			probes.add(group);
+	 		}
+
+	 		StringTokenizer probe = new StringTokenizer(tokenString);
+ 			prev.setLength(0);
+ 			
+ 			// The first token is the probe name
+ 			token = probe.nextToken();
+ 			currentProbe = new TreeDefinitionNode("probe " + token, token, null, true); //$NON-NLS-1$
+ 			group.add(currentProbe);
+
+ 			// the remaining tokens are variable names and variable types name:type.
+	 		while(probe.hasMoreTokens()){	
+	 			token = probe.nextToken();
+
+				// Because some variable types contain spaces (var2:struct task_struct)
+	 			// the only way to know if we have the entire string representing a
+	 			// variable is if we reach the next token containing a ':' or we reach
+	 			// the end of the stream.
+	 			if (token.contains(":") && prev.length() > 0){ //$NON-NLS-1$
+	 				prev.setLength(prev.length() - 1); // Remove the trailing space.
+	 				currentProbe.add(new TreeNode(prev.toString(), prev.toString(), false));
+	 				prev.setLength(0);
 	 			}
-	 			else if(i < (total - 1)) {
-	 				//if the token is empty, of course add it
-	 				if(token.length() == 0) {
-	 					token.append(prev);
-	 				}
-	 				//if the token has a : already, and the current token doesn't, append it
-	 				else if(!(token.length()==0) && !prev.contains(":")) {
-	 					token.append(prev + " ");
-	 				}
-	 				//if token isn't empty, and the current one contains a ':', add token, empty, and append prev
-	 				else if(!(token.length()==0) && prev.contains(":")) {
-	 					item = probes.getChildAt(probes.getChildCount()-1);
-	 					child = item.getChildAt(item.getChildCount()-1);
-	 					child.add(new TreeNode(token.toString(), token.toString(), false));
-	 					token.setLength(0);
-	 					token.append(prev + " ");
-	 				}
-	 			}
-	 			else if(i == (total - 1)) {
-	 				if(prev.contains(":")) { //add token, then add prev
-	 					item = probes.getChildAt(probes.getChildCount()-1);
-	 					child = item.getChildAt(item.getChildCount()-1);
-	 					child.add(new TreeNode(token.toString(), token.toString(), false));
-	 					item = probes.getChildAt(probes.getChildCount()-1);
-	 					child = item.getChildAt(item.getChildCount()-1);
-	 					child.add(new TreeNode(prev, prev, false));
-	 				}
-	 				else { // end var type, append to token, then add token
-	 					token.append(prev);
-	 					item = probes.getChildAt(probes.getChildCount()-1);
-	 					child = item.getChildAt(item.getChildCount()-1);
-	 					child.add(new TreeNode(token.toString(), token.toString(), false));
-	 				}
-	 			}
+	 			prev.append(token + " "); //$NON-NLS-1$
+	 		}
+
+ 			// Add the last token if there is one
+	 		if (prev.length() > 0){
+	 			prev.setLength(prev.length() - 1); // Remove the trailing space.
+	 			currentProbe.add(new TreeNode(prev.toString(), prev.toString(), false));
 	 		}
 	 	}
 	}
-	
+
 	/**
 	 * This method is used to build up the list of functions that were found
 	 * during the first pass of stap.  Stap is invoked by: $stap -v -p1 -e
@@ -365,87 +383,40 @@ public class TapsetParser implements Runnable {
 		}
 	}
 
-	/**
-	 * Removes all directories that do not contain any fuctions or
-	 * probe aliases from both trees.
-	 */
-	protected void cleanupTrees() {
-		for(int i=functions.getChildCount()-1; i>=0; i--) {
-			if(0 == functions.getChildAt(i).getChildCount())
-				functions.remove(i);
-			if(0 == probes.getChildAt(i).getChildCount())
-				probes.remove(i);
-		}
-
+	protected void sortTrees() {
 		functions.sortTree();
 		probes.sortTree();
-		
-		formatProbes();
+	}
+
+	/**
+	 * Reads the static probes list and adds it to the probes tree.
+	 * This function assumes that the probes list will be sorted.
+	 * @return 
+	 */
+	private String addStaticProbes(String probeList) {
+		StringBuilder probes = new StringBuilder(probeList);
+
+		BufferedReader input = null;
+		try {
+			URL location = IDEPlugin.getDefault().getBundle().getEntry("completion/static_probe_list.properties"); //$NON-NLS-1$
+			location = FileLocator.toFileURL(location);
+			input = new BufferedReader(new FileReader(new File(location.getFile())));
+			String line = input.readLine();
+			while (line != null){
+				probes.append('\n');
+				probes.append(line);
+				line = input.readLine();
+			}
+			input.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return probes.toString();
 	}
 	
-	/**
-	 * Reorders the probes tree so that probes are grouped by type
-	 * instead of by file they were defined in.
-	 * 
-	 * ProbeTree organized by class grouping.  ie:
-	 * 	syscall
-	 * 		syscall.open
-	 * 			filename
-	 * 			flags
-	 * 			mode
-	 * 			name
-	 * 		syscall.open.return
-	 * 			name
-	 * 			retstr
-	 * 		syscall.read
-	 * 		...
-	 * 	tcp
-	 * 		tcp.disconnect
-	 * 		tcp.disconnect.return
-	 */
-	private void formatProbes() {
-		TreeNode probes2 = new TreeNode("", false);
-		TreeNode probe, fileNode, probeGroup, probeFolder;
-		String directory;
-		String[] folders;
-		boolean added;
-		
-		for(int j,i=0; i<probes.getChildCount(); i++) {	//Probe main group
-			fileNode = probes.getChildAt(i);
-			for(j=0; j<fileNode.getChildCount(); j++) {	//Actual probes
-				probe = fileNode.getChildAt(j);
-				directory = probe.toString();
-				
-				if(directory.endsWith(".return") || directory.endsWith(".entry"))
-					directory = directory.substring(0, directory.lastIndexOf('.'));
-				
-				folders = directory.split("\\.");
-				probeGroup = probes2;
-				
-				for(int k=0; k<folders.length-1; k++) {	//Complete path directory
-
-					added = false;
-					for(int l=0; l<probeGroup.getChildCount(); l++) {	//Destination folder
-						probeFolder = probeGroup.getChildAt(l);
-						if(probeFolder.toString().equals(folders[k])) {
-							probeGroup = probeFolder;
-							added = true;
-							break;
-						}
-					}
-					if(!added) {	//Create brand new folder since it doesn't exist yet
-						probeFolder = new TreeNode(folders[k], false);
-						probeGroup.add(probeFolder);
-						probeGroup = probeFolder;
-					}
-				}
-				probeGroup.add(probe);	//Add the probe to its appropriate directory
-			}
-		}
-		probes = probes2;
-		probes.sortTree();
-	}
-		
 	/**
 	 * This method will clean up everything from the run.
 	 */
@@ -462,6 +433,15 @@ public class TapsetParser implements Runnable {
 		}
 	}
 	
+	private void displayError(final String title, final String error){
+    	Display.getDefault().asyncExec(new Runnable() {
+    		public void run() {
+    			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    			MessageDialog.openWarning(window.getShell(), title, error);
+    		}
+    	});
+	}
+
 	private boolean stopped = true;
 	private boolean disposed = true;
 	private boolean successfulFinish = false;
