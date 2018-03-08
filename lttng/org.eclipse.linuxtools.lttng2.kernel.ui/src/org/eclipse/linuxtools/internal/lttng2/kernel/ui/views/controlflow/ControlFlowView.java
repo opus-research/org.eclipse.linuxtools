@@ -48,7 +48,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphSelectionListener;
@@ -499,7 +498,7 @@ public class ControlFlowView extends TmfView {
         final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
         int thread = -1;
-        for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
+        for (ITmfTrace trace : fTraceManager.getActiveTraceSet()) {
             if (thread > 0) {
                 break;
             }
@@ -597,7 +596,7 @@ public class ControlFlowView extends TmfView {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
         ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
             if (monitor.isCanceled()) {
                 return;
             }
