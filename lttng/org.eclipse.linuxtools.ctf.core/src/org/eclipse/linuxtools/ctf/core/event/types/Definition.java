@@ -13,12 +13,13 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
- * A CTF definiton
+ * A CTF definition
  *
- * A definition is like an object of a declaration class. It fills the declaration
- * with values. <br>
+ * A definition is like an object of a declaration class. It fills the
+ * declaration with values. <br>
  * An example: <br>
  * int i = 0; <br>
  * <b>int</b> is the declaration.<br>
@@ -123,9 +124,11 @@ public abstract class Definition {
      *
      * @param input
      *            the bitbuffer containing the data to read.
+     * @throws CTFReaderException
+     *             the error message
      * @since 2.0
      */
-    public abstract void read(BitBuffer input);
+    public abstract void read(BitBuffer input) throws CTFReaderException;
 
     /**
      * Offset the buffer position wrt the current alignment.
@@ -136,9 +139,9 @@ public abstract class Definition {
      *            The declaration which has an alignment
      * @since 2.2
      */
-    protected static void alignRead(BitBuffer input, IDeclaration declaration){
-        int align = (int) declaration.getAlignment();
-        int pos = input.position() + ((align - (input.position() % align)) % align);
+    protected static void alignRead(BitBuffer input, IDeclaration declaration) {
+        long align = declaration.getAlignment();
+        long pos = input.position() + ((align - (input.position() % align)) % align);
         input.position(pos);
     }
 

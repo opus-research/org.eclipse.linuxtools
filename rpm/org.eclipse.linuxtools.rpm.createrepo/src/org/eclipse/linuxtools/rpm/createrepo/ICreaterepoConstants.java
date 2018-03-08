@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * Common constants used in createrepo.
@@ -39,15 +36,5 @@ public interface ICreaterepoConstants {
 	 * An empty string.
 	 */
 	String EMPTY_STRING = ""; //$NON-NLS-1$
-
-	/**
-	 * The main createrepo command name.
-	 */
-	String CREATEREPO_COMMAND = "createrepo"; //$NON-NLS-1$
-
-	/**
-	 * An empty list.
-	 */
-	List<String> EMPTY_LIST = new ArrayList<String>();
 
 }
