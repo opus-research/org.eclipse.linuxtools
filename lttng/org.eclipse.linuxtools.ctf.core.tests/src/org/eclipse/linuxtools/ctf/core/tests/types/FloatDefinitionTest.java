@@ -24,6 +24,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+
+
 /**
  * The class <code>IntegerDefinitionTest</code> contains tests for the class
  * <code>{@link IntegerDefinition}</code>.
@@ -33,13 +35,11 @@ import org.junit.Test;
  */
 @SuppressWarnings("javadoc")
 public class FloatDefinitionTest {
-
     private FloatDefinition fixture;
     private FloatDefinition singleFixture;
     private FloatDefinition doubleFixture; //all the way.
     private FloatDeclaration parent;
-    private static final String fieldName = "float";
-
+    private static final String fieldName = "float"; //$NON-NLS-1$
     /**
      * Launch the test.
      *
@@ -88,25 +88,27 @@ public class FloatDefinitionTest {
 
     @Test
     public void testFloat32Bit(){
-        for(int i = 1; i < 31 ; i++) {
+        for(int i = 1; i < 31 ; i++)
+        {
             parent = new FloatDeclaration(i, 32-i, ByteOrder.nativeOrder(), 0);
             fixture = parent.createDefinition(null, fieldName);
             assertNotNull(fixture);
             fixture.setValue(2.0);
-            assertTrue(fixture.toString().contains("2"));
+            assertTrue(fixture.toString().contains("2")); //$NON-NLS-1$
         }
     }
 
     @Test
     public void testFloat64Bit(){
-        for(int i = 1; i < 63 ; i++) {
+        for(int i = 1; i < 63 ; i++)
+        {
             parent = new FloatDeclaration(i, 64-i, ByteOrder.nativeOrder(), 0);
             fixture = parent.createDefinition(null, fieldName);
             assertNotNull(fixture);
             BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
             fixture.read(input);
             fixture.setValue(2.0);
-            assertTrue(fixture.toString().contains("2"));
+            assertTrue(fixture.toString().contains("2")); //$NON-NLS-1$
         }
     }
 
