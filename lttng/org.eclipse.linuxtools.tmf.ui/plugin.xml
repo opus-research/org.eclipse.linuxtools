@@ -1124,6 +1124,42 @@
             </and>
          </activeWhen>
       </handler>
+      <handler
+            class="org.eclipse.linuxtools.tmf.ui.views.filter.CopyHandler"
+            commandId="org.eclipse.ui.edit.copy">
+         <activeWhen>
+            <with
+                  variable="activePart">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.views.filter.FilterView">
+               </instanceof>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.tmf.ui.views.filter.PasteHandler"
+            commandId="org.eclipse.ui.edit.paste">
+         <activeWhen>
+            <with
+                  variable="activePart">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.views.filter.FilterView">
+               </instanceof>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.tmf.ui.views.filter.CutHandler"
+            commandId="org.eclipse.ui.edit.cut">
+         <activeWhen>
+            <with
+                  variable="activePart">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.views.filter.FilterView">
+               </instanceof>
+            </with>
+         </activeWhen>
+      </handler>
    </extension>
    <extension point="org.eclipse.ui.bindings">
       <key
