@@ -182,7 +182,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         /** Filter object */
         String FILTER_OBJ = "$fltr_obj"; //$NON-NLS-1$
 
-        /** Timestamp*/
+        /** Timestamp */
         String TIMESTAMP = "$time"; //$NON-NLS-1$
 
         /** Rank */
@@ -371,9 +371,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                                 }
                             } else {
                                 broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts, fSelectedBeginTimestamp));
-                                if (fStatusLineManager != null) {
-                                    updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
-                                }
+                                updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
                             }
                         }
                     } else {
@@ -597,7 +595,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 fRawViewer.setVisible(true);
                 fSashForm.layout();
                 final int index = fTable.getSelectionIndex();
-                if (index >= +1) {
+                if (index >= 1) {
                     fRawViewer.selectAndReveal(index - 1);
                 }
             }

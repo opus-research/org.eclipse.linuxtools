@@ -81,7 +81,7 @@ public class TmfVirtualTable extends Composite {
     private int     fSelectedBeginRank = -1;     // Global rank of the selected begin event
     private boolean fPendingSelection  = false;  // Pending selection update
 
-    private int       fTableItemCount  = 0;
+    private int     fTableItemCount    = 0;
 
     // The slider
     private Slider fSlider;
@@ -186,12 +186,12 @@ public class TmfVirtualTable extends Composite {
                     // the mouse down event went through to the table
                     fTable.setSelection (new TableItem [] {(TableItem) e.item});
                     fTable.notifyListeners (SWT.Selection, e);
-                    shell.dispose ();
+                    shell.dispose();
                     fTable.setFocus();
                     break;
                 case SWT.MouseExit:
                 case SWT.MouseWheel:
-                    shell.dispose ();
+                    shell.dispose();
                     break;
                 default:
                     break;
@@ -211,7 +211,7 @@ public class TmfVirtualTable extends Composite {
                     if (tip == null) {
                         break;
                     }
-                    tip.dispose ();
+                    tip.dispose();
                     tip = null;
                     label = null;
                     break;
@@ -221,7 +221,7 @@ public class TmfVirtualTable extends Composite {
                     if (item != null) {
                         for (int i=0; i < fTable.getColumnCount(); i++) {
                             Rectangle bounds = item.getBounds(i);
-                            if (bounds.contains(event.x,event.y)){
+                            if (bounds.contains(event.x, event.y)) {
                                 if (tip != null && !tip.isDisposed()) {
                                     tip.dispose();
                                 }
@@ -250,6 +250,9 @@ public class TmfVirtualTable extends Composite {
                                 Point pt = fTable.toDisplay(bounds.x, bounds.y);
                                 tip.setBounds(pt.x, pt.y, size.x, size.y);
                                 tip.setVisible(true);
+
+                                // Item found, leave loop.
+                                break;
                             }
                         }
                     }
@@ -320,9 +323,9 @@ public class TmfVirtualTable extends Composite {
                         if (doubleClickListener != null) {
                             TableItem item = fTable.getItem (new Point (event.x, event.y));
                             if (item != null) {
-                                for(int i=0;i<fTable.getColumnCount();i++){
+                                for (int i=0; i<fTable.getColumnCount(); i++){
                                     Rectangle bounds = item.getBounds(i);
-                                    if (bounds.contains(event.x,event.y)){
+                                    if (bounds.contains(event.x, event.y)){
                                         doubleClickListener.handleDoubleClick(TmfVirtualTable.this, item, i);
                                         break;
                                     }
@@ -652,7 +655,6 @@ public class TmfVirtualTable extends Composite {
         fTable.addKeyListener(listener);
     }
 
-
     /**
      * Method addMouseListener.
      * @param listener MouseListener
@@ -858,7 +860,7 @@ public class TmfVirtualTable extends Composite {
         if (!done) {
             return;
         }
-        if (fPendingSelection && done) {
+        if (fPendingSelection) {
             fPendingSelection = false;
             TableItem item = null;
             if (fSelectedEventRank >= 0 && fSelectedEventRank < fFrozenRowCount) {
@@ -1002,7 +1004,6 @@ public class TmfVirtualTable extends Composite {
             }
 
             refreshTable();
-
         }
     }
 
