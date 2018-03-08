@@ -59,10 +59,8 @@ public class TmfLostEventStatisticsTest {
     public static void setUpClass() {
         try {
             assumeTrue(lostEventsTrace.exists());
-            File htFileTotals = File.createTempFile("stats-test-lostevents-totals", ".ht");
-            File htFileTypes = File.createTempFile("stats-test-lostevents-types", ".ht");
-
-            backend = new TmfStateStatistics(lostEventsTrace.getTrace(), htFileTotals, htFileTypes);
+            File htFile = File.createTempFile("stats-test-lostevents", ".ht");
+            backend = new TmfStateStatistics(lostEventsTrace.getTrace(), htFile);
 
         } catch (IOException e) {
             fail();
