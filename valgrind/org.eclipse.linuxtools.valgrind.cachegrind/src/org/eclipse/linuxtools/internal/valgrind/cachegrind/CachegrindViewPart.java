@@ -320,7 +320,7 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 		return result;
 	}
 
-	protected static class CachegrindTreeContentProvider implements ITreeContentProvider {
+	protected class CachegrindTreeContentProvider implements ITreeContentProvider {
 
 		public Object[] getChildren(Object parentElement) {
 			Object[] result = null;

@@ -487,14 +487,9 @@ public class PerfCore {
 				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 				// line containing report information
 				if ((line.startsWith("#"))) {
-					if (line.contains("Events:") || line.contains("Samples:")) {
+					if (line.contains("Events:")) {
 						String[] tmp = line.trim().split(" ");
-						String event = tmp[tmp.length - 1];
-						// In this case, the event name is single quoted
-						if (line.contains("Samples:")){
-							event = event.substring(1, event.length() -1);
-						}
-						currentEvent = new PMEvent(event);
+						currentEvent = new PMEvent(tmp[tmp.length - 1]);
 						invisibleRoot.addChild(currentEvent);
 						currentCommand = null;
 						currentDso = null;

@@ -53,7 +53,7 @@ public abstract class ModuleView extends ViewPart {
 	/**
 	 * This class provides the framework for traversing the view's Tree structure.
 	 */
-	private static class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+	private class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 		
 		public void dispose() {}
