@@ -688,13 +688,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         fRawViewer.setMenu(menu);
     }
 
-
-    @SuppressWarnings("unused")
     protected void appendToTablePopupMenu(final MenuManager tablePopupMenu, final TableItem selectedItem) {
         // override to append more actions
     }
 
-    @SuppressWarnings("unused")
     protected void appendToRawPopupMenu(final MenuManager rawViewerPopupMenu) {
         // override to append more actions
     }
@@ -1991,12 +1988,4 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         mb.open();
     }
 
-    /**
-     * @since 2.0
-     */
-    public void refresh() {
-        fCache.clear();
-        fTable.refresh();
-        fTable.redraw();
-    }
 }
