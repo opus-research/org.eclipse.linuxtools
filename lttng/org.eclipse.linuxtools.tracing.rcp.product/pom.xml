@@ -40,7 +40,6 @@
                         <configuration>
                             <formats>
                                 <linux>tar.gz</linux>
-                                <macosx>tar.gz</macosx>
                                 <solaris>zip</solaris>
                                 <win32>zip</win32>
                             </formats>
