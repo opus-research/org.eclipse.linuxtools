@@ -35,28 +35,16 @@ import org.eclipse.osgi.util.NLS;
 public class DownloadJob extends Job {
 	private IFile file;
 	private URLConnection content;
-	private boolean fileOverride;
 
 	/**
 	 * Creates the download job.
 	 * @param file The file to store the remote content.
 	 * @param content The URLConnection to the remote file.
-	 * @param override Flag to override file if it exists.
 	 */
-	public DownloadJob(IFile file, URLConnection content, boolean override) {
+	public DownloadJob(IFile file, URLConnection content) {
 		super(NLS.bind(Messages.DownloadJob_0, file.getName()));
 		this.file = file;
 		this.content = content;
-		this.fileOverride = override;
-	}
-
-	/**
-	 * Creates the download job.
-	 * @param file The file to store the remote content.
-	 * @param content URLConnection to the remote file.
-	 */
-	public DownloadJob(IFile file, URLConnection content) {
-		this(file, content, false);
 	}
 
 	@Override
@@ -69,19 +57,21 @@ public class DownloadJob extends Job {
 			FileOutputStream fos = new FileOutputStream(tempFile);
 			InputStream is = new BufferedInputStream(content.getInputStream());
 			int b;
+			byte buf[] = new byte[5 * 1024];
 			boolean canceled = false;
-			while ((b = is.read()) != -1) {
-				if (monitor.isCanceled()) {
-					canceled = true;
-					break;
+				while ((b = is.read(buf)) != -1) {
+					if (monitor.isCanceled()) {
+						canceled = true;
+						break;
+					}
+					fos.write(buf, 0 ,b);
+					monitor.worked(1);
 				}
-				fos.write(b);
-				monitor.worked(1);
-			}
 			is.close();
 			fos.close();
 			if (!canceled) {
-				if (fileOverride) {
+				// override the previous file if there is one
+				if (file.exists()) {
 					file.setContents(new FileInputStream(tempFile), true,
 							false, monitor);
 				} else {
