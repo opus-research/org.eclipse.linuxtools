@@ -18,6 +18,8 @@ package org.eclipse.linuxtools.tmf.core.trace;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfLocationArray;
@@ -182,20 +184,19 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     /* (non-Javadoc)
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(org.eclipse.core.resources.IProject, java.lang.String)
      */
+    /**
+     * @since 2.0
+     */
     @Override
-    public boolean validate(final IProject project, final String path) {
-        return true;
+    public IStatus validate(final IProject project, final String path) {
+        return Status.OK_STATUS;
     }
 
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
 
-    /**
-     * Get the list of traces. Handle with care...
-     *
-     * @return the experiment traces
-     */
+    @Override
     public ITmfTrace[] getTraces() {
         return fTraces;
     }

@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -25,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -398,7 +397,7 @@ public class TmfTraceTest {
         // Validate
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
         final File testfile = new File(FileLocator.toFileURL(location).toURI());
-        assertTrue("validate", trace.validate(null, testfile.getPath()));
+        assertTrue("validate", trace.validate(null, testfile.getPath()).isOK());
 
         // InitTrace and wait for indexing completion...
         trace.initTrace(null, testfile.toURI().getPath(), ITmfEvent.class);
@@ -548,15 +547,17 @@ public class TmfTraceTest {
     @Test
     public void testGetStateSystem() {
         /* There should be no state system registered so far */
-        ITmfStateSystem ss = fTrace.getStateSystem("something");
+        ITmfStateSystem ss = fTrace.getStateSystems().get("something");
         assertNull(ss);
     }
 
-    @Test
-    public void testListStateSystem() {
-        Collection<String> sss = fTrace.listStateSystems();
-        assertNotNull(sss);
-        assertEquals(0, sss.size());
+    /**
+     * Make sure the returned map is unmodifiable.
+     */
+    @Test(expected=UnsupportedOperationException.class)
+    public void testGetStateSystem_readOnly() {
+        Map<String, ITmfStateSystem> sss = fTrace.getStateSystems();
+        sss.put("something", null);
     }
 
     // ------------------------------------------------------------------------
