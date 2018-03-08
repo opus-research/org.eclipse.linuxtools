@@ -23,7 +23,6 @@ import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedDataRequest;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
-import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestScheduler;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
@@ -95,7 +94,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
         fDataQueue = new LinkedBlockingQueue<ITmfEvent>(fQueueSize);
-        fExecutor = new TmfRequestScheduler();
+        fExecutor = new TmfRequestExecutor();
     }
 
     /**
@@ -111,7 +110,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         fType = type;
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
-        fExecutor = new TmfRequestScheduler();
+        fExecutor = new TmfRequestExecutor();
         fSignalDepth = 0;
 
         fLogData = TmfCoreTracer.isEventTraced();
