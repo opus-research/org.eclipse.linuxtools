@@ -17,6 +17,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -49,6 +50,9 @@ class StatsStateProvider extends AbstractStateChangeInput {
      */
     private static final int VERSION = 0;
 
+    /* Commonly-used attributes */
+    private int typeAttribute = -1;
+
     /**
      * Constructor
     *
@@ -65,8 +69,11 @@ class StatsStateProvider extends AbstractStateChangeInput {
     }
 
     @Override
-    public StatsStateProvider getNewInstance() {
-        return new StatsStateProvider(this.getTrace());
+    public void assignTargetStateSystem(ITmfStateSystemBuilder ssb) {
+        super.assignTargetStateSystem(ssb);
+
+        /* Setup common locations */
+        typeAttribute = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES);
     }
 
     @Override
@@ -86,7 +93,7 @@ class StatsStateProvider extends AbstractStateChangeInput {
             ss.incrementAttribute(ts, quark);
 
             /* Number of events of each type, globally */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+            quark = ss.getQuarkRelativeAndAdd(typeAttribute, eventName);
             ss.incrementAttribute(ts, quark);
 
 //            /* Number of events per CPU */
