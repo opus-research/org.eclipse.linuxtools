@@ -86,6 +86,24 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 /* CTF fields do not have sub-fields */
                 null);
     }
+    /**
+     * Standard constructor. Only to be used internally, call parseField() to
+     * generate a new field object.
+     *
+     * @param name
+     *            The name of this field
+     * @param value
+     *            The value of this field. Its type should match the field type.
+     * @param fields
+     *            The children fields. Useful for composite fields
+     * @since 2.0
+     */
+    protected CtfTmfEventField(String name, Object value, ITmfEventField[] fields) {
+        super(/* Strip the underscore from the field name if there is one */
+                name.startsWith("_") ? name.substring(1) : name, //$NON-NLS-1$
+                value,
+                fields);
+    }
 
     // ------------------------------------------------------------------------
     // Operations
@@ -383,6 +401,11 @@ final class CTFEnumField extends CtfTmfEventField {
     public CtfEnumPair getValue() {
         return (CtfEnumPair) super.getValue();
     }
+
+    @Override
+    public String toString() {
+        return getValue().getStringValue();
+    }
 }
 
 /**
@@ -401,7 +424,7 @@ final class CTFStructField extends CtfTmfEventField {
      *            The name of this field
      */
     CTFStructField(String name, CtfTmfEventField[] fields) {
-        super(name, fields);
+        super(name, fields, fields);
     }
 
     @Override
