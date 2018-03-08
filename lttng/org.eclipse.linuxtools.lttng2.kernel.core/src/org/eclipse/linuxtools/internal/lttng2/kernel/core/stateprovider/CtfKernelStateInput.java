@@ -242,7 +242,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
                 /* Set the exec name of the new process */
                 quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.EXEC_NAME);
                 value = TmfStateValue.newValueString(nextProcessName);
-                ss.modifyAttribute(ts, value, quark);
+                ss.updateOngoingState(value, quark);
 
                 /*
                  * Check if we need to set the syscall state and the PPID of
