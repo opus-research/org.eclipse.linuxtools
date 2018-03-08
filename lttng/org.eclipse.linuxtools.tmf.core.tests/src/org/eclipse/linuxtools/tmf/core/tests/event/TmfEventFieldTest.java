@@ -43,21 +43,21 @@ public class TmfEventFieldTest {
     private final Object fValue1 = "Value";
     private final Object fValue2 = Integer.valueOf(10);
 
-    private final TmfEventField fField1 = new TmfEventField(fFieldName1, fValue1, null);
+    private final TmfEventField fField1 = new TmfEventField(fFieldName1, fValue1);
     private final TmfEventField fField2 = new TmfEventField(fFieldName2, fValue2, null);
     private final TmfEventField fField3 = new TmfEventField(fFieldName1, fValue2, null);
 
     private final String fStructRootFieldName = "Root-S";
     private final String[] fStructFieldNames = new String[] { fFieldName1, fFieldName2 };
-    private final TmfEventField fStructTerminalField1 = new TmfEventField(fFieldName1, null, null);
-    private final TmfEventField fStructTerminalField2 = new TmfEventField(fFieldName2, null, null);
-    private final TmfEventField fStructTerminalField3 = new TmfEventField(fFieldName1, null, null);
-    private final TmfEventField fStructRootField = new TmfEventField(fStructRootFieldName, null,
+    private final TmfEventField fStructTerminalField1 = new TmfEventField(fFieldName1, null);
+    private final TmfEventField fStructTerminalField2 = new TmfEventField(fFieldName2, null);
+    private final TmfEventField fStructTerminalField3 = new TmfEventField(fFieldName1, null);
+    private final TmfEventField fStructRootField = new TmfEventField(fStructRootFieldName,
             new ITmfEventField[] { fStructTerminalField1, fStructTerminalField2 });
 
     private final String fRootFieldName = "Root";
     private final String[] fFieldNames = new String[] { fFieldName1, fFieldName2 };
-    private final TmfEventField fRootField = new TmfEventField(fRootFieldName, null,
+    private final TmfEventField fRootField = new TmfEventField(fRootFieldName,
             new ITmfEventField[] { fField1, fField2 });
 
     // ------------------------------------------------------------------------
@@ -246,16 +246,16 @@ public class TmfEventFieldTest {
 
     @Test
     public void testNonEqualValues() {
-        final TmfEventField copy1 = new TmfEventField(fFieldName1, fValue1, null);
-        TmfEventField copy2 = new TmfEventField(fFieldName1, fValue1, null);
+        final TmfEventField copy1 = new TmfEventField(fFieldName1, fValue1);
+        TmfEventField copy2 = new TmfEventField(fFieldName1, fValue1);
         assertTrue("equals", copy1.equals(copy2));
         assertTrue("equals", copy2.equals(copy1));
 
-        copy2 = new TmfEventField(fFieldName1, fValue2, null);
+        copy2 = new TmfEventField(fFieldName1, fValue2);
         assertFalse("equals", copy1.equals(copy2));
         assertFalse("equals", copy2.equals(copy1));
 
-        copy2 = new TmfEventField(fFieldName1, null, null);
+        copy2 = new TmfEventField(fFieldName1, null);
         assertFalse("equals", copy1.equals(copy2));
         assertFalse("equals", copy2.equals(copy1));
     }
