@@ -2,20 +2,18 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.junit.After;
 import org.junit.Before;
@@ -50,7 +48,6 @@ public class StreamTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
         fixture = new Stream(TestParams.createTrace());
         fixture.setEventContext(new StructDeclaration(1L));
         fixture.setPacketContext(new StructDeclaration(1L));
@@ -135,7 +132,7 @@ public class StreamTest {
      */
     @Test
     public void testGetEvents() {
-        HashMap<Long, IEventDeclaration> result = fixture.getEvents();
+        HashMap<Long, EventDeclaration> result = fixture.getEvents();
         assertNotNull(result);
     }
 

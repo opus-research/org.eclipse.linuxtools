@@ -35,7 +35,6 @@ import org.eclipse.linuxtools.internal.perf.model.PMEvent;
 import org.eclipse.linuxtools.internal.perf.model.PMFile;
 import org.eclipse.linuxtools.internal.perf.model.PMSymbol;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
-import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -164,11 +163,7 @@ public class PerfCore {
 		} catch( IOException e ) {
 			e.printStackTrace();
 		} 
-		return parseEventList(input);
-	}
 
-	public static HashMap<String,ArrayList<String>> parseEventList (BufferedReader input){
-		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		String line;
 		try {
 			// Process list of events. Each line is of the form <event>\s+<category>.
@@ -210,9 +205,16 @@ public class PerfCore {
 		return events;
 	}
 
+
 	//Gets the current version of perf
 	public static String getPerfVersion(ILaunchConfiguration config, String[] environ, IPath workingDir) {
-		IProject project = getProject(config);
+		ConfigUtils configUtils = new ConfigUtils(config);
+		IProject project = null;
+		try {
+			project = ConfigUtils.getProject(configUtils.getProjectName());
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
 		Process p = null;
 		IRemoteFileProxy proxy = null;
 		IFileStore workingDirFileStore = null;
@@ -360,8 +362,20 @@ public class PerfCore {
 	//perfDataLoc is optional - it is used to provide a pre-existing data file instead of something recorded from
 	//whatever project is being profiled. It is only used for junit tests atm.
 	public static void Report(ILaunchConfiguration config, String[] environ, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
-		IProject project = getProject(config);
-		TreeParent invisibleRoot = PerfPlugin.getDefault().clearModelRoot();
+		ConfigUtils configUtils = new ConfigUtils(config);
+		IProject project = null;
+		try {
+			project = ConfigUtils.getProject(configUtils.getProjectName());
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		TreeParent invisibleRoot = PerfPlugin.getDefault().getModelRoot();  
+		if (invisibleRoot == null) {
+			invisibleRoot = new TreeParent("");
+			PerfPlugin.getDefault().setModelRoot(invisibleRoot);
+		} else {
+			invisibleRoot.clear();
+		}
 
 		boolean OldPerfVersion = false;
 		if (getPerfVersion(config, environ, workingDir).contains("perf version 0.0.2.PERF")) {
@@ -374,9 +388,7 @@ public class PerfCore {
 		BufferedReader error = null;
 		Process p = null;
 
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 		try {
 			if (workingDir==null) {
@@ -399,6 +411,7 @@ public class PerfCore {
 		PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
 				invisibleRoot, OldPerfVersion, input, error, project);
 
+		RefreshView();
 	}
 
 	/**
@@ -425,16 +438,13 @@ public class PerfCore {
 			IPath workingDir, IProgressMonitor monitor, String perfDataLoc,
 			PrintStream print, TreeParent invisibleRoot,
 			boolean OldPerfVersion, BufferedReader input, BufferedReader error, IProject project) {
-
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 		String line = null;
 		String items[];
 		float percent;
 
 		Process p = null;
-		int samples;
+		double samples;
 		String comm,dso,symbol;
 		boolean kernelFlag;
 		PMEvent currentEvent = null;
@@ -444,9 +454,7 @@ public class PerfCore {
 		PMSymbol currentSym = null;
 		try {
 			while (( line = input.readLine()) != null){
-				if (monitor != null && monitor.isCanceled()) {
-					return;
-				}
+				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 				// line containing report information
 				if ((line.startsWith("#"))) {
 					if (line.contains("Events:") || line.contains("Samples:")) {
@@ -471,7 +479,7 @@ public class PerfCore {
 						continue;
 					}
 					percent = Float.parseFloat(items[0]); //percent column
-					samples = Integer.parseInt(items[1].trim()); //samples column
+					samples = Double.parseDouble(items[1].trim()); //samples column
 					comm = items[2].trim(); //command column
 					dso = items[3].trim(); //dso column
 					symbol = items[4].trim(); //symbol column 
@@ -503,7 +511,7 @@ public class PerfCore {
 					 *  attach all symbols as children of 'Unfiled Symbols'.
 					 */
 					currentFile = currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols);
-					currentSym = new PMSymbol(symbol, percent, samples);
+					currentSym = new PMSymbol(symbol, samples, percent);
 					currentFile.addChild(currentSym);
 				}
 			}
@@ -522,9 +530,7 @@ public class PerfCore {
 			SourceLineNumbers = false;
 		}
 
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 		boolean hasProfileData = invisibleRoot.getChildren().length != 0;
 
@@ -540,9 +546,7 @@ public class PerfCore {
 						for (TreeParent s : currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren()) {
 							if (!(s instanceof PMSymbol)) continue;
 
-							if (monitor != null && monitor.isCanceled()) {
-								return;
-							}
+							if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 
 							currentSym = (PMSymbol)s;
@@ -596,10 +600,7 @@ public class PerfCore {
 	public static void parseAnnotation(IProgressMonitor monitor,
 			BufferedReader input, IPath workingDir, PMDso currentDso,
 			PMSymbol currentSym) {
-
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 		boolean grabBlock = false;
 		boolean blockStarted = false;
@@ -661,21 +662,21 @@ public class PerfCore {
 		}
 	}
 
-	public static void RefreshView (final String title) {
+	public static void RefreshView()
+	{
 		Display.getDefault().syncExec(new Runnable() {
-
 			@Override
 			public void run() {
+				//Try to switch the active view to Perf.
 				try {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
-					PerfProfileView view = PerfPlugin.getDefault().getProfileView();
-					view.setContentDescription(title);
-					view.refreshModel();
+					PerfPlugin.getDefault().getProfileView().refreshModel();
+				} catch (NullPointerException e) {
+					e.printStackTrace();					
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-
 }

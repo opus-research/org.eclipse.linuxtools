@@ -42,6 +42,19 @@
       </comments>
     </license>
   </licenses>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>../src.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <modules>
     <module>org.eclipse.linuxtools.callgraph</module>
@@ -58,16 +71,20 @@
     <module>org.eclipse.linuxtools.systemtap.ui.dashboardextension</module>
     <module>org.eclipse.linuxtools.systemtap.ui.doc</module>
     <module>org.eclipse.linuxtools.systemtap.ui.editor</module>
+    <module>org.eclipse.linuxtools.systemtap.ui.graphicalrun</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphing</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphingapi.ui</module>
     <module>org.eclipse.linuxtools.systemtap.ui.ide</module>
     <module>org.eclipse.linuxtools.systemtap.ui.ide.tests</module>
+    <module>org.eclipse.linuxtools.systemtap.ui.logging</module>
     <module>org.eclipse.linuxtools.systemtap.ui.structures</module>
     <module>org.eclipse.linuxtools.systemtap.ui.structures.tests</module>
     <module>org.eclipse.linuxtools.systemtap.ui.systemtapgui</module>
     <module>org.eclipse.linuxtools.systemtap.ui.tests</module>
+    <module>org.eclipse.linuxtools.threadprofiler</module>
+    <module>org.eclipse.linuxtools.threadprofiler.feature</module>
   </modules>
 
 </project>

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -34,18 +33,16 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 
 import com.jcraft.jsch.JSchException;
 
@@ -54,13 +51,13 @@ import com.jcraft.jsch.JSchException;
  * Contributors:
  *    Ryan Morse - Original author.
  *    Red Hat Inc. - Copied most code from RunScriptAction here and made it into
- *                   base class for run actions.
+ *                   base class for run actions. 
  * @since 1.2
  */
 
 abstract public class RunScriptBaseAction extends Action implements IWorkbenchWindowActionDelegate {
 
-	protected boolean runLocal = true;
+	protected boolean runLocal = false;
 	protected boolean continueRun = true;
 	protected String fileName = null;
 	protected String tmpfileName = null;
@@ -70,29 +67,21 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	protected Subscription subscription;
 	protected int SCRIPT_ID;
 	protected ScriptConsole console;
-	protected IPath path;
 
 	public RunScriptBaseAction() {
 		super();
 	}
 
-	@Override
 	public void dispose() {
 		fWindow= null;
 	}
 
-	@Override
 	public void init(IWorkbenchWindow window) {
 		fWindow= window;
 	}
 
-	@Override
 	public void run(IAction action) {
 		run();
-	}
-
-	public void setPath(IPath path){
-		this.path = path;
 	}
 
 	/**
@@ -106,7 +95,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		if(isValid()) {
 			if(getRunLocal() == false) {
 				try{
-
+				 
 					ScpClient scpclient = new ScpClient();
 					serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
 					tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
@@ -122,56 +111,29 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
             if(continueRun)
             {
             	Display.getDefault().asyncExec(new Runnable() {
-            		@Override
-					public void run() {
+            		public void run() {
             			final ScriptConsole console;
             			if(getRunLocal() == false) {
             				console = ScriptConsole.getInstance(serverfileName);
-            				console.run(script, envVars, new StapErrorParser());
+            				console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
             			} else {
             				console = ScriptConsole.getInstance(fileName);
-            				console.runLocally(script, envVars, new StapErrorParser());
+            				console.runLocally(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
             			}
-                        scriptConsoleInitialized(console);
             		}
             	});
             }
 		}
 	}
-
-	/**
-	 * Once a console for running the script has been created this
-	 * function is called so that observers can be added for example
-	 * @param console
-	 */
-	protected void scriptConsoleInitialized(ScriptConsole console){
-	}
-
-	/**
-	 * Returns the path that was set for this action. If one was not set it
-	 * returns the path of the current editor in the window this action is
-	 * associated with.
-	 *
-	 * @return The string representation of the path of the script to run.
-	 */
-	protected String getFilePath() {
-		if (path != null){
-			return path.toOSString();
-		}
-		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
-		if(ed.getEditorInput() instanceof PathEditorInput){
-			return ((PathEditorInput)ed.getEditorInput()).getPath().toString();
-		} else {
-			return ResourceUtil.getFile(ed.getEditorInput()).getLocation().toString();
-		}
-	}
-
+	
+	protected abstract String getFilePath();
+	
 	protected abstract boolean isValid();
 
 	/**
 	 * Checks whether the directory to which the given file
 	 * belongs is a valid directory. Currently this function just
-	 * checks if the given file does not belong to the tapset
+	 * checks if the given file does not belong to the tapset 
 	 * directory.
 	 * @param fileName
 	 * @return true if the given path is valid false otherwise.
@@ -179,10 +141,8 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	 */
 	protected boolean isValidDirectory(String fileName) {
 		this.fileName = fileName;
-		if(0 == IDESessionSettings.tapsetLocation.trim().length()){
+		if(0 == IDESessionSettings.tapsetLocation.trim().length())
 			TapsetLibrary.getTapsetLocation(IDEPlugin.getDefault().getPreferenceStore());
-		}
-
 		if(fileName.contains(IDESessionSettings.tapsetLocation)) {
 			String msg = MessageFormat.format(Localization.getString("RunScriptAction.TapsetDirectoryRun"),(Object []) null); //$NON-NLS-1$
 			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Error"), msg); //$NON-NLS-1$
@@ -190,7 +150,18 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		}
 		return true;
 	}
-
+	
+	/**
+	 * Called by <code>run(IAction)</code> to generate the command line necessary to run the script.
+	 * @return The arguments to pass to <code>Runtime.exec</code> to start the stap process on this script.
+	 * @see TerminalCommand
+	 * @see Runtime#exec(java.lang.String[], java.lang.String[])
+	 * @deprecated Use {@link RunScriptBaseAction#buildStandardScript()} instead
+	 */
+	protected String[] buildScript() {
+		return buildStandardScript();
+	}
+	
 	/**
 	 * The command line argument generation method used by <code>RunScriptAction</code>. This generates
 	 * a stap command line that includes the tapsets specified in user preferences, a guru mode flag
@@ -201,22 +172,23 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	//FixMe: Take care of this in the next release. For now only the guru mode is sent
 		ArrayList<String> cmdList = new ArrayList<String>();
 		String[] script;
-
+		
 		getImportedTapsets(cmdList);
-
+		
 		if(isGuru())
 			cmdList.add("-g"); //$NON-NLS-1$
+		
 
 		script = finalizeScript(cmdList);
-
+		
 		return script;
 	}
-
+	
 	/**
 	 * Adds the tapsets that the user has added in preferences to the input <code>ArrayList</code>
 	 * @param cmdList The list to add the user-specified tapset locations to.
 	 */
-
+	
 	protected void getImportedTapsets(ArrayList<String> cmdList) {
 		IPreferenceStore preferenceStore = IDEPlugin.getDefault().getPreferenceStore();
 		String[] tapsets = preferenceStore.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
@@ -229,9 +201,9 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	   		}
 		}
 	}
-
+	
 	/**
-	 * Checks the current script to determine if guru mode is required in order to run. This is determined
+	 * Checks the current script to determine if guru mode is required in order to run. This is determined 
 	 * by the presence of embedded C.
 	 * @return True if the script contains embedded C code.
 	 */
@@ -239,7 +211,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		try {
 			File f = new File(fileName);
 			FileReader fr = new FileReader(f);
-
+			
 			int curr = 0;
 			int prev = 0;
 			boolean front = false;
@@ -273,7 +245,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		}
 		return false;
 	}
-
+	
 	protected boolean createClientSession()
 	{
 		if (!ClientSession.isConnected() && new SelectServerDialog(fWindow.getShell()).open()) {
@@ -283,7 +255,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 				console = ScriptConsole.getInstance(fileName, subscription);
 				console.run();
 				}*/
-		}
+		}		
 		return true;
 	}
 
@@ -347,23 +319,22 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	protected String[] getEnvironmentVariables() {
 		return EnvironmentVariablesPreferencePage.getEnvironmentVariables();
 	}
-
-	@Override
+	
 	public void selectionChanged(IAction act, ISelection select) {
 		this.act = act;
 		setEnablement(false);
 		buildEnablementChecks();
 	}
-
+	
 	private void buildEnablementChecks() {
 		if(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor() instanceof STPEditor)
 			setEnablement(true);
 	}
-
+	
 	private void setEnablement(boolean enabled) {
 		act.setEnabled(enabled);
 	}
-
+	
 	protected Subscription getSubscription()
 	{
 		return subscription;
@@ -376,5 +347,5 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	public boolean getRunLocal() {
 		return runLocal;
 	}
-
+	
 }

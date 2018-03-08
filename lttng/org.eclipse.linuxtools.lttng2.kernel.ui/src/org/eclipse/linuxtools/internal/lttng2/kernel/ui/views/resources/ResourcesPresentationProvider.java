@@ -57,9 +57,9 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
         IDLE            (new RGB(200, 200, 200)),
         USERMODE        (new RGB(0, 200, 0)),
         SYSCALL         (new RGB(0, 0, 200)),
-        IRQ             (new RGB(200,   0, 100)),
+        IRQ             (new RGB(200, 100, 100)),
         SOFT_IRQ        (new RGB(200, 150, 100)),
-        IRQ_ACTIVE      (new RGB(200,   0, 100)),
+        IRQ_ACTIVE      (new RGB(200, 100, 100)),
         SOFT_IRQ_RAISED (new RGB(200, 200, 0)),
         SOFT_IRQ_ACTIVE (new RGB(200, 150, 100));
 
@@ -245,7 +245,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                     ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
 
                     try {
-                        retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.CALENDAR, Resolution.NANOSEC));
+                        retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.ABSOLUTE, Resolution.NANOSEC));
                         int cpuQuark = entry.getQuark();
                         int currentThreadQuark = ssq.getQuarkRelative(cpuQuark, Attributes.CURRENT_THREAD);
                         ITmfStateInterval interval = ssq.querySingleState(hoverTime, currentThreadQuark);

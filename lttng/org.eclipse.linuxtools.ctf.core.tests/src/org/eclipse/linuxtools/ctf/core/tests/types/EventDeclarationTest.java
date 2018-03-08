@@ -5,8 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.TestParams;
@@ -14,7 +14,6 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +47,6 @@ public class EventDeclarationTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
         fixture = new EventDeclaration();
         fixture.setContext(new StructDeclaration(1L));
         fixture.setId(1L);

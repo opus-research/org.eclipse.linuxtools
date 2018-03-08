@@ -10,16 +10,17 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.systemtap.ui.ide.wizards;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
@@ -29,6 +30,7 @@ import org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.ide.IDE;
@@ -77,7 +79,6 @@ public class StapNewWizard extends Wizard implements INewWizard {
 		final String containerName = page.getContainerName();
 		final String fileName = page.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
-			@Override
 			public void run(IProgressMonitor monitor) throws InvocationTargetException {
 				try {
 					doFinish(containerName, fileName, monitor);
@@ -111,33 +112,44 @@ public class StapNewWizard extends Wizard implements INewWizard {
 		// create a .stp file
 
 		monitor.beginTask(resourceBundle.getString("StapNewWizard.BeginTask") + fileName, 2); //$NON-NLS-1$
-		final IContainer newResource = (IContainer) ResourcesPlugin.getWorkspace().getRoot().findMember(containerName);
-		final IFile newFile = newResource.getFile(new Path(fileName));
-		String envString = "#!/usr/bin/env stap"; //$NON-NLS-1$
-		newFile.create(new ByteArrayInputStream(envString.getBytes()) , true, monitor);
+		final File newFile = new File(containerName, fileName);
+		try {
+			String envString = "#!/usr/bin/env stap"; //$NON-NLS-1$
+			FileOutputStream FOS = new FileOutputStream(newFile);
+			newFile.createNewFile();
+			FOS.write(envString.getBytes());
+			FOS.close();
+		} catch (IOException e) {
+			throwCoreException("Error: " + e);
+		}
 		monitor.worked(1);
 		monitor.setTaskName(resourceBundle.getString("StapNewWizard.SetTask")); //$NON-NLS-1$
 		getShell().getDisplay().asyncExec(new Runnable() {
-			@Override
 			public void run() {
 				try {
 					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getWorkbench()
 							.showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-					IDE.openEditor(page, newFile);
+					IDE.openEditorOnFileStore(page, EFS.getLocalFileSystem().fromLocalFile(newFile));
 				} catch (WorkbenchException e1) {
-					// ignore, the file is created but opening the editor failed
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 			}
 		});
 		monitor.worked(1);
 	}
 
+	private void throwCoreException(String message) throws CoreException {
+		IStatus status =
+			new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.ide", IStatus.OK, message, null); //$NON-NLS-1$
+		throw new CoreException(status);
+	}
+
 	/**
 	 * We will accept the selection in the workbench to see if
 	 * we can initialize from it.
-	 * @see INewWizard#init(IWorkbench, IStructuredSelection)
+	 * @see IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
 	 */
-	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
 	}

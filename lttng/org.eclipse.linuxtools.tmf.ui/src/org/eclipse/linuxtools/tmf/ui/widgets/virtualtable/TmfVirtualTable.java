@@ -698,12 +698,12 @@ public class TmfVirtualTable extends Composite {
 	 *
      */
     public void setItemCount(int nbItems) {
-        final int nb = Math.max(0, nbItems);
+        nbItems = Math.max(0, nbItems);
 
-        if (nb != fTableItemCount) {
-            fTableItemCount = nb;
+        if (nbItems != fTableItemCount) {
+            fTableItemCount = nbItems;
             fTable.remove(fTableItemCount, fTable.getItemCount() - 1);
-            fSlider.setMaximum(nb);
+            fSlider.setMaximum(nbItems);
             resize();
             int tableHeight = Math.max(0, fTable.getClientArea().height - fTable.getHeaderHeight());
             fFullyVisibleRows = tableHeight / getItemHeight();
@@ -764,11 +764,11 @@ public class TmfVirtualTable extends Composite {
 
     /**
      * Method setTopIndex.
-     * @param index int suggested top index for the table.
+     * @param i int suggested top index for the table.
      */
-    public void setTopIndex(int index) {
+    public void setTopIndex(int i) {
         if (fTableItemCount > 0) {
-            int i = Math.min(index, fTableItemCount - 1);
+            i = Math.min(i, fTableItemCount - 1);
             i = Math.max(i, fFrozenRowCount);
 
             fTableTopEventRank = i - fFrozenRowCount;
@@ -928,11 +928,11 @@ public class TmfVirtualTable extends Composite {
 
     /**
      * Method setSelection.
-     * @param index int the item number to select in the table.
+     * @param i int the item number to select in the table.
      */
-    public void setSelection(int index) {
+    public void setSelection(int i) {
         if (fTableItemCount > 0) {
-            int i = Math.min(index, fTableItemCount - 1);
+            i = Math.min(i, fTableItemCount - 1);
             i = Math.max(i, 0);
 
             fSelectedEventRank = i;

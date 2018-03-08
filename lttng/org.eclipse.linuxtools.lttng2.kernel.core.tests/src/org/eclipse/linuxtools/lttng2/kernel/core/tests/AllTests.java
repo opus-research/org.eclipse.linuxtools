@@ -16,11 +16,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Runner for the lttng2.kernel unit tests.
+ * <b><u>AllTests</u></b>
+ * <p>
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({
-    ActivatorTest.class,
-//    org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider.TestAll.class // Depends on the CTF traces
+@Suite.SuiteClasses({ ActivatorTest.class,
+    org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider.CtfKernelStateInputTest.class,
+    org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider.StateSystemFullHistoryTest.class
 })
 public class AllTests { }

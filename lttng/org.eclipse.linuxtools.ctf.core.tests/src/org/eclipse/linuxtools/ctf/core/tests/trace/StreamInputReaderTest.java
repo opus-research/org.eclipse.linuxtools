@@ -3,11 +3,11 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.nio.channels.FileChannel;
 import java.util.Set;
 
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.tests.TestParams;
@@ -16,7 +16,6 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +64,6 @@ public class StreamInputReaderTest {
     }
 
     private static StreamInputReader getStreamInputReader() throws CTFReaderException {
-        assumeTrue(TestParams.tracesExist());
         CTFTrace trace = TestParams.createTrace();
         Stream s = trace.getStream((long) 0);
         Set<StreamInput> streamInput = s.getStreamInputs();
