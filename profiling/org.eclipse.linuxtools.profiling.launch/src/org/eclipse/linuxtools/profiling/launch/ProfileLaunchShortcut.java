@@ -89,25 +89,42 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 		IExtensionPoint extPoint = Platform.getExtensionRegistry()
 				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, "launchProvider"); //$NON-NLS-1$
 		IConfigurationElement[] configs = extPoint.getConfigurationElements();
+		ProfileLaunchShortcut backupShortcut = null;
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
 				String currentType = config.getAttribute("type"); //$NON-NLS-1$
 				String shortcut = config.getAttribute("shortcut"); //$NON-NLS-1$
 				if (currentType != null &&  shortcut != null
 						&& currentType.equals(type)) {
-					try {
-						Object obj = config.createExecutableExtension("shortcut"); //$NON-NLS-1$
-						if (obj instanceof ProfileLaunchShortcut) {
-							return (ProfileLaunchShortcut) obj;
+					String isDefault = config.getAttribute("default");
+					if (isDefault != null && isDefault.equals("true")) {
+						try {
+							Object obj = config
+									.createExecutableExtension("shortcut"); //$NON-NLS-1$
+							if (obj instanceof ProfileLaunchShortcut) {
+								return (ProfileLaunchShortcut) obj;
+							}
+						} catch (CoreException e) {
+							// continue, perhaps another configuration will
+							// succeed
 						}
-					} catch (CoreException e) {
-						// continue, perhaps another configuration will succeed
+					} else if (backupShortcut == null) {
+						try {
+							Object obj = config
+									.createExecutableExtension("shortcut"); //$NON-NLS-1$
+							if (obj instanceof ProfileLaunchShortcut) {
+								backupShortcut = (ProfileLaunchShortcut) obj;
+							}
+						} catch (CoreException e) {
+							// continue, perhaps another configuration will
+							// succeed
+						}
 					}
 				}
 			}
 		}
 
-		return null;
+		return backupShortcut;
 	}
 
 	/**
