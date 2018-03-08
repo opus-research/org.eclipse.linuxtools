@@ -274,18 +274,28 @@ public final class TmfTraceManager {
      */
     @TmfSignalHandler
     public synchronized void timeRangeUpdated(final TmfRangeSynchSignal signal) {
+        final ITmfTimestamp signalTs = signal.getCurrentTime();
+
         for (Map.Entry<ITmfTrace, TmfTraceContext> entry : fTraces.entrySet()) {
             final ITmfTrace trace = entry.getKey();
             final TmfTraceContext curCtx = entry.getValue();
 
             final TmfTimeRange validTr = getValidTimeRange(trace);
 
+            /* Determine the new time stamp */
+            ITmfTimestamp newTs;
+            if (signalTs != null && signalTs.intersects(validTr)) {
+                newTs = signalTs;
+            } else {
+                newTs = curCtx.getTimestamp();
+            }
+
             /* Determine the new time range */
             TmfTimeRange targetTr = signal.getCurrentRange().getIntersection(validTr);
             TmfTimeRange newTr = (targetTr == null ? curCtx.getTimerange() : targetTr);
 
             /* Update the values */
-            TmfTraceContext newCtx = new TmfTraceContext(curCtx.getTimestamp(), newTr);
+            TmfTraceContext newCtx = new TmfTraceContext(newTs, newTr);
             entry.setValue(newCtx);
         }
     }

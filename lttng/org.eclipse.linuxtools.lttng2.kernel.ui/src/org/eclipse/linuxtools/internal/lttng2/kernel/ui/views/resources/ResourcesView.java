@@ -42,6 +42,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
@@ -322,7 +323,8 @@ public class ResourcesView extends TmfView {
                 long startTime = event.getStartTime();
                 long endTime = event.getEndTime();
                 TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
-                broadcast(new TmfRangeSynchSignal(ResourcesView.this, range));
+                TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphViewer.getSelectedTime());
+                broadcast(new TmfRangeSynchSignal(ResourcesView.this, range, time));
                 startZoomThread(startTime, endTime);
             }
         });
@@ -450,6 +452,7 @@ public class ResourcesView extends TmfView {
         }
         final long startTime = signal.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         final long endTime = signal.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -457,6 +460,7 @@ public class ResourcesView extends TmfView {
                     return;
                 }
                 fTimeGraphViewer.setStartFinishTime(startTime, endTime);
+                fTimeGraphViewer.setSelectedTime(time, false);
                 startZoomThread(startTime, endTime);
             }
         });
