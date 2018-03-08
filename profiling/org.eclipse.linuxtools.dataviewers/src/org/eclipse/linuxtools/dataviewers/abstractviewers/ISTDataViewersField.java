@@ -31,7 +31,7 @@ import org.eclipse.swt.graphics.Image;
  * hyperlink as underlined text
  * </ul>
  * Three abstract implementations are available: {@link AbstractSTDataViewersField} for default rendering
- * {@link AbstractPercentageDrawerField} for displaying percentages as progress bars
+ * {@link STAbstractPercentageDrawerField} for displaying percentages as progress bars
  * {@link STDataViewersHyperLinkDrawerField} for displaying hyperlinks as underlined text
  */
 public interface ISTDataViewersField {
