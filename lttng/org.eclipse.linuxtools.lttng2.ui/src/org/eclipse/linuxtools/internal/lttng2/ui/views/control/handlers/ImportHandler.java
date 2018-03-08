@@ -111,7 +111,6 @@ public class ImportHandler extends BaseControlViewHandler {
                 wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
                 WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
                 dialog.open();
-                traceFolder.refresh();
                 return null;
             }
 

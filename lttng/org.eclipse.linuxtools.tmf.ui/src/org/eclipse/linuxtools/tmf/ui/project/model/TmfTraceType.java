@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Matthew Khouzam - Added import functionalities
- *   Geneviève Bastien - Added support for experiment types
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -79,12 +78,6 @@ public final class TmfTraceType {
      */
     public static final String TYPE_ELEM = "type"; //$NON-NLS-1$
     /**
-     * Extension point element 'Experiment'
-     *
-     * @since 3.0
-     */
-    public static final String EXPERIMENT_ELEM = "experiment"; //$NON-NLS-1$
-    /**
      * Extension point element 'Default editor'
      */
     public static final String DEFAULT_EDITOR_ELEM = "defaultEditor"; //$NON-NLS-1$
@@ -116,12 +109,6 @@ public final class TmfTraceType {
      */
     public static final String TRACE_TYPE_ATTR = "trace_type"; //$NON-NLS-1$
     /**
-     * Extension point attribute 'experiment_type'
-     *
-     * @since 3.0
-     */
-    public static final String EXPERIMENT_TYPE_ATTR = "experiment_type"; //$NON-NLS-1$
-    /**
      * Extension point attribute 'event_type'
      */
     public static final String EVENT_TYPE_ATTR = "event_type"; //$NON-NLS-1$
@@ -147,13 +134,6 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
-
-    /**
-     * Default experiment type
-     *
-     * @since 3.0
-     */
-    public static final String DEFAULT_EXPERIMENT_TYPE = "org.eclipse.linuxtools.tmf.ui.experimenttype.generic"; //$NON-NLS-1$
 
     // The mapping of available trace type IDs to their corresponding
     // configuration element
@@ -206,7 +186,7 @@ public final class TmfTraceType {
                  * Search in the configuration if there is any viewer specified
                  * for this kind of trace type.
                  */
-                for (IConfigurationElement ce : TmfTraceType.getTypeAndExperimentElements()) {
+                for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
                     if (ce.getAttribute(TmfTraceType.ID_ATTR).equals(traceType)) {
                         IConfigurationElement[] viewerCE = ce.getChildren(element);
                         if (viewerCE.length != 1) {
@@ -240,49 +220,6 @@ public final class TmfTraceType {
         return typeElements.toArray(new IConfigurationElement[typeElements.size()]);
     }
 
-    /**
-     * Retrieves all type and experiment configuration elements from the
-     * platform extension registry for the trace type extension.
-     *
-     * @return an array of trace type configuration elements
-     * @since 3.0
-     */
-    public static IConfigurationElement[] getTypeAndExperimentElements() {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry()
-                .getConfigurationElementsFor(TMF_TRACE_TYPE_ID);
-        List<IConfigurationElement> typeElements = new LinkedList<>();
-        for (IConfigurationElement element : elements) {
-            if (element.getName().equals(TYPE_ELEM)) {
-                typeElements.add(element);
-            } else if (element.getName().equals(EXPERIMENT_ELEM)) {
-                typeElements.add(element);
-            }
-        }
-        return typeElements.toArray(new IConfigurationElement[typeElements.size()]);
-    }
-
-    /**
-     * Retrieves all type or experiment configuration elements from the platform
-     * extension registry for the trace type extension.
-     *
-     * @param elType
-     *            Either TYPE_ELEM or EXPERIMENT_ELEM depending on what type of
-     *            elements to return
-     * @return an array of trace type configuration elements
-     * @since 3.0
-     */
-    public static IConfigurationElement[] getTypeOrExperimentElements(String elType) {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry()
-                .getConfigurationElementsFor(TMF_TRACE_TYPE_ID);
-        List<IConfigurationElement> typeElements = new LinkedList<>();
-        for (IConfigurationElement element : elements) {
-            if (element.getName().equals(elType)) {
-                typeElements.add(element);
-            }
-        }
-        return typeElements.toArray(new IConfigurationElement[typeElements.size()]);
-    }
-
     private TmfTraceType() {
         init();
     }
@@ -307,8 +244,6 @@ public final class TmfTraceType {
     /**
      * Returns a list of "category:tracetype , ..."
      *
-     * Returns only trace types, not experiment types
-     *
      * @return returns a list of "category:tracetype , ..."
      * @since 2.0
      */
@@ -321,9 +256,7 @@ public final class TmfTraceType {
         getCustomTraceTypes();
         for (String key : this.fTraceTypes.keySet()) {
             TraceTypeHelper tt = this.fTraceTypes.get(key);
-            if (!tt.isExperimentType()) {
-                traceTypes.add(tt.getCategoryName() + SEPARATOR + tt.getName());
-            }
+            traceTypes.add(tt.getCategoryName() + SEPARATOR + tt.getName());
         }
 
         // Format result
@@ -377,21 +310,19 @@ public final class TmfTraceType {
         for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
             String traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
             ITmfTrace trace = new CustomTxtTrace(def);
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_TXT_CATEGORY, def.definitionName, trace, false);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_TXT_CATEGORY, def.definitionName, trace);
             fTraceTypes.put(traceTypeId, tt);
             traceTypes.add(traceTypeId);
-            // Deregister trace as signal handler because it is only used for
-            // validation
+            // Deregister trace as signal handler because it is only used for validation
             TmfSignalManager.deregister(trace);
         }
         for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
             String traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
             ITmfTrace trace = new CustomXmlTrace(def);
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_XML_CATEGORY, def.definitionName, trace, false);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_XML_CATEGORY, def.definitionName, trace);
             fTraceTypes.put(traceTypeId, tt);
             traceTypes.add(traceTypeId);
-            // Deregister trace as signal handler because it is only used for
-            // validation
+            // Deregister trace as signal handler because it is only used for validation
             TmfSignalManager.deregister(trace);
         }
         return traceTypes;
@@ -422,9 +353,6 @@ public final class TmfTraceType {
                 } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
                     String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
                     fTraceCategories.put(categoryId, ce);
-                } else if (elementName.equals(TmfTraceType.EXPERIMENT_ELEM)) {
-                    String experimentTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                    fTraceTypeAttributes.put(experimentTypeId, ce);
                 }
             }
             // create the trace types
@@ -433,22 +361,13 @@ public final class TmfTraceType {
                 final String category = getCategory(ce);
                 final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
                 ITmfTrace trace = null;
-                boolean experimentType = false;
                 try {
-                    if (ce.getName().equals(TmfTraceType.TYPE_ELEM)) {
-                        trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                    } else if (ce.getName().equals(TmfTraceType.EXPERIMENT_ELEM)) {
-                        trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.EXPERIMENT_TYPE_ATTR);
-                        experimentType = true;
-                    }
-                    if (trace != null) {
-                        // Deregister trace as signal handler because it is only
-                        // used for validation
-                        TmfSignalManager.deregister(trace);
-                    }
+                    trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    // Deregister trace as signal handler because it is only used for validation
+                    TmfSignalManager.deregister(trace);
                 } catch (CoreException e) {
                 }
-                TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace, experimentType);
+                TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
                 fTraceTypes.put(typeId, tt);
             }
         }
@@ -483,23 +402,21 @@ public final class TmfTraceType {
     }
 
     /**
-     * Get the trace type helper classes from category name. Return only the
-     * trace types, not the experiment types
+     * Get the trace type helper classes from category name
      *
      * @param categoryName
      *            the categoryName to lookup
      * @return a list of trace type helper classes {@link TraceTypeHelper}
      * @since 2.0
      */
+
     public List<TraceTypeHelper> getTraceTypes(String categoryName) {
         init();
         List<TraceTypeHelper> traceNames = new ArrayList<>();
         for (String key : fTraceTypes.keySet()) {
-            if (!fTraceTypes.get(key).isExperimentType()) {
-                final String storedCategoryName = fTraceTypes.get(key).getCategoryName();
-                if (storedCategoryName.equals(categoryName)) {
-                    traceNames.add(fTraceTypes.get(key));
-                }
+            final String storedCategoryName = fTraceTypes.get(key).getCategoryName();
+            if (storedCategoryName.equals(categoryName)) {
+                traceNames.add(fTraceTypes.get(key));
             }
         }
         return traceNames;
@@ -712,10 +629,8 @@ public final class TmfTraceType {
      * @param shell
      *            a shell to display the message to. If it is null, it is
      *            assumed to be cancelled.
-     * @param traceTypeHint
-     *            the ID of a trace (like "o.e.l.specifictrace" )
-     * @return null if the request is cancelled or a TraceTypeHelper if it
-     *         passes.
+     * @param traceTypeHint the ID of a trace (like "o.e.l.specifictrace" )
+     * @return null if the request is cancelled or a TraceTypeHelper if it passes.
      * @throws TmfTraceImportException
      *             if the traces don't match or there are errors in the trace
      *             file
@@ -846,7 +761,6 @@ public final class TmfTraceType {
      */
     public static IStatus setTraceType(IPath path, TraceTypeHelper traceType) throws CoreException {
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-        String TRACE_NAME = path.lastSegment();
         String traceBundle = null, traceTypeId = traceType.getCanonicalName(), traceIcon = null;
         if (TmfTraceType.isCustomTraceId(traceTypeId)) {
             traceBundle = Activator.getDefault().getBundle().getSymbolicName();
@@ -861,29 +775,16 @@ public final class TmfTraceType {
         resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceTypeId);
         resource.setPersistentProperty(TmfCommonConstants.TRACEICON, traceIcon);
 
-        TmfProjectElement tmfProject = TmfProjectRegistry.getProject(resource.getProject());
-        if (tmfProject != null) {
-            final TmfTraceFolder tracesFolder = tmfProject.getTracesFolder();
-            tracesFolder.refresh();
-
-            List<TmfTraceElement> traces = tracesFolder.getTraces();
-            boolean found = false;
-            for (TmfTraceElement traceElement : traces) {
-                if (traceElement.getName().equals(resource.getName())) {
-                    traceElement.refreshTraceType();
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                TmfTraceElement te = new TmfTraceElement(TRACE_NAME, resource, tracesFolder);
-                te.refreshTraceType();
-                traces = tracesFolder.getTraces();
-                for (TmfTraceElement traceElement : traces) {
-                    traceElement.refreshTraceType();
-                }
+        TmfProjectElement tmfProject = TmfProjectRegistry.getProject(resource.getProject(), true);
+        final TmfTraceFolder tracesFolder = tmfProject.getTracesFolder();
+        List<TmfTraceElement> traces = tracesFolder.getTraces();
+        for (TmfTraceElement traceElement : traces) {
+            if (traceElement.getName().equals(resource.getName())) {
+                traceElement.refreshTraceType();
+                break;
             }
         }
+        tmfProject.refresh();
         return Status.OK_STATUS;
     }
 

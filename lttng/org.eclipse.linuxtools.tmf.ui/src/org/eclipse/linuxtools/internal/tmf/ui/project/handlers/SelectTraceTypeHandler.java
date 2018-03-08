@@ -14,8 +14,10 @@
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -34,8 +36,8 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfCommonProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.swt.widgets.Shell;
@@ -96,7 +98,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
             Iterator<Object> iterator = fSelection.iterator();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
-                if (!(element instanceof TmfCommonProjectElement)) {
+                if (!(element instanceof TmfTraceElement)) {
                     return false;
                 }
             }
@@ -119,12 +121,11 @@ public class SelectTraceTypeHandler extends AbstractHandler {
             return null;
         }
         List<IStatus> statuses = new ArrayList<>();
+        Set<TmfProjectElement> projects = new HashSet<>();
         boolean ok = true;
         for (Object element : fSelection.toList()) {
-            TmfCommonProjectElement trace = (TmfCommonProjectElement) element;
-            if (trace instanceof TmfTraceElement) {
-                trace = ((TmfTraceElement) trace).getElementUnderTraceFolder();
-            }
+            TmfTraceElement trace = (TmfTraceElement) element;
+            trace = trace.getElementUnderTraceFolder();
             IResource resource = trace.getResource();
             if (resource != null) {
                 try {
@@ -146,12 +147,16 @@ public class SelectTraceTypeHandler extends AbstractHandler {
                     } else {
                         statuses.add(status);
                     }
+                    projects.add(trace.getProject());
                 } catch (CoreException e) {
                     Activator.getDefault().logError(Messages.SelectTraceTypeHandler_ErrorSelectingTrace + trace.getName(), e);
                 }
             }
+            trace.getProject();
         }
-        ((ITmfProjectModelElement) fSelection.getFirstElement()).getProject().refresh();
+        for (TmfProjectElement project : projects) {
+            project.refresh();
+        }
 
         if (!ok) {
             final Shell shell = window.getShell();
@@ -168,7 +173,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         return null;
     }
 
-    private static IStatus propagateProperties(TmfCommonProjectElement trace,
+    private static IStatus propagateProperties(TmfTraceElement trace,
             String bundleName, String traceType, String iconUrl)
             throws CoreException {
 
@@ -214,7 +219,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         resource.setPersistentProperty(TmfCommonConstants.TRACEICON, iconUrl);
     }
 
-    private static IStatus validateTraceType(TmfCommonProjectElement trace) {
+    private static IStatus validateTraceType(TmfTraceElement trace) {
         IProject project = trace.getProject().getResource();
         ITmfTrace tmfTrace = null;
         IStatus validate = null;

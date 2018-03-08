@@ -26,6 +26,15 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.navigator.CommonNavigator;
+import org.eclipse.ui.navigator.CommonViewer;
 
 /**
  * The implementation of the base TMF project model element. It provides default implementation
@@ -126,13 +135,39 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement 
     @Override
     public void removeChild(ITmfProjectModelElement child) {
         fChildren.remove(child);
-        refresh();
     }
 
     @Override
     public void refresh() {
-        // Do nothing by default: sub-classes override this on an "as-needed"
-        // basis.
+        // make sure the model is updated in the current thread
+        refreshChildren();
+
+        Display.getDefault().asyncExec(new Runnable(){
+            @Override
+            public void run() {
+                IWorkbench wb = PlatformUI.getWorkbench();
+                IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
+                if (wbWindow == null) {
+                    return;
+                }
+                IWorkbenchPage activePage = wbWindow.getActivePage();
+                if (activePage == null) {
+                    return;
+                }
+
+                for (IViewReference viewReference : activePage.getViewReferences()) {
+                    IViewPart viewPart = viewReference.getView(false);
+                    if (viewPart instanceof CommonNavigator) {
+                        CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
+                        Object element = TmfProjectModelElement.this;
+                        if (element instanceof TmfProjectElement) {
+                            // for the project element the viewer uses the IProject resource
+                            element = getResource();
+                        }
+                        commonViewer.refresh(element);
+                    }
+                }
+            }});
     }
 
     // ------------------------------------------------------------------------
@@ -169,7 +204,7 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement 
     /**
      * Refresh the children of this model element, adding new children and
      * removing dangling children as necessary. The remaining children should
-     * also refresh their own children list.
+     * also refresh their own children sub-tree.
      */
     void refreshChildren() {
         // Sub-classes may override this method as needed

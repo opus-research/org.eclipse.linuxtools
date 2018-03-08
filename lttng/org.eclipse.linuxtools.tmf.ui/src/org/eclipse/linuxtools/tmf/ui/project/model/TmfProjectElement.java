@@ -18,15 +18,6 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.navigator.CommonNavigator;
-import org.eclipse.ui.navigator.CommonViewer;
 
 /**
  * The implementation of TMF project model element.
@@ -103,34 +94,6 @@ public class TmfProjectElement extends TmfProjectModelElement {
     // ------------------------------------------------------------------------
     // TmfProjectModelElement
     // ------------------------------------------------------------------------
-
-    @Override
-    public void refresh() {
-        // make sure the model is updated in the current thread
-        refreshChildren();
-
-        Display.getDefault().asyncExec(new Runnable(){
-            @Override
-            public void run() {
-                IWorkbench wb = PlatformUI.getWorkbench();
-                IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
-                if (wbWindow == null) {
-                    return;
-                }
-                IWorkbenchPage activePage = wbWindow.getActivePage();
-                if (activePage == null) {
-                    return;
-                }
-
-                for (IViewReference viewReference : activePage.getViewReferences()) {
-                    IViewPart viewPart = viewReference.getView(false);
-                    if (viewPart instanceof CommonNavigator) {
-                        CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
-                        commonViewer.refresh(getResource());
-                    }
-                }
-            }});
-    }
 
     @Override
     void refreshChildren() {

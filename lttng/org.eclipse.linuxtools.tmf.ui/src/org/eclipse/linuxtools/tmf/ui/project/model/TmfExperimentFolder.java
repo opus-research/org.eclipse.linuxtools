@@ -90,12 +90,6 @@ public class TmfExperimentFolder extends TmfProjectModelElement implements IProp
     }
 
     @Override
-    public void refresh() {
-        TmfProjectElement project = (TmfProjectElement) getParent();
-        project.refresh();
-    }
-
-    @Override
     void refreshChildren() {
         IFolder folder = getResource();
 

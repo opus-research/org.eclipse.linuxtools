@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.ui.tests.shared;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.resources.IFolder;
@@ -23,7 +22,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -37,8 +35,6 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 /**
  * Creates objects used for this package's testing purposes
@@ -50,7 +46,7 @@ public class ProjectModelTestData {
     /* Maximum number of thread delays the main thread will do before timing out */
     private static final int DELAY_COUNTER = 10;
     /* Default delay time when having the main thread sleep. */
-    private static final int DEFAULT_DELAY = 500;
+    private static final long DEFAULT_DELAY = 500;
 
     /** Default test project name */
     public static final String PROJECT_NAME = "Test_Project";
@@ -86,46 +82,9 @@ public class ProjectModelTestData {
         TmfTraceElement traceElement = projectElement.getTracesFolder().getTraces().get(0);
         traceElement.refreshTraceType();
 
+        projectElement.refresh();
+
         return projectElement;
-    }
-
-    /**
-     * Adds a new experiment to the project
-     *
-     * @param projectElement
-     *            The project to add to
-     * @param experimentName
-     *            Name of the experiment
-     * @return The newly created experiment
-     */
-    public static TmfExperimentElement addExperiment(TmfProjectElement projectElement, String experimentName) {
-        IFolder experimentFolder = projectElement.getExperimentsFolder().getResource();
-        final IFolder folder = experimentFolder.getFolder(experimentName);
-
-        WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
-            @Override
-            public void execute(IProgressMonitor monitor) throws CoreException {
-                monitor.beginTask("", 1000);
-                folder.create(false, true, monitor);
-                monitor.done();
-            }
-        };
-        try {
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(operation);
-        } catch (InterruptedException exception) {
-
-        } catch (InvocationTargetException exception) {
-
-        } catch (RuntimeException exception) {
-
-        }
-
-        for (ITmfProjectModelElement el : projectElement.getExperimentsFolder().getChildren()) {
-            if (el.getName().equals(experimentName) && (el instanceof TmfExperimentElement)) {
-                return (TmfExperimentElement) el;
-            }
-        }
-        return null;
     }
 
     /**
@@ -255,7 +214,7 @@ public class ProjectModelTestData {
     public static void delayUntilTraceOpened(final ITmfProjectModelElement projectElement) throws TimeoutException {
         if (projectElement instanceof TmfTraceElement) {
             TmfTraceElement traceElement = (TmfTraceElement) projectElement;
-            final long deadline = System.nanoTime() + (DELAY_COUNTER * DEFAULT_DELAY * 1000000);
+            final long deadline = System.nanoTime() + (DELAY_COUNTER * DEFAULT_DELAY * 1000000L);
             do {
                 delayThread(DEFAULT_DELAY);
                 if (traceElement.getTrace() != null) {
