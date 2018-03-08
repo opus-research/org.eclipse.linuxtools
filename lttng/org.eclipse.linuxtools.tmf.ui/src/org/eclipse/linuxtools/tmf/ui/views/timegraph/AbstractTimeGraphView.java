@@ -11,7 +11,6 @@
  *   Bernd Hufmann - Updated signal handling
  *   Geneviève Bastien - Move code to provide base classes for time graph view
  *   Marc-Andre Laperle - Add time zone preference
- *   Geneviève Bastien - Add event links between entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.timegraph;
@@ -27,13 +26,13 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
@@ -42,8 +41,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
@@ -54,7 +53,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProv
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphRangeUpdateEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphSelectionEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
@@ -73,7 +71,7 @@ import org.eclipse.ui.IActionBars;
  * left, showing entries and a canvas on the right to draw something for these
  * entries.
  *
- * @since 2.1
+ * @since 3.0
  */
 public abstract class AbstractTimeGraphView extends TmfView {
 
@@ -275,7 +273,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
      *            the trace to add
      * @param list
      *            The list of time graph entries
-     * @since 2.1
      */
     protected void putEntryList(ITmfTrace trace, List<TimeGraphEntry> list) {
         synchronized(fEntryListMap) {
@@ -449,10 +446,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 }
                 zoom(entry, fMonitor);
             }
-            /* Refresh the arrows when zooming */
-            List<ILinkEvent> events = getLinkList(fZoomStartTime, fZoomEndTime, fResolution, fMonitor);
-            fTimeGraphCombo.setLinks(events);
-            redraw();
         }
 
         private void zoom(TimeGraphEntry entry, IProgressMonitor monitor) {
@@ -530,8 +523,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
             public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
                 final long startTime = event.getStartTime();
                 final long endTime = event.getEndTime();
-                TmfTimeRange range = new TmfTimeRange(new TmfNanoTimestamp(startTime), new TmfNanoTimestamp(endTime));
-                broadcast(new TmfRangeSynchSignal(AbstractTimeGraphView.this, range));
+                TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
+                TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
+                broadcast(new TmfRangeSynchSignal(AbstractTimeGraphView.this, range, time));
                 if (fZoomThread != null) {
                     fZoomThread.cancel();
                 }
@@ -542,9 +536,8 @@ public abstract class AbstractTimeGraphView extends TmfView {
         fTimeGraphCombo.getTimeGraphViewer().addTimeListener(new ITimeGraphTimeListener() {
             @Override
             public void timeSelected(TimeGraphTimeEvent event) {
-                TmfNanoTimestamp startTime = new TmfNanoTimestamp(event.getBeginTime());
-                TmfNanoTimestamp endTime = new TmfNanoTimestamp(event.getEndTime());
-                broadcast(new TmfTimeSynchSignal(AbstractTimeGraphView.this, startTime, endTime));
+                long time = event.getTime();
+                broadcast(new TmfTimeSynchSignal(AbstractTimeGraphView.this, new CtfTmfTimestamp(time)));
             }
         });
 
@@ -556,9 +549,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
         });
 
         fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
-
-        IStatusLineManager statusLineManager = getViewSite().getActionBars().getStatusLineManager();
-        fTimeGraphCombo.getTimeGraphViewer().getTimeGraphControl().setStatusLineManager(statusLineManager);
 
         // View Action Handling
         makeActions();
@@ -640,7 +630,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
     }
 
     /**
-     * Handler for the time synch signal
+     * Handler for the synch signal
      *
      * @param signal
      *            The signal that's received
@@ -650,8 +640,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         if (signal.getSource() == this || fTrace == null) {
             return;
         }
-        final long beginTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        final long endTime = signal.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
         Display.getDefault().asyncExec(new Runnable() {
             @Override
@@ -659,20 +648,16 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 if (fTimeGraphCombo.isDisposed()) {
                     return;
                 }
-                if (beginTime == endTime) {
-                    fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(beginTime, true);
-                } else {
-                    fTimeGraphCombo.getTimeGraphViewer().setSelectionRange(beginTime, endTime);
-                }
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, true);
                 startZoomThread(fTimeGraphCombo.getTimeGraphViewer().getTime0(), fTimeGraphCombo.getTimeGraphViewer().getTime1());
 
-                synchingToTime(beginTime);
+                synchingToTime(time);
             }
         });
     }
 
     /**
-     * Handler for the range synch signal
+     * Handler for the range sync signal
      *
      * @param signal
      *            The signal that's received
@@ -687,6 +672,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         }
         final long startTime = signal.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         final long endTime = signal.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -694,6 +680,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
                     return;
                 }
                 fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, false);
                 startZoomThread(startTime, endTime);
             }
         });
@@ -701,7 +688,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
 
     /**
      * @param signal the format of the timestamps was updated.
-     * @since 2.1
      */
     @TmfSignalHandler
     public void updateTimeFormat( final TmfTimestampFormatUpdateSignal signal){
@@ -772,27 +758,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
             IProgressMonitor monitor);
 
     /**
-     * Gets the list of links (displayed as arrows) for a trace in a given
-     * timerange.  Default implementation returns an empty list.
-     *
-     * @param startTime
-     *            Start of the time range
-     * @param endTime
-     *            End of the time range
-     * @param resolution
-     *            The resolution
-     * @param monitor
-     *            The progress monitor object
-     * @return The list of link events
-     * @since 2.1
-     */
-    protected List<ILinkEvent> getLinkList(long startTime, long endTime,
-            long resolution, IProgressMonitor monitor) {
-        return new ArrayList<ILinkEvent>();
-    }
-
-
-    /**
      * Refresh the display
      */
     protected void refresh() {
@@ -816,13 +781,12 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 fTimeGraphCombo.setInput(entries);
                 fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
 
-                long selectionBeginTime = fTrace == null ? 0 : fTraceManager.getSelectionBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                long selectionEndTime = fTrace == null ? 0 : fTraceManager.getSelectionEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                long timestamp = fTrace == null ? 0 : fTraceManager.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 long startTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 long endTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 startTime = Math.max(startTime, fStartTime);
                 endTime = Math.min(endTime, fEndTime);
-                fTimeGraphCombo.getTimeGraphViewer().setSelectionRange(selectionBeginTime, selectionEndTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(timestamp, false);
                 fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
 
                 for (TreeColumn column : fTimeGraphCombo.getTreeViewer().getTree().getColumns()) {
