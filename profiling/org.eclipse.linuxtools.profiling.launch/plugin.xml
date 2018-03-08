@@ -467,6 +467,24 @@
         <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
         <placement after="org.eclipse.debug.ui.commonTab"/>
       </tab>
+
+      <!--
+      This is a workaround for a limitation in o.e.debug.ui.launchConfigurationTabGroups.
+      Launch Configuration Tab Groups that may clash with ours (contributing to same type and mode)
+      should be added here.
+      -->
+      <tab
+            class="org.eclipse.linuxtools.internal.profiling.launch.CProfilingOptionsTab"
+            group="org.eclipse.ptp.etfw.tau.performance.launchConfigurationTabGroup"
+            id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.profilingTab"
+            name="%ProfilerTab.name">
+         <associatedDelegate
+               delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate">
+         </associatedDelegate>
+         <placement
+               after="org.eclipse.debug.ui.commonTab">
+         </placement>
+      </tab>
       </extension>
       <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
