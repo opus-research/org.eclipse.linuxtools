@@ -107,7 +107,7 @@ public class ImportTraceWizardSelectDirectoriesPage extends AbstractImportTraceW
 //        addDirectory.setSize(maxSize, maxHeight);
 //        removeFile.setSize(maxSize, maxHeight);
 
-        this.setTitle(Messages.ImportTraceWizardDirectoryTitle);
+        this.setTitle(Messages.ImportTraceWizardDirectoryCaption);
     }
 
     private void updateButtons() {
