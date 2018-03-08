@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
@@ -92,7 +91,7 @@ public class ImportRPMsPage extends FormPage {
 
 		// Section and its client area to manage importing the RPMs
 		Section rpmSection = toolkit.createSection(form.getBody(), Section.DESCRIPTION
-				| ExpandableComposite.TITLE_BAR);
+				| Section.TITLE_BAR);
 		layout = new GridLayout();
 		rpmSection.setText(Messages.ImportRPMsPage_sectionTitle);
 		rpmSection.setDescription(Messages.ImportRPMsPage_sectionInstruction);
@@ -134,7 +133,7 @@ public class ImportRPMsPage extends FormPage {
 	 *
 	 * @return The created GridData.
 	 */
-	private static GridData expandComposite() {
+	private GridData expandComposite() {
 		GridData data = new GridData();
 		data.verticalAlignment = GridData.FILL;
 		data.horizontalAlignment = GridData.FILL;
