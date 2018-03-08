@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,25 +39,11 @@ public class SequenceDeclarationTest {
 
     private SequenceDeclaration fixture;
 
-    static final String fieldName = "LengthName"; //$NON-NLS-1$
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(SequenceDeclarationTest.class);
-    }
+    static final String fieldName = "LengthName";
 
     @Before
     public void setUp() {
         fixture = new SequenceDeclaration(fieldName, new StringDeclaration());
-    }
-
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -66,13 +51,12 @@ public class SequenceDeclarationTest {
      */
     @Test
     public void testSequenceDeclaration() {
-        String lengthName = ""; //$NON-NLS-1$
+        String lengthName = "";
         IDeclaration elemType = new StringDeclaration();
 
-        SequenceDeclaration result = new SequenceDeclaration(lengthName,
-                elemType);
+        SequenceDeclaration result = new SequenceDeclaration(lengthName, elemType);
         assertNotNull(result);
-        String string = "[declaration] sequence["; //$NON-NLS-1$
+        String string = "[declaration] sequence[";
         assertEquals(string, result.toString().substring(0, string.length()));
     }
 
@@ -87,11 +71,10 @@ public class SequenceDeclarationTest {
 
         StructDeclaration structDec = new StructDeclaration(0);
         structDec.addField(fieldName, id);
-        StructDefinition structDef = new StructDefinition(structDec, null, "x"); //$NON-NLS-1$
+        StructDefinition structDef = new StructDefinition(structDec, null, "x");
         long seqLen = 10;
         structDef.lookupInteger(fieldName).setValue(seqLen);
-        SequenceDefinition result = this.fixture.createDefinition(structDef,
-                fieldName);
+        SequenceDefinition result = this.fixture.createDefinition(structDef, fieldName);
         assertNotNull(result);
     }
 
@@ -110,7 +93,7 @@ public class SequenceDeclarationTest {
     @Test
     public void testToString() {
         String result = fixture.toString();
-        String left = "[declaration] sequence["; //$NON-NLS-1$
+        String left = "[declaration] sequence[";
         assertEquals(left, result.substring(0, left.length()));
     }
 }
