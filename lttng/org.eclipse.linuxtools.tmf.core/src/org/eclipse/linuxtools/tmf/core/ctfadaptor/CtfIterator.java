@@ -91,7 +91,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             setUnknownLocation();
         }
-
     }
 
     /**
@@ -177,6 +176,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             curLocation = NULL_LOCATION;
         }
+
         return ret;
     }
 
