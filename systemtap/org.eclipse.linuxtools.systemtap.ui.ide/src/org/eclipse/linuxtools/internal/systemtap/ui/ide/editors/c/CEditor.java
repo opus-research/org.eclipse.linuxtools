@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.editor.ColorManager;
+import org.eclipse.linuxtools.systemtap.ui.editor.*;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
@@ -39,7 +39,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 
 
@@ -158,13 +157,13 @@ public class CEditor extends AbstractDecoratedTextEditor {
 				LogManager.logInfo("Disposing", MessageDialog.class); //$NON-NLS-1$
 			} else {
 				IEditorInput in = getEditorInput();
-				if(in instanceof FileStoreEditorInput) {
-					FileStoreEditorInput input = (FileStoreEditorInput)in;
+				if(in instanceof PathEditorInput) {
+					PathEditorInput input = (PathEditorInput)in;
 	
 					IPreferenceStore p = IDEPlugin.getDefault().getPreferenceStore();
 					String kernroot = p.getString(IDEPreferenceConstants.P_KERNEL_SOURCE);
 	
-					String filepath = input.getURI().getPath();
+					String filepath = input.getPath().toOSString();
 					String kernrelative = filepath.substring(kernroot.length()+1, filepath.length());
 					StringBuffer sb = new StringBuffer();
 					
@@ -177,18 +176,17 @@ public class CEditor extends AbstractDecoratedTextEditor {
 						LogManager.logInfo("Disposing", MessageDialog.class);
 					} else { */
 						sb.append("\n{\n\t\n}\n");
-						STPEditor activeSTPEditor = IDESessionSettings.getActiveSTPEditor(); 
-						if(null == activeSTPEditor) {
+						if(null == IDESessionSettings.activeSTPEditor) {
 							NewFileAction action = new NewFileAction();
 							//action.init(input.getMainWindow());
 							action.run();
 							IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 							if(ed instanceof STPEditor)
-								IDESessionSettings.setActiveSTPEditor((STPEditor)ed);
+								IDESessionSettings.activeSTPEditor = (STPEditor)ed;
 						}
-
-						if(null != activeSTPEditor)
-							activeSTPEditor.insertText(sb.toString());
+						STPEditor editor = IDESessionSettings.activeSTPEditor;
+						if(null != editor)
+							editor.insertText(sb.toString());
 					//}
 				}
 			}
@@ -201,7 +199,7 @@ public class CEditor extends AbstractDecoratedTextEditor {
 		public void mouseUp(MouseEvent e) {
 		}
 	}
-
+	
 	/**
 	 * Default Constructor for the <code>CEditor</code> class. Creates an instance of the editor which
 	 * is not associated with any given input. 
