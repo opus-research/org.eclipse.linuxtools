@@ -9,7 +9,6 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.linuxtools.lttng2.ui.tests.control.model.component;
 
 import org.eclipse.core.commands.ExecutionException;

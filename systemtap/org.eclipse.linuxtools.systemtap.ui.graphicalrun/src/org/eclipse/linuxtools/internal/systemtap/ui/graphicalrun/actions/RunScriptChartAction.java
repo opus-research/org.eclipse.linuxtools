@@ -9,18 +9,23 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse, Anithra P J
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.ide.actions;
+package org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun.actions;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.ChartStreamDaemon2;
+import org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun.GraphicalRunPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
+import org.eclipse.linuxtools.systemtap.ui.graphicalrun.structures.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -43,7 +48,12 @@ public class RunScriptChartAction extends RunScriptAction {
 			String name = console.getName();
 			((GraphSelectorView)ivp).createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
 		} catch(WorkbenchException we) {
-			ExceptionErrorDialog.openError(Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective, we);
+			IStatus status = new Status(IStatus.ERROR,
+				      GraphicalRunPlugin.PLUGIN_ID, 1, Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective , we);
+			ErrorDialog.openError(Display.getCurrent().getActiveShell(),
+					Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective,
+					null,
+					status);
 		}
 	}
 

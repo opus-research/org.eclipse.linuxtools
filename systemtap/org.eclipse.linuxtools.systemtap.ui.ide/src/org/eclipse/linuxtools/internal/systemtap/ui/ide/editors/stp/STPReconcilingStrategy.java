@@ -219,11 +219,11 @@ public class STPReconcilingStrategy  implements IReconcilingStrategy,
     }
 
     private boolean isProbe() throws BadLocationException {
-		return matchKeyWord("probe"); //$NON-NLS-1$
+    	return matchKeyWord("probe");
     }
     
     private boolean isFunction() throws BadLocationException {
-		return matchKeyWord("function"); //$NON-NLS-1$
+    	return matchKeyWord("function");
     }
 
     private boolean matchKeyWord(String word) throws BadLocationException {

@@ -23,7 +23,7 @@ public class IDEPreferencePage extends FieldEditorPreferencePage implements IWor
 	public IDEPreferencePage() {
 		super(GRID);
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription("Preferences when loading the IDE perspective"); //$NON-NLS-1$
+		setDescription("Preferences when loading the IDE perspective");
 	}
 	
 	@Override

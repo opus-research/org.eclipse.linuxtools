@@ -145,8 +145,8 @@ public class CustomEvent extends TmfEvent {
                 fColumnData[i++] = new TmfEventField(outputColumn.name, (value != null ? value : "")); //$NON-NLS-1$
             }
         }
-        CustomEventContent curContent = (CustomEventContent) getContent();
-        setContent(new CustomEventContent(curContent.getName(), curContent.getValue(), fColumnData));
+        CustomEventContent content = (CustomEventContent) getContent();
+        content.setFields(fColumnData);
         fData = null;
     }
 
