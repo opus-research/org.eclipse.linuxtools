@@ -77,8 +77,6 @@ public class TimeGraphCombo extends Composite {
 
     private static final Object FILLER = new Object();
 
-    private static final String ITEM_HEIGHT = "$height$"; //$NON-NLS-1$
-
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
@@ -626,28 +624,6 @@ public class TimeGraphCombo extends Composite {
             public void mouseEnter(MouseEvent e) {
                 if (fTreeViewer.getControl().isFocusControl()) {
                     fTimeGraphViewer.getTimeGraphControl().setFocus();
-                }
-            }
-        });
-
-        // ensure the time graph item heights are equal to the tree item heights
-        tree.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                List<TreeItem> items = getVisibleExpandedItems(tree);
-                for (int i = 0; i < items.size() - 1; i++) {
-                    TreeItem item = items.get(i);
-                    /*
-                     * Bug in Linux. The method getBounds doesn't always return the correct height.
-                     * Use the difference of y position between items to calculate the height.
-                     */
-                    Integer itemHeight = items.get(i + 1).getBounds().y - item.getBounds().y;
-                    if (!itemHeight.equals(item.getData(ITEM_HEIGHT))) {
-                        ITimeGraphEntry entry = (ITimeGraphEntry) item.getData();
-                        if (fTimeGraphViewer.getTimeGraphControl().setItemHeight(entry, itemHeight)) {
-                            item.setData(ITEM_HEIGHT, itemHeight);
-                        }
-                    }
                 }
             }
         });
