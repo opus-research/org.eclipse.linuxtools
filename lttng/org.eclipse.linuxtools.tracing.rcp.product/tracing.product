@@ -25,12 +25,13 @@ http://www.eclipse.org/legal/epl-v10.html
    <launcherArgs>
       <programArgs>--launcher.XXMaxPermSize 256m -data @noDefault</programArgs>
       <vmArgsLin>-Xms512m -Xmx1024m  -Dosgi.requiredJavaVersion=1.6</vmArgsLin>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <vmArgsMac>-Xms512m -Xmx1024m -XstartOnFirstThread -Dosgi.requiredJavaVersion=1.6 -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
       <vmArgsSol>-Xms512m -Xmx1024m  -Dosgi.requiredJavaVersion=1.6</vmArgsSol>
       <vmArgsWin>-Xms512m -Xmx1024m  -Dosgi.requiredJavaVersion=1.6</vmArgsWin>
    </launcherArgs>
 
    <windowImages i16="/org.eclipse.linuxtools.tracing.rcp.ui/icons/alt_window_16.gif" i32="/org.eclipse.linuxtools.tracing.rcp.ui/icons/alt_window_32.gif"/>
+
 
    <launcher name="traceViewer">
       <solaris/>
