@@ -48,12 +48,12 @@ import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.dialogs.AddBookmarkDialog;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -451,7 +451,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         }
                         Point pt = fTable.toDisplay(event.x, y);
                         pt.x += BOOKMARK_IMAGE.getBounds().width;
-                        pt.y += item.getBounds().height;
+                        pt.y += size.y;
                         tooltipShell.setBounds(pt.x, pt.y, size.x, size.y);
                         tooltipShell.setVisible(true);
                         break;
@@ -1705,9 +1705,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     }
                     defaultMessage.append(tableItem.getText(i));
                 }
-                final InputDialog dialog = new AddBookmarkDialog(
-                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                        defaultMessage.toString());
+                final InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                        Messages.TmfEventsTable_AddBookmarkDialogTitle, Messages.TmfEventsTable_AddBookmarkDialogText,
+                        defaultMessage.toString(), null);
                 if (dialog.open() == Window.OK) {
                     final String message = dialog.getValue();
                     try {

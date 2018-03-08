@@ -5,8 +5,6 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.ui.messages"; //$NON-NLS-1$
 
-    public static String AddBookmarkDialog_Message;
-    public static String AddBookmarkDialog_Title;
     public static String ManageCustomParsersDialog_DeleteButtonLabel;
     public static String ManageCustomParsersDialog_DeleteConfirmation;
     public static String ManageCustomParsersDialog_DeleteParserDialogHeader;
@@ -52,6 +50,8 @@ public class Messages extends NLS {
     public static String CustomXmlTraceDefinition_timestampOutputFormat;
 
     public static String TmfEventsTable_AddBookmarkActionText;
+    public static String TmfEventsTable_AddBookmarkDialogText;
+    public static String TmfEventsTable_AddBookmarkDialogTitle;
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
     public static String TmfEventsTable_ContentColumnHeader;
