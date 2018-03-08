@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.eclipse.core.resources.IProject;
@@ -36,21 +34,19 @@ import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 public class TestLaunchingExternalProject extends AbstractTest {
-
+	
 	private final Path EXTERNAL_PROJECT_PATH = new Path("/tmp/eclipse-oprofile-ext_project_test"); //$NON-NLS-1$
 	private final String PROJECT_NAME = "primeTest"; //$NON-NLS-1$
 	private ILaunchConfiguration config;
 	private Shell testShell;
 	private IProject externalProject;	// external project to work with
-
-	@Before
-	public void setUp() throws Exception {
+	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 		// Setup a temporary workspace external path
 		File tempExternalProjectPath = EXTERNAL_PROJECT_PATH.toFile();
 		// create directory if not existing
@@ -64,8 +60,8 @@ public class TestLaunchingExternalProject extends AbstractTest {
 		testShell.setLayout(new GridLayout());
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@Override
+	protected void tearDown() throws Exception {
 		testShell.dispose();
 		externalProject.delete(true, null); // delete project
 		// cleanup temporary directory
@@ -73,6 +69,7 @@ public class TestLaunchingExternalProject extends AbstractTest {
 		if (tempExternalProjectPath.exists()) {
 			tempExternalProjectPath.delete();
 		}
+		super.tearDown();
 	}
 
 	// Implemented abstract method of AbstractTest
@@ -90,21 +87,20 @@ public class TestLaunchingExternalProject extends AbstractTest {
 		configTab.setDefaults(wc);
 		setupTab.setDefaults(wc);
 	}
-
+	
 	/**
 	 * Testcase for Eclipse BugZilla 321905/RedHat BZ
-	 *
+	 * 
 	 * @throws CoreException
 	 */
-	@Test
-	public void testLaunchExternalProject() throws CoreException {
+	public void testLaunchExternalProject() throws CoreException {		
 		LaunchTestingOptions options = new LaunchTestingOptions();
 		options.setOprofileProject(externalProject);
 		options.loadConfiguration(config);
-
+		
 		TestingOprofileLaunchConfigurationDelegate delegate = new TestingOprofileLaunchConfigurationDelegate();
 		ILaunch launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
-
+		
 		assertTrue(options.isValid());
 		assertEquals("", options.getBinaryImage()); //$NON-NLS-1$
 		assertEquals("", options.getKernelImageFile()); //$NON-NLS-1$

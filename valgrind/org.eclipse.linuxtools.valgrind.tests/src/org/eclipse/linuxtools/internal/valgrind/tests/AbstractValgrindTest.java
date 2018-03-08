@@ -41,8 +41,6 @@ import org.eclipse.linuxtools.internal.valgrind.launch.LaunchConfigurationConsta
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
-import org.junit.After;
-import org.junit.Before;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
@@ -65,16 +63,18 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 
 	private List<ILaunch> launches;
 
-	@Before
-	public void setUp() throws Exception {
+	@Override
+	protected void setUp() throws Exception {
 		launches = new ArrayList<ILaunch>();
 
 		// Substitute Valgrind command line interaction
 		ValgrindLaunchPlugin.getDefault().setValgrindCommand(getValgrindCommand());
+
+		super.setUp();
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@Override
+	protected void tearDown() throws Exception {
 		ILaunchManager lm = DebugPlugin.getDefault().getLaunchManager();
 		if (launches.size() > 0) {
 			lm.removeLaunches(launches.toArray(new ILaunch[launches.size()]));
@@ -85,6 +85,7 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 		for (ILaunchConfiguration config : configs) {
 			config.delete();
 		}
+		super.tearDown();
 	}
 
 	@Override

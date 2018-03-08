@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests;
 
-import static org.junit.Assert.*;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -31,29 +29,28 @@ import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 public class TestLaunching extends AbstractTest {
-
-
+	
+	
 	protected ILaunchConfiguration config;
 	protected Shell testShell;
-
-	@Before
-	public void setUp() throws Exception {
+	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "primeTest"); //$NON-NLS-1$
 		config = createConfiguration(proj.getProject());
 		testShell = new Shell(Display.getDefault());
 		testShell.setLayout(new GridLayout());
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@Override
+	protected void tearDown() throws Exception {
 		testShell.dispose();
 		deleteProject(proj);
+		super.tearDown();
 	}
 
 	@Override
@@ -69,11 +66,11 @@ public class TestLaunching extends AbstractTest {
 		configTab.setDefaults(wc);
 		setupTab.setDefaults(wc);
 	}
-	@Test
+	
 	public void testDefaultLaunch() throws CoreException {
 		TestingOprofileLaunchConfigurationDelegate delegate = new TestingOprofileLaunchConfigurationDelegate();
 		ILaunch launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
-
+		
 		LaunchTestingOptions options = new LaunchTestingOptions();
 		options.setOprofileProject(proj.getProject());
 		options.loadConfiguration(config);
@@ -91,11 +88,11 @@ public class TestLaunching extends AbstractTest {
 		assertFalse(delegate._options.getVerboseLogging());
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, delegate._options.getSeparateProfilesMask());
 	}
-	@Test
+	
 	public void testEventLaunch() throws CoreException {
 		TestingOprofileLaunchConfigurationDelegate delegate = new TestingOprofileLaunchConfigurationDelegate();
 		ILaunch launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
-
+		
 		ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false);
 		wc.setAttribute(OprofileLaunchPlugin.ATTR_COUNTER_ENABLED(0), true);

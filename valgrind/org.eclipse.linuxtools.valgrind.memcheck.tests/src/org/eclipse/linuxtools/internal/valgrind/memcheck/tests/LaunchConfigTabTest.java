@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
@@ -37,9 +35,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.osgi.framework.Version;
 
 public class LaunchConfigTabTest extends AbstractMemcheckTest {
@@ -49,8 +44,9 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 	protected ILaunchConfiguration config;
 	protected Shell testShell;
 
-	@Before
-	public void setUpProject() throws Exception {
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
 
 		config = createConfiguration(proj.getProject());
@@ -60,8 +56,8 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		tab = new ValgrindOptionsTab();
 	}
 
-	@After
-	public void cleanup() throws Exception {
+	@Override
+	protected void tearDown() throws Exception {
 		tab.dispose();
 		testShell.dispose();
 		deleteProject(proj);
@@ -89,7 +85,6 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		return launch;
 	}
 
-	@Test
 	public void testDefaults() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		ILaunch launch = saveAndLaunch(wc, "testDefaults"); //$NON-NLS-1$
@@ -130,7 +125,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testWSSuppresions() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String text = "${workspace_loc:/basicTest/testsuppfile.supp}"; //$NON-NLS-1$
@@ -147,7 +142,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testSuppressions() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IPath suppPath = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path("basicTest/testsuppfile.supp")).getLocation(); //$NON-NLS-1$
@@ -163,7 +158,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testSuppressionsMultiple() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IPath suppPath = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path("basicTest/testsuppfile.supp")).getLocation(); //$NON-NLS-1$
@@ -182,7 +177,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testSuppressionsSpaces() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IPath suppPath = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path("basicTest/test suppfile.supp")).getLocation(); //$NON-NLS-1$
@@ -198,7 +193,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testTraceChildren() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getTraceChildrenButton().setSelection(true);
@@ -213,7 +208,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testDemangle() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getDemangleButton().setSelection(false);
@@ -228,7 +223,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testNumCallers() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getNumCallersSpinner().setSelection(24);
@@ -243,7 +238,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testErrorLimit() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getErrorLimitButton().setSelection(false);
@@ -258,7 +253,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testShowBelowMain() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getShowBelowMainButton().setSelection(true);
@@ -273,7 +268,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testMaxStackframe() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getMaxStackFrameSpinner().setSelection(50000000);
@@ -288,7 +283,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testRunFreeRes() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		tab.getRunFreeresButton().setSelection(false);
@@ -303,7 +298,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	@Test
+
 	public void testAlignment() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 
@@ -325,7 +320,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--alignment=512")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testAlignmentBad() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 
@@ -340,7 +335,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 
 		assertFalse(tab.isValid(config));
 	}
-	@Test
+
 	public void testNoLeakCheck() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getLeakCheckButton().setSelection(false);
@@ -351,7 +346,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--leak-check=no")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testShowReachable() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getShowReachableButton().setSelection(true);
@@ -362,7 +357,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--show-reachable=yes")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testLeakResolutionMed() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String[] opts = dynamicTab.getLeakResCombo().getItems();
@@ -376,7 +371,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--leak-resolution=med")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testLeakResolutionHigh() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String[] opts = dynamicTab.getLeakResCombo().getItems();
@@ -390,7 +385,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--leak-resolution=high")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testFreeListVol() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getFreelistSpinner().setSelection(2000000);
@@ -401,7 +396,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--freelist-vol=2000000")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testWorkaroundGCCBugs() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getGccWorkaroundButton().setSelection(true);
@@ -412,7 +407,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--workaround-gcc296-bugs=yes")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testPartialLoads() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getPartialLoadsButton().setSelection(true);
@@ -423,7 +418,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--partial-loads-ok=yes")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testUndefValueErrors() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getUndefValueButton().setSelection(false);
@@ -434,7 +429,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--undef-value-errors=no")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testMainStackSize() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IProject project = CDebugUtils.verifyCProject(wc).getProject();
@@ -457,7 +452,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			assertNull(tab.getMainStackSizeSpinner());
 		}
 	}
-	@Test
+
 	public void testTrackOrigins() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IProject project = CDebugUtils.verifyCProject(config).getProject();
@@ -475,7 +470,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			assertNull(dynamicTab.getTrackOriginsButton());
 		}
 	}
-	@Test
+
 	public void testTrackOriginsValidity() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IProject project = CDebugUtils.verifyCProject(config).getProject();
@@ -489,7 +484,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			assertFalse(tab.isValid(wc));
 		}
 	}
-	@Test
+
 	public void testValgrindError() throws Exception {
 		String notExistentFile = "DOES NOT EXIST"; //$NON-NLS-1$
 		ILaunchConfigurationWorkingCopy wc = initConfig();
