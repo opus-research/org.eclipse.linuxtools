@@ -148,7 +148,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				}
 
 				PerfCore.Report(config, getEnvironment(config), workingDir, monitor, null, print);
-				PerfPlugin.getDefault().getPerfProfileData().toFile().setReadOnly();
 				PerfCore.RefreshView(renderProcessLabel(exePath.toOSString()));
 
 				if (config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly,
