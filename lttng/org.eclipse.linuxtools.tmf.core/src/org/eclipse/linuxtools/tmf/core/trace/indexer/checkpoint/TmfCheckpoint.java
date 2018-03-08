@@ -14,6 +14,8 @@
 
 package org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint;
 
+import java.nio.ByteBuffer;
+
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
@@ -38,6 +40,8 @@ public class TmfCheckpoint implements ITmfCheckpoint {
 
     // The checkpoint timestamp
     private final ITmfTimestamp fTimestamp;
+
+    private int fCheckpointRank = 0;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -169,4 +173,37 @@ public class TmfCheckpoint implements ITmfCheckpoint {
         return getClass().getSimpleName() + " [fLocation=" + fLocation + ", fTimestamp=" + fTimestamp + "]";
     }
 
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeOut(ByteBuffer bufferOut) {
+        fLocation.serializeOut(bufferOut);
+        fTimestamp.serializeOut(bufferOut);
+        bufferOut.putInt(fCheckpointRank);
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void serializeIn(ByteBuffer bufferIn) {
+        fCheckpointRank = bufferIn.getInt();
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public void setCheckpointRank(int rank) {
+        fCheckpointRank = rank;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public int getCheckpointRank() {
+        return fCheckpointRank;
+    }
 }
