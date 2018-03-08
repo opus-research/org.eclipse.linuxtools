@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -92,6 +92,12 @@ public class TmfStatisticsView extends TmfView {
         this(TMF_STATISTICS_VIEW);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public void createPartControl(Composite parent) {
         fStatsViewers.setParent(parent);
@@ -103,6 +109,11 @@ public class TmfStatisticsView extends TmfView {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#dispose()
+     */
     @Override
     public void dispose() {
         super.dispose();
@@ -199,6 +210,11 @@ public class TmfStatisticsView extends TmfView {
         fStatsViewers.layout();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
     @Override
     public void setFocus() {
         fStatsViewers.setFocus();

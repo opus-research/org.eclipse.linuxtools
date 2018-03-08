@@ -130,6 +130,10 @@ abstract public class BaseEnableEventHandler extends BaseControlViewHandler {
      */
     abstract TraceDomainComponent getDomain(CommandParameter param);
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 

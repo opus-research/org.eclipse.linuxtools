@@ -316,6 +316,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
         return fDefaultIntervalFormat;
     }
 
+    /* (non-Javadoc)
+     * @see java.text.SimpleDateFormat#applyPattern(java.lang.String)
+     */
     @Override
     public void applyPattern(String pattern) {
         fPattern = pattern;
@@ -323,6 +326,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
         super.applyPattern(quotedPattern);
     }
 
+    /* (non-Javadoc)
+     * @see java.text.SimpleDateFormat#toPattern()
+     */
     @Override
     public String toPattern() {
         return fPattern;
