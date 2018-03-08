@@ -33,7 +33,7 @@ public class ContainsFilter extends ViewerFilter {
 	 */
 	@Override
 	public boolean select(Viewer viewer, Object parentElement, Object element) {
-		if (!(viewer instanceof TreeViewer)) {
+		if ((viewer instanceof TreeViewer) == false) {
 			return true;
 		}
 		TreeViewer treeViewer = (TreeViewer) viewer;
