@@ -13,10 +13,28 @@
 package org.eclipse.linuxtools.tmf.tests.stubs.ctf;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 
 /**
  * Dummy test ctf trace
  */
 public class CtfTmfTraceStub extends CtfTmfTrace {
+
+    /**
+     * Simulate trace opening
+     */
+    public void openTrace() {
+        TmfSignalManager.dispatchSignal(new TmfTraceOpenedSignal(this, this, null));
+        selectTrace();
+    }
+
+    /**
+     * Simulate selecting the trace
+     */
+    public void selectTrace() {
+        TmfSignalManager.dispatchSignal(new TmfTraceSelectedSignal(this, this));
+    }
 
 }
