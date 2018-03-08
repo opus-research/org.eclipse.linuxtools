@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -29,36 +28,23 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 final class TmfTraceContext {
 
     static final TmfTraceContext NULL_CONTEXT =
-            new TmfTraceContext(TmfTimestamp.BIG_CRUNCH, TmfTimestamp.BIG_CRUNCH, TmfTimeRange.NULL_RANGE);
+            new TmfTraceContext(TmfTimestamp.BIG_CRUNCH, TmfTimeRange.NULL_RANGE);
 
-    private final ITmfTimestamp fSelectionBegin;
-    private final ITmfTimestamp fSelectionEnd;
+    private final ITmfTimestamp fTimestamp;
     private final TmfTimeRange fTimerange;
 
-    public TmfTraceContext(ITmfTimestamp beginTs, ITmfTimestamp endTs, TmfTimeRange tr) {
-        fSelectionBegin = beginTs;
-        fSelectionEnd = endTs;
+    public TmfTraceContext(ITmfTimestamp ts, TmfTimeRange tr) {
+        fTimestamp = ts;
         fTimerange = tr;
     }
 
-    public TmfTraceContext(TmfTraceContext prevCtx, ITmfTimestamp beginTs, ITmfTimestamp endTs) {
-        fSelectionBegin = beginTs;
-        fSelectionEnd = endTs;
+    public TmfTraceContext(TmfTraceContext prevCtx, ITmfTimestamp ts) {
+        fTimestamp = ts;
         fTimerange = prevCtx.fTimerange;
     }
 
-    public TmfTraceContext(TmfTraceContext prevCtx, TmfTimeRange tr) {
-        fSelectionBegin = prevCtx.fSelectionBegin;
-        fSelectionEnd = prevCtx.fSelectionEnd;
-        fTimerange = tr;
-    }
-
-    public ITmfTimestamp getSelectionBegin() {
-        return fSelectionBegin;
-    }
-
-    public ITmfTimestamp getSelectionEnd() {
-        return fSelectionEnd;
+    public ITmfTimestamp getTimestamp() {
+        return fTimestamp;
     }
 
     public TmfTimeRange getTimerange() {
@@ -66,8 +52,7 @@ final class TmfTraceContext {
     }
 
     public boolean isValid() {
-        if (fSelectionBegin.compareTo(TmfTimestamp.ZERO) <= 0 ||
-                fSelectionEnd.compareTo(TmfTimestamp.ZERO) <= 0 ||
+        if (fTimestamp.compareTo(TmfTimestamp.ZERO) <= 0 ||
                 fTimerange.getEndTime().compareTo(fTimerange.getStartTime()) <= 0) {
             return false;
         }
@@ -76,8 +61,7 @@ final class TmfTraceContext {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[fSelectionBegin=" + fSelectionBegin.toString() + //$NON-NLS-1$
-                ", fSelectionEnd=" + fSelectionEnd.toString() + //$NON-NLS-1$
+        return getClass().getSimpleName() + "[fTimestamp=" + fTimestamp.toString() + //$NON-NLS-1$
                 ", fTimerange=" + fTimerange + ']'; //$NON-NLS-1$
     }
 }

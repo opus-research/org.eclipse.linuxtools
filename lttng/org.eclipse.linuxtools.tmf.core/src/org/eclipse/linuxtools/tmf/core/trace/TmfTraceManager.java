@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -87,27 +86,9 @@ public final class TmfTraceManager {
      * Return the current selected time.
      *
      * @return the current time stamp
-     * @deprecated As of 2.1, use {@link #getSelectionBeginTime()} and {@link #getSelectionEndTime()}
      */
-    @Deprecated
     public synchronized ITmfTimestamp getCurrentTime() {
-        return getCurrentTraceContext().getSelectionBegin();
-    }
-
-    /**
-     * @return The begin timestamp of selection
-     * @since 2.1
-     */
-    public ITmfTimestamp getSelectionBeginTime() {
-        return getCurrentTraceContext().getSelectionBegin();
-    }
-
-    /**
-     * @return The end timestamp of selection
-     * @since 2.1
-     */
-    public ITmfTimestamp getSelectionEndTime() {
-        return getCurrentTraceContext().getSelectionEnd();
+        return getCurrentTraceContext().getTimestamp();
     }
 
     /**
@@ -228,7 +209,7 @@ public final class TmfTraceManager {
         long endTime = startTs.normalize(0, SCALE).getValue() + offset;
         final TmfTimeRange startTr = new TmfTimeRange(startTs, new TmfTimestamp(endTime, SCALE));
 
-        final TmfTraceContext startCtx = new TmfTraceContext(startTs, startTs, startTr);
+        final TmfTraceContext startCtx = new TmfTraceContext(startTs, startTr);
 
         fTraces.put(trace, startCtx);
 
@@ -274,21 +255,20 @@ public final class TmfTraceManager {
      * Signal handler for the TmfTimeSynchSignal signal.
      *
      * The current time of *all* traces whose range contains the requested new
-     * selection time range will be updated.
+     * time will be updated.
      *
      * @param signal
      *            The incoming signal
      */
     @TmfSignalHandler
     public synchronized void timeUpdated(final TmfTimeSynchSignal signal) {
-        final ITmfTimestamp beginTs = signal.getBeginTime();
-        final ITmfTimestamp endTs = signal.getEndTime();
+        final ITmfTimestamp ts = signal.getCurrentTime();
 
         for (Map.Entry<ITmfTrace, TmfTraceContext> entry : fTraces.entrySet()) {
             final ITmfTrace trace = entry.getKey();
-            if (beginTs.intersects(getValidTimeRange(trace)) || endTs.intersects(getValidTimeRange(trace))) {
+            if (ts.intersects(getValidTimeRange(trace))) {
                 TmfTraceContext prevCtx = entry.getValue();
-                TmfTraceContext newCtx = new TmfTraceContext(prevCtx, beginTs, endTs);
+                TmfTraceContext newCtx = new TmfTraceContext(prevCtx, ts);
                 entry.setValue(newCtx);
             }
         }
@@ -297,7 +277,7 @@ public final class TmfTraceManager {
     /**
      * Signal handler for the TmfRangeSynchSignal signal.
      *
-     * The current timerange of *all* valid traces will be updated
+     * The current timestamp and timerange of *all* valid traces will be updated
      * to the new requested times.
      *
      * @param signal
@@ -305,18 +285,28 @@ public final class TmfTraceManager {
      */
     @TmfSignalHandler
     public synchronized void timeRangeUpdated(final TmfRangeSynchSignal signal) {
+        final ITmfTimestamp signalTs = signal.getCurrentTime();
+
         for (Map.Entry<ITmfTrace, TmfTraceContext> entry : fTraces.entrySet()) {
             final ITmfTrace trace = entry.getKey();
             final TmfTraceContext curCtx = entry.getValue();
 
             final TmfTimeRange validTr = getValidTimeRange(trace);
 
+            /* Determine the new time stamp */
+            ITmfTimestamp newTs;
+            if (signalTs != null && signalTs.intersects(validTr)) {
+                newTs = signalTs;
+            } else {
+                newTs = curCtx.getTimestamp();
+            }
+
             /* Determine the new time range */
             TmfTimeRange targetTr = signal.getCurrentRange().getIntersection(validTr);
             TmfTimeRange newTr = (targetTr == null ? curCtx.getTimerange() : targetTr);
 
             /* Update the values */
-            TmfTraceContext newCtx = new TmfTraceContext(curCtx, newTr);
+            TmfTraceContext newCtx = new TmfTraceContext(newTs, newTr);
             entry.setValue(newCtx);
         }
     }
