@@ -16,7 +16,6 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITmfTimeGraphDrawingHelper;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -163,24 +162,5 @@ public interface ITimeGraphPresentationProvider {
      * @since 2.0
      */
     Map<String, String> getEventHoverToolTipInfo(ITimeEvent event, long hoverTime);
-
-    /**
-     * Returns the drawing helper for this presentation provider.
-     *
-     * @return The drawing helper
-     * @since 3.0
-     */
-    ITmfTimeGraphDrawingHelper getDrawingHelper();
-
-    /**
-     * Sets this presentation provider's drawing helper.
-     * This helper be needed to know where to draw items, get its coordinates
-     * given a time, etc.
-     *
-     * @param helper
-     *            The drawing helper
-     * @since 3.0
-     */
-    void setDrawingHelper(ITmfTimeGraphDrawingHelper helper);
 
 }
