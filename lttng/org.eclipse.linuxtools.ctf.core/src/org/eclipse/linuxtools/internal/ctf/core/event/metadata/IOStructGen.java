@@ -229,10 +229,8 @@ public class IOStructGen {
             for (CommonTree event : events) {
                 parseEvent(event);
                 if (DEBUG_) {
-                    CommonTree name = (CommonTree) event.getChild(0).getChild(1)
-                            .getChild(0).getChild(0);
-                    CommonTree id = (CommonTree) event.getChild(1).getChild(1)
-                            .getChild(0).getChild(0);
+                    CommonTree name = (CommonTree) event.getChild(0).getChild(1).getChild(0).getChild(0);
+                    CommonTree id = (CommonTree) event.getChild(1).getChild(1).getChild(0).getChild(0);
                     out.write("Name = " + name + " Id = " + id + '\n'); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             }
@@ -264,26 +262,26 @@ public class IOStructGen {
         for (CommonTree child : children) {
             final String key = child.getChild(0).getChild(0).getChild(0)
                     .getText();
-            final CommonTree value = (CommonTree) child.getChild(1).getChild(0).getChild(0);
+            final CommonTree value = (CommonTree) child.getChild(1).getChild(0)
+                    .getChild(0);
             final int type = value.getType();
             switch (type) {
             case CTFParser.INTEGER:
             case CTFParser.DECIMAL_LITERAL:
                 /*
-                 * Not a pretty hack, this is to make sure that there is no number
-                 * overflow due to 63 bit integers. The offset should only really
-                 * be an issue in the year 2262. the tracer in C/ASM can write an offset in
-                 * an unsigned 64 bit long. In java, the last bit, being set to 1 will
-                 * be read as a negative number, but since it is too big a positive it will
-                 * throw an exception. this will happen in 2^63 ns from 1970.
-                 * Therefore 293 years from 1970
+                 * Not a pretty hack, this is to make sure that there is no
+                 * number overflow due to 63 bit integers. The offset should
+                 * only really be an issue in the year 2262. the tracer in C/ASM
+                 * can write an offset in an unsigned 64 bit long. In java, the
+                 * last bit, being set to 1 will be read as a negative number,
+                 * but since it is too big a positive it will throw an
+                 * exception. this will happen in 2^63 ns from 1970. Therefore
+                 * 293 years from 1970
                  */
                 Long numValue;
-                try{
+                try {
                     numValue = Long.parseLong(value.getText());
-                }
-                catch( Exception e)
-                {
+                } catch (Exception e) {
                     numValue = 1330938566783103277L;
                 }
                 ctfClock.addAttribute(key, numValue);
@@ -726,15 +724,14 @@ public class IOStructGen {
                 throw new ParseException("fields expects a struct"); //$NON-NLS-1$
             }
             /*
-             * The underscores in the event names.
-             * These underscores were added by the LTTng tracer.
+             * The underscores in the event names. These underscores were added
+             * by the LTTng tracer.
              */
             final StructDeclaration fields = (StructDeclaration) fieldsDecl;
             event.setFields(fields);
-        }
-        else if (left.equals(CTFStrings.LOGLEVEL2)){
+        } else if (left.equals(CTFStrings.LOGLEVEL2)) {
 
-            long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0)) ;
+            long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0));
             event.setLogLevel(logLevel);
         } else {
             throw new ParseException("Unknown event attribute : " + left); //$NON-NLS-1$
@@ -1078,7 +1075,7 @@ public class IOStructGen {
          * sequence. For example, int a[3][len] means that we have an array of 3
          * (sequences of length 'len' of (int)).
          */
-        if (lengths.size() > 0 ) {
+        if (lengths.size() > 0) {
             /* We begin at the end */
             Collections.reverse(lengths);
 
@@ -1147,9 +1144,6 @@ public class IOStructGen {
 
         switch (firstChild.getType()) {
         case CTFParser.FLOATING_POINT:
-//            Activator
-//                    .getDefault()
-//                    .log("parseTypeSpecifierList: floating_point not implemented yet"); //$NON-NLS-1$
             declaration = parseFloat(firstChild);
             break;
         case CTFParser.INTEGER:
@@ -1186,12 +1180,11 @@ public class IOStructGen {
             childTypeError(firstChild);
         }
 
-        assert (declaration != null);
         return declaration;
     }
 
-    private IDeclaration parseFloat(CommonTree floatingPoint) throws ParseException {
-        assert (floatingPoint.getType() == CTFParser.INTEGER);
+    private IDeclaration parseFloat(CommonTree floatingPoint)
+            throws ParseException {
 
         List<CommonTree> children = floatingPoint.getChildren();
 
@@ -1217,15 +1210,11 @@ public class IOStructGen {
                 /*
                  * An assignment expression must have 2 children, left and right
                  */
-                assert (child.getChildCount() == 2);
 
                 CommonTree leftNode = (CommonTree) child.getChild(0);
-                assert (leftNode.getType() == CTFParser.CTF_LEFT);
                 CommonTree rightNode = (CommonTree) child.getChild(1);
-                assert (rightNode.getType() == CTFParser.CTF_RIGHT);
 
                 List<CommonTree> leftStrings = leftNode.getChildren();
-                assert (leftStrings != null);
 
                 if (!isUnaryString(leftStrings.get(0))) {
                     throw new ParseException(
@@ -1264,7 +1253,8 @@ public class IOStructGen {
             }
         }
 
-        floatDeclaration = new FloatDeclaration(exponent, mantissa, byteOrder, alignment);
+        floatDeclaration = new FloatDeclaration(exponent, mantissa, byteOrder,
+                alignment);
 
         assert (floatDeclaration != null);
         return floatDeclaration;
@@ -1372,7 +1362,8 @@ public class IOStructGen {
                 } else if (left.equals("map")) { //$NON-NLS-1$
                     clock = getClock(rightNode);
                 } else {
-                    throw new ParseException("Integer: unknown attribute " + left); //$NON-NLS-1$
+                    throw new ParseException(
+                            "Integer: unknown attribute " + left); //$NON-NLS-1$
                 }
 
                 break;
@@ -1752,6 +1743,17 @@ public class IOStructGen {
          * is "int".
          */
         if (containerTypeDeclaration == null) {
+            IDeclaration enumDecl;
+            /*
+             * it could be because the enum was already declared.
+             */
+            if (enumName != null) {
+                enumDecl = getCurrentScope().rlookupEnum(enumName);
+                if (enumDecl != null) {
+                    return (EnumDeclaration) enumDecl;
+                }
+            }
+
             IDeclaration decl = getCurrentScope().rlookupType("int"); //$NON-NLS-1$
 
             if (decl == null) {
@@ -2462,9 +2464,11 @@ public class IOStructGen {
         if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
-            if (strval.equals(CTFStrings.TRUE) || strval.equals(CTFStrings.TRUE2)) {
+            if (strval.equals(CTFStrings.TRUE)
+                    || strval.equals(CTFStrings.TRUE2)) {
                 ret = true;
-            } else if (strval.equals(CTFStrings.FALSE) || strval.equals(CTFStrings.FALSE2)) {
+            } else if (strval.equals(CTFStrings.FALSE)
+                    || strval.equals(CTFStrings.FALSE2)) {
                 ret = false;
             } else {
                 throw new ParseException("Invalid boolean value " //$NON-NLS-1$
@@ -2512,7 +2516,8 @@ public class IOStructGen {
 
             if (strval.equals(CTFStrings.LE)) {
                 return ByteOrder.LITTLE_ENDIAN;
-            } else if (strval.equals(CTFStrings.BE) || strval.equals(CTFStrings.NETWORK)) {
+            } else if (strval.equals(CTFStrings.BE)
+                    || strval.equals(CTFStrings.NETWORK)) {
                 return ByteOrder.BIG_ENDIAN;
             } else if (strval.equals(CTFStrings.NATIVE)) {
                 return trace.getByteOrder();
@@ -2626,18 +2631,24 @@ public class IOStructGen {
         } else if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
-            if (strval.equals(CTFStrings.DECIMAL) || strval.equals(CTFStrings.DEC)
-                    || strval.equals(CTFStrings.DEC_CTE) || strval.equals(CTFStrings.INT_MOD)
+            if (strval.equals(CTFStrings.DECIMAL)
+                    || strval.equals(CTFStrings.DEC)
+                    || strval.equals(CTFStrings.DEC_CTE)
+                    || strval.equals(CTFStrings.INT_MOD)
                     || strval.equals(CTFStrings.UNSIGNED_CTE)) {
                 return 10;
-            } else if (strval.equals(CTFStrings.HEXADECIMAL) || strval.equals(CTFStrings.HEX)
-                    || strval.equals(CTFStrings.X) || strval.equals(CTFStrings.X2)
+            } else if (strval.equals(CTFStrings.HEXADECIMAL)
+                    || strval.equals(CTFStrings.HEX)
+                    || strval.equals(CTFStrings.X)
+                    || strval.equals(CTFStrings.X2)
                     || strval.equals(CTFStrings.POINTER)) {
                 return 16;
-            } else if (strval.equals(CTFStrings.OCTAL) || strval.equals(CTFStrings.OCT)
+            } else if (strval.equals(CTFStrings.OCTAL)
+                    || strval.equals(CTFStrings.OCT)
                     || strval.equals(CTFStrings.OCTAL_CTE)) {
                 return 8;
-            } else if (strval.equals(CTFStrings.BINARY) || strval.equals(CTFStrings.BIN)) {
+            } else if (strval.equals(CTFStrings.BINARY)
+                    || strval.equals(CTFStrings.BIN)) {
                 return 2;
             } else {
                 throw new ParseException("Invalid value for base"); //$NON-NLS-1$
