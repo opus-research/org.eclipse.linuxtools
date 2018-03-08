@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.osgi.util.NLS;
 
 /**
  * The state provider for traces that support the Call Stack view.
@@ -73,9 +72,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
     /** Undefined function exit name */
     public static final String UNDEFINED = "UNDEFINED"; //$NON-NLS-1$
 
-    /** Dummy function name for when no function is expected */
-    private static final String NO_FUNCTION = "no function"; //$NON-NLS-1$
-
     /**
      * Version number of this state provider. Please bump this if you modify
      * the contents of the generated state history in some way.
@@ -103,7 +99,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
             return;
         }
         try {
-            /* Check if the event is a function entry */
             String functionEntryName = functionEntry(event);
             if (functionEntryName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
@@ -114,25 +109,15 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
                 return;
             }
 
-            /* Check if the event is a function exit */
             String functionExitName = functionExit(event);
             if (functionExitName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 String thread = getThreadName(event);
                 int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
                 ITmfStateValue poppedValue = ss.popAttribute(timestamp, quark);
-                String poppedName = (poppedValue == null ? NO_FUNCTION : poppedValue.unboxStr());
 
-                /*
-                 * Verify that the value we are popping matches the one in the
-                 * event field, unless the latter is undefined.
-                 */
-                if (!functionExitName.equals(UNDEFINED) &&
-                        !functionExitName.equals(poppedName)) {
-                    Activator.logWarning(NLS.bind(
-                            Messages.CallStackStateProvider_UnmatchedPoppedValue,
-                            functionExitName,
-                            poppedName));
+                if (!functionExitName.equals(poppedValue.unboxStr())) {
+                    Activator.logWarning(Messages.CallStackStateProvider_UmatchedPoppedValue);
                 }
             }
 
