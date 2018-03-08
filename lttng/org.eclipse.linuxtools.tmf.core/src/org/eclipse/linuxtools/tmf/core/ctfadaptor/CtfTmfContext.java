@@ -12,7 +12,7 @@
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
 /**
  * Lightweight Context for CtfTmf traces. Should only use 3 references, 1 ref to
@@ -58,9 +58,6 @@ public class CtfTmfContext implements ITmfContext {
         return curRank;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation getLocation() {
         return curLocation;
@@ -71,9 +68,6 @@ public class CtfTmfContext implements ITmfContext {
         return curRank != CtfLocation.INVALID_LOCATION.getTimestamp();
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void setLocation(ITmfLocation location) {
         curLocation = (CtfLocation) location;

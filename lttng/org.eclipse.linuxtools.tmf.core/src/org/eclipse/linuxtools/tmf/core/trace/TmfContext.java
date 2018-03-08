@@ -14,8 +14,6 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-
 /**
  * A basic implementation of ITmfContext.
  * <p>
@@ -54,7 +52,6 @@ public class TmfContext implements ITmfContext {
      * Simple constructor (unknown rank)
      *
      * @param location the event location
-     * @since 3.0
      */
     public TmfContext(final ITmfLocation location) {
         this(location, UNKNOWN_RANK);
@@ -65,7 +62,6 @@ public class TmfContext implements ITmfContext {
      *
      * @param location the event location
      * @param rank the event rank
-     * @since 3.0
      */
     public TmfContext(final ITmfLocation location, final long rank) {
         fLocation = location;
@@ -89,17 +85,11 @@ public class TmfContext implements ITmfContext {
     // ITmfContext
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation getLocation() {
         return fLocation;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void setLocation(final ITmfLocation location) {
         fLocation = location;
