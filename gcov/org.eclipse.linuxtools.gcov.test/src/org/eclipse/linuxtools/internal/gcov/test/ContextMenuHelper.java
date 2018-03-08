@@ -53,8 +53,7 @@ public class ContextMenuHelper {
                 // show
                 final MenuItem menuItem = UIThreadRunnable
                                 .syncExec(new WidgetResult<MenuItem>() {
-                                        @Override
-										public MenuItem run() {
+                                        public MenuItem run() {
                                                 MenuItem theItem = getMenuItem(bot, texts);
                                                 if (theItem != null && !theItem.isEnabled())
                                                         throw new IllegalStateException(
@@ -73,8 +72,7 @@ public class ContextMenuHelper {
 
                 // hide
                 UIThreadRunnable.syncExec(new VoidResult() {
-                        @Override
-						public void run() {
+                        public void run() {
                                 if (menuItem.isDisposed())
                                         return; // menu already gone
                                 hide(menuItem.getParent());
@@ -122,8 +120,7 @@ public class ContextMenuHelper {
                 // show
                 final MenuItem menuItem = UIThreadRunnable
                                 .syncExec(new WidgetResult<MenuItem>() {
-                                        @Override
-										public MenuItem run() {
+                                        public MenuItem run() {
                                                 MenuItem theItem = getMenuItem(bot, texts);
                                                 if (theItem != null && theItem.isEnabled())
                                                         enabled.set(true);
@@ -136,8 +133,7 @@ public class ContextMenuHelper {
                 }
                 // hide
                 UIThreadRunnable.syncExec(new VoidResult() {
-                        @Override
-						public void run() {
+                        public void run() {
                                 if (menuItem.isDisposed())
                                         return; // menu already gone
                                 hide(menuItem.getParent());
@@ -168,8 +164,7 @@ public class ContextMenuHelper {
                 event.type = SWT.Selection;
 
                 UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-                        @Override
-						public void run() {
+                        public void run() {
                                 menuItem.notifyListeners(SWT.Selection, event);
                         }
                 });
