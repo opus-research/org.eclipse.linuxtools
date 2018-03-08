@@ -20,7 +20,7 @@ public class ParseException extends Exception {
     private static final long serialVersionUID = 7901917601459652080L;
 
     /**
-     * Enoty constructor
+     * Enpty constructor
      */
     public ParseException() {
         super();
@@ -33,6 +33,14 @@ public class ParseException extends Exception {
      */
     public ParseException(String message) {
         super(message);
+    }
+
+    /**
+     * Copy constructor
+     * @param e the exception to throw
+     */
+    public ParseException(Exception e) {
+        super(e);
     }
 
 }

@@ -35,6 +35,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
@@ -2307,15 +2308,16 @@ public class IOStructGen {
      * @param unaryInteger
      *            An unary integer node.
      * @return The integer value.
+     * @throws CTFReaderException
      */
-    private static long parseUnaryInteger(CommonTree unaryInteger) {
+    private static long parseUnaryInteger(CommonTree unaryInteger) throws ParseException {
 
         List<CommonTree> children = unaryInteger.getChildren();
         CommonTree value = children.get(0);
         String strval = value.getText();
 
         long intval;
-
+        try{
         if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_DEC) {
             intval = Long.parseLong(strval, 10);
         } else if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_HEX) {
@@ -2323,7 +2325,9 @@ public class IOStructGen {
         } else { /* unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_OCT */
             intval = Long.parseLong(strval, 010); // 010 == 0x08 == 8
         }
-
+        }catch(NumberFormatException e){
+            throw new ParseException(e);
+        }
         /* The rest of children are sign */
         if ((children.size() % 2) == 0) {
             return -intval;
