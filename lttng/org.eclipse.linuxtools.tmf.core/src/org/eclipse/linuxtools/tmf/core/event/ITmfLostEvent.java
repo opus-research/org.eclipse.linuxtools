@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-
 /**
  * The generic lost event structure in TMF.
  *
@@ -41,7 +39,6 @@ public interface ITmfLostEvent extends ITmfEvent {
 
     /**
      * @return the 'problem' time range
-     * @since 2.0
      */
     public TmfTimeRange getTimeRange();
 
