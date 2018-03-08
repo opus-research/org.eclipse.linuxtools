@@ -13,7 +13,9 @@
 package org.eclipse.linuxtools.tmf.core.tests.statevalue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.junit.Test;
@@ -116,5 +118,203 @@ public class TmfStateValueTest {
 
         returnValue = value5.compareTo(value8);
         assertEquals(greater, returnValue);
+    }
+
+    /**
+     * Test adding an integer state value to an integer state value
+     */
+    @Test
+    public void testAddIntToInt() {
+        try {
+            ITmfStateValue sv = value2.add(value6);
+            assertEquals(30, sv.unboxInt());
+        } catch (StateValueTypeException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Test adding a long state value to an integer state value
+     */
+    @Test
+    public void testAddLongToInt() {
+        ITmfStateValue sv = value2.add(value8);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a string state value to an integer state value
+     */
+    @Test
+    public void testAddStringToInt() {
+        ITmfStateValue sv = value2.add(value1);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a null state value to an integer state value
+     */
+    @Test
+    public void testAddNullToInt() {
+        ITmfStateValue sv = value2.add(value3);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding an integer state value to a long state value
+     */
+    @Test
+    public void testAddIntToLong() {
+        ITmfStateValue sv = value8.add(value2);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a long state value to a long state value
+     */
+    @Test
+    public void testAddLongToLong() {
+        try {
+            ITmfStateValue long1 = TmfStateValue.newValueLong(1l);
+            ITmfStateValue long2 = TmfStateValue.newValueLong(9L);
+            ITmfStateValue result = long1.add(long2);
+            assertEquals(10L, result.unboxLong());
+        } catch (StateValueTypeException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Test adding a string state value to a long state value
+     */
+    @Test
+    public void testAddStringToLong() {
+        ITmfStateValue sv = value8.add(value1);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a null state value to a long state value
+     */
+    @Test
+    public void testAddNullToLong() {
+        ITmfStateValue sv = value8.add(value7);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding an integer state value to a string state value
+     */
+    @Test
+    public void testAddIntToString() {
+        ITmfStateValue sv = value1.add(value2);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a long state value to a string state value
+     */
+    @Test
+    public void testAddLongToString() {
+        ITmfStateValue sv = value1.add(value8);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a string state value to a string state value
+     */
+    @Test
+    public void testAddStringToString() {
+        ITmfStateValue sv = value1.add(value4);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a null state value to a string state value
+     */
+    @Test
+    public void testAddNullToString() {
+        ITmfStateValue sv = value1.add(value7);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding an integer state value to a null state value
+     */
+    @Test
+    public void testAddIntToNull() {
+        ITmfStateValue sv = value3.add(value2);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a long state value to a null state value
+     */
+    @Test
+    public void testAddLongToNull() {
+        ITmfStateValue sv = value3.add(value8);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a string state value to a null state value
+     */
+    @Test
+    public void testAddStringToNull() {
+        ITmfStateValue sv = value3.add(value1);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test adding a null state value to a null state value
+     */
+    @Test
+    public void testAddNullToNull() {
+        ITmfStateValue sv = value3.add(value7);
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test increment an integer state value
+     */
+    @Test
+    public void testIncrementInt() {
+        try {
+            ITmfStateValue sv = value2.increment();
+            assertEquals(value2.unboxInt() + 1, sv.unboxInt());
+        } catch (StateValueTypeException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Test increment a long state value
+     */
+    @Test
+    public void testIncrementLong() {
+        try {
+            ITmfStateValue sv = value8.increment();
+            assertEquals(value8.unboxLong() + 1, sv.unboxLong());
+        } catch (StateValueTypeException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Test increment a string state value
+     */
+    @Test
+    public void testIncrementString() {
+        ITmfStateValue sv = value1.increment();
+        assertEquals(null, sv);
+    }
+
+    /**
+     * Test increment a null state value
+     */
+    @Test
+    public void testIncrementNull() {
+        ITmfStateValue sv = value3.increment();
+        assertEquals(null, sv);
     }
 }

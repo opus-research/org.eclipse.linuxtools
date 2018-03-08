@@ -71,4 +71,14 @@ final class StringStateValue extends TmfStateValue {
         }
         return returnValue;
     }
+
+    @Override
+    public ITmfStateValue add(ITmfStateValue stateValue) {
+        return null;
+    }
+
+    @Override
+    public ITmfStateValue increment() {
+        return null;
+    }
 }

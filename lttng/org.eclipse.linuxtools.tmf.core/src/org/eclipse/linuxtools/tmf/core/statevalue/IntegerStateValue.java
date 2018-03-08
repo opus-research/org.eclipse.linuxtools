@@ -70,4 +70,25 @@ final class IntegerStateValue extends TmfStateValue {
         }
         return returnValue;
     }
+
+    @Override
+    public ITmfStateValue add(ITmfStateValue stateValue) {
+        try {
+            if (stateValue.getType() == Type.NULL) {
+                return null;
+            }
+            return TmfStateValue.newValueInt(this.unboxInt() + stateValue.unboxInt());
+        } catch (StateValueTypeException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public ITmfStateValue increment() {
+        try {
+            return TmfStateValue.newValueInt(this.unboxInt() + 1);
+        } catch (StateValueTypeException e) {
+        }
+        return null;
+    }
 }

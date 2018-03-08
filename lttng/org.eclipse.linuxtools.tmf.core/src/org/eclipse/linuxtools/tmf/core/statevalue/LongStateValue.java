@@ -70,4 +70,25 @@ final class LongStateValue extends TmfStateValue {
         }
         return returnValue;
     }
+
+    @Override
+    public ITmfStateValue add(ITmfStateValue stateValue) {
+        try {
+            if (stateValue.getType() == Type.NULL) {
+                return null;
+            }
+            return TmfStateValue.newValueLong(this.unboxLong() + stateValue.unboxLong());
+        } catch (StateValueTypeException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public ITmfStateValue increment() {
+        try {
+            return TmfStateValue.newValueLong(this.unboxLong() + 1);
+        } catch (StateValueTypeException e) {
+        }
+        return null;
+    }
 }
