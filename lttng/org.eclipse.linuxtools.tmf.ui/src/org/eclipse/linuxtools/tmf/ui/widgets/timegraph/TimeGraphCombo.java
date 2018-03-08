@@ -23,6 +23,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITableColorProvider;
+import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
@@ -48,6 +50,8 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -183,7 +187,7 @@ public class TimeGraphCombo extends Composite {
      * The TreeLabelProviderWrapper is used to intercept the filler items
      * from the calls to the tree's real label provider.
      */
-    private class TreeLabelProviderWrapper implements ITableLabelProvider {
+    private class TreeLabelProviderWrapper implements ITableLabelProvider, ITableFontProvider, ITableColorProvider {
         private final ITableLabelProvider labelProvider;
 
         public TreeLabelProviderWrapper(ITableLabelProvider labelProvider) {
@@ -225,6 +229,30 @@ public class TimeGraphCombo extends Composite {
         public String getColumnText(Object element, int columnIndex) {
             if (element instanceof ITimeGraphEntry) {
                 return labelProvider.getColumnText(element, columnIndex);
+            }
+            return null;
+        }
+
+        @Override
+        public Color getForeground(Object element, int columnIndex) {
+            if (labelProvider instanceof ITableColorProvider) {
+                return ((ITableColorProvider)labelProvider).getForeground(element, columnIndex);
+            }
+            return null;
+        }
+
+        @Override
+        public Color getBackground(Object element, int columnIndex) {
+            if (labelProvider instanceof ITableColorProvider) {
+                return ((ITableColorProvider)labelProvider).getBackground(element, columnIndex);
+            }
+            return null;
+        }
+
+        @Override
+        public Font getFont(Object element, int columnIndex) {
+            if (labelProvider instanceof ITableFontProvider) {
+                return ((ITableFontProvider)labelProvider).getFont(element, columnIndex);
             }
             return null;
         }

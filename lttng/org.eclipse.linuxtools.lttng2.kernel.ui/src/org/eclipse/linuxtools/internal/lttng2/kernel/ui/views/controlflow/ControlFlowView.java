@@ -38,6 +38,9 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * The Control Flow view main object
@@ -134,8 +137,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
     }
 
     /**
-     * @author gbastien
-     *
+     * Tree label provider class
      */
     protected static class ControlFlowTreeLabelProvider extends TreeLabelProvider {
 
@@ -157,6 +159,24 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 return entry.getTrace().getName();
             }
             return ""; //$NON-NLS-1$
+        }
+
+        /*
+         * FIXME: just a demonstration
+         * Changes the color of a root process
+         */
+        @Override
+        public Color getForeground(Object element, int columnIndex) {
+
+            if (COLUMN_NAMES[columnIndex].equals(Messages.ControlFlowView_processColumn)) {
+                if (element instanceof ControlFlowEntry) {
+                    ControlFlowEntry entry = (ControlFlowEntry) element;
+                    if (entry.getParent() == null) {
+                        return Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
+                    }
+                }
+            }
+            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         }
 
     }
