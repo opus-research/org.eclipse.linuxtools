@@ -46,8 +46,6 @@ public class HistogramZoom implements MouseWheelListener {
     private long fRangeStartTime;
     private long fRangeDuration;
 
-    private MouseScrollCounter fScrollCounter;
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -111,16 +109,6 @@ public class HistogramZoom implements MouseWheelListener {
     // ------------------------------------------------------------------------
 
     /**
-     * Stops the zooming (multiple consecutive execution)
-     */
-    public synchronized void stop() {
-        if (fScrollCounter != null) {
-            fScrollCounter.interrupt();
-            fScrollCounter = null;
-        }
-    }
-
-    /**
      * The the full time range of the histogram
      *
      * @param startTime the start time the histogram
@@ -163,17 +151,10 @@ public class HistogramZoom implements MouseWheelListener {
 
     @Override
     public synchronized void mouseScrolled(MouseEvent event) {
-        if (fScrollCounter == null) {
-            fScrollCounter = new MouseScrollCounter(this);
-            fScrollCounter.start();
-        }
-        fScrollCounter.incrementMouseScroll(event.count);
+        zoom(event.count);
     }
 
     private synchronized void zoom(int nbClicks) {
-        // The job is finished
-        fScrollCounter = null;
-
         // Compute the new time range
         long requestedRange = (nbClicks > 0) ? Math.round(ZOOM_FACTOR * fRangeDuration) : (long) Math.ceil(fRangeDuration * (1.0 / ZOOM_FACTOR));
 
@@ -208,55 +189,4 @@ public class HistogramZoom implements MouseWheelListener {
         }
         return realEnd;
     }
-
-    // ------------------------------------------------------------------------
-    // DelayedMouseScroll
-    // ------------------------------------------------------------------------
-
-    private static class MouseScrollCounter extends Thread {
-
-        // --------------------------------------------------------------------
-        // Attributes
-        // --------------------------------------------------------------------
-
-        private HistogramZoom fZoom = null;
-        private int nbScrollClick = 0;
-
-        // --------------------------------------------------------------------
-        // Constructors
-        // --------------------------------------------------------------------
-
-        /**
-         * Constructor of inner class to handle consecutive scrolls of mouse wheel.
-         * @param zoom the histogram zoom reference
-         */
-        public MouseScrollCounter(HistogramZoom zoom) {
-            fZoom = zoom;
-        }
-
-        // --------------------------------------------------------------------
-        // Operation
-        // --------------------------------------------------------------------
-
-        /**
-         * Increments the number of scroll clicks.
-         * @param nbScrolls the number to add to the current value
-         */
-        public void incrementMouseScroll(int nbScrolls) {
-            nbScrollClick += nbScrolls;
-        }
-
-        // --------------------------------------------------------------------
-        // Thread
-        // --------------------------------------------------------------------
-
-        @Override
-        public void run() {
-            // Done waiting. Notify the histogram.
-            if (!isInterrupted()) {
-                fZoom.zoom(nbScrollClick);
-            }
-        }
-    }
-
 }

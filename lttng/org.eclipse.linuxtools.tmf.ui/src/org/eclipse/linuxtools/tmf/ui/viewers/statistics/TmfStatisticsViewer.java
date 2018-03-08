@@ -8,7 +8,7 @@
  *
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and implementation
- *   Alexandre Montplaisir - Port to ITmfStatistics provider, request processor
+ *   Alexandre Montplaisir - Port to ITmfStatistics provider
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.statistics;
@@ -156,15 +156,12 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     private boolean fSendRangeRequest = true;
 
-    private final RequestProcessor requestProc;
-
     /**
      * Empty constructor. To be used in conjunction with
      * {@link TmfStatisticsViewer#init(Composite, String, ITmfTrace)}
      */
     public TmfStatisticsViewer() {
         super();
-        requestProc = new RequestProcessor(this);
     }
 
     /**
@@ -180,7 +177,6 @@ public class TmfStatisticsViewer extends TmfViewer {
      * @see TmfComponent
      */
     public TmfStatisticsViewer(Composite parent, String viewerName, ITmfTrace trace) {
-        requestProc = new RequestProcessor(this);
         init(parent, viewerName, trace);
     }
 
@@ -220,8 +216,6 @@ public class TmfStatisticsViewer extends TmfViewer {
             fWaitCursor.dispose();
         }
 
-        requestProc.dispose();
-
         // Clean the model for this viewer
         TmfStatisticsTreeManager.removeStatTreeRoot(getTreeID());
     }
@@ -248,7 +242,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Sends the time range request only once from this method.
             if (fSendRangeRequest) {
                 fSendRangeRequest = false;
-                requestTimeRangeData(fTrace.getCurrentRange());
+                requestTimeRangeData(trace, fTrace.getCurrentRange());
             }
         }
         requestData(trace, signal.getRange());
@@ -266,7 +260,7 @@ public class TmfStatisticsViewer extends TmfViewer {
         if (fTrace == null) {
             return;
         }
-        requestProc.setLatestSignal(signal);
+        requestTimeRangeData(fTrace, signal.getCurrentRange());
     }
 
     /**
@@ -670,19 +664,21 @@ public class TmfStatisticsViewer extends TmfViewer {
      * @param timeRange
      *            The range to request to the trace
      */
-    void requestData(final ITmfTrace trace, final TmfTimeRange timeRange) {
+    protected void requestData(final ITmfTrace trace, final TmfTimeRange timeRange) {
         buildStatisticsTree(trace, timeRange, true);
     }
 
     /**
      * Sends the time range request from the trace
      *
+     * @param trace
+     *            The trace used to send the request
      * @param timeRange
      *            The range to request to the trace
      */
-    void requestTimeRangeData(final TmfTimeRange timeRange) {
+    protected void requestTimeRangeData(final ITmfTrace trace, final TmfTimeRange timeRange) {
         fRequestedTimerange = timeRange;
-        buildStatisticsTree(fTrace, timeRange, false);
+        buildStatisticsTree(trace, timeRange, false);
     }
 
     /**
