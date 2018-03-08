@@ -15,6 +15,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.viewers.events;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +27,9 @@ import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -105,7 +108,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.themes.ColorUtil;
 
@@ -123,14 +128,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
 
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
-    private static final Image SEARCH_IMAGE = Activator.getDefault().getImageFromPath("icons/elcl16/search.gif"); //$NON-NLS-1$
+    private static final Image SEARCH_IMAGE = Activator.getDefault().getImageFromPath(
+            "icons/elcl16/search.gif"); //$NON-NLS-1$
     private static final Image SEARCH_MATCH_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/search_match.gif"); //$NON-NLS-1$
     private static final Image SEARCH_MATCH_BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/search_match_bookmark.gif"); //$NON-NLS-1$
-    private static final Image FILTER_IMAGE = Activator.getDefault()
-            .getImageFromPath("icons/elcl16/filter_items.gif"); //$NON-NLS-1$
-    private static final Image STOP_IMAGE = Activator.getDefault().getImageFromPath("icons/elcl16/stop.gif"); //$NON-NLS-1$
+    private static final Image FILTER_IMAGE = Activator.getDefault().getImageFromPath(
+            "icons/elcl16/filter_items.gif"); //$NON-NLS-1$
+    private static final Image STOP_IMAGE = Activator.getDefault().getImageFromPath(
+            "icons/elcl16/stop.gif"); //$NON-NLS-1$
     private static final String SEARCH_HINT = Messages.TmfEventsTable_SearchHint;
     private static final String FILTER_HINT = Messages.TmfEventsTable_FilterHint;
     private static final int MAX_CACHE_SIZE = 1000;
@@ -154,7 +161,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         /** Filter object */
         String FILTER_OBJ = "$fltr_obj"; //$NON-NLS-1$
 
-        /** Timestamp*/
+        /** Timestamp */
         String TIMESTAMP = "$time"; //$NON-NLS-1$
 
         /** Rank */
@@ -215,19 +222,26 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     protected long fPendingGotoRank = -1;
 
     // SWT resources
-    protected LocalResourceManager fResourceManager = new LocalResourceManager(JFaceResources.getResources());
+    protected LocalResourceManager fResourceManager = new LocalResourceManager(
+            JFaceResources.getResources());
     protected Color fGrayColor;
     protected Color fGreenColor;
     protected Font fBoldFont;
 
     // Table column names
-    static private final String[] COLUMN_NAMES = new String[] { Messages.TmfEventsTable_TimestampColumnHeader,
-        Messages.TmfEventsTable_SourceColumnHeader, Messages.TmfEventsTable_TypeColumnHeader,
-        Messages.TmfEventsTable_ReferenceColumnHeader, Messages.TmfEventsTable_ContentColumnHeader };
+    static private final String[] COLUMN_NAMES = new String[] {
+            Messages.TmfEventsTable_TimestampColumnHeader,
+            Messages.TmfEventsTable_SourceColumnHeader,
+            Messages.TmfEventsTable_TypeColumnHeader,
+            Messages.TmfEventsTable_ReferenceColumnHeader,
+            Messages.TmfEventsTable_ContentColumnHeader };
 
-    static private final ColumnData[] COLUMN_DATA = new ColumnData[] { new ColumnData(COLUMN_NAMES[0], 100, SWT.LEFT),
-        new ColumnData(COLUMN_NAMES[1], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[2], 100, SWT.LEFT),
-        new ColumnData(COLUMN_NAMES[3], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[4], 100, SWT.LEFT) };
+    static private final ColumnData[] COLUMN_DATA = new ColumnData[] {
+            new ColumnData(COLUMN_NAMES[0], 100, SWT.LEFT),
+            new ColumnData(COLUMN_NAMES[1], 100, SWT.LEFT),
+            new ColumnData(COLUMN_NAMES[2], 100, SWT.LEFT),
+            new ColumnData(COLUMN_NAMES[3], 100, SWT.LEFT),
+            new ColumnData(COLUMN_NAMES[4], 100, SWT.LEFT) };
 
     // Event cache
     private final TmfEventsCache fCache;
@@ -264,7 +278,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
      * @param columnData
      *            The column data to use for this table
      */
-    public TmfEventsTable(final Composite parent, int cacheSize, final ColumnData[] columnData) {
+    public TmfEventsTable(final Composite parent, int cacheSize,
+            final ColumnData[] columnData) {
         super("TmfEventsTable"); //$NON-NLS-1$
 
         fComposite = new Composite(parent, SWT.NONE);
@@ -278,7 +293,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         fSashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         // Create a virtual table
-        final int style = SWT.H_SCROLL | SWT.V_SCROLL | SWT.SINGLE | SWT.FULL_SELECTION;
+        final int style = SWT.H_SCROLL | SWT.V_SCROLL | SWT.SINGLE
+                | SWT.FULL_SELECTION;
         fTable = new TmfVirtualTable(fSashForm, style);
 
         // Set the table layout
@@ -294,11 +310,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
 
         // Set the default column field ids if this is not a subclass
         if (Arrays.equals(columnData, COLUMN_DATA)) {
-            fTable.getColumns()[0].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_TIMESTAMP);
-            fTable.getColumns()[1].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_SOURCE);
-            fTable.getColumns()[2].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_TYPE);
-            fTable.getColumns()[3].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_REFERENCE);
-            fTable.getColumns()[4].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_CONTENT);
+            fTable.getColumns()[0].setData(Key.FIELD_ID,
+                    ITmfEvent.EVENT_FIELD_TIMESTAMP);
+            fTable.getColumns()[1].setData(Key.FIELD_ID,
+                    ITmfEvent.EVENT_FIELD_SOURCE);
+            fTable.getColumns()[2].setData(Key.FIELD_ID,
+                    ITmfEvent.EVENT_FIELD_TYPE);
+            fTable.getColumns()[3].setData(Key.FIELD_ID,
+                    ITmfEvent.EVENT_FIELD_REFERENCE);
+            fTable.getColumns()[4].setData(Key.FIELD_ID,
+                    ITmfEvent.EVENT_FIELD_CONTENT);
         }
 
         // Set the frozen row for header row
@@ -321,14 +342,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         }
                         if (selectedTableItem.getData(Key.TIMESTAMP) instanceof TmfTimestamp) {
                             final TmfTimestamp ts = (TmfTimestamp) selectedTableItem.getData(Key.TIMESTAMP);
-                            broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts));
+                            broadcast(new TmfTimeSynchSignal(
+                                    TmfEventsTable.this, ts));
                         }
                     }
                 }
             }
         });
 
-        cacheSize = Math.max(cacheSize, Display.getDefault().getBounds().height / fTable.getItemHeight());
+        cacheSize = Math.max(cacheSize, Display.getDefault().getBounds().height
+                / fTable.getItemHeight());
         cacheSize = Math.min(cacheSize, MAX_CACHE_SIZE);
         fCache = new TmfEventsCache(cacheSize, this);
 
@@ -347,7 +370,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 }
 
                 if (fTable.getData(Key.FILTER_OBJ) != null) {
-                    if ((event.index == 1) || (event.index == (fTable.getItemCount() - 1))) {
+                    if ((event.index == 1)
+                            || (event.index == (fTable.getItemCount() - 1))) {
                         setFilterStatusRowItemData(item);
                         return;
                     }
@@ -387,70 +411,80 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             }
         });
 
-        final Listener tooltipListener = new Listener () {
+        final Listener tooltipListener = new Listener() {
             Shell tooltipShell = null;
+
             @Override
             public void handleEvent(final Event event) {
                 switch (event.type) {
-                    case SWT.MouseHover:
-                        final TableItem item = fTable.getItem(new Point(event.x, event.y));
-                        if (item == null) {
-                            return;
-                        }
-                        final Long rank = (Long) item.getData(Key.RANK);
-                        if (rank == null) {
-                            return;
-                        }
-                        final String tooltipText = (String) item.getData(Key.BOOKMARK);
-                        final Rectangle bounds = item.getImageBounds(0);
-                        bounds.width = BOOKMARK_IMAGE.getBounds().width;
-                        if (!bounds.contains(event.x,event.y)) {
-                            return;
-                        }
-                        if ((tooltipShell != null) && !tooltipShell.isDisposed()) {
-                            tooltipShell.dispose();
-                        }
-                        tooltipShell = new Shell(fTable.getShell(), SWT.ON_TOP | SWT.NO_FOCUS | SWT.TOOL);
-                        tooltipShell.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-                        final FillLayout layout = new FillLayout();
-                        layout.marginWidth = 2;
-                        tooltipShell.setLayout(layout);
-                        final Label label = new Label(tooltipShell, SWT.WRAP);
-                        String text = rank.toString() + (tooltipText != null ? ": " + tooltipText : ""); //$NON-NLS-1$ //$NON-NLS-2$
-                        label.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-                        label.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-                        label.setText(text);
-                        label.addListener(SWT.MouseExit, this);
-                        label.addListener(SWT.MouseDown, this);
-                        label.addListener(SWT.MouseWheel, this);
-                        final Point size = tooltipShell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                        /*
-                         * Bug in Linux.  The coordinates of the event have an origin that excludes the table header but
-                         * the method toDisplay() expects coordinates relative to an origin that includes the table header.
-                         */
-                        int y = event.y;
-                        if (System.getProperty("os.name").contains("Linux")) { //$NON-NLS-1$ //$NON-NLS-2$
-                            y += fTable.getHeaderHeight();
-                        }
-                        Point pt = fTable.toDisplay(event.x, y);
-                        pt.x += BOOKMARK_IMAGE.getBounds().width;
-                        pt.y += size.y;
-                        tooltipShell.setBounds(pt.x, pt.y, size.x, size.y);
-                        tooltipShell.setVisible(true);
-                        break;
-                    case SWT.Dispose:
-                    case SWT.KeyDown:
-                    case SWT.MouseMove:
-                    case SWT.MouseExit:
-                    case SWT.MouseDown:
-                    case SWT.MouseWheel:
-                        if (tooltipShell != null) {
-                            tooltipShell.dispose();
-                            tooltipShell = null;
-                        }
-                        break;
-                    default:
-                        break;
+                case SWT.MouseHover:
+                    final TableItem item = fTable.getItem(new Point(event.x,
+                            event.y));
+                    if (item == null) {
+                        return;
+                    }
+                    final Long rank = (Long) item.getData(Key.RANK);
+                    if (rank == null) {
+                        return;
+                    }
+                    final String tooltipText = (String) item.getData(Key.BOOKMARK);
+                    final Rectangle bounds = item.getImageBounds(0);
+                    bounds.width = BOOKMARK_IMAGE.getBounds().width;
+                    if (!bounds.contains(event.x, event.y)) {
+                        return;
+                    }
+                    if ((tooltipShell != null) && !tooltipShell.isDisposed()) {
+                        tooltipShell.dispose();
+                    }
+                    tooltipShell = new Shell(fTable.getShell(), SWT.ON_TOP
+                            | SWT.NO_FOCUS | SWT.TOOL);
+                    tooltipShell.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(
+                            SWT.COLOR_INFO_BACKGROUND));
+                    final FillLayout layout = new FillLayout();
+                    layout.marginWidth = 2;
+                    tooltipShell.setLayout(layout);
+                    final Label label = new Label(tooltipShell, SWT.WRAP);
+                    String text = rank.toString()
+                            + (tooltipText != null ? ": " + tooltipText : ""); //$NON-NLS-1$ //$NON-NLS-2$
+                    label.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(
+                            SWT.COLOR_INFO_FOREGROUND));
+                    label.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(
+                            SWT.COLOR_INFO_BACKGROUND));
+                    label.setText(text);
+                    label.addListener(SWT.MouseExit, this);
+                    label.addListener(SWT.MouseDown, this);
+                    label.addListener(SWT.MouseWheel, this);
+                    final Point size = tooltipShell.computeSize(SWT.DEFAULT,
+                            SWT.DEFAULT);
+                    /*
+                     * Bug in Linux. The coordinates of the event have an origin
+                     * that excludes the table header but the method toDisplay()
+                     * expects coordinates relative to an origin that includes
+                     * the table header.
+                     */
+                    int y = event.y;
+                    if (System.getProperty("os.name").contains("Linux")) { //$NON-NLS-1$ //$NON-NLS-2$
+                        y += fTable.getHeaderHeight();
+                    }
+                    Point pt = fTable.toDisplay(event.x, y);
+                    pt.x += BOOKMARK_IMAGE.getBounds().width;
+                    pt.y += size.y;
+                    tooltipShell.setBounds(pt.x, pt.y, size.x, size.y);
+                    tooltipShell.setVisible(true);
+                    break;
+                case SWT.Dispose:
+                case SWT.KeyDown:
+                case SWT.MouseMove:
+                case SWT.MouseExit:
+                case SWT.MouseDown:
+                case SWT.MouseWheel:
+                    if (tooltipShell != null) {
+                        tooltipShell.dispose();
+                        tooltipShell = null;
+                    }
+                    break;
+                default:
+                    break;
                 }
             }
         };
@@ -470,7 +504,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
 
         fTable.setItemCount(1); // +1 for header row
 
-        fRawViewer = new TmfRawEventViewer(fSashForm, SWT.H_SCROLL | SWT.V_SCROLL);
+        fRawViewer = new TmfRawEventViewer(fSashForm, SWT.H_SCROLL
+                | SWT.V_SCROLL);
 
         fRawViewer.addSelectionListener(new Listener() {
             @Override
@@ -479,12 +514,18 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     final long rank = (Long) e.data;
                     int index = (int) rank;
                     if (fTable.getData(Key.FILTER_OBJ) != null) {
-                        index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
+                        index = fCache.getFilteredEventIndex(rank) + 1; // +1
+                                                                        // for
+                                                                        // top
+                                                                        // filter
+                                                                        // status
+                                                                        // row
                     }
                     fTable.setSelection(index + 1); // +1 for header row
                     fSelectedRank = rank;
                 } else if (e.data instanceof ITmfLocation<?>) {
-                    // DOES NOT WORK: rank undefined in context from seekLocation()
+                    // DOES NOT WORK: rank undefined in context from
+                    // seekLocation()
                     // ITmfLocation<?> location = (ITmfLocation<?>) e.data;
                     // TmfContext context = fTrace.seekLocation(location);
                     // fTable.setSelection((int) context.getRank());
@@ -496,7 +537,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 if ((selection != null) && (selection.length > 0)) {
                     final TmfTimestamp ts = (TmfTimestamp) fTable.getSelection()[0].getData(Key.TIMESTAMP);
                     if (ts != null) {
-                        broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts));
+                        broadcast(new TmfTimeSynchSignal(TmfEventsTable.this,
+                                ts));
                     }
                 }
             }
@@ -508,6 +550,24 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         createPopupMenu();
     }
 
+    @SuppressWarnings("nls")
+    private Callsite extractCallsiteFromString(String data) {
+        Callsite cs = new Callsite();
+        String tokens[] = data.split(",");
+        for (String assignment : tokens) {
+            String pair[] = assignment.split("=", 2);
+            if (pair[0].equals(" callsite")) {
+                cs.fileName = pair[1].split("/")[0];
+                cs.lineNumber = Integer.parseInt((pair[1].split(":")[1]));
+            }
+        }
+        return cs;
+    }
+    class Callsite{
+        String fileName = null;
+        String funcName = null;
+        int lineNumber = -1;
+    }
     protected void createPopupMenu() {
         final IAction showTableAction = new Action(Messages.TmfEventsTable_ShowTableActionText) {
             @Override
@@ -515,6 +575,41 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 fTable.setVisible(true);
                 fSashForm.layout();
             }
+        };
+
+        final IAction showCallsite = new Action(Messages.TmfEventsTable_ShowCallsiteActionText) {
+            @Override
+            public void run() {
+                String content = fTable.getSelection()[0].getText(4);
+                Callsite cs = extractCallsiteFromString(content);
+                IMarker marker = null;
+                try {
+                    IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+
+                    for (IProject project : projects) {
+                        final IFile file = (IFile) project.findMember(cs.fileName);
+                        if (file != null) {
+                            marker = file.createMarker(IMarker.BOOKMARK);
+
+                        }
+                    }
+                    if (marker != null) {
+                        marker.setAttribute(IMarker.LINE_NUMBER, cs.lineNumber);
+                        IDE.openEditor(
+                                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
+                                marker);
+                        marker.delete();
+                    }
+                } catch (PartInitException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+
         };
 
         final IAction hideTableAction = new Action(Messages.TmfEventsTable_HideTableActionText) {
@@ -616,6 +711,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         return;
                     }
                 }
+
+                String field = extractCallsiteFromString(fTable.getSelection()[0].getText(4)).fileName;
+                if (field != null) {
+                    tablePopupMenu.add(showCallsite);
+                }
                 // Right-click on table
                 if (fTable.isVisible() && fRawViewer.isVisible()) {
                     tablePopupMenu.add(hideTableAction);
@@ -671,7 +771,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         fRawViewer.setMenu(menu);
     }
 
-    protected void appendToTablePopupMenu(final MenuManager tablePopupMenu, final TableItem selectedItem) {
+    protected void appendToTablePopupMenu(final MenuManager tablePopupMenu,
+            final TableItem selectedItem) {
         // override to append more actions
     }
 
@@ -714,17 +815,19 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     /**
      * @param columnData
      *
-     * FIXME: Add support for column selection
+     *            FIXME: Add support for column selection
      */
     protected void setColumnHeaders(final ColumnData[] columnData) {
         fTable.setColumnHeaders(columnData);
     }
 
-    protected void setItemData(final TableItem item, final ITmfEvent event, final long rank) {
+    protected void setItemData(final TableItem item, final ITmfEvent event,
+            final long rank) {
         final ITmfEventField[] fields = extractItemFields(event);
         final String[] content = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
-            content[i] = fields[i].getValue() != null ? fields[i].getValue().toString() : ""; //$NON-NLS-1$
+            content[i] = fields[i].getValue() != null ? fields[i].getValue().toString()
+                    : ""; //$NON-NLS-1$
         }
         item.setText(content);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
@@ -809,7 +912,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     protected void setFilterStatusRowItemData(final TableItem item) {
         for (int i = 0; i < fTable.getColumns().length; i++) {
             if (i == 0) {
-                if ((fTrace == null) || (fFilterCheckCount == fTrace.getNbEvents())) {
+                if ((fTrace == null)
+                        || (fFilterCheckCount == fTrace.getNbEvents())) {
                     item.setImage(FILTER_IMAGE);
                 } else {
                     item.setImage(STOP_IMAGE);
@@ -884,7 +988,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         txtKey = Key.FILTER_TXT;
                     }
 
-                    // The control that will be the editor must be a child of the Table
+                    // The control that will be the editor must be a child of
+                    // the Table
                     final Text newEditor = (Text) fTable.createTableEditorControl(Text.class);
                     final String headerString = (String) column.getData(txtKey);
                     if (headerString != null) {
@@ -937,7 +1042,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                             tableEditor.getEditor().dispose();
                             return false;
                         }
-                        final TmfFilterMatchesNode filter = new TmfFilterMatchesNode(null);
+                        final TmfFilterMatchesNode filter = new TmfFilterMatchesNode(
+                                null);
                         String fieldId = (String) column.getData(Key.FIELD_ID);
                         if (fieldId == null) {
                             fieldId = column.getText();
@@ -948,7 +1054,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         column.setData(txtKey, regex);
                     } catch (final PatternSyntaxException ex) {
                         tableEditor.getEditor().dispose();
-                        MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                        MessageDialog.openError(
+                                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
                                 ex.getDescription(), ex.getMessage());
                         return false;
                     }
@@ -1076,14 +1183,15 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
      * @since 1.1
      */
     protected void applyFilter(ITmfFilter filter) {
-    	stopFilterThread();
-    	stopSearchThread();
+        stopFilterThread();
+        stopSearchThread();
         fFilterMatchCount = 0;
         fFilterCheckCount = 0;
         fCache.applyFilter(filter);
         fTable.clearAll();
         fTable.setData(Key.FILTER_OBJ, filter);
-        fTable.setItemCount(3); // +1 for header row, +2 for top and bottom filter status rows
+        fTable.setItemCount(3); // +1 for header row, +2 for top and bottom
+                                // filter status rows
         startFilterThread();
         fireFilterApplied(filter);
     }
@@ -1102,7 +1210,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         }
         fTable.setData(Key.FILTER_OBJ, null);
         if (fTrace != null) {
-            fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1 for header row
+            fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1 for
+                                                                 // header row
         } else {
             fTable.setItemCount(1); // +1 for header row
         }
@@ -1138,8 +1247,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             if (nbRequested <= 0) {
                 return;
             }
-            request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, (int) fFilterCheckCount,
-                    nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
+            request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class,
+                    (int) fFilterCheckCount, nbRequested,
+                    fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
                 @Override
                 public void handleData(final ITmfEvent event) {
                     super.handleData(event);
@@ -1191,7 +1301,15 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     if (fTable.isDisposed()) {
                         return;
                     }
-                    fTable.setItemCount((int) fFilterMatchCount + 3); // +1 for header row, +2 for top and bottom filter status rows
+                    fTable.setItemCount((int) fFilterMatchCount + 3); // +1 for
+                                                                      // header
+                                                                      // row, +2
+                                                                      // for top
+                                                                      // and
+                                                                      // bottom
+                                                                      // filter
+                                                                      // status
+                                                                      // rows
                     fTable.refresh();
                     synchronized (syncObj) {
                         refreshBusy = false;
@@ -1223,17 +1341,21 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             final int selectionIndex = fTable.getSelectionIndex();
             int startIndex;
             if (selectionIndex > 0) {
-                startIndex = selectionIndex; // -1 for header row, +1 for next event
+                startIndex = selectionIndex; // -1 for header row, +1 for next
+                                             // event
             } else {
                 // header row is selected, start at top event
-                startIndex = Math.max(0, fTable.getTopIndex() - 1); // -1 for header row
+                startIndex = Math.max(0, fTable.getTopIndex() - 1); // -1 for
+                                                                    // header
+                                                                    // row
             }
             final ITmfFilterTreeNode eventFilter = (ITmfFilterTreeNode) fTable.getData(Key.FILTER_OBJ);
-            if (eventFilter != null)
-             {
-                startIndex = Math.max(0, startIndex - 1); // -1 for top filter status row
+            if (eventFilter != null) {
+                startIndex = Math.max(0, startIndex - 1); // -1 for top filter
+                                                          // status row
             }
-            fSearchThread = new SearchThread(searchFilter, eventFilter, startIndex, fSelectedRank, Direction.FORWARD);
+            fSearchThread = new SearchThread(searchFilter, eventFilter,
+                    startIndex, fSelectedRank, Direction.FORWARD);
             fSearchThread.schedule();
         }
     }
@@ -1250,17 +1372,19 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             final int selectionIndex = fTable.getSelectionIndex();
             int startIndex;
             if (selectionIndex > 0) {
-                startIndex = selectionIndex - 2; // -1 for header row, -1 for previous event
+                startIndex = selectionIndex - 2; // -1 for header row, -1 for
+                                                 // previous event
             } else {
                 // header row is selected, start at precedent of top event
-                startIndex = fTable.getTopIndex() - 2; // -1 for header row, -1 for previous event
+                startIndex = fTable.getTopIndex() - 2; // -1 for header row, -1
+                                                       // for previous event
             }
             final ITmfFilterTreeNode eventFilter = (ITmfFilterTreeNode) fTable.getData(Key.FILTER_OBJ);
-            if (eventFilter != null)
-             {
+            if (eventFilter != null) {
                 startIndex = startIndex - 1; // -1 for top filter status row
             }
-            fSearchThread = new SearchThread(searchFilter, eventFilter, startIndex, fSelectedRank, Direction.BACKWARD);
+            fSearchThread = new SearchThread(searchFilter, eventFilter,
+                    startIndex, fSelectedRank, Direction.BACKWARD);
             fSearchThread.schedule();
         }
     }
@@ -1285,7 +1409,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         protected TmfDataRequest<ITmfEvent> request;
         private ITmfTimestamp foundTimestamp = null;
 
-        public SearchThread(final ITmfFilterTreeNode searchFilter, final ITmfFilterTreeNode eventFilter, final int startIndex,
+        public SearchThread(final ITmfFilterTreeNode searchFilter,
+                final ITmfFilterTreeNode eventFilter, final int startIndex,
                 final long currentRank, final int direction) {
             super(Messages.TmfEventsTable_SearchingJobName);
             this.searchFilter = searchFilter;
@@ -1304,7 +1429,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             final Display display = Display.getDefault();
             if (startIndex < 0) {
                 rank = (int) fTrace.getNbEvents() - 1;
-            } else if (startIndex >= (fTable.getItemCount() - (eventFilter == null ? 1 : 3))) { // -1 for header row, -2 for top and bottom filter status rows
+            } else if (startIndex >= (fTable.getItemCount() - (eventFilter == null ? 1
+                    : 3))) { // -1 for header row, -2 for top and bottom filter
+                             // status rows
                 rank = 0;
             } else {
                 int idx = startIndex;
@@ -1314,7 +1441,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         break;
                     }
                     rank = event.rank;
-                    if (searchFilter.matches(event.event) && ((eventFilter == null) || eventFilter.matches(event.event))) {
+                    if (searchFilter.matches(event.event)
+                            && ((eventFilter == null) || eventFilter.matches(event.event))) {
                         foundRank = event.rank;
                         foundTimestamp = event.event.getTimestamp();
                         break;
@@ -1341,18 +1469,23 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             }
             final int startRank = (int) rank;
             boolean wrapped = false;
-            while (!monitor.isCanceled() && (foundRank == -1) && (fTrace != null)) {
-                int nbRequested = (direction == Direction.FORWARD ? Integer.MAX_VALUE : Math.min((int) rank + 1, fTrace.getCacheSize()));
+            while (!monitor.isCanceled() && (foundRank == -1)
+                    && (fTrace != null)) {
+                int nbRequested = (direction == Direction.FORWARD ? Integer.MAX_VALUE
+                        : Math.min((int) rank + 1, fTrace.getCacheSize()));
                 if (direction == Direction.BACKWARD) {
                     rank = Math.max(0, rank - fTrace.getCacheSize() + 1);
                 }
-                request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, (int) rank, nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
+                request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class,
+                        (int) rank, nbRequested, fTrace.getCacheSize(),
+                        ExecutionType.BACKGROUND) {
                     long currentRank = rank;
 
                     @Override
                     public void handleData(final ITmfEvent event) {
                         super.handleData(event);
-                        if (searchFilter.matches(event) && ((eventFilter == null) || eventFilter.matches(event))) {
+                        if (searchFilter.matches(event)
+                                && ((eventFilter == null) || eventFilter.matches(event))) {
                             foundRank = currentRank;
                             foundTimestamp = event.getTimestamp();
                             if (direction == Direction.FORWARD) {
@@ -1405,7 +1538,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             if (eventFilter != null) {
                 index = fCache.getFilteredEventIndex(foundRank);
             }
-            final int selection = index + 1 + (eventFilter != null ? +1 : 0); // +1 for header row, +1 for top filter status row
+            final int selection = index + 1 + (eventFilter != null ? +1 : 0); // +1
+                                                                              // for
+                                                                              // header
+                                                                              // row,
+                                                                              // +1
+                                                                              // for
+                                                                              // top
+                                                                              // filter
+                                                                              // status
+                                                                              // row
 
             display.asyncExec(new Runnable() {
                 @Override
@@ -1420,7 +1562,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     fSelectedRank = foundRank;
                     fRawViewer.selectAndReveal(fSelectedRank);
                     if (foundTimestamp != null) {
-                        broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, foundTimestamp));
+                        broadcast(new TmfTimeSynchSignal(TmfEventsTable.this,
+                                foundTimestamp));
                     }
                     synchronized (fSearchSyncObj) {
                         fSearchThread = null;
@@ -1440,10 +1583,12 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     }
 
     protected void createResources() {
-        fGrayColor = fResourceManager.createColor(ColorUtil.blend(fTable.getBackground().getRGB(), fTable
-                .getForeground().getRGB()));
+        fGrayColor = fResourceManager.createColor(ColorUtil.blend(
+                fTable.getBackground().getRGB(),
+                fTable.getForeground().getRGB()));
         fGreenColor = fTable.getDisplay().getSystemColor(SWT.COLOR_DARK_GREEN);
-        fBoldFont = fResourceManager.createFont(FontDescriptor.createFrom(fTable.getFont()).setStyle(SWT.BOLD));
+        fBoldFont = fResourceManager.createFont(FontDescriptor.createFrom(
+                fTable.getFont()).setStyle(SWT.BOLD));
     }
 
     protected void packColumns() {
@@ -1474,14 +1619,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             final String type = event.getType().getName();
             final String reference = event.getReference();
             final ITmfEventField content = event.getContent();
-            final String value = (content.getValue() != null) ? content.getValue().toString() : content.toString();
+            final String value = (content.getValue() != null) ? content.getValue().toString()
+                    : content.toString();
             fields = new TmfEventField[] {
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP,
+                            timestamp),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, value)
-            };
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE,
+                            reference),
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, value) };
         }
         return fields;
     }
@@ -1520,12 +1667,17 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 if (fTrace != null) {
                     if (!fTable.isDisposed() && (fTrace != null)) {
                         if (fTable.getData(Key.FILTER_OBJ) == null) {
-                            fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1 for header row
+                            fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1
+                                                                                 // for
+                                                                                 // header
+                                                                                 // row
                         } else {
                             stopFilterThread();
                             fFilterMatchCount = 0;
                             fFilterCheckCount = 0;
-                            fTable.setItemCount(3); // +1 for header row, +2 for top and bottom filter status rows
+                            fTable.setItemCount(3); // +1 for header row, +2 for
+                                                    // top and bottom filter
+                                                    // status rows
                             startFilterThread();
                         }
                     }
@@ -1601,24 +1753,27 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             if (tableItem.getData(Key.RANK) != null) {
                 final StringBuffer defaultMessage = new StringBuffer();
                 for (int i = 0; i < fTable.getColumns().length; i++) {
-                    if (i > 0)
-                     {
+                    if (i > 0) {
                         defaultMessage.append(", "); //$NON-NLS-1$
                     }
                     defaultMessage.append(tableItem.getText(i));
                 }
-                final InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                        Messages.TmfEventsTable_AddBookmarkDialogTitle, Messages.TmfEventsTable_AddBookmarkDialogText,
+                final InputDialog dialog = new InputDialog(
+                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                        Messages.TmfEventsTable_AddBookmarkDialogTitle,
+                        Messages.TmfEventsTable_AddBookmarkDialogText,
                         defaultMessage.toString(), null);
                 if (dialog.open() == Window.OK) {
                     final String message = dialog.getValue();
                     try {
                         final IMarker bookmark = bookmarksFile.createMarker(IMarker.BOOKMARK);
                         if (bookmark.exists()) {
-                            bookmark.setAttribute(IMarker.MESSAGE, message.toString());
+                            bookmark.setAttribute(IMarker.MESSAGE,
+                                    message.toString());
                             final long rank = (Long) tableItem.getData(Key.RANK);
                             final int location = (int) rank;
-                            bookmark.setAttribute(IMarker.LOCATION, (Integer) location);
+                            bookmark.setAttribute(IMarker.LOCATION,
+                                    (Integer) location);
                             fBookmarksMap.put(rank, bookmark.getId());
                             fTable.refresh();
                         }
@@ -1683,7 +1838,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         }
         try {
             fBookmarksMap.clear();
-            for (final IMarker bookmark : bookmarksFile.findMarkers(IMarker.BOOKMARK, false, IResource.DEPTH_ZERO)) {
+            for (final IMarker bookmark : bookmarksFile.findMarkers(
+                    IMarker.BOOKMARK, false, IResource.DEPTH_ZERO)) {
                 final int location = bookmark.getAttribute(IMarker.LOCATION, -1);
                 if (location != -1) {
                     final long rank = location;
@@ -1702,7 +1858,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         if (rank != -1) {
             int index = rank;
             if (fTable.getData(Key.FILTER_OBJ) != null) {
-                index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
+                index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top
+                                                                // filter status
+                                                                // row
             } else if (rank >= fTable.getItemCount()) {
                 fPendingGotoRank = rank;
             }
@@ -1717,7 +1875,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     /*
      * (non-Javadoc)
      *
-     * @see org.eclipse.linuxtools.tmf.ui.views.colors.IColorSettingsListener#colorSettingsChanged(org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting[])
+     * @see org.eclipse.linuxtools.tmf.ui.views.colors.IColorSettingsListener#
+     * colorSettingsChanged
+     * (org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting[])
      */
     @Override
     public void colorSettingsChanged(final ColorSetting[] colorSettings) {
@@ -1732,7 +1892,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     }
 
     @Override
-    public void removeEventsFilterListener(final ITmfEventsFilterListener listener) {
+    public void removeEventsFilterListener(
+            final ITmfEventsFilterListener listener) {
         fEventsFilterListeners.remove(listener);
     }
 
@@ -1757,9 +1918,19 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             public void run() {
                 if (!fTable.isDisposed() && (fTrace != null)) {
                     if (fTable.getData(Key.FILTER_OBJ) == null) {
-                        fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1 for header row
-                        if ((fPendingGotoRank != -1) && ((fPendingGotoRank + 1) < fTable.getItemCount())) { // +1 for header row
-                            fTable.setSelection((int) fPendingGotoRank + 1); // +1 for header row
+                        fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1
+                                                                             // for
+                                                                             // header
+                                                                             // row
+                        if ((fPendingGotoRank != -1)
+                                && ((fPendingGotoRank + 1) < fTable.getItemCount())) { // +1
+                                                                                       // for
+                                                                                       // header
+                                                                                       // row
+                            fTable.setSelection((int) fPendingGotoRank + 1); // +1
+                                                                             // for
+                                                                             // header
+                                                                             // row
                             fPendingGotoRank = -1;
                         }
                     } else {
@@ -1790,9 +1961,19 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             public void run() {
                 if (!fTable.isDisposed() && (fTrace != null)) {
                     if (fTable.getData(Key.FILTER_OBJ) == null) {
-                        fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1 for header row
-                        if ((fPendingGotoRank != -1) && ((fPendingGotoRank + 1) < fTable.getItemCount())) { // +1 for header row
-                            fTable.setSelection((int) fPendingGotoRank + 1); // +1 for header row
+                        fTable.setItemCount((int) fTrace.getNbEvents() + 1); // +1
+                                                                             // for
+                                                                             // header
+                                                                             // row
+                        if ((fPendingGotoRank != -1)
+                                && ((fPendingGotoRank + 1) < fTable.getItemCount())) { // +1
+                                                                                       // for
+                                                                                       // header
+                                                                                       // row
+                            fTable.setSelection((int) fPendingGotoRank + 1); // +1
+                                                                             // for
+                                                                             // header
+                                                                             // row
                             fPendingGotoRank = -1;
                         }
                     } else {
@@ -1815,12 +1996,17 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
-        if ((signal.getSource() != this) && (fTrace != null) && (!fTable.isDisposed())) {
+        if ((signal.getSource() != this) && (fTrace != null)
+                && (!fTable.isDisposed())) {
 
-            // Create a request for one event that will be queued after other ongoing requests. When this request is completed
-            // do the work to select the actual event with the timestamp specified in the signal. This procedure prevents
-            // the method fTrace.getRank() from interfering and delaying ongoing requests.
-            final TmfDataRequest<ITmfEvent> subRequest = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
+            // Create a request for one event that will be queued after other
+            // ongoing requests. When this request is completed
+            // do the work to select the actual event with the timestamp
+            // specified in the signal. This procedure prevents
+            // the method fTrace.getRank() from interfering and delaying ongoing
+            // requests.
+            final TmfDataRequest<ITmfEvent> subRequest = new TmfDataRequest<ITmfEvent>(
+                    ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
 
                 TmfTimestamp ts = new TmfTimestamp(signal.getCurrentTime());
 
@@ -1836,7 +2022,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         return;
                     }
 
-                    // Verify if the event is within the trace range and adjust if necessary
+                    // Verify if the event is within the trace range and adjust
+                    // if necessary
                     ITmfTimestamp timestamp = ts;
                     if (timestamp.compareTo(fTrace.getStartTime(), true) == -1) {
                         timestamp = fTrace.getStartTime();
@@ -1863,9 +2050,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                             if (fTable.isDisposed()) {
                                 return;
                             }
-                            if (fTable.getData(Key.FILTER_OBJ) != null)
-                             {
-                                index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
+                            if (fTable.getData(Key.FILTER_OBJ) != null) {
+                                index = fCache.getFilteredEventIndex(rank) + 1; // +1
+                                                                                // for
+                                                                                // top
+                                                                                // filter
+                                                                                // status
+                                                                                // row
                             }
                             fTable.setSelection(index + 1); // +1 for header row
                             fRawViewer.selectAndReveal(rank);
@@ -1885,10 +2076,12 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     /**
      * Display an exception in a message box
      *
-     * @param e the exception
+     * @param e
+     *            the exception
      */
     private static void displayException(final Exception e) {
-        final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+        final MessageBox mb = new MessageBox(
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
         mb.setText(e.getClass().getName());
         mb.setMessage(e.getMessage());
         mb.open();
