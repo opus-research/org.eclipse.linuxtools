@@ -99,6 +99,7 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
             return;
         }
         try {
+            /* Check if the event is a function entry */
             String functionEntryName = functionEntry(event);
             if (functionEntryName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
@@ -109,6 +110,7 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
                 return;
             }
 
+            /* Check if the event is a function exit */
             String functionExitName = functionExit(event);
             if (functionExitName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
@@ -116,7 +118,12 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
                 int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
                 ITmfStateValue poppedValue = ss.popAttribute(timestamp, quark);
 
-                if (!functionExitName.equals(poppedValue.unboxStr())) {
+                /*
+                 * Verify that the value we are popping matches the one in the
+                 * event field, unless the latter is undefined.
+                 */
+                if (!functionExitName.equals(UNDEFINED) &&
+                        !functionExitName.equals(poppedValue.unboxStr())) {
                     Activator.logWarning(Messages.CallStackStateProvider_UmatchedPoppedValue);
                 }
             }
