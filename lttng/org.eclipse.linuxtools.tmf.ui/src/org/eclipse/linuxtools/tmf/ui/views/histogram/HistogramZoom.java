@@ -216,19 +216,10 @@ public class HistogramZoom implements MouseWheelListener {
     private static class MouseScrollCounter extends Thread {
 
         // --------------------------------------------------------------------
-        // Constants
-        // --------------------------------------------------------------------
-
-        private final static long QUIET_TIME = 100L;
-        private final static long POLLING_INTERVAL = 10L;
-
-        // --------------------------------------------------------------------
         // Attributes
         // --------------------------------------------------------------------
 
         private HistogramZoom fZoom = null;
-
-        private long fLastPoolTime = 0L;
         private int nbScrollClick = 0;
 
         // --------------------------------------------------------------------
@@ -241,7 +232,6 @@ public class HistogramZoom implements MouseWheelListener {
          */
         public MouseScrollCounter(HistogramZoom zoom) {
             fZoom = zoom;
-            fLastPoolTime = System.currentTimeMillis();
         }
 
         // --------------------------------------------------------------------
@@ -253,7 +243,6 @@ public class HistogramZoom implements MouseWheelListener {
          * @param nbScrolls the number to add to the current value
          */
         public void incrementMouseScroll(int nbScrolls) {
-            fLastPoolTime = System.currentTimeMillis();
             nbScrollClick += nbScrolls;
         }
 
@@ -263,13 +252,6 @@ public class HistogramZoom implements MouseWheelListener {
 
         @Override
         public void run() {
-            while ((System.currentTimeMillis() - fLastPoolTime) < QUIET_TIME) {
-                try {
-                    Thread.sleep(POLLING_INTERVAL);
-                } catch (Exception e) {
-                    return;
-                }
-            }
             // Done waiting. Notify the histogram.
             if (!isInterrupted()) {
                 fZoom.zoom(nbScrollClick);
