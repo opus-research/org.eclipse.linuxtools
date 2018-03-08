@@ -612,8 +612,7 @@ public class TraceControlKernelSessionTests {
         probeEvent = (TraceProbeEventComponent) channel0Events[0];
         assertEquals("myevent4", probeEvent.getName());
         assertEquals(TraceLogLevel.LEVEL_UNKNOWN, probeEvent.getLogLevel());
-        // Changed for Bug fix 419454 to function event which was introduced by LTTng 2.2
-        assertEquals(TraceEventType.FUNCTION, probeEvent.getEventType());
+        assertEquals(TraceEventType.PROBE, probeEvent.getEventType());
         assertEquals(TraceEnablement.ENABLED, probeEvent.getState());
         assertEquals("0x0", probeEvent.getOffset());
         assertNull(null, probeEvent.getAddress());
