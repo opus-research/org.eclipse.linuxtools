@@ -338,7 +338,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @Override
     public ITmfTimestamp getStartTime() {
-        return fStartTime.clone();
+        return fStartTime;
     }
 
     /* (non-Javadoc)
@@ -346,7 +346,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @Override
     public ITmfTimestamp getEndTime() {
-        return fEndTime.clone();
+        return fEndTime;
     }
 
     // ------------------------------------------------------------------------
@@ -378,8 +378,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param range the new time range
      */
     protected void setTimeRange(final TmfTimeRange range) {
-        fStartTime = range.getStartTime().clone();
-        fEndTime = range.getEndTime().clone();
+        fStartTime = range.getStartTime();
+        fEndTime = range.getEndTime();
     }
 
     /**
@@ -388,7 +388,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param startTime the new first event timestamp
      */
     protected void setStartTime(final ITmfTimestamp startTime) {
-        fStartTime = startTime.clone();
+        fStartTime = startTime;
     }
 
     /**
@@ -397,7 +397,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param endTime the new last event timestamp
      */
     protected void setEndTime(final ITmfTimestamp endTime) {
-        fEndTime = endTime.clone();
+        fEndTime = endTime;
     }
 
     /**
@@ -526,10 +526,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected synchronized void updateAttributes(final ITmfContext context, final ITmfTimestamp timestamp) {
         if (fStartTime.equals(TmfTimestamp.BIG_BANG) || (fStartTime.compareTo(timestamp, false) > 0)) {
-            fStartTime = timestamp.clone();
+            fStartTime = timestamp;
         }
         if (fEndTime.equals(TmfTimestamp.BIG_CRUNCH) || (fEndTime.compareTo(timestamp, false) < 0)) {
-            fEndTime = timestamp.clone();
+            fEndTime = timestamp;
         }
         if (context.hasValidRank()) {
             long rank = context.getRank();

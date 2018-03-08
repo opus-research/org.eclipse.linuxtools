@@ -54,7 +54,7 @@ public class CtfTmfTimestamp extends TmfTimestamp {
      * @param timestamp long
      */
     public CtfTmfTimestamp(long timestamp) {
-        setValue(timestamp, -9, 0);
+        super(timestamp, -9, 0);
         type = TimestampType.DAY;
     }
 
