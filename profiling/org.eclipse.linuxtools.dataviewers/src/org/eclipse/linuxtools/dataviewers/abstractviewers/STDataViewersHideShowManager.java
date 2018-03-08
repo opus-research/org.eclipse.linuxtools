@@ -20,8 +20,8 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Item;
 
 /*
- * This class is used to handle the hide/show column state.
- * It also handles the save and restore into the .setting
+ * This class is used to handle the hide/show column state.  
+ * It also handles the save and restore into the .setting    
  */
 public class STDataViewersHideShowManager {
 
@@ -68,8 +68,7 @@ public class STDataViewersHideShowManager {
             columns[i].addListener(SWT.Resize, l);
             columns[i].addDisposeListener(new DisposeListener() {
 
-                @Override
-				public void widgetDisposed(DisposeEvent e) {
+                public void widgetDisposed(DisposeEvent e) {
                     Item column = (Item) e.widget;
                     column.removeListener(SWT.Resize, columnsSizeListener.get(column));
 
@@ -97,7 +96,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Restores the columns width and the columns state using the columns state saved into the .setting
-     *
+     * 
      * @param dialogSettings
      */
     public void restoreState(IDialogSettings dialogSettings) {
@@ -158,9 +157,9 @@ public class STDataViewersHideShowManager {
 
     /*
      * It sets the column width
-     *
+     * 
      * @param index of column
-     *
+     * 
      * @param width
      */
     public void setWidth(int index, int width) {
@@ -172,9 +171,9 @@ public class STDataViewersHideShowManager {
 
     /*
      * It sets the state of column
-     *
+     * 
      * @param index of the column
-     *
+     * 
      * @state can be: STATE_SHOWN or STATE_HIDDEN
      */
     public void setState(int index, int state) {
@@ -183,7 +182,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Gets the column width
-     *
+     * 
      * @param index of the column
      */
     public int getWidth(int index) {
@@ -192,7 +191,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Gets the column state which can be: STATE_SHOWN or STATE_HIDDEN
-     *
+     * 
      * @param index of the column
      */
     public int getState(int index) {
@@ -201,7 +200,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Gets the all columns width of the STViewer
-     *
+     * 
      * @return int[]
      */
     public int[] getColumnsWidth() {
@@ -210,7 +209,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Gets the all columns state of the STViewer
-     *
+     * 
      * @return int[]
      */
     public int[] getColumnsState() {
@@ -219,7 +218,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Updates the columns width
-     *
+     * 
      * @param column
      */
     public void updateColumns(Item[] columns) {
@@ -237,7 +236,7 @@ public class STDataViewersHideShowManager {
 
     /*
      * Gets the STViewer hooked to this Hide/Show Manager
-     *
+     * 
      * @return AbstractSTViewer
      */
     public AbstractSTViewer getSTViewer() {
