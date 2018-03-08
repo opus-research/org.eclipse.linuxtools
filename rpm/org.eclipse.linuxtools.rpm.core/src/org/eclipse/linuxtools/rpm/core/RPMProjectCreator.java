@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
  */
 public class RPMProjectCreator {
 	private RPMProjectLayout layout;
+	private IProject latest;
 
 	/**
 	 * Creates the utility class and sets the layout that will be used.
@@ -61,9 +62,8 @@ public class RPMProjectCreator {
 	 *            The parent location of the project.
 	 * @param monitor
 	 *            Progress monitor to report back status.
-	 * @return The newly created project.
 	 */
-	public IProject create(String projectName, IPath projectPath,
+	public void create(String projectName, IPath projectPath,
 			IProgressMonitor monitor) {
 		try {
 			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -94,12 +94,20 @@ public class RPMProjectCreator {
 					createDirsRemote(monitor, project, parsedIPathString);
 				}
 			} 
-			return project;
+			latest = project;
 
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		return null;
+	}
+
+	/**
+	 * Returns the latest project created.
+	 * 
+	 * @return The last created project.
+	 */
+	public IProject getLatestProject() {
+		return latest;
 	}
 
 	private void createDirsRemote(IProgressMonitor monitor, IProject project,
