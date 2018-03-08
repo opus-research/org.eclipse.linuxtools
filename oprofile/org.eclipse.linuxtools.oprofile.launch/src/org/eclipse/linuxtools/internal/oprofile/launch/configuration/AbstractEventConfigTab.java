@@ -313,6 +313,9 @@ AbstractLaunchConfigurationTab {
 		if (getOprofileTimerMode()) {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 		} else {
+			if(defaultEventCheck==null) {
+				initializeFrom(config);
+			}
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, defaultEventCheck.getSelection());
 			for (CounterSubTab cst : counterSubTabs) {
 				cst.performApply(config);
