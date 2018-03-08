@@ -104,9 +104,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueInt(int intValue) {
-        if (intValue == -1) {
-            return nullValue();
-        }
         return new IntegerStateValue(intValue);
     }
 
@@ -119,9 +116,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @since 2.0
      */
     public static TmfStateValue newValueLong(long longValue) {
-        if (longValue == -1) {
-            return nullValue();
-        }
         return new LongStateValue(longValue);
     }
 
@@ -133,9 +127,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueDouble(double value) {
-        if (value == Double.NaN) {
-            return nullValue();
-        }
         return new DoubleStateValue(value);
     }
 
