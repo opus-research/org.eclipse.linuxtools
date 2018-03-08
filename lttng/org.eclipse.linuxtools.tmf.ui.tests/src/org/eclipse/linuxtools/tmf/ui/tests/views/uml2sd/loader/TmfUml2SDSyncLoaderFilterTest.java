@@ -52,7 +52,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
         Criteria criteria = new Criteria();
         criteria.setLifeLineSelected(true);
         criteria.setExpression(IUml2SDTestConstants.FIRST_PLAYER_NAME);
-        filterToSave.add(new FilterCriteria(criteria, false, false));
+        filterToSave.add(new FilterCriteria(criteria, true, false));
 
         criteria = new Criteria();
         criteria.setLifeLineSelected(true);
@@ -82,20 +82,12 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyFilter1of2() {
-        // Make sure we are at the first page
-        fFacility.firstPage();
-        // Initialize the filter
-        filterToSave.get(0).setActive(true);
-        // Run the filter
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
 
         assertEquals("filter", 1, fFacility.getSdView().getFrame().lifeLinesCount());
         assertEquals("filter", IUml2SDTestConstants.MASTER_PLAYER_NAME, fFacility.getSdView().getFrame().getLifeline(0).getName());
         assertEquals("filter", 0, fFacility.getSdView().getFrame().syncMessageCount());
-
-        // Remove the filter
-        resetFilter();
     }
 
 
@@ -107,20 +99,12 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyFilter2of2() {
-        // Make sure we are at the first page
-        fFacility.firstPage();
-        // Initialize the filter
-        filterToSave.get(0).setActive(true);
         filterToSave.get(1).setActive(true);
-        // Run the filter
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
 
         assertEquals("filter", 0, fFacility.getSdView().getFrame().lifeLinesCount());
         assertEquals("filter", 0, fFacility.getSdView().getFrame().syncMessageCount());
-
-        // Remove the filter
-        resetFilter();
     }
 
     /**
@@ -131,14 +115,10 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyRemoval() {
-        // First set 2 filter
-        filterToSave.get(0).setActive(true);
-        filterToSave.get(1).setActive(true);
+        filterToSave.get(0).setActive(false);
+        filterToSave.get(1).setActive(false);
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
-
-        // Remove the filter
-        resetFilter();
 
         assertEquals("filter", 2, fFacility.getSdView().getFrame().lifeLinesCount());
         assertEquals("filter", IUml2SDTestConstants.MAX_MESSEAGES_PER_PAGE,
@@ -153,11 +133,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
      */
     @Test
     public void verifyMessageFilter() {
-        // Make sure we are at the first page
-        fFacility.firstPage();
-        // Initialize the filter
         filterToSave.get(2).setActive(true);
-        // Run the filter
         fFacility.getLoader().filter(filterToSave);
         fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
 
@@ -172,9 +148,6 @@ public class TmfUml2SDSyncLoaderFilterTest {
             assertTrue("filter", msg instanceof TmfSyncMessage);
             assertEquals("filter", messages[i], msg.getName());
         }
-
-        // Remove the filter
-        resetFilter();
     }
 
     /**
@@ -187,7 +160,7 @@ public class TmfUml2SDSyncLoaderFilterTest {
     @Test
     public void verifyFilter1of3() {
         filterToSave.get(0).setActive(true);
-        fFacility.getLoader().filter(filterToSave);
+        filterToSave.get(2).setActive(false);
         fFacility.setPage(IUml2SDTestConstants.PAGE_OF_ALL_LIFELINES);
 
         assertEquals("filter", 2, fFacility.getSdView().getFrame().lifeLinesCount());
@@ -200,15 +173,6 @@ public class TmfUml2SDSyncLoaderFilterTest {
 
         assertTrue(fFacility.getSdView().getFrame().syncMessageCount() > 0);
 
-        resetFilter();
-    }
-
-    private static void resetFilter() {
-        filterToSave.get(0).setActive(false);
-        filterToSave.get(1).setActive(false);
         filterToSave.get(2).setActive(false);
-        fFacility.getLoader().filter(filterToSave);
-        fFacility.delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
     }
-
 }
