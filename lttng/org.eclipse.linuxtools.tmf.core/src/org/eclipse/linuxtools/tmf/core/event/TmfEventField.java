@@ -7,14 +7,15 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Updated as per TMF Event Model 1.0
+ *   Francois Chouinard - Initial API and implementation,
+ *                        Updated as per TMF Event Model 1.0
  *   Alexandre Montplaisir - Removed Cloneable, made immutable
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -37,10 +38,7 @@ public class TmfEventField implements ITmfEventField {
 
     private final String fName;
     private final Object fValue;
-    private final ITmfEventField[] fFields;
-
-    private final String[] fFieldNames;
-    private final Map<String, ITmfEventField> fNameMapping;
+    private final Map<String, ITmfEventField> fFields;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -49,9 +47,12 @@ public class TmfEventField implements ITmfEventField {
     /**
      * Full constructor
      *
-     * @param name the event field id
-     * @param value the event field value
-     * @param fields the list of subfields
+     * @param name
+     *            The event field id
+     * @param value
+     *            The event field value
+     * @param fields
+     *            The list of subfields
      */
     public TmfEventField(final String name, final Object value, final ITmfEventField[] fields) {
         if (name == null) {
@@ -59,24 +60,25 @@ public class TmfEventField implements ITmfEventField {
         }
         fName = name;
         fValue = value;
-        fFields = fields;
 
-        /* Fill the fFieldNames and fNameMapping structures */
-        final int nbFields = (fFields != null) ? fFields.length : 0;
-        fFieldNames = new String[nbFields];
-        fNameMapping = new HashMap<String, ITmfEventField>();
-
-        for (int i = 0; i < nbFields; i++) {
-            final String curName = fFields[i].getName();
-            fFieldNames[i] = curName;
-            fNameMapping.put(curName, fFields[i]);
+        Map<String, ITmfEventField> fieldMap;
+        if (fields == null) {
+            fieldMap = new LinkedHashMap<String, ITmfEventField>();
+        } else {
+            fieldMap = new LinkedHashMap<String, ITmfEventField>(fields.length);
+            for (ITmfEventField field : fields) {
+                fieldMap.put(field.getName(), field);
+            }
         }
+        fFields = Collections.unmodifiableMap(fieldMap);
+
     }
 
     /**
      * Copy constructor
      *
-     * @param field the other event field
+     * @param field
+     *            The event field to copy
      */
     public TmfEventField(final TmfEventField field) {
         if (field == null) {
@@ -84,76 +86,34 @@ public class TmfEventField implements ITmfEventField {
         }
         fName = field.fName;
         fValue = field.fValue;
-        fFields = field.fFields;
-        fFieldNames = field.fFieldNames;
-        fNameMapping = field.fNameMapping;
+        fFields = field.fFields; /* Immutable, so safe to shallow-copy */
     }
 
     // ------------------------------------------------------------------------
     // ITmfEventField
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getName()
-     */
     @Override
     public String getName() {
         return fName;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
-     */
     @Override
     public Object getValue() {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldNames()
+    /**
+     * @since 2.0
      */
     @Override
-    public String[] getFieldNames() {
-        return fFieldNames;
+    public Map<String, ITmfEventField> getFields() {
+        return fFields;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldName(int)
-     */
-    @Override
-    public String getFieldName(final int index) {
-        final ITmfEventField field = getField(index);
-        if (field != null) {
-            return field.getName();
-        }
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFields()
-     */
-    @Override
-    public ITmfEventField[] getFields() {
-        return (fFields != null) ? fFields : new ITmfEventField[0];
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(java.lang.String)
-     */
     @Override
     public ITmfEventField getField(final String name) {
-        return fNameMapping.get(name);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(int)
-     */
-    @Override
-    public ITmfEventField getField(final int index) {
-        if (fFields != null && index >= 0 && index < fFields.length) {
-            return fFields[index];
-        }
-        return null;
+        return fFields.get(name);
     }
 
     // ------------------------------------------------------------------------
@@ -179,9 +139,6 @@ public class TmfEventField implements ITmfEventField {
     // Object
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -191,9 +148,6 @@ public class TmfEventField implements ITmfEventField {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -219,9 +173,6 @@ public class TmfEventField implements ITmfEventField {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder ret = new StringBuilder();
@@ -238,7 +189,7 @@ public class TmfEventField implements ITmfEventField {
             ret.append('=');
             ret.append(fValue);
 
-            if (fFields != null && fFields.length > 0) {
+            if (fFields.size() > 0) {
                 /*
                  * In addition to its own name/value, this field also has
                  * sub-fields.
@@ -252,13 +203,13 @@ public class TmfEventField implements ITmfEventField {
     }
 
     private void appendSubFields(StringBuilder sb) {
-        ITmfEventField field;
-        for (int i = 0; i < getFields().length; i++) {
-            field = getFields()[i];
+        int i = 0;
+        for (ITmfEventField field : getFields().values()) {
             if (i != 0) {
                 sb.append(", ");//$NON-NLS-1$
             }
             sb.append(field.toString());
+            i++;
         }
     }
 

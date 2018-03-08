@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
 /**
  * This is the high-level wrapper around the State History and its input and
@@ -158,27 +159,26 @@ public class HistoryBuilder extends TmfComponent {
      */
     @TmfSignalHandler
     public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        /*
-         * Check if this signal is for this trace, or for an experiment
-         * containing this trace.
-         */
-        ITmfTrace sender = signal.getTrace();
-        ITmfTrace target = null;
-        for (ITmfTrace trace : sender.getTraces()) {
-            if (trace == sci.getTrace()) {
-                target = trace;
-                break;
+        ITmfTrace trace = signal.getTrace();
+        if (signal.getTrace() instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
+            for (ITmfTrace expTrace : experiment.getTraces()) {
+                if (expTrace == sci.getTrace()) {
+                    trace = expTrace;
+                    break;
+                }
             }
         }
-
-        if (target == null) {
+        if (trace != sci.getTrace()) {
             return;
         }
+        /* the signal is for this trace or for an experiment containing this trace */
 
         if (!started) {
             started = true;
             StateSystemBuildRequest request = new StateSystemBuildRequest(this);
-            sender.sendRequest(request);
+            trace = signal.getTrace();
+            trace.sendRequest(request);
         }
     }
 
@@ -190,19 +190,22 @@ public class HistoryBuilder extends TmfComponent {
      */
     @TmfSignalHandler
     public void traceClosed(TmfTraceClosedSignal signal) {
-        /*
-         * Check if this signal is for this trace, or for an experiment
-         * containing this trace.
-         */
-        boolean found = false;
-        for (ITmfTrace trace : signal.getTrace().getTraces()) {
-            if (trace == sci.getTrace()) {
-                found = true;
-                break;
+        ITmfTrace trace = signal.getTrace();
+        if (signal.getTrace() instanceof TmfExperiment) {
+            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
+            for (ITmfTrace expTrace : experiment.getTraces()) {
+                if (expTrace == sci.getTrace()) {
+                    trace = expTrace;
+                    break;
+                }
             }
         }
+        if (trace != sci.getTrace()) {
+            return;
+        }
+        /* the signal is for this trace or for an experiment containing this trace */
 
-        if (found && !started) {
+        if (!started) {
             close(true);
         }
     }

@@ -13,8 +13,7 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.Collection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -157,20 +156,6 @@ public interface ITmfTrace extends ITmfDataProvider {
     // ------------------------------------------------------------------------
 
     /**
-     * If this trace is used as a container for sub-traces, this can be used to
-     * get the sub-traces themselves. If the trace is stand-alone, this should
-     * return an array with only "this" inside. For this reason, be careful if
-     * calling this recursively.
-     *
-     * This offers a standard way of iterating through compound traces (like
-     * experiments).
-     *
-     * @return The array of sub-traces.
-     * @since 2.0
-     */
-    public ITmfTrace[] getTraces();
-
-    /**
      * @return the trace event type
      */
     public Class<? extends ITmfEvent> getEventType();
@@ -197,30 +182,24 @@ public interface ITmfTrace extends ITmfDataProvider {
     public ITmfStatistics getStatistics();
 
     /**
-     * Return the map of state systems associated with this trace.
-     *
-     * This view should be read-only (implementations should use
-     * {@link Collections#unmodifiableMap}).
-     *
-     * @return The map of state systems
-     * @since 2.0
-     */
-    public Map<String, ITmfStateSystem> getStateSystems();
-
-    /**
-     * If a state system is not build by the trace itself, it's possible to
-     * register it if it comes from another source. It will then be accessible
-     * with {@link #getStateSystems} normally.
+     * Retrieve a state system that belongs to this trace
      *
      * @param id
-     *            The unique ID to assign to this state system. In case of
-     *            conflicting ID's, the new one will overwrite the previous one
-     *            (default Map behavior).
-     * @param ss
-     *            The already-built state system
+     *            The ID of the state system to retrieve.
+     * @return The state system that is associated with this trace and ID, or
+     *         'null' if such a match doesn't exist.
      * @since 2.0
      */
-    public void registerStateSystem(String id, ITmfStateSystem ss);
+    public ITmfStateSystem getStateSystem(String id);
+
+    /**
+     * Return the list of existing state systems registered with this trace.
+     *
+     * @return A Collection view of the available state systems. The collection
+     *         could be empty, but should not be null.
+     * @since 2.0
+     */
+    public Collection<String> listStateSystems();
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters
