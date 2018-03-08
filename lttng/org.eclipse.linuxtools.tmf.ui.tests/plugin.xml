@@ -64,7 +64,7 @@
       </category>
       <type
             category="org.eclipse.linuxtools.tmf.tests.category.tracetype"
-            event_type="org.eclipse.linuxtools.tmf.tests.stubs.event.TmfEventStub"
+            event_type="org.eclipse.linuxtools.tmf.core.event.TmfEvent"
             id="org.eclipse.linuxtools.tmf.tests.tracetype"
             name="TMF Tests"
             trace_type="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub">
