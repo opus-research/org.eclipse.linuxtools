@@ -17,8 +17,8 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 /**
  * A CTF enum definition.
  *
- * The definition of a enum point basic data type. It will take the data
- * from a trace and store it (and make it fit) as an integer and a string.
+ * The definition of a enum point basic data type. It will take the data from a
+ * trace and store it (and make it fit) as an integer and a string.
  *
  * @version 1.0
  * @author Matthew Khouzam
@@ -36,21 +36,28 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
 
     private String value;
 
+    private final long mask;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
      * Constructor
-     * @param declaration the parent declaration
-     * @param definitionScope the parent scope
-     * @param fieldName the field name
+     *
+     * @param declaration
+     *            the parent declaration
+     * @param definitionScope
+     *            the parent scope
+     * @param fieldName
+     *            the field name
      */
     public EnumDefinition(EnumDeclaration declaration,
             IDefinitionScope definitionScope, String fieldName) {
         super(definitionScope, fieldName);
 
         this.declaration = declaration;
+        this.mask = declaration.getAlignment() - 1;
 
         integerValue = declaration.getContainerType().createDefinition(
                 definitionScope, fieldName);
@@ -62,7 +69,9 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
     // ------------------------------------------------------------------------
 
     /**
-     * Gets the value of the enum in string format so "Enum a{DAY="0", NIGHT="1"}; will return "DAY"
+     * Gets the value of the enum in string format so
+     * "Enum a{DAY="0", NIGHT="1"}; will return "DAY"
+     *
      * @return the value of the enum.
      */
     public String getValue() {
@@ -70,12 +79,14 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
     }
 
     @Override
-    public String getStringValue(){
+    public String getStringValue() {
         return getValue();
     }
 
     /**
-     * Gets the value of the enum in string format so "Enum a{DAY="0", NIGHT="1"}; will return 0
+     * Gets the value of the enum in string format so
+     * "Enum a{DAY="0", NIGHT="1"}; will return 0
+     *
      * @return the value of the enum.
      */
     @Override
@@ -84,8 +95,11 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
     }
 
     /**
-     * Sets the value of the enum in string format so "Enum a{DAY="0", NIGHT="1"}; will set 0
-     * @param value The value of the enum.
+     * Sets the value of the enum in string format so
+     * "Enum a{DAY="0", NIGHT="1"}; will set 0
+     *
+     * @param value
+     *            The value of the enum.
      */
     public void setIntegerValue(long value) {
         integerValue.setValue(value);
@@ -103,7 +117,7 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
 
     @Override
     public void read(BitBuffer input) {
-        alignRead(input, this.declaration);
+        alignRead(input, mask);
         integerValue.read(input);
         long val = integerValue.getValue();
 

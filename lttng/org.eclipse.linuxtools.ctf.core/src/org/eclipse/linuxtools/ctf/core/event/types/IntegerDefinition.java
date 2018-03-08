@@ -19,8 +19,8 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 /**
  * A CTF integer definition.
  *
- * The definition of a integer basic data type. It will take the data
- * from a trace and store it (and make it fit) as a long.
+ * The definition of a integer basic data type. It will take the data from a
+ * trace and store it (and make it fit) as a long.
  *
  * @version 1.0
  * @author Matthew Khouzam
@@ -34,6 +34,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     private final IntegerDeclaration declaration;
     private long value;
+    private final long mask;
 
     // ------------------------------------------------------------------------
     // Contructors
@@ -41,14 +42,19 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     /**
      * Constructor
-     * @param declaration the parent declaration
-     * @param definitionScope the parent scope
-     * @param fieldName the field name
+     *
+     * @param declaration
+     *            the parent declaration
+     * @param definitionScope
+     *            the parent scope
+     * @param fieldName
+     *            the field name
      */
     public IntegerDefinition(IntegerDeclaration declaration,
             IDefinitionScope definitionScope, String fieldName) {
         super(definitionScope, fieldName);
         this.declaration = declaration;
+        this.mask = declaration.getAlignment() - 1;
     }
 
     // ------------------------------------------------------------------------
@@ -57,6 +63,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     /**
      * Gets the value of the integer
+     *
      * @return the value of the integer (in long)
      */
     public long getValue() {
@@ -65,7 +72,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     /**
      * Sets the value of an integer
-     * @param val the value
+     *
+     * @param val
+     *            the value
      */
     public void setValue(long val) {
         value = val;
@@ -94,7 +103,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     public void read(BitBuffer input) {
         final long longNegBit = 0x0000000080000000L;
         /* Offset the buffer position wrt the current alignment */
-        alignRead(input, this.declaration);
+        alignRead(input, this.mask);
 
         boolean signed = declaration.isSigned();
         int length = declaration.getLength();
