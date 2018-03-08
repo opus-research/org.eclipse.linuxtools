@@ -154,9 +154,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Refresh the view
      */
     public void refresh() {
-        setTimeRange(_stateCtrl.getTraces());
-        _verticalScrollBar.setEnabled(true);
-        refreshAllData(_stateCtrl.getTraces());
+        setInput(_stateCtrl.getTraces());
     }
 
     /**
@@ -1039,9 +1037,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Returns the time graph control associated with this viewer.
      *
      * @return the time graph control
-     * @since 2.0
      */
-    public TimeGraphControl getTimeGraphControl() {
+    TimeGraphControl getTimeGraphControl() {
         return _stateCtrl;
     }
 
@@ -1049,9 +1046,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Returns the time graph scale associated with this viewer.
      *
      * @return the time graph scale
-     * @since 2.0
      */
-    public TimeGraphScale getTimeGraphScale() {
+    TimeGraphScale getTimeGraphScale() {
         return _timeScaleCtrl;
     }
 

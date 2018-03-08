@@ -19,9 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
  * The Attribute Tree is the /proc-like filesystem used to organize attributes.
@@ -287,26 +284,7 @@ public class AttributeTree {
                 }
                 prevNode = nextNode;
             }
-            /*
-             * Insert an initial null value for this attribute in the state
-             * system (in case the state provider doesn't set one).
-             */
-            final int newAttrib = attributeList.size() - 1;
-            try {
-                ss.modifyAttribute(ss.getStartTime(), TmfStateValue.nullValue(), newAttrib);
-            } catch (TimeRangeException e) {
-                /* Should not happen, we're inserting at ss's start time */
-                throw new RuntimeException();
-            } catch (AttributeNotFoundException e) {
-                /* Should not happen, we just created this attribute! */
-                throw new RuntimeException();
-            } catch (StateValueTypeException e) {
-                /* Should not happen, there is no existing state value, and the
-                 * one we insert is a null value anyway. */
-                throw new RuntimeException();
-            }
-
-            return newAttrib;
+            return attributeList.size() - 1;
         }
         /*
          * The attribute was already existing, return the quark of that

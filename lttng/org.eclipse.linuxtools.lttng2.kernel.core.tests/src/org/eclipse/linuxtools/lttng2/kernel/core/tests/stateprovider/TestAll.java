@@ -20,7 +20,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    LttngKernelStateProviderTest.class,
+    CtfKernelStateInputTest.class,
     PartialStateSystemTest.class,
     StateSystemFullHistoryTest.class,
     StateSystemInMemoryTest.class

@@ -43,6 +43,11 @@ final class StringStateValue extends TmfStateValue {
     }
 
     @Override
+    public byte[] toByteArray() {
+        return valueStr.getBytes();
+    }
+
+    @Override
     public String toString() {
         return valueStr;
     }
