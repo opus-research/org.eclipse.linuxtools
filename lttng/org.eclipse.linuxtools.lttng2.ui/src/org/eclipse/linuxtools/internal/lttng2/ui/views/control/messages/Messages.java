@@ -25,8 +25,6 @@ import org.eclipse.osgi.util.NLS;
 final public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.messages"; //$NON-NLS-1$
 
-    public static String EnableChannelDialog_DefaultMessage;
-
     // Failures
     public static String TraceControl_ConnectionFailure;
     public static String TraceControl_DisconnectionFailure;
@@ -148,8 +146,6 @@ final public class Messages extends NLS {
     public static String TraceControl_EnableChannelDiscardModeTooltip;
     public static String TraceControl_EnableChannelOverwriteModeLabel;
     public static String TraceControl_EnableChannelOverwriteModeTooltip;
-    public static String TraceControl_EnbleChannelMaxSizeTraceFilesTooltip;
-    public static String TraceControl_EnbleChannelMaxNumTraceFilesTooltip;
 
     public static String TraceControl_InvalidChannelNameError;
     public static String TraceControl_ChannelAlreadyExistsError;
@@ -229,7 +225,6 @@ final public class Messages extends NLS {
     public static String TraceControl_EventDisplayName;
     public static String TraceControl_ProviderDisplayName;
     public static String TraceControl_KernelProviderDisplayName;
-    public static String TraceControl_PerUidBuffersDisplayName;
 
     // Property names
     public static String TraceControl_SessionNamePropertyName;
@@ -256,9 +251,6 @@ final public class Messages extends NLS {
     public static String TraceControl_ProbeAddressPropertyName;
     public static String TraceControl_ProbeOffsetPropertyName;
     public static String TraceControl_ProbeSymbolPropertyName;
-    public static String TraceControl_MaxSizeTraceFilesPropertyName;
-    public static String TraceControl_MaxNumTraceFilesPropertyName;
-    public static String TraceControl_ConfigureMetadataChannelName;
 
     // Preferences
     public static String TraceControl_TracingGroupPreference;
