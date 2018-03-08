@@ -1,4 +1,4 @@
-package org.eclipse.linuxtools.systemtap.ui.ide.launcher;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -25,7 +25,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 
 		// Script path
 		Group scriptSettingsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
-		scriptSettingsGroup.setText(Messages.SystemTapScriptLaunchConfigurationTab_0);
+		scriptSettingsGroup.setText("Systemtap Script:");
 		scriptSettingsGroup.setLayoutData( new GridData(SWT.FILL, SWT.FILL, true, false));
 		layout = new GridLayout();
 		layout.numColumns = 2;
@@ -37,7 +37,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		GridData gridData = new GridData();
 		gridData.widthHint = 110;
 		selectScriptButon.setLayoutData(gridData);
-		selectScriptButon.setText(Messages.SystemTapScriptLaunchConfigurationTab_1);
+		selectScriptButon.setText("Browse...");
 
 		// User Settings
 		Group userSettingsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
@@ -47,42 +47,42 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		userSettingsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		Button currentUserCheckButton = new Button(userSettingsGroup, SWT.CHECK);
-		currentUserCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_2);
+		currentUserCheckButton.setText("Execute script as current user.");
 		currentUserCheckButton.setSelection(true);
 		gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		currentUserCheckButton.setLayoutData(gridData);
 
 		Label label = new Label(userSettingsGroup, SWT.NONE);
-		label.setText(Messages.SystemTapScriptLaunchConfigurationTab_3);
+		label.setText("User Name:");
 		Text userNameText = new Text(userSettingsGroup, SWT.SINGLE | SWT.BORDER);
 		userNameText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		label = new Label(userSettingsGroup, SWT.NONE);
-		label.setText(Messages.SystemTapScriptLaunchConfigurationTab_4);
+		label.setText("Password:");
 		Text userPasswordText = new Text(userSettingsGroup, SWT.SINGLE | SWT.BORDER | SWT.PASSWORD);
 		userPasswordText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		userSettingsGroup.setLayoutData( new GridData(SWT.FILL, SWT.FILL, true, false));
-		userSettingsGroup.setText(Messages.SystemTapScriptLaunchConfigurationTab_5);
+		userSettingsGroup.setText("User:");
 
 		// Host settings
 		Group hostSettingsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
 		hostSettingsGroup.setLayoutData( new GridData(SWT.FILL, SWT.FILL, true, false));
-		hostSettingsGroup.setText(Messages.SystemTapScriptLaunchConfigurationTab_6);
+		hostSettingsGroup.setText("Host:");
 		layout = new GridLayout();
 		hostSettingsGroup.setLayout(layout);
 		layout.numColumns = 2;
 
 		Button localHostCheckButton = new Button(hostSettingsGroup, SWT.CHECK);
-		localHostCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_7);
+		localHostCheckButton.setText("Run script on localhost.");
 		localHostCheckButton.setSelection(true);
 		gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		localHostCheckButton.setLayoutData(gridData);
 
 		label = new Label(hostSettingsGroup, SWT.NONE);
-		label.setText(Messages.SystemTapScriptLaunchConfigurationTab_8);
+		label.setText("Host Name:");
 		Text hostNameText = new Text(hostSettingsGroup, SWT.SINGLE | SWT.BORDER);
 		hostNameText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 	}
@@ -103,7 +103,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	}
 
 	public String getName() {
-		return Messages.SystemTapScriptLaunchConfigurationTab_9; 
+		return "Settings"; 
 	}
 
 }
