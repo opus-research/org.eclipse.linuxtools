@@ -190,6 +190,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 
 		// Get working directory
 		IPath workingDir = PerfPlugin.getDefault().getWorkingDir();
+		File wd = workingDir.toFile();
 
 		int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount,
 				PerfPlugin.ATTR_StatRunCount_default);
@@ -213,7 +214,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			statEvents = (configEvents == null) ? statEvents : configEvents.toArray(new String[]{});
 		}
 
-		StatData sd = new StatData(title, workingDir, exePath.toOSString(), arguments, runCount, statEvents);
+		StatData sd = new StatData(title, wd, exePath.toOSString(), arguments, runCount, statEvents);
 		sd.setLaunch(launch);
 		sd.parse();
 		PerfPlugin.getDefault().setStatData(sd);
