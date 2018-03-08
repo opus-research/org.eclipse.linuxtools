@@ -16,9 +16,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ExportScriptDialog;
@@ -44,7 +43,6 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.XMLMemento;
@@ -56,8 +54,7 @@ import org.eclipse.ui.XMLMemento;
  *
  * @author Ryan Morse
  */
-public class CreateModuleAction extends Action implements
-		IWorkbenchWindowActionDelegate {
+public class CreateModuleHandler extends AbstractHandler {
 	/**
 	 * This method will bring up the export script dialog window for the user to
 	 * select what they want to new module to contain. If the user enters module
@@ -68,15 +65,10 @@ public class CreateModuleAction extends Action implements
 	// private static String scriptFileName = "/script.stp";
 	public String script = null;
 
-	@Override
-	public void init(IWorkbenchWindow window) {
-		fWindow = window;
-	}
-
 	protected IWorkbenchWindow fWindow = null;
 
 	@Override
-	public void run(IAction action) {
+	public Object execute(ExecutionEvent event) {
 		ScriptDetails sd = new ScriptDetails(fWindow.getShell());
 		sd.create();
 		if (sd.open() == Window.OK) {
@@ -98,7 +90,7 @@ public class CreateModuleAction extends Action implements
 			wizard.dispose();
 
 			if (null == parser || null == dataSet)
-				return;
+				return null;
 
 			ExportScriptDialog exportDialog = new ExportScriptDialog(fWindow.getShell(), dataSet);
 			exportDialog.create();
@@ -133,6 +125,7 @@ public class CreateModuleAction extends Action implements
 				// }
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -301,17 +294,5 @@ public class CreateModuleAction extends Action implements
 			// PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		} catch (WorkbenchException we) {
 		}
-	}
-
-	@Override
-	public void selectionChanged(IAction action, ISelection selection) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void dispose() {
-		// TODO Auto-generated method stub
-
 	}
 }
