@@ -1,4 +1,4 @@
-Manifest-Version: 1.1
+Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundleName
 Bundle-SymbolicName: org.eclipse.linuxtools.systemtap.graphingapi.core;singleton:=true
