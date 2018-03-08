@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartAnalysisSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.osgi.util.NLS;
 
 /**
@@ -212,9 +211,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
         fStarted = false;
         fJob = null;
         fFinishedLatch.countDown();
-        if ((fTrace != null) && (fTrace instanceof TmfTrace)) {
-            ((TmfTrace) fTrace).refreshSupplementaryFiles();
-        }
     }
 
     /**
