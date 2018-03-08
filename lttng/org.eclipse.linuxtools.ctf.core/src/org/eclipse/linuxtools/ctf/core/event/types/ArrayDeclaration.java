@@ -15,17 +15,16 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 /**
  * A CTF array declaration
  *
- * Arrays are fixed-length. Their length is declared in the type
- * declaration within the meta-data. They contain an array of "inner type"
- * elements, which can refer to any type not containing the type of the
- * array being declared (no circular dependency). The length is the number
- * of elements in an array.
+ * Arrays are fixed-length. Their length is declared in the type declaration
+ * within the meta-data. They contain an array of "inner type" elements, which
+ * can refer to any type not containing the type of the array being declared (no
+ * circular dependency). The length is the number of elements in an array.
  *
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class ArrayDeclaration implements IDeclaration {
+public class ArrayDeclaration implements IPrimitiveDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -40,8 +39,11 @@ public class ArrayDeclaration implements IDeclaration {
 
     /**
      * Constructor
-     * @param length how many elements in the array
-     * @param elemType what type of element is in the array
+     *
+     * @param length
+     *            how many elements in the array
+     * @param elemType
+     *            what type of element is in the array
      */
     public ArrayDeclaration(int length, IDeclaration elemType) {
         this.length = length;
@@ -72,6 +74,7 @@ public class ArrayDeclaration implements IDeclaration {
     public long getAlignment() {
         return getElementType().getAlignment();
     }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -88,4 +91,12 @@ public class ArrayDeclaration implements IDeclaration {
         return "[declaration] array[" + Integer.toHexString(hashCode()) + ']'; //$NON-NLS-1$
     }
 
+    @Override
+    public long getSize() {
+        long size = 0;
+        if (getElementType() instanceof IPrimitiveDeclaration) {
+            size = ((IPrimitiveDeclaration) getElementType()).getSize() * getLength();
+        }
+        return size;
+    }
 }
