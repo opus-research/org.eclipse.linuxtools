@@ -10,34 +10,25 @@
  *******************************************************************************/ 
 package org.eclipse.linuxtools.profiling.snapshot.launch;
 
-import org.eclipse.cdt.core.model.IBinary;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public class SnapshotLaunchShortcut extends ProfileLaunchShortcut {
-
-	private static final String SNAPSHOT = "snapshot"; //$NON-NLS-1$
-
-	@Override
-	public void launch(IBinary bin, String mode) {
-		ProfileLaunchShortcut provider = getProfilingProvider(SNAPSHOT);
-		if (provider != null){
-			provider.launch(bin, mode);
-		}else{
-			handleFail(Messages.SnapshotLaunchShortcut_0 + SNAPSHOT);
-		}
-	}
+	
+	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.profiling.snapshot.launchConfigurationType";
 
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
-		return null;
+		return getLaunchManager().getLaunchConfigurationType(LAUNCHCONF_ID);
 	}
 
 	@Override
 	protected void setDefaultProfileAttributes(
 			ILaunchConfigurationWorkingCopy wc) {
-		//TODO determine what should be done here
+		wc.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
+		wc.setAttribute(IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE, true);
 	}
 
 }
