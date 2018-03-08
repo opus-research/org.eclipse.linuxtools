@@ -43,11 +43,13 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 			errorGobbler = new StreamGobbler(process.getErrorStream());            
 			inputGobbler = new StreamGobbler(process.getInputStream());
 
-			this.transferListeners();
+			int i;
+			for(i=0; i<inputListeners.size(); i++)
+				inputGobbler.addDataListener(inputListeners.get(i));
+			for(i=0; i<errorListeners.size(); i++)
+				errorGobbler.addDataListener(errorListeners.get(i));
 			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} catch(IOException ioe) {}
 		return false;
 	}
 	
@@ -59,20 +61,15 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 	public void run() {
 		errorGobbler.start();
 		inputGobbler.start();
+		
 		try {
-			process.waitFor();
-		} catch (InterruptedException e) {} 
-		stop();
+			while(!stopped) {
+				try {
+					process.exitValue();	//Dont care what the value is, just whether it throws an exception
+					stop();	//Above line will throw an exception if not finished
+				} catch(IllegalThreadStateException itse) {}				
+			}
+		} catch(NullPointerException npe) {}
 	}
 
-	public synchronized void stop() {
-		if(!stopped) {
-			process.destroy();
-			stopped = true;
-			if(null != errorGobbler)
-				errorGobbler.stop();
-			if(null != inputGobbler)
-				inputGobbler.stop();
-		}
-	}
 }

@@ -24,16 +24,19 @@
   <name>Linux Tools Perf Tests Plug-in</name>
 
  <build>
+     <!-- workaround for https://issues.sonatype.org/browse/TYCHO-168 -->
+     <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-surefire-plugin</artifactId>
-          <configuration>
-            <useUIHarness>true</useUIHarness>
-            <useUIThread>true</useUIThread>
-            <testSuite>org.eclipse.linuxtools.perf.tests</testSuite>
-            <testClass>org.eclipse.linuxtools.internal.perf.tests.AllPerfTests</testClass>
-        </configuration>
+        <artifactId>tycho-source-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
