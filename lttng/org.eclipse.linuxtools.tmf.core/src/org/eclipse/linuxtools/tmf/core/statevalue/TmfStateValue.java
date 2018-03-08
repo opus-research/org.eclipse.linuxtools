@@ -88,7 +88,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *
      * @return A null value
      */
-    public static final TmfStateValue nullValue() {
+    public final static TmfStateValue nullValue() {
         return nullValue;
     }
 
