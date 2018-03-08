@@ -8,7 +8,7 @@
  * Contributors:
  *    Camilo Bernal <cabernal@redhat.com> - Initial Implementation.
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.perf.handlers;
+package org.eclipse.linuxtools.internal.perf.ui;
 
 import java.io.BufferedWriter;
 import java.io.File;

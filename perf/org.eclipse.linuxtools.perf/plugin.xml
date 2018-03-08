@@ -188,12 +188,12 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveSessionHandler"
+            defaultHandler="org.eclipse.linuxtools.internal.perf.ui.PerfSaveSessionHandler"
             id="org.eclipse.linuxtools.perf.SaveData"
             name="Save Current Session">
       </command>
       <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveStatsHandler"
+            defaultHandler="org.eclipse.linuxtools.internal.perf.ui.PerfSaveStatsHandler"
             id="org.eclipse.linuxtools.perf.SaveStatData"
             name="Save Statistics">
       </command>
