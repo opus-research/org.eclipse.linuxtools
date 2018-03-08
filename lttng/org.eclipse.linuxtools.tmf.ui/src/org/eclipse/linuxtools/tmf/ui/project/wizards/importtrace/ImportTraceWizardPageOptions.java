@@ -31,9 +31,6 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.IWorkbench;
 
 /**
- * This page selects the project to import to.
- *
- *
  * @author Matthew Khouzam
  * @since 2.0
  */
@@ -111,8 +108,8 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
             this.setErrorMessage(null);
         }else{
             this.setErrorMessage(Messages.ImportTraceWizardPageOptions_NoProjectSelected);
+
         }
-        this.setTitle(Messages.ImportTraceWizardPageOptions_Title);
     }
 
 }

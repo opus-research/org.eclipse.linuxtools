@@ -174,6 +174,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      */
     public void removeFile(final String fileName) {
         fParentFiles.remove(fileName);
+        fParentFilesToScan.remove(fileName);
         startUpdateTask(Messages.BatchImportTraceWizard_remove + " " + fileName, null);//$NON-NLS-1$
     }
 
@@ -190,9 +191,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         sm = SubMonitor.convert(monitor);
                         sm.setTaskName(taskName);
                         sm.setWorkRemaining(TOTALWORK);
-                        if ((updateFiles(sm, fileName).getSeverity() & IStatus.CANCEL) != 0) {
-                            // leaving the if statement as a snippet
-                        }
+                        updateFiles(sm, fileName);
                         sm.done();
                     }
                 }
@@ -245,7 +244,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             try {
                 if (fLinked) {
                     createLink(fTargetFolder, Path.fromOSString(traceToImport.getFile().getAbsolutePath()), traceToImport.getName());
-                    success= setTraceType(traceToImport).isOK();
+                    success = setTraceType(traceToImport).isOK();
                 }
                 else {
                     List<File> subList = new ArrayList<File>();
@@ -663,7 +662,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 fParentFilesToScan.add(name);
             }
             IStatus cancelled = updateScanQueue(monitor, filesToScan, traceTypes);
-            if ((cancelled.getSeverity() & IStatus.CANCEL) != 0) {
+            if (cancelled.matches(IStatus.CANCEL)) {
                 fParentFilesToScan.remove(traceToScan);
                 fParentFiles.remove(traceToScan);
             }
@@ -709,7 +708,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
+                    if (retVal.matches(IStatus.CANCEL)) {
                         return retVal;
                     }
                     monitor.worked(step);
@@ -730,7 +729,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
+                    if (retVal.matches(IStatus.CANCEL)) {
                         return retVal;
                     }
                 }
