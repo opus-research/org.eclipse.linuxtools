@@ -123,6 +123,7 @@ public class CTFTraceReader {
                 reader.dispose();
             }
         }
+        streamInputReaders.clear();
     }
 
     // ------------------------------------------------------------------------
