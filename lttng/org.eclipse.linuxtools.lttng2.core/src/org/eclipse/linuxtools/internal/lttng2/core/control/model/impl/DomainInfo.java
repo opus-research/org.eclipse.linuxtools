@@ -100,7 +100,6 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
      */
     @Override
     public void setChannels(List<IChannelInfo> channels) {
-        fChannels.clear();
         for (Iterator<IChannelInfo> iterator = channels.iterator(); iterator.hasNext();) {
             IChannelInfo channelInfo = iterator.next();
             fChannels.add(channelInfo);
