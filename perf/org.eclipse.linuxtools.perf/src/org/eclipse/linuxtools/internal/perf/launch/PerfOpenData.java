@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.internal.perf.launch;
 
 import java.net.URI;
-import java.sql.Date;
-import java.text.DateFormat;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.resources.IFile;
@@ -48,14 +46,12 @@ public class PerfOpenData extends ProfileLaunchShortcut implements
                 if(selection instanceof ITreeSelection){
                         Object element = ((ITreeSelection)selection).getFirstElement();
                         if(element instanceof IFile){
-                                IFile eFile = (IFile) element;
-                                IProject project = eFile.getProject();
+                                IProject project = ((IFile)element).getProject();
                                 projectName = project.getName();
                                 URI fileURI = ((IFile)element).getLocationURI();
                                 ILaunchConfiguration config = createDefaultConfiguration(projectName);
                                 PerfCore.Report(config, null, null, null, fileURI.getPath(), null);
-                                String timestamp = DateFormat.getInstance().format(new Date(eFile.getLocalTimeStamp()));
-                                PerfCore.RefreshView(fileURI.toString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                                PerfCore.RefreshView(fileURI.toString());
                         }
                 }
         } else {
