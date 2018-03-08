@@ -8,7 +8,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.eclipse.linuxtools.internal.callgraph.core;x-friends:="org.eclipse.linuxtools.callgraph.launch,org.eclipse.linuxtools.callgraph,org.eclipse.linuxtools.callgraph.tests"
+Export-Package: org.eclipse.linuxtools.internal.callgraph.core
 Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.core.resources,
  org.eclipse.debug.ui.sourcelookup,

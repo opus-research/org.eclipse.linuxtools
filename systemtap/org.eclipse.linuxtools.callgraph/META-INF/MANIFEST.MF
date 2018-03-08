@@ -9,8 +9,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.zest.core;bundle-version="1.2.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.eclipse.linuxtools.internal.callgraph;x-friends:="org.eclipse.linuxtools.callgraph.tests",
- org.eclipse.linuxtools.internal.callgraph.graphlisteners;x-friends:="org.eclipse.linuxtools.callgraph.tests"
+Export-Package: org.eclipse.linuxtools.internal.callgraph,
+ org.eclipse.linuxtools.internal.callgraph.graphlisteners
 Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.linuxtools.internal.callgraph.core
 Bundle-Vendor: %Bundle-Vendor
