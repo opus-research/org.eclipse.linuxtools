@@ -1360,11 +1360,7 @@ public class TmfTraceTest {
         final int nbEvents  = 1000;
         final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
-        final TmfDataRequest request = new TmfDataRequest(ITmfEvent.class,
-                startIndex,
-                nbEvents,
-                TmfDataRequest.DEFAULT_BLOCK_SIZE,
-                TmfDataRequest.ExecutionType.FOREGROUND) {
+        final TmfDataRequest request = new TmfDataRequest(ITmfEvent.class, startIndex, nbEvents) {
             @Override
             public void handleData(final ITmfEvent event) {
                 super.handleData(event);
@@ -1468,5 +1464,14 @@ public class TmfTraceTest {
 
         TmfTimestamp initRange = new TmfTimestamp(5, ITmfTimestamp.MILLISECOND_SCALE);
         assertEquals("getInitialRangeOffset", initRange, trace.getInitialRangeOffset());
+    }
+
+    /**
+     * Run the String getHostId() method test
+     */
+    @Test
+    public void testTraceHostId() {
+        String a = fTrace.getHostId();
+        assertEquals("A-Test-10K", a);
     }
 }
