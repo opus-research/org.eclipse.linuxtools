@@ -38,7 +38,6 @@ public class Messages extends NLS {
 	public static String SystemTapScriptOptionsTab_3;
 	public static String SystemTapScriptOptionsTab_4;
 	public static String SystemTapScriptOptionsTab_5;
-	public static String SystemTapScriptOptionsTab_initializeConfigurationFailed;
 	public static String SystemTapScriptOptionsTab_targetToolTip;
 
 	static {
