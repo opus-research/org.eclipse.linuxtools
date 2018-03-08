@@ -6,9 +6,8 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *     Simon Marchi - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Simon Marchi - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -35,6 +34,7 @@ import org.eclipse.linuxtools.ctf.parser.CTFLexer;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
 import org.eclipse.linuxtools.ctf.parser.CTFParser.parse_return;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.IOStructGen;
+import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.CtfAntlrException;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
 /**
@@ -177,9 +177,9 @@ public class Metadata {
         } catch (ParseException e) {
             tempException = new CTFReaderException(e);
         } catch (MismatchedTokenException e) {
-            tempException = new CTFReaderException(e);
+            tempException = new CtfAntlrException(e);
         } catch (RecognitionException e) {
-            tempException = new CTFReaderException(e);
+            tempException = new CtfAntlrException(e);
         }
 
         /* Ghetto resource management. Java 7 will deliver us from this... */
@@ -344,9 +344,6 @@ public class Metadata {
 
         /* Extract the text from the packet */
         int payloadSize = ((header.contentSize / 8) - METADATA_PACKET_HEADER_SIZE);
-        if (payloadSize < 0) {
-            throw new CTFReaderException("Invalid metadata packet payload size."); //$NON-NLS-1$
-        }
         int skipSize = (header.packetSize - header.contentSize) / 8;
 
         /* Read the payload + the padding in a ByteBuffer */
