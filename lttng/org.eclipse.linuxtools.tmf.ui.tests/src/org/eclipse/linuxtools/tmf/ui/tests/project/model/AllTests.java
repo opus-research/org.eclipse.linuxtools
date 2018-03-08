@@ -20,7 +20,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ProjectModelTraceTest.class
+    ProjectModelTraceTest.class,
+    ProjectModelAnalysisTest.class,
+    ProjectModelOutputTest.class
 })
 public class AllTests {
 

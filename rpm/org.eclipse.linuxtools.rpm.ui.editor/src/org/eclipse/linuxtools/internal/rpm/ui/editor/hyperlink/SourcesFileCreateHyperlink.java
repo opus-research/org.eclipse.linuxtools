@@ -37,9 +37,9 @@ import org.eclipse.ui.ide.IDE;
  */
 public class SourcesFileCreateHyperlink implements IHyperlink {
 
-	private String fileName;
-	private IFile original;
-	private IRegion region;
+	String fileName;
+	IFile original;
+	IRegion region;
 
 	/**
 	 * Creates hyperlink for the following file name, region and file whether

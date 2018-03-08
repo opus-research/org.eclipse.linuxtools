@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisOutputElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
@@ -58,7 +59,8 @@ public class OpenAction extends Action {
             IStructuredSelection sSelection = (IStructuredSelection) selection;
             if (sSelection.size() == 1) {
                 if (sSelection.getFirstElement() instanceof TmfTraceElement ||
-                        sSelection.getFirstElement() instanceof TmfExperimentElement) {
+                        sSelection.getFirstElement() instanceof TmfExperimentElement ||
+                        sSelection.getFirstElement() instanceof TmfAnalysisOutputElement) {
                     element = (TmfProjectModelElement) sSelection.getFirstElement();
                     return true;
                 }
@@ -71,7 +73,7 @@ public class OpenAction extends Action {
     public void run() {
         try {
             IHandlerService handlerService = (IHandlerService) page.getActivePart().getSite().getService(IHandlerService.class);
-            boolean executeCommand = (element instanceof TmfTraceElement);
+            boolean executeCommand = ((element instanceof TmfTraceElement) || (element instanceof TmfAnalysisOutputElement));
 
             if (!executeCommand && element instanceof TmfExperimentElement) {
                 TmfExperimentElement experiment = (TmfExperimentElement) element;

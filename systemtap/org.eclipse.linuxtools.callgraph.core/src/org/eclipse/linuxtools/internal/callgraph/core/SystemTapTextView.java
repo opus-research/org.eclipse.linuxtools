@@ -37,9 +37,8 @@ public class SystemTapTextView extends SystemTapView {
 	 */
 	@Override
 	public void setFocus() {
-		if (viewer != null && !viewer.isDisposed()) {
+		if (viewer != null && !viewer.isDisposed())
 			viewer.setFocus();
-		}
 	}
 
 	public void createViewer(Composite parent) {
