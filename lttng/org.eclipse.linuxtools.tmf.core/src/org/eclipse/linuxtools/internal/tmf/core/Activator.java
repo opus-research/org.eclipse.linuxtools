@@ -90,21 +90,6 @@ public class Activator extends Plugin {
         super.stop(context);
     }
 
-
-    // ------------------------------------------------------------------------
-    // Log an IStatus
-    // ------------------------------------------------------------------------
-
-    /**
-     * Log an IStatus object directly
-     *
-     * @param status
-     *            The status to log
-     */
-    public static void log(IStatus status) {
-        fPlugin.getLog().log(status);
-    }
-
     // ------------------------------------------------------------------------
     // Log INFO
     // ------------------------------------------------------------------------
@@ -187,4 +172,5 @@ public class Activator extends Plugin {
     public static void logError(String message, Throwable exception) {
         fPlugin.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, exception));
     }
+
 }
