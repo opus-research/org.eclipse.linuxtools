@@ -19,11 +19,15 @@
   <parent>
     <groupId>org.eclipse.linuxtools.releng</groupId>
     <artifactId>linuxtools-releng-parent</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.releng-site</artifactId>
   <packaging>eclipse-repository</packaging>
+
+  <properties>
+    <relengTargetDir>${basedir}/target_save</relengTargetDir>
+  </properties>
 
   <build>
     <plugins>
@@ -48,6 +52,37 @@
             </goals>
             <configuration>
               <finalName>${project.artifactId}</finalName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!--
+           Packaging type 'eclipse-repository' performs a clean on the
+           'initialize' phase. The maven-javadoc-plugin executes
+           'generate-sources', which will also trigger an 'initialize' (clean).
+
+           Copy the contents of our target folder to another location so
+           that it's available for later use.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>save-releng-target-dir</id>
+            <phase>install</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+	      <outputDirectory>${relengTargetDir}</outputDirectory>
+	      <resources>
+	        <resource>
+                    <directory>${project.build.directory}</directory>
+	        </resource>
+	      </resources>
+              <overwrite>true</overwrite>
             </configuration>
           </execution>
         </executions>
@@ -77,7 +112,7 @@
 
   <name>Eclipse Linux Tools p2 Repository</name>
   <!-- see http://issues.sonatype.org/browse/TYCHO-313 -->
-  <version>1.2.0</version>
+  <version>1.2.0-SNAPSHOT</version>
 
   <profiles>
     <profile>
@@ -92,7 +127,7 @@
              <execution>
                <id>pack</id>
                <configuration>
-                 <inputFile>${project.build.directory}/org.eclipse.linuxtools.releng-site.zip</inputFile>
+                 <inputFile>${relengTargetDir}/org.eclipse.linuxtools.releng-site.zip</inputFile>
                </configuration>
                <phase>install</phase>
                <goals>
@@ -145,12 +180,12 @@
                    <tasks>
                      <delete includeemptydirs="false">
                        <fileset
-                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-juno">
+                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
                          <include name="**" />
                        </fileset>
                      </delete>
                      <copy includeemptydirs="false"
-                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-juno">
+                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
                        <fileset dir="target/checksumFix">
                          <include name="**" />
                        </fileset>
