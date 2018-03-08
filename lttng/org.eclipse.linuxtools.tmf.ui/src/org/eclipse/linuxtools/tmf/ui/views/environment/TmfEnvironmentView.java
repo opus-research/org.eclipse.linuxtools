@@ -16,11 +16,9 @@ package org.eclipse.linuxtools.tmf.ui.views.environment;
 
 import java.util.Map;
 
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
@@ -40,7 +38,6 @@ public class TmfEnvironmentView extends TmfView {
     /** The Environment View's ID */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.environment"; //$NON-NLS-1$
 
-    private ITmfTrace fTrace;
     private Tree fTree;
 
     /**
@@ -48,7 +45,6 @@ public class TmfEnvironmentView extends TmfView {
      */
     public TmfEnvironmentView() {
         super("EnvironmentVariables"); //$NON-NLS-1$
-//        fTitlePrefix = getTitle();
     }
 
     // ------------------------------------------------------------------------
@@ -75,7 +71,8 @@ public class TmfEnvironmentView extends TmfView {
         }
     }
 
-    private void updateTable() {
+    @Override
+    protected void loadTrace() {
         fTree.setItemCount(0);
         if (fTrace == null) {
             return;
@@ -107,40 +104,13 @@ public class TmfEnvironmentView extends TmfView {
     }
 
     @Override
+    protected void closeTrace() {
+        fTree.setItemCount(0);
+    }
+
+    @Override
     public void setFocus() {
         fTree.setFocus();
     }
-
-    /**
-     * Handler for the trace selected signal.
-     *
-     * @param signal
-     *            The incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceSelected(TmfTraceSelectedSignal signal) {
-        // Update the trace reference
-        ITmfTrace trace = signal.getTrace();
-        if (!trace.equals(fTrace)) {
-            fTrace = trace;
-            updateTable();
-        }
-    }
-
-    /**
-     * Handler for the trace closed signal.
-     *
-     * @param signal the incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceClosed(TmfTraceClosedSignal signal) {
-        if (signal.getTrace() == fTrace) {
-            fTrace = null;
-            fTree.setItemCount(0);
-        }
-    }
-
 }
 

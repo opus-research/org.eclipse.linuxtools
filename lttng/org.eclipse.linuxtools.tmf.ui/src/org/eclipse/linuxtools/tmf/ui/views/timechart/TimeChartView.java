@@ -581,6 +581,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      *            The incoming signal
      * @since 2.0
      */
+    @Override
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
         final ITmfTrace trace = signal.getTrace();
@@ -637,6 +638,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
      * @param signal
      *            The incoming signal
      */
+    @Override
     @TmfSignalHandler
     public void traceSelected(TmfTraceSelectedSignal signal) {
         if (signal.getSource() != this) {
