@@ -19,9 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramScaledData;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.IHistogramModelListener;
@@ -193,7 +190,7 @@ public class HistogramDataModelTest {
         HistogramDataModel model = new HistogramDataModel(nbBuckets);
         for (int i = 0; i < nbBuckets; i++) {
             model.countEvent(i, i);
-            model.countEvent(i + 1, i);
+            model.countEvent(i+1, i);
         }
 
         HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
@@ -247,13 +244,16 @@ public class HistogramDataModelTest {
         HistogramDataModel model = new HistogramDataModel(10);
         try {
             model.scaleTo(10, 0, 1);
-        } catch (AssertionError e1) {
+        }
+        catch (AssertionError e1) {
             try {
                 model.scaleTo(0, 10, 1);
-            } catch (AssertionError e2) {
+            }
+            catch (AssertionError e2) {
                 try {
                     model.scaleTo(0, 0, 1);
-                } catch (AssertionError e3) {
+                }
+                catch (AssertionError e3) {
                     return;
                 }
             }
@@ -449,8 +449,7 @@ public class HistogramDataModelTest {
         // (int)(width / barWith) = 2
         // -> 2 bars -> expected result needs two buckets (scaled data)
         //
-        // buckets (in model) per bar = last bucket id / nbBars + 1 (plus 1 to
-        // cover all used buckets)
+        // buckets (in model) per bar = last bucket id / nbBars + 1 (plus 1 to cover all used buckets)
         // -> buckets per bar = 50 / 2 + 1 = 26
         // -> first entry in expected result is 26 * 4 = 104
         // -> second entry in expected result is 22 * 4 + 9 = 97
@@ -471,7 +470,7 @@ public class HistogramDataModelTest {
         assertEquals(0, result.fFirstEventTime);
         assertEquals(1, result.fLastBucket);
         assertEquals(104, result.fMaxValue);
-        assertEquals((double) maxHeight / 104, result.fScalingFactor, DELTA);
+        assertEquals((double)maxHeight/104, result.fScalingFactor, DELTA);
         assertEquals(maxHeight, result.fHeight);
         assertEquals(width, result.fWidth);
         assertEquals(barWidth, result.fBarWidth);
@@ -504,8 +503,7 @@ public class HistogramDataModelTest {
         // (int)(width / barWith) = 10
         // -> 10 bars -> expected result needs 10 buckets (scaled data)
         //
-        // buckets in (model) per bar = last bucket id / nbBars + 1 (plus 1 to
-        // cover all used buckets)
+        // buckets in (model) per bar = last bucket id / nbBars + 1 (plus 1 to cover all used buckets)
         // -> buckets per bar = 50 / 10 + 1 = 6
         final int[] expectedResult = new int[] { 21, 24, 24, 24, 24, 24, 24, 24, 12, 0 };
 
@@ -520,12 +518,11 @@ public class HistogramDataModelTest {
         assertEquals(4 * 6, result.fBucketDuration);
         assertEquals(0, result.fSelectionBeginBucket);
         assertEquals(0, result.fSelectionEndBucket);
-        assertEquals(-3, result.fFirstBucketTime); // negative is correct, can
-                                                   // happen when reverse
+        assertEquals(-3, result.fFirstBucketTime); // negative is correct, can happen when reverse
         assertEquals(0, result.fFirstEventTime);
         assertEquals(9, result.fLastBucket);
         assertEquals(24, result.fMaxValue);
-        assertEquals((double) maxHeight / 24, result.fScalingFactor, DELTA);
+        assertEquals((double)maxHeight/24, result.fScalingFactor, DELTA);
         assertEquals(maxHeight, result.fHeight);
         assertEquals(width, result.fWidth);
         assertEquals(barWidth, result.fBarWidth);
@@ -565,7 +562,7 @@ public class HistogramDataModelTest {
 
         model.clear();
 
-        for (int i = nbEvents - 1; i >= 0; i--) {
+        for (int i = nbEvents -1; i >= 0; i--) {
             model.countEvent(i, i);
         }
 
@@ -579,8 +576,7 @@ public class HistogramDataModelTest {
         assertEquals(nbEvents - 1, model.getEndTime());
         assertEquals(2 * nbBuckets, model.getTimeLimit());
 
-        // For the above number of events, result and revResult are exactly the
-        // same.
+        // For the above number of events, result and revResult are exactly the same.
         assertEquals(result.fBucketDuration, revResult.fBucketDuration);
         assertEquals(result.fSelectionBeginBucket, revResult.fSelectionBeginBucket);
         assertEquals(result.fSelectionEndBucket, revResult.fSelectionEndBucket);
@@ -604,7 +600,7 @@ public class HistogramDataModelTest {
         final int nbBuckets = 2000;
         final int nbEvents = 10 * nbBuckets + 256;
         final int[] count = new int[1];
-        count[0] = 0;
+        count [0] = 0;
 
         // Test add listener and call of listener
         IHistogramModelListener listener = new IHistogramModelListener() {
@@ -618,7 +614,7 @@ public class HistogramDataModelTest {
         HistogramDataModel model = new HistogramDataModel(nbBuckets);
         model.addHistogramListener(listener);
         for (int i = 0; i < nbEvents; i++) {
-            model.countEvent(i + 1, i);
+            model.countEvent(i+1, i);
         }
 
         assertTrue(count[0] == 1);
@@ -640,182 +636,5 @@ public class HistogramDataModelTest {
         }
         model.complete();
         assertTrue(count[0] == 0);
-    }
-
-    /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
-     */
-    @Test
-    public void testLostEventsScaleTo_0() {
-        final int nbBuckets = 10;
-        final int maxHeight = 10;
-        final int nbEvents = 3 * nbBuckets;
-        final int nbLostEvents_0 = 4;
-        final int nbLostEvents_1 = 9;
-        final int nbCombinedEvents = nbEvents + 2;
-        final int[] expectedResult = new int[] { 4, 4, 4, 4, 4, 4, 4, 2, 0, 0 };
-        final int[] expectedLostEventsResult = new int[] { 0, 2, 2, 0, 3, 3, 3, 0, 0, 0 };
-
-        HistogramDataModel model = new HistogramDataModel(nbBuckets);
-        for (int i = 0; i < nbEvents; i++) {
-            model.countEvent(i, i);
-        }
-
-        final TmfTimeRange timeRange_0 = new TmfTimeRange(
-                new TmfTimestamp(5L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(10L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_0, nbLostEvents_0, false);
-
-        final TmfTimeRange timeRange_1 = new TmfTimeRange(
-                new TmfTimestamp(18L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(27L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_1, nbLostEvents_1, false);
-
-        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
-        for (int i = 0; i < result.fData.length; i++) {
-            assertTrue(result.fData[i] == expectedResult[i]);
-        }
-        for (int i = 0; i < result.fLostEventsData.length; i++) {
-            assertTrue(result.fLostEventsData[i] == expectedLostEventsResult[i]);
-        }
-
-        assertTrue(model.getNbEvents() == nbCombinedEvents);
-        assertTrue(model.getNbBuckets() == nbBuckets);
-        assertTrue(model.getBucketDuration() == 4);
-        assertTrue(model.getFirstBucketTime() == 0);
-        assertTrue(model.getStartTime() == 0);
-        assertTrue(model.getEndTime() == nbEvents - 1);
-        assertTrue(model.getTimeLimit() == 4 * nbBuckets);
-        assertTrue(result.fMaxCombinedValue == 7);
-    }
-
-    /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
-     */
-    @Test
-    public void testLostEventsScaleTo_1() {
-        final int nbBuckets = 10;
-        final int maxHeight = 10;
-        final int nbEvents = 3 * nbBuckets;
-        final int nbLostEvents_0 = 4;
-        final int nbLostEvents_1 = 9;
-        final int nbCombinedEvents = nbEvents + 2;
-        final int[] expectedLostEventsResult = new int[] { 0, 2, 5, 3, 3, 0, 0, 0, 0, 0 };
-
-        HistogramDataModel model = new HistogramDataModel(nbBuckets);
-        for (int i = 0; i < nbEvents; i++) {
-            model.countEvent(i, i);
-        }
-
-        final TmfTimeRange timeRange_0 = new TmfTimeRange(
-                new TmfTimestamp(5L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(10L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_0, nbLostEvents_0, false);
-
-        final TmfTimeRange timeRange_1 = new TmfTimeRange(
-                new TmfTimestamp(11L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(18L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_1, nbLostEvents_1, false);
-
-        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
-        for (int i = 0; i < result.fLostEventsData.length; i++) {
-            assertTrue(result.fLostEventsData[i] == expectedLostEventsResult[i]);
-        }
-
-        assertTrue(model.getNbEvents() == nbCombinedEvents);
-        assertTrue(model.getNbBuckets() == nbBuckets);
-        assertTrue(model.getBucketDuration() == 4);
-        assertTrue(model.getFirstBucketTime() == 0);
-        assertTrue(model.getStartTime() == 0);
-        assertTrue(model.getEndTime() == nbEvents - 1);
-        assertTrue(model.getTimeLimit() == 4 * nbBuckets);
-        assertTrue(result.fMaxCombinedValue == 9);
-    }
-
-    /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
-     */
-    @Test
-    public void testLostEventsScaleTo_2() {
-        final int nbBuckets = 10;
-        final int maxHeight = 10;
-        final int nbEvents = 3 * nbBuckets;
-        final int nbLostEvents_0 = 5;
-        final int nbLostEvents_1 = 15;
-        final int nbLostEvents_2 = 2;
-        final int nbCombinedEvents = nbEvents + 3;
-        final int[] expectedLostEventsResult = new int[] { 0, 0, 3, 3, 6, 5, 3, 2, 0, 0 };
-
-        HistogramDataModel model = new HistogramDataModel(nbBuckets);
-        for (int i = 0; i < nbEvents; i++) {
-            model.countEvent(i, i);
-        }
-
-        final TmfTimeRange timeRange_0 = new TmfTimeRange(
-                new TmfTimestamp(18L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(22L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_0, nbLostEvents_0, false);
-
-        final TmfTimeRange timeRange_2 = new TmfTimeRange(
-                new TmfTimestamp(28L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(29L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_2, nbLostEvents_2, false);
-
-        final TmfTimeRange timeRange_1 = new TmfTimeRange(
-                new TmfTimestamp(11L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(26L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_1, nbLostEvents_1, false);
-
-        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
-        for (int i = 0; i < result.fLostEventsData.length; i++) {
-            assertEquals(expectedLostEventsResult[i], result.fLostEventsData[i] );
-        }
-
-        assertEquals(nbCombinedEvents, model.getNbEvents());
-        assertEquals(nbBuckets, model.getNbBuckets());
-        assertEquals(4, model.getBucketDuration());
-        assertEquals(0, model.getFirstBucketTime());
-        assertEquals(0, model.getStartTime());
-        assertEquals(nbEvents - 1, model.getEndTime());
-        assertEquals(4 * nbBuckets, model.getTimeLimit());
-        assertEquals(10, result.fMaxCombinedValue);
-    }
-
-    /**
-     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
-     */
-    @Test
-    public void testLostEventsScaleTo_3() {
-        final int nbBuckets = 10;
-        final int maxHeight = 10;
-        final int nbEvents = 3 * nbBuckets;
-        final int nbLostEvents_0 = 23;
-        final int nbCombinedEvents = nbEvents + 1;
-        final int[] expectedLostEventsResult = new int[] { 0, 0, 5, 5, 5, 5, 3, 0, 0, 0 };
-
-        HistogramDataModel model = new HistogramDataModel(nbBuckets);
-        for (int i = 0; i < nbEvents; i++) {
-            model.countEvent(i, i);
-        }
-
-        final TmfTimeRange timeRange_0 = new TmfTimeRange(
-                new TmfTimestamp(11L, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(26L, ITmfTimestamp.NANOSECOND_SCALE));
-        model.countLostEvent(timeRange_0, nbLostEvents_0, false);
-
-        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
-        for (int i = 0; i < result.fLostEventsData.length; i++) {
-            assertEquals(expectedLostEventsResult[i], result.fLostEventsData[i] );
-        }
-
-
-        assertEquals(nbCombinedEvents, model.getNbEvents());
-        assertEquals(nbBuckets, model.getNbBuckets());
-        assertEquals(4, model.getBucketDuration());
-        assertEquals(0, model.getFirstBucketTime());
-        assertEquals(0, model.getStartTime());
-        assertEquals(nbEvents - 1, model.getEndTime());
-        assertEquals(4 * nbBuckets, model.getTimeLimit());
-        assertEquals(9, result.fMaxCombinedValue);
     }
 }
