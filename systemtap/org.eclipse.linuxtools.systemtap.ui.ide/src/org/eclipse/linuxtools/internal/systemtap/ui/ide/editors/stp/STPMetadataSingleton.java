@@ -21,13 +21,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
 
 /**
@@ -136,7 +135,7 @@ public class STPMetadataSingleton {
 				return NO_MATCHES;
 
 			// Now get the completions.
-			return getMatchingChildren(node, match);			
+			return getMatchingChildren(node, match);
 		}
 
 		// Now get the completions.
