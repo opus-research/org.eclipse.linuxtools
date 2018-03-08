@@ -13,14 +13,12 @@
 package org.eclipse.linuxtools.tmf.core.tests.statistics;
 
 import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
@@ -30,8 +28,6 @@ import org.junit.BeforeClass;
  */
 public class TmfStateStatisticsTest extends TmfStatisticsTest {
 
-    private static File htFile;
-
     /**
      * Set up the fixture (build the state history, etc.) once for all tests.
      */
@@ -39,21 +35,13 @@ public class TmfStateStatisticsTest extends TmfStatisticsTest {
     public static void setUpClass() {
         assumeTrue(testTrace.exists());
         try {
-            htFile = File.createTempFile("stats-test", ".ht");
+            File htFile = File.createTempFile("stats-test", ".ht");
+            htFile.deleteOnExit();
             backend = new TmfStateStatistics(testTrace.getTrace(), htFile);
-
         } catch (TmfTraceException e) {
-            fail();
+            e.printStackTrace();
         } catch (IOException e) {
-            fail();
+            e.printStackTrace();
         }
-    }
-
-    /**
-     * Class cleanup
-     */
-    @AfterClass
-    public static void tearDownClass() {
-        htFile.delete();
     }
 }
