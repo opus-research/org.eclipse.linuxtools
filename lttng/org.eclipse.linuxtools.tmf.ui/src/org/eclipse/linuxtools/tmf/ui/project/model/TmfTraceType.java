@@ -456,13 +456,7 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public boolean validate(TraceValidationHelper traceToValidate) {
-        boolean valid = false;
-        try {
-            valid = validate(traceToValidate.getTraceType(), traceToValidate.getTraceToScan());
-        } catch (Exception e) {
-            /* Catch all exceptions that may occur during validation */
-        }
-        return valid;
+        return validate(traceToValidate.getTraceType(), traceToValidate.getTraceToScan());
     }
 
     /**
