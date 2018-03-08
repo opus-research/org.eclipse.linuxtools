@@ -13,6 +13,7 @@
  *   Yuriy Vashchuk - Histogram Canvas Heritage correction
  *   Francois Chouinard - Cleanup and refactoring
  *   Francois Chouinard - Moved from LTTng to TMF
+ *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -35,6 +36,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -245,6 +247,10 @@ public class HistogramView extends TmfView {
         // Histogram
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
 
+        // Add mouse wheel listener to time span control
+        MouseWheelListener listener = fFullTraceHistogram.getZoom();
+        fTimeSpanControl.addMouseWheelListener(listener);
+
         ITmfTrace trace = getActiveTrace();
         if (trace != null) {
             traceSelected(new TmfTraceSelectedSignal(this, trace));
@@ -323,13 +329,12 @@ public class HistogramView extends TmfView {
             TmfTimeRange timeRange = new TmfTimeRange(
                     new TmfTimestamp(startTime, ITmfTimestamp.NANOSECOND_SCALE),
                     new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE));
-            ITmfTimestamp currentTime = new TmfTimestamp(fCurrentTimestamp, ITmfTimestamp.NANOSECOND_SCALE);
             fTimeSpanControl.setValue(endTime - startTime);
 
             updateDisplayedTimeRange(startTime, endTime);
 
             // Send the FW signal
-            TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange, currentTime);
+            TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange);
             fTimeRangeSyncThrottle.queue(signal);
         }
     }

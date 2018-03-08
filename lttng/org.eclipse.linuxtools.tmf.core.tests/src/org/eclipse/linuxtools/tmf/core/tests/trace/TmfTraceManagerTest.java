@@ -110,7 +110,7 @@ public class TmfTraceManagerTest {
     }
 
     private void selectTimeRange(TmfTimeRange tr) {
-        TmfSignalManager.dispatchSignal(new TmfRangeSynchSignal(this, tr, null));
+        TmfSignalManager.dispatchSignal(new TmfRangeSynchSignal(this, tr));
     }
 
     // ------------------------------------------------------------------------
