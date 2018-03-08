@@ -181,7 +181,7 @@ public class DomainInfoTest extends TestCase {
         assertTrue("equals", channel1.equals(channel3));
     }
 
-    public void testEqualsNull() {
+    public void testEqualsNull() throws Exception {
         assertTrue("equals", !fDomainInfo1.equals(null));
         assertTrue("equals", !fDomainInfo2.equals(null));
     }
