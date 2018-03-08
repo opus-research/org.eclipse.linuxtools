@@ -49,8 +49,7 @@ public class CustomEvent extends TmfEvent {
     }
 
     public CustomEvent(CustomTraceDefinition definition, ITmfTrace parentTrace, ITmfTimestamp timestamp, String source, TmfEventType type, String reference) {
-        // TODO: need to pass model URI?
-        super(parentTrace, timestamp, source, type, null, reference, null);
+        super(parentTrace, timestamp, source, type, null, reference);
         fDefinition = definition;
         fData = new HashMap<String, String>();
     }

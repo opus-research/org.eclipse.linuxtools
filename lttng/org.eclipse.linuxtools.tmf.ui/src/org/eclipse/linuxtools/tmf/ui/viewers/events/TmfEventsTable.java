@@ -11,7 +11,6 @@
  *   Patrick Tasse - Factored out from events view
  *   Francois Chouinard - Replaced Table by TmfVirtualTable
  *   Patrick Tasse - Filter implementation (inspired by www.eclipse.org/mat)
- *   Ansgar Radermacher (CEA) - Papyrus integration
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.events;
@@ -28,16 +27,12 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -49,7 +44,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -120,12 +114,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.themes.ColorUtil;
 
@@ -154,12 +143,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private static final String SEARCH_HINT = Messages.TmfEventsTable_SearchHint;
     private static final String FILTER_HINT = Messages.TmfEventsTable_FilterHint;
     private static final int MAX_CACHE_SIZE = 1000;
-
-    private static TmfEventsTable instance;
-
-    public static TmfEventsTable getInstance() {
-        return instance;
-    }
 
     /**
      * The events table search/filter keys
@@ -255,15 +238,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // Table column names
     static private final String[] COLUMN_NAMES = new String[] { Messages.TmfEventsTable_TimestampColumnHeader,
         Messages.TmfEventsTable_SourceColumnHeader, Messages.TmfEventsTable_TypeColumnHeader,
-        Messages.TmfEventsTable_ReferenceColumnHeader, Messages.TmfEventsTable_ContentColumnHeader,
-        Messages.TmfEventsTable_ModelURIColumnHeader
-    };
+        Messages.TmfEventsTable_ReferenceColumnHeader, Messages.TmfEventsTable_ContentColumnHeader };
 
     static private final ColumnData[] COLUMN_DATA = new ColumnData[] { new ColumnData(COLUMN_NAMES[0], 100, SWT.LEFT),
         new ColumnData(COLUMN_NAMES[1], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[2], 100, SWT.LEFT),
-        new ColumnData(COLUMN_NAMES[3], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[4], 100, SWT.LEFT),
-        new ColumnData(COLUMN_NAMES[5], 100, SWT.LEFT)
-    };
+        new ColumnData(COLUMN_NAMES[3], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[4], 100, SWT.LEFT) };
 
     // Event cache
     private final TmfEventsCache fCache;
@@ -302,7 +281,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      */
     public TmfEventsTable(final Composite parent, int cacheSize, final ColumnData[] columnData) {
         super("TmfEventsTable"); //$NON-NLS-1$
-        instance = this;
 
         fComposite = new Composite(parent, SWT.NONE);
         final GridLayout gl = new GridLayout(1, false);
@@ -336,7 +314,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             fTable.getColumns()[2].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_TYPE);
             fTable.getColumns()[3].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_REFERENCE);
             fTable.getColumns()[4].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_CONTENT);
-            fTable.getColumns()[5].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_MODEL_URI);
         }
 
         // Set the frozen row for header row
@@ -415,44 +392,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 final TableItem item = fTable.getItem(point);
                 if (item != null) {
                     final Rectangle imageBounds = item.getImageBounds(0);
-
-                    final Long rank = (Long)item.getData(Key.RANK);
-                    if(rank != null) {
-                        final CachedEvent cachedEvent = fCache.getEvent(rank.intValue());
-                        String modelURI = cachedEvent.event.getModelURI();
-
-                        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
-                        IFile file = null;
-                        URI uri = URI.createURI(modelURI);
-                        if (uri.isPlatformResource()) {
-                            IPath path = new Path(uri.toPlatformString(true));
-                            file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
-                        } else if (uri.isFile() && !uri.isRelative()) {
-                            file = ResourcesPlugin  .getWorkspace().getRoot().getFileForLocation(
-                                new Path(uri.toFileString()));
-                        }
-
-                        if(file != null) {
-                            try {
-                                // create a temporary marker on the UML file, remove it afterwards
-                                // TODO: marker type is defined within Papyrus, but we do not want to
-                                // declare a dependency from linuxtools.tmf.ui to Papyrus. Eventually move code into new plug-in
-                                // linuxtools.tmf.syncuri (e.g. register double click listener -or context menu- there)
-                                IMarker marker = file.createMarker("org.eclipse.papyrus.tporbpmarker"); //$NON-NLS-1$
-                                marker.setAttribute(/* EValidator.URI_ATTRIBUTE */"uri", modelURI); //$NON-NLS-1$
-                                IDE.openEditor(activePage, marker, OpenStrategy.activateOnOpen());
-                                marker.delete();
-                            }
-                            catch (CoreException e) {
-                                System.err.println(e);
-                            }
-                        }
-                    }
-
                     imageBounds.width = BOOKMARK_IMAGE.getBounds().width;
                     if (imageBounds.contains(point)) {
-                        // final Long rank = (Long) item.getData(Key.RANK);
+                        final Long rank = (Long) item.getData(Key.RANK);
                         if (rank != null) {
                             toggleBookmark(rank);
                         }
@@ -1150,7 +1092,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     /**
      * @since 1.1
      */
-    public void applyFilter(ITmfFilter filter) {
+    protected void applyFilter(ITmfFilter filter) {
         stopFilterThread();
         stopSearchThread();
         fFilterMatchCount = 0;
@@ -1163,7 +1105,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fireFilterApplied(filter);
     }
 
-    public void clearFilters() {
+    protected void clearFilters() {
         if (fTable.getData(Key.FILTER_OBJ) == null) {
             return;
         }
@@ -1557,15 +1499,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             final String source = event.getSource();
             final String type = event.getType().getName();
             final String reference = event.getReference();
-            final String modelURI = event.getModelURI();
             final String content = event.getContent().toString();
             fields = new TmfEventField[] {
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type),
                     new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_MODEL_URI, modelURI)
+                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content)
             };
         }
         return fields;

@@ -56,11 +56,6 @@ public class EventDeclaration {
      */
     private long logLevel;
 
-    /**
-     * Model URI of an event
-     */
-    private String modelURI;
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -246,22 +241,6 @@ public class EventDeclaration {
      */
     public void setLogLevel( long level){
         logLevel = level;
-    }
-
-    /**
-     * What is the URI of a model element associated with the event
-     * @return the model URI.
-     */
-    public String getModelURI() {
-        return modelURI;
-    }
-
-    /**
-     * Sets the model URI
-     * @param modelURI the URI of a model element associated with the event
-     */
-    public void setModelURI( String modelURI){
-        this.modelURI = modelURI;
     }
 
     // ------------------------------------------------------------------------

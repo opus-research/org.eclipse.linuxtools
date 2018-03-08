@@ -69,7 +69,6 @@ public class Messages extends NLS {
     public static String TmfEventsTable_SourceColumnHeader;
     public static String TmfEventsTable_TimestampColumnHeader;
     public static String TmfEventsTable_TypeColumnHeader;
-    public static String TmfEventsTable_ModelURIColumnHeader;
 
     public static String TmfTimeFilterDialog_EDIT_PROFILING_OPTIONS;
     public static String TmfTimeFilterDialog_TRACE_FILTER;

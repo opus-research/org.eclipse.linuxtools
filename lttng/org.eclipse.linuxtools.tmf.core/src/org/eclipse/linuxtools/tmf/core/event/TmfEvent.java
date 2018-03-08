@@ -46,7 +46,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
     private ITmfEventType fType;
     private ITmfEventField fContent;
     private String fReference;
-    private String fModelURI;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -57,7 +56,7 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
      * event rank is set to TmfContext.UNKNOWN_RANK.
      */
     public TmfEvent() {
-        this(null, ITmfContext.UNKNOWN_RANK, null, null, null, null, null, null);
+        this(null, ITmfContext.UNKNOWN_RANK, null, null, null, null, null);
     }
 
     /**
@@ -69,48 +68,13 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
-     * @param modelURI URI of the event
-     */
-    public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference, final String modelURI)
-    {
-        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference, modelURI);
-    }
 
-    /**
-     * Convenience constructor without modelURI
-     *
-     * @param trace the parent trace
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
      */
     public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
     {
-        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference, ""); //$NON-NLS-1$
+        this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference);
     }
-
-
-    /**
-     * Convenience constructor without modelURI
-     *
-     * @param trace the parent trace
-     * @param rank the event rank (in the trace)
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
-     */
-    public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference)
-    {
-        this(trace, rank, timestamp, source, type, content, reference, ""); //$NON-NLS-1$
-    }
-
 
     /**
      * Full constructor
@@ -122,10 +86,9 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
      * @param type the event type
      * @param content the event content (payload)
      * @param reference the event reference
-     * @param modelURI URI of the event
      */
     public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
-            final ITmfEventType type, final ITmfEventField content, final String reference, final String modelURI)
+            final ITmfEventType type, final ITmfEventField content, final String reference)
     {
         fTrace = trace;
         fRank = rank;
@@ -134,7 +97,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         fType = type;
         fContent = content;
         fReference = reference;
-        fModelURI = modelURI;
     }
 
     /**
@@ -153,7 +115,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         fType = event.getType();
         fContent = event.getContent();
         fReference = event.getReference();
-        fModelURI = event.getModelURI();
     }
 
     // ------------------------------------------------------------------------
@@ -216,15 +177,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         return fReference;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getModelURI()
-     */
-    @Override
-    public String getModelURI() {
-        return fModelURI;
-    }
-
     // ------------------------------------------------------------------------
     // Convenience setters
     // ------------------------------------------------------------------------
@@ -278,13 +230,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         fReference = reference;
     }
 
-    /**
-     * @param modelURI the URI of the model element referenced by this event
-     */
-    protected void setModelURI(final String modelURI) {
-        fModelURI = modelURI;
-    }
-
     // ------------------------------------------------------------------------
     // Cloneable
     // ------------------------------------------------------------------------
@@ -304,7 +249,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
             clone.fType = fType != null ? fType.clone() : null;
             clone.fContent = fContent != null ? fContent.clone() : null;
             clone.fReference = fReference;
-            clone.fModelURI = fModelURI;
         } catch (final CloneNotSupportedException e) {
         }
         return clone;

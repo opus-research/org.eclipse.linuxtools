@@ -72,8 +72,6 @@ public interface CTFStrings {
     public static final String EXP_DIG = "exp_dig"; //$NON-NLS-1$
     /** Loglevel */
     public static final String LOGLEVEL2 = "loglevel"; //$NON-NLS-1$
-    /** Model URI */
-    public static final String MODEL_URI = "model.emf.uri"; //$NON-NLS-1$
     /** Name */
     public static final String NAME2 = "name"; //$NON-NLS-1$
     /** Event context */

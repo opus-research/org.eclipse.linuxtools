@@ -62,7 +62,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
     private final long typeId;
     private final String eventName;
     private final String fileName;
-    private final String modelURI;
 
     private final TmfEventField fContent;
 
@@ -92,7 +91,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
             this.fileName = NO_STREAM;
             this.eventName = EMPTY_CTF_EVENT_NAME;
             this.fContent = null;
-            this.modelURI = null;
             return;
         }
 
@@ -102,7 +100,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         this.sourceCPU = eventDef.getCPU();
         this.typeId = eventDef.getDeclaration().getId();
         this.eventName = eventDef.getDeclaration().getName();
-        this.modelURI = eventDef.getDeclaration().getModelURI();
         this.fileName =  fileName;
 
         /* Read the fields */
@@ -195,7 +192,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         /* Strings are immutable, it's safe to shallow-copy them */
         this.eventName = other.eventName;
         this.fileName = other.fileName;
-        this.modelURI = other.modelURI;
 
         /* Copy the fields over */
         this.fContent = other.fContent.clone();
@@ -215,7 +211,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
         this.sourceCPU = -1;
         this.typeId = -1;
         this.fileName = NO_STREAM;
-        this.modelURI = null;
         this.eventName = EMPTY_CTF_EVENT_NAME;
         this.fContent = new TmfEventField("", new CtfTmfEventField[0]); //$NON-NLS-1$
     }
@@ -263,11 +258,6 @@ public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
      */
     public String getEventName() {
         return eventName;
-    }
-
-    @Override
-    public String getModelURI() {
-        return modelURI;
     }
 
     /**
