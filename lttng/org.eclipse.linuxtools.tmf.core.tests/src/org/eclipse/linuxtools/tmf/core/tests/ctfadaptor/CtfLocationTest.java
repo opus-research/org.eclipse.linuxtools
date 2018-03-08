@@ -50,8 +50,8 @@ public class CtfLocationTest {
      */
     @Before
     public void setUp() {
-        fixture = new CtfLocation(new CtfLocationData(1,0));
-        fixture.setLocation(new CtfLocationData(1,0));
+        fixture = new CtfLocation(new CtfLocationData(1, 0));
+        fixture.setLocation(new CtfLocationData(1, 0));
     }
 
     /**
@@ -68,7 +68,7 @@ public class CtfLocationTest {
      */
     @Test
     public void testCtfLocation_long() {
-        CtfLocationData location = new CtfLocationData(1,0);
+        CtfLocationData location = new CtfLocationData(1, 0);
         CtfLocation result = new CtfLocation(location);
 
         assertNotNull(result);
@@ -120,7 +120,7 @@ public class CtfLocationTest {
      */
     @Test
     public void testSetLocation() {
-        CtfLocationData location = new CtfLocationData(1337,7331);
+        CtfLocationData location = new CtfLocationData(1337, 7331);
         fixture.setLocation(location);
     }
 
@@ -129,7 +129,7 @@ public class CtfLocationTest {
      */
     @Test
     public void testToString_valid(){
-        CtfLocation fixture2 = new CtfLocation(new CtfLocationData(1337,7331));
+        CtfLocation fixture2 = new CtfLocation(new CtfLocationData(1337, 7331));
         assertEquals("CtfLocation: Element [1337/7331]",fixture2.toString()); //$NON-NLS-1$
     }
 
@@ -138,7 +138,7 @@ public class CtfLocationTest {
      */
     @Test
     public void testToString_invalid(){
-        CtfLocation fixture2 = new CtfLocation(new CtfLocationData(-1,-1));
+        CtfLocation fixture2 = new CtfLocation(new CtfLocationData(-1, -1));
         assertEquals("CtfLocation: INVALID",fixture2.toString()); //$NON-NLS-1$
     }
 }

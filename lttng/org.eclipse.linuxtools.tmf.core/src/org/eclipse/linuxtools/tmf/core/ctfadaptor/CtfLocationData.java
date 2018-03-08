@@ -11,41 +11,41 @@
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 /**
- * CtfLocationData, the data in a ctf location.
+ * CtfLocationData, the data in a CTF location.
  *
  * @author Matthew Khouzam
  * @since 2.0
  */
 public class CtfLocationData implements Comparable<CtfLocationData> {
 
+    private final long timestamp;
+    private final long index;
+
     /**
      * @param ts
-     *            timestamp
-     * @param off
-     *            offset (if there are N elements with the same packet, which
-     *            one is it.)
+     *            Timestamp
+     * @param index
+     *            Index of this event (if there are N elements with the same
+     *            timestamp, which one is it.)
      */
-    public CtfLocationData(long ts, long off) {
-        timestamp = ts;
-        offset = off;
+    public CtfLocationData(long ts, long index) {
+        this.timestamp = ts;
+        this.index = index;
     }
 
     /**
-     * @return the timestamp
+     * @return The timestamp
      */
     public long getTimestamp() {
         return timestamp;
     }
 
     /**
-     * @return the offset of the element
+     * @return The index of the element
      */
-    public long getOffset() {
-        return offset;
+    public long getIndex() {
+        return index;
     }
-
-    private final long timestamp;
-    private final long offset;
 
     /*
      * (non-Javadoc)
@@ -56,7 +56,7 @@ public class CtfLocationData implements Comparable<CtfLocationData> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + (int) (offset ^ (offset >>> 32));
+        result = (prime * result) + (int) (index ^ (index >>> 32));
         result = (prime * result) + (int) (timestamp ^ (timestamp >>> 32));
         return result;
     }
@@ -78,7 +78,7 @@ public class CtfLocationData implements Comparable<CtfLocationData> {
             return false;
         }
         CtfLocationData other = (CtfLocationData) obj;
-        if (offset != other.offset) {
+        if (index != other.index) {
             return false;
         }
         if (timestamp != other.timestamp) {
@@ -94,21 +94,21 @@ public class CtfLocationData implements Comparable<CtfLocationData> {
      */
     @Override
     public String toString() {
-        return "Element [" + timestamp + "/" + offset + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "Element [" + timestamp + '/' + index + ']'; //$NON-NLS-1$
     }
 
     @Override
     public int compareTo(CtfLocationData other) {
-        if( this.timestamp > other.getTimestamp() ) {
+        if (this.timestamp > other.getTimestamp()) {
             return 1;
         }
-        if( this.timestamp < other.getTimestamp() ) {
+        if (this.timestamp < other.getTimestamp()) {
             return -1;
         }
-        if( this.offset > other.getOffset() ) {
+        if (this.index > other.getIndex()) {
             return 1;
         }
-        if( this.offset < other.getOffset() ) {
+        if (this.index < other.getIndex()) {
             return -1;
         }
         return 0;
