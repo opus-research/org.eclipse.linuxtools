@@ -43,6 +43,15 @@
             id="org.eclipse.linuxtools.perf.ui.StatViewDiff"
             name="Perf Statistics Comparison">
       </view>
+      <view
+            allowMultiple="true"
+            category="org.eclipse.linuxtools.profiling.ui"
+            class="org.eclipse.linuxtools.internal.perf.ui.ReportComparisonView"
+            icon="icons/symbol.gif"
+            id="org.eclipse.linuxtools.perf.ui.ReportViewDiff"
+            name="Perf Comparison"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.help.contexts">
@@ -181,6 +190,12 @@
                label="Save Current Session"
                style="push">
          </command>
+         <command
+               commandId="org.eclipse.linuxtools.perf.ReportDiff"
+               id="org.eclipse.linuxtools.perf.ReportDiff"
+               label="Compare Sessions"
+               style="push">
+         </command>
       </menuContribution>
       <menuContribution
             allPopups="false"
@@ -215,6 +230,11 @@
             defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfStatsComparisonHandler"
             id="org.eclipse.linuxtools.perf.StatDiff"
             name="Compare Statistics">
+      </command>
+      <command
+            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfComparisonHandler"
+            id="org.eclipse.linuxtools.perf.ReportDiff"
+            name="Compare Sessions">
       </command>
    </extension>   
 </plugin>
