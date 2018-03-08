@@ -82,31 +82,32 @@ public class Oprofile
 	 * @return true if the module is loaded, otherwise false
 	 */
 	private static boolean isKernelModuleLoaded() {
-		IRemoteFileProxy proxy = null;
-		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+			IRemoteFileProxy proxy = null;
+			try {
+				proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
 
-		for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
-			IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
-			if (f.fetchInfo().exists())
-				return true;
+			for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
+				IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
+				if (f.fetchInfo().exists())
+					return true;
+			}
+			return false;
+		} else {
+			return true;
 		}
-		return false;
 	}
 	/**
 	 *  Initialize oprofile module by calling <code>`opcontrol --init`</code>
 	 */
 	private static void initializeOprofile() {
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			try {
-				OprofileCorePlugin.getDefault().getOpcontrolProvider()
-						.initModule();
-			} catch (OpcontrolException e) {
-				OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
-			}
+		try {
+			OprofileCorePlugin.getDefault().getOpcontrolProvider().initModule();
+		} catch (OpcontrolException e) {
+			OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
 		}
 	}
 
@@ -130,7 +131,7 @@ public class Oprofile
 	 * @return the number of counters
 	 */
 	public static int getNumberOfCounters() {
-		if (!isKernelModuleLoaded() && OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)){
+		if (!isKernelModuleLoaded()){
 			return 0;
 		}
 		return info.getNrCounters();
@@ -184,9 +185,7 @@ public class Oprofile
 	 * @return true if oprofile is in timer mode, false otherwise
 	 */
 	public static boolean getTimerMode() {
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)){
-			return false;
-		} else if (! isKernelModuleLoaded()){
+		if (! isKernelModuleLoaded()){
 			return true;
 		}
 		return info.getTimerMode();
@@ -258,7 +257,7 @@ public class Oprofile
 		if (!isKernelModuleLoaded()){
 			initializeOprofile();
 		}
-		if(isKernelModuleLoaded() || OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)){
+		if(isKernelModuleLoaded()){
 			info = OpInfo.getInfo();
 		}
 	}
