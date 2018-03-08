@@ -25,7 +25,7 @@ import java.util.List;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class EnumDeclaration implements IDeclaration {
+public class EnumDeclaration implements IPrimitiveDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -66,6 +66,11 @@ public class EnumDeclaration implements IDeclaration {
     @Override
     public long getAlignment() {
         return this.getContainerType().getAlignment();
+    }
+
+    @Override
+    public long getSize() {
+        return containerType.getSize();
     }
 
     // ------------------------------------------------------------------------
