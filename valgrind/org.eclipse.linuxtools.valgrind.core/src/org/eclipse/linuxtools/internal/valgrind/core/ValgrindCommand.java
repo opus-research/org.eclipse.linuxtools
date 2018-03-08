@@ -33,9 +33,17 @@ public class ValgrindCommand {
 
 	public String whichVersion(IProject project) throws IOException {
 		StringBuffer out = new StringBuffer();
+		String version = "";
 		Process p = RuntimeProcessFactory.getFactory().exec(new String[] { VALGRIND_CMD, CommandLineConstants.OPT_VERSION }, project);
-		readIntoBuffer(out, p);
-		return out.toString().trim();
+		if (p != null) {
+			try {
+				readIntoBuffer(out, p);
+			    version = out.toString().trim();
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return version;
 	}
 	
 	public void execute(String[] commandArray, Object env, File wd, String exeFile, boolean usePty, IProject project) throws IOException {
