@@ -13,7 +13,6 @@
  *   Patrick Tasse, Ericsson - Refactoring
  *   Geneviève Bastien, École Polytechnique de Montréal - Move code to
  *                            provide base classes for time graph view
- *                            Add display of links between items
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -36,7 +35,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTreeExpansionEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeLinkEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -1174,7 +1172,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             Item item = items[i];
             drawItem(item, bounds, timeProvider, i, nameSpace, gc);
         }
-        drawLinks(bounds, timeProvider, items, topIndex, nameSpace, gc);
         fTimeGraphProvider.postDrawControl(bounds, gc);
     }
 
@@ -1236,9 +1233,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             int lastX = -1;
             while (iterator.hasNext()) {
                 ITimeEvent event = iterator.next();
-                if (event.isLink()) {
-                    continue;
-                }
                 int x = rect.x + (int) ((event.getTime() - time0) * pixelsPerNanoSec);
                 int xEnd = rect.x + (int) ((event.getTime() + event.getDuration() - time0) * pixelsPerNanoSec);
                 if (x >= rect.x + rect.width || xEnd < rect.x) {
@@ -1263,156 +1257,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             }
         }
         fTimeGraphProvider.postDrawEntry(entry, rect, gc);
-    }
-
-    /**
-     * Draw the items' links
-     *
-     * @param bounds
-     *            The rectangle of the area
-     * @param timeProvider
-     *            The time provider
-     * @param items
-     *            The array items to draw
-     * @param topIndex
-     *            The index of the first element to draw
-     * @param nameSpace
-     *            The width reserved for the names
-     * @param gc
-     *            Reference to the SWT GC object
-     * @since 3.0
-     */
-    public void drawLinks(Rectangle bounds, ITimeDataProvider timeProvider,
-            Item[] items, int topIndex, int nameSpace, GC gc) {
-        for (int i = topIndex; i < items.length; i++) {
-            Item item = items[i];
-            drawItemLinks(item, bounds, timeProvider, i, nameSpace, gc);
-        }
-    }
-
-    /**
-     * Draws the link type events of this item
-     *
-     * @param item
-     *            the item to draw
-     * @param bounds
-     *            the container rectangle
-     * @param timeProvider
-     *            Time provider
-     * @param i
-     *            the item index
-     * @param nameSpace
-     *            the name space
-     * @param gc
-     *            Graphics context
-     * @since 3.0
-     */
-    protected void drawItemLinks(Item item, Rectangle bounds, ITimeDataProvider timeProvider, int i, int nameSpace, GC gc) {
-        ITimeGraphEntry entry = item.fTrace;
-        long time0 = timeProvider.getTime0();
-        long time1 = timeProvider.getTime1();
-        Rectangle rect = getStatesRect(bounds, i, nameSpace);
-        // K pixels per second
-        double pixelsPerNanoSec = (rect.width <= RIGHT_MARGIN) ? 0 : (double) (rect.width - RIGHT_MARGIN) / (time1 - time0);
-
-        /*
-         * FIXME: when source entry is visible, then the arrow is drawn even if
-         * we don't see the destination, but if source entry is invisible, then the
-         * arrow is not drawn even if destination is visible, which is an
-         * inconsistent behavior
-         */
-        if (entry.hasTimeEvents()) {
-            long maxDuration = (timeProvider.getTimeSpace() == 0) ? Long.MAX_VALUE : 1 * (time1 - time0) / timeProvider.getTimeSpace();
-            Iterator<ITimeEvent> iterator = entry.getTimeEventsIterator(time0, time1, maxDuration);
-            while (iterator.hasNext()) {
-                ITimeEvent event = iterator.next();
-                /* Only draw link events */
-                if (!event.isLink()) {
-                    continue;
-                }
-                if (event instanceof TimeLinkEvent) {
-                    TimeLinkEvent link = (TimeLinkEvent) event;
-                    int destIndex = fItemData.findItemIndex(link.getDestinationEntry());
-                    int x0 = rect.x + (int) ((link.getTime() - time0) * pixelsPerNanoSec);
-                    Rectangle dst = getStatesRect(bounds, destIndex, nameSpace);
-                    int x1 = dst.x + (int) ((link.getTime() + link.getDuration() - time0) * pixelsPerNanoSec);
-                    int offset = rect.height >> 1;
-                    int y0 = rect.y + offset;
-                    int y1 = dst.y + offset;
-                    drawArrow(getColorScheme(), event, new Rectangle(x0, y0, x1-x0, y1-y0), gc);
-                }
-            }
-        }
-    }
-
-    /**
-     * Draw the state (color fill)
-     *
-     * @param colors
-     *            Color scheme
-     * @param event
-     *            Time event for which we're drawing the state
-     * @param rect
-     *            Where to draw
-     * @param gc
-     *            Graphics context
-     * @return true if the state was drawn
-     * @since 3.0
-     */
-    protected boolean drawArrow(TimeGraphColorScheme colors, ITimeEvent event,
-            Rectangle rect, GC gc) {
-
-        int colorIdx = fTimeGraphProvider.getStateTableIndex(event);
-        if (colorIdx < 0 && colorIdx != ITimeGraphPresentationProvider.TRANSPARENT) {
-            return false;
-        }
-        boolean visible = ((rect.height == 0) && (rect.width == 0)) ? false : true;
-
-        if (visible) {
-            if (colorIdx == ITimeGraphPresentationProvider.TRANSPARENT) {
-                // do not draw the arrow
-                return false;
-            }
-            Color stateColor = null;
-            if (colorIdx < fEventColorMap.length) {
-                stateColor = fEventColorMap[colorIdx];
-            } else {
-                stateColor = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
-            }
-
-            gc.setForeground(stateColor);
-            gc.setBackground(stateColor);
-
-            /* Draw the arrow */
-            gc.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
-            drawArrowHead(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height, gc);
-
-        }
-        fTimeGraphProvider.postDrawEvent(event, rect, gc);
-        return visible;
-    }
-
-    /*
-     * Source:
-     * http://stackoverflow.com/questions/3010803/draw-arrow-on-line-algorithm
-     */
-    private static void drawArrowHead(int x0, int y0, int x1, int y1, GC gc)
-    {
-        int factor = 10;
-        double cos = 0.9510;
-        double sin = 0.3090;
-        int lenx = x1 - x0;
-        int leny = y1 - y0;
-        double len = Math.sqrt(lenx * lenx + leny * leny);
-
-        double dx = factor * lenx / len;
-        double dy = factor * leny / len;
-        int end1X = (int) Math.round((x1 - (dx * cos + dy * -sin)));
-        int end1Y = (int) Math.round((y1 - (dx * sin + dy * cos)));
-        int end2X = (int) Math.round((x1 - (dx * cos + dy * sin)));
-        int end2Y = (int) Math.round((y1 - (dx * -sin + dy * cos)));
-        int[] arrow = new int[] { x1, y1, end1X, end1Y, end2X, end2Y, x1, y1 };
-        gc.fillPolygon(arrow);
     }
 
     /**

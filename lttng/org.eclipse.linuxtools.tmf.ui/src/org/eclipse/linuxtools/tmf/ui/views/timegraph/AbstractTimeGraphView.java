@@ -10,6 +10,7 @@
  *   Patrick Tasse - Initial API and implementation
  *   Bernd Hufmann - Updated signal handling
  *   Geneviève Bastien - Move code to provide base classes for time graph view
+ *   Marc-Andre Laperle - Add time zone preference
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.timegraph;
@@ -35,6 +36,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
@@ -69,7 +71,7 @@ import org.eclipse.ui.IActionBars;
  * left, showing entries and a canvas on the right to draw something for these
  * entries.
  *
- * @since 2.1
+ * @since 3.0
  */
 public abstract class AbstractTimeGraphView extends TmfView {
 
@@ -682,6 +684,14 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 startZoomThread(startTime, endTime);
             }
         });
+    }
+
+    /**
+     * @param signal the format of the timestamps was updated.
+     */
+    @TmfSignalHandler
+    public void updateTimeFormat( final TmfTimestampFormatUpdateSignal signal){
+        this.fTimeGraphCombo.refresh();
     }
 
     // ------------------------------------------------------------------------

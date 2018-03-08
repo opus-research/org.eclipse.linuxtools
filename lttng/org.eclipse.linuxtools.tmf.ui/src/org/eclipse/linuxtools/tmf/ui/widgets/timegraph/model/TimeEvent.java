@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Geneviève Bastien - Added the fValue parameter to avoid subclassing
- *                       Added the isLink method and extension of Comparable
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
@@ -23,13 +22,13 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 public class TimeEvent implements ITimeEvent {
 
     /** TimeGraphEntry matching this time event */
-    private ITimeGraphEntry fEntry;
+    protected ITimeGraphEntry fEntry;
 
     /** Beginning timestamp of this time event */
-    private long fTime;
+    protected long fTime;
 
     /** Duration of this time event */
-    private long fDuration;
+    protected long fDuration;
 
     private final int fValue;
 
@@ -109,25 +108,8 @@ public class TimeEvent implements ITimeEvent {
         return fDuration;
     }
 
-    /**
-     * @since 3.0
-     */
-    @Override
-    public boolean isLink() {
-        return false;
-    }
-
     @Override
     public String toString() {
         return "TimeEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " value=" + (hasValue() ? fValue : "N/A"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public int compareTo(ITimeEvent o) {
-        return getTime() < o.getTime() ? -1 : getTime() > o.getTime() ? 1 : 0;
-    }
-
 }
