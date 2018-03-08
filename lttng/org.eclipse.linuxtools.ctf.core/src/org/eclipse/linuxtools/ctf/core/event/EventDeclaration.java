@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.ctf.core.event;
 
+import java.util.HashMap;
+
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
 import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
@@ -55,6 +57,8 @@ public class EventDeclaration {
      * Loglevel of an event
      */
     private long logLevel;
+
+    private HashMap<String, String> rootFields = new HashMap<String, String>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -134,6 +138,24 @@ public class EventDeclaration {
      */
     public void setFields(StructDeclaration fields) {
         this.fields = fields;
+    }
+
+    /**
+     *
+     * @param name the name of the root field
+     * @param value the text value of the root field
+     */
+    public void addRootField(String name, String value) {
+        rootFields .put(name, value);
+    }
+
+    /**
+     * gets a root field
+     * @param name the name of the field
+     * @return the value of the field, or null if it is not available
+     */
+    public String getRootField( String name){
+        return rootFields.get(name);
     }
 
     /**
@@ -307,5 +329,6 @@ public class EventDeclaration {
         result = (prime * result) + ((stream == null) ? 0 : stream.hashCode());
         return result;
     }
+
 
 }
