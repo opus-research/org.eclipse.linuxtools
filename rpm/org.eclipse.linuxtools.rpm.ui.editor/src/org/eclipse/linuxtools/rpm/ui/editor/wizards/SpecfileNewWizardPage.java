@@ -80,8 +80,6 @@ public class SpecfileNewWizardPage extends WizardPage {
 
 	private GridData gd;
 
-	private Combo templateCombo;
-
 	private ISelection selection;
 
 	private String selectedTemplate = "minimal"; //$NON-NLS-1$
@@ -90,7 +88,7 @@ public class SpecfileNewWizardPage extends WizardPage {
 
 	/**
 	 * Constructor for SpecfileNewWizardPage.
-	 * 
+	 *
 	 * @param selection
 	 *            The selection to put the new spec file in.
 	 */
@@ -134,7 +132,7 @@ public class SpecfileNewWizardPage extends WizardPage {
 		// Template to use
 		label = new Label(container, SWT.NULL);
 		label.setText(Messages.SpecfileNewWizardPage_13);
-		templateCombo = new Combo(container, SWT.NULL);
+		Combo templateCombo = new Combo(container, SWT.NULL);
 		try {
 			populateTemplateCombo(templateCombo);
 		} catch (CoreException e2) {
@@ -165,8 +163,9 @@ public class SpecfileNewWizardPage extends WizardPage {
 						if (line.startsWith("Group:")) { //$NON-NLS-1$
 							String[] items = line.split(":", 2); //$NON-NLS-1$
 							String value = items[1].trim();
-							if (!value.equals("")) //$NON-NLS-1$
+							if (!value.equals("")) {//$NON-NLS-1$
 								groupCombo.setText(value);
+							}
 						}
 						if (line.startsWith("License:")) { //$NON-NLS-1$
 							setTemplateTagValue(licenseText, line);
@@ -292,18 +291,19 @@ public class SpecfileNewWizardPage extends WizardPage {
 	 * Tests if the current workbench selection is a suitable container to use.
 	 */
 	private void initialize() {
-		if (selection != null && selection.isEmpty() == false
-				&& selection instanceof IStructuredSelection) {
+		if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
 			IStructuredSelection ssel = (IStructuredSelection) selection;
-			if (ssel.size() > 1)
+			if (ssel.size() > 1) {
 				return;
+			}
 			Object obj = ssel.getFirstElement();
 			if (obj instanceof IResource) {
 				IContainer container;
-				if (obj instanceof IContainer)
+				if (obj instanceof IContainer) {
 					container = (IContainer) obj;
-				else
+				} else {
 					container = ((IResource) obj).getParent();
+				}
 				projectText.setText(container.getFullPath().toString());
 			}
 		}
@@ -396,10 +396,11 @@ public class SpecfileNewWizardPage extends WizardPage {
 		if (dir.exists()) {
 			String templateCSV = ""; //$NON-NLS-1$
 			for (String file : files) {
-				if (file.startsWith("spectemplate-")) //$NON-NLS-1$
+				if (file.startsWith("spectemplate-")) { //$NON-NLS-1$
 					templateCSV += file.split("-", 2)[1].replaceAll("\\.spec", //$NON-NLS-1$ //$NON-NLS-2$
 							"") //$NON-NLS-1$
 							+ ","; //$NON-NLS-1$
+				}
 			}
 			String[] templates = templateCSV.split(","); //$NON-NLS-1$
 			for (String template : templates) {
@@ -438,7 +439,7 @@ public class SpecfileNewWizardPage extends WizardPage {
 				IStatus.OK, message, null);
 		throw new CoreException(status);
 	}
-	
+
 	public Text getNameText() {
 		return nameText;
 	}
