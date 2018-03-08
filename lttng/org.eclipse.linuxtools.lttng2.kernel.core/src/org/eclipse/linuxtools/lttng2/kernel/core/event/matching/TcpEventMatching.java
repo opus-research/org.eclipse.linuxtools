@@ -12,10 +12,11 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.event.matching;
 
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map.Entry;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.TcpEventStrings;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -39,12 +40,12 @@ public class TcpEventMatching extends TmfEventMatching {
     /**
      * Hashtables for unmatches incoming events
      */
-    protected Hashtable<Object, LinkedList<ITmfEvent>>[] fUnmatchedIn;
+    protected List<Map<Object, LinkedList<ITmfEvent>>> fUnmatchedIn;
 
     /**
      * Hashtables for unmatches outgoing events
      */
-    protected Hashtable<Object, LinkedList<ITmfEvent>>[] fUnmatchedOut;
+    protected List<Map<Object, LinkedList<ITmfEvent>>> fUnmatchedOut;
 
     /**
      * Constants for in and out types
@@ -105,11 +106,11 @@ public class TcpEventMatching extends TmfEventMatching {
     @Override
     public void initMatching() {
         // Initialize the matching infrastructure (unmatched event lists)
-        fUnmatchedIn = new Hashtable[fTraces.length];
-        fUnmatchedOut = new Hashtable[fTraces.length];
+        fUnmatchedIn = new ArrayList<Map<Object, LinkedList<ITmfEvent>>>();
+        fUnmatchedOut = new ArrayList<Map<Object, LinkedList<ITmfEvent>>>();
         for (int i = 0; i < fTraces.length; i++) {
-            fUnmatchedIn[i] = new Hashtable<Object, LinkedList<ITmfEvent>>();
-            fUnmatchedOut[i] = new Hashtable<Object, LinkedList<ITmfEvent>>();
+            fUnmatchedIn.add(new HashMap<Object, LinkedList<ITmfEvent>>());
+            fUnmatchedOut.add(new HashMap<Object, LinkedList<ITmfEvent>>());
         }
     }
 
@@ -121,11 +122,10 @@ public class TcpEventMatching extends TmfEventMatching {
      *            The table to count events for
      * @return The number of events
      */
-    protected int countEvents(Hashtable<Object, LinkedList<ITmfEvent>> tbl) {
-        Iterator<Entry<Object, LinkedList<ITmfEvent>>> iterator = tbl.entrySet().iterator();
+    protected int countEvents(Map<Object, LinkedList<ITmfEvent>> tbl) {
         int count = 0;
-        while (iterator.hasNext()) {
-            count += iterator.next().getValue().size();
+        for (LinkedList<ITmfEvent> entry : tbl.values()) {
+            count += entry.size();
         }
         return count;
     }
@@ -138,15 +138,14 @@ public class TcpEventMatching extends TmfEventMatching {
      */
     @SuppressWarnings("nls")
     @Override
-    public String printMatchingStats() {
+    public String toString() {
         final String cr = System.getProperty("line.separator");
         StringBuilder b = new StringBuilder();
-        b.append("Number of matches found: " + fMatches.getMatches().size() + cr);
+        b.append("Number of matches found: " + fMatches.countMatches() + cr);
         for (int i = 0; i < fTraces.length; i++) {
-            b.append("" +
-                    "Trace " + i + ":" + cr +
-                    "  " + countEvents(fUnmatchedIn[i]) + " unmatched incoming events" + cr +
-                    "  " + countEvents(fUnmatchedOut[i]) + " unmatched outgoing events" + cr);
+            b.append("Trace " + i + ":" + cr +
+                    "  " + countEvents(fUnmatchedIn.get(i)) + " unmatched incoming events" + cr +
+                    "  " + countEvents(fUnmatchedOut.get(i)) + " unmatched outgoing events" + cr);
         }
         return b.toString();
     }
@@ -177,7 +176,7 @@ public class TcpEventMatching extends TmfEventMatching {
 
         // Get the event's sequence number
         ITmfEventField seq = event.getContent().getField(TcpEventStrings.SEQ);
-        Hashtable<Object, LinkedList<ITmfEvent>>[] unmatchedTbl, companionTbl;
+        List<Map<Object, LinkedList<ITmfEvent>>> unmatchedTbl, companionTbl;
 
         // Point to the appropriate table
         if (evtype == IN) {
@@ -190,17 +189,18 @@ public class TcpEventMatching extends TmfEventMatching {
 
         boolean found = false;
         TmfEventDependency dep = null;
-        // Search for the event in the companion table
+        /* Search for the event in the companion table */
         for (int i = 0; i < fTraces.length; i++) {
-            if (companionTbl[i].containsKey(seq.getValue())) {
+            if (companionTbl.get(i).containsKey(seq.getValue())) {
                 found = true;
-                ITmfEvent companionEvent = companionTbl[i].get(seq.getValue()).poll();
+                ITmfEvent companionEvent = companionTbl.get(i).get(seq.getValue()).poll();
 
-                // Remove the key if there are no more elements
-                if (companionTbl[i].get(seq.getValue()).isEmpty()) {
-                    companionTbl[i].remove(seq.getValue());
+                /* Remove the key if there are no more elements */
+                if (companionTbl.get(i).get(seq.getValue()).isEmpty()) {
+                    companionTbl.get(i).remove(seq.getValue());
                 }
 
+                /* Create the dependency object */
                 if (evtype == IN) {
                     dep = new TmfEventDependency(companionEvent, event);
                 } else {
@@ -208,11 +208,16 @@ public class TcpEventMatching extends TmfEventMatching {
                 }
             }
         }
+
+        /*
+         * If no companion was found, add the event to the appropriate unMatched
+         * lists
+         */
         if (!found) {
-            if (!unmatchedTbl[traceno].containsKey(seq.getValue())) {
-                unmatchedTbl[traceno].put(seq.getValue(), new LinkedList<ITmfEvent>());
+            if (!unmatchedTbl.get(traceno).containsKey(seq.getValue())) {
+                unmatchedTbl.get(traceno).put(seq.getValue(), new LinkedList<ITmfEvent>());
             }
-            unmatchedTbl[traceno].get(seq.getValue()).add(event);
+            unmatchedTbl.get(traceno).get(seq.getValue()).add(event);
         }
 
         return dep;
