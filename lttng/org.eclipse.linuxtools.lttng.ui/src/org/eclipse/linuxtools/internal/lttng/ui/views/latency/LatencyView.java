@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2010, 2011 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Philippe Sawicki (INF4990.A2010@gmail.com)   - Initial API and implementation
  *   Mathieu Denis    (mathieu.denis55@gmail.com) - Refactored code
@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.internal.lttng.ui.views.latency.model.IGraphModelL
 import org.eclipse.linuxtools.internal.lttng.ui.views.latency.model.LatencyController;
 import org.eclipse.linuxtools.internal.lttng.ui.views.latency.model.LatencyGraphModel;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
@@ -50,7 +51,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * <b><u>LatencyView</u></b>
  * <p>
  * TmfView displaying the latency views (i.e. the two latency charts).
- *
+ * 
  * @author Philippe Sawicki
  */
 public class LatencyView extends TmfView implements IGraphModelListener {
@@ -58,7 +59,7 @@ public class LatencyView extends TmfView implements IGraphModelListener {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
+    
     // The initial window span (in nanoseconds)
     public static final long INITIAL_WINDOW_SPAN = (1L * 100 * 1000 * 1000); // .1sec
 
@@ -70,7 +71,7 @@ public class LatencyView extends TmfView implements IGraphModelListener {
     /**
      * A reference to the currently selected experiment.
      */
-    protected TmfExperiment fExperiment = null;
+    protected TmfExperiment<LttngEvent> fExperiment = null;
 
     /**
      * Parent composite.
@@ -81,7 +82,7 @@ public class LatencyView extends TmfView implements IGraphModelListener {
      * Graph view.
      */
     protected GraphViewer fGraphViewer;
-
+    
     /**
      * Histogram view.
      */
@@ -91,22 +92,22 @@ public class LatencyView extends TmfView implements IGraphModelListener {
      * Action executed when the user wants to see the list of matching events.
      */
     protected Action fListMatchingEvents;
-
+    
     /**
      * Action executed when the user wants to add matching events.
      */
     protected Action fAddMatchingEvents;
-
+    
     /**
      * Action executed when the user wants to delete matching events.
      */
     protected Action fDeleteMatchingEvents;
-
+    
     /**
      * Action executed when the user wants to increase the width of the histogram bars.
      */
     protected Action fIncreaseBarWidth;
-
+    
     /**
      * Action executed when the user wants to decrease the width of the histogram bars.
      */
@@ -142,10 +143,10 @@ public class LatencyView extends TmfView implements IGraphModelListener {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    
     /**
      * Create the UI controls of this view.
-     *
+     * 
      * @param parent
      *            The composite parent of this view.
      */
@@ -202,16 +203,17 @@ public class LatencyView extends TmfView implements IGraphModelListener {
 
         fController.registerModel(fGraphViewer.getModel());
         fController.registerModel(fHistogramViewer.getModel());
-
+        
         ((LatencyGraphModel)fGraphViewer.getModel()).addGraphModelListener(this);
-
-        TmfExperiment experiment = TmfExperiment.getCurrentExperiment();
+        
+        @SuppressWarnings("unchecked")
+        TmfExperiment<TmfEvent> experiment = (TmfExperiment<TmfEvent>) TmfExperiment.getCurrentExperiment();
         if (experiment != null) {
 
             TmfTimeRange experimentTRange = experiment.getTimeRange();
 
             if (!experimentTRange.equals(TmfTimeRange.NULL_RANGE)) {
-                TmfExperimentSelectedSignal signal = new TmfExperimentSelectedSignal(this, experiment);
+                TmfExperimentSelectedSignal<TmfEvent> signal = new TmfExperimentSelectedSignal<TmfEvent>(this, experiment);
                 experimentSelected(signal);
             }
         }
@@ -235,41 +237,42 @@ public class LatencyView extends TmfView implements IGraphModelListener {
     // Signal handlers
     // ------------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
     @TmfSignalHandler
-    public void experimentSelected(TmfExperimentSelectedSignal signal) {
+    public void experimentSelected(TmfExperimentSelectedSignal<TmfEvent> signal) {
         // Clear the views
         fGraphViewer.clear();
         fHistogramViewer.clear();
 
         if (fParent != null) {
             // Update the trace reference
-            fExperiment = signal.getExperiment();
+            fExperiment = (TmfExperiment<LttngEvent>) signal.getExperiment();
 
             fTimeRange = TmfTimeRange.NULL_RANGE;
             TmfTimeRange experimentTRange = fExperiment.getTimeRange();
 
             if (!experimentTRange.equals(TmfTimeRange.NULL_RANGE)) {
-                fTimeRange = new TmfTimeRange(experimentTRange.getStartTime(),
+                fTimeRange = new TmfTimeRange(experimentTRange.getStartTime(), 
                         new TmfTimestamp(experimentTRange.getStartTime().getValue() + INITIAL_WINDOW_SPAN, experimentTRange.getStartTime().getScale(), experimentTRange.getStartTime().getPrecision()));
                 fController.refreshModels(fExperiment, fTimeRange);
             }
         }
-    }
+    }    
     @TmfSignalHandler
     public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
         if (fTimeRange.equals(TmfTimeRange.NULL_RANGE) && signal.getExperiment().equals(fExperiment)) {
             TmfTimeRange experimentTRange = signal.getRange();
 
             if (!experimentTRange.equals(TmfTimeRange.NULL_RANGE)) {
-                fTimeRange = new TmfTimeRange(experimentTRange.getStartTime(),
+                fTimeRange = new TmfTimeRange(experimentTRange.getStartTime(), 
                         new TmfTimestamp(experimentTRange.getStartTime().getValue() + INITIAL_WINDOW_SPAN, experimentTRange.getStartTime().getScale(), experimentTRange.getStartTime().getPrecision()));
                 fController.refreshModels(fExperiment, fTimeRange);
             }
         }
     }
-
+    
     @TmfSignalHandler
-    public void experimentDisposed(TmfExperimentDisposedSignal signal) {
+    public void experimentDisposed(TmfExperimentDisposedSignal<TmfEvent> signal) {
         if (signal.getExperiment() != fExperiment) {
             return;
         }
@@ -296,9 +299,9 @@ public class LatencyView extends TmfView implements IGraphModelListener {
 
     /**
      * Method called when synchronization is active and that the user select an event.
-     *
+     * 
      * The models will be updated with the new current selected time.
-     *
+     * 
      * @param signal
      *            Signal received from the framework. Contain the event.
      */
@@ -315,7 +318,7 @@ public class LatencyView extends TmfView implements IGraphModelListener {
      * Method called when synchronization is active and that the user changed the current time range.
 
      * The models will be updated with the new time range.
-     *
+     * 
      * @param signal
      *            Signal received from the framework. Contain the new time range.
      */
@@ -325,7 +328,7 @@ public class LatencyView extends TmfView implements IGraphModelListener {
             // Erase the graph views
             fGraphViewer.clear();
             fHistogramViewer.clear();
-
+            
             ITmfTimestamp startTime = signal.getCurrentRange().getStartTime();
             ITmfTimestamp endTime = signal.getCurrentRange().getEndTime();
             fTimeRange = new TmfTimeRange(startTime, endTime);
@@ -333,7 +336,7 @@ public class LatencyView extends TmfView implements IGraphModelListener {
             fController.refreshModels(fExperiment, fTimeRange);
         }
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.lttng.ui.views.latency.model.IGraphModelListener#graphModelUpdated()
@@ -349,13 +352,13 @@ public class LatencyView extends TmfView implements IGraphModelListener {
      */
     @Override
     public void currentEventUpdated(final long currentEventTime) {
-        if (fExperiment != null &&
+        if (fExperiment != null && 
                 !fSyncSignalReceived && // Don't broadcast the current time that was received just before with a time sync signal
                 currentEventTime != Config.INVALID_EVENT_TIME) {
 
-            // Queue update in the event request queue
+            // Queue update in the event request queue 
             TmfTimeRange timeRange = new TmfTimeRange(new TmfTimestamp(currentEventTime, Config.TIME_SCALE), TmfTimestamp.BIG_CRUNCH);
-            TmfEventRequest request = new TmfEventRequest(LttngEvent.class, timeRange, 0, 1, ExecutionType.FOREGROUND) {
+            TmfEventRequest<LttngEvent> request = new TmfEventRequest<LttngEvent>(LttngEvent.class, timeRange, 0, 1, ExecutionType.FOREGROUND) {
                 @Override
                 public void handleCompleted() {
                     broadcast(new TmfTimeSynchSignal(this, new TmfTimestamp(currentEventTime, Config.TIME_SCALE)));
@@ -364,11 +367,11 @@ public class LatencyView extends TmfView implements IGraphModelListener {
             fExperiment.sendRequest(request);
         }
     }
-
+    
     // ------------------------------------------------------------------------
     // Helper functions
     // ------------------------------------------------------------------------
-
+    
     /**
      * Fills the local pull down menu.
      * @param manager
