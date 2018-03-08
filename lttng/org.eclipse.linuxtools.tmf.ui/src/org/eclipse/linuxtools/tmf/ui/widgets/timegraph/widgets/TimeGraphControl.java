@@ -33,7 +33,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphColorListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
@@ -81,10 +80,8 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl
-        implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener,
-        ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider,
-        MenuDetectListener, ITmfTimeGraphDrawingHelper, ITimeGraphColorListener {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
+
 
     /** Max scrollbar size */
     public static final int H_SCROLLBAR_MAX = Integer.MAX_VALUE - 1;
@@ -131,15 +128,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
     private ITimeGraphPresentationProvider fTimeGraphProvider = null;
     private ItemData fItemData = null;
     private List<SelectionListener> fSelectionListeners;
-    private final List<ISelectionChangedListener> fSelectionChangedListeners = new ArrayList<>();
-    private final List<ITimeGraphTreeListener> fTreeListeners = new ArrayList<>();
-    private final List<MenuDetectListener> fTimeGraphEntryMenuListeners = new ArrayList<>();
-    private final List<MenuDetectListener> fTimeEventMenuListeners = new ArrayList<>();
+    private final List<ISelectionChangedListener> fSelectionChangedListeners = new ArrayList<ISelectionChangedListener>();
+    private final List<ITimeGraphTreeListener> fTreeListeners = new ArrayList<ITimeGraphTreeListener>();
+    private final List<MenuDetectListener> fTimeGraphEntryMenuListeners = new ArrayList<MenuDetectListener>();
+    private final List<MenuDetectListener> fTimeEventMenuListeners = new ArrayList<MenuDetectListener>();
     private final Cursor fDragCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_HAND);
     private final Cursor fResizeCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_IBEAM);
     private final Cursor fWaitCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_WAIT);
     private final Cursor fZoomCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_SIZEWE);
-    private final List<ViewerFilter> fFilters = new ArrayList<>();
+    private final List<ViewerFilter> fFilters = new ArrayList<ViewerFilter>();
     private MenuDetectEvent fPendingMenuDetectEvent = null;
     private boolean fHideArrows = false;
 
@@ -232,11 +229,22 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
         if (timeGraphProvider instanceof ITimeGraphPresentationProvider2) {
             ((ITimeGraphPresentationProvider2) timeGraphProvider).setDrawingHelper(this);
-            ((ITimeGraphPresentationProvider2) timeGraphProvider).addColorListener(this);
         }
 
+        if (fEventColorMap != null) {
+            for (Color color : fEventColorMap) {
+                fResourceManager.destroyColor(color.getRGB());
+            }
+        }
         StateItem[] stateItems = fTimeGraphProvider.getStateTable();
-        colorSettingsChanged(stateItems);
+        if (stateItems != null) {
+            fEventColorMap = new Color[stateItems.length];
+            for (int i = 0; i < stateItems.length; i++) {
+                fEventColorMap[i] = fResourceManager.createColor(stateItems[i].getStateColor());
+            }
+        } else {
+            fEventColorMap = new Color[] { };
+        }
     }
 
     /**
@@ -287,7 +295,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
         if (null == fSelectionListeners) {
-            fSelectionListeners = new ArrayList<>();
+            fSelectionListeners = new ArrayList<SelectionListener>();
         }
         fSelectionListeners.add(listener);
     }
@@ -1162,7 +1170,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
      * @return The expanded elements
      */
     public ITimeGraphEntry[] getExpandedElements() {
-        ArrayList<ITimeGraphEntry> elements = new ArrayList<>();
+        ArrayList<ITimeGraphEntry> elements = new ArrayList<ITimeGraphEntry>();
         for (Item item : fItemData.fExpandedItems) {
             elements.add(item.fTrace);
         }
@@ -2410,35 +2418,13 @@ public class TimeGraphControl extends TimeGraphBaseControl
         fFilters.remove(filter);
     }
 
-    /**
-     * @since 3.0
-     */
-    @Override
-    public void colorSettingsChanged(StateItem[] stateItems) {
-        /* Destroy previous colors from the resource manager */
-        if (fEventColorMap != null) {
-            for (Color color : fEventColorMap) {
-                fResourceManager.destroyColor(color.getRGB());
-            }
-        }
-        if (stateItems != null) {
-            fEventColorMap = new Color[stateItems.length];
-            for (int i = 0; i < stateItems.length; i++) {
-                fEventColorMap[i] = fResourceManager.createColor(stateItems[i].getStateColor());
-            }
-        } else {
-            fEventColorMap = new Color[] { };
-        }
-        redraw();
-    }
-
     private class ItemData {
         private Item[] fExpandedItems = new Item[0];
         private Item[] fItems = new Item[0];
         private ITimeGraphEntry fTraces[] = new ITimeGraphEntry[0];
-        private List<ILinkEvent> fLinks = new ArrayList<>();
+        private List<ILinkEvent> fLinks = new ArrayList<ILinkEvent>();
         private boolean fTraceFilter[] = new boolean[0];
-        private final ArrayList<ITimeGraphEntry> fFilteredOut = new ArrayList<>();
+        private final ArrayList<ITimeGraphEntry> fFilteredOut = new ArrayList<ITimeGraphEntry>();
 
         public ItemData() {
         }
@@ -2474,7 +2460,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         }
 
         public void refreshData() {
-            List<Item> itemList = new ArrayList<>();
+            List<Item> itemList = new ArrayList<Item>();
             fFilteredOut.clear();
             ITimeGraphEntry selection = getSelectedTrace();
             for (int i = 0; i < fTraces.length; i++) {
@@ -2514,7 +2500,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         }
 
         public void updateExpandedItems() {
-            List<Item> expandedItemList = new ArrayList<>();
+            List<Item> expandedItemList = new ArrayList<Item>();
             for (int i = 0; i < fTraces.length; i++) {
                 ITimeGraphEntry entry = fTraces[i];
                 Item item = findItem(entry);
@@ -2565,7 +2551,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
             if (events != null) {
                 fLinks = events;
             } else {
-                fLinks = new ArrayList<>();
+                fLinks = new ArrayList<ILinkEvent>();
             }
         }
 
@@ -2596,7 +2582,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
             this.fTrace = trace;
             this.fName = name;
             this.fLevel = level;
-            this.fChildren = new ArrayList<>();
+            this.fChildren = new ArrayList<Item>();
         }
 
         @Override

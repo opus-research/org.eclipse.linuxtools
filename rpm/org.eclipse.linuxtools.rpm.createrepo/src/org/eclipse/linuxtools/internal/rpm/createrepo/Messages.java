@@ -54,12 +54,6 @@ public final class Messages {
 	public static String CreaterepoNewWizardPageTwo_errorName;
 	/****/
 	public static String CreaterepoNewWizardPageTwo_errorURL;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipID;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipName;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipURL;
 
 	// CreaterepoProject
 	/****/
@@ -72,22 +66,6 @@ public final class Messages {
 	// Createrepo
 	/****/
 	public static String Createrepo_jobName;
-	/****/
-	public static String Createrepo_jobCancelled;
-	/****/
-	public static String Createrepo_errorExecuting;
-	/****/
-	public static String Createrepo_errorTryingToFindCommand;
-	/****/
-	public static String Createrepo_errorCommandNotFound;
-	/****/
-	public static String Createrepo_errorWrongVersionCreaterepo;
-	/****/
-	public static String Createrepo_errorWrongVersionYum;
-	/****/
-	public static String Createrepo_errorCancelled;
-	/****/
-	public static String Createrepo_errorPasingVersion;
 
 	// RepoFormEditor
 	/****/
@@ -112,8 +90,6 @@ public final class Messages {
 	public static String ImportRPMsPage_buttonCreateRepo;
 	/****/
 	public static String ImportRPMsPage_errorRefreshingTree;
-	/****/
-	public static String ImportRPMsPage_errorResourceChanged;
 
 	// ImportRPMsPage$ImportButtonListener
 	/****/
@@ -139,79 +115,15 @@ public final class Messages {
 	/****/
 	public static String MetadataPage_sectionInstructionTags;
 	/****/
-	public static String MetadataPage_labelTags;
-	/****/
 	public static String MetadataPage_buttonAddTag;
 	/****/
 	public static String MetadataPage_buttonEditTag;
 	/****/
 	public static String MetadataPage_buttonRemoveTag;
-	/****/
-	public static String MetadataPage_errorSavingPreferences;
 
 	// CreaterepoResourceChangeListener
 	/****/
 	public static String CreaterepoResourceChangeListener_errorGettingResource;
-
-	// CreaterepoPreferencePage
-	/****/
-	public static String CreaterepoPreferencePage_description;
-	/****/
-	public static String CreaterepoPreferencePage_generalGroupLabel;
-	/****/
-	public static String CreaterepoPreferencePage_booleanChecksumName;
-	/****/
-	public static String CreaterepoPreferencePage_booleanGenerateSQLDB;
-	/****/
-	public static String CreaterepoPreferencePage_booleanIgnoreSymlinks;
-	/****/
-	public static String CreaterepoPreferencePage_booleanPrettyXML;
-	/****/
-	public static String CreaterepoPreferencePage_numWorkers;
-	/****/
-	public static String CreaterepoPreferencePage_updateGroupLabel;
-	/****/
-	public static String CreaterepoPreferencePage_booleanCheckTS;
-	/****/
-	public static String CreaterepoPreferencePage_checkTSNote;
-	/****/
-	public static String CreaterepoPreferencePage_changelogGroupLabel;
-	/****/
-	public static String CreaterepoPreferencePage_numChangelogLimit;
-	/****/
-	public static String CreaterepoPreferencePage_checksumGroupLabel;
-	/****/
-	public static String CreaterepoPreferencePage_compressionGroupLabel;
-
-	// CreaterepoGeneralPropertyPage
-	/****/
-	public static String CreaterepoGeneralPropertyPage_projectSettings;
-	/****/
-	public static String CreaterepoGeneralPropertyPage_workspaceSettings;
-
-	// CreaterepoDeltaPropertyPage
-	/****/
-	public static String CreaterepoDeltaPropertyPage_description;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_groupLabel;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_groupDirectoryLabel;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_booleanEnableLabel;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_maxNumberOfDeltas;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_maxDeltaSize;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_errorInvalidText;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_directoryDescription;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_directoryDialogLabel;
-
-	// ImportRPMDropListener
-	/****/
-	public static String ImportRPMDropListener_errorCopyingFileToProject;
 
 	static {
 		// initialize resource bundle

@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 
 /**
  * The request scheduler works with 5 slots with a specific time. It has 4 slots
@@ -56,8 +56,8 @@ public class TmfRequestExecutor implements Executor {
     private final String fExecutorName;
 
     // The request queues
-    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<>(100);
-    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<>(100);
+    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
+    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
 
     // The tasks
     private TmfEventThread fActiveTask;
