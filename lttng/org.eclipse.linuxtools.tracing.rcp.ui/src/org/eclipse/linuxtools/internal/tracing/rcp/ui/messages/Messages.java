@@ -31,6 +31,10 @@ public class Messages extends NLS {
     public static String CliParser_MalformedCommand;
     /** Unkown command */
     public static String CliParser_UnknownCommand;
+    /** Select trace type title */
+    public static String OpenDirHandler_SelectTraceType;
+    /** Select trace file */
+    public static String OpenFileHandler_SelectTraceFile;
 
     static {
         // initialize resource bundle

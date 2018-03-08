@@ -12,17 +12,15 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.math.BigInteger;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF integer definition.
  *
- * The definition of a integer basic data type. It will take the data from a
- * trace and store it (and make it fit) as a long.
+ * The definition of a integer basic data type. It will take the data
+ * from a trace and store it (and make it fit) as a long.
  *
  * @version 1.0
  * @author Matthew Khouzam
@@ -38,18 +36,14 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     private long value;
 
     // ------------------------------------------------------------------------
-    // Constructors
+    // Contructors
     // ------------------------------------------------------------------------
 
     /**
      * Constructor
-     *
-     * @param declaration
-     *            the parent declaration
-     * @param definitionScope
-     *            the parent scope
-     * @param fieldName
-     *            the field name
+     * @param declaration the parent declaration
+     * @param definitionScope the parent scope
+     * @param fieldName the field name
      */
     public IntegerDefinition(IntegerDeclaration declaration,
             IDefinitionScope definitionScope, String fieldName) {
@@ -58,12 +52,11 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
      * Gets the value of the integer
-     *
      * @return the value of the integer (in long)
      */
     public long getValue() {
@@ -72,9 +65,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     /**
      * Sets the value of an integer
-     *
-     * @param val
-     *            the value
+     * @param val the value
      */
     public void setValue(long val) {
         value = val;
@@ -100,7 +91,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     }
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         final long longNegBit = 0x0000000080000000L;
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
@@ -122,9 +113,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
         // TODO: use the eventual getLong from BitBuffer
         if (length == 64) {
-            long low = input.get(32, false);
+            long low = input.getInt(32, false);
             low = low & 0x00000000FFFFFFFFL;
-            long high = input.get(32, false);
+            long high = input.getInt(32, false);
             high = high & 0x00000000FFFFFFFFL;
             if (this.declaration.getByteOrder() != ByteOrder.BIG_ENDIAN) {
                 bits = (high << 32) | low;
@@ -132,7 +123,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
                 bits = (low << 32) | high;
             }
         } else {
-            bits = input.get(length, signed);
+            bits = input.getInt(length, signed);
             bits = bits & 0x00000000FFFFFFFFL;
             /*
              * The previous line loses sign information but is necessary, this
@@ -159,54 +150,6 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
             char c = (char) value;
             return Character.toString(c);
         }
-        return formatNumber(value, declaration.getBase(), declaration.isSigned());
-    }
-
-    /**
-     * Print a numeric value as a string in a given base
-     *
-     * @param value
-     *            The value to print as string
-     * @param base
-     *            The base for this value
-     * @param signed
-     *            Is the value signed or not
-     * @return formatted number string
-     * @since 3.0
-     */
-    public static final String formatNumber(long value, int base, boolean signed) {
-        String s;
-        /* Format the number correctly according to the integer's base */
-        switch (base) {
-        case 2:
-            s = "0b" + Long.toBinaryString(value); //$NON-NLS-1$
-            break;
-        case 8:
-            s = "0" + Long.toOctalString(value); //$NON-NLS-1$
-            break;
-        case 16:
-            s = "0x" + Long.toHexString(value); //$NON-NLS-1$
-            break;
-        case 10:
-        default:
-            /* For non-standard base, we'll just print it as a decimal number */
-            if (!signed && value < 0) {
-                /*
-                 * Since there are no 'unsigned long', handle this case with
-                 * BigInteger
-                 */
-                BigInteger bigInteger = BigInteger.valueOf(value);
-                /*
-                 * we add 2^64 to the negative number to get the real unsigned
-                 * value
-                 */
-                bigInteger = bigInteger.add(BigInteger.valueOf(1).shiftLeft(64));
-                s = bigInteger.toString();
-            } else {
-                s = Long.toString(value);
-            }
-            break;
-        }
-        return s;
+        return String.valueOf(value);
     }
 }
