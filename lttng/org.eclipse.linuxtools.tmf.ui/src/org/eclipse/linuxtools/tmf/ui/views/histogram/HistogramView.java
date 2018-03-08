@@ -14,7 +14,6 @@
  *   Francois Chouinard - Cleanup and refactoring
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Patrick Tasse - Update for mouse wheel zoom
- *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -27,6 +26,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalThrottler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
@@ -73,6 +73,9 @@ public class HistogramView extends TmfView {
 
     // Parent widget
     private Composite fParent;
+
+    // The current trace
+    private ITmfTrace fTrace;
 
     // Current timestamp/time window - everything in the TIME_SCALE
     private long fTraceStartTime;
@@ -372,8 +375,35 @@ public class HistogramView extends TmfView {
     // Signal handlers
     // ------------------------------------------------------------------------
 
-    @Override
-    protected void loadTrace() {
+    /**
+     * Handles trace opened signal. Loads histogram if new trace time range is not
+     * equal <code>TmfTimeRange.NULL_RANGE</code>
+     * @param signal the trace selected signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceOpened(TmfTraceOpenedSignal signal) {
+        assert (signal != null);
+        fTrace = signal.getTrace();
+        loadTrace();
+    }
+
+    /**
+     * Handles trace selected signal. Loads histogram if new trace time range is not
+     * equal <code>TmfTimeRange.NULL_RANGE</code>
+     * @param signal the trace selected signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceSelected(TmfTraceSelectedSignal signal) {
+        assert (signal != null);
+        if (fTrace != signal.getTrace()) {
+            fTrace = signal.getTrace();
+            loadTrace();
+        }
+    }
+
+    private void loadTrace() {
         initializeHistograms();
         fParent.redraw();
     }
