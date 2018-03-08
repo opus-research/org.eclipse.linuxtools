@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -134,10 +133,7 @@ public class Uml2SDTestFacility {
             // Create test trace object
             final URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path("tracesets/sdEvents"), null);
             final File test = new File(FileLocator.toFileURL(location).toURI());
-            TmfTraceStub trace = new TmfTraceStub(test.getPath(), 500, true, parser, null);
-            trace.broadcast(new TmfTraceOpenedSignal(this, trace, null));
-            trace.broadcast(new TmfTraceSelectedSignal(this, trace));
-            return trace;
+            return new TmfTraceStub(test.getPath(), 500, true, parser, null);
         } catch (final TmfTraceException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -299,7 +295,6 @@ public class Uml2SDTestFacility {
         final ITmfTrace traces[] = new ITmfTrace[1];
         traces[0] = fTrace;
         fExperiment = new TmfExperiment(ITmfEvent.class, "TestExperiment", traces);
-        fTrace.broadcast(new TmfTraceOpenedSignal(this, fExperiment, null));
         fTrace.broadcast(new TmfTraceSelectedSignal(this, fExperiment));
         if (wait) {
             while (fExperiment.getNbEvents() == 0) {
