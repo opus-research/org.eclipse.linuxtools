@@ -59,6 +59,34 @@ public class Utils {
     // ------------------------------------------------------------------------
 
     /**
+     * Unsigned long comparison.
+     *
+     * @param a
+     *            First operand.
+     * @param b
+     *            Second operand.
+     * @return -1 if a < b, 1 if a > b, 0 if a == b.
+     */
+    public static int unsignedCompare(long a, long b) {
+        boolean aLeftBit = (a & (1 << (Long.SIZE - 1))) != 0;
+        boolean bLeftBit = (b & (1 << (Long.SIZE - 1))) != 0;
+
+        if (aLeftBit && !bLeftBit) {
+            return 1;
+        } else if (!aLeftBit && bLeftBit) {
+            return -1;
+        } else {
+            if (a < b) {
+                return -1;
+            } else if (a > b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    /**
      * Creates a UUID object from an array of 16 bytes.
      *
      * @param bytes
