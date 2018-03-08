@@ -41,7 +41,7 @@
             name="%tracetype.type.kernel"
             trace_type="org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace">
          <eventsTableType
-               class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.Lttng2KernelEventsTable">
+               class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.LTTng2EventsTable">
          </eventsTableType>
       </type>
    </extension>
