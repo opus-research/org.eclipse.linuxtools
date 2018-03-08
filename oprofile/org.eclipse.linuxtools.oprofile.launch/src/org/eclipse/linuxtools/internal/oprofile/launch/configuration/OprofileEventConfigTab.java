@@ -228,7 +228,6 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				
 				for (CounterSubTab tab : counterSubTabs) {
 					tab.initializeTab(config);
-					tab.createEventsFilter();
 				}
 			try{
 				boolean enabledState = config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
@@ -236,6 +235,10 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				setEnabledState(!enabledState);
 			} catch (CoreException e) {
 				e.printStackTrace();
+			}
+			
+			for (CounterSubTab tab : counterSubTabs) {
+				tab.createEventsFilter();
 			}
 		}
 	}
