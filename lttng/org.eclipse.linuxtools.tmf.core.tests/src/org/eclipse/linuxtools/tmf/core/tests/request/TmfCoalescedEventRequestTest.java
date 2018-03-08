@@ -489,9 +489,8 @@ public class TmfCoalescedEventRequestTest {
         final long REQUEST_OFFSET = 1000;
 
         requestedEvents1 = new Vector<ITmfEvent>();
-        request1 = new TmfEventRequest(ITmfEvent.class, range, signal.fIndex,
-                NB_EVENTS, BLOCK_SIZE, ExecutionType.FOREGROUND) {
-            int nbRead = 0;
+        request1 = new TmfEventRequest(ITmfEvent.class, range, signal.fIndex, NB_EVENTS, BLOCK_SIZE) {
+        	int nbRead = 0;
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
@@ -505,9 +504,7 @@ public class TmfCoalescedEventRequestTest {
         };
 
         requestedEvents2 = new Vector<ITmfEvent>();
-        request2 = new TmfEventRequest(ITmfEvent.class, range,
-                signal.fIndex + REQUEST_OFFSET, NB_EVENTS, BLOCK_SIZE,
-                ExecutionType.FOREGROUND) {
+        request2 = new TmfEventRequest(ITmfEvent.class, range, signal.fIndex + REQUEST_OFFSET, NB_EVENTS, BLOCK_SIZE) {
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
@@ -518,9 +515,7 @@ public class TmfCoalescedEventRequestTest {
         };
 
         requestedEvents3 = new Vector<ITmfEvent>();
-        request3 = new TmfEventRequest(ITmfEvent.class, range,
-                signal.fIndex + 2 * REQUEST_OFFSET, NB_EVENTS, BLOCK_SIZE,
-                ExecutionType.FOREGROUND) {
+        request3 = new TmfEventRequest(ITmfEvent.class, range, signal.fIndex + 2 * REQUEST_OFFSET, NB_EVENTS, BLOCK_SIZE) {
             @Override
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
