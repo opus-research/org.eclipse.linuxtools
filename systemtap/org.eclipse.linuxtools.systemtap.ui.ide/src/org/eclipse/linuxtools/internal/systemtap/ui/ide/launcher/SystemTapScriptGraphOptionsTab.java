@@ -302,7 +302,7 @@ public class SystemTapScriptGraphOptionsTab extends
 		addGraphButton.setText(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton);
 		addGraphButton.setToolTipText(Messages.SystemTapScriptGraphOptionsTab_AddGraphButtonToolTip);
 		addGraphButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+
 		// Button to edit an existing graph
 		editGraphButton = new Button(buttonComposite, SWT.PUSH);
 		editGraphButton.setText(Messages.SystemTapScriptGraphOptionsTab_EditGraphButton);
@@ -350,7 +350,7 @@ public class SystemTapScriptGraphOptionsTab extends
 				}
 			}
 		});
-		
+
 		// When button is clicked, brings up same wizard as the one for adding
 		// a graph. Data in the wizard is filled out to match the properties
 		// of the selected graph.
@@ -369,10 +369,9 @@ public class SystemTapScriptGraphOptionsTab extends
 				GraphData gd = wizard.getGraphData();
 
 				if (null != gd) {
-					TableItem item = new TableItem(graphsTable, SWT.NONE);
-					item.setText(GraphFactory.getGraphName(gd.graphID) + ":" //$NON-NLS-1$
+					selectedTableItem.setText(GraphFactory.getGraphName(gd.graphID) + ":" //$NON-NLS-1$
 							+ gd.title);
-					item.setData(gd);
+					selectedTableItem.setData(gd);
 					updateLaunchConfigurationDialog();
 				}
 			}

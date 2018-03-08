@@ -133,9 +133,10 @@ public class SelectSeriesWizardPage extends WizardPage {
 		cboXItem.select(edit && model.getXSeries() != GraphModel.ROW_X ? model.getXSeries() : 0);
 		if (edit) {
 			cboYItems[0].select(model.getYSeries()[0]);
+			displayYCombos();
 		}
 		for(int i=1; i<cboYItems.length; i++) {
-			cboYItems[i].select(edit ? model.getYSeries()[i] : 0);
+			cboYItems[i].select(edit && model.getYSeries().length > i ? model.getYSeries()[i] : 0);
 		}
 
 		//Add the key filter wigets
@@ -189,6 +190,11 @@ public class SelectSeriesWizardPage extends WizardPage {
 		data1.top = new FormAttachment(lblKey, 2);
 		data1.right = new FormAttachment(80, 0);
 		txtKey.setLayoutData(data1);
+
+		if (edit) {
+			setKeyEnablement(GraphFactory.isKeyRequired(model.getGraphID(), model.getDataSet()),
+							 GraphFactory.isKeyOptional(model.getGraphID(), model.getDataSet()));
+		}
 
 		//Make comp visible
 		setControl(comp);
@@ -303,6 +309,20 @@ public class SelectSeriesWizardPage extends WizardPage {
 		model = null;
 	}
 
+	private void displayYCombos() {
+		boolean setVisible = true;
+		if(GraphFactory.isMultiGraph(model.getGraphID())) {
+			for(int i=1; i<cboYItems.length; i++) {
+				cboYItems[i].setVisible(setVisible);
+				lblYItems[i].setVisible(setVisible);
+				if(cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible())
+					setVisible = true;
+				else
+					setVisible = false;
+			}
+		}
+	}
+
 	private class ComboSelectionListener implements SelectionListener {
 		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {}
@@ -310,17 +330,7 @@ public class SelectSeriesWizardPage extends WizardPage {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			if(!cboXItem.equals(e.getSource())) {
-				boolean setVisible = true;
-				if(GraphFactory.isMultiGraph(model.getGraphID())) {
-					for(int i=1; i<cboYItems.length; i++) {
-						cboYItems[i].setVisible(setVisible);
-						lblYItems[i].setVisible(setVisible);
-						if(cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible())
-							setVisible = true;
-						else
-							setVisible = false;
-					}
-				}
+				displayYCombos();
 			}
 
 			if(!isSeriesUnique()) {

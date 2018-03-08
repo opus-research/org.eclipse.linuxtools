@@ -39,11 +39,7 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 
 	@Override
 	public void addPages() {
-		if (!edit) {
-			setWindowTitle(Localization.getString("SelectGraphWizard.CreateGraph")); //$NON-NLS-1$
-		} else {
-			setWindowTitle(Localization.getString("SelectGraphWizard.EditGraph")); //$NON-NLS-1$
-		}
+		setWindowTitle(Localization.getString(!edit ? "SelectGraphWizard.CreateGraph" : "SelectGraphWizard.EditGraph"));  //$NON-NLS-1$//$NON-NLS-2$
 		selectGraphPage = new SelectGraphWizardPage();
 		addPage(selectGraphPage);
 		selectSeriesPage = new SelectSeriesWizardPage();

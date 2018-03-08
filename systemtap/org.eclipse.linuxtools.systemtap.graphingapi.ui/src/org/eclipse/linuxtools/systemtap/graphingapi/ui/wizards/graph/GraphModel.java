@@ -18,7 +18,7 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 
 public class GraphModel {
 	public static final int ROW_X = -1;
-	
+
 	public GraphModel(IDataSet d) {
 		graph = new GraphData();
 		graph.graphID = ""; //$NON-NLS-1$
