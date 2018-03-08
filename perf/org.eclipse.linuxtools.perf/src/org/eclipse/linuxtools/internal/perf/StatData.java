@@ -20,42 +20,34 @@ import java.util.List;
  */
 public class StatData extends AbstractDataManipulator {
 
-	private String prog;
+	private String cmd;
 	private String [] args;
 	private int runCount;
 
-	public StatData(String title, String prog, String [] args, int runCount) {
+	public StatData(String title, String cmd, String [] args, int runCount) {
 		super(title);
-		this.prog = prog;
+		this.cmd = cmd;
 		this.args = args;
 		this.runCount = runCount;
 	}
 
 	@Override
 	public void parse() {
-		String [] cmd = getCommand(this.prog, this.args);
+		String [] cmd = getCommand(this.cmd, this.args);
 		// perf stat prints the data to standard error
 		performCommand(cmd, 2);
 	}
 
-	protected String [] getCommand(String prog, String [] args) {
+	protected String [] getCommand(String command, String [] args) {
 		List<String> ret = new ArrayList<String>(Arrays.asList(
 				new String[] {"perf", "stat" })); //$NON-NLS-1$ //$NON-NLS-2$
 		if (runCount > 1) {
 			ret.add("-r"); //$NON-NLS-1$
 			ret.add(String.valueOf(runCount));
 		}
-		ret.add(prog);
+		ret.add(command);
 		ret.addAll(Arrays.asList(args));
 		return ret.toArray(new String [0]);
-	}
-
-	protected String getProgram () {
-		return prog;
-	}
-
-	protected String [] getArguments () {
-		return args;
 	}
 
 }
