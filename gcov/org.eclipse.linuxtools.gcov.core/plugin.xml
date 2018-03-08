@@ -39,8 +39,7 @@
       <page
             class="org.eclipse.linuxtools.internal.gcov.preferences.ColorPreferencePage"
             id="org.eclipse.linuxtools.gcov.core.preferences.colors"
-            name="%colorprefpage"
-            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage">
+            name="%colorprefpage">
       </page>
    </extension>
    <extension

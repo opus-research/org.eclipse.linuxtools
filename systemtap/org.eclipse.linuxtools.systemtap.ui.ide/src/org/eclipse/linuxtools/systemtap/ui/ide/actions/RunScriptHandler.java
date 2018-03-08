@@ -24,9 +24,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
@@ -36,7 +33,6 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
@@ -92,7 +88,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * Finally, it gets an instance of <code>ScriptConsole</code> to run the script.
 	 */
 	@Override
-	public Object execute(ExecutionEvent event){
+	public Object execute(ExecutionEvent event) {
 
 		if(isValid()) {
 			if(getRunLocal() == false) {
@@ -103,14 +99,9 @@ public class RunScriptHandler extends AbstractHandler {
 					tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
 					 scpclient.transfer(fileName,tmpfileName);
 			        } catch (JSchException e) {
-						ErrorDialog.openError(PlatformUI.getWorkbench()
-								.getActiveWorkbenchWindow().getShell(),
-								Localization.getString("RunScriptHandler.1"), Localization.getString("RunScriptHandler.1"), //$NON-NLS-1$ //$NON-NLS-2$
-								new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, Localization.getString("RunScriptHandler.2"))); //$NON-NLS-1$
-						return null;
+						e.printStackTrace();
 					} catch (IOException e) {
-						ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.3"), e); //$NON-NLS-1$
-						return null;
+						e.printStackTrace();
 					}
 			}
 			final String[] script = buildStandardScript();

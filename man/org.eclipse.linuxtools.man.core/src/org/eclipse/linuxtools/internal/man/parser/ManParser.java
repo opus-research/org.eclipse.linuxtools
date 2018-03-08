@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.man.Activator;
 import org.eclipse.linuxtools.internal.man.preferences.PreferenceConstants;
 
@@ -67,13 +65,11 @@ public class ManParser {
 				}
 			}
 		} catch (IOException e1) {
-			Status status = new Status(IStatus.ERROR, e1.getMessage(),
-					Activator.PLUGIN_ID);
-			Activator.getDefault().getLog().log(status);
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		} catch (InterruptedException e1) {
-			Status status = new Status(IStatus.ERROR, e1.getMessage(),
-					Activator.PLUGIN_ID);
-			Activator.getDefault().getLog().log(status);
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		return sb;
 	}
