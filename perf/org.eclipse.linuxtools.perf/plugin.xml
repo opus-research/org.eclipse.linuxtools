@@ -26,6 +26,15 @@
             icon="icons/symbol.gif"
             id="org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"
             name="Source Disassembly">
+	</view>
+      <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.profiling.ui"
+            class="org.eclipse.linuxtools.internal.perf.ui.PerfComparisonView"
+            icon="icons/symbol.gif"
+            id="org.eclipse.linuxtools.perf.ui.PerfSessionDiffView"
+            name="Perf Comparison View"
+            restorable="false">
       </view>
    </extension>
    <extension
