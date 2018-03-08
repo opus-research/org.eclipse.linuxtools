@@ -92,7 +92,7 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
 
             // Set and propagate
             setValue(value);
-            fParentView.updateSelectionTime(value, value);
+            fParentView.updateCurrentEventTime(value);
         } else {
             setValue(value);
         }
