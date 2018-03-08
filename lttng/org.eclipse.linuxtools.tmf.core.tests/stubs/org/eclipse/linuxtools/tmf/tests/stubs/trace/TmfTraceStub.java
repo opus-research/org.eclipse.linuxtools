@@ -316,7 +316,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         try {
             // parseNextEvent will update the context
             if (fTrace != null && getParser() != null && context != null) {
-                final ITmfEvent event = getParser().parseEvent(context);
+                final ITmfEvent event = getParser().parseEvent(context.clone());
                 return event;
             }
         } finally {

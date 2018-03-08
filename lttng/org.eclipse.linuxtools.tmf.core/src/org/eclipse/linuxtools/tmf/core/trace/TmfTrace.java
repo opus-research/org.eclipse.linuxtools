@@ -613,21 +613,17 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         ITmfContext context = fIndexer.seekIndex(timestamp);
 
         // And locate the requested event context
-        ITmfLocation previousLocation = context.getLocation();
-        long previousRank = context.getRank();
-        ITmfEvent event = getNext(context);
+        final ITmfContext nextEventContext = context.clone(); // Must use clone() to get the right subtype...
+        ITmfEvent event = getNext(nextEventContext);
         while (event != null && event.getTimestamp().compareTo(timestamp, false) < 0) {
-            previousLocation = context.getLocation();
-            previousRank = context.getRank();
-            event = getNext(context);
+            context.dispose();
+            context = nextEventContext.clone();
+            event = getNext(nextEventContext);
         }
+        nextEventContext.dispose();
         if (event == null) {
             context.setLocation(null);
             context.setRank(ITmfContext.UNKNOWN_RANK);
-        } else {
-            context.dispose();
-            context = seekEvent(previousLocation);
-            context.setRank(previousRank);
         }
         return context;
     }

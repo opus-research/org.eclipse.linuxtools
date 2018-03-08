@@ -57,6 +57,18 @@ public final class TmfExperimentLocation implements ITmfLocation {
         this(location.getLocationInfo());
     }
 
+    /**
+     * The "update" constructor. Copies the array of locations and updates
+     * a single entry.
+     *
+     * @param exp_location the experiment location
+     * @param index the entry to modify
+     * @param location the new entry
+     */
+    public TmfExperimentLocation(TmfExperimentLocation exp_location, int index, ITmfLocation location) {
+        fLocation = new TmfLocationArray(exp_location.fLocation, index, location);
+    }
+
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
@@ -67,8 +79,13 @@ public final class TmfExperimentLocation implements ITmfLocation {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        StringBuilder result = new StringBuilder("TmfExperimentLocation [");
-        result.append(fLocation.toString());
+        StringBuilder result = new StringBuilder("[TmfExperimentLocation");
+        int index = 0;
+        ITmfLocation location = getLocationInfo().getLocation(index);
+        while (location != null) {
+            result.append("[" + location + "]");
+            location = getLocationInfo().getLocation(++index);
+        }
         result.append("]");
         return result.toString();
     }

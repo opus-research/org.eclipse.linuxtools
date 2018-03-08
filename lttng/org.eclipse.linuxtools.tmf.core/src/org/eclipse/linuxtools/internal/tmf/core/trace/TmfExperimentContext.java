@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.internal.tmf.core.trace;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 
 /**
@@ -57,14 +58,46 @@ public class TmfExperimentContext extends TmfContext {
     /**
      * Standard constructor
      *
-     * @param nbTraces
-     *            The number of traces in the experiment
+     * @param contexts
+     *            The matching context for each trace in the experiment
      */
-    public TmfExperimentContext(final int nbTraces) {
+    public TmfExperimentContext(final ITmfContext[] contexts) {
         super();
-        fContexts = new ITmfContext[nbTraces];
-        fEvents = new ITmfEvent[nbTraces];
+        fContexts = contexts;
+        fEvents = new ITmfEvent[fContexts.length];
+        final ITmfLocation[] locations = new ITmfLocation[fContexts.length];
+
+        setLocation(new TmfExperimentLocation(new TmfLocationArray(locations.clone())));
+
+        final long[] ranks = new long[fContexts.length];
+        long rank = 0;
+        for (int i = 0; i < fContexts.length; i++) {
+            if (contexts[i] != null) {
+                locations[i] = contexts[i].getLocation();
+                ranks[i] = contexts[i].getRank();
+                rank += contexts[i].getRank();
+            }
+        }
+
+//        setLocation(new TmfExperimentLocation(new TmfLocationArray(locations)));
+        setRank(rank);
         fLastTraceRead = NO_TRACE;
+    }
+
+    /**
+     * Copy constructor
+     *
+     * @param other
+     *            The experiment context to copy
+     */
+    public TmfExperimentContext(final TmfExperimentContext other) {
+        this(other.cloneContexts());
+        fEvents = other.fEvents;
+        if (other.getLocation() != null) {
+            setLocation(other.getLocation());
+        }
+        setRank(other.getRank());
+        setLastTrace(other.fLastTraceRead);
     }
 
     /* (non-Javadoc)
@@ -76,6 +109,35 @@ public class TmfExperimentContext extends TmfContext {
             context.dispose();
         }
         super.dispose();
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#clone()
+     */
+    @Override
+    public TmfExperimentContext clone() {
+        TmfExperimentContext clone = null;
+        clone = (TmfExperimentContext) super.clone();
+        clone.fContexts = cloneContexts();
+        clone.fEvents = cloneEvents();
+        clone.fLastTraceRead = fLastTraceRead;
+        return clone;
+    }
+
+    private ITmfContext[] cloneContexts() {
+        final ITmfContext[] contexts = new ITmfContext[fContexts.length];
+        for (int i = 0; i < fContexts.length; i++) {
+            contexts[i] = (fContexts[i] != null) ? fContexts[i].clone() : null;
+        }
+        return contexts;
+    }
+
+    private ITmfEvent[] cloneEvents() {
+        final ITmfEvent[] events = new ITmfEvent[fEvents.length];
+        for (int i = 0; i < fEvents.length; i++) {
+            events[i] = fEvents[i];
+        }
+        return events;
     }
 
     // ------------------------------------------------------------------------
