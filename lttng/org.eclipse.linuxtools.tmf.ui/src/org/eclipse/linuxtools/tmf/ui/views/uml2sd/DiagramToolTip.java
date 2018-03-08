@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,26 +33,24 @@ import org.eclipse.swt.widgets.Text;
 public class DiagramToolTip {
 
     // ------------------------------------------------------------------------
-    // Constants
-    // ------------------------------------------------------------------------
-    private static final int CHARACTERS_PER_COLUMN = 100;
-    private static final int DEFAULT_CURSOR_HEIGHT = 32;
-
-    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
     /**
      * The parent control where the tooltip must be drawn.
      */
-    private Control fParent = null;
+    protected Control fParent = null;
     /**
      * The tooltip shell.
      */
-    private Shell fToolTipShell = null;
+    protected Shell fToolTipShell = null;
+    /**
+     * The tooltip text.
+     */
+    protected String fText = null;
     /**
      * The text box.
      */
-    private Text fTextBox = null;
+    protected Text fTextBox = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -86,9 +84,10 @@ public class DiagramToolTip {
             return;
         }
 
+        fText = value;
         int w = fToolTipShell.getBounds().width;
         Point hr = Display.getDefault().getCursorLocation();
-        int cursorH = DEFAULT_CURSOR_HEIGHT;
+        int cursorH = 32;
         for (int i = 0; i < Display.getDefault().getCursorSizes().length; i++) {
             if (Display.getDefault().getCursorSizes()[i].y < cursorH) {
                 cursorH = Display.getDefault().getCursorSizes()[i].y;
@@ -102,15 +101,17 @@ public class DiagramToolTip {
             hr.x = hr.x - tempX;
         }
         fTextBox.setText(value);
+        int charactersPerColumn = 100;
         GC gc = new GC(fTextBox);
         FontMetrics fm = gc.getFontMetrics();
         gc.dispose();
-        int width = CHARACTERS_PER_COLUMN * fm.getAverageCharWidth();
+        int width = charactersPerColumn * fm.getAverageCharWidth();
         fTextBox.setSize(fTextBox.computeSize(width, fTextBox.getLineCount() * fTextBox.getLineHeight()));
         fToolTipShell.setLocation(hr.x, hr.y + cursorH);
         fToolTipShell.setSize(fTextBox.getSize());
         fTextBox.setVisible(true);
         fToolTipShell.setVisible(true);
+
     }
 
     /**
@@ -118,14 +119,6 @@ public class DiagramToolTip {
      */
     public void hideToolTip() {
         fToolTipShell.setVisible(false);
-    }
-
-    /**
-     * @return parent control
-     * @since 2.0
-     */
-    protected Control getParent() {
-        return fParent;
     }
 
 }

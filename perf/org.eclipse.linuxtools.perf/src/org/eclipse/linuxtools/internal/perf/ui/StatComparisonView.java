@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.linuxtools.internal.perf.IPerfData;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
@@ -57,13 +56,13 @@ public class StatComparisonView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		parent.setLayoutData(new GridLayout(1, true));
 
-		text = new StyledText(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+		text = new StyledText(parent, SWT.WRAP | SWT.V_SCROLL);
 		text.setEditable(false);
 
-		IPerfData statsDiff = PerfPlugin.getDefault()
+		StatComparisonData statsDiff = PerfPlugin.getDefault()
 				.getStatDiffData();
 		if (statsDiff != null) {
-			setStyledText(statsDiff.getPerfData());
+			setStyledText(statsDiff.getResult());
 			setContentDescription(statsDiff.getTitle());
 		}
 	}

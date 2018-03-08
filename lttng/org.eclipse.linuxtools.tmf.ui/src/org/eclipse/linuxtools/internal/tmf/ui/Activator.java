@@ -7,20 +7,17 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Francois Chouinard - Initial API and implementation
+ *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.properties.TmfTimePreferences;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventAdapterFactory;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -43,8 +40,6 @@ public class Activator extends AbstractUIPlugin {
      * The shared instance
      */
     private static Activator plugin;
-
-    private TmfEventAdapterFactory fTmfEventAdapterFactory;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -80,17 +75,12 @@ public class Activator extends AbstractUIPlugin {
         TmfUiTracer.init();
         TmfTraceElement.init();
         TmfTimePreferences.init();
-
-        fTmfEventAdapterFactory = new TmfEventAdapterFactory();
-        Platform.getAdapterManager().registerAdapters(fTmfEventAdapterFactory, ITmfEvent.class);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         TmfUiTracer.stop();
         plugin = null;
-
-        Platform.getAdapterManager().unregisterAdapters(fTmfEventAdapterFactory);
         super.stop(context);
     }
 
@@ -147,7 +137,6 @@ public class Activator extends AbstractUIPlugin {
         reg.put(ITmfImageConstants.IMG_UI_SEQ_DIAGRAM_OBJ, getImageFromPath(ITmfImageConstants.IMG_UI_SEQ_DIAGRAM_OBJ));
         reg.put(ITmfImageConstants.IMG_UI_ARROW_COLLAPSE_OBJ, getImageFromPath(ITmfImageConstants.IMG_UI_ARROW_COLLAPSE_OBJ));
         reg.put(ITmfImageConstants.IMG_UI_ARROW_UP_OBJ, getImageFromPath(ITmfImageConstants.IMG_UI_ARROW_UP_OBJ));
-        reg.put(ITmfImageConstants.IMG_UI_CONFLICT, getImageFromPath(ITmfImageConstants.IMG_UI_CONFLICT));
     }
 
     /**

@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
 /**
  * This is the high-level wrapper around the State History and its provider and
@@ -74,7 +73,7 @@ public class HistoryBuilder extends TmfComponent {
         }
         if (stateProvider.getAssignedStateSystem() != ss) {
             /* Logic check to make sure the provider is setup properly */
-            throw new IllegalArgumentException();
+            throw new RuntimeException();
         }
 
         sp = stateProvider;
@@ -159,9 +158,20 @@ public class HistoryBuilder extends TmfComponent {
      */
     @TmfSignalHandler
     public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
+        /*
+         * Check if this signal is for this trace, or for an experiment
+         * containing this trace.
+         */
         ITmfTrace sender = signal.getTrace();
+        ITmfTrace target = null;
+        for (ITmfTrace trace : sender.getTraces()) {
+            if (trace == sp.getTrace()) {
+                target = trace;
+                break;
+            }
+        }
 
-        if (!signalIsForUs(sender)) {
+        if (target == null) {
             return;
         }
 
@@ -180,30 +190,21 @@ public class HistoryBuilder extends TmfComponent {
      */
     @TmfSignalHandler
     public void traceClosed(TmfTraceClosedSignal signal) {
-        ITmfTrace sender = signal.getTrace();
+        /*
+         * Check if this signal is for this trace, or for an experiment
+         * containing this trace.
+         */
+        boolean found = false;
+        for (ITmfTrace trace : signal.getTrace().getTraces()) {
+            if (trace == sp.getTrace()) {
+                found = true;
+                break;
+            }
+        }
 
-        if (signalIsForUs(sender) && !started) {
+        if (found && !started) {
             close(true);
         }
-    }
-
-    /**
-     * Check if this signal is for this trace, or for an experiment containing
-     * this trace.
-     */
-    private boolean signalIsForUs(ITmfTrace sender) {
-        if (sender instanceof TmfExperiment) {
-            /* Yeah doing a lazy instanceof check here, but it's a special case! */
-            TmfExperiment exp = (TmfExperiment) sender;
-            for (ITmfTrace childTrace : exp.getTraces()) {
-                if (childTrace == sp.getTrace()) {
-                    return true;
-                }
-            }
-        } else if (sender == sp.getTrace()) {
-            return true;
-        }
-        return false;
     }
 
     // ------------------------------------------------------------------------
@@ -227,7 +228,7 @@ public class HistoryBuilder extends TmfComponent {
 class StateSystemBuildRequest extends TmfEventRequest {
 
     /** The amount of events queried at a time through the requests */
-    private static final int CHUNK_SIZE = 50000;
+    private final static int chunkSize = 50000;
 
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
@@ -237,7 +238,7 @@ class StateSystemBuildRequest extends TmfEventRequest {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
                 TmfDataRequest.ALL_DATA,
-                CHUNK_SIZE,
+                chunkSize,
                 ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
@@ -247,8 +248,10 @@ class StateSystemBuildRequest extends TmfEventRequest {
     @Override
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
-        if (event != null && event.getTrace() == trace) {
-            sci.processEvent(event);
+        if (event != null) {
+            if (event.getTrace() == trace) {
+                sci.processEvent(event);
+            }
         }
     }
 

@@ -15,9 +15,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	LaunchTabsTest.class,ModelTest.class,DataManipulatorTest.class,SaveSessionTest.class,
-	StatsComparisonTest.class,LaunchTest.class, LaunchRemoteTest.class, FindActionTest.class
+	LaunchTabsTest.class,ModelTest.class,DataManipulatorTest.class,SaveSessionTest.class,StatsComparisonTest.class,LaunchTest.class
 })
-
 public class AllPerfTests {
+
 }

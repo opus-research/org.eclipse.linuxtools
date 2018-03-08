@@ -35,7 +35,7 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceS
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy;
 import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
@@ -92,6 +92,10 @@ public class ImportDialog extends Dialog implements IImportDialog {
      * The overwrite button
      */
     private Button fOverwriteButton;
+    /**
+     * The button to open import wizard for import locally.
+     */
+    private Button fImportLocallyButton;
     /**
      * List of available LTTng 2.0 projects
      */
@@ -185,9 +189,9 @@ public class ImportDialog extends Dialog implements IImportDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        Button importLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
+        fImportLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
         if (fSession.isStreamedTrace()) {
-            importLocallyButton.setText("&Next..."); //$NON-NLS-1$
+            fImportLocallyButton.setText("&Next..."); //$NON-NLS-1$
         }
     }
 
@@ -421,6 +425,14 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
         fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
         fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
+
+//        Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+//        layout = new GridLayout(1, true);
+//        overrideGroup.setLayout(layout);
+//        overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//
+//        fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
+//        fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
 
         getShell().setMinimumSize(new Point(500, 50));
     }
