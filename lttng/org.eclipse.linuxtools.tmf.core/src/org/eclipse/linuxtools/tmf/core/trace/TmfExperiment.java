@@ -17,6 +17,7 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -42,6 +43,7 @@ import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationManager;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
@@ -613,6 +615,16 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
         if (signal.getTrace() == this) {
             initializeStreamingMonitor();
         }
+    }
+
+    @Override
+    public ITmfCheckpoint restoreCheckpoint(ByteBuffer bufferIn) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getCheckpointSize() {
+        throw new UnsupportedOperationException();
     }
 
 }
