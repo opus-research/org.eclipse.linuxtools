@@ -13,13 +13,13 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assume.assumeTrue;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfIterator;
@@ -95,6 +95,15 @@ public class CtfTmfEventTest {
     }
 
     /**
+     * Run the ArrayList<String> getFieldNames() method test.
+     */
+    @Test
+    public void testGetFieldNames() {
+        String[] result = fixture.getContent().getFieldNames();
+        assertNotNull(result);
+    }
+
+    /**
      * Run the Object getFieldValue(String) method test.
      */
     @Test
@@ -111,8 +120,9 @@ public class CtfTmfEventTest {
      */
     @Test
     public void testGetFields() {
-        Map<String, ITmfEventField> fields = nullEvent.getContent().getFields();
-        assertEquals(0, fields.size());
+        ITmfEventField[] fields = nullEvent.getContent().getFields();
+        ITmfEventField[] fields2 = new ITmfEventField[0];
+        assertArrayEquals(fields2, fields);
     }
 
     /**
@@ -184,7 +194,7 @@ public class CtfTmfEventTest {
         assertEquals(-1, nullEvent.getCPU());
         assertEquals("Empty CTF event", nullEvent.getEventName());
         assertEquals("No stream", nullEvent.getReference());
-        assertEquals(0, nullEvent.getContent().getFields().size());
+        assertArrayEquals(new ITmfEventField[0], nullEvent.getContent().getFields());
         assertEquals(-1L, nullEvent.getID());
         assertEquals(-1L, nullEvent.getTimestamp().getValue());
     }
