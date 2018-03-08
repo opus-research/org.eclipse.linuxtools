@@ -50,9 +50,7 @@ public class TmfEditorInput implements IEditorInput {
 
     @Override
 	public boolean exists() {
-        /* prevent this input from appearing in "Files Most Recently Used" list,
-         * as this causes lingering reference to ITmfTrace in the platform */
-        return false;
+        return fFile.exists();
     }
 
     @Override

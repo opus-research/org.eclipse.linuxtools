@@ -16,9 +16,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
- * Signal indicating a trace has been updated.
- *
- * The trace has been indexed up to the specified range.
+ * A trace was updated (typically its time range)
  *
  * @version 1.0
  * @author Francois Chouinard

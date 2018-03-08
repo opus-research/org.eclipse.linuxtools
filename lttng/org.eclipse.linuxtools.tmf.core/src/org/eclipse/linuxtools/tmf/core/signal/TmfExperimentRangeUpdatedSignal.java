@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,21 +13,17 @@
 package org.eclipse.linuxtools.tmf.core.signal;
 
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
 /**
- * Signal indicating a trace range has been updated.
- *
- * Receivers can safely perform event requests for the specified time range.
- * The signal acts as a trigger for coalescing such requests.
+ * Experiment time range update
  *
  * @version 1.0
- * @author Patrick Tasse
- * @since 2.0
+ * @author Francois Chouinard
  */
-public class TmfTraceRangeUpdatedSignal extends TmfSignal {
+public class TmfExperimentRangeUpdatedSignal extends TmfSignal {
 
-	private final ITmfTrace fTrace;
+	private final TmfExperiment fExperiment;
 	private final TmfTimeRange fTimeRange;
 
     /**
@@ -35,22 +31,24 @@ public class TmfTraceRangeUpdatedSignal extends TmfSignal {
      *
      * @param source
      *            Object sending this signal
-     * @param trace
-     *            Trace whose range was updated
+     * @param experiment
+     *            Experiment whose range was updated
      * @param range
-     *            The new time range of the trace
+     *            The new time range of the experiment
      */
-    public TmfTraceRangeUpdatedSignal(Object source, ITmfTrace trace, TmfTimeRange range) {
+    public TmfExperimentRangeUpdatedSignal(Object source,
+            TmfExperiment experiment, TmfTimeRange range) {
+            // , ITmfTrace trace) {
         super(source);
-        fTrace = trace;
+        fExperiment = experiment;
         fTimeRange = range;
     }
 
 	/**
-	 * @return The trace
+	 * @return The experiment
 	 */
-	public ITmfTrace getTrace() {
-		return fTrace;
+	public TmfExperiment getExperiment() {
+		return fExperiment;
 	}
 
 	/**
@@ -66,7 +64,7 @@ public class TmfTraceRangeUpdatedSignal extends TmfSignal {
 	@Override
     @SuppressWarnings("nls")
 	public String toString() {
-		return "[TmfTraceRangeUpdatedSignal (" + fTrace.getName() + ", " + fTimeRange.toString() + ")]";
+		return "[TmfExperimentRangeUpdatedSignal (" + fExperiment.toString() + ", " + fTimeRange.toString() + ")]";
 	}
 
 }

@@ -20,14 +20,14 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
@@ -152,36 +152,27 @@ public class HistoryBuilder extends TmfComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Listen to the "trace range updated" signal to start the state history
+     * Listen to the "experiment selected" signal to start the state history
      * construction.
      *
      * @param signal
-     *            The "trace range updated" signal. Listening to this
+     *            The "experiment range updated" signal. Listening to this
      *            signal will coalesce this request with the one from the
      *            indexer and histogram.
      */
     @TmfSignalHandler
-    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        ITmfTrace trace = signal.getTrace();
-        if (signal.getTrace() instanceof TmfExperiment) {
-            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
-            for (ITmfTrace expTrace : experiment.getTraces()) {
-                if (expTrace == sci.getTrace()) {
-                    trace = expTrace;
-                    break;
-                }
-            }
-        }
-        if (trace != sci.getTrace()) {
-            return;
-        }
-        /* the signal is for this trace or for an experiment containing this trace */
+    public void experimentRangeUpdated(final TmfExperimentRangeUpdatedSignal signal) {
+        StateSystemBuildRequest request;
+        TmfExperiment exp;
 
         if (!started) {
             started = true;
-            StateSystemBuildRequest request = new StateSystemBuildRequest(this);
-            trace = signal.getTrace();
-            trace.sendRequest(request);
+            request = new StateSystemBuildRequest(this);
+            exp = TmfExperiment.getCurrentExperiment();
+            if (exp == null) {
+                return;
+            }
+            exp.sendRequest(request);
         }
     }
 

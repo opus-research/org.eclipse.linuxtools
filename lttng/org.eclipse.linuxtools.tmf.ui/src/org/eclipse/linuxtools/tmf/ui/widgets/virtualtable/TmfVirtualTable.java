@@ -929,8 +929,7 @@ public class TmfVirtualTable extends Composite {
             fSelectedEventRank = i;
             if ((i < fTableTopEventRank + fFrozenRowCount && i >= fFrozenRowCount) ||
                     (i >= fTableTopEventRank + fFullyVisibleRows)) {
-                int lastPageTopEntryRank = Math.max(0, fTableItemCount - fFullyVisibleRows);
-                fTableTopEventRank = Math.max(0, Math.min(lastPageTopEntryRank, i - fFrozenRowCount - fFullyVisibleRows / 2));
+                fTableTopEventRank = Math.max(0, i - fFrozenRowCount - fFullyVisibleRows / 2);
             }
             if (fFullyVisibleRows < fTableItemCount) {
                 fSlider.setSelection(fTableTopEventRank);

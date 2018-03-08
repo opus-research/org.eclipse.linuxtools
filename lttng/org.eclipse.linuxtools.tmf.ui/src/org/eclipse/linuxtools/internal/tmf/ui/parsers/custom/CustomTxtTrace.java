@@ -64,6 +64,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser {
         } catch (IOException e) {
             throw new TmfTraceException(e.getMessage(), e);
         }
+        indexTrace(false);
     }
 
     @Override
@@ -189,7 +190,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser {
         }
 
         final CustomTxtTraceContext context = (CustomTxtTraceContext) tmfContext;
-        if (!(context.getLocation().getLocationInfo() instanceof Long) || NULL_LOCATION.equals(context.getLocation())) {
+        if (context.getLocation() == null || !(context.getLocation().getLocationInfo() instanceof Long) || NULL_LOCATION.equals(context.getLocation())) {
             return null;
         }
 
