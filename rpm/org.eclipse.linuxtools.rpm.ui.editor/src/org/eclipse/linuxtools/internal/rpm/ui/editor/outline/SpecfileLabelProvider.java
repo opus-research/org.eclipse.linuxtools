@@ -12,13 +12,10 @@
 package org.eclipse.linuxtools.internal.rpm.ui.editor.outline;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.Activator;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfilePreamble;
-import org.eclipse.linuxtools.rpm.core.utils.RPMQuery;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileElement;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfilePackage;
@@ -68,29 +65,24 @@ public class SpecfileLabelProvider implements ILabelProvider {
 	@Override
 	public String getText(Object element) {
 		String str = ""; //$NON-NLS-1$
-		try {
-			if (element instanceof SpecfileSection) {
-				SpecfileSection specfileSection = (SpecfileSection) element;
-				str = specfileSection.toString();
-			} else if (element instanceof Specfile) {
-				str = ((Specfile) element).getName();
-			} else if (element instanceof SpecfilePackageContainer) {
-				str = Messages.SpecfileLabelProvider_0;
-			} else if (element instanceof SpecfilePreamble){
-				str = Messages.SpecfileLabelProvider_1;
-			} else if (element instanceof SpecfileElement) {
-				SpecfileElement specfileElement = (SpecfileElement) element;
-				str = specfileElement.getName();
-			} else if (element instanceof String) {
-				str = (String) element;
-			} else if (element instanceof SpecfilePackage) {
-				str = ((SpecfilePackage) element).getName();
-			}
-			str = RPMQuery.eval(project, str).trim();
-		} catch (CoreException e) {
-			SpecfileLog.logError("Within Project Outline, unable to evaluate " + str, e); //$NON-NLS-1$
+		if (element instanceof SpecfileSection) {
+			SpecfileSection specfileSection = (SpecfileSection) element;
+			str = specfileSection.toString();
+		} else if (element instanceof Specfile) {
+			str = ((Specfile) element).getName();
+		} else if (element instanceof SpecfilePackageContainer) {
+			str = Messages.SpecfileLabelProvider_0;
+		} else if (element instanceof SpecfilePreamble){
+			str = Messages.SpecfileLabelProvider_1;
+		} else if (element instanceof SpecfileElement) {
+			SpecfileElement specfileElement = (SpecfileElement) element;
+			str = specfileElement.getName();
+		} else if (element instanceof String) {
+			str = (String) element;
+		} else if (element instanceof SpecfilePackage) {
+			str = ((SpecfilePackage) element).getName();
 		}
-		return str;
+		return str.trim();
 	}
 
 	/**
