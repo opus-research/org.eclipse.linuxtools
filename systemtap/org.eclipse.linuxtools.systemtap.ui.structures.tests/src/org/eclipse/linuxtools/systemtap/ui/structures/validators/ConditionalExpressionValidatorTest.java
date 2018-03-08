@@ -1,9 +1,8 @@
-package org.eclipse.linuxtools.systemtap.ui.ide.test;
+package org.eclipse.linuxtools.systemtap.ui.structures.validators;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.ConditionalExpressionValidator;
 import org.junit.Test;
 
 public class ConditionalExpressionValidatorTest {
