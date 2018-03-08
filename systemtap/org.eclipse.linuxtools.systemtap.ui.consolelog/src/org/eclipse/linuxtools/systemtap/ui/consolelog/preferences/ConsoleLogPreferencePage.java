@@ -16,11 +16,17 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 
+
+
+
+
 public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public ConsoleLogPreferencePage() {
 		super(GRID);
+	//	LogManager.logDebug("Start ConsoleLogPreferencePage:", this);
 		setPreferenceStore(ConsoleLogPlugin.getDefault().getPreferenceStore());
 		setDescription("Preferences when accessing a remote server");
+		//LogManager.logDebug("End ConsoleLogPreferencePage:", this);
 	}
 	
 	@Override
@@ -41,6 +47,9 @@ public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implemen
         passwordField.getTextControl(getFieldEditorParent()).setEchoChar('*');
         addField(passwordField);
 
+	//	addField(new StringFieldEditor(ConsoleLogPreferenceConstants.SCP_PASSWORD,
+		//		"Password: ", getFieldEditorParent()));
+
 		addField(new BooleanFieldEditor(ConsoleLogPreferenceConstants.REMEMBER_SERVER,
 				"Always connect to this host.", getFieldEditorParent()));
 		
@@ -49,5 +58,13 @@ public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implemen
 
 	}
 
-	public void init(IWorkbench workbench) {}
+	public void init(IWorkbench workbench) {
+	
+	}
+
+	@Override
+	public void dispose() {
+	
+		super.dispose();
+	}
 }
