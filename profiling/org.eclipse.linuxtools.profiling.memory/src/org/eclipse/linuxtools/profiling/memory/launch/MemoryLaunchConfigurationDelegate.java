@@ -12,7 +12,7 @@ package org.eclipse.linuxtools.profiling.memory.launch;
 
 
 import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
-import org.eclipse.linuxtools.profiling.memory.MemoryProfileConstants;
+import org.eclipse.linuxtools.profiling.memory.Activator;
 
 /**
  * 
@@ -25,12 +25,12 @@ public class MemoryLaunchConfigurationDelegate extends
 	
 	@Override
 	protected String getPluginID() {
-		return MemoryProfileConstants.PLUGIN_ID;
+		return Activator.PLUGIN_ID;
 	}
 
 	@Override
 	public String getProfilingType() {
-		return MemoryProfileConstants.PROFILING_TYPE;
+		return Activator.PROFILING_TYPE;
 	}
 
 }

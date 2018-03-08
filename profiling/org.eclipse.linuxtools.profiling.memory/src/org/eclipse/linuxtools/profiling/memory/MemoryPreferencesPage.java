@@ -17,6 +17,6 @@ public class MemoryPreferencesPage extends AbstractProviderPreferencesPage {
 
 	@Override
 	public String getProfilingType() {
-		return MemoryProfileConstants.PROFILING_TYPE;
+		return Activator.PROFILING_TYPE;
 	}
 }

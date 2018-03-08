@@ -21,6 +21,6 @@ public class SnapshotPreferencesPage extends AbstractProviderPreferencesPage {
 
 	@Override
 	public String getProfilingType() {
-		return SnapshotConstants.PROFILING_TYPE;
+		return SnapshotProviderPlugin.PROFILING_TYPE;
 	}
 }
