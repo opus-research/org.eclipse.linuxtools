@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests
+Bundle-SymbolicName: org.eclipse.linuxtools.perf.tests
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.junit;bundle-version="4.8.1"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Fragment-Host: org.eclipse.linuxtools.perf
+Import-Package: org.eclipse.linuxtools.profiling.tests

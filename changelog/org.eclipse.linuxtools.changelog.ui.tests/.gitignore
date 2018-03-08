@@ -1,0 +1,7 @@
+bin
+@dot
+javaCompiler...args
+build.xml
+target
+screenshots
+swtbot_tests.log
