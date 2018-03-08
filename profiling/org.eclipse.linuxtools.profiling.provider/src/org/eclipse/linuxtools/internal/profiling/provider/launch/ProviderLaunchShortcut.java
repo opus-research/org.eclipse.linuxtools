@@ -147,13 +147,10 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	protected void setDefaultProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
 
 		// acquire a provider id to run.
-		final String providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(getProfilingType());
-
-		// get tool name from id.
-		final String providerToolName = getProviderToolNameFromId(providerId);
+		String providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(getProfilingType());
 
 		// get tab group associated with provider id.
-		final ProfileLaunchConfigurationTabGroup tabgroup = ProfileLaunchConfigurationTabGroup.getTabGroupProviderFromId(providerId);
+		ProfileLaunchConfigurationTabGroup tabgroup = ProfileLaunchConfigurationTabGroup.getTabGroupProviderFromId(providerId);
 
 		/**
 		 * Certain tabs' setDefaults(ILaunchConfigurationWorkingCopy) may
@@ -206,8 +203,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 				if (name == null) {
 					name = "";
 				}
-				String providerConfigutationName = generateProviderConfigurationName(name, providerToolName);
-				return getLaunchManager().generateLaunchConfigurationName(providerConfigutationName);
+				return getLaunchManager().generateLaunchConfigurationName(name);
 			}
 		};
 
@@ -226,9 +222,6 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 		wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT,
 				providerId);
-
-		// set tool name in configuration.
-		wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_TOOLNAME_ATT, providerToolName);
 	}
 
 	/**
@@ -259,20 +252,6 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 	public String getProfilingType() {
 		return type;
-	}
-
-	/**
-	 * Generate a string that can be used as a name for a provider launch configuration.
-	 * It combines <code>configName</code> and <code>toolName</code> into a String of
-	 * consistent format: <configuration name> [<tool name>].
-	 *
-	 * @param configName
-	 * @param toolName
-	 * @return String tool name appended to original configuration name.
-	 * @since 1.2
-	 */
-	public static String generateProviderConfigurationName(String configName, String toolName){
-		return configName + " " + "[" + toolName + "]"; //$NON-NLS-1$
 	}
 
 }
