@@ -124,28 +124,24 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			
 			private void update(){
 				boolean enable = !currentUserCheckButton.getSelection();
-				userNameText.setEnabled(enable);
-				userNameLabel.setEnabled(enable);
-				userPasswordText.setEnabled(enable);
-				userPasswordLabel.setEnabled(enable);
+				setUserGroupEnablement(enable);
 				updateLaunchConfigurationDialog();
 			}
 		});
 
-		userNameText.setEnabled(false);
 		userNameText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
 		});
-		userNameLabel.setEnabled(false);
-		userPasswordText.setEnabled(false);
+
 		userPasswordText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
 		});
-		userPasswordLabel.setEnabled(false);
+
+		setUserGroupEnablement(false);
 
 		// Host settings
 		Group hostSettingsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
@@ -185,6 +181,18 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		});
 	}
 
+	private void setUserGroupEnablement(boolean enable){
+		userNameText.setEnabled(enable);
+		userNameLabel.setEnabled(enable);
+		userPasswordText.setEnabled(enable);
+		userPasswordLabel.setEnabled(enable);
+	}
+
+	private void setHostGroupEnablement(boolean enable){
+		hostNamelabel.setEnabled(enable);
+		hostNameText.setEnabled(enable);
+	}
+
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(SCRIPT_PATH_ATTR, this.getSelectedScriptPath());
 		configuration.setAttribute(CURRENT_USER_ATTR, true);
@@ -216,14 +224,10 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		configuration.setAttribute(HOST_NAME_ATTR, this.hostNameText.getText());
 
 		boolean enable = !currentUserCheckButton.getSelection();
-		userNameText.setEnabled(enable);
-		userNameLabel.setEnabled(enable);
-		userPasswordText.setEnabled(enable);
-		userPasswordLabel.setEnabled(enable);
+		setUserGroupEnablement(enable);
 
 		enable = !localHostCheckButton.getSelection();
-		hostNamelabel.setEnabled(enable);
-		hostNameText.setEnabled(enable);
+		setHostGroupEnablement(enable);
 	}
 
 	public String getName() {
@@ -233,7 +237,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	private String getSelectedScriptPath(){
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
-		String pathString = "";
+		String pathString = ""; //$NON-NLS-1$
 
 		if (window != null)
 		{
@@ -262,7 +266,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX))
 			return pathString;
 
-		return "";
+		return ""; //$NON-NLS-1$
 	}
 
 }
