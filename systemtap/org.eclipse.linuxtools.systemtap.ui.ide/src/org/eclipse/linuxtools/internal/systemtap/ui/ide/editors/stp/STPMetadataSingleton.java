@@ -143,10 +143,8 @@ public class STPMetadataSingleton {
 	 */
 	private String getTapset(String data) {
 		int i = data.indexOf('.');
-		if (i < 0){
-			return data;
-		}
-
+		if (i < 0)
+			throw new StringIndexOutOfBoundsException();
 		return data.substring(0, data.indexOf('.'));
 	}
 

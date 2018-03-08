@@ -60,7 +60,7 @@ public class ProbeAliasBrowserView extends BrowserView {
 		doubleClickAction = new ProbeAliasAction(getSite().getWorkbenchWindow(), this);
 		viewer.addDoubleClickListener(doubleClickAction);
 		Control control = this.viewer.getControl();
-		MenuManager manager = new MenuManager("probePopup"); //$NON-NLS-1$
+		MenuManager manager = new MenuManager("probePopup");
 
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 		Menu menu = manager.createContextMenu(control);

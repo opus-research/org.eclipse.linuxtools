@@ -40,6 +40,16 @@ public class CtfIteratorTest {
     private CtfIterator fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CtfIteratorTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      *
      * @throws TmfTraceException

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,20 +8,17 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -34,16 +31,13 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfCheckpointIndexer;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfEmptyTraceStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Test suite for the TmfCheckpointIndexer class (events with same
  * timestamp around checkpoint).
  */
 @SuppressWarnings({"nls","javadoc"})
-public class TmfCheckpointIndexTest2 {
+public class TmfCheckpointIndexTest2 extends TestCase {
 
     // ------------------------------------------------------------------------
     // Variables
@@ -62,13 +56,22 @@ public class TmfCheckpointIndexTest2 {
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    @Before
-    public void setUp() {
+    /**
+     * @param name the test name
+     */
+    public TmfCheckpointIndexTest2(final String name)  {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         setupTrace(DIRECTORY + File.separator + TEST_STREAM);
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
         fTrace.dispose();
         fTrace = null;
         fEmptyTrace.dispose();
@@ -145,7 +148,6 @@ public class TmfCheckpointIndexTest2 {
     // Verify checkpoints
     // ------------------------------------------------------------------------
 
-    @Test
     @SuppressWarnings("null")
     public void testTmfTraceMultiTimestamps() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
