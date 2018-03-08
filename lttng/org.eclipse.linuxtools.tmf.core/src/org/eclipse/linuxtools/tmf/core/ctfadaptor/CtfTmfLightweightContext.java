@@ -11,6 +11,9 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import java.util.ArrayList;
+import java.util.ListIterator;
+
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
@@ -18,16 +21,14 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * Lightweight Context for CtfTmf traces. Should only use 3 references, 1 ref to
  * a boxed Long, a long and an int.
  *
- * @author Matthew Khouzam
  * @version 1.0
- * @since 2.0
+ * @author Matthew Khouzam
  */
-public class CtfTmfContext implements ITmfContext {
+public class CtfTmfLightweightContext implements ITmfContext {
 
     // -------------------------------------------
     // Fields
     // -------------------------------------------
-
     private CtfLocation curLocation;
     private long curRank;
 
@@ -36,15 +37,28 @@ public class CtfTmfContext implements ITmfContext {
     // -------------------------------------------
     // Constructor
     // -------------------------------------------
+    /**
+     * Deprecated, use CtfTmfLightweightContext( CtfTmfTrace please )
+     *
+     * @param iters
+     *            the shared iterator pool.
+     * @param pos
+     *            the iterator position.
+     */
+    @Deprecated
+    public CtfTmfLightweightContext(ArrayList<CtfIterator> iters,
+            ListIterator<CtfIterator> pos) {
+        fTrace = iters.get(0).getCtfTmfTrace();
+        curLocation = new CtfLocation(new CtfLocationData(0, 0));
+    }
 
     /**
-     * Constructor
      *
      * @param ctfTmfTrace
      *            the parent trace
      * @since 1.1
      */
-    public CtfTmfContext(CtfTmfTrace ctfTmfTrace) {
+    public CtfTmfLightweightContext(CtfTmfTrace ctfTmfTrace) {
         fTrace = ctfTmfTrace;
         curLocation = new CtfLocation(new CtfLocationData(0, 0));
     }
@@ -92,15 +106,6 @@ public class CtfTmfContext implements ITmfContext {
     // -------------------------------------------
     // CtfTmfTrace Helpers
     // -------------------------------------------
-
-    /**
-     * Gets the trace of this context.
-     *
-     * @return The trace of this context
-     */
-    public CtfTmfTrace getTrace() {
-        return fTrace;
-    }
 
     /**
      * Gets the current event. Wrapper to help CtfTmfTrace
@@ -165,22 +170,22 @@ public class CtfTmfContext implements ITmfContext {
         return getIterator().seek(location);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#clone()
+     */
     @Override
-    public CtfTmfContext clone() {
-        CtfTmfContext ret = null;
-        try {
-            ret = (CtfTmfContext) super.clone();
-            /* Fields are immutable, no need to deep-copy them */
-        } catch (CloneNotSupportedException e) {
-            /* Should not happen, we're calling Object.clone() */
-        }
+    public CtfTmfLightweightContext clone() {
+        CtfTmfLightweightContext ret = new CtfTmfLightweightContext(fTrace);
+        ret.curLocation = curLocation.clone();
+        ret.curRank = curRank;
         return ret;
     }
 
     // -------------------------------------------
     // Private helpers
     // -------------------------------------------
-
     /**
      * Get iterator, called every time to get an iterator, no local copy is
      * stored so that there is no need to "update"
