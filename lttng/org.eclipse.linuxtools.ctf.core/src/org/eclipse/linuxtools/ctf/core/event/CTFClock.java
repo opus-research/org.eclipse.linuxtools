@@ -96,7 +96,6 @@ public class CTFClock {
 
     /**
      * @return the clockOffset
-     * @since 2.0
      */
     public long getClockOffset() {
         return clockOffset;
@@ -104,7 +103,6 @@ public class CTFClock {
 
     /**
      * @return the clockScale
-     * @since 2.0
      */
     public double getClockScale() {
         return clockScale;
@@ -112,7 +110,6 @@ public class CTFClock {
 
     /**
      * @return the clockAntiScale
-     * @since 2.0
      */
     public double getClockAntiScale() {
         return clockAntiScale;
@@ -120,7 +117,6 @@ public class CTFClock {
 
     /**
      * @return is the clock in ns or cycles?
-     * @since 2.0
      */
     public boolean isClockScaled() {
         return isScaled;
