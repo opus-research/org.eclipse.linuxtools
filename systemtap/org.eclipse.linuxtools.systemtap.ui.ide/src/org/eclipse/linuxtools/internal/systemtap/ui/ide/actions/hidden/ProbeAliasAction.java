@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
@@ -52,6 +53,7 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 * @param view	browser that fires this action
 	 */
 	public ProbeAliasAction(IWorkbenchWindow window, ProbeAliasBrowserView view) {
+		LogManager.logInfo("initialized", this); //$NON-NLS-1$
 		this.window = window;
 		setId(ID);
 		setActionDefinitionId(ID);
@@ -78,6 +80,7 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
+		LogManager.logInfo("disposed", this); //$NON-NLS-1$
 	}
 
 	/**
