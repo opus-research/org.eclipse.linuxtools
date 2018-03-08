@@ -13,16 +13,15 @@
  *   Francois Chouinard - Implement augmented interface
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.timestamp;
+package org.eclipse.linuxtools.tmf.core.event;
 
 /**
  * A generic timestamp implementation. The timestamp is represented by the
  * tuple { value, scale, precision }. By default, timestamps are scaled in
  * seconds.
  *
- * @author Francois Chouinard
  * @version 1.1
- * @since 2.0
+ * @author Francois Chouinard
  */
 public class TmfTimestamp implements ITmfTimestamp {
 
