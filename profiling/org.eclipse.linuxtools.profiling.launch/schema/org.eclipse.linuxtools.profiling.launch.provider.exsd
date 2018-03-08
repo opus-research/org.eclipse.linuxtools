@@ -83,11 +83,10 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="priority" type="string" use="required">
+         <attribute name="default" type="boolean">
             <annotation>
                <documentation>
-                  Positive integer stating priorty over launch provider&apos;s of the same type.
-Invalid values will be assigned the lowest priority to the extension.
+                  If true, this shortcut is set as the default for the given type.
                </documentation>
             </annotation>
          </attribute>

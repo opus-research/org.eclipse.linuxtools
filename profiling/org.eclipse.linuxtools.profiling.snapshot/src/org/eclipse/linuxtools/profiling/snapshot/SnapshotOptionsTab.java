@@ -67,7 +67,6 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 
 				// initialize all tab widgets based on the configuration
 				initializeFrom(initial);
-				top.layout();
 			}
 		});
 
