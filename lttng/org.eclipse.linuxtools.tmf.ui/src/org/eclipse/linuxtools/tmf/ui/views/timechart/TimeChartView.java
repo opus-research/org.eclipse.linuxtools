@@ -39,7 +39,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting;
@@ -648,8 +647,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
                     break;
                 }
             }
-            ITmfTimestamp currentTime = TmfTraceManager.getInstance().getCurrentTime();
-            fViewer.setSelectedTime(currentTime.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue(), false);
+            fViewer.setSelectedTime(trace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue(), false);
         }
     }
 
