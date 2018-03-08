@@ -64,7 +64,7 @@ public class PerfCore {
 		}
 		String str = strBuf.toString();
 		if (!str.trim().isEmpty() && print != null) {
-			print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle); //$NON-NLS-1$ //$NON-NLS-2$
+				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return str;
 	}
@@ -145,7 +145,11 @@ public class PerfCore {
 		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		IProject project = getProject(config);
 
-		if (!PerfCore.checkPerfInPath(project)) {
+		if (project == null) {
+			if (!PerfCore.checkPerfInPath()) {
+				return events;
+			}
+		} else if (!PerfCore.checkRemotePerfInPath(project)) {
 			return events;
 		}
 
@@ -237,13 +241,13 @@ public class PerfCore {
 				logException(e);
 			}
 		}
+
 		if (p == null) {
 			return null;
 		}
 
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-		String perfVersion = spitStream(input, "Perf --version", null); //$NON-NLS-1$
+		String perfVersion = spitStream(input, "Perf --version", null);
 		int index = perfVersion.indexOf('-');
 		if (index > 0) {
 			perfVersion = perfVersion.substring(0, index);
@@ -252,34 +256,20 @@ public class PerfCore {
 		return new Version(perfVersion);
 	}
 
-	//Gets the current version of perf
-	public static Version getPerfVersion(ILaunchConfiguration config) {
-		IProject project = getProject(config);
-		Process p = null;
-
-		try {
-			p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
-		} catch (IOException e) {
-			logException(e);
-		}
-		if (p == null) {
-			return null;
-		}
-
-		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-		String perfVersion = spitStream(input, "Perf --version", null); //$NON-NLS-1$
-		int index = perfVersion.indexOf('-');
-		if (index > 0) {
-			perfVersion = perfVersion.substring(0, index);
-		}
-		perfVersion = perfVersion.replace("perf version", "").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-		return new Version(perfVersion);
-	}
-
-
-	public static boolean checkPerfInPath(IProject project)
+	public static boolean checkPerfInPath()
 	{
+		try
+		{
+			Process p = Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}); //$NON-NLS-1$
+			return (p != null);
+		}
+		catch (IOException e)
+		{
+			return false;
+		}
+	}
+
+	public static boolean checkRemotePerfInPath(IProject project) {
 		try
 		{
 			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
@@ -287,6 +277,7 @@ public class PerfCore {
 		}
 		catch (IOException e)
 		{
+			logException(e);
 			return false;
 		}
 	}
@@ -389,10 +380,9 @@ public class PerfCore {
 	//whatever project is being profiled. It is only used for junit tests atm.
 	public static void Report(ILaunchConfiguration config, String[] environ, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
 		IProject project = getProject(config);
-
 		TreeParent invisibleRoot = PerfPlugin.getDefault().clearModelRoot();
 
-		Version perfVersion = getPerfVersion(config);
+		Version perfVersion = getPerfVersion(config, environ, workingDir);
 		boolean OldPerfVersion = false;
 		if (new Version(0, 0, 2).compareTo(perfVersion) > 0) {
 			OldPerfVersion = true;
@@ -427,8 +417,10 @@ public class PerfCore {
 			logException(e);
 		}
 
+
 		PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
 				invisibleRoot, OldPerfVersion, input, error, project);
+
 	}
 
 	/**
@@ -573,6 +565,8 @@ public class PerfCore {
 							if (monitor != null && monitor.isCanceled()) {
 								return;
 							}
+
+
 							currentSym = (PMSymbol)s;
 							String[] annotateCmd;
 							if (workingDir == null) {
@@ -591,7 +585,8 @@ public class PerfCore {
 								logException(e);
 							}
 
-							PerfCore.parseAnnotation(monitor, input, workingDir, currentDso, currentSym);
+							PerfCore.parseAnnotation(monitor, input,
+									workingDir, currentDso, currentSym);
 						}
 
 						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {

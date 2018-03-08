@@ -72,14 +72,14 @@ public class LaunchTest extends AbstractTest {
 
 	@Test
 	public void testDefaultRun() throws CoreException {
-		if (PerfCore.checkPerfInPath(null)) {
+		if (PerfCore.checkPerfInPath()) {
 			delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
 		}
 	}
 
 	@Test
 	public void testClockEventRun() throws CoreException {
-		if (PerfCore.checkPerfInPath(null)) {
+		if (PerfCore.checkPerfInPath()) {
 			ArrayList<String> list = new ArrayList<String>();
 			list.addAll(Arrays.asList(new String[] { "cpu-clock", "task-clock",
 					"cycles" }));
