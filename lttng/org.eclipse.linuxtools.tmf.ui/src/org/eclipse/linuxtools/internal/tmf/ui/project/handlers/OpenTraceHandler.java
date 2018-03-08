@@ -77,10 +77,6 @@ public class OpenTraceHandler extends AbstractHandler {
 
         // Get the selection
         final IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        if (page == null) {
-            return false;
-        }
-
         final IWorkbenchPart part = page.getActivePart();
         final ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
@@ -172,9 +168,6 @@ public class OpenTraceHandler extends AbstractHandler {
             final IEditorInput editorInput = new TmfEditorInput(file, trace);
             final IWorkbench wb = PlatformUI.getWorkbench();
             final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
-            if (activePage == null) {
-                return null;
-            }
 
             final IEditorPart editor = activePage.findEditor(new FileEditorInput(file));
             if ((editor != null) && (editor instanceof IReusableEditor)) {
