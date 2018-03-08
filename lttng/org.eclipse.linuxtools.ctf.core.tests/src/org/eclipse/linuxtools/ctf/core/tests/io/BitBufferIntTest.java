@@ -113,7 +113,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getInt(int,int,boolean) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -129,7 +129,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getInt(int,int,boolean) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -145,7 +145,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getInt(int,int,boolean) method test with a little-endian
+     * Run the get method test with a little-endian
      * BitBuffer.
      *
      * @throws CTFReaderException
@@ -166,7 +166,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getInt(int,int,boolean) method test with a little-endian
+     * Run the get method test with a little-endian
      * BitBuffer.
      *
      * @throws CTFReaderException
@@ -204,7 +204,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getInt(int,int,boolean) method test and expect an overflow.
+     * Run the get method test and expect an overflow.
      *
      * @throws CTFReaderException
      *             error
@@ -223,7 +223,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the getLong method test.
      *
      * @throws CTFReaderException
      *             error
@@ -236,7 +236,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the getLong method test.
      *
      * @throws CTFReaderException
      *             error
@@ -249,7 +249,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the getLong method test.
      *
      * @throws CTFReaderException
      *             error
@@ -262,7 +262,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the getLong method test.
      *
      * @throws CTFReaderException
      *             error
@@ -276,7 +276,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the getLong method test.
      *
      * @throws CTFReaderException
      *             error
@@ -290,7 +290,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the getLong method test.
      *
      * @throws CTFReaderException
      *             error
@@ -304,39 +304,39 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the long getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
      */
     @Test
-    public void testGetLong35_pos0BE() throws CTFReaderException {
+    public void testGet35_pos0BE() throws CTFReaderException {
         fixture.position(0);
         final long result = fixture.get(35, false);
         assertEquals(result, 0x081018L);
     }
 
     /**
-     * Run the long getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
      */
     @Test
-    public void testGetLong35_pos8BE() throws CTFReaderException {
+    public void testGet35_pos8BE() throws CTFReaderException {
         fixture.position(8);
         final long result = fixture.get(35, false);
         assertEquals(result, 0x08101820L);
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
      */
     @Test
-    public void testGetLong35_pos0LE() throws CTFReaderException {
+    public void testGet35_pos0LE() throws CTFReaderException {
         fixture.position(0);
         fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
         final long result = fixture.get(35, false);
@@ -345,7 +345,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -359,7 +359,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -373,7 +373,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -387,7 +387,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -401,7 +401,7 @@ public class BitBufferIntTest {
     }
 
     /**
-     * Run the int getLong(int) method test.
+     * Run the get method test.
      *
      * @throws CTFReaderException
      *             error
@@ -498,7 +498,7 @@ public class BitBufferIntTest {
      * Run the void putInt(int,int,int,boolean) method test.
      *
      * @throws CTFReaderException
-     *             error
+     *             desired
      */
     @Test(expected = CTFReaderException.class)
     public void testPutInt_invalid() throws CTFReaderException {

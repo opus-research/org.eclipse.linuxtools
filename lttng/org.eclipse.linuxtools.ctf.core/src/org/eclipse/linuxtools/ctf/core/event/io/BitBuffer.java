@@ -99,7 +99,8 @@ public final class BitBuffer {
      *
      * @return The int value (signed) read from the buffer
      * @throws CTFReaderException
-     *             error
+     *             An error occurred reading the long. This exception can be
+     *             raised if the buffer tries to read out of bounds
      */
     public int getInt() throws CTFReaderException {
         return getInt(BIT_INT, true);
@@ -113,7 +114,8 @@ public final class BitBuffer {
      *
      * @return The long value (signed) read from the buffer
      * @throws CTFReaderException
-     *             An error occurred reading the long.
+     *             An error occurred reading the long. This exception can be
+     *             raised if the buffer tries to read out of bounds
      */
     public long getLong() throws CTFReaderException {
         return get(BIT_LONG, true);
@@ -132,9 +134,10 @@ public final class BitBuffer {
      *            The sign extended flag
      * @return The long value read from the buffer
      * @throws CTFReaderException
-     *             errors with the data
+     *             An error occurred reading the data. If more than 64 bits at a
+     *             time are read, or the buffer is read beyond its end, this
+     *             exception will be raised.
      */
-
     public long get(int length, boolean signed) throws CTFReaderException {
         if (length > BIT_LONG) {
             throw new CTFReaderException("Cannot read a long longer than 64 bits. Rquested: " + length); //$NON-NLS-1$
@@ -172,7 +175,8 @@ public final class BitBuffer {
      *            The sign extended flag
      * @return The int value read from the buffer
      * @throws CTFReaderException
-     *             error
+     *             An error occurred reading the data. when the buffer is read
+     *             beyond its end, this exception will be raised.
      */
     private int getInt(int length, boolean signed) throws CTFReaderException {
 
@@ -194,11 +198,11 @@ public final class BitBuffer {
          * Try a fast read when the position is byte-aligned by using
          * java.nio.ByteBuffer's native methods
          */
+        /*
+         * A faster alignment detection as the compiler cannot guaranty that pos
+         * is always positive.
+         */
         if ((this.pos & (BitBuffer.BIT_CHAR - 1)) == 0) {
-            /*
-             * A-- faster alignment detection as the compiler cannot guaranty
-             *      that pos is always positive.
-             */
             switch (length) {
             case BitBuffer.BIT_CHAR:
                 // Byte
@@ -362,7 +366,8 @@ public final class BitBuffer {
      * @param value
      *            The int value to write
      * @throws CTFReaderException
-     *             error
+     *             An error occurred writing the data. If the buffer is written
+     *             beyond its end, this exception will be raised.
      */
     public void putInt(int value) throws CTFReaderException {
         putInt(BIT_INT, value);
@@ -382,7 +387,8 @@ public final class BitBuffer {
      * @param value
      *            The value to write
      * @throws CTFReaderException
-     *             error
+     *             An error occurred writing the data. If the buffer is written
+     *             beyond its end, this exception will be raised.
      */
     public void putInt(int length, int value) throws CTFReaderException {
         final long curPos = this.pos;

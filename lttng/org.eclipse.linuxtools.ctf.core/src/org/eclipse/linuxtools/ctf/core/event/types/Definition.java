@@ -125,7 +125,8 @@ public abstract class Definition {
      * @param input
      *            the bitbuffer containing the data to read.
      * @throws CTFReaderException
-     *             the error message
+     *             An error occurred reading the data. If the buffer is reading
+     *             beyond its end, this exception will be raised.
      * @since 2.0
      */
     public abstract void read(BitBuffer input) throws CTFReaderException;
