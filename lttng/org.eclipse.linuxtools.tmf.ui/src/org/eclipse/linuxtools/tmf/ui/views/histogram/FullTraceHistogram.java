@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -31,7 +32,7 @@ import org.eclipse.swt.widgets.Display;
  * @version 1.1
  * @author Francois Chouinard
  */
-public class FullTraceHistogram extends Histogram {
+public class FullTraceHistogram extends Histogram implements MouseMoveListener {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -63,6 +64,7 @@ public class FullTraceHistogram extends Histogram {
         super(view, parent);
         fZoom = new HistogramZoom(this, getStartTime(), getTimeLimit());
         addMouseWheelListener(fZoom);
+        fCanvas.addMouseMoveListener(this);
     }
 
     @Override
@@ -109,41 +111,39 @@ public class FullTraceHistogram extends Histogram {
         fDataModel.complete();
     }
 
+    @Override
+    public void updateTimeRange(long startTime, long endTime) {
+        ((HistogramView) fParentView).updateTimeRange(startTime, endTime);
+    }
+
     // ------------------------------------------------------------------------
     // MouseListener
     // ------------------------------------------------------------------------
 
+    private boolean fMouseDown;
     private int fStartPosition;
-    private boolean fMouseMoved;
 
     @Override
     public void mouseDown(MouseEvent event) {
-        if ((event.button == 2 || (event.button == 1 && (event.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL)) &&
-                fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
-            fDragState = DRAG_RANGE;
-            fDragButton = event.button;
-            fStartPosition = event.x;
-            fMouseMoved = false;
-            return;
-        }
-        super.mouseDown(event);
+        fMouseDown = true;
+        fStartPosition = event.x;
     }
 
     @Override
     public void mouseUp(MouseEvent event) {
-        if (fDragState == DRAG_RANGE && event.button == fDragButton) {
-            fDragState = DRAG_NONE;
-            fDragButton = 0;
-            if (!fMouseMoved) {
-                // if single click without move, center on the click
-                long startTime = getTimestamp(event.x) - fRangeDuration / 2;
-                fRangeStartTime = Math.max(getStartTime(), Math.min(getEndTime() - fRangeDuration, startTime));
+        if (fMouseDown) {
+            fMouseDown = false;
+            // Check if mouse click without move; if so, just set the current event time
+            if (event.x == fStartPosition) {
+                super.mouseDown(event);
+                return;
             }
+
             ((HistogramView) fParentView).updateTimeRange(fRangeStartTime, fRangeStartTime + fRangeDuration);
-            return;
+
         }
-        super.mouseUp(event);
     }
+
 
     // ------------------------------------------------------------------------
     // MouseMoveListener
@@ -151,7 +151,8 @@ public class FullTraceHistogram extends Histogram {
 
     @Override
     public void mouseMove(MouseEvent event) {
-        if (fDragState == DRAG_RANGE) {
+
+        if (fMouseDown) {
             int nbBuckets = event.x - fStartPosition;
             long delta = nbBuckets * fScaledData.fBucketDuration;
             long newStart = fZoom.getStartTime() + delta;
@@ -164,11 +165,8 @@ public class FullTraceHistogram extends Histogram {
                 newStart = newEnd - fZoom.getDuration();
             }
             fRangeStartTime = newStart;
-            fCanvas.redraw();
-            fMouseMoved = true;
-            return;
+            fDataModel.complete();
         }
-        super.mouseMove(event);
     }
 
     // ------------------------------------------------------------------------
