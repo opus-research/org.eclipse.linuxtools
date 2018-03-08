@@ -157,6 +157,20 @@ public interface ITmfTrace extends ITmfDataProvider {
     // ------------------------------------------------------------------------
 
     /**
+     * If this trace is used as a container for sub-traces, this can be used to
+     * get the sub-traces themselves. If the trace is stand-alone, this should
+     * return an array with only "this" inside. For this reason, be careful if
+     * calling this recursively.
+     *
+     * This offers a standard way of iterating through compound traces (like
+     * experiments).
+     *
+     * @return The array of sub-traces.
+     * @since 2.0
+     */
+    public ITmfTrace[] getTraces();
+
+    /**
      * @return the trace event type
      */
     public Class<? extends ITmfEvent> getEventType();
@@ -192,21 +206,6 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @since 2.0
      */
     public Map<String, ITmfStateSystem> getStateSystems();
-
-    /**
-     * If a state system is not build by the trace itself, it's possible to
-     * register it if it comes from another source. It will then be accessible
-     * with {@link #getStateSystems} normally.
-     *
-     * @param id
-     *            The unique ID to assign to this state system. In case of
-     *            conflicting ID's, the new one will overwrite the previous one
-     *            (default Map behavior).
-     * @param ss
-     *            The already-built state system
-     * @since 2.0
-     */
-    public void registerStateSystem(String id, ITmfStateSystem ss);
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters
