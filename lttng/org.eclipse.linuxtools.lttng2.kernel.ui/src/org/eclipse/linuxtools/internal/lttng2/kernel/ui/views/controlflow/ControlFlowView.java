@@ -30,7 +30,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
@@ -520,9 +520,9 @@ public class ControlFlowView extends TmfView {
             if (thread > 0) {
                 break;
             }
-            if (trace instanceof LttngKernelTrace) {
-                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) trace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(LttngKernelTrace.STATE_ID);
+            if (trace instanceof CtfKernelTrace) {
+                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
                 if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);  //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
@@ -625,10 +625,10 @@ public class ControlFlowView extends TmfView {
             if (monitor.isCanceled()) {
                 return;
             }
-            if (aTrace instanceof LttngKernelTrace) {
+            if (aTrace instanceof CtfKernelTrace) {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
-                LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(LttngKernelTrace.STATE_ID);
+                CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) aTrace;
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
                     return;
                 }
@@ -739,7 +739,7 @@ public class ControlFlowView extends TmfView {
     }
 
     private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystem(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
         long resolution = Math.max(1, (end - start) / fDisplayWidth);
@@ -767,7 +767,7 @@ public class ControlFlowView extends TmfView {
         if (realEnd <= realStart) {
             return null;
         }
-        ITmfStateSystem ssq = entry.getTrace().getStateSystem(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
         List<ITimeEvent> eventList = null;
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
