@@ -162,11 +162,7 @@ public class GemModel {
 	 * @return The package
 	 */
 	public String getPackageName() {
-		String simpleName = getSimplePackageName();
-		if (simpleName.startsWith("rubygem-")) {
-			return simpleName;
-		}
-		return "rubygem-"+simpleName;
+		return "rubygem-" + getSimplePackageName();
 	}
 
 	/**
