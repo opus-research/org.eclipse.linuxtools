@@ -20,15 +20,19 @@ package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
@@ -38,6 +42,8 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlEvent;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
@@ -198,6 +204,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     public void refreshTraceType() {
         try {
             fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
+            refreshAnalysis();
         } catch (CoreException e) {
             Activator.getDefault().logError("Error refreshing trace type pesistent property for trace " + getName(), e); //$NON-NLS-1$
         }
@@ -576,4 +583,54 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             experiment.closeEditors();
         }
     }
+
+    private void refreshAnalysis() {
+        List<TmfTraceAnalysis> list = getAvailableAnalysis();
+
+        /* Remove children */
+        getChildren().clear();
+
+        /* Add the children again */
+        for (TmfTraceAnalysis module : list) {
+            addChild(module);
+        }
+
+    }
+
+    /**
+     * Get the list of analysis elements
+     *
+     * @return Array of analysis elements
+     * @since 3.0
+     */
+    public List<TmfTraceAnalysis> getAvailableAnalysis() {
+        List<TmfTraceAnalysis> list = new ArrayList<TmfTraceAnalysis>();
+
+        TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(getTraceType());
+
+        if (helper == null) {
+            return list;
+        }
+
+        for (IAnalysisModule module : TmfAnalysisManager.getAnalysisModules(helper.getTraceClass()).values()) {
+            if (fResource instanceof IFolder) {
+                IFolder folder = (IFolder) fResource;
+                IPath path = folder.getFullPath().append(module.getId());
+                IFolder newresource = ResourcesPlugin.getWorkspace().getRoot().getFolder(path);
+                if (!newresource.exists()) {
+                    try {
+                        newresource.create(true, true, null);
+                    } catch (CoreException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                TmfTraceAnalysis analysis = new TmfTraceAnalysis(module.getName(), newresource, this, module.getId(), module);
+                list.add(analysis);
+            }
+        }
+
+        return list;
+    }
+
 }
