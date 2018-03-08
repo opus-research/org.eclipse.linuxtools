@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.profiling.provider.launch;
 
+import org.eclipse.cdt.core.model.IBinary;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
@@ -23,8 +26,47 @@ public abstract class ProviderLaunchShortcut extends ProfileLaunchShortcut {
 	}
 
 	@Override
-	protected void setDefaultProfileAttributes(
-			ILaunchConfigurationWorkingCopy wc) {
+	protected ILaunchConfiguration findLaunchConfiguration(IBinary bin, String mode) {
+		// create a launch configuration based on the shortcut
+		ILaunchConfiguration config = createConfiguration(bin, false);
+		boolean exists = false;
+
+		try {
+			for (ILaunchConfiguration cfg : getLaunchManager().getLaunchConfigurations()){
+				if (areEqual(config, cfg)){
+					exists = true;
+				}
+			}
+		} catch (CoreException e) {
+			exists = true;
+		}
+
+		// only save the configuration if it does not exist
+		if (! exists) {
+			createConfiguration(bin);
+		}
+
+		return super.findLaunchConfiguration(bin, mode);
+	}
+
+	/**
+	 * @param cfg1 a launch configuration
+	 * @param cfg2 a launch configuration
+	 * @return true if the launch configurations contain the exact
+	 * same attributes, and false otherwise.
+	 */
+	private boolean areEqual(ILaunchConfiguration cfg1,
+			ILaunchConfiguration cfg2) {
+		try {
+			return cfg1.getAttributes().equals(cfg2.getAttributes());
+		} catch (CoreException e) {
+			return false;
+		}
+	}
+
+
+	@Override
+	protected void setDefaultProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
 
 		// acquire a provider id to run.
 		String providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(getProfilingType());
