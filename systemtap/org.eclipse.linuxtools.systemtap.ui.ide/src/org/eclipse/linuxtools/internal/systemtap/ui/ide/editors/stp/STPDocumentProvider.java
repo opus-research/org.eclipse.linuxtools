@@ -21,29 +21,47 @@ import org.eclipse.linuxtools.systemtap.ui.editor.SimpleDocumentProvider;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 
 public class STPDocumentProvider extends SimpleDocumentProvider {
+	//private IDocument document;
 
-	@Override
-	protected void setupDocument(IDocument document) {
-		LogManager.logDebug("Start setupDocument: document-" + document, this); //$NON-NLS-1$
-		if (document != null) {
-			IDocumentPartitioner partitioner = new FastPartitioner(
-					new STPPartitionScanner(), new String[] {
-							STPPartitionScanner.STP_COMMENT,
-							STPPartitionScanner.STP_PROBE });
-			partitioner.connect(document);
-			document.setDocumentPartitioner(partitioner);
-		}
-		LogManager.logDebug("End setupDocument:", this); //$NON-NLS-1$
-	}
-
-	/**
-	 * Instantiates and returns a new AnnotationModel object.
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.editors.text.TextFileDocumentProvider#getDocument(java.lang.Object)
 	 */
 	@Override
-	protected IAnnotationModel createAnnotationModel(Object element) {
-		LogManager.logDebug(
-				"Start/End createAnnotationModel: element-" + element, this); //$NON-NLS-1$
-		return new AnnotationModel();
-	}
+	/*public IDocument getDocument(Object element) {
+		document = super.getDocument(element);
+		if (document != null) {
+			STPPartitioner partitioner = new STPPartitioner(
+					new STPPartitionScanner(),
+					STPPartitionScanner.STP_PARTITION_TYPES);
+
+			partitioner.connect(document, false);
+			if (document.getDocumentPartitioner() == null)
+				document.setDocumentPartitioner(partitioner);
+		}
+		return document;
+	}*/
+	
+	 protected void setupDocument(IDocument document) {
+         LogManager.logDebug("Start setupDocument: document-" + document, this); //$NON-NLS-1$
+         if (document != null) {
+                 IDocumentPartitioner partitioner =
+                         new FastPartitioner(
+                                 new STPPartitionScanner(),
+                                 new String[] {
+                                         STPPartitionScanner.STP_COMMENT});
+                 partitioner.connect(document);
+                 document.setDocumentPartitioner(partitioner);
+         }
+         LogManager.logDebug("End setupDocument:", this); //$NON-NLS-1$
+ }
+
+ /**
+  * Instantiates and returns a new AnnotationModel object.
+  */
+ @Override
+protected IAnnotationModel createAnnotationModel(Object element) {
+         LogManager.logDebug("Start/End createAnnotationModel: element-" + element, this); //$NON-NLS-1$
+         return new AnnotationModel();
+ }
 
 }
