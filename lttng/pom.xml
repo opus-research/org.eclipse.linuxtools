@@ -76,9 +76,6 @@
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
     <module>org.eclipse.linuxtools.tmf.help</module>
 
-    <module>org.eclipse.linuxtools.tmf.analysis.xml</module>
-    <module>org.eclipse.linuxtools.tmf.analysis.xml.tests</module>
-
     <module>org.eclipse.linuxtools.lttng2</module>
     <module>org.eclipse.linuxtools.lttng2.core</module>
     <module>org.eclipse.linuxtools.lttng2.core.tests</module>
