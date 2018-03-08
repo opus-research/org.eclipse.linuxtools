@@ -868,10 +868,16 @@ public class ScrollView extends Composite {
 
         @Override
         public void run() {
+            final Display display = Display.getDefault();
+            if ((display == null) || display.isDisposed()) {
+                return;
+            }
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    scrollView.scrollBy(deltaX, deltaY);
+                    if (!display.isDisposed()) {
+                        scrollView.scrollBy(deltaX, deltaY);
+                    }
                 }
             });
         }
