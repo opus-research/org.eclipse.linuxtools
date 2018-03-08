@@ -79,8 +79,9 @@ public class LoggedCommand2 extends ScpExec {
 	@Override
 	public synchronized void stop() {
 		if(isRunning()) {
-			super.stop();
-			removeInputStreamListener(logger);
+	    	removeInputStreamListener(logger);
+	    	super.stop();
+	    	
 		}
 	}
 	
