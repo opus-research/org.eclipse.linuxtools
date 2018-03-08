@@ -26,9 +26,9 @@ public class LTTngControlServiceConstants {
     // Version constants
     // ------------------------------------------------------------------------
     /**
-     * Pattern to match the LTTng toolchain version 2.x.y.
+     * Constant for the LTTng toolchain version 2.0
      */
-    public final static Pattern VERSION_2_PATTERN = Pattern.compile("(2\\.\\d+\\.\\d+).*"); //$NON-NLS-1$
+    public final static String LTTNG_MAJOR_VERSION_2_0 = "2.0"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Command constants
