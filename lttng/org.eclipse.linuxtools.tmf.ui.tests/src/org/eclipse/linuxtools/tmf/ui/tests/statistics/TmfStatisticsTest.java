@@ -85,7 +85,7 @@ public class TmfStatisticsTest extends TestCase {
             assertEquals(expected, stats.getPartial());
             i += i;
         }
-        // Increment by a negative number do nothing
+        // Increment by a negative number. It should do nothing.
         stats.incrementPartial(-10);
         assertEquals(expected, stats.getPartial());
 
@@ -103,7 +103,7 @@ public class TmfStatisticsTest extends TestCase {
         stats.resetTotalCount();
         assertEquals(0, stats.getTotal());
 
-        // test when already to 0
+        // test when already at 0
         stats.resetTotalCount();
         assertEquals(0, stats.getTotal());
 
@@ -127,7 +127,7 @@ public class TmfStatisticsTest extends TestCase {
         stats.resetPartialCount();
         assertEquals(0, stats.getPartial());
 
-        // test when already to 0
+        // test when already at 0
         stats.resetPartialCount();
         assertEquals(0, stats.getPartial());
 
