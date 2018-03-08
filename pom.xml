@@ -8,7 +8,7 @@
    http://www.eclipse.org/legal/epl-v10.html
 
    Contributors:
-       Red Hat Incorporated - initial implementation
+       Red Hat Incorporated - Initial implementation.
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -28,7 +28,7 @@
 
   <groupId>org.eclipse.linuxtools</groupId>
   <artifactId>linuxtools-parent</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.7</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Parent</name>
@@ -170,6 +170,7 @@
   </profiles>
 
   <modules>
+    <module>nonexistent</module>
     <module>changelog</module>
     <module>gcov</module>
     <module>gprof</module>
