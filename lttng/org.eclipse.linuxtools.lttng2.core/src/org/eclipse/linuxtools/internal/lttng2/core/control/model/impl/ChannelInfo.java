@@ -74,9 +74,9 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
      */
     private int fMaxNumberTraceFiles;
     /**
-     * The value of buffer type
+     * The value of the checkbox per UID buffers
      */
-    private BufferType fBufferType = BufferType.BUFFER_TYPE_UNKNOWN;
+    private boolean fIsBuffersUID;
 
 
     // ------------------------------------------------------------------------
@@ -103,7 +103,7 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         fReadTimer = other.fReadTimer;
         fMaxSizeTraceFiles = other.fMaxSizeTraceFiles;
         fMaxNumberTraceFiles = other.fMaxNumberTraceFiles;
-        fBufferType = other.fBufferType;
+        fIsBuffersUID = other.fIsBuffersUID;
         fOutputType = (other.fOutputType == null ? null : String.valueOf(other.fOutputType));
         fState = other.fState;
         for (Iterator<IEventInfo> iterator = other.fEvents.iterator(); iterator.hasNext();) {
@@ -231,7 +231,6 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         result = prime * result + ((fState == null) ? 0 : (fState.ordinal() + 1));
         result = prime * result + (int) (fSubBufferSize ^ (fSubBufferSize >>> 32));
         result = prime * result + (int) (fSwitchTimer ^ (fSwitchTimer >>> 32));
-        result = prime * result + ((fBufferType == null) ? 0 : (fBufferType.ordinal() + 1));
         return result;
     }
 
@@ -275,9 +274,6 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         if (fSwitchTimer != other.fSwitchTimer) {
             return false;
         }
-        if (fBufferType != other.fBufferType) {
-            return false;
-        }
         return true;
     }
 
@@ -301,10 +297,6 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
             output.append(fReadTimer);
             output.append(",output=");
             output.append(fOutputType);
-            if ((fBufferType != null) && !fBufferType.equals(BufferType.BUFFER_TYPE_UNKNOWN) && !fBufferType.equals(BufferType.BUFFER_SHARED)) {
-                output.append(",BufferType=");
-                output.append(fBufferType);
-            }
             output.append(",Events=");
             if (fEvents.isEmpty()) {
                 output.append("None");
@@ -339,12 +331,12 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
     }
 
     @Override
-    public void setBufferType(BufferType bufferType) {
-        fBufferType = bufferType;
+    public void setBuffersUID(boolean buffersUID) {
+        fIsBuffersUID = buffersUID;
     }
 
     @Override
-    public BufferType getBufferType() {
-        return fBufferType;
+    public boolean isBuffersUID() {
+        return fIsBuffersUID;
     }
 }
