@@ -313,22 +313,24 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 	 */
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		IProject project = getProject(config);
-		try {
-			if (!hasPermissions(project)) {
+		try{
+			if(!hasPermissions(project)){
 				return;
 			}
-			if (getTimerMode()) {
-				config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
-			} else {
-				config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, defaultEventCheck.getSelection());
-				for (CounterSubTab cst : counterSubTabs) {
-					cst.performApply(config);
-				}
+		if (getTimerMode()) {
+			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
+		} else {
+			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, defaultEventCheck.getSelection());
+			for (CounterSubTab cst : counterSubTabs) {
+				cst.performApply(config);
 			}
-
-		} catch (OpcontrolException e) {
+		}
+			config.doSave();
+		} catch(OpcontrolException e){
 			return;
 
+		} catch (CoreException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -361,6 +363,11 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		}
 
 		config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, useDefault);
+		try {
+			config.doSave();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -772,6 +779,11 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		 */
 		public void performApply(ILaunchConfigurationWorkingCopy config) {
 			counter.saveConfiguration(config);
+			try {
+				config.doSave();
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
 		}
 
 		/**
