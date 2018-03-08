@@ -44,7 +44,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
      * Version number of this state provider. Please bump this if you modify the
      * contents of the generated state history in some way.
      */
-    private static final int VERSION = 0;
+    private static final int VERSION = 2;
 
     /* Event names HashMap. TODO: This can be discarded once we move to Java 7 */
     private final HashMap<String, Integer> knownEventNames;
@@ -264,20 +264,9 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
                 value = TmfStateValue.newValueString(nextProcessName);
                 ss.modifyAttribute(ts, value, quark);
 
-                /*
-                 * Check if we need to set the syscall state and the PPID of
-                 * the new process (in case we haven't seen this process before)
-                 */
-                quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.SYSTEM_CALL);
-                if (ss.isLastAttribute(quark)) { /* Did we just add this attribute? */
-                    value = TmfStateValue.nullValue();
-                    ss.modifyAttribute(ts, value, quark);
-                }
-                quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.PPID);
-                if (ss.isLastAttribute(quark)) {
-                    value = TmfStateValue.nullValue();
-                    ss.modifyAttribute(ts, value, quark);
-                }
+                /* Make sure the PPID and system_call sub-attributes exist */
+                ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.SYSTEM_CALL);
+                ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.PPID);
 
                 /* Set the current scheduled process on the relevant CPU */
                 quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.CURRENT_THREAD);
@@ -333,6 +322,13 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
                 /* Set the process' syscall name, to be the same as the parent's */
                 quark = ss.getQuarkRelativeAndAdd(parentTidNode, Attributes.SYSTEM_CALL);
                 value = ss.queryOngoingState(quark);
+                if (value.isNull()) {
+                    /*
+                     * Maybe we were missing info about the parent? At least we
+                     * will set the child right. Let's suppose "sys_clone".
+                     */
+                    value = TmfStateValue.newValueString(LttngStrings.SYS_CLONE);
+                }
                 quark = ss.getQuarkRelativeAndAdd(childTidNode, Attributes.SYSTEM_CALL);
                 ss.modifyAttribute(ts, value, quark);
             }
@@ -404,6 +400,25 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
                     }
                     ss.modifyAttribute(ts, value, quark);
                 }
+            }
+                break;
+
+            case 12: // "sched_wakeup":
+            case 13: // "sched_wakeup_new":
+            /* Fields (same fields for both types):
+             * string comm, int32 pid, int32 prio, int32 success,
+             * int32 target_cpu */
+            {
+                final int tid = ((Long) content.getField(LttngStrings.TID).getValue()).intValue();
+                final int threadNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), String.valueOf(tid));
+
+                /*
+                 * The process indicated in the event's payload is now ready to
+                 * run. Assign it to the "wait for cpu" state.
+                 */
+                quark = ss.getQuarkRelativeAndAdd(threadNode, Attributes.STATUS);
+                value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT_FOR_CPU);
+                ss.modifyAttribute(ts, value, quark);
             }
                 break;
 
@@ -503,6 +518,8 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
         map.put(LttngStrings.SCHED_PROCESS_EXIT, 9);
         map.put(LttngStrings.SCHED_PROCESS_FREE, 10);
         map.put(LttngStrings.STATEDUMP_PROCESS_STATE, 11);
+        map.put(LttngStrings.SCHED_WAKEUP, 12);
+        map.put(LttngStrings.SCHED_WAKEUP_NEW, 13);
 
         return map;
     }
