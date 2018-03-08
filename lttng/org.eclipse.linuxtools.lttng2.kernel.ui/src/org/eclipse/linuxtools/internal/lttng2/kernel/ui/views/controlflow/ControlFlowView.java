@@ -81,8 +81,10 @@ public class ControlFlowView extends AbstractTimeGraphView {
      * Constructor
      */
     public ControlFlowView() {
-        super(ID, COLUMN_NAMES, FILTER_COLUMN_NAMES, new ControlFlowPresentationProvider());
+        super(ID, new ControlFlowPresentationProvider());
+        setTreeColumns(COLUMN_NAMES);
         setTreeLabelProvider(new ControlFlowTreeLabelProvider());
+        setFilterColumns(FILTER_COLUMN_NAMES);
         setEntryComparator(new ControlFlowEntryComparator());
     }
 
