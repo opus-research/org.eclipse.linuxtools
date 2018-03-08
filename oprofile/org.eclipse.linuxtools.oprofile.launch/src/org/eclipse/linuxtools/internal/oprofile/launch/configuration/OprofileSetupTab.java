@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 /**
@@ -52,8 +51,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 	//maybe these later
 //	protected Button _checkSeparateThread;
 //	protected Button _checkSeparateCpu;
-	
-	protected Spinner executionsSpinner;
 
 	protected LaunchOptions options = null;
 
@@ -78,7 +75,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		options.loadConfiguration(config);
 		
 		kernelImageFileText.setText(options.getKernelImageFile());
-		executionsSpinner.setSelection(options.getExecutionsNumber());
 		
 		int separate = options.getSeparateSamples();
 		
@@ -170,18 +166,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 		checkSeparateKernel = myCreateCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateKernel.text")); //$NON-NLS-1$
 //		_checkSeparateThread = _createCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateThread.text")); //$NON-NLS-1$
 //		_checkSeparateCpu = _createCheckButton(p, OprofileLaunchMessages.getString("tab.global.check.separateCpu.text")); //$NON-NLS-1$
-		
-		//Number of executions spinner
-		Label executionsLabel = new Label(top, SWT.LEFT);
-		executionsLabel.setText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.text")); //$NON-NLS-1$
-		executionsLabel.setToolTipText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.tooltip")); //$NON-NLS-1$
-		executionsSpinner = new Spinner(top, SWT.BORDER);
-		executionsSpinner.setMinimum(1);
-		executionsSpinner.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				options.setExecutionsNumber(executionsSpinner.getSelection());
-			}
-		});
 	}
 
 	// convenience method to create radio buttons with the given label
