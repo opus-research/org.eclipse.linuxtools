@@ -25,7 +25,6 @@ import org.eclipse.help.IToc;
 import org.eclipse.help.ITopic;
 import org.eclipse.help.IUAElement;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.linuxtools.cdt.libhover.devhelp.DevHelpPlugin;
 import org.eclipse.linuxtools.internal.cdt.libhover.devhelp.preferences.PreferenceConstants;
 
 public class DevHelpToc implements IToc {
@@ -71,8 +70,12 @@ public class DevHelpToc implements IToc {
 			});
 			for (IFileStore file: files) {
 				String name = file.fetchInfo().getName();
-				ITopic topic = new DevHelpTopic(name);
-				topics.add(topic);
+				if (fs.getStore(
+						devhelpLocation.append(name).append(name + ".devhelp2"))
+						.fetchInfo().exists()) {
+					ITopic topic = new DevHelpTopic(name);
+					topics.add(topic);
+				}
 			}
 			ITopic[] retval = new ITopic[topics.size()];
 			return topics.toArray(retval);

@@ -49,6 +49,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
 	 */
+	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
 		return computeCompletionProposals(viewer.getDocument(), offset);
@@ -90,7 +91,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		if (partition.getType() == STPPartitionScanner.STP_PROBE){
 			ICompletionProposal[] variableCompletions = getProbeVariableCompletions(document, offset, prefix);
 			ICompletionProposal[] functionCompletions = getFunctionCompletions(offset, prefix);
-			
+
 			ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>(
 					variableCompletions.length + functionCompletions.length);
 			completions.addAll(Arrays.asList(variableCompletions));
@@ -318,6 +319,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(org.eclipse.jface.text.ITextViewer, int)
 	 */
+	@Override
 	public IContextInformation[] computeContextInformation(ITextViewer viewer,
 			int offset) {
 		return NO_CONTEXTS;
@@ -326,6 +328,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
 	 */
+	@Override
 	public char[] getCompletionProposalAutoActivationCharacters() {
 		return PROPOSAL_ACTIVATION_CHARS;
 	}
@@ -333,6 +336,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationAutoActivationCharacters()
 	 */
+	@Override
 	public char[] getContextInformationAutoActivationCharacters() {
 		return PROPOSAL_ACTIVATION_CHARS;
 	}
@@ -340,6 +344,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
 	 */
+	@Override
 	public IContextInformationValidator getContextInformationValidator() {
 		return null;
 	}
@@ -347,6 +352,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getErrorMessage()
 	 */
+	@Override
 	public String getErrorMessage() {
 		// TODO: When does this trigger?
 		return "Error."; //$NON-NLS-1$
