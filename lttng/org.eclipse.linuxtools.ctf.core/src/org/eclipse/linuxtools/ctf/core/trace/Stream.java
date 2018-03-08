@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
 /**
@@ -230,19 +231,16 @@ public class Stream {
         }
 
         /*
-         * If there is an event without id (the null key), it must be the only
-         * one
+         * If there is an event without id set, it must be the only one
          */
-        if ((event.getId() == null) && (events.size() != 0)) {
-            throw new ParseException(
-                    "Event without id with multiple events in a stream"); //$NON-NLS-1$
+        if ((event.getId() == EventDeclaration.UNSET_EVENT_ID) && (events.size() != 0)) {
+            throw new ParseException("Event without id for multiple events in a stream"); //$NON-NLS-1$
         }
 
         /* Check if an event with the same ID already exists */
         if (events.get(event.getId()) != null) {
             throw new ParseException("Event id already exists"); //$NON-NLS-1$
         }
-
         /* Put the event in the map */
         events.put(event.getId(), event);
     }
