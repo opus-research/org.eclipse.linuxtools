@@ -263,7 +263,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         composite.setLayoutData(gridData);
 
         // Y-axis max event
@@ -284,10 +283,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         gridData.verticalSpan = 2;
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
-        gridData.heightHint = 0;
-        gridData.widthHint = 0;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         canvasComposite.setLayoutData(gridData);
         canvasComposite.setLayout(new FillLayout());
         fCanvas = new Canvas(canvasComposite, SWT.DOUBLE_BUFFERED);
@@ -581,8 +577,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                                 long maxNbEvents = HistogramScaledData.hideLostEvents ? fScaledData.fMaxValue : fScaledData.fMaxCombinedValue;
                                 fMaxNbEventsText.setText(Long.toString(maxNbEvents));
                                 // The Y-axis area might need to be re-sized
-                                GridData gd = (GridData) fMaxNbEventsText.getLayoutData();
-                                gd.widthHint = Math.max(gd.widthHint, fMaxNbEventsText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
                                 fMaxNbEventsText.getParent().layout();
                             }
                         }
@@ -878,12 +872,15 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
     @Override
     public void mouseHover(final MouseEvent event) {
-        if (fDataModel.getNbEvents() > 0 && fScaledData != null && fScaledData.fLastBucket >= event.x) {
-            final String tooltip = formatToolTipLabel(event.x);
-            fCanvas.setToolTipText(tooltip);
-        } else {
-            fCanvas.setToolTipText(null);
+        if (fDataModel.getNbEvents() > 0 && fScaledData != null) {
+            int delimiterIndex = (int) ((fDataModel.getEndTime() - fScaledData.getFirstBucketTime()) / fScaledData.fBucketDuration) + 1;
+            if (event.x < delimiterIndex) {
+                final String tooltip = formatToolTipLabel(event.x - fOffset);
+                fCanvas.setToolTipText(tooltip);
+                return;
+            }
         }
+        fCanvas.setToolTipText(null);
     }
 
     private String formatToolTipLabel(final int index) {
