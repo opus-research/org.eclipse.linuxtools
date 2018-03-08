@@ -27,6 +27,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 public class CtfIterator extends CTFTraceReader implements ITmfContext,
         Comparable<CtfIterator>, Cloneable {
 
+
     private final CtfTmfTrace ctfTmfTrace;
 
     /**
