@@ -376,7 +376,7 @@ public class ControlFlowView extends TmfView {
             }
         });
 
-        fTimeGraphCombo.getTimeGraphViewer().setTimeCalendarFormat(true);
+        fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.ABSOLUTE);
 
         final Thread thread = new Thread("ControlFlowView build") { //$NON-NLS-1$
             @Override
