@@ -33,19 +33,19 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @see ITmfEventField
  * @see ITmfTrace
 */
-public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
+public class TmfEvent implements ITmfEvent, IAdaptable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private ITmfTrace fTrace;
-    private long fRank;
-    private ITmfTimestamp fTimestamp;
-    private String fSource;
-    private ITmfEventType fType;
-    private ITmfEventField fContent;
-    private String fReference;
+    private final ITmfTrace fTrace;
+    private final long fRank;
+    private final ITmfTimestamp fTimestamp;
+    private final String fSource;
+    private final ITmfEventType fType;
+    private final ITmfEventField fContent;
+    private final String fReference;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -175,83 +175,6 @@ public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
     @Override
     public String getReference() {
         return fReference;
-    }
-
-    // ------------------------------------------------------------------------
-    // Convenience setters
-    // ------------------------------------------------------------------------
-
-    /**
-     * @param trace the new event trace
-     */
-    protected void setTrace(final ITmfTrace trace) {
-        fTrace = trace;
-    }
-
-    /**
-     * @param rank the new event rank
-     */
-    protected void setRank(final long rank) {
-        fRank = rank;
-    }
-
-    /**
-     * @param timestamp the new event timestamp
-     */
-    protected void setTimestamp(final ITmfTimestamp timestamp) {
-        fTimestamp = timestamp;
-    }
-
-    /**
-     * @param source the new event source
-     */
-    protected void setSource(final String source) {
-        fSource = source;
-    }
-
-    /**
-     * @param type the new event type
-     */
-    protected void setType(final ITmfEventType type) {
-        fType = type;
-    }
-
-    /**
-     * @param content the event new content
-     */
-    protected void setContent(final ITmfEventField content) {
-        fContent = content;
-    }
-
-    /**
-     * @param reference the new event reference
-     */
-    protected void setReference(final String reference) {
-        fReference = reference;
-    }
-
-    // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public TmfEvent clone() {
-        TmfEvent clone = null;
-        try {
-            clone = (TmfEvent) super.clone();
-            clone.fTrace = fTrace;
-            clone.fRank = fRank;
-            clone.fTimestamp = fTimestamp;
-            clone.fSource = fSource;
-            clone.fType = fType != null ? fType.clone() : null;
-            clone.fContent = fContent != null ? fContent.clone() : null;
-            clone.fReference = fReference;
-        } catch (final CloneNotSupportedException e) {
-        }
-        return clone;
     }
 
     // ------------------------------------------------------------------------
