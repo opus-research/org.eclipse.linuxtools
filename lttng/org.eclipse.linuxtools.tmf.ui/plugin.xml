@@ -26,15 +26,6 @@
             id="org.eclipse.linuxtools.tmf.ui.views.timechart"
             name="%timechart.view.name"
             restorable="true">
-      </view> 
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.ui.views.category"
-            class="org.eclipse.linuxtools.tmf.ui.views.environment.TmfEnvironmentView"
-            icon="icons/eview16/events_view.gif"
-            id="org.eclipse.linuxtools.tmf.ui.views.environment"
-            name="%environment.view.name"
-            restorable="true">
       </view>
       <view
             allowMultiple="false"
@@ -95,6 +86,15 @@
             icon="icons/eview16/callstack_view.gif"
             id="org.eclipse.linuxtools.tmf.ui.views.callstack"
             name="%callstack.view.name"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.tmf.ui.views.category"
+            class="org.eclipse.linuxtools.tmf.ui.views.synchronization.TmfSynchronizationView"
+            icon="icons/eview16/synced.gif"
+            id="org.eclipse.linuxtools.tmf.ui.views.synchronization"
+            name="%synchronization.view.name"
             restorable="true">
       </view>
    </extension>
@@ -411,6 +411,9 @@
                         </instanceof>
                         <instanceof
                               value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                        </instanceof>
+                        <instanceof
+                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisOutputElement">
                         </instanceof>
                      </or>
                   </iterate>
@@ -736,6 +739,30 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.synchronize_traces"
+               icon="icons/obj16/add_obj.gif"
+               label="%command.synchronize_traces"
+               mnemonic="%command.synchronize_traces.mnemonic"
+               style="push"
+               tooltip="%commands.synchronize_traces.description">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
          <separator
                name="org.eclipse.linuxtools.tmf.ui.separator5"
                visible="true">
@@ -770,6 +797,30 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.analysis_help"
+               icon="icons/dlcl16/open.gif"
+               label="%command.analysis_help"
+               mnemonic="%command.analysis_help.mnemonic"
+               style="push"
+               tooltip="%command.analysis_help.description">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -784,6 +835,12 @@
             description="%command.new_experiment.description"
             id="org.eclipse.linuxtools.tmf.ui.command.new_experiment"
             name="%command.new_experiment">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.analysis_help.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.analysis_help"
+            name="%command.analysis_help">
       </command>
       <command
             categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
@@ -826,6 +883,12 @@
             description="%command.select_traces.description"
             id="org.eclipse.linuxtools.tmf.ui.command.select_traces"
             name="%command.select_traces">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.synchronize_traces.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.synchronize_traces"
+            name="%command.synchronize_traces">
       </command>
       <category
             description="%commands.parser.category.description"
@@ -972,6 +1035,40 @@
                      operator="and">
                   <instanceof
                         value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OpenAnalysisHelpHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.analysis_help">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OpenAnalysisOutputHandler"
+            commandId="org.eclipse.ui.navigate.openResource">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisOutputElement">
                   </instanceof>
                </iterate>
             </and>
@@ -1172,6 +1269,23 @@
       <handler
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTracesHandler"
             commandId="org.eclipse.linuxtools.tmf.ui.command.select_traces">
+         <activeWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                  </instanceof>
+               </iterate>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SynchronizeTracesHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.synchronize_traces">
          <activeWhen>
             <and>
                <count

@@ -42,7 +42,7 @@ public class ExportToTextRequest extends TmfDataRequest {
      *            the {@link TmfEventsTable} requesting the export (may be <code>null</code>)
      */
     public ExportToTextRequest(Writer w, ITmfFilter filter, TmfEventsTable table) {
-        super(ITmfEvent.class);
+        super(ITmfEvent.class, 0, TmfDataRequest.ALL_DATA, ExecutionType.FOREGROUND);
         this.fWriter = w;
         this.fFilter = filter;
         this.fTable = table;

@@ -147,7 +147,7 @@ public class StreamInputPacketIndex {
                 break;
             }
 
-            if (timestamp <= guessEntry.getTimestampBegin()) {
+            if (timestamp < guessEntry.getTimestampBegin()) {
                 /*
                  * If the timestamp if before the begin timestamp, we know that
                  * the packet to return is before the guess.
@@ -159,6 +159,24 @@ public class StreamInputPacketIndex {
                  * the packet to return is after the guess or is the guess.
                  */
                 min = guessI;
+            } else if (timestamp == guessEntry.getTimestampBegin()) {
+                /*
+                 * If the timestamp is equal to the begin timestamp, we want to
+                 * return the first packetIndexEntry that have this timestamp.
+                 */
+                if (guessI > 0) {
+                    StreamInputPacketIndexEntry previousGuessEntry = this.entries.get(guessI - 1);
+                    while (guessI > 0 && guessEntry.getTimestampBegin() == previousGuessEntry.getTimestampBegin()) {
+                        guessEntry = previousGuessEntry;
+                        guessI--;
+                        if (guessI - 1 >= 0) {
+                            previousGuessEntry = this.entries.get(guessI - 1);
+                        }
+                    }
+                    min = guessI;
+                    max = guessI;
+                }
+
             }
         }
 

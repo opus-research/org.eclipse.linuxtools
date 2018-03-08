@@ -98,8 +98,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsCache.CachedEvent;
 import org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting;
 import org.eclipse.linuxtools.tmf.ui.views.colors.ColorSettingsManager;
@@ -197,7 +197,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         /** Filter object */
         String FILTER_OBJ = "$fltr_obj"; //$NON-NLS-1$
 
-        /** Timestamp*/
+        /** Timestamp */
         String TIMESTAMP = "$time"; //$NON-NLS-1$
 
         /** Rank */
@@ -386,9 +386,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                                 }
                             } else {
                                 broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts, fSelectedBeginTimestamp));
-                                if (fStatusLineManager != null) {
-                                    updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
-                                }
+                                updateStatusLine(fSelectedBeginTimestamp.getDelta(ts));
                             }
                         }
                     } else {
@@ -612,7 +610,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 fRawViewer.setVisible(true);
                 fSashForm.layout();
                 final int index = fTable.getSelectionIndex();
-                if (index >= +1) {
+                if (index >= 1) {
                     fRawViewer.selectAndReveal(index - 1);
                 }
             }
@@ -1474,7 +1472,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 return;
             }
             request = new TmfDataRequest(ITmfEvent.class, (int) fFilterCheckCount,
-                    nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
+                    nbRequested, ExecutionType.BACKGROUND) {
                 @Override
                 public void handleData(final ITmfEvent event) {
                     super.handleData(event);
@@ -1712,7 +1710,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 if (direction == Direction.BACKWARD) {
                     rank = Math.max(0, rank - fTrace.getCacheSize() + 1);
                 }
-                request = new TmfDataRequest(ITmfEvent.class, (int) rank, nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
+                request = new TmfDataRequest(ITmfEvent.class, (int) rank, nbRequested, ExecutionType.BACKGROUND) {
                     long currentRank = rank;
 
                     @Override
@@ -2266,7 +2264,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             // Create a request for one event that will be queued after other ongoing requests. When this request is completed
             // do the work to select the actual event with the timestamp specified in the signal. This procedure prevents
             // the method fTrace.getRank() from interfering and delaying ongoing requests.
-            final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
+            final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class,
+                    0, 1, ExecutionType.FOREGROUND) {
 
                 TmfTimestamp ts = new TmfTimestamp(signal.getBeginTime());
 
