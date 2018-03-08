@@ -9,7 +9,7 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -43,7 +43,7 @@ import org.eclipse.ui.PartInitException;
  * @author Ryan Morse
  * @see org.eclipse.linuxtools.systemtap.ui.structures.TreeNode#isClickable()
  * @see org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor#insertTextAtCurrent(String)
- * @see org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.TreeExpandCollapseAction
+ * @see org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.TreeExpandCollapseAction
  */
 public class FunctionBrowserAction extends Action implements ISelectionListener, IDoubleClickListener {
 	private final IWorkbenchWindow window;
