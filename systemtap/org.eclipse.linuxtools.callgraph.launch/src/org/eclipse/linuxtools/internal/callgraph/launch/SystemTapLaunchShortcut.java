@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.callgraph.launch;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.cdt.core.CCorePlugin;
@@ -337,6 +338,11 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			binName = bin.getPath().toString();
 		} else {
 			binName = ""; //$NON-NLS-1$
+			// SystemTapUIErrorMessages error = new SystemTapUIErrorMessages(
+			// "Null_Binary",
+			// "Invalid executable",
+			// "An error has occured: a binary/executable file was not given to the launch shortcut.");
+			// error.schedule();
 		}
 		return binName;
 	}
@@ -499,6 +505,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		try {
 			ArrayList<ICContainer> list = new ArrayList<ICContainer>();
 			TranslationUnitVisitor v = new TranslationUnitVisitor();
+			// ASTTranslationUnitVisitor v = new ASTTranslationUnitVisitor();
 
 			for (ICElement b : bin.getCProject().getChildrenOfType(
 					ICElement.C_CCONTAINER)) {
@@ -793,7 +800,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		public GetFunctionsJob(String name, ICProject p, Object[] o) {
 			super(name);
 			functionList = new ArrayList<String>();
-			listOfFiles = o;
+			listOfFiles = Arrays.copyOf(o, o.length);
 			project = p;
 		}
 
