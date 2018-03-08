@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -36,20 +36,12 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 /**
  * Test suite for the scheduler.
  */
 public class TmfSchedulerTest {
-
-    /** Time-out tests after 60 seconds */
-    @Rule
-    public TestRule globalTimeout= new Timeout(60000);
 
     // ------------------------------------------------------------------------
     // Constants
@@ -69,7 +61,7 @@ public class TmfSchedulerTest {
     private long fEndTime;
     private TmfTimeRange fForegroundTimeRange;
 
-    private final List<String> fOrderList = new ArrayList<>();
+    private final List<String> fOrderList = new ArrayList<String>();
     private int fForegroundId = 0;
     private int fBackgroundId = 0;
 
@@ -336,10 +328,9 @@ public class TmfSchedulerTest {
     /**
      * Test if the scheduler is working as expected
      */
-    @Ignore
     @Test
     public void executionOrder() {
-        List<String> expectedOrder = new LinkedList<>();
+        List<String> expectedOrder = new LinkedList<String>();
         expectedOrder.add("FOREGROUND1");
         expectedOrder.add("FOREGROUND2");
         expectedOrder.add("FOREGROUND3");
@@ -387,14 +378,14 @@ public class TmfSchedulerTest {
     // ------------------------------------------------------------------------
 
     private class BackgroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String backgroundName;
 
         BackgroundRequest(TmfTimeRange timeRange) {
-            super(fixture.getEventType(),
-                    timeRange,
-                    0,
-                    ITmfEventRequest.ALL_DATA,
+            super(fixture.getEventType(), timeRange,
+                    TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -416,14 +407,14 @@ public class TmfSchedulerTest {
     }
 
     private class ForegroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String foregroundName;
 
         ForegroundRequest(TmfTimeRange timeRange) {
-            super(fixture.getEventType(),
-                    timeRange,
-                    0,
-                    ITmfEventRequest.ALL_DATA,
+            super(fixture.getEventType(), timeRange,
+                    TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }

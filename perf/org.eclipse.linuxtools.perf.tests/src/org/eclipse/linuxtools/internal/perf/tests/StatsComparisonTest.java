@@ -14,6 +14,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.internal.perf.BaseDataManipulator;
+import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.junit.Before;
@@ -109,7 +112,7 @@ public class StatsComparisonTest {
 		IPath statData = Path.fromOSString(STAT_RES + "perf_simple.stat");
 
 		//set up expected result
-		ArrayList<PMStatEntry> expectedStatList = new ArrayList<>();
+		ArrayList<PMStatEntry> expectedStatList = new ArrayList<PMStatEntry>();
 
 		expectedStatList.add(new PMStatEntry((float) 4.78, "cpu-clock",
 				(float) 0.0, null, (float) 0.37, (float) 0.0));
@@ -150,6 +153,30 @@ public class StatsComparisonTest {
 	}
 
 	@Test
+	public void testStatDataComparisonCaching() {
+		IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
+		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
+		StatComparisonData diffData = new StatComparisonData("title",
+				oldStatData, newStatData);
+		diffData.cacheData();
+
+		PerfPlugin plugin = PerfPlugin.getDefault();
+		BaseDataManipulator dataMan = new BaseDataManipulator();
+
+		// check data was cached
+		assertEquals(dataMan.fileToString(oldStatData.toFile()),
+				plugin.getCachedData(diffData.getOldDataID()));
+		assertEquals(dataMan.fileToString(newStatData.toFile()),
+				plugin.getCachedData(diffData.getNewDataID()));
+
+		diffData.clearCachedData();
+
+		// check cached data was cleared
+		assertNull(plugin.getCachedData(diffData.getOldDataID()));
+		assertNull(plugin.getCachedData(diffData.getNewDataID()));
+	}
+
+	@Test
 	public void testStatDataComparison() {
 		IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
 		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
@@ -157,7 +184,7 @@ public class StatsComparisonTest {
 				oldStatData, newStatData);
 
 		// expected comparison list
-		ArrayList<PMStatEntry> expectedDiff = new ArrayList<>();
+		ArrayList<PMStatEntry> expectedDiff = new ArrayList<PMStatEntry>();
 
 		expectedDiff.add(new PMStatEntry((float) -4.0, "cpu-clock",
 				(float) 0.0, null, (float) 0.54, (float) 0.0));
@@ -188,47 +215,42 @@ public class StatsComparisonTest {
 		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
 		IPath diffStatData = Path.fromOSString(STAT_RES + "perf_diff.stat");
 
-		try (BufferedReader diffDataReader = new BufferedReader(new FileReader(
-				diffStatData.toFile()))) {
-			StatComparisonData diffData = new StatComparisonData("title",
-					oldStatData, newStatData);
+		BufferedReader diffDataReader = new BufferedReader(new FileReader(
+				diffStatData.toFile()));
+		StatComparisonData diffData = new StatComparisonData("title",
+				oldStatData, newStatData);
 
-			diffData.runComparison();
-			String actualResult = diffData.getPerfData();
-			String[] actualResultLines = actualResult.split("\n");
+		diffData.runComparison();
+		String actualResult = diffData.getPerfData();
+		String[] actualResultLines = actualResult.split("\n");
 
-			String curLine;
-			for (int i = 0; i < actualResultLines.length; i++) {
-				curLine = diffDataReader.readLine();
+		String curLine;
+		for (int i = 0; i < actualResultLines.length; i++) {
+			curLine = diffDataReader.readLine();
 
-				/**
-				 * Elapsed seconds are usually very close to zero, and thus
-				 * prone to some small formatting differences across systems.
-				 * Total time entry items are checked more thoroughly to avoid
-				 * test failures.
-				 */
-				if (curLine.contains(PMStatEntry.TIME)) {
-					String expectedEntry = curLine.trim();
-					String actualEntry = actualResultLines[i].trim();
+			/**
+			 * Elapsed seconds are usually very close to zero, and thus prone to
+			 * some small formatting differences across systems. Total time
+			 * entry items are checked more thoroughly to avoid test failures.
+			 */
+			if (curLine.contains(PMStatEntry.TIME)) {
+				String expectedEntry = curLine.trim();
+				String actualEntry = actualResultLines[i].trim();
 
-					String expectedSamples = expectedEntry.substring(0,
-							expectedEntry.indexOf(" "));
-					String expectedRest = expectedEntry.substring(expectedEntry
-							.indexOf(" ") + 1);
+				String expectedSamples = expectedEntry.substring(0, expectedEntry.indexOf(" "));
+				String expectedRest = expectedEntry.substring(expectedEntry.indexOf(" ") + 1);
 
-					String actualSamples = actualEntry.substring(0,
-							actualEntry.indexOf(" "));
-					String actualRest = actualEntry.substring(actualEntry
-							.indexOf(" ") + 1);
+				String actualSamples = actualEntry.substring(0, actualEntry.indexOf(" "));
+				String actualRest = actualEntry.substring(actualEntry.indexOf(" ") + 1);
 
-					assertEquals(StatComparisonData.toFloat(actualSamples),
-							StatComparisonData.toFloat(expectedSamples), 0);
-					assertEquals(actualRest, expectedRest);
-				} else {
-					assertEquals(actualResultLines[i], curLine);
-				}
+				assertEquals(StatComparisonData.toFloat(actualSamples),
+						StatComparisonData.toFloat(expectedSamples), 0);
+				assertEquals(actualRest, expectedRest);
+			} else {
+				assertEquals(actualResultLines[i], curLine);
 			}
 		}
 
+		diffDataReader.close();
 	}
 }

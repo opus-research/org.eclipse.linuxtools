@@ -34,16 +34,17 @@ public class VariantDeclaration implements IDeclaration {
 
     private String tag = null;
     private static final long alignment = 1;
-    private final Map<String, IDeclaration> fields = new HashMap<>();
+    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * constructor
      */
     public VariantDeclaration() {
+
     }
 
     // ------------------------------------------------------------------------
@@ -75,7 +76,7 @@ public class VariantDeclaration implements IDeclaration {
     }
 
     /**
-     * Gets current variant tag
+     * gets current variant tag
      * @return the variant tag.
      */
     public String getTag() {

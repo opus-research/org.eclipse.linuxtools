@@ -38,7 +38,7 @@ import org.eclipse.ui.IWorkbench;
 public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage {
 
     private List fProjects;
-    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<>();
+    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<String, IProject>();
 
     /**
      * Import page that tells where the trace will go
@@ -65,7 +65,7 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         optionPane.setLayout(new GridLayout());
         optionPane.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
 
-        fProjects = new List(optionPane, SWT.V_SCROLL);
+        fProjects = new List(optionPane, SWT.NONE);
         fProjects.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         for (IProject project : TraceUtils.getOpenedTmfProjects()) {
@@ -77,36 +77,34 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         fProjects.getSelection();
         fProjects.addSelectionListener(new SelectionListener() {
 
+            private static final String TRACE = "Traces"; //$NON-NLS-1$
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateWithSelection();
+                handleSelected();
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                updateWithSelection();
+                handleSelected();
+            }
+
+            private void handleSelected() {
+                String[] selection = fProjects.getSelection();
+                if (selection.length > 0) {
+                    final String listItem = selection[0];
+                    IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
+                    getBatchWizard().setTraceFolder(folder);
+                    ImportTraceWizardPageOptions.this.setErrorMessage(null);
+                }
             }
         });
         if (proj != null) {
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
-        } else if (fProjects.getItemCount() > 0) {
-            fProjects.setSelection(0);
-        }
-        updateWithSelection();
-        setMessage(Messages.SharedSelectProject);
-        this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
-    }
-
-    private void updateWithSelection() {
-        final String TRACE = "Traces"; //$NON-NLS-1$
-        String[] selection = fProjects.getSelection();
-        if (selection.length > 0) {
-            final String listItem = selection[0];
-            IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
-            getBatchWizard().setTraceFolder(folder);
-            ImportTraceWizardPageOptions.this.setErrorMessage(null);
+            this.setErrorMessage(null);
         } else {
-            ImportTraceWizardPageOptions.this.setErrorMessage(Messages.SharedSelectProject);
+            this.setErrorMessage(Messages.SharedSelectProject);
         }
+        this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
     }
 }

@@ -36,7 +36,7 @@ public class UiModelDependent implements IUiModelElement {
 		this.parent = parent;
 		this.dataModelDependents = dependents;
 		this.dependents = null;
-		this.totalCount = totalCount+depCount;
+		this.totalCount = totalCount;
 		this.depCount = depCount;
 		refreshModel();
 	}

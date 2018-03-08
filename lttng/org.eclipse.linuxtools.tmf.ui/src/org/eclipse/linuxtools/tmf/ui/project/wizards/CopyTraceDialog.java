@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.osgi.util.NLS;
@@ -61,6 +62,7 @@ public class CopyTraceDialog extends SelectionStatusDialog {
     private final TmfTraceElement fTrace;
     private Text fNewTraceName;
     private final IFolder fTraceFolder;
+    private final TmfProjectElement fProject;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -75,6 +77,7 @@ public class CopyTraceDialog extends SelectionStatusDialog {
         fTrace = trace;
         TmfTraceFolder folder = (TmfTraceFolder) trace.getParent();
         fTraceFolder = folder.getResource();
+        fProject = trace.getProject();
         setTitle(Messages.CopyTraceDialog_DialogTitle);
         setStatusLineAboveButtons(true);
     }
@@ -183,6 +186,10 @@ public class CopyTraceDialog extends SelectionStatusDialog {
         }
         setSelectionResult(new IResource[] { trace });
         super.okPressed();
+
+        if (fProject != null) {
+            fProject.refresh();
+        }
     }
 
     private IResource copyTrace(final String newName) {

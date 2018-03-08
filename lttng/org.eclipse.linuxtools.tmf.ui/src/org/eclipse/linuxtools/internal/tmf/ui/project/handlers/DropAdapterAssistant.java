@@ -120,7 +120,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
 
         // If target is a project, use its trace folder
         if (targetToUse instanceof IProject) {
-            TmfProjectElement projectElement = TmfProjectRegistry.getProject((IProject) targetToUse, true);
+            TmfProjectElement projectElement = TmfProjectRegistry.getProject((IProject) targetToUse);
             if (projectElement != null) {
                 targetToUse = projectElement.getTracesFolder();
             }
@@ -261,7 +261,6 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         }
         if (traceResource != null && traceResource.exists()) {
             createLink(targetExperiment.getResource(), traceResource, traceResource.getName());
-            targetExperiment.deleteSupplementaryResources();
             targetExperiment.closeEditors();
             return traceResource;
         }
@@ -377,7 +376,6 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             }
             if (resource != null && resource.exists()) {
                 createLink(targetExperiment.getResource(), resource, resource.getName());
-                targetExperiment.deleteSupplementaryResources();
                 targetExperiment.closeEditors();
                 return true;
             }

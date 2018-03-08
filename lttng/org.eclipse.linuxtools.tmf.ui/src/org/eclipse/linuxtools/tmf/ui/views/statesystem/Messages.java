@@ -76,10 +76,6 @@ public class Messages extends NLS {
      * @since 2.1*/
     public static String TypeLong;
 
-    /** Label for type Double
-     * @since 3.0*/
-    public static String TypeDouble;
-
     /** Label for the type String
      * @since 2.1*/
     public static String TypeString;

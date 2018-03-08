@@ -14,12 +14,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -37,6 +40,8 @@ import org.eclipse.linuxtools.internal.perf.model.PMSymbol;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
@@ -59,7 +64,7 @@ public class PerfCore {
 		}
 		String str = strBuf.toString();
 		if (!str.trim().isEmpty() && print != null) {
-			print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle); //$NON-NLS-1$ //$NON-NLS-2$
+				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return str;
 	}
@@ -76,7 +81,7 @@ public class PerfCore {
 		String projectHost = getHostName(config);
 
 		if(eventsHostMap == null){
-			eventsHostMap = new HashMap<>();
+			eventsHostMap = new HashMap<String, HashMap<String,ArrayList<String>>>();
 		}
 
 		// local projects have null hosts
@@ -137,10 +142,14 @@ public class PerfCore {
 	}
 
 	private static HashMap<String,ArrayList<String>> loadEventList(ILaunchConfiguration config){
-		HashMap<String,ArrayList<String>> events = new HashMap<>();
+		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		IProject project = getProject(config);
 
-		if (!PerfCore.checkPerfInPath(project)) {
+		if (project == null) {
+			if (!PerfCore.checkPerfInPath()) {
+				return events;
+			}
+		} else if (!PerfCore.checkRemotePerfInPath(project)) {
 			return events;
 		}
 
@@ -164,7 +173,7 @@ public class PerfCore {
 	}
 
 	public static HashMap<String,ArrayList<String>> parseEventList (BufferedReader input){
-		HashMap<String,ArrayList<String>> events = new HashMap<>();
+		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		String line;
 		try {
 			// Process list of events. Each line is of the form <event>\s+<category>.
@@ -187,7 +196,7 @@ public class PerfCore {
 					}
 					ArrayList<String> categoryEvents = events.get(category);
 					if (categoryEvents == null) {
-						categoryEvents = new ArrayList<>();
+						categoryEvents = new ArrayList<String>();
 						events.put(category, categoryEvents);
 					}
 					categoryEvents.add(event.trim());
@@ -207,22 +216,38 @@ public class PerfCore {
 	}
 
 	//Gets the current version of perf
-	public static Version getPerfVersion(ILaunchConfiguration config) {
+	public static Version getPerfVersion(ILaunchConfiguration config, String[] environ, IPath workingDir) {
 		IProject project = getProject(config);
 		Process p = null;
+		IRemoteFileProxy proxy = null;
+		IFileStore workingDirFileStore = null;
 
-		try {
-			p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
-		} catch (IOException e) {
-			logException(e);
+		if (workingDir == null) {
+			try {
+				p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
+			} catch (IOException e) {
+				logException(e);
+			}
+		} else {
+			try {
+				proxy = RemoteProxyManager.getInstance().getFileProxy(new URI(workingDir.toOSString()));
+				workingDirFileStore = proxy.getResource(workingDir.toOSString());
+				p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, environ, workingDirFileStore, project); //$NON-NLS-1$
+			} catch (IOException e) {
+				logException(e);
+			} catch (CoreException e) {
+				logException(e);
+			} catch (URISyntaxException e) {
+				logException(e);
+			}
 		}
+
 		if (p == null) {
 			return null;
 		}
 
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-		String perfVersion = spitStream(input, "Perf --version", null); //$NON-NLS-1$
+		String perfVersion = spitStream(input, "Perf --version", null);
 		int index = perfVersion.indexOf('-');
 		if (index > 0) {
 			perfVersion = perfVersion.substring(0, index);
@@ -231,9 +256,20 @@ public class PerfCore {
 		return new Version(perfVersion);
 	}
 
-
-	public static boolean checkPerfInPath(IProject project)
+	public static boolean checkPerfInPath()
 	{
+		try
+		{
+			Process p = Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}); //$NON-NLS-1$
+			return (p != null);
+		}
+		catch (IOException e)
+		{
+			return false;
+		}
+	}
+
+	public static boolean checkRemotePerfInPath(IProject project) {
 		try
 		{
 			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
@@ -241,6 +277,7 @@ public class PerfCore {
 		}
 		catch (IOException e)
 		{
+			logException(e);
 			return false;
 		}
 	}
@@ -251,7 +288,7 @@ public class PerfCore {
 		if (config == null) {
 			return base;
 		} else {
-			ArrayList<String> newCommand = new ArrayList<>();
+			ArrayList<String> newCommand = new ArrayList<String>();
 			newCommand.addAll(Arrays.asList(base));
 			try {
 				if (new Version(3, 11, 0).compareTo(perfVersion) > 0) {
@@ -278,7 +315,7 @@ public class PerfCore {
 	}
 
 	public static String[] getReportString(ILaunchConfiguration config, String perfDataLoc) {
-		ArrayList<String> base = new ArrayList<>();
+		ArrayList<String> base = new ArrayList<String>();
 		base.addAll(Arrays.asList(new String [] {PerfPlugin.PERF_COMMAND, "report", "--sort", "comm,dso,sym", "-n", "-t", "" + (char)1 }));//(char 1 as -t is a custom field seperator) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		if (config != null) {
 			try {
@@ -312,7 +349,7 @@ public class PerfCore {
 	}
 
 	public static String[] getAnnotateString(ILaunchConfiguration config, String dso, String symbol, String perfDataLoc, boolean OldPerfVersion) {
-		ArrayList<String> base = new ArrayList<>();
+		ArrayList<String> base = new ArrayList<String>();
 		if (OldPerfVersion) {
 			base.addAll( Arrays.asList( new String[]{PerfPlugin.PERF_COMMAND, "annotate", "-s", symbol, "-l", "-P"} ) ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		} else {
@@ -343,10 +380,9 @@ public class PerfCore {
 	//whatever project is being profiled. It is only used for junit tests atm.
 	public static void Report(ILaunchConfiguration config, String[] environ, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
 		IProject project = getProject(config);
-
 		TreeParent invisibleRoot = PerfPlugin.getDefault().clearModelRoot();
 
-		Version perfVersion = getPerfVersion(config);
+		Version perfVersion = getPerfVersion(config, environ, workingDir);
 		boolean OldPerfVersion = false;
 		if (new Version(0, 0, 2).compareTo(perfVersion) > 0) {
 			OldPerfVersion = true;
@@ -381,8 +417,10 @@ public class PerfCore {
 			logException(e);
 		}
 
+
 		PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
 				invisibleRoot, OldPerfVersion, input, error, project);
+
 	}
 
 	/**
@@ -527,6 +565,8 @@ public class PerfCore {
 							if (monitor != null && monitor.isCanceled()) {
 								return;
 							}
+
+
 							currentSym = (PMSymbol)s;
 							String[] annotateCmd;
 							if (workingDir == null) {
@@ -545,7 +585,8 @@ public class PerfCore {
 								logException(e);
 							}
 
-							PerfCore.parseAnnotation(monitor, input, workingDir, currentDso, currentSym);
+							PerfCore.parseAnnotation(monitor, input,
+									workingDir, currentDso, currentSym);
 						}
 
 						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {

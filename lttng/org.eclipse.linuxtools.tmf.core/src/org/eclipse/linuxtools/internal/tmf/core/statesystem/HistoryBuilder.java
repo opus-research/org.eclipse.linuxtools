@@ -17,7 +17,8 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -26,7 +27,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
@@ -41,10 +41,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
  *
  * @author alexmont
  *
- * @deprecated Building state systems should now be done via
- *             {@link TmfStateSystemAnalysisModule}
  */
-@Deprecated
 public class HistoryBuilder extends TmfComponent {
 
     private final ITmfStateProvider sp;
@@ -228,6 +225,10 @@ public class HistoryBuilder extends TmfComponent {
 }
 
 class StateSystemBuildRequest extends TmfEventRequest {
+
+    /** The amount of events queried at a time through the requests */
+    private static final int CHUNK_SIZE = 50000;
+
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
     private final ITmfTrace trace;
@@ -235,9 +236,9 @@ class StateSystemBuildRequest extends TmfEventRequest {
     StateSystemBuildRequest(HistoryBuilder builder) {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
-                0,
-                ITmfEventRequest.ALL_DATA,
-                ITmfEventRequest.ExecutionType.BACKGROUND);
+                TmfDataRequest.ALL_DATA,
+                CHUNK_SIZE,
+                ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
         this.trace = sci.getTrace();

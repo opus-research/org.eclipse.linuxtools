@@ -38,7 +38,7 @@ public class ReadTrace {
 
         // Work variables
         Long nbEvent = 0L;
-        Vector<Double> benchs = new Vector<>();
+        Vector<Double> benchs = new Vector<Double>();
         CTFTrace trace = null;
         long start, stop;
         for (int loops = 0; loops < LOOP_COUNT; loops++) {
@@ -52,38 +52,32 @@ public class ReadTrace {
             if (USE_TEXT) {
                 System.out.println("Event, " + " Time, " + " type, " + " CPU ");
             }
-            try {
-                if (trace != null) {
-                    CTFTraceReader traceReader = new CTFTraceReader(trace);
+            if (trace != null) {
+                CTFTraceReader traceReader = new CTFTraceReader(trace);
 
-                    start = System.nanoTime();
+                start = System.nanoTime();
 
-                    while (traceReader.hasMoreEvents()) {
-                        EventDefinition ed = traceReader.getCurrentEventDef();
-                        nbEvent++;
-                        if (USE_TEXT) {
-                            String output = formatDate(ed.getTimestamp()
-                                    + trace.getOffset());
-                            System.out.println(nbEvent + ", "
-                                    + output + ", " + ed.getDeclaration().getName()
-                                    + ", " + ed.getCPU() + ed.getFields().toString());
-                        }
-                        // long endTime = traceReader.getEndTime();
-                        // long timestamp =
-                        // traceReader.getCurrentEventDef().getTimestamp();
-                        traceReader.advance();
+                while (traceReader.hasMoreEvents()) {
+                    EventDefinition ed = traceReader.getCurrentEventDef();
+                    nbEvent++;
+                    if (USE_TEXT) {
+                        String output = formatDate(ed.getTimestamp()
+                                + trace.getOffset());
+                        System.out.println(nbEvent + ", "
+                                + output + ", " + ed.getDeclaration().getName()
+                                + ", " + ed.getCPU() + ed.getFields().toString()) ;
                     }
-                    // Map<Long, Stream> streams =
-                    // traceReader.getTrace().getStreams();
+                    // long endTime = traceReader.getEndTime();
+                    // long timestamp = traceReader.getCurrentEventDef().getTimestamp();
+                    traceReader.advance();
                 }
-                stop = System.nanoTime();
-
-                System.out.print('.');
-                double time = (stop - start) / (double) nbEvent;
-                benchs.add(time);
-            } catch (CTFReaderException e) {
-                System.out.println("error");
+                // Map<Long, Stream> streams = traceReader.getTrace().getStreams();
             }
+            stop = System.nanoTime();
+
+            System.out.print('.');
+            double time = (stop - start) / (double) nbEvent;
+            benchs.add(time);
         }
         System.out.println("");
         double avg = 0;

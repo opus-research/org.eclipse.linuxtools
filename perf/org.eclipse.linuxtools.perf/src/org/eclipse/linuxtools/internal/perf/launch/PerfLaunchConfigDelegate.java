@@ -62,7 +62,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 	public void launch(ILaunchConfiguration config, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		// check if Perf exists in $PATH
-		if (! PerfCore.checkPerfInPath(null)) {
+		if (! PerfCore.checkPerfInPath()) {
 			IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID,
 					Messages.PerfLaunchConfigDelegate_perf_not_found);
 			throw new CoreException(status);
@@ -88,9 +88,9 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			// Program args from launch config.
 			String arguments[] = getProgramArgumentsArray(config);
 
-			ArrayList<String> command = new ArrayList<>();
+			ArrayList<String> command = new ArrayList<String>();
 			// Get the base commandline string (with flags/options based on config)
-			Version perfVersion = PerfCore.getPerfVersion(config);
+			Version perfVersion = PerfCore.getPerfVersion(config, null, workingDir);
 			command.addAll(Arrays.asList(PerfCore.getRecordString(config, perfVersion)));
 			// Add the path to the executable
 			command.add(exePath.toOSString());
@@ -205,6 +205,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		Object[] titleArgs = new Object[]{exePath.toOSString(), args.toString(), String.valueOf(runCount)};
 		String title = renderProcessLabel(MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs));
 
+		@SuppressWarnings("unchecked")
 		List<String> configEvents = config.getAttribute(PerfPlugin.ATTR_SelectedEvents,
 				PerfPlugin.ATTR_SelectedEvents_default);
 
