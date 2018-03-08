@@ -56,12 +56,6 @@ public class Messages extends NLS {
 	public static String SystemTapScriptGraphOptionsTab_sampleOutputNoMatch;
 	public static String SystemTapScriptGraphOptionsTab_sampleOutputIsEmpty;
 
-	public static String SystemTapScriptGraphOptionsTab_generateFromPrintsButton;
-	public static String SystemTapScriptGraphOptionsTab_generateFromPrintsTitle;
-	public static String SystemTapScriptGraphOptionsTab_generateFromPrintsMessage;
-	public static String SystemTapScriptGraphOptionsTab_generateFromPrintsError;
-	public static String SystemTapScriptGraphOptionsTab_generateFromPrintsEmpty;
-
 	public static String SystemTapScriptLaunchConfigurationTab_0;
 	public static String SystemTapScriptLaunchConfigurationTab_1;
 	public static String SystemTapScriptLaunchConfigurationTab_2;
@@ -80,8 +74,6 @@ public class Messages extends NLS {
 	public static String SystemTapScriptLaunchConfigurationTab_runWithChart;
 	public static String SystemTapScriptLaunchShortcut_couldNotFindConfig;
 	public static String SystemTapScriptLaunchShortcut_couldNotLaunchScript;
-	public static String SystemTapScriptLaunchConfigurationTab_couldNotFindFile;
-	public static String SystemTapScriptLaunchConfigurationTab_fileNotStp;
 	public static String SystemTapScriptOptionsTab_0;
 	public static String SystemTapScriptOptionsTab_1;
 	public static String SystemTapScriptOptionsTab_2;
