@@ -1045,30 +1045,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * Return the x coordinate corresponding to a time
-     *
-     * @param time the time
-     * @return the x coordinate corresponding to the time
-     *
-     * @since 2.0
-     */
-    public int getXForTime(long time) {
-        return _stateCtrl.getXForTime(time);
-    }
-
-    /**
-     * Return the time corresponding to an x coordinate
-     *
-     * @param x the x coordinate
-     * @return the time corresponding to the x coordinate
-     *
-     * @since 2.0
-     */
-    public long getTimeAtX(int x) {
-        return _stateCtrl.getTimeAtX(x);
-    }
-
-    /**
      * Get the selection provider
      *
      * @return the selection provider
@@ -1387,7 +1363,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#addTimeGraphEntryMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 1.2
+     * @since 2.0
      */
     public void addTimeGraphEntryMenuListener(MenuDetectListener listener) {
         _stateCtrl.addTimeGraphEntryMenuListener(listener);
@@ -1396,7 +1372,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#removeTimeGraphEntryMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 1.2
+     * @since 2.0
      */
     public void removeTimeGraphEntryMenuListener(MenuDetectListener listener) {
         _stateCtrl.removeTimeGraphEntryMenuListener(listener);
@@ -1405,7 +1381,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#addTimeEventMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 1.2
+     * @since 2.0
      */
     public void addTimeEventMenuListener(MenuDetectListener listener) {
         _stateCtrl.addTimeEventMenuListener(listener);
@@ -1414,7 +1390,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#removeTimeEventMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 1.2
+     * @since 2.0
      */
     public void removeTimeEventMenuListener(MenuDetectListener listener) {
         _stateCtrl.removeTimeEventMenuListener(listener);

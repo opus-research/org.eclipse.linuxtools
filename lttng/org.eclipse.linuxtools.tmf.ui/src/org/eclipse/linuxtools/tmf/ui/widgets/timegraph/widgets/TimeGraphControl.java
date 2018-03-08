@@ -497,7 +497,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      * Add a menu listener on {@link ITimeGraphEntry}s
      * @param listener
      *            The listener to add
-     * @since 1.2
+     * @since 2.0
      */
     public void addTimeGraphEntryMenuListener(MenuDetectListener listener) {
         if (!_timeGraphEntryMenuListeners.contains(listener)) {
@@ -510,7 +510,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param listener
      *            The listener to remove
-     * @since 1.2
+     * @since 2.0
      */
     public void removeTimeGraphEntryMenuListener(MenuDetectListener listener) {
         if (_timeGraphEntryMenuListeners.contains(listener)) {
@@ -535,7 +535,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param listener
      *            The listener to add
-     * @since 1.2
+     * @since 2.0
      */
     public void addTimeEventMenuListener(MenuDetectListener listener) {
         if (!_timeEventMenuListeners.contains(listener)) {
@@ -548,7 +548,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *
      * @param listener
      *            The listener to remove
-     * @since 1.2
+     * @since 2.0
      */
     public void removeTimeEventMenuListener(MenuDetectListener listener) {
         if (_timeEventMenuListeners.contains(listener)) {
@@ -903,36 +903,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         return idx >= 0 ? _data._expandedItems[idx]._trace : null;
     }
 
-    /**
-     * Return the x coordinate corresponding to a time
-     *
-     * @param time the time
-     * @return the x coordinate corresponding to the time
-     *
-     * @since 2.0
-     */
-    public int getXForTime(long time) {
-        if (null == _timeProvider) {
-            return -1;
-        }
-        long time0 = _timeProvider.getTime0();
-        long time1 = _timeProvider.getTime1();
-        int width = getCtrlSize().x;
-        int nameSpace = _timeProvider.getNameSpace();
-        double pixelsPerNanoSec = (width - nameSpace <= RIGHT_MARGIN) ? 0 : (double) (width - nameSpace - RIGHT_MARGIN) / (time1 - time0);
-        int x = getBounds().x + nameSpace + (int) ((time - time0) * pixelsPerNanoSec);
-        return x;
-    }
-
-    /**
-     * Return the time corresponding to an x coordinate
-     *
-     * @param x the x coordinate
-     * @return the time corresponding to the x coordinate
-     *
-     * @since 2.0
-     */
-    public long getTimeAtX(int x) {
+    long getTimeAtX(int x) {
         if (null == _timeProvider) {
             return -1;
         }
@@ -2075,7 +2046,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * @since 1.2
+     * @since 2.0
      */
     @Override
     public void menuDetected(MenuDetectEvent e) {
