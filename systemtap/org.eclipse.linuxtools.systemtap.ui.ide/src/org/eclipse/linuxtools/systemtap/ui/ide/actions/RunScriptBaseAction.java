@@ -119,6 +119,15 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	
 	protected abstract boolean isValid();
 
+	/**
+	 * Checks whether the directory to which the given file
+	 * belongs is a valid directory. Currently this function just
+	 * checks if the given file does not belong to the tapset 
+	 * directory.
+	 * @param fileName
+	 * @return true if the given path is valid false otherwise.
+	 * @since 1.2
+	 */
 	protected boolean isValidDirectory(String fileName) {
 		this.fileName = fileName;
 		if(0 == IDESessionSettings.tapsetLocation.trim().length())
