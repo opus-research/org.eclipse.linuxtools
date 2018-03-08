@@ -46,11 +46,6 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
-    public TargetNodeComponent getTargetNodeComponent() {
-        return fTargetNodeComponent;
-    }
-
     public void setIsKernel(boolean isKernel) {
         fIsKernel = isKernel;
     }
