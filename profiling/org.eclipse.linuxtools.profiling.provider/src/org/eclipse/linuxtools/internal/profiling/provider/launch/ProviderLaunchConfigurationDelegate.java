@@ -8,15 +8,17 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.profiling.launch.provider.launch;
+package org.eclipse.linuxtools.internal.profiling.provider.launch;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.ProviderProfileConstants;
+import org.eclipse.linuxtools.internal.profiling.provider.ProviderProfileConstants;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public class ProviderLaunchConfigurationDelegate extends
 		ProfileLaunchConfigurationDelegate {
@@ -32,7 +34,7 @@ public class ProviderLaunchConfigurationDelegate extends
 						ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
 
 				// get delegate associated with provider id.
-				ProfileLaunchConfigurationDelegate delegate = ProviderFramework.getConfigurationDelegateFromId(providerId);
+				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
 
 				// launch delegate
 				if (delegate != null) {
@@ -58,13 +60,17 @@ public class ProviderLaunchConfigurationDelegate extends
 	 */
 	public static String getProviderIdToRun(String type) {
 		// Look in the preferences for a provider
-		String providerId = ConfigurationScope.INSTANCE.getNode(
-				ProviderProfileConstants.PLUGIN_ID).get(
-				ProviderProfileConstants.PREFS_KEY + type, "");
-		if (providerId.equals("") || ProviderFramework.getConfigurationDelegateFromId(providerId) == null) {
+		String providerId = ConfigurationScope.INSTANCE.getNode(type).get(
+				ProviderProfileConstants.PREFS_KEY, "");
+		if (providerId.equals("") || getConfigurationDelegateFromId(providerId) == null) {
 			// Get highest priority provider
-			providerId = ProviderFramework
+			providerId = ProfileLaunchConfigurationTabGroup
 					.getHighestProviderId(type);
+			if (providerId == null) {
+				// Get default provider
+				providerId = ProfileLaunchShortcut
+						.getDefaultLaunchShortcutProviderId(type);
+			}
 		}
 		return providerId;
 	}
