@@ -20,11 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfMutableEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -33,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  *
  * @author Patrick Tassé
  */
-public class CustomEvent extends TmfMutableEvent {
+public class CustomEvent extends TmfEvent {
 
     /** Default timestamp scale for text-parser events */
     public static final byte TIMESTAMP_SCALE = -3;
@@ -71,7 +70,7 @@ public class CustomEvent extends TmfMutableEvent {
      * @param other
      *            The TmfEvent to copy
      */
-    public CustomEvent(CustomTraceDefinition definition, ITmfEvent other) {
+    public CustomEvent(CustomTraceDefinition definition, TmfEvent other) {
         super(other);
         fDefinition = definition;
         fData = new HashMap<String, String>();

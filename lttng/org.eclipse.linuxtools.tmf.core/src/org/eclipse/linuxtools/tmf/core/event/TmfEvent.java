@@ -9,25 +9,21 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Event Model 1.0
- *   Alexandre Montplaisir - Renamed from the old TmfEvent
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
  * A basic implementation of ITmfEvent.
- *
- * As its name implies, TmfMutableEvent is mutable, so should be used for event
- * types where the object instantiation and the population of the fields have to
- * be done in separate steps.
- *
- * Still, the separate setters should only be used for the "preparation" of the
- * event, and should not be called afterwards. Randomly re-assigning fields
- * after the event has been sent to the framework is asking for trouble!
+ * <p>
+ * Note that for performance reasons TmfEvent is NOT immutable. If a shallow
+ * copy of the event is needed, use the copy constructor. Otherwise (deep copy)
+ * use clone().
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -36,9 +32,8 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @see ITmfEventType
  * @see ITmfEventField
  * @see ITmfTrace
- * @since 2.0
- */
-public abstract class TmfMutableEvent implements ITmfEvent {
+*/
+public class TmfEvent implements ITmfEvent, IAdaptable, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -60,7 +55,7 @@ public abstract class TmfMutableEvent implements ITmfEvent {
      * Default constructor. All fields have their default value (null) and the
      * event rank is set to TmfContext.UNKNOWN_RANK.
      */
-    public TmfMutableEvent() {
+    public TmfEvent() {
         this(null, ITmfContext.UNKNOWN_RANK, null, null, null, null, null);
     }
 
@@ -75,7 +70,7 @@ public abstract class TmfMutableEvent implements ITmfEvent {
      * @param reference the event reference
 
      */
-    public TmfMutableEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
+    public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
     {
         this(trace, ITmfContext.UNKNOWN_RANK, timestamp, source, type, content, reference);
@@ -92,7 +87,7 @@ public abstract class TmfMutableEvent implements ITmfEvent {
      * @param content the event content (payload)
      * @param reference the event reference
      */
-    public TmfMutableEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
+    public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
     {
         fTrace = trace;
@@ -109,14 +104,10 @@ public abstract class TmfMutableEvent implements ITmfEvent {
      *
      * @param event the original event
      */
-    public TmfMutableEvent(final ITmfEvent event) {
+    public TmfEvent(final ITmfEvent event) {
         if (event == null) {
             throw new IllegalArgumentException();
         }
-        /*
-         * The fields are shallow-copied, but fTrace is a singleton, and all the
-         * others are immutable, so it's safe to do so.
-         */
         fTrace = event.getTrace();
         fRank = event.getRank();
         fTimestamp = event.getTimestamp();
@@ -130,36 +121,57 @@ public abstract class TmfMutableEvent implements ITmfEvent {
     // ITmfEvent
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getTrace()
+     */
     @Override
     public ITmfTrace getTrace() {
         return fTrace;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getRank()
+     */
     @Override
     public long getRank() {
         return fRank;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getTimestamp()
+     */
     @Override
     public ITmfTimestamp getTimestamp() {
         return fTimestamp;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getSource()
+     */
     @Override
     public String getSource() {
         return fSource;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getType()
+     */
     @Override
     public ITmfEventType getType() {
         return fType;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getContent()
+     */
     @Override
     public ITmfEventField getContent() {
         return fContent;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEvent#getReference()
+     */
     @Override
     public String getReference() {
         return fReference;
@@ -219,9 +231,36 @@ public abstract class TmfMutableEvent implements ITmfEvent {
     }
 
     // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfEvent clone() {
+        TmfEvent clone = null;
+        try {
+            clone = (TmfEvent) super.clone();
+            clone.fTrace = fTrace;
+            clone.fRank = fRank;
+            clone.fTimestamp = fTimestamp;
+            clone.fSource = fSource;
+            clone.fType = fType != null ? fType.clone() : null;
+            clone.fContent = fContent;
+            clone.fReference = fReference;
+        } catch (final CloneNotSupportedException e) {
+        }
+        return clone;
+    }
+
+    // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -236,6 +275,9 @@ public abstract class TmfMutableEvent implements ITmfEvent {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -244,10 +286,10 @@ public abstract class TmfMutableEvent implements ITmfEvent {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof TmfMutableEvent)) {
+        if (!(obj instanceof TmfEvent)) {
             return false;
         }
-        final TmfMutableEvent other = (TmfMutableEvent) obj;
+        final TmfEvent other = (TmfEvent) obj;
         if (fTrace == null) {
             if (other.fTrace != null) {
                 return false;
@@ -296,18 +338,20 @@ public abstract class TmfMutableEvent implements ITmfEvent {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        return "TmfMutableEvent [fTimestamp=" + fTimestamp + ", fTrace=" + fTrace + ", fRank=" + fRank
+        return "TmfEvent [fTimestamp=" + fTimestamp + ", fTrace=" + fTrace + ", fRank=" + fRank
                 + ", fSource=" + fSource + ", fType=" + fType + ", fContent=" + fContent
                 + ", fReference=" + fReference + "]";
     }
 
-    // ------------------------------------------------------------------------
-    // IAdaptable
-    // ------------------------------------------------------------------------
-
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+     */
     /**
      * @since 2.0
      */
