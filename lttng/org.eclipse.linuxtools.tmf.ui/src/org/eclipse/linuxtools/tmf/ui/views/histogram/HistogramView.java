@@ -13,7 +13,6 @@
  *   Yuriy Vashchuk - Histogram Canvas Heritage correction
  *   Francois Chouinard - Cleanup and refactoring
  *   Francois Chouinard - Moved from LTTng to TMF
- *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -36,7 +35,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -246,11 +244,6 @@ public class HistogramView extends TmfView {
 
         // Histogram
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
-
-        // Add mouse wheel listener to text controls
-        MouseWheelListener listener = fFullTraceHistogram.getZoom();
-        fCurrentEventTimeControl.addMouseWheelListener(listener);
-        fTimeSpanControl.addMouseWheelListener(listener);
 
         ITmfTrace trace = getActiveTrace();
         if (trace != null) {
