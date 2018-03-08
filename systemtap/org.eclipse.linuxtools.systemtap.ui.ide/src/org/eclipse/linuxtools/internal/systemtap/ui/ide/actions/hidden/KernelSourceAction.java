@@ -13,8 +13,6 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
@@ -31,6 +29,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
 /**
@@ -44,10 +43,10 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
  * @see org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.TreeExpandCollapseAction
  * @see org.eclipse.linuxtools.internal.systemtap.ui.ide.views.KernelBrowserView
  */
-public class KernelSourceAction extends Action implements ISelectionListener, IDoubleClickListener {
-	private static final String CDT_EDITOR_ID = "org.eclipse.cdt.ui.editor.CEditor"; //$NON-NLS-1$
+public class KernelSourceAction extends Action implements ISelectionListener, IWorkbenchAction {
+	private static final String CDT_EDITOR_ID = "org.eclipse.cdt.ui.editor.CEditor";
 	private final IWorkbenchWindow window;
-	public final static String ID = "org.eclipse.linuxtools.systemtap.ui.ide.KBAction"; //$NON-NLS-1$
+	public final static String ID = "org.eclipse.linuxtools.systemtap.ui.ide.KBAction";
 	private KernelBrowserView viewer;
 	private IStructuredSelection selection;
 	private TreeExpandCollapseAction expandAction;
@@ -64,9 +63,8 @@ public class KernelSourceAction extends Action implements ISelectionListener, ID
 		this.window = window;
 		setId(ID);
 		setActionDefinitionId(ID);
-		setText(Localization.getString("KernelSourceAction.Insert")); //$NON-NLS-1$
-		setToolTipText(Localization
-				.getString("KernelSourceAction.InsertSelectedFunction")); //$NON-NLS-1$
+		setText(Localization.getString("KernelSourceAction.Insert"));
+		setToolTipText(Localization.getString("KernelSourceAction.InsertSelectedFunction"));
 		window.getSelectionService().addSelectionListener(this);
 		viewer = browser;
 		expandAction = new TreeExpandCollapseAction(KernelBrowserView.class);
@@ -151,9 +149,5 @@ public class KernelSourceAction extends Action implements ISelectionListener, ID
 			}
 		}
 		LogManager.logDebug("End run", this); //$NON-NLS-1$
-	}
-
-	public void doubleClick(DoubleClickEvent event) {
-		run();
 	}
 }
