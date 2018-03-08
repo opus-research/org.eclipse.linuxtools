@@ -30,6 +30,10 @@ public final class Messages extends NLS {
 	public static String PrepareSources_prepareSources;
 	public static String PrepareSources_consoleName;
 
+	// SpecfileEditorCreatePatchesActionDelegate
+	public static String CreatePatches_error;
+	public static String CreatePatches_errorOnFileCreation;
+
 	// RPMHandlerUtils
 	public static String RPMHandlerUtils_cannotCreateRPMProject;
 
