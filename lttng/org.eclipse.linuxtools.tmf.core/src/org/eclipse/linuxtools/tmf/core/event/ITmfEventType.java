@@ -47,26 +47,26 @@ public interface ITmfEventType {
     /**
      * @return the event type context
      */
-    String getContext();
+    public String getContext();
 
     /**
      * @return the event type ID
      */
-    String getName();
+    public String getName();
 
     /**
      * @return the event type root field
      */
-    ITmfEventField getRootField();
+    public ITmfEventField getRootField();
 
     /**
      * @return the event field names (labels)
      */
-    String[] getFieldNames();
+    public String[] getFieldNames();
 
     /**
      * @param index the event field index
      * @return the corresponding event field label
      */
-    String getFieldName(int index);
+    public String getFieldName(int index);
 }
