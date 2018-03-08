@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp;
 
 import static org.junit.Assert.assertNotNull;
@@ -171,6 +182,8 @@ public class STPCompletionProcessorTest {
 		offset += prefix.length();
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+		completionProcessor.waitForInitialization();
+
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
