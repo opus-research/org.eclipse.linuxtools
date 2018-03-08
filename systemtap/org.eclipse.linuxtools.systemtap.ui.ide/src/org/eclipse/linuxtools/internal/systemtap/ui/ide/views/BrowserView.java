@@ -23,8 +23,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.handlers.CollapseAllHandler;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
@@ -41,7 +39,6 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class BrowserView extends ViewPart {
 	protected TreeViewer viewer;
-
 	private CollapseAllHandler collapseHandler;
 
 	public BrowserView() {
@@ -154,9 +151,7 @@ public abstract class BrowserView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		parent.getShell().setCursor(parent.getShell().getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-		PatternFilter filter = new PatternFilter();
-		FilteredTree filteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
-		viewer = filteredTree.getViewer();
+		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
