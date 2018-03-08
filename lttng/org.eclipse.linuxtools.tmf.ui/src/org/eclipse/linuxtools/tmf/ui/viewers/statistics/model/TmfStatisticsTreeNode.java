@@ -26,8 +26,8 @@ import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
  * the path from the root to this node.
  *
  * @version 2.0
- * @author Mathieu Denis
  * @since 2.0
+ * @author Mathieu Denis
  */
 public class TmfStatisticsTreeNode {
 
