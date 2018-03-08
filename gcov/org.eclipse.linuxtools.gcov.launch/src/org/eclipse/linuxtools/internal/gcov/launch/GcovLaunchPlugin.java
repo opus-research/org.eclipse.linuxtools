@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.launch;
 
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 
 /**
  * The main plugin class to be used in the desktop.
  */
-public class GcovLaunchPlugin {
+public class GcovLaunchPlugin extends AbstractUIPlugin {
 	//shared cache instance for configuration
 
 	public static final String PLUGIN_ID = "org.eclipse.linuxtools.gcov.launch"; //$NON-NLS-1$

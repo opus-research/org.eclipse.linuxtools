@@ -97,8 +97,7 @@ public class OpenTraceHandler extends AbstractHandler {
         }
 
         // If trace is under an experiment, use the original trace from the traces folder
-        TmfOpenTraceHelper.openTraceFromElement(fTrace.getElementUnderTraceFolder());
-        return null;
+        return TmfOpenTraceHelper.openTraceFromElement(fTrace.getElementUnderTraceFolder());
     }
 
 }

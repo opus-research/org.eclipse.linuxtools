@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.valgrind.launch;
 
 import java.io.File;
@@ -58,7 +58,6 @@ public class ValgrindExportWizardPage extends WizardPage {
 	}
 
 
-	@Override
 	public void createControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
 		top.setLayout(new GridLayout());
@@ -78,7 +77,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 			} catch (CoreException e) {
 				setErrorMessage(e.getLocalizedMessage());
 				e.printStackTrace();
-			}
+			}			
 		}
 
 		Label selectFilesLabel = new Label(top, SWT.NONE);
@@ -128,10 +127,9 @@ public class ValgrindExportWizardPage extends WizardPage {
 		if (logPath != null) {
 			// List all output files in our output directory from the recent launch
 			File logs[] = logPath.toFile().listFiles(new FileFilter() {
-				@Override
 				public boolean accept(File pathname) {
 					return pathname.isFile();
-				}
+				}				
 			});
 			viewer.setInput(logs);
 			viewer.setAllChecked(true);
@@ -139,7 +137,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 
 		// catch any errors so far
 		setPageComplete(isValid());
-
+		
 		setControl(top);
 	}
 
@@ -163,7 +161,6 @@ public class ValgrindExportWizardPage extends WizardPage {
 		destText = new Text(destGroup, SWT.BORDER);
 		destText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		destText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				setPageComplete(isValid());
 			}
@@ -180,7 +177,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 				dialog.setText(Messages.getString("ValgrindLaunchConfigurationDelegate.Select_Destination")); //$NON-NLS-1$
 				String strpath = dialog.open();
 				if (strpath != null) {
-					destText.setText(strpath);
+					destText.setText(strpath);					
 				}
 			}
 		});
@@ -189,7 +186,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 	protected boolean isValid() {
 		boolean valid = false;
 		int length = -1;
-
+		
 		setErrorMessage(null);
 		setMessage(null);
 
@@ -217,7 +214,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 				valid = true;
 			}
 		}
-
+		
 		return valid;
 	}
 

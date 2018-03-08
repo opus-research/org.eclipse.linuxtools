@@ -45,7 +45,7 @@ public class ReportComparisonView extends ViewPart {
 	private static final Color ORANGE = new Color(Display.getDefault(), 150, 100, 0);
 
 	// Regex for a generic entry in a perf comparison report.
-	private static final String DIFF_ENTRY = "\\s+(\\d+(\\.\\d+)?)\\%\\s+([\\+\\-]?\\d+(\\.\\d+)?)\\%.*"; //$NON-NLS-1$
+	private static final String DIFF_ENTRY = "\\s+(\\d+(\\.\\d+)?)\\%\\s+([\\+\\-]?\\d+(\\.\\d+)?)\\%.*";
 
 	// Secondary view id.
 	private static int SECONDARY_ID = 0;
@@ -81,7 +81,7 @@ public class ReportComparisonView extends ViewPart {
 
 		List<StyleRange> styles = new ArrayList<StyleRange>();
 		int ptr = 0;
-		String[] lines = input.split("\n"); //$NON-NLS-1$
+		String[] lines = input.split("\n");
 
 		for(String line : lines){
 			if (Pattern.matches(DIFF_ENTRY, line)) {
