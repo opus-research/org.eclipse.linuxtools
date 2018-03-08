@@ -4,7 +4,9 @@
       <provider
             default="true"
             delegate="org.eclipse.linuxtools.internal.gprof.launch.GprofLaunchConfigurationDelegate"
+            description="%gprofLaunchConfiguration.description"
             id="org.eclipse.linuxtools.profiling.provider.timing.gprof"
+            information="%gprofLaunchConfiguration.information"
             name="%gprofLaunchConfiguration.name.0"
             priority="1"
             shortcut="org.eclipse.linuxtools.internal.gprof.launch.GprofLaunchShortcut"
