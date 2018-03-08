@@ -15,7 +15,6 @@ tokens {
 	TRACE;
 	ENV;
 	CLOCK;
-	CALLSITE;
 	
 	DECLARATION;
 	SV_DECLARATION;
@@ -939,7 +938,6 @@ ctfSpecifierHead
 	| TRACETOK -> TRACE
 	| ENVTOK -> ENV
 	| CLOCKTOK -> CLOCK
-	| CALLSITETOK -> CALLSITE
   ;
 
 ctfTypeSpecifier
