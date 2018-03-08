@@ -84,19 +84,19 @@ public class ImportTraceWizardSelectDirectoriesPage extends AbstractImportTraceW
         buttonArea.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
 
         Button addFile = new Button(buttonArea, SWT.PUSH);
-        addFile.setText(Messages.ImportTraceWizardAddFile);
+        addFile.setText(Messages.ImportTraceWizard_addFile);
         addFile.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
         addFile.addSelectionListener(new AddFileHandler());
         addFile.setAlignment(SWT.CENTER);
 
         Button addDirectory = new Button(buttonArea, SWT.PUSH);
-        addDirectory.setText(Messages.ImportTraceWizardAddDirectory);
+        addDirectory.setText(Messages.ImportTraceWizard_addDirectory);
         addDirectory.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
         addDirectory.addSelectionListener(new AddDirectoryHandler());
         addDirectory.setAlignment(SWT.CENTER);
 
         Button removeFile = new Button(buttonArea, SWT.PUSH);
-        removeFile.setText(Messages.ImportTraceWizardRemove);
+        removeFile.setText(Messages.ImportTraceWizard_remove);
         removeFile.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
         removeFile.addSelectionListener(new RemoveFileHandler(selectedFiles));
         removeFile.setAlignment(SWT.CENTER);
@@ -107,7 +107,7 @@ public class ImportTraceWizardSelectDirectoriesPage extends AbstractImportTraceW
 //        addDirectory.setSize(maxSize, maxHeight);
 //        removeFile.setSize(maxSize, maxHeight);
 
-        this.setTitle(Messages.ImportTraceWizardDirectoryCaption);
+        this.setTitle(Messages.ImportTraceWizardDirectory_title);
     }
 
     private void updateButtons() {
@@ -133,7 +133,7 @@ public class ImportTraceWizardSelectDirectoriesPage extends AbstractImportTraceW
         if (canLoad) {
             setErrorMessage(null);
         } else {
-            setErrorMessage(Messages.ImportTraceWizardDirectoryHint);
+            setErrorMessage(Messages.ImportTraceWizardDirectory_hint);
         }
         return canLoad;
     }

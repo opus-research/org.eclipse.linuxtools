@@ -111,6 +111,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         final Composite control = (Composite) this.getControl();
+        setTitle(Messages.ImportTraceWizardScanPage_title);
         traceTypeViewer = new CheckboxTreeViewer(control, SWT.CHECK);
         traceTypeViewer.setContentProvider(getBatchWizard().getScannedTraces());
         traceTypeViewer.getTree().setHeaderVisible(true);
@@ -131,7 +132,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         // --------------------
         TreeViewerColumn column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
         column.getColumn().setWidth(200);
-        column.getColumn().setText(Messages.ImportTraceWizardTraceDisplayName);
+        column.getColumn().setText(Messages.ImportTraceWizard_traceDisplayName);
         column.setLabelProvider(new FirstColumnLabelProvider());
         column.setEditingSupport(new ColumnEditorSupport(traceTypeViewer, textCellEditor));
 
@@ -141,7 +142,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
         column.getColumn().setWidth(200);
-        column.getColumn().setText(Messages.ImportTraceWizardImportCaption);
+        column.getColumn().setText(Messages.ImportTraceWizard_importCaption);
         column.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -156,7 +157,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         init();
         getBatchWizard().setTracesToScan(fTracesToScan);
         fRunnable.schedule();
-        setErrorMessage(Messages.ImportTraceWizardScanPage_SelectAtleastOne);
+        setErrorMessage(Messages.ImportTraceWizardScanPage_selectAtleastOne);
     }
 
     private void init() {
@@ -166,12 +167,12 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         optionPane.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
 
         final Button fLink = new Button(optionPane, SWT.RADIO);
-        fLink.setText(Messages.ImportTraceWizardLinkTraces);
+        fLink.setText(Messages.ImportTraceWizard_linkTraces);
         fLink.setSelection(true);
         fLink.setLayoutData(new GridData());
 
         final Button fCopy = new Button(optionPane, SWT.RADIO);
-        fCopy.setText(Messages.ImportTraceWizardCopyTraces);
+        fCopy.setText(Messages.ImportTraceWizard_copyTraces);
         fCopy.setLayoutData(new GridData());
 
         final SelectionListener linkedListener = new RadioChooser(fLink);
@@ -180,7 +181,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         fCopy.addSelectionListener(linkedListener);
 
         Button fOverwrite = new Button(optionPane, SWT.CHECK);
-        fOverwrite.setText(Messages.ImportTraceWizardOverwriteTraces);
+        fOverwrite.setText(Messages.ImportTraceWizard_overwriteTraces);
         fOverwrite.setLayoutData(new GridData());
         fOverwrite.setSelection(true);
         fOverwrite.addSelectionListener(new SelectionListener() {
@@ -327,7 +328,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
             if (getBatchWizard().hasConflicts()) {
                 setErrorMessage(Messages.ImportTraceWizardScanPage_renameError);
             } else if (!getBatchWizard().hasTracesToImport()) {
-                setErrorMessage(Messages.ImportTraceWizardScanPage_SelectAtleastOne);
+                setErrorMessage(Messages.ImportTraceWizardScanPage_selectAtleastOne);
             } else {
                 setErrorMessage(null);
             }
