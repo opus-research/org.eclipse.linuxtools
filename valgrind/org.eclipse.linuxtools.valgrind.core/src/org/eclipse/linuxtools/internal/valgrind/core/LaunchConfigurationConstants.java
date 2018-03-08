@@ -38,7 +38,13 @@ public final class LaunchConfigurationConstants {
 	
 	// 3.6.0 specific
 	public static final String ATTR_GENERAL_DSYMUTIL = PLUGIN_ID + ".GENERAL_DSYMUTIL"; //$NON-NLS-1$
-	
+
+	// 3.8.0 specific
+	public static final String ATTR_GENERAL_CUSTOM_MALLOC_BOOL = PLUGIN_ID + ".CUSTOM_MALLOC_BOOL"; //$NON-NLS-1$
+	public static final String ATTR_GENERAL_CUSTOM_MALLOC = PLUGIN_ID + ".CUSTOM_MALLOC"; //$NON-NLS-1$
+	public static final String ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL = PLUGIN_ID + ".CUSTOM_MALLOC_DYNAMIC_BOOL"; //$NON-NLS-1$
+
+
 	public static final String DEFAULT_TOOL = PluginConstants.TOOL_EXT_DEFAULT;
 	
 	public static final boolean DEFAULT_GENERAL_TRACECHILD = false;
@@ -50,6 +56,7 @@ public final class LaunchConfigurationConstants {
 	public static final boolean DEFAULT_GENERAL_BELOWMAIN = false;
 	public static final int DEFAULT_GENERAL_MAXFRAME = 2000000;
 	public static final List<?> DEFAULT_GENERAL_SUPPFILES = Collections.EMPTY_LIST;
+	public static final String DEFAULT_GENERAL_CUSTOM_MALLOC = ""; //$NON-NLS-1$
 	
 	// 3.4.0 specific
 	public static final boolean DEFAULT_GENERAL_MAINSTACK_BOOL = false;
@@ -57,4 +64,8 @@ public final class LaunchConfigurationConstants {
 	
 	// 3.6.0 specific 
 	public static final boolean DEFAULT_GENERAL_DSYMUTIL = true; // necessary for OS X, Bug #333640
+
+	// 3.8.0 specific
+	public static final boolean DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL = false;
+	public static final boolean DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL = true;
 }
