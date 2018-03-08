@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * Common constants used in createrepo.
@@ -31,11 +28,6 @@ public interface ICreaterepoConstants {
 	String REPO_FILE_EXTENSION = "repo"; //$NON-NLS-1$
 
 	/**
-	 * The delimiter of preferences.
-	 */
-	String DELIMITER = ";"; //$NON-NLS-1$
-
-	/**
 	 * The file extension of RPM files.
 	 */
 	String RPM_FILE_EXTENSION = "rpm"; 	//$NON-NLS-1$
@@ -44,10 +36,5 @@ public interface ICreaterepoConstants {
 	 * An empty string.
 	 */
 	String EMPTY_STRING = ""; //$NON-NLS-1$
-
-	/**
-	 * An empty list.
-	 */
-	List<String> EMPTY_LIST = new ArrayList<String>();
 
 }
