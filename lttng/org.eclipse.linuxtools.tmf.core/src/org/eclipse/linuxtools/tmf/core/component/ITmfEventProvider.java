@@ -17,8 +17,8 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
- * This is the interface of the data providers in TMF. Data providers have the
- * capability of handling data requests.
+ * This is the interface of the event providers in TMF. Event providers have the
+ * capability of handling event requests.
  *
  * @author Francois Chouinard
  * @version 2.0
@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * @see TmfDataProvider
  * @see TmfEventProvider
  */
-public interface ITmfDataProvider extends ITmfComponent {
+public interface ITmfEventProvider extends ITmfComponent {
 
     /**
      * Queue the request for processing.
