@@ -19,14 +19,13 @@ import org.eclipse.ui.PlatformUI;
 
 
 /**
- * This class is a descendant of <code>RunScriptAction</code> that allows for additional arguments, specified
+ * This class is a decendent of <code>RunScriptAction</code> that allows for additional arguments, specified
  * by the user, to be passed to stap. Its behavior is very similar to the <code>RunScriptAction</code> action.
  * @author Ryan Morse
- * @see org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler
- * @since 2.0
+ * @see org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction
  */
-public class RunScriptOptionsHandler extends RunScriptHandler {
-	public RunScriptOptionsHandler() {
+public class RunScriptOptionsAction extends RunScriptAction {
+	public RunScriptOptionsAction() {
 		super();
 	}
 
@@ -36,7 +35,7 @@ public class RunScriptOptionsHandler extends RunScriptHandler {
 	 * calls the <code>getCommandLineOptions</code> method, which will contain all the information that the
 	 * tapset method contained, as well as whatever optional arguments the user specifies.
 	 * @return Command line arguments suitable to pass to <code>Runtime.exec</code> in order to run the script as requested
-	 * @see RunScriptHandler#buildStandardScript()
+	 * @see RunScriptAction#buildStandardScript()
 	 */
 	protected String[] buildOptionsScript() {
 		ArrayList<String> cmdList = new ArrayList<String>();
