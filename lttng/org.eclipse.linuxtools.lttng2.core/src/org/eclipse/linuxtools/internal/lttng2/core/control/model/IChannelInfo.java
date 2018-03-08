@@ -50,21 +50,9 @@ public interface IChannelInfo extends ITraceInfo {
      */
     public final static long DEFAULT_SWITCH_TIMER = 0;
     /**
-     * Default value for number of the switch timer for periodical metadata flush.
-     */
-    public final static long DEFAULT_SWITCH_TIMER_METADATA = 0;
-    /**
      * Default value for number of the read timer interval.
      */
     public final static long DEFAULT_READ_TIMER = 200;
-    /**
-     * Default value for maximum size of trace files
-     */
-    public final static int DEFAULT_MAXIMUM_SIZE_TRACE_FILES = 0;
-    /**
-     * Default value for maximum number of trace files
-     */
-    public final static int DEFAULT_MAXIMUM_NUMBER_TRACE_FILES = 0;
 
     /**
      * @return the overwrite mode value.
@@ -155,31 +143,4 @@ public interface IChannelInfo extends ITraceInfo {
      * @param event - event information to add.
      */
     void addEvent(IEventInfo event);
-    /**
-     * Sets the maximum size of trace files
-     * @param maxSizeTraceFiles - maximum size
-     */
-    void setMaxSizeTraceFiles(int maxSizeTraceFiles);
-    /**
-     * Sets the maximum number of trace files
-     * @param maxNumberTraceFiles - maximum number
-     */
-    void setMaxNumberTraceFiles(int maxNumberTraceFiles);
-    /**
-     * @return maximum size of trace files
-     */
-    int getMaxSizeTraceFiles();
-    /**
-     * @return maximum number of trace files
-     */
-    int getMaxNumberTraceFiles();
-    /**
-     * Sets per UID buffers
-     * @param buffersUID - enable or not
-     */
-    void setBuffersUID(boolean buffersUID);
-    /**
-     * @return the value of buffersUID (enable or not)
-     */
-    boolean isBuffersUID();
 }

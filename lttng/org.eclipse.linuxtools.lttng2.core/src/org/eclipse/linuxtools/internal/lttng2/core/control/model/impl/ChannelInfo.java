@@ -64,18 +64,6 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
      * The events information of the channel.
      */
     private final List<IEventInfo> fEvents = new ArrayList<IEventInfo>();
-    /**
-     * The maximum size of trace files
-     */
-    private int fMaxSizeTraceFiles;
-    /**
-     * The maximum number of trace files
-     */
-    private int fMaxNumberTraceFiles;
-    /**
-     * The value of the checkbox per UID buffers
-     */
-    private boolean fBuffersUID;
 
 
     // ------------------------------------------------------------------------
@@ -100,9 +88,6 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         fNumberOfSubBuffers = other.fNumberOfSubBuffers;
         fSwitchTimer = other.fSwitchTimer;
         fReadTimer = other.fReadTimer;
-        fMaxSizeTraceFiles = other.fMaxSizeTraceFiles;
-        fMaxNumberTraceFiles = other.fMaxNumberTraceFiles;
-        fBuffersUID = other.fBuffersUID;
         fOutputType = (other.fOutputType == null ? null : String.valueOf(other.fOutputType));
         fState = other.fState;
         for (Iterator<IEventInfo> iterator = other.fEvents.iterator(); iterator.hasNext();) {
@@ -307,35 +292,5 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
             }
             output.append(")]");
             return output.toString();
-    }
-
-    @Override
-    public void setMaxSizeTraceFiles(int maxSizeTraceFiles) {
-        fMaxSizeTraceFiles = maxSizeTraceFiles;
-    }
-
-    @Override
-    public void setMaxNumberTraceFiles(int maxNumberTraceFiles) {
-        fMaxNumberTraceFiles = maxNumberTraceFiles;
-    }
-
-    @Override
-    public int getMaxSizeTraceFiles() {
-        return fMaxSizeTraceFiles;
-    }
-
-    @Override
-    public int getMaxNumberTraceFiles() {
-        return fMaxNumberTraceFiles;
-    }
-
-    @Override
-    public void setBuffersUID(boolean buffersUID) {
-        fBuffersUID = buffersUID;
-    }
-
-    @Override
-    public boolean isBuffersUID() {
-        return fBuffersUID;
     }
 }
