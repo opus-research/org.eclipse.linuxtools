@@ -127,7 +127,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
      * Method used by the attribute tree when creating new attributes, to keep
      * the attribute count in the transient state in sync.
      */
-    protected void addEmptyAttribute() {
+    void addEmptyAttribute() {
         transState.addEmptyEntry();
     }
 
@@ -286,7 +286,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
             } else {
                 startingAttribute = getQuarkAbsolute(prefixStr);
             }
-            directChildren = getSubAttributes(startingAttribute, false);
+            directChildren = attributeTree.getSubAttributes(startingAttribute,
+                    false);
         } catch (AttributeNotFoundException e) {
             /* That attribute path did not exist, return the empty array */
             return quarks;
@@ -434,7 +435,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * "Nullify our children first, recursively. We pass 'false' because we
          * handle the recursion ourselves.
          */
-        childAttributes = getSubAttributes(attributeQuark, false);
+        childAttributes = attributeTree.getSubAttributes(attributeQuark, false);
         for (Integer childNodeQuark : childAttributes) {
             assert (attributeQuark != childNodeQuark);
             removeAttribute(t, childNodeQuark);
@@ -497,10 +498,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateSystemDisposedException();
         }
 
-        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(getNbAttributes());
+        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
+                attributeTree.getNbAttributes());
 
         /* Bring the size of the array to the current number of attributes */
-        for (int i = 0; i < getNbAttributes(); i++) {
+        for (int i = 0; i < attributeTree.getNbAttributes(); i++) {
             stateInfo.add(null);
         }
 
