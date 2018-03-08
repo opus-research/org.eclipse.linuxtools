@@ -68,17 +68,28 @@ public class UiModelRoot implements IUiModelElement {
 		return null;
 	}
 
+	/**
+	 * Returns this element children
+	 * @return An array of IUiModelElements
+	 */
 	public IUiModelElement[] getChildren() {
 		if (events != null)
 			return events;
 		else
 			return new IUiModelElement[] { rootError };
 	}
-
+	/**
+	 * Returns if the element has any children.
+	 * @return true since this is the root element
+	 */
 	public boolean hasChildren() {
 		return true;
 	}
 
+	/**
+	 * Return null since the root element does not have any parent
+	 * @return null
+	 */
 	public IUiModelElement getParent() {
 		return null;
 	}
