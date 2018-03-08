@@ -11,13 +11,10 @@
 package org.eclipse.linuxtools.internal.profiling.provider;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -36,37 +33,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
-public class ProviderOptionsTab extends ProfileLaunchConfigurationTab implements IExecutableExtension {
+public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 
-	String type;
-	String name;
 	Composite top;
 	Combo providerCombo;
 	AbstractLaunchConfigurationTab[] tabs;
 	ILaunchConfiguration initial;
 	HashMap<String, String> comboItems;
 	CTabFolder tabgroup;
+	public static final String PROVIDER_CONFIG_ATT = "provider"; //$NON-NLS-1$
 
 	// if tabs are being initialized do not call performApply()
 	HashMap<String, Boolean> initialized = new HashMap<String, Boolean> ();
-
-	public void setInitializationData(IConfigurationElement config,
-			String propertyName, Object data) {
-		Hashtable<String, String> parameters = (Hashtable<String, String>) data;
-		String profilingType = parameters
-				.get(ProviderProfileConstants.INIT_DATA_TYPE_KEY);
-
-		if (profilingType == null) {
-			profilingType = "";
-		}
-
-		setProfilingType(profilingType);
-	}
-
-	public ProviderOptionsTab(String profilingType, String profilingName){
-		type = profilingType;
-		name = profilingName;
-	}
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
@@ -163,8 +141,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab implements
 		// check if there exists a launch provider id in the configuration
 		if (initial != null) {
 			try {
-				String providerId = initial.getAttribute(
-						ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+				String providerId = initial.getAttribute(PROVIDER_CONFIG_ATT, "");
 				if (providerId != null && !providerId.equals("")) {
 					// load provider corresponding to specified id
 					loadTabGroupItems(tabgroup, providerId);
@@ -208,8 +185,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab implements
 	private void setProvider(String providerId) {
 		try {
 			ILaunchConfigurationWorkingCopy wc = initial.getWorkingCopy();
-			wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT,
-					providerId);
+			wc.setAttribute(PROVIDER_CONFIG_ATT, providerId);
 			initial = wc.doSave();
 		} catch (CoreException e1) {
 			e1.printStackTrace();
@@ -225,8 +201,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab implements
 	 */
 	private String getProviderId() {
 		try {
-			return initial.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+			return initial.getAttribute(PROVIDER_CONFIG_ATT, "");
 		} catch (CoreException e) {
 			return "";
 		}
@@ -278,8 +253,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab implements
 	public boolean isValid(ILaunchConfiguration config) {
 		String provider;
 		try {
-			provider = config.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+			provider = config.getAttribute(PROVIDER_CONFIG_ATT, "");
 		} catch (CoreException e) {
 			setErrorMessage(e.getMessage());
 			return false;
@@ -292,29 +266,9 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab implements
 	}
 
 	/**
-	 * Get name of profiling type that used for this tab.
-	 *
-	 * @return String profiling name.
-	 */
-	private void setProfilingType(String profilingType){
-		type = profilingType;
-	}
-
-	/**
-	 * Get profiling type of the configuration.
+	 * Get profiling type of this plug-in.
 	 *
 	 * @return String profiling type this plug-in supports.
 	 */
-	protected String getProfilingType(){
-		return type;
-	}
-
-	/**
-	 * Get name of profiling type that used for this tab.
-	 *
-	 * @return String profiling name.
-	 */
-	public String getName() {
-		return name;
-	}
+	protected abstract String getProfilingType();
 }
