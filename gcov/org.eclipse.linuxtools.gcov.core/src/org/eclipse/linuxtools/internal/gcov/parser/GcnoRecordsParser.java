@@ -208,9 +208,8 @@ public class GcnoRecordsParser {
                             }
                         } else {
                             String fileName = GcovStringReader.readString(stream);
-                            if (fileName.equals(Messages.GcnoRecordsParser_null_string)){
+                            if (fileName == Messages.GcnoRecordsParser_null_string)
                                 break;
-                            }
 
                             source = findOrAdd(fileName, currentAllSrcs);
                             lineNos[ix++] = 0;
