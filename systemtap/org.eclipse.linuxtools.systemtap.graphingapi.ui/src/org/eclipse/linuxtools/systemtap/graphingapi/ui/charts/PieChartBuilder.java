@@ -28,7 +28,12 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 
 	@Override
 	protected void createChart() {
-		this.chart = new PieChart(this, getStyle(), adapter.getLabels());
+		String[] allNames = adapter.getLabels();
+		String[] ySeriesNames = new String[allNames.length - 1];
+		for (int i = 0; i < ySeriesNames.length; i++) {
+			ySeriesNames[i] = allNames[i+1];
+		}
+		this.chart = new PieChart(this, getStyle(), ySeriesNames);
 	}
 
 	@Override
@@ -84,32 +89,8 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 			}
 		}
 
-		// Give duplicate labels unique names.
-		for (int i = 0; i < len_trim - 1; i++) {
-			int count = 0;
-			for (int j = i + 1; j < len_trim; j++) {
-				if (labels_trim[i].equals(labels_trim[j])) {
-					count++;
-					int k = 0;
-					while (k < j) {
-						if (labels_trim[k].equals(makeCountedLabel(labels_trim[j], count))) {
-							count++;
-							k = 0;
-						} else {
-							k++;
-						}
-					}
-					labels_trim[j] = makeCountedLabel(labels_trim[j], count);
-				}
-			}
-		}
-
 		((PieChart)this.chart).addPieChartSeries(labels_trim, values_trim);
 		chart.redraw();
-	}
-
-	private String makeCountedLabel(String original, int count) {
-		return original.concat(String.format(" (%d)", count + 1)); //$NON-NLS-1$
 	}
 
 	@Override
