@@ -738,6 +738,36 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
     }
 
     /**
+     * Gets the current first packet start time
+     * @return the current start time
+     * @since 3.0
+     */
+    public long getCurrentStartTime() {
+        long currentStart = Long.MAX_VALUE;
+        for (CTFStream stream : fStreams.values()) {
+            for (CTFStreamInput si : stream.getStreamInputs()) {
+                currentStart = Math.min(currentStart, si.getIndex().getEntries().get(0).getTimestampBegin());
+            }
+        }
+        return timestampCyclesToNanos(currentStart);
+    }
+
+    /**
+     * Gets the current last packet end time
+     * @return the current end time
+     * @since 3.0
+     */
+    public long getCurrentEndTime() {
+        long currentEnd = Long.MIN_VALUE;
+        for (CTFStream stream : fStreams.values()) {
+            for (CTFStreamInput si : stream.getStreamInputs()) {
+                currentEnd = Math.max(currentEnd, si.getTimestampEnd());
+            }
+        }
+        return timestampCyclesToNanos(currentEnd);
+    }
+
+    /**
      * Does the trace need to time scale?
      *
      * @return if the trace is in ns or cycles.
@@ -885,6 +915,9 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
      */
     public CTFCallsite getCallsite(String eventName, long ip) {
         final TreeSet<CTFCallsite> candidates = fCallsitesByName.get(eventName);
+        if (candidates == null) {
+            return null;
+        }
         final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
         final CTFCallsite callsite = candidates.ceiling(dummyCs);
         if (callsite == null) {
