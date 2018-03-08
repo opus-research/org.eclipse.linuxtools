@@ -72,15 +72,8 @@ public class Command implements Runnable {
 	 * @since 2.0
 	 */
 	public Command(String[] cmd, String[] envVars) {
-		if (cmd != null) {
-			this.cmd = new String[cmd.length];
-			System.arraycopy(cmd, 0, this.cmd, 0, cmd.length);
-		}
-
-		if (envVars != null) {
-			this.envVars = new String[envVars.length];
-			System.arraycopy(envVars, 0, this.envVars, 0, envVars.length);
-		}
+		this.cmd = cmd;
+		this.envVars = envVars;
 	}
 
 	/**
