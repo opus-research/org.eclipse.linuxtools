@@ -52,5 +52,5 @@ public class TmfCommonConstants {
      *
      * @since 2.2
      */
-    public static final String DEFAULT_TRACE_PROJECT_NAME = "Tracing"; //$NON-NLS-1$
+    public static final String DEFAULT_TRACE_PROJECT_NAME = Messages.DefaultTraceProjectName;
 }
