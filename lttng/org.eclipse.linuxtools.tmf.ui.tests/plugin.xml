@@ -24,13 +24,6 @@
         name="TestSDView2Loaders"
         restorable="true">
   </view>
-  <view
-        category="org.eclipse.linuxtools.tmf.ui.stubs"
-        class="org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView"
-        id="org.eclipse.linuxtools.tmf.ui.tests.testAnalysisView"
-        name="Test Analysis View"
-        restorable="true">
-  </view>
 	</extension>
  <extension
        point="org.eclipse.linuxtools.tmf.ui.uml2SDLoader">
@@ -79,14 +72,6 @@
                class="org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable">
          </eventsTableType>
       </type>
-   </extension>
-   <extension
-         point="org.eclipse.linuxtools.tmf.core.analysis">
-      <module
-            analysis_module="org.eclipse.linuxtools.tmf.ui.tests.stubs.analysis.TestAnalysisUi"
-            id="org.eclipse.linuxtools.tmf.ui.tests.test"
-            name="Test analysis in UI">
-      </module>
    </extension>
 
 </plugin>
