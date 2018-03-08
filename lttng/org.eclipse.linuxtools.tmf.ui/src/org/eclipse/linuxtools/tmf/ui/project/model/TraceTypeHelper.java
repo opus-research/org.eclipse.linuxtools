@@ -27,6 +27,7 @@ public class TraceTypeHelper {
     private final String fName;
     private final String fCategoryName;
     private final String fCanonicalName;
+    private final boolean fExperimentType;
     private final ITmfTrace fTrace;
 
     /**
@@ -42,12 +43,15 @@ public class TraceTypeHelper {
      *            the name of the trace
      * @param trace
      *            an object of the trace type
+     * @param experiment
+     *            True if this helper is for an experiment type
      */
-    public TraceTypeHelper(String canonicalName, String categoryName, String name, ITmfTrace trace) {
+    public TraceTypeHelper(String canonicalName, String categoryName, String name, ITmfTrace trace, boolean experiment) {
         fName = name;
         fCategoryName = categoryName;
         fCanonicalName = canonicalName;
         fTrace = trace;
+        fExperimentType = experiment;
     }
 
     /**
@@ -99,6 +103,15 @@ public class TraceTypeHelper {
      */
     public ITmfTrace getTrace() {
         return fTrace;
+    }
+
+    /**
+     * Return whether this helper applies to a trace type or experiment type
+     *
+     * @return True if experiment type, false otherwise
+     */
+    public boolean isExperimentType() {
+        return fExperimentType;
     }
 
     private boolean standardValidate(String path) {

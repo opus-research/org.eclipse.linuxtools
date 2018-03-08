@@ -29,6 +29,35 @@ public class Messages extends NLS {
 
     /** The message when analysis view is not available */
     public static String TmfAnalysisViewOutput_ViewUnavailable;
+    /** Analysis view title */
+    public static String TmfAnalysisViewOutput_Title;
+
+    /** Error message when closing editor */
+    public static String TmfCommonProjectElement_ErrorClosingEditor;
+
+    /** Error message when copying supplementary folder */
+    public static String TmfCommonProjectElement_ErrorCopyingSF;
+
+    /** Error message when creating supplementary resource */
+    public static String TmfCommonProjectElement_ErrorCreateSuppRes;
+
+    /** Error message when deleting supplementary folder */
+    public static String TmfCommonProjectElement_ErrorDeletingSF;
+
+    /** Error message when deleting supplementary resource */
+    public static String TmfCommonProjectElement_ErrorDeletingSR;
+
+    /** Error message when refreshing persistent property */
+    public static String TmfCommonProjectElement_ErrorRefreshingProperty;
+
+    /** Error message when renaming supplementary folder */
+    public static String TmfCommonProjectElement_ErrorRenamingSF;
+
+    /** Error message when setting persistent property */
+    public static String TmfCommonProjectElement_ErrorSettingProperty;
+
+    /** Error message when instantiating trace */
+    public static String TmfExperimentElement_ErrorInstantiatingTrace;
 
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
@@ -56,31 +85,26 @@ public class Messages extends NLS {
      * */
     public static String TmfTraceType_SelectTraceType;
 
-    /** Error opening a trace */
-    public static String TmfOpenTraceHelper_ErrorOpeningTrace;
-    /** Error opening an experiment */
-    public static String TmfOpenTraceHelper_ErrorOpeningExperiment;
+    /** Error opening a trace or experiment */
+    public static String TmfOpenTraceHelper_ErrorOpeningElement;
     /** Could not link trace */
     public static String TmfOpenTraceHelper_LinkFailed;
     /** No trace type match */
     public static String TmfOpenTraceHelper_NoTraceTypeMatch;
-    /** Open Trace*/
-    public static String TmfOpenTraceHelper_OpenTrace;
-    /** Open Experiment*/
-    public static String TmfOpenTraceHelper_OpenExperiment;
+    /** Open trace or experiment*/
+    public static String TmfOpenTraceHelper_OpenElement;
     /** Reduce was too efficient, no candidates found! */
     public static String TmfOpenTraceHelper_ReduceError;
+    /** No trace or experiment type */
+    public static String TmfOpenTraceHelper_NoTraceOrExperimentType;
     /** No trace type */
     public static String TmfOpenTraceHelper_NoTraceType;
-    /** Error opening trace*/
-    public static String TmfOpenTraceHelper_ErrorTrace;
-    /** Error opening experiment */
-    public static String TmfOpenTraceHelper_ErrorExperiment;
+    /** Error opening trace or experiment */
+    public static String TmfOpenTraceHelper_ErrorElement;
     /** Init error */
     public static String TmfOpenTraceHelper_InitError;
-
-    /** Analysis view title */
-    public static String TmfAnalysisViewOutput_Title;
+    /** Trace not found */
+    public static String TmfOpenTraceHelper_TraceNotFound;
 
     static {
         // initialize resource bundle

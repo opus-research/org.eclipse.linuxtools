@@ -16,6 +16,10 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
@@ -26,6 +30,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
@@ -236,8 +241,13 @@ public class TmfStatisticsView extends TmfView {
 
             String traceName;
             IResource traceResource;
+            List<ITmfTrace> traces = new ArrayList<ITmfTrace>();
+            traces.add(fTrace);
+            if (fTrace instanceof TmfExperiment) {
+                traces.addAll(Arrays.asList(TmfTraceManager.getTraceSet(fTrace)));
+            }
             // Creates a statistics viewer for each trace.
-            for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
+            for (ITmfTrace trace : traces) {
                 traceName = trace.getName();
                 traceResource = trace.getResource();
                 TmfStatisticsViewer viewer = getStatisticsViewer(traceResource);

@@ -69,6 +69,10 @@
             id="org.eclipse.linuxtools.tmf.tests.category.tracetype"
             name="Test trace">
       </category>
+      <category
+            id="org.eclipse.linuxtools.tmf.tests.category.tracetype2"
+            name="Test trace2">
+      </category>
       <type
             category="org.eclipse.linuxtools.tmf.tests.category.tracetype"
             event_type="org.eclipse.linuxtools.tmf.core.event.TmfEvent"
@@ -86,6 +90,21 @@
             name="CTF Tests"
             trace_type="org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub">
       </type>
+      <experiment
+            id="org.eclipse.linuxtools.tmf.tests.experimenttype"
+            name="Test experiment"
+            category="org.eclipse.linuxtools.tmf.tests.category.tracetype2"
+            experiment_type="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub">
+         <defaultEditor
+               id="org.eclipse.linuxtools.tmf.ui.editors.events.stub">
+         </defaultEditor>
+         <eventsTableType
+               class="org.eclipse.linuxtools.tmf.ui.tests.experiment.type.TmfEventsTableExperimentStub">
+         </eventsTableType>
+         <statisticsViewerType
+               class="org.eclipse.linuxtools.tmf.ui.tests.experiment.type.TmfStatisticsViewerStub">
+         </statisticsViewerType>
+      </experiment>
    </extension>
    <extension
          point="org.eclipse.linuxtools.tmf.core.analysis">
@@ -100,6 +119,18 @@
                class="org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub">
          </tracetype>
       </module>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.linuxtools.tmf.ui.tests.experiment.type.TmfEventsEditorStub"
+            default="false"
+            id="org.eclipse.linuxtools.tmf.ui.editors.events.stub"
+            name="%events.editor.name">
+         <contentTypeBinding
+               contentTypeId="org.eclipse.linuxtools.tmf.ui.content-type.trace">
+         </contentTypeBinding>
+      </editor>
    </extension>
 
 </plugin>
