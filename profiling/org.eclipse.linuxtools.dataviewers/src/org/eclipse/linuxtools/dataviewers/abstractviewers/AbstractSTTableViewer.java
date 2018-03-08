@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.abstractviewers;
 
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -50,17 +51,16 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 		super(parent,style,init);
 	}
 
-	/**
-	 * It creates the wrapped TableViewer 
-	 * @param parent - the parent Composite
-	 * @param style - the table style
-	 * @return a TableViewer
-	 * @since 4.1
-	 */
 	@Override
-	protected TableViewer createViewer(Composite parent, int style) {
-		Table t = createTable(parent, style);
-		return new TableViewer(t);
+	/*
+	 * It creates the TableViewer wrapped
+	 * @param parent
+	 * @param style
+	 * @return ColumnViewer
+	 */
+	protected ColumnViewer createViewer(Composite parent, int style) {
+		return new TableViewer(
+				createTable(parent, style));
 	}
 	
 	/**
@@ -121,6 +121,7 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 									Rectangle bounds = item.getBounds(i);
 									if (bounds.contains(e.x,e.y)){
 										handleHyperlink(field,item.getData());
+										return;
 									}
 								}
 							}
@@ -142,12 +143,12 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 								if (field.isHyperLink(item.getData())){
 									Rectangle bounds = item.getBounds(i);
 								if (bounds.contains(e.x,e.y)){
-										cursor = new Cursor(e.display,SWT.CURSOR_HAND);
+										cursor = e.display.getSystemCursor(SWT.CURSOR_HAND);
 										table.setCursor(cursor);
 										return;
 									}
 								}
-								cursor = new Cursor(e.display,SWT.CURSOR_ARROW);
+								cursor = e.display.getSystemCursor(SWT.CURSOR_ARROW);
 								table.setCursor(cursor);
 							}
 			

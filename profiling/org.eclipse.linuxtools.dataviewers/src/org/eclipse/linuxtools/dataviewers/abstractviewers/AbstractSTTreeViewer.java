@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.abstractviewers;
 
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -51,17 +52,29 @@ public abstract class AbstractSTTreeViewer extends AbstractSTViewer {
 		super(parent,style,init);
 	}
 
-	/**
-	 * It creates the wrapped TreeViewer
-	 * @param parent - the parent Composite
-	 * @param style - the table style
-	 * @return a TreeViewer
-	 * @since 4.1
+
+	/*
+	 * It creates the TreeViewer wrapped
+	 * @param parent
+	 * @param style
+	 * @return ColumnViewer
 	 */
 	@Override
-	protected TreeViewer createViewer(Composite parent, int style) {
-		Tree t = createTree(parent, style); 
-		return new TreeViewer(t);
+	protected ColumnViewer createViewer(Composite parent, int style) {
+		return new TreeViewer(createTree(parent, style)) {
+			@Override
+			// FIXME Temporary fix for eclipse bug #170521
+			// (bug in the refresh() method)
+			// Saves the expanded elements in order to correctly restore
+			// the expanded state of the tree.
+			public void refresh(Object element) {
+				getTree().setRedraw(false);
+				Object[] elements = this.getExpandedElements();
+				super.refresh(element);
+				this.setExpandedElements(elements);
+				getTree().setRedraw(true);
+			}
+		};
 	}
 	
 	/**
@@ -122,6 +135,7 @@ public abstract class AbstractSTTreeViewer extends AbstractSTViewer {
 									Rectangle bounds = item.getBounds(i);
 									if (bounds.contains(e.x,e.y)){
 										handleHyperlink(field,item.getData());
+										return;
 									}
 								}
 							}
@@ -142,12 +156,12 @@ public abstract class AbstractSTTreeViewer extends AbstractSTViewer {
 							if (field.isHyperLink(item.getData())){
 								Rectangle bounds = item.getBounds(i);
 							if (bounds.contains(e.x,e.y)){
-									cursor = new Cursor(e.display,SWT.CURSOR_HAND);
+									cursor = e.display.getSystemCursor(SWT.CURSOR_HAND);
 									tree.setCursor(cursor);
 									return;
 								}
 							}
-							cursor = new Cursor(e.display,SWT.CURSOR_ARROW);
+							cursor = e.display.getSystemCursor(SWT.CURSOR_ARROW);
 							tree.setCursor(cursor);
 						}
 					}
