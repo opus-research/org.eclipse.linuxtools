@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.osgi.framework.FrameworkUtil;
 
 public class LaunchTabsTest extends AbstractTest {
@@ -62,7 +61,7 @@ public class LaunchTabsTest extends AbstractTest {
 	
 	
 	//getter functions for otherwise unaccessible member variables 
-	private static class TestOptionsTab extends PerfOptionsTab {
+	private class TestOptionsTab extends PerfOptionsTab {
 		protected Text get_txtKernel_Location() { return _txtKernel_Location; }
 		protected Button get_chkRecord_Realtime() { return _chkRecord_Realtime; }
 		protected Button get_chkRecord_Verbose() { return _chkRecord_Verbose; }
@@ -74,85 +73,84 @@ public class LaunchTabsTest extends AbstractTest {
 	}
 	
 	public void testOptionsTab() throws CoreException {
-		ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
 		TestOptionsTab tab = new TestOptionsTab();
 		tab.createControl(new Shell());
 		assertNotNull(tab.getImage());
 		assertNotNull(tab.getName());
 		
 		//default config
-		tab.setDefaults(wc);
+		tab.setDefaults(config.getWorkingCopy());
 		tab.initializeFrom(config);
 		assertTrue(tab.isValid(config));
 		
 		Button rrCheck = tab.get_chkRecord_Realtime();
 		rrCheck.setSelection(true);
 		rrCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_Record_Realtime, false));
 		rrCheck.setSelection(false);
 		rrCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Record_Realtime, true));
 		
 		Button rvCheck = tab.get_chkRecord_Verbose();
 		rvCheck.setSelection(true);
 		rvCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_Record_Verbose, false));
 		rvCheck.setSelection(false);
 		rvCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Record_Verbose, true));
 		
 		Button slcCheck = tab.get_chkSourceLineNumbers();
 		slcCheck.setSelection(true);
 		slcCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_SourceLineNumbers, false));
 		slcCheck.setSelection(false);
 		slcCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_SourceLineNumbers, true));
 		
 		Button kslcCheck = tab.get_chkKernel_SourceLineNumbers();
 		kslcCheck.setSelection(true);
 		kslcCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, false));
 		kslcCheck.setSelection(false);
 		kslcCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, true));
 		
 		Button meCheck = tab.get_chkMultiplexEvents();
 		meCheck.setSelection(true);
 		meCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_Multiplex, false));
 		meCheck.setSelection(false);
 		meCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Multiplex, true));
 		
 		Button msCheck = tab.get_chkModuleSymbols();
 		msCheck.setSelection(true);
 		msCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, false));
 		msCheck.setSelection(false);
 		msCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, true));
 		
 		Button husCheck = tab.get_chkHideUnresolvedSymbols();
 		husCheck.setSelection(true);
 		husCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(true, config.getAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, false));
 		husCheck.setSelection(false);
 		husCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, true));
 		
 		rrCheck.setSelection(true);
@@ -169,7 +167,7 @@ public class LaunchTabsTest extends AbstractTest {
 		msCheck.notifyListeners(SWT.Selection, null);
 		husCheck.setSelection(true);
 		husCheck.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		tab.initializeFrom(config);
 		assertTrue(rrCheck.getSelection());
 		assertTrue(rvCheck.getSelection());
@@ -182,17 +180,17 @@ public class LaunchTabsTest extends AbstractTest {
 		Text klocText = tab.get_txtKernel_Location();
 		klocText.setText("doesntexist"); //$NON-NLS-1$
 		klocText.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertFalse(tab.isValid(config));
 
 		klocText.setText(""); //$NON-NLS-1$
 		klocText.notifyListeners(SWT.Selection, null);
-		testPerformApply(tab, wc);
+		tab.performApply(config.getWorkingCopy());
 		assertTrue(tab.isValid(config));
 	}
 	
 	//getter functions for otherwise unaccessible member variables 
-	private static class TestEventsTab extends PerfEventsTab {
+	private class TestEventsTab extends PerfEventsTab {
 		public Button get_chkDefaultEvent() { return _chkDefaultEvent; }
 	}
 	
@@ -213,11 +211,6 @@ public class LaunchTabsTest extends AbstractTest {
 		tab.get_chkDefaultEvent().setSelection(false);
 		tab.get_chkDefaultEvent().notifyListeners(SWT.Selection, null);
 		assertFalse(tab.get_chkDefaultEvent().getSelection());
-	}
-
-	public void testPerformApply (ILaunchConfigurationTab tab, ILaunchConfigurationWorkingCopy wc) throws CoreException {
-		tab.performApply(wc);
-		wc.doSave();
 	}
 
 }

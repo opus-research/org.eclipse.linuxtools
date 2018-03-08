@@ -184,12 +184,10 @@ public class SelectSeriesWizardPage extends WizardPage {
 		txtKey.setEnabled(required);
 	}
 	
-	@Override
 	public boolean canFlipToNextPage() {
 		return false;
 	}
 
-	@Override
 	public boolean isPageComplete() {
 		return saveDataToModel();
 	}
@@ -251,7 +249,6 @@ public class SelectSeriesWizardPage extends WizardPage {
 		return true;
 	}
 
-	@Override
 	public void dispose() {
 		super.dispose();
 		if(null != txtTitle)

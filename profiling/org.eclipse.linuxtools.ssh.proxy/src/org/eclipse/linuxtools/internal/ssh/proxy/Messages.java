@@ -39,8 +39,6 @@ public class Messages extends NLS {
 	public static String SSHBase_CreateSessionFailed;
 	public static String SSHBase_CreateSessionCancelled;
 	public static String SSHPasswordDialog_Password;
-	public static String SSHPasswordDialog_Password_Title;
-	public static String SSHPasswordDialog_Title;
 	public static String SSHCommandLauncher_execution_problem;
 
 	static {

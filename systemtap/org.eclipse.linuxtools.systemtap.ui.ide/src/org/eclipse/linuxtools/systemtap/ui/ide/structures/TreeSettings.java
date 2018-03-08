@@ -149,7 +149,7 @@ public final class TreeSettings {
 			writeTree(child, probes, 0);
 
 			child = data.createChild("modifiedDate");
-			child.putString("date", (Long.valueOf(Calendar.getInstance().getTimeInMillis())).toString());
+			child.putString("date", (new Long(Calendar.getInstance().getTimeInMillis())).toString());
 
 			FileWriter writer = new FileWriter(settingsFile);
 			data.save(writer);
@@ -238,12 +238,8 @@ public final class TreeSettings {
 		settingsFile = new File(SystemTapGUISettings.settingsFolder.getAbsolutePath() + fileName);
 
 		try {
-			if (!settingsFile.exists()){
-				// Create a new settings file-and its parent
-				// directories- if one does not exist.
-				settingsFile.getParentFile().mkdirs();
-				settingsFile.createNewFile();				
-			}
+			if (!settingsFile.exists())
+				settingsFile.createNewFile();
 		} catch(IOException ioe) {
 			return false;
 		}

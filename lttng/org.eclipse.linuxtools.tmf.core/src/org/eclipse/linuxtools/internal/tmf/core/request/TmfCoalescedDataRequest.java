@@ -21,8 +21,6 @@ import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 /**
  * The TMF coalesced data request
  *
- * @param <T> The request data type
- *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -119,9 +117,8 @@ public class TmfCoalescedDataRequest<T extends ITmfEvent> extends TmfDataRequest
      * @param nbRequested the number of events requested
      * @param blockSize the number of events per block
      */
-    @SuppressWarnings("unchecked")
     public TmfCoalescedDataRequest(Class<T> dataType, long index, int nbRequested, int blockSize) {
-        super((Class<T>) ITmfEvent.class, index, nbRequested, blockSize, ExecutionType.FOREGROUND);
+        super(dataType, index, nbRequested, blockSize, ExecutionType.FOREGROUND);
     }
 
     /**
@@ -134,9 +131,8 @@ public class TmfCoalescedDataRequest<T extends ITmfEvent> extends TmfDataRequest
      * @param blockSize the number of events per block
      * @param priority the requested execution priority
      */
-    @SuppressWarnings("unchecked")
     public TmfCoalescedDataRequest(Class<T> dataType, long index, int nbRequested, int blockSize, ExecutionType priority) {
-        super((Class<T>) ITmfEvent.class, index, nbRequested, blockSize, priority);
+        super(dataType, index, nbRequested, blockSize, priority);
     }
 
     // ------------------------------------------------------------------------
@@ -216,25 +212,25 @@ public class TmfCoalescedDataRequest<T extends ITmfEvent> extends TmfDataRequest
     // ------------------------------------------------------------------------
 
     @Override
-    public void handleData(T data) {
-        super.handleData(data);
-        // Don't call sub-requests handleData() unless this is a
-        // TmfCoalescedDataRequest; extended classes should call
-        // the sub-requests handleData().
-        if (getClass() == TmfCoalescedDataRequest.class) {
-            long index = getIndex() + getNbRead() - 1;
-            for (ITmfDataRequest<T> request : fRequests) {
-                if (!request.isCompleted()) {
+	public void handleData(T data) {
+		super.handleData(data);
+    	// Don't call sub-requests handleData() unless this is a
+		// TmfCoalescedDataRequest; extended classes should call
+		// the sub-requests handleData().
+		if (getClass() == TmfCoalescedDataRequest.class) {
+		    long index = getNbRead();
+	    	for (ITmfDataRequest<T> request : fRequests) {
+	    	    if (!request.isCompleted()) {
                     if (request.getDataType().isInstance(data)) {
                         long start = request.getIndex();
-                        long end = start + request.getNbRequested();
+                        long end = start + request.getNbRequested() - 1;
                         if (index >= start && index < end) {
                             request.handleData(data);
                         }
                     }
-                }
-            }
-        }
+	    	    }
+	    	}
+		}
     }
 
     @Override

@@ -22,20 +22,16 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 
-import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
@@ -67,10 +63,6 @@ public class CTFTrace implements IDefinitionScope {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
-    private static final String OFFSET = "offset"; //$NON-NLS-1$
-
-
 
     /*
      * (non-Javadoc)
@@ -131,20 +123,20 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Collection of streams contained in the trace.
      */
-    private final Map<Long, Stream> streams =  new HashMap<Long, Stream>();
+    private final HashMap<Long, Stream> streams;
 
     /**
      * Collection of environment variables set by the tracer
      */
-    private final Map<String, String> environment = new HashMap<String, String>();
+    private final HashMap<String, String> environment;
 
     /**
      * Collection of all the clocks in a system.
      */
-    private final Map<String, CTFClock> clocks = new HashMap<String, CTFClock>();
+    private final HashMap<String, CTFClock> clocks;
 
     /** FileChannels to the streams */
-    private final List<FileChannel> streamFileChannels = new LinkedList<FileChannel>();
+    private final List<FileChannel> streamFileChannels;
 
     /** Handlers for the metadata files */
     private final static FileFilter metadataFileFilter = new MetadataFileFilter();
@@ -152,16 +144,11 @@ public class CTFTrace implements IDefinitionScope {
                                                                                          // fieldJavadoc
 
     /** map of all the event types */
-    private final Map<Long,HashMap<Long, EventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,EventDeclaration>>();
+    private final HashMap<Long,HashMap<Long, EventDeclaration>> eventDecs;
     /** map of all the event types */
-    private final Map<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
+    private final HashMap<StreamInput,HashMap<Long, EventDefinition>> eventDefs;
     /** map of all the indexes */
-    private final Map<StreamInput, StreamInputPacketIndex> indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
-
-    /** Callsite helpers */
-    private Map<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
-    /** Callsite helpers */
-    private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
+    private final HashMap<StreamInput, StreamInputPacketIndex> indexes;
 
 
 
@@ -195,6 +182,12 @@ public class CTFTrace implements IDefinitionScope {
         this.metadata = new Metadata(this);
 
         /* Set up the internal containers for this trace */
+        streams = new HashMap<Long, Stream>();
+        environment = new HashMap<String, String>();
+        clocks = new HashMap<String, CTFClock>();
+        streamFileChannels = new LinkedList<FileChannel>();
+        eventDecs = new HashMap<Long, HashMap<Long, EventDeclaration>>();
+        eventDefs = new HashMap<StreamInput, HashMap<Long, EventDefinition>>();
 
         if (!this.path.isDirectory()) {
             throw new CTFReaderException("Path must be a valid directory"); //$NON-NLS-1$
@@ -213,6 +206,7 @@ public class CTFTrace implements IDefinitionScope {
         /* List files not called metadata and not hidden. */
         File[] files = path.listFiles(metadataFileFilter);
         Arrays.sort(files, metadataComparator);
+        indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
         /* Try to open each file */
         for (File streamFile : files) {
             openStreamInput(streamFile);
@@ -648,9 +642,9 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * gets the Environment variables from the trace metadata (See CTF spec)
-     * @return the environment variables in a map form (key value)
+     * @return the environment variables in a hashmap form (key value)
      */
-    public Map<String, String> getEnvironment() {
+    public HashMap<String, String> getEnvironment() {
         return environment;
     }
 
@@ -701,11 +695,7 @@ public class CTFTrace implements IDefinitionScope {
         if (clocks.size() == 1) {
             if (singleClock == null) {
                 singleClock = clocks.get(clocks.keySet().toArray()[0]);
-                if (singleClock.getProperty(OFFSET) != null) {
-                    singleOffset = (Long) getClock().getProperty(OFFSET);
-                } else {
-                    singleClock.addAttribute(OFFSET, 0);
-                }
+                singleOffset = (Long) getClock().getProperty("offset"); //$NON-NLS-1$
             }
             return singleClock;
         }
@@ -744,104 +734,6 @@ public class CTFTrace implements IDefinitionScope {
             eventDecs.put(id, value);
         }
         return value;
-    }
-
-    /**
-     * Adds a callsite
-     *
-     * @param eventName
-     *            the event name of the callsite
-     * @param funcName
-     *            the name of the callsite function
-     * @param ip
-     *            the ip of the callsite
-     * @param fileName
-     *            the filename of the callsite
-     * @param lineNumber
-     *            the line number of the callsite
-     */
-    public void addCallsite(String eventName, String funcName, long ip,
-            String fileName, long lineNumber) {
-        final CTFCallsite cs = new CTFCallsite(eventName, funcName, ip,
-                fileName, lineNumber);
-        LinkedList<CTFCallsite> csl = callsitesByName.get(eventName);
-        if (csl == null) {
-            csl = new LinkedList<CTFCallsite>();
-            callsitesByName.put(eventName, csl);
-        }
-
-        ListIterator<CTFCallsite> iter = csl.listIterator();
-        int index = 0;
-        for (; index < csl.size(); index++) {
-            if (iter.next().compareTo(cs) < 0) {
-                break;
-            }
-        }
-
-        csl.add(index, cs);
-
-        callsitesByIP.add(cs);
-    }
-
-    /**
-     * Gets the list of callsites associated to an event name. O(1)
-     *
-     * @param eventName
-     *            the event name
-     * @return the callsite list can be empty
-     * @since 1.2
-     */
-    public List<CTFCallsite> getCallsiteCandidates(String eventName) {
-        LinkedList<CTFCallsite> retVal = callsitesByName.get(eventName);
-        if( retVal == null ) {
-            retVal = new LinkedList<CTFCallsite>();
-        }
-        return retVal;
-    }
-
-    /**
-     * The I'm feeling lucky of getCallsiteCandidates O(1)
-     *
-     * @param eventName
-     *            the event name
-     * @return the first callsite that has that event name, can be null
-     * @since 1.2
-     */
-    public CTFCallsite getCallsite(String eventName) {
-        return callsitesByName.get(eventName).getFirst();
-    }
-
-    /**
-     * Gets a callsite from the instruction pointer O(log(n))
-     *
-     * @param ip
-     *            the instruction pointer to lookup
-     * @return the callsite just before that IP in the list remember the IP is
-     *         backwards on X86, can be null if no callsite is before the IP.
-     * @since 1.2
-     */
-    public CTFCallsite getCallsite(long ip) {
-        CTFCallsite cs = new CTFCallsite(null, null, ip, null, 0L);
-        return callsitesByIP.ceiling(cs);
-    }
-
-    /**
-     * Gets a callsite using the event name and instruction pointer O(log(n))
-     *
-     * @param eventName
-     *            the name of the event
-     * @param ip
-     *            the instruction pointer
-     * @return the closest matching callsite, can be null
-     */
-    public CTFCallsite getCallsite(String eventName, long ip) {
-        final LinkedList<CTFCallsite> candidates = callsitesByName.get(eventName);
-        final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
-        final int pos = Collections.binarySearch(candidates, dummyCs)+1;
-        if( pos >= candidates.size()) {
-            return null;
-        }
-        return candidates.get(pos);
     }
 
 }

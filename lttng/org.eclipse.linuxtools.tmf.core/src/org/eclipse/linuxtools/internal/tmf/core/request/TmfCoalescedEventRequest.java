@@ -24,8 +24,6 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 /**
  * The TMF coalesced event request
  *
- * @param <T> The request event type
- *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -148,9 +146,8 @@ public class TmfCoalescedEventRequest<T extends ITmfEvent> extends TmfCoalescedD
      * @param blockSize the number of events per block
      * @param priority the requested execution priority
      */
-    @SuppressWarnings("unchecked")
     public TmfCoalescedEventRequest(Class<T> dataType, TmfTimeRange range, long index, int nbRequested, int blockSize, ExecutionType priority) {
-        super((Class<T>) ITmfEvent.class, index, nbRequested, blockSize, priority);
+        super(dataType, index, nbRequested, blockSize, priority);
         fRange = range;
 
         if (Tracer.isRequestTraced()) {
@@ -212,16 +209,13 @@ public class TmfCoalescedEventRequest<T extends ITmfEvent> extends TmfCoalescedD
     @Override
     public void handleData(T data) {
         super.handleData(data);
-        long index = getIndex() + getNbRead() - 1;
         for (ITmfDataRequest<T> request : fRequests) {
             if (data == null) {
                 request.handleData(null);
             } else {
-                long start = request.getIndex();
-                long end = start + request.getNbRequested();
                 if (request instanceof TmfEventRequest<?>) {
                     TmfEventRequest<T> req = (TmfEventRequest<T>) request;
-                    if (!req.isCompleted() && index >= start && index < end) {
+                    if (!req.isCompleted() && (getNbRead() > request.getIndex())) {
                         ITmfTimestamp ts = data.getTimestamp();
                         if (req.getRange().contains(ts)) {
                             if (req.getDataType().isInstance(data)) {
@@ -232,7 +226,7 @@ public class TmfCoalescedEventRequest<T extends ITmfEvent> extends TmfCoalescedD
                 }
                 else {
                     TmfDataRequest<T> req = (TmfDataRequest<T>) request;
-                    if (!req.isCompleted() && index >= start && index < end) {
+                    if (!req.isCompleted()) {
                         if (req.getDataType().isInstance(data)) {
                             req.handleData(data);
                         }

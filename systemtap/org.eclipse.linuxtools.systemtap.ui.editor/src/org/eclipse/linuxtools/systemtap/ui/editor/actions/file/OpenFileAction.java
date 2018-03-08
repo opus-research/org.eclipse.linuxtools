@@ -51,7 +51,6 @@ public class OpenFileAction extends EditorAction {
 	/**
 	 * Opens the editor input.
 	 */
-	@Override
 	public void run() {
 		successful = false;
 		if (window == null)
@@ -66,6 +65,9 @@ public class OpenFileAction extends EditorAction {
 				RecentFileLog.updateRecentFiles(file);
 				successful = true;
 			} catch (PartInitException e) {}
+		} else {
+			String msg = Localization.getString("OpenFileAction.FileIsNull");
+			MessageDialog.openWarning(window.getShell(), Localization.getString("OpenFileAction.Problem"), msg);
 		}
 	}
 	

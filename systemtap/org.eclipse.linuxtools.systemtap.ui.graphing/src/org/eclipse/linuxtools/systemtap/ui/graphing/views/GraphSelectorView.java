@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -63,6 +64,7 @@ public class GraphSelectorView extends ViewPart {
 		item = new CTabItem(scriptFolder, SWT.CLOSE);
 		item.setText(title);
 		Composite parent = new Composite(scriptFolder, SWT.NONE);
+		parent.setBackground(new Color(parent.getDisplay(), 0, 0, 255));
 		GraphDisplaySet gds = new GraphDisplaySet(parent, dataSet);
 		displaySets.add(gds);
 		item.setControl(parent);
@@ -75,7 +77,6 @@ public class GraphSelectorView extends ViewPart {
 	 * This method creates the framework for what will be displayed by this dialog box.
 	 * @param parent The composite that will contain all the elements from this dialog
 	 */
-	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 
@@ -128,12 +129,11 @@ public class GraphSelectorView extends ViewPart {
 	public GraphDisplaySet getActiveDisplaySet() {
 		int index = scriptFolder.getSelectionIndex();
 		if(index >= 0 && index < displaySets.size())
-			return displaySets.get(index);
+			return (GraphDisplaySet)displaySets.get(index);
 		else
 			return null;
 	}
 	
-	@Override
 	public void setFocus() {}
 	
 	public void addTabListener(ITabListener listener) {
@@ -146,24 +146,23 @@ public class GraphSelectorView extends ViewPart {
 	
 	private void fireTabCloseEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
-			tabListeners.get(i).tabClosed();
+			((ITabListener)tabListeners.get(i)).tabClosed();
 	}
 	
 	private void fireTabOpenEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
-			tabListeners.get(i).tabOpened();
+			((ITabListener)tabListeners.get(i)).tabOpened();
 	}
 	
 	private void fireTabChangedEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
-			tabListeners.get(i).tabChanged();
+			((ITabListener)tabListeners.get(i)).tabChanged();
 	}
 
 	/**
 	 * Removes all internal references in this class.  Nothing should make any references
 	 * to anyting in this class after calling the dispose method.
 	 */
-	@Override
 	public void dispose() {
 		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$

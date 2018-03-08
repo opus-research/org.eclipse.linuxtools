@@ -25,7 +25,6 @@ public class OprofileRemoteEventConfigTab extends OprofileEventConfigTab  {
 	public OprofileRemoteEventConfigTab(){
 	}
 
-	@Override
 	protected boolean hasPermissions(IProject project){
 		try{
 			if (this.hasPermissions == null){
@@ -42,7 +41,6 @@ public class OprofileRemoteEventConfigTab extends OprofileEventConfigTab  {
 
 	}
 
-	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 		// Force re-check of permissions every time the view is initialized
 		this.hasPermissions = null;

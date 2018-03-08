@@ -55,7 +55,6 @@ public class InsertMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#run
 	 */
-	@Override
 	public void run(IAction action) {
 		IWorkbenchPage page = window.getActivePage();
 		IEditorPart part = page.getActiveEditor();
@@ -100,7 +99,6 @@ public class InsertMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#selectionChanged
 	 */
-	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
@@ -110,7 +108,6 @@ public class InsertMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#dispose
 	 */
-	@Override
 	public void dispose() {
 	}
 
@@ -120,7 +117,6 @@ public class InsertMarkerAction implements IWorkbenchWindowActionDelegate {
 	 * 
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
-	@Override
 	public void init(IWorkbenchWindow window) {
 		this.window = window;
 	}

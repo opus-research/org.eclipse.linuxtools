@@ -26,6 +26,8 @@ import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 public class PerfOptionsTab extends org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab {
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
+
+		//if (PerfPlugin.DEBUG_ON) System.out.println("Initializing optionsTab from previous config.");
 		ConfigUtils configUtils = new ConfigUtils(config);
 		IProject project = null;
 		try {
@@ -34,6 +36,7 @@ public class PerfOptionsTab extends org.eclipse.linuxtools.internal.perf.launch.
 			e1.printStackTrace();
 		}
 		try {
+			System.out.println(project.getLocationURI());
 			if (! PerfCore.checkRemotePerfInPath(project)) 
 			{
 				IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID, "Error: Perf was not found on PATH"); //$NON-NLS-1$

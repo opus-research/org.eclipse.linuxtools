@@ -15,7 +15,6 @@ import org.eclipse.cdt.core.model.IMethod;
 import org.eclipse.cdt.core.model.ITranslationUnit;
 import org.eclipse.cdt.ui.CElementLabelProvider;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -129,7 +128,7 @@ public class CModelLabelsTest extends AbstractCachegrindTest {
 	
 	private void checkLabelProvider(TreeViewer viewer, TreePath path, ICachegrindElement element) {
 		// expand only the interesting item
-		viewer.expandToLevel(element, AbstractTreeViewer.ALL_LEVELS);
+		viewer.expandToLevel(element, TreeViewer.ALL_LEVELS);
 		TreeSelection selection = new TreeSelection(path);
 		viewer.setSelection(selection);		
 		TreeItem item = viewer.getTree().getSelection()[0];

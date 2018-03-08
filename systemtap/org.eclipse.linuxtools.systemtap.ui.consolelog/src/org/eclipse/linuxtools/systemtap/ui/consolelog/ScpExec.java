@@ -17,7 +17,7 @@ public class ScpExec implements Runnable {
   
 	public ScpExec(String cmd[], String moduleName) {
 	//	this.moduleName = moduleName;
-		this.command = "";
+		this.command = new String();
 		
 		try{
 			
@@ -49,21 +49,7 @@ public class ScpExec implements Runnable {
 		//	returnVal = Integer.MIN_VALUE;
 		}
 	}
-
-	/**
-	 * This transfers any listeners which may have been added
-	 * to the command before the process has been constructed
-	 * properly to the process itself.
-	 * @since 1.2
-	 */
-	protected void transferListeners(){
-		int i;
-		for(i=0; i<inputListeners.size(); i++)
-			inputGobbler.addDataListener(inputListeners.get(i));
-		for(i=0; i<errorListeners.size(); i++)
-			errorGobbler.addDataListener(errorListeners.get(i));
-	}
-
+	
 	protected boolean init()
 	{
 	  String user=ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_USER);
@@ -92,8 +78,12 @@ public class ScpExec implements Runnable {
    
 		errorGobbler = new StreamGobbler(channel.getExtInputStream());            
 		inputGobbler = new StreamGobbler(channel.getInputStream());
-
-		this.transferListeners();
+      	
+		int i;
+		for(i=0; i<inputListeners.size(); i++)
+			inputGobbler.addDataListener((IGobblerListener)inputListeners.get(i));
+		for(i=0; i<errorListeners.size(); i++)
+			errorGobbler.addDataListener((IGobblerListener)errorListeners.get(i));
 		return true;
 
       }catch(Exception e)
@@ -209,9 +199,9 @@ public class ScpExec implements Runnable {
 	 */
 	public ArrayList<IGobblerListener> getInputStreamListeners() {
 		if(null != inputGobbler)
-			return inputGobbler.getDataListeners();
-		else
 			return inputListeners;
+		else
+			return inputGobbler.getDataListeners();
 	}
 	
 	/**
@@ -220,9 +210,9 @@ public class ScpExec implements Runnable {
 	 */
 	public ArrayList<IGobblerListener> getErrorStreamListeners() {
 		if(null != errorGobbler)
-			return errorGobbler.getDataListeners();
-		else
 			return errorListeners;
+		else
+			return errorGobbler.getDataListeners();
 	}
 	
 	/**
@@ -296,12 +286,12 @@ public class ScpExec implements Runnable {
   }
 
   
-   protected boolean stopped = false;
+   private boolean stopped = false;
 	private boolean disposed = false;
-	protected StreamGobbler inputGobbler = null;
-	protected StreamGobbler errorGobbler = null;
-	protected ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
-	protected ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+	private StreamGobbler inputGobbler = null;
+	private StreamGobbler errorGobbler = null;
+	private ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+	private ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
 	//private int returnVal = Integer.MAX_VALUE;
 	private String command;
 

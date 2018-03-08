@@ -11,19 +11,20 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.eclipse.linuxtools.systemtap.ui.structures.ZipArchive;
 
-public class ZipArchiveTest {
+import junit.framework.TestCase;
 
-	@Before
-	public void setUp() throws Exception {
+public class ZipArchiveTest extends TestCase {
+	public ZipArchiveTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+		
 		File f = new File("/tmp/test/a");
 		f.getParentFile().mkdirs();
 		f.createNewFile();
@@ -31,16 +32,14 @@ public class ZipArchiveTest {
 		ZipArchive.zipFiles("/tmp/test/a.zip", new String[] {"/tmp/test/a"}, new String[] {"a"});
 		ZipArchive.compressFile("/tmp/test/a.gz", "/tmp/test/a.zip");
 	}
-
-	@Test
+	
 	public void testZipFiles() {
 		File b = new File("/tmp/test/b.zip");
 		assertFalse(b.exists());
 		ZipArchive.zipFiles(b.getAbsolutePath(), new String[] {"/tmp/test/a", "/tmp/test/a.zip"}, new String[] {"a", "a.zip"});
 		assertTrue(b.exists());
 	}
-
-	@Test
+	
 	public void testUnzipFiles() {
 		File b = new File("/tmp/test/aa/");
 		assertFalse(b.exists());
@@ -49,16 +48,14 @@ public class ZipArchiveTest {
 		assertTrue(b.exists());
 		assertTrue(new File(b.getAbsolutePath() + "a").exists());
 	}
-
-	@Test
+	
 	public void testCompressFile() {
 		File b = new File("/tmp/test/b.gz");
 		assertFalse(b.exists());
 		ZipArchive.compressFile(b.getAbsolutePath(), "/tmp/test/a.zip");
 		assertTrue(b.exists());
 	}
-
-	@Test
+	
 	public void testUncompressFile() {
 		File b = new File("/tmp/test/bb/");
 		assertFalse(b.exists());
@@ -68,17 +65,8 @@ public class ZipArchiveTest {
 		assertTrue(new File(b.getAbsolutePath() + "a.zip").exists());
 	}
 	
-	@After
-	public void tearDown() {
-		deleteFile(new File[]{new File("/tmp/test/")});
-	}
-	
-	private void deleteFile(File[] files){
-		for(File file: files){
-			if (file.isDirectory()){
-				deleteFile(file.listFiles());
-			}
-			file.delete();
-		}
+	protected void tearDown() throws Exception {
+		new File("/tmp/test/").deleteOnExit();
+		super.tearDown();
 	}
 }

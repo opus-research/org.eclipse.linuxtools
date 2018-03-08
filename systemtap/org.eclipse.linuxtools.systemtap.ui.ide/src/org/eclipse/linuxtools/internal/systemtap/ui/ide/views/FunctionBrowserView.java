@@ -33,13 +33,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
  * @author Henry Hughes
  */
 public class FunctionBrowserView extends BrowserView {
-	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView";
-	private FunctionBrowserAction doubleClickAction;
-	private IDoubleClickListener dblClickListener;
-	private TreeNode functions;
-	private TreeNode localFunctions;
-	private Menu menu;
-
 	public FunctionBrowserView() {
 		super();
 		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
@@ -48,7 +41,6 @@ public class FunctionBrowserView extends BrowserView {
 	/**
 	 * Creates the UI on the given <code>Composite</code>
 	 */
-	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 		super.createPartControl(parent);
@@ -62,7 +54,6 @@ public class FunctionBrowserView extends BrowserView {
 	/**
 	 * Refreshes the list of functions in the viewer.
 	 */
-	@Override
 	public void refresh() {
 		LogManager.logDebug("Start refresh:", this); //$NON-NLS-1$
 		functions = TapsetLibrary.getFunctions();
@@ -118,7 +109,6 @@ public class FunctionBrowserView extends BrowserView {
 		LogManager.logDebug("End makeActions:", this); //$NON-NLS-1$
 	}
 	
-	@Override
 	public void dispose() {
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();
@@ -138,6 +128,12 @@ public class FunctionBrowserView extends BrowserView {
 			menu.dispose();
 		menu = null;
 		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
-		TapsetLibrary.stop();
 	}
+	
+	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView";
+	private FunctionBrowserAction doubleClickAction;
+	private IDoubleClickListener dblClickListener;
+	private TreeNode functions;
+	private TreeNode localFunctions;
+	private Menu menu;
 }

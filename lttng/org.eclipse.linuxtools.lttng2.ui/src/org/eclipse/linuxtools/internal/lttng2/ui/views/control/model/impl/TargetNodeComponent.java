@@ -171,6 +171,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -204,17 +205,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
             return sessions.toArray(new TraceSessionComponent[sessions.size()]);
         }
         return new TraceSessionComponent[0];
-    }
-
-    /**
-     * @return node version
-     */
-    public String getNodeVersion() {
-        // Control service is null during connection to node
-        if (getControlService() != null) {
-            return getControlService().getVersion();
-        }
-        return ""; //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------

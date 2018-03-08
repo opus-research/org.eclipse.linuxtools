@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.dashboard.actions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.eclipse.jface.action.Action;
@@ -20,23 +19,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.ClientSession;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.actions.hidden.GetSelectedModule;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
-import org.eclipse.linuxtools.systemtap.ui.graphicalrun.structures.ChartStreamDaemon2;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetFactory;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IActionListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Display;
@@ -46,7 +28,23 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 
-import com.jcraft.jsch.JSchException;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.ClientSession;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.Subscription;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetFactory;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IActionListener;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.actions.hidden.GetSelectedModule;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.graphicalrun.structures.ChartStreamDaemon2;
 
 
 /**
@@ -78,7 +76,6 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 	 * The command is setup and started.  Any graphs associated with the module
 	 * are also added to the main window the the user to monitor.
 	 */
-	@Override
 	public void run() {
 		//Get the treeViewer
 //		BusyIndicator.showWhile(Display.getCurrent(), this.);
@@ -182,17 +179,13 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 			new SelectServerDialog(fWindow.getShell()).open() == false)
 			return;
         	
-	  if (module.location.equalsIgnoreCase("local")) { //$NON-NLS-1$
+	  if (module.location.equalsIgnoreCase("local")) {
 		 try{
 				ScpClient scpclient = new ScpClient();
 				tmpfileName=null;
-				tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
+				tmpfileName="/tmp/"+ serverfileName;
 				 scpclient.transfer(fileName,tmpfileName);
-		    } catch (JSchException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		    }catch(Exception e){e.printStackTrace();}
 	  }
 		String modname = serverfileName.substring(0, serverfileName.indexOf('.'));
 		if (modname.indexOf('-') != -1)
@@ -200,9 +193,9 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 	
 		//TODO: Check for prebuilt module first
 		String[] cmd = new String[] {
-				"stap", //$NON-NLS-1$
-				"-g", //$NON-NLS-1$
-				"-m", //$NON-NLS-1$
+				"stap",
+				"-g",
+				"-m",
 				modname,
 				tmpfileName};
 		
@@ -229,7 +222,7 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 			amd.cmd = console;
 			amd.data = ds;
 			amd.paused = false;
-			addActive(module.category + "." + module.display, amd); //$NON-NLS-1$
+			addActive(module.category + "." + module.display, amd);
 		//}
 	
 	}
@@ -277,18 +270,20 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 	 * called or referenced after the dispose method.
 	 */
 	public void dispose() {
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-				.getActivePage().findView(DashboardModuleBrowserView.ID);
-		final DashboardModuleBrowserView dmbv = (DashboardModuleBrowserView) ivp;
-		dmbv.getViewer().removeSelectionChangedListener(moduleListener);
-
-		ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-				.getActivePage().findView(ActiveModuleBrowserView.ID);
-		final ActiveModuleBrowserView ambv = (ActiveModuleBrowserView) ivp;
-		ambv.getViewer().removeSelectionChangedListener(activeModuleListener);
-
-		StopModuleAction.removeActionListener(stopListener);
-		PauseModuleAction.removeActionListener(pauseListener);
+		try {
+			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(DashboardModuleBrowserView.ID);
+			final DashboardModuleBrowserView dmbv = (DashboardModuleBrowserView)ivp;
+			dmbv.getViewer().removeSelectionChangedListener(moduleListener);
+			
+			ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ActiveModuleBrowserView.ID);
+			final ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
+			ambv.getViewer().removeSelectionChangedListener(activeModuleListener);
+			
+			StopModuleAction.removeActionListener(stopListener);
+			PauseModuleAction.removeActionListener(pauseListener);
+		} catch(Exception e) {
+			
+		}
 		view = null;
 		act = null;
 		fWindow = null;
@@ -345,12 +340,13 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 	 */
 	private final ISelectionChangedListener activeModuleListener = new ISelectionChangedListener() {
 		public void selectionChanged(SelectionChangedEvent e) {
-			TreeNode node = (TreeNode) ((StructuredSelection) (e.getSelection()))
-					.getFirstElement();
-			if (((ActiveModuleData) node.getData()).paused)
-				setEnablement(true);
-			else
-				setEnablement(false);
+			try {
+				TreeNode node = (TreeNode)((StructuredSelection)(e.getSelection())).getFirstElement();
+				if(((ActiveModuleData)node.getData()).paused)
+					setEnablement(true);
+				else
+					setEnablement(false);
+			} catch(Exception ex) {}
 		}
 	};
 	
@@ -361,35 +357,32 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 	 */
 	private final ISelectionChangedListener moduleListener = new ISelectionChangedListener() {
 		public void selectionChanged(SelectionChangedEvent e) {
-			TreeNode node = (TreeNode) ((StructuredSelection) (e.getSelection()))
-					.getFirstElement();
-			IViewPart ivp = PlatformUI.getWorkbench()
-					.getActiveWorkbenchWindow().getActivePage()
-					.findView(ActiveModuleBrowserView.ID);
-			ActiveModuleBrowserView amdv = (ActiveModuleBrowserView) ivp;
-			DashboardModule module = (node.getData() instanceof DashboardModule) ? (DashboardModule) node
-					.getData() : null;
-			int childcount = node.getChildCount();
-			if (0 == childcount && !amdv.isActive(module))
-				setEnablement(true);
-			else if (amdv.isActive(module) && amdv.isPaused(module))
-				setEnablement(true);
-			else if (childcount > 0) {
-				boolean active = false;
-
-				for (int j = 0; j < childcount; j++) {
-					if (amdv.isActive((DashboardModule) node.getChildAt(j)
-							.getData())) {
-						active = true;
-						break;
-					}
-				}
-				if (active == false)
+			try {
+				TreeNode node = (TreeNode)((StructuredSelection)(e.getSelection())).getFirstElement();
+				IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ActiveModuleBrowserView.ID);
+				ActiveModuleBrowserView amdv = (ActiveModuleBrowserView)ivp;
+				DashboardModule module = (node.getData() instanceof DashboardModule) ? (DashboardModule)node.getData() : null;
+				int childcount = node.getChildCount();
+				if(0 == childcount && !amdv.isActive(module))
 					setEnablement(true);
-
-			} else
-				setEnablement(false);
-
+				else if(amdv.isActive(module) && amdv.isPaused(module))
+					setEnablement(true);
+				else if(childcount > 0)
+				{   	
+					boolean active = false;
+					
+					
+						for(int j=0; j<childcount; j++) {
+							if(amdv.isActive((DashboardModule)node.getChildAt(j).getData())) {
+								active = true;
+								break; }
+						}
+						if (active == false ) setEnablement(true);
+					
+				}
+				else
+				 setEnablement(false);
+			} catch(Exception ex) {}
 		}
 	};
 	

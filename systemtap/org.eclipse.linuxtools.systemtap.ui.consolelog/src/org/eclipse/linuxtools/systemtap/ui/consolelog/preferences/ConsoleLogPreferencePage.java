@@ -29,7 +29,6 @@ public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implemen
 		//LogManager.logDebug("End ConsoleLogPreferencePage:", this);
 	}
 	
-	@Override
 	public void createFieldEditors() {
 		
 		addField(new StringFieldEditor(ConsoleLogPreferenceConstants.HOST_NAME,
@@ -62,7 +61,6 @@ public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implemen
 	
 	}
 
-	@Override
 	public void dispose() {
 	
 		super.dispose();

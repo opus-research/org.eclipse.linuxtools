@@ -35,7 +35,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * Gets the parent of this tree node;
 	 * @return a tree node
 	 */
-	@Override
 	public TreeElement getParent() {
 		return parent;
 	}
@@ -45,7 +44,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * @return <code>true</code> if this tree node has children,
 	 * <code>false</code> otherwise.
 	 */
-	@Override
 	public boolean hasChildren() {
 		return true;
 	}
@@ -54,7 +52,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getCalls()
 	 */
-	@Override
 	public int getCalls() {
 		if (calls == -1) {
 			calls = 0;
@@ -70,7 +67,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getSamples()
 	 */
-	@Override
 	public int getSamples() {
 		if (samples == -1) {
 			samples = 0;
@@ -85,7 +81,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getSourceLine()
 	 */
-	@Override
 	public int getSourceLine() {
 		return 0;
 	}
@@ -94,7 +89,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getSourcePath()
 	 */
-	@Override
 	public String getSourcePath() {
 		return null;
 	}
@@ -103,7 +97,6 @@ public abstract class AbstractTreeElement implements TreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getRoot()
 	 */
-	@Override
 	public TreeElement getRoot() {
 		if (parent == null) return this;
 		return parent.getRoot();
