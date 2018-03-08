@@ -1,14 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *     Alexandre Montplaisir - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -18,9 +17,10 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -512,7 +512,7 @@ public class CTFTrace implements IDefinitionScope {
      * @throws CTFReaderException
      */
     private void openStreamInput(File streamFile) throws CTFReaderException {
-        ByteBuffer byteBuffer;
+        MappedByteBuffer byteBuffer;
         BitBuffer streamBitBuffer;
         Stream stream;
         FileChannel fc;
@@ -528,8 +528,8 @@ public class CTFTrace implements IDefinitionScope {
             fileInputStreams.add(fis);
             fc = fis.getChannel();
 
-            byteBuffer = ByteBuffer.allocate(Math.min((int)fc.size(), 4096));
-            fc.read(byteBuffer);
+            /* Map one memory page of 4 kiB */
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, 4096);
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
             throw new CTFReaderException();
@@ -583,10 +583,6 @@ public class CTFTrace implements IDefinitionScope {
         } else {
             /* No packet header, we suppose there is only one stream */
             stream = streams.get(null);
-        }
-
-        if (stream == null) {
-            throw new CTFReaderException("Unexpected end of stream"); //$NON-NLS-1$
         }
 
         /* Create the stream input */

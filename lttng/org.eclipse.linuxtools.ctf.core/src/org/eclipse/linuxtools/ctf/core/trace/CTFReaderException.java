@@ -89,19 +89,6 @@ public class CTFReaderException extends Exception {
         parseMismatchedException(e);
     }
 
-    /**
-     * Constructor with an attached message and re-throw an exception into this type.
-     *
-     * @param message
-     *            The message attached to this exception
-     * @param exception
-     *            The previous Exception caught
-     * @since 2.0
-     */
-    public CTFReaderException(String message, Throwable exception) {
-        super(message, exception);
-    }
-
     private void parseMismatchedException(MismatchedTokenException m) {
         // Iterate through the tokens that are hidden in the CTFLexer
         // They are private static final int fields.
