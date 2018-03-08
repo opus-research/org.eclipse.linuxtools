@@ -356,8 +356,8 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testSeekEvent_location() {
-        final CtfLocationData location2 = new CtfLocationData(1L, 0L);
-        CtfLocation ctfLocation = new CtfLocation(location2);
+        final CtfLocationData loation2 = new CtfLocationData(1L, 0L);
+        CtfLocation ctfLocation = new CtfLocation(loation2);
         ITmfContext result = fixture.seekEvent(ctfLocation);
         assertNotNull(result);
     }

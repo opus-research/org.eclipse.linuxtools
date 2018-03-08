@@ -119,7 +119,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
         /*
          * Set the BitBuffer's byte order.
          */
-        getBitBuffer().setByteOrder(streamInputReader.getByteOrder());
+        getBitBuffer().order(streamInputReader.getByteOrder());
 
         events = streamInputReader.getStreamInput().getStream().getTrace()
                 .getEventDefs(streamInputReader.getStreamInput());
@@ -287,14 +287,20 @@ public class StreamInputPacketReader implements IDefinitionScope {
              */
             if (getStreamPacketContextDef() != null) {
                 getStreamPacketContextDef().read(getBitBuffer());
+                /*
+                 * Read CPU ID
+                 */
 
-                /* Read CPU ID */
                 if (this.getCurrentPacket().getTarget() != null) {
-                    this.currentCpu = (int) this.getCurrentPacket().getTargetId();
+                    this.currentCpu = (int) this.getCurrentPacket()
+                            .getTargetId();
                 }
+                /*
+                 * Read number of lost events
+                 */
 
-                /* Read number of lost events */
-                lostEventsInThisPacket = (int) this.getCurrentPacket().getLostEvents();
+                lostEventsInThisPacket = (int) this.getCurrentPacket()
+                        .getLostEvents();
                 lostSoFar = 0;
 
             }

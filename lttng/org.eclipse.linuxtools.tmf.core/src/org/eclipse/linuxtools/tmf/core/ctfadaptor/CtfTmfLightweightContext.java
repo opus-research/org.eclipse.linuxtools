@@ -49,7 +49,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
     public CtfTmfLightweightContext(ArrayList<CtfIterator> iters,
             ListIterator<CtfIterator> pos) {
         fTrace = iters.get(0).getCtfTmfTrace();
-        curLocation = new CtfLocation(new CtfLocationData(0, 0));
+        curLocation = new CtfLocation(new CtfLocationData(0,0));
     }
 
     /**
@@ -60,7 +60,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
      */
     public CtfTmfLightweightContext(CtfTmfTrace ctfTmfTrace) {
         fTrace = ctfTmfTrace;
-        curLocation = new CtfLocation(new CtfLocationData(0, 0));
+        curLocation = new CtfLocation(new CtfLocationData(0,0));
     }
 
     // -------------------------------------------
@@ -126,10 +126,11 @@ public class CtfTmfLightweightContext implements ITmfContext {
 
         if (currentEvent != null) {
             final long timestampValue = currentEvent.getTimestampValue();
-            if (curLocationData.getTimestamp() == timestampValue) {
-                curLocation.setLocation(timestampValue, curLocationData.getIndex() + 1);
-            } else {
-                curLocation.setLocation(timestampValue, 0L);
+            if(curLocationData.getTimestamp() == timestampValue ){
+                curLocation.setLocation(timestampValue,curLocationData.getOffset()+1);
+            }
+            else{
+                curLocation.setLocation(timestampValue,0L);
             }
         } else {
             curLocation.setLocation(CtfLocation.INVALID_LOCATION);
@@ -151,7 +152,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
      * @return success or not
      */
     public synchronized boolean seek(final long timestamp) {
-        curLocation.setLocation(timestamp, 0);
+        curLocation.setLocation(timestamp,0);
         return getIterator().seek(timestamp);
     }
 

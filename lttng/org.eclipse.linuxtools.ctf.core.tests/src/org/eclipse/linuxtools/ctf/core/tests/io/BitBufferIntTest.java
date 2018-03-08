@@ -37,7 +37,7 @@ public class BitBufferIntTest {
     @Before
     public void setUp() {
         fixture = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
-        fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
+        fixture.order(ByteOrder.BIG_ENDIAN);
         createBuffer(fixture);
     }
 
@@ -113,10 +113,11 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_signed() {
         fixture.position(1);
+        int index = 1;
         int length = 0;
         boolean signed = true;
 
-        int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(index, length, signed);
         assertEquals(0, result);
     }
 
@@ -126,10 +127,11 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_signed_length1() {
         fixture.position(1);
+        int index = 1;
         int length = 1;
         boolean signed = true;
 
-        int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(index, length, signed);
         assertEquals(0, result);
     }
 
@@ -141,11 +143,12 @@ public class BitBufferIntTest {
     public void testGetInt_le1() {
         BitBuffer le_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        le_fixture.order(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(1);
+        int index = 1;
         int length = 24;
-        int result = le_fixture.getInt(length, false);
+        int result = le_fixture.getInt(index, length, false);
 
         /* 0x020100 downshifted */
         assertEquals(0x810080, result);
@@ -159,11 +162,12 @@ public class BitBufferIntTest {
     public void testGetInt_le2() {
         BitBuffer le_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        le_fixture.order(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(0);
+        int index = 0;
         int length = 24;
-        int result = le_fixture.getInt(length, false);
+        int result = le_fixture.getInt(index, length, false);
         assertEquals(0x020100, result);
     }
 
@@ -174,7 +178,7 @@ public class BitBufferIntTest {
     public void testGetInt_invalid() {
         BitBuffer small_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
+        small_fixture.order(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(10);
         int length = 32;
@@ -191,13 +195,14 @@ public class BitBufferIntTest {
     public void testGetInt_invalid2() {
         BitBuffer small_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
+        small_fixture.order(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(1);
+        int index = 1;
         int length = 64;
         boolean signed = true;
 
-        int result = small_fixture.getInt(length, signed);
+        int result = small_fixture.getInt(index, length, signed);
         assertEquals(0, result);
     }
 
@@ -228,11 +233,12 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_length0() {
+        int index = 1;
         int length = 0;
         int value = 1;
 
         fixture.position(1);
-        fixture.putInt(length, value);
+        fixture.putInt(index, length, value);
     }
 
     /**
@@ -240,11 +246,12 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_length1() {
+        int index = 1;
         int length = 1;
         int value = 1;
 
         fixture.position(1);
-        fixture.putInt(length, value);
+        fixture.putInt(index, length, value);
     }
 
     /**
@@ -252,18 +259,12 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_hex() {
-        final int value = 0x010203;
-        int read;
+        int value = 0x010203;
 
-        for (int i = 0; i <= 32; i++) {
-            fixture.position(i);
-            fixture.putInt(value);
-
-            fixture.position(i);
-            read = fixture.getInt();
-
-            assertEquals(value, read);
-        }
+        fixture.position(1);
+        fixture.putInt(value);
+        int read = fixture.getInt();
+        assertEquals(value, read);
     }
 
     /**
@@ -273,14 +274,15 @@ public class BitBufferIntTest {
     public void testPutInt_invalid() {
         BitBuffer fixture2;
         fixture2 = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
-        fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
+        fixture2.order(ByteOrder.BIG_ENDIAN);
         createBuffer(fixture2, 4);
         fixture2.position(1);
 
+        int index = 16;
         int length = 32;
         int value = 1;
 
-        fixture2.putInt(length, value);
+        fixture2.putInt(index, length, value);
 
         int read = fixture2.getInt(1, true);
         assertEquals(value, read);

@@ -58,8 +58,8 @@ public class CtfIteratorTest {
     @Before
     public void setUp() throws TmfTraceException {
         fixture = new CtfIterator(createTrace());
-        CtfLocation ctfLocation = new CtfLocation(new CtfLocationData(1, 0));
-        ctfLocation.setLocation(new CtfLocationData(1, 0));
+        CtfLocation ctfLocation = new CtfLocation(new CtfLocationData(1,0));
+        ctfLocation.setLocation(new CtfLocationData(1,0));
         fixture.setLocation(ctfLocation);
         fixture.increaseRank();
     }
@@ -117,7 +117,7 @@ public class CtfIteratorTest {
         CtfTmfTrace trace = createTrace();
         long timestampValue = 1L;
         long rank = 1L;
-        CtfIterator result = new CtfIterator(trace, new CtfLocationData(timestampValue, 0), rank);
+        CtfIterator result = new CtfIterator(trace, new CtfLocationData(timestampValue,0), rank);
 
         assertNotNull(result);
     }
@@ -165,8 +165,8 @@ public class CtfIteratorTest {
     @Test
     public void testEquals_other() throws TmfTraceException {
         CtfIterator obj = new CtfIterator(createTrace());
-        CtfLocation ctfLocation1 = new CtfLocation(new CtfLocationData(1, 0));
-        ctfLocation1.setLocation(new CtfLocationData(1, 0));
+        CtfLocation ctfLocation1 = new CtfLocation(new CtfLocationData(1,0));
+        ctfLocation1.setLocation(new CtfLocationData(1,0));
         obj.setLocation(ctfLocation1);
         obj.increaseRank();
 
@@ -263,8 +263,8 @@ public class CtfIteratorTest {
      */
     @Test
     public void testSetLocation() {
-        CtfLocation location = new CtfLocation(new CtfLocationData(1, 0));
-        location.setLocation(new CtfLocationData(1, 0));
+        CtfLocation location = new CtfLocation(new CtfLocationData(1,0));
+        location.setLocation(new CtfLocationData(1,0));
         fixture.setLocation(location);
     }
 }
