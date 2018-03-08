@@ -25,11 +25,9 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersImages;
-import org.eclipse.linuxtools.dataviewers.abstractviewers.TreeColumnViewerFilter;
 import org.eclipse.linuxtools.dataviewers.actions.STExportToCSVAction;
 import org.eclipse.linuxtools.dataviewers.charts.actions.ChartAction;
 import org.eclipse.linuxtools.gcov.Activator;
@@ -38,14 +36,11 @@ import org.eclipse.linuxtools.internal.gcov.parser.CovManager;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.OpenSourceFileAction;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -61,8 +56,6 @@ public class CovView extends AbstractSTDataView {
 	private String defaultCSVPath = "gcov.csv";
 	
 	private Label label;
-    private Text fFilterText;
-    private TreeColumnViewerFilter fViewerFilter;
 
 	private Action folderAction;
 	private Action fileAction;
@@ -132,8 +125,6 @@ public class CovView extends AbstractSTDataView {
 		l.verticalSpacing = 0;
 		l.marginHeight = 0;
 		l.marginWidth = 0;
-		fViewerFilter = new TreeColumnViewerFilter((TreeViewer) getSTViewer().getViewer(), getSTViewer().getAllFields()[0], true);
-		getSTViewer().getViewer().addFilter(fViewerFilter);
 	}
 
 	@Override
@@ -141,19 +132,6 @@ public class CovView extends AbstractSTDataView {
 		label = new Label(parent, SWT.WRAP);
 		GridData data = new GridData(SWT.FILL, SWT.BEGINNING, true, false, 1, 1);
 		label.setLayoutData(data);
-		
-		fFilterText = new Text(parent, SWT.BORDER | SWT.SINGLE | SWT.SEARCH | SWT.ICON_SEARCH
-                | SWT.ICON_CANCEL);
-		fFilterText.setMessage("type filter text");
-        fFilterText.setToolTipText("Filter by name");
-        fFilterText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        fFilterText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                String text = fFilterText.getText();
-                fViewerFilter.setMatchingText(text);
-            }
-        });
 	}
 
 	public static void setCovViewTitle(CovView view, String title,

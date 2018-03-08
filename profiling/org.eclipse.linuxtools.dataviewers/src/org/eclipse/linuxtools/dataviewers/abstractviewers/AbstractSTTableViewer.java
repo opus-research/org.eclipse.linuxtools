@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.abstractviewers;
 
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -50,17 +51,16 @@ public abstract class AbstractSTTableViewer extends AbstractSTViewer {
 		super(parent,style,init);
 	}
 
-	/**
-	 * It creates the wrapped TableViewer 
-	 * @param parent - the parent Composite
-	 * @param style - the table style
-	 * @return a TableViewer
-	 * @since 4.1
-	 */
 	@Override
-	protected TableViewer createViewer(Composite parent, int style) {
-		Table t = createTable(parent, style);
-		return new TableViewer(t);
+	/*
+	 * It creates the TableViewer wrapped
+	 * @param parent
+	 * @param style
+	 * @return ColumnViewer
+	 */
+	protected ColumnViewer createViewer(Composite parent, int style) {
+		return new TableViewer(
+				createTable(parent, style));
 	}
 	
 	/**
