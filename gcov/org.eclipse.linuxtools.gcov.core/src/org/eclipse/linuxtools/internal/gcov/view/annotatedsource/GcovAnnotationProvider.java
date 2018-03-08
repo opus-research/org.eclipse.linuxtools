@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.IAnnotationProvider;
 import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.ISTAnnotationColumn;
 import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.parser.Line;
@@ -26,7 +25,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * 
+ *
  * @author Xavier Raynaud <xavier.raynaud@kalray.eu>
  */
 public class GcovAnnotationProvider implements IAnnotationProvider {
@@ -86,10 +85,12 @@ public class GcovAnnotationProvider implements IAnnotationProvider {
                 Line line = lines.get(index);
                 if (line.exists()) {
                     long count = line.getCount();
-                    if (count == 0)
-                        return RED;
-                    if (!USE_GRADIENT || count == sourceFile.getmaxLineCount())
-                        return GREEN_MAX;
+                    if (count == 0) {
+						return RED;
+					}
+                    if (!USE_GRADIENT || count == sourceFile.getmaxLineCount()) {
+						return GREEN_MAX;
+					}
                     int colorIndex = 128 - (int) ((128 * count) / sourceFile.getmaxLineCount());
                     if (GREENCOLORS[colorIndex] == null) {
                         int r = GREEN_MIN.getRed() + (GREEN_MAX.getRed() - GREEN_MIN.getRed()) / colorIndex;
@@ -111,15 +112,19 @@ public class GcovAnnotationProvider implements IAnnotationProvider {
 
     @Override
     public void dispose() {
-        if (GREEN_MAX != null)
-            GREEN_MAX.dispose();
-        if (GREEN_MIN != null)
-            GREEN_MIN.dispose();
-        if (RED != null)
-            RED.dispose();
+        if (GREEN_MAX != null) {
+			GREEN_MAX.dispose();
+		}
+        if (GREEN_MIN != null) {
+			GREEN_MIN.dispose();
+		}
+        if (RED != null) {
+			RED.dispose();
+		}
         for (Color c : GREENCOLORS) {
-            if (c != null)
-                c.dispose();
+            if (c != null) {
+				c.dispose();
+			}
         }
     }
 
