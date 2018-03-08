@@ -16,18 +16,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.List;
-
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.Messages;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
@@ -39,7 +33,6 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotCTabItem;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotCombo;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -51,7 +44,7 @@ import org.junit.runner.RunWith;
 public class TestCreateSystemtapScript {
 
 	static SWTWorkbenchBot bot;
-	static boolean stapInstalled = true;
+	static boolean stapInstalled;
 
 	private static final String SYSTEMTAP_PROJECT_NAME = "SystemtapTest";
 
@@ -99,11 +92,10 @@ public class TestCreateSystemtapScript {
 	private static class StapHasExited extends DefaultCondition{
 
 		@Override
-		public boolean test() throws IOException, InterruptedException {
-			Process process = RuntimeProcessFactory.getFactory().exec(
-					new String[] {"pgrep","stap"}, null); //$NON-NLS-1$
-			process.waitFor();
-			return (process.exitValue() != 0);
+		public boolean test() {
+			SWTBotView console = TestCreateSystemtapScript.bot.viewById("org.eclipse.ui.console.ConsoleView");
+			console.setFocus();
+			return (!console.toolbarButton("Stop Script").isEnabled());
 		}
 
 		@Override
@@ -115,6 +107,7 @@ public class TestCreateSystemtapScript {
 	@BeforeClass
 	public static void beforeClass() {
 		bot = new SWTWorkbenchBot();
+		stapInstalled = true;
 
 		// Dismiss "Systemtap not installed" dialog(s) if present.
 		try {
@@ -186,14 +179,10 @@ public class TestCreateSystemtapScript {
 
 		SWTBotText text = bot.textWithLabel("Script Name:").setText(scriptName);
 		assertEquals(scriptName, text.getText());
-		bot.button("Browse").click();
 
-		SWTBotShell shell2 = bot.shell("Folder Selection");
-		shell2.activate();
-		SWTBotTree tree = bot.tree().select(SYSTEMTAP_PROJECT_NAME);
-		assertNotNull(tree);
+		text = bot.textWithLabel("Project:").setText(SYSTEMTAP_PROJECT_NAME);
+		assertEquals(SYSTEMTAP_PROJECT_NAME, text.getText());
 
-		bot.button("OK").click();
 		bot.button("Finish").click();
 		bot.waitUntil(new ShellIsClosed(shell));
 
@@ -230,33 +219,24 @@ public class TestCreateSystemtapScript {
 		SWTBotTree runConfigurationsTree = bot.tree();
 		runConfigurationsTree.select("SystemTap").contextMenu("New").click();
 
-		bot.button("Run").click();
-		bot.waitUntil(new ShellIsClosed(shell));
+		if (stapInstalled) {
+			bot.button("Run").click();
+			bot.waitUntil(new ShellIsClosed(shell));
 
-		SWTBotView console = bot.viewByTitle("Console");
-		console.setFocus();
-		assertTrue(console.bot().label().getText().contains(scriptName));
-		bot.waitUntil(new StapHasExited(), 10000);
+			SWTBotView console = bot.viewById("org.eclipse.ui.console.ConsoleView");
+			console.setFocus();
+			assertTrue(console.bot().label().getText().contains(scriptName));
+			bot.waitUntil(new StapHasExited(), 10000);
+		} else {
+			bot.button("Close").click();
+			bot.waitUntil(new ShellIsClosed(shell));
+		}
 	}
 
 	@Test
-	public void testGraphScript(){
-		String scriptName = "testGraph.stp";
+	public void testMissingColumns(){
+		String scriptName = "missingColumns.stp";
 		createScript(bot, scriptName);
-
-		// Write a script
-		SWTBotEclipseEditor editor = bot.editorByTitle(scriptName).toTextEditor();
-		editor.setText("#!/usr/bin/env stap"
-				+ "\nglobal i,j,k"
-				+ "\nprobe begin{i=0;j=0;k=0}"
-				+ "\nprobe timer.ms(100){printf(\"Value:%d %d\\n\",i,j);i++;j+=2}"
-				+ "\nprobe timer.ms(250){printf(\"Other:%d %d\\n\",i,k);k++}"
-				+ "\nprobe timer.ms(1000){exit()}");
-		editor.save();
-
-		String val0 = "i";
-		String val1 = "j";
-		String val2 = "k";
 
 		// Focus on project explorer view.
 		bot.viewByTitle("Project Explorer").setFocus();
@@ -283,88 +263,41 @@ public class TestCreateSystemtapScript {
 
 		// Enable output graphing.
 		bot.checkBox(Messages.SystemTapScriptGraphOptionsTab_2).click();
-		SWTBotText text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
-		text.setText("Value:(\\d+) (\\d+)");
-		assertEquals("Value:(\\d+) (\\d+)", text.getText());
 
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_sampleOutputLabel);
-		text.setText("Value:1 2");
-		assertEquals("Value:1 2", text.getText());
-
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "0"));
-		text.setText(val0);
-		assertEquals(val0, text.getText());
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "1"));
-		text.setText(val1);
-		assertEquals(val1, text.getText());
-
-		// Add a graph.
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).click();
-		setupGraph("Values");
-
-		// Make a second regex, and a graph for it.
-		shell.setFocus();
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 0).click();
-
-		SWTBotShell shell2 = bot.shell(Messages.SystemTapScriptGraphOptionsTab_setRegexTitleAdd);
-		shell2.setFocus();
-		bot.button("OK").click();
-
-		bot.waitUntil(new ShellIsClosed(shell2));
-
-		shell.setFocus();
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_regexLabel);
+		// As soon as the Graphing tab is entered, no regular expression exists & nothing can be run.
+		SWTBotText text = bot.textWithLabel("Regular Expression:");
 		assertEquals("", text.getText());
-		text.setText("Other:(\\d+) (\\d+)");
-		assertEquals("Other:(\\d+) (\\d+)", text.getText());
+		assertTrue(!bot.button("Run").isEnabled());
+		assertTrue(!bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).isEnabled());
+		text.setText("(1)(2)");
+		assertEquals("(1)(2)", text.getText());
+		assertTrue(bot.button("Run").isEnabled());
+		assertTrue(bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).isEnabled());
 
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "0"));
-		text.setText(val0);
-		assertEquals(val0, text.getText());
-		text = bot.text(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, "1"));
-		text.setText(val2);
-		assertEquals(val2, text.getText());
+		text = bot.text("", 1);
+		text.setText("Val 1");
+		assertEquals("Val 1", text.getText());
+		text = bot.text("", 1);
+		text.setText("Val 2");
+		assertEquals("Val 2", text.getText());
 
-		text = bot.textWithLabel(Messages.SystemTapScriptGraphOptionsTab_sampleOutputLabel);
-		assertEquals("", text.getText());
-
-		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton, 1).click();
-		setupGraph("Others");
+		bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).click();
+		setupGraph("Graph");
 
 		shell.setFocus();
-		bot.button("Run").click();
+		assertTrue(bot.button("Run").isEnabled());
+
+		// Removing groups from the regex disables graphs that rely on those groups.
+		text = bot.textWithLabel("Regular Expression:");
+		text.setText("(1)");
+		assertTrue(!bot.button("Run").isEnabled());
+		text.setText("(1)(2)(3)");
+		assertTrue(bot.button("Run").isEnabled());
+
+		shell.setFocus();
+		bot.button("Apply").click();
+		bot.button("Close").click();
 		bot.waitUntil(new ShellIsClosed(shell));
-		bot.waitUntil(new StapHasExited(), 11000); // Wait 10 seconds longer than script duration
-
-		// If Systemtap is not installed, don't test graph output. Otherwise, do.
-		if (!stapInstalled) {
-			return;
-		}
-
-		bot.sleep(1000); // Give time for the table to be fully constructed
-		SWTBotEditor graphDisplay = bot.activeEditor();
-		graphDisplay.setFocus();
-		graphDisplay.bot().cTabItem(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultRegexTitleBase, "0")).activate();
-		graphDisplay.bot().cTabItem("Data View").activate();
-		SWTBotTable dataTable = bot.table(0);
-		List<String> colNames = dataTable.columns();
-		assertEquals(3, colNames.size());
-		assertEquals(10, dataTable.rowCount());
-		assertEquals(val0, colNames.get(1));
-		assertEquals(val1, colNames.get(2));
-		assertEquals("3", dataTable.cell(3, 1));
-		assertEquals("6", dataTable.cell(3, 2));
-
-		graphDisplay.bot().cTabItem(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultRegexTitleBase, "1")).activate();
-		graphDisplay.bot().cTabItem("Data View").activate();
-		dataTable = bot.table(0);
-		colNames = dataTable.columns();
-		assertEquals(3, colNames.size());
-		assertEquals(4, dataTable.rowCount());
-		assertEquals(val0, colNames.get(1));
-		assertEquals(val2, colNames.get(2));
-		assertEquals("10", dataTable.cell(3, 1));
-		assertEquals("3", dataTable.cell(3, 2));
 	}
 
 	private void setupGraph(String title) {
