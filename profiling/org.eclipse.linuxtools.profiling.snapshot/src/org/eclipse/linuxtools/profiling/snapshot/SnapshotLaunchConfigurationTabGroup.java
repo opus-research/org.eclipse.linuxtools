@@ -13,10 +13,10 @@ package org.eclipse.linuxtools.profiling.snapshot;
 import java.util.ArrayList;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.internal.profiling.provider.ProviderLaunchConfigurationTabGroup;
 
 public class SnapshotLaunchConfigurationTabGroup extends
-		ProfileLaunchConfigurationTabGroup {
+		ProviderLaunchConfigurationTabGroup {
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
