@@ -17,11 +17,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp.TimestampType;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -47,9 +46,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     //-------------------------------------------
     //        Fields
     //-------------------------------------------
-
-    /** Reference to the state system assigned to this trace */
-    protected IStateSystemQuerier ss = null;
 
     /* Reference to the CTF Trace */
     private CTFTrace fTrace;
@@ -109,7 +105,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
             throw new TmfTraceException(e.getMessage(), e);
         }
 
-        //FIXME This should be called via the ExperimentUpdated signal
         buildStateSystem();
 
         /* Refresh the project, so it can pick up new files that got created. */
@@ -149,6 +144,12 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         }
     }
 
+    @Override
+    protected void buildStateSystem() throws TmfTraceException {
+        /* CTF itself doesn't specify any additional state system */
+        super.buildStateSystem();
+    }
+
     /**
      * Method getCurrentLocation. This is not applicable in CTF
      * @return null, since the trace has no knowledge of the current location
@@ -158,8 +159,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     public ITmfLocation<?> getCurrentLocation() {
         return null;
     }
-
-
 
     @Override
     public double getLocationRatio(ITmfLocation<?> location) {
@@ -263,30 +262,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         }
 
         return event;
-    }
-
-    /**
-     * Suppressing the warning, because the 'throws' will usually happen in
-     * sub-classes.
-     *
-     * @throws TmfTraceException
-     */
-    @SuppressWarnings("unused")
-    protected void buildStateSystem() throws TmfTraceException {
-        /*
-         * Nothing is done in the basic implementation, please specify
-         * how/if to build a state system in derived classes.
-         */
-        return;
-    }
-
-    /**
-     * Method getStateSystem.
-     *
-     * @return IStateSystemQuerier
-     */
-    public IStateSystemQuerier getStateSystem() {
-        return this.ss;
     }
 
     /**
