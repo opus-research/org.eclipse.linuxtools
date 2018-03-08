@@ -246,8 +246,6 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
                             bookmarksFile.move(newBookmarksPath, IResource.FORCE | IResource.SHALLOW, null);
                         }
                     }
-
-                    fExperiment.renameSupplementaryFolder(newName);
                 	fExperiment.getResource().move(newPath, IResource.FORCE | IResource.SHALLOW, null);
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
