@@ -34,27 +34,27 @@ public interface ISDGraphNodeSupporter {
     /**
      * Lifeline support ID
      */
-    static int LIFELINE = 0;
+    public static int LIFELINE = 0;
     /**
      * Synchronous message support ID
      */
-    static int SYNCMESSAGE = 1;
+    public static int SYNCMESSAGE = 1;
     /**
      * Synchronous message return support ID
      */
-    static int SYNCMESSAGERETURN = 2;
+    public static int SYNCMESSAGERETURN = 2;
     /**
      * Asynchronous message support ID
      */
-    static int ASYNCMESSAGE = 3;
+    public static int ASYNCMESSAGE = 3;
     /**
      * Asynchronous message return support ID
      */
-    static int ASYNCMESSAGERETURN = 4;
+    public static int ASYNCMESSAGERETURN = 4;
     /**
      * Stop support ID
      */
-    static int STOP = 5;
+    public static int STOP = 5;
 
     // ------------------------------------------------------------------------
     // Methods
