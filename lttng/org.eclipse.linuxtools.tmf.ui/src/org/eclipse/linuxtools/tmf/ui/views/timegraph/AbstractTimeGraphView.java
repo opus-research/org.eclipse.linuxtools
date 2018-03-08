@@ -11,6 +11,7 @@
  *   Bernd Hufmann - Updated signal handling
  *   Geneviève Bastien - Move code to provide base classes for time graph view
  *   Marc-Andre Laperle - Add time zone preference
+ *   Geneviève Bastien - Add event links between entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.timegraph;
@@ -22,6 +23,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -56,6 +59,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeLinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -97,6 +101,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
 
     /** The timegraph entry list */
     private List<TimeGraphEntry> fEntryList;
+
+    /** The links (vertical events) of this view */
+    private Set<TimeLinkEvent> fLinkEvents = new TreeSet<TimeLinkEvent>();
 
     /** The trace to entry list hash map */
     private final Map<ITmfTrace, List<TimeGraphEntry>> fEntryListMap = new HashMap<ITmfTrace, List<TimeGraphEntry>>();
@@ -281,6 +288,30 @@ public abstract class AbstractTimeGraphView extends TmfView {
     }
 
     /**
+     * Adds a vertical time event (link) to the view
+     *
+     * @param lnk The link event
+     * @since 3.0
+     */
+    protected void addLink(TimeLinkEvent lnk) {
+        fLinkEvents.add(lnk);
+    }
+
+    /**
+     * Gets the link events
+     *
+     * @return The set link events
+     * @since 3.0
+     */
+    protected Set<TimeLinkEvent> getLinks() {
+        return fLinkEvents;
+    }
+
+    private void resetLinkEvents() {
+        fLinkEvents = new TreeSet<TimeLinkEvent>();
+    }
+
+    /**
      * Text for the "next" button
      *
      * @return The "next" button text
@@ -446,6 +477,10 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 }
                 zoom(entry, fMonitor);
             }
+            /* Refresh the arrows when zooming */
+            List<TimeLinkEvent> events = getLinkList(fZoomStartTime, fZoomEndTime, fResolution, fMonitor);
+            fTimeGraphCombo.setLinks(events.toArray(new TimeLinkEvent[0]));
+            redraw();
         }
 
         private void zoom(TimeGraphEntry entry, IProgressMonitor monitor) {
@@ -618,6 +653,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         synchronized (fEntryListMap) {
             fEntryListMap.remove(signal.getTrace());
         }
+        resetLinkEvents();
         if (signal.getTrace() == fTrace) {
             fTrace = null;
             fStartTime = 0;
@@ -708,6 +744,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
                     buildThread.start();
                 }
             } else {
+                resetLinkEvents();
                 fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 refresh();
@@ -756,6 +793,28 @@ public abstract class AbstractTimeGraphView extends TmfView {
     protected abstract List<ITimeEvent> getEventList(TimeGraphEntry entry,
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor);
+
+    /**
+     * Gets the list of links (displayed as arrows) for a trace in a given
+     * timerange.  Default implementation returns the list of link events
+     * for this object.
+     *
+     * @param startTime
+     *            Start of the time range
+     * @param endTime
+     *            End of the time range
+     * @param resolution
+     *            The resolution
+     * @param monitor
+     *            The progress monitor object
+     * @return The list of link events
+     * @since 3.0
+     */
+    protected List<TimeLinkEvent> getLinkList(long startTime, long endTime,
+            long resolution, IProgressMonitor monitor) {
+        return new ArrayList<TimeLinkEvent>(fLinkEvents);
+    }
+
 
     /**
      * Refresh the display
