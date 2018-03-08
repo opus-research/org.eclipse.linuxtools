@@ -19,15 +19,11 @@
   <parent>
     <groupId>org.eclipse.linuxtools.releng</groupId>
     <artifactId>linuxtools-releng-parent</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.releng-site</artifactId>
   <packaging>eclipse-repository</packaging>
-
-  <properties>
-    <relengTargetDir>${basedir}/target_save</relengTargetDir>
-  </properties>
 
   <build>
     <plugins>
@@ -66,12 +62,12 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <tasks>
+              <target>
                 <!-- copy scripts to build directory and execute -->
                 <copy file="p2.xsl" todir="${project.build.directory}"/>
                 <copy file="promoter.xml" todir="${project.build.directory}"/>
                 <ant antfile="${project.build.directory}/promoter.xml"/>
-              </tasks>
+              </target>
             </configuration>
           </execution>
         </executions>
@@ -81,7 +77,7 @@
 
   <name>Eclipse Linux Tools p2 Repository</name>
   <!-- see http://issues.sonatype.org/browse/TYCHO-313 -->
-  <version>2.0.0-SNAPSHOT</version>
+  <version>2.2.0-SNAPSHOT</version>
 
   <profiles>
     <profile>
@@ -96,7 +92,7 @@
              <execution>
                <id>pack</id>
                <configuration>
-                 <inputFile>${relengTargetDir}/org.eclipse.linuxtools.releng-site.zip</inputFile>
+                 <inputFile>${project.build.directory}/org.eclipse.linuxtools.releng-site.zip</inputFile>
                </configuration>
                <phase>install</phase>
                <goals>
@@ -146,7 +142,7 @@
                    <goal>run</goal>
                  </goals>
                  <configuration>
-                   <tasks>
+                   <target>
                      <delete includeemptydirs="false">
                        <fileset
                          dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
@@ -159,7 +155,7 @@
                          <include name="**" />
                        </fileset>
                      </copy>
-                   </tasks>
+                   </target>
                  </configuration>
                </execution>
              </executions>

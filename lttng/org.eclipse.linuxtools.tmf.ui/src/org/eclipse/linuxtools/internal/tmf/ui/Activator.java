@@ -7,19 +7,24 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
+ *     Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.properties.TmfTimePreferences;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventAdapterFactory;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -35,11 +40,18 @@ public class Activator extends AbstractUIPlugin {
      * The plug-in ID
      */
     public static final String PLUGIN_ID = "org.eclipse.linuxtools.tmf.ui"; //$NON-NLS-1$
+    /**
+     * The core plug-in ID
+     */
+    public static final String PLUGIN_CORE_ID = "org.eclipse.linuxtools.tmf.core"; //$NON-NLS-1$
 
     /**
      * The shared instance
      */
     private static Activator plugin;
+
+    private TmfEventAdapterFactory fTmfEventAdapterFactory;
+    private IPreferenceStore fCorePreferenceStore;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -74,14 +86,29 @@ public class Activator extends AbstractUIPlugin {
         plugin = this;
         TmfUiTracer.init();
         TmfTraceElement.init();
-        TmfTimePreferences.init();
+
+        fTmfEventAdapterFactory = new TmfEventAdapterFactory();
+        Platform.getAdapterManager().registerAdapters(fTmfEventAdapterFactory, ITmfEvent.class);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         TmfUiTracer.stop();
         plugin = null;
+
+        Platform.getAdapterManager().unregisterAdapters(fTmfEventAdapterFactory);
         super.stop(context);
+    }
+
+    /**
+     * Returns a preference store for org.eclipse.linux.tmf.core preferences
+     * @return the preference store
+     */
+    public IPreferenceStore getCorePreferenceStore() {
+        if (fCorePreferenceStore == null) {
+            fCorePreferenceStore= new ScopedPreferenceStore(InstanceScope.INSTANCE, PLUGIN_CORE_ID);
+        }
+        return fCorePreferenceStore;
     }
 
     // ------------------------------------------------------------------------

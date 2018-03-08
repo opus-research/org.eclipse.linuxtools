@@ -84,11 +84,11 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     /**
      * Index of last supported streaming protocol for common URL configuration.
      */
-    private final static int COMMON_URL_LAST_INDEX = 1;
+    private static final int COMMON_URL_LAST_INDEX = 1;
     /**
      *  Index of default streaming protocol.
      */
-    private final static int DEFAULT_URL_INDEX = 0;
+    private static final int DEFAULT_URL_INDEX = 0;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -611,6 +611,14 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                 if (fsss != null) {
                     try {
                         IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSessionPath, new NullProgressMonitor());
+
+                        if (remoteFolder == null) {
+                            MessageDialog.openError(getShell(),
+                                    Messages.TraceControl_CreateSessionDialogTitle,
+                                    Messages.TraceControl_InvalidSessionPathError + " (" + fSessionPath + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
+                            return;
+                        }
+
                         if (remoteFolder.exists()) {
                             MessageDialog.openError(getShell(),
                                     Messages.TraceControl_CreateSessionDialogTitle,

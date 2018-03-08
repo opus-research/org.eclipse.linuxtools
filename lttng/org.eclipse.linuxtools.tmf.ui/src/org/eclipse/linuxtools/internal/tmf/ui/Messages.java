@@ -72,9 +72,9 @@ public class Messages extends NLS {
     public static String TmfEventsTable_FilterHint;
     public static String TmfEventsTable_HideRawActionText;
     public static String TmfEventsTable_HideTableActionText;
-    public static String TmfEventsTable_OpenCallsiteActionText;
-    public static String TmfEventsTable_OpenCallsiteNotFound;
-    public static String TmfEventsTable_OpenCallsiteSelectFileDialogTitle;
+    public static String TmfEventsTable_OpenSourceCodeActionText;
+    public static String TmfEventsTable_OpenSourceCodeNotFound;
+    public static String TmfEventsTable_OpenSourceCodeSelectFileDialogTitle;
     public static String TmfEventsTable_OpenModelActionText;
     public static String TmfEventsTable_OpenModelUnsupportedURI;
     public static String TmfEventsTable_ReferenceColumnHeader;
@@ -134,6 +134,12 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_ZoomInActionToolTipText;
     public static String TmfTimeGraphViewer_ZoomOutActionNameText;
     public static String TmfTimeGraphViewer_ZoomOutActionToolTipText;
+    public static String TmfTimeGraphViewer_HideArrowsActionNameText;
+    public static String TmfTimeGraphViewer_HideArrowsActionToolTipText;
+    public static String TmfTimeGraphViewer_FollowArrowForwardActionNameText;
+    public static String TmfTimeGraphViewer_FollowArrowForwardActionToolTipText;
+    public static String TmfTimeGraphViewer_FollowArrowBackwardActionNameText;
+    public static String TmfTimeGraphViewer_FollowArrowBackwardActionToolTipText;
 
     public static String ColorsView_AddActionToolTipText;
     public static String ColorsView_BackgroundButtonText;

@@ -7,23 +7,28 @@
  *
  * Contributors:
  *     Matthew Khouzam - Initial API and implementation
+ *     Simon Delisle - Generate dummy trace
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.IOStructGen;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -32,7 +37,6 @@ import org.junit.Test;
  * @author Matthew Khouzam
  */
 public class IOstructgenTest {
-
 
     private static final String metadataDecs = "typealias integer { size = 8; align = 8; signed = false; } := uint8_t;\n"
             + "typealias integer { size = 16; align = 8; signed = false; } := uint16_t;\n"
@@ -86,54 +90,53 @@ public class IOstructgenTest {
             + "\n";
 
     private static final String ctfStart =
-              "typealias integer {\n"
-            + "    size = 27; align = 1; signed = false;\n"
-            + "    map = clock.monotonic.value;\n"
-            + "} := uint27_clock_monotonic_t;\n"
-            + "\n"
-            + "typealias integer {\n"
-            + "    size = 32; align = 8; signed = false;\n"
-            + "    map = clock.monotonic.value;\n"
-            + "} := uint32_clock_monotonic_t;\n"
-            + "\n"
-            + "typealias integer {\n"
-            + "    size = 64; align = 8; signed = false;\n"
-            + "    map = clock.monotonic.value;\n"
-            + "} := uint64_clock_monotonic_t;\n"
-            + "\n";
-
+            "typealias integer {\n"
+                    + "    size = 27; align = 1; signed = false;\n"
+                    + "    map = clock.monotonic.value;\n"
+                    + "} := uint27_clock_monotonic_t;\n"
+                    + "\n"
+                    + "typealias integer {\n"
+                    + "    size = 32; align = 8; signed = false;\n"
+                    + "    map = clock.monotonic.value;\n"
+                    + "} := uint32_clock_monotonic_t;\n"
+                    + "\n"
+                    + "typealias integer {\n"
+                    + "    size = 64; align = 8; signed = false;\n"
+                    + "    map = clock.monotonic.value;\n"
+                    + "} := uint64_clock_monotonic_t;\n"
+                    + "\n";
 
     private static final String ctfHeaders =
-              "struct packet_context {\n"
-            + "    uint64_clock_monotonic_t timestamp_begin;\n"
-            + "    uint64_clock_monotonic_t timestamp_end;\n"
-            + "    uint64_t content_size;\n"
-            + "    uint64_t packet_size;\n"
-            + "    unsigned long events_discarded;\n"
-            + "    uint32_t cpu_id;\n"
-            + "};\n"
-            + "\n"
-            + "struct event_header_compact {\n"
-            + "    enum : uint5_t { compact = 0 ... 30, extended = 31 } id;\n"
-            + "    variant <id> {\n"
-            + "        struct {\n"
-            + "            uint27_clock_monotonic_t timestamp;\n"
-            + "        } compact;\n"
-            + "        struct {\n"
-            + "            uint32_t id;\n"
-            + "            uint64_clock_monotonic_t timestamp;\n"
-            + "        } extended;\n"
-            + "    } v;\n"
-            + "} align(8);\n"
-            + "\n"
-            + "struct event_header_large {\n"
-            + "    enum : uint16_t { compact = 0 ... 65534, extended = 65535 } id;\n"
-            + "    variant <id> {\n" + "        struct {\n"
-            + "            uint32_clock_monotonic_t timestamp;\n"
-            + "        } compact;\n" + "        struct {\n"
-            + "            uint32_t id;\n"
-            + "            uint64_clock_monotonic_t timestamp;\n"
-            + "        } extended;\n" + "    } v;\n" + "} align(8);\n" + "\n";
+            "struct packet_context {\n"
+                    + "    uint64_clock_monotonic_t timestamp_begin;\n"
+                    + "    uint64_clock_monotonic_t timestamp_end;\n"
+                    + "    uint64_t content_size;\n"
+                    + "    uint64_t packet_size;\n"
+                    + "    unsigned long events_discarded;\n"
+                    + "    uint32_t cpu_id;\n"
+                    + "};\n"
+                    + "\n"
+                    + "struct event_header_compact {\n"
+                    + "    enum : uint5_t { compact = 0 ... 30, extended = 31 } id;\n"
+                    + "    variant <id> {\n"
+                    + "        struct {\n"
+                    + "            uint27_clock_monotonic_t timestamp;\n"
+                    + "        } compact;\n"
+                    + "        struct {\n"
+                    + "            uint32_t id;\n"
+                    + "            uint64_clock_monotonic_t timestamp;\n"
+                    + "        } extended;\n"
+                    + "    } v;\n"
+                    + "} align(8);\n"
+                    + "\n"
+                    + "struct event_header_large {\n"
+                    + "    enum : uint16_t { compact = 0 ... 65534, extended = 65535 } id;\n"
+                    + "    variant <id> {\n" + "        struct {\n"
+                    + "            uint32_clock_monotonic_t timestamp;\n"
+                    + "        } compact;\n" + "        struct {\n"
+                    + "            uint32_t id;\n"
+                    + "            uint64_clock_monotonic_t timestamp;\n"
+                    + "        } extended;\n" + "    } v;\n" + "} align(8);\n" + "\n";
 
     private static final String ctfBody = "stream {\n"
             + "    id = 0;\n"
@@ -201,58 +204,58 @@ public class IOstructgenTest {
             + "\n";
 
     private static final String enumMd =
-              "typealias integer { size = 32; align = 8; signed = false; } := int;\n"
-            + "typealias enum { ONE = 0, a,b,c=10, d} := useless_enum;\n"
-            + "struct useless{ \n"
-            + "    enum : uint8_t { A=0, \"B\",} enum3;\n"
-            + "    useless_enum enum2;"
-            + "    enum { C, D, E } enum4;\n"
-            + "    uint16_t val;\n"
-            + "} ;\n"
-            + "\n"
-            + "event {\n"
-            + "   name = \"enumEvent\";\n"
-            + "   id = 6;\n"
-            + "   stream_id = 0;\n"
-            + "   loglevel = 5;\n"
-            + "   fields := struct{\n"
-            + "       uint16_t _some_field;\n"
-//            + "       useless junk;\n"
-//            + "       bad_enum a;\n"
-            + "       enum {A, B, C = 3 , } _other_enum;\n"
-            + "   };\n"
-            + "};\n"
-            + "\n";
+            "typealias integer { size = 32; align = 8; signed = false; } := int;\n"
+                    + "typealias enum { ONE = 0, a,b,c=10, d} := useless_enum;\n"
+                    + "struct useless{ \n"
+                    + "    enum : uint8_t { A=0, \"B\",} enum3;\n"
+                    + "    useless_enum enum2;"
+                    + "    enum { C, D, E } enum4;\n"
+                    + "    uint16_t val;\n"
+                    + "} ;\n"
+                    + "\n"
+                    + "event {\n"
+                    + "   name = \"enumEvent\";\n"
+                    + "   id = 6;\n"
+                    + "   stream_id = 0;\n"
+                    + "   loglevel = 5;\n"
+                    + "   fields := struct{\n"
+                    + "       uint16_t _some_field;\n"
+                    // + "       useless junk;\n"
+                    // + "       bad_enum a;\n"
+                    + "       enum {A, B, C = 3 , } _other_enum;\n"
+                    + "   };\n"
+                    + "};\n"
+                    + "\n";
 
     private final static String contextMD =
             "event {\n" +
-            "   name = \"someOtherEvent\";\n" +
-            "   id = 5;\n" +
-            "   stream_id = 0;\n" +
-            "   loglevel = 5;\n" +
-            "   context := struct{\n" +
-            "       uint16_t _someContext;\n" +
-            "   };\n" +
-            "   fields := struct{\n" +
-            "       uint16_t _somefield;\n" +
-            "   };\n" +
-            "};\n " +
-            "\n" ;
+                    "   name = \"someOtherEvent\";\n" +
+                    "   id = 5;\n" +
+                    "   stream_id = 0;\n" +
+                    "   loglevel = 5;\n" +
+                    "   context := struct{\n" +
+                    "       uint16_t _someContext;\n" +
+                    "   };\n" +
+                    "   fields := struct{\n" +
+                    "       uint16_t _somefield;\n" +
+                    "   };\n" +
+                    "};\n " +
+                    "\n";
 
     private static final String callsiteMD =
-              "callsite {\n"
-            + "    name = \"ust_tests_demo2:loop\";\n"
-            + "    func = \"main\";\n" + "    ip = 0x400a29;\n"
-            + "    file = \"demo.c\";\n" + "    line = 59;\n" + "};\n" + "\n"
-            + "callsite {\n" + "    name = \"ust_tests_demo3:done\";\n"
-            + "    func = \"main\";\n" + "    ip = 0x400a6c;\n"
-            + "    file = \"demo.c\";\n" + "    line = 62;\n" + "};\n" + "\n"
-            + "callsite {\n" + "    name = \"ust_tests_demo:done\";\n"
-            + "    func = \"main\";\n" + "    ip = 0x400aaf;\n"
-            + "    file = \"demo.c\";\n" + "    line = 61;\n" + "};\n" + "\n"
-            + "callsite {\n" + "    name = \"ust_tests_demo:starting\";\n"
-            + "    func = \"main\";\n" + "    ip = 0x400af2;\n"
-            + "    file = \"demo.c\";\n" + "    line = 55;\n" + "};\n";
+            "callsite {\n"
+                    + "    name = \"ust_tests_demo2:loop\";\n"
+                    + "    func = \"main\";\n" + "    ip = 0x400a29;\n"
+                    + "    file = \"demo.c\";\n" + "    line = 59;\n" + "};\n" + "\n"
+                    + "callsite {\n" + "    name = \"ust_tests_demo3:done\";\n"
+                    + "    func = \"main\";\n" + "    ip = 0x400a6c;\n"
+                    + "    file = \"demo.c\";\n" + "    line = 62;\n" + "};\n" + "\n"
+                    + "callsite {\n" + "    name = \"ust_tests_demo:done\";\n"
+                    + "    func = \"main\";\n" + "    ip = 0x400aaf;\n"
+                    + "    file = \"demo.c\";\n" + "    line = 61;\n" + "};\n" + "\n"
+                    + "callsite {\n" + "    name = \"ust_tests_demo:starting\";\n"
+                    + "    func = \"main\";\n" + "    ip = 0x400af2;\n"
+                    + "    file = \"demo.c\";\n" + "    line = 55;\n" + "};\n";
 
     private static final String simpleTSDL = metadataDecs + ctfStart + ctfHeaders
             + ctfBody;
@@ -263,14 +266,64 @@ public class IOstructgenTest {
     private static final String envTSDL = metadataDecs + environmentMD + ctfStart
             + ctfHeaders + ctfBody;
     private static final String contextTSDL = metadataDecs + environmentMD + ctfStart
-            + ctfHeaders + ctfBody +contextMD;
+            + ctfHeaders + ctfBody + contextMD;
     private static final String callsiteTSDL = metadataDecs + ctfStart + ctfHeaders
             + ctfBody + callsiteMD;
     private static final String allDressedTSDL = metadataDecs + environmentMD + clockMD
-            + ctfStart +  ctfHeaders + ctfBody +enumMd+ callsiteMD;
+            + ctfStart + ctfHeaders + ctfBody + enumMd + callsiteMD;
 
     static final String tempTraceDir = System.getProperty("java.io.tmpdir")
-            + "/" + "tempTrace";
+            + File.separator + "tempTrace";
+
+    private static final int DATA_SIZE = 4096;
+
+    private static final int HEADER_SIZE = 68;
+
+    private static final int PACKET_SIZE = DATA_SIZE + HEADER_SIZE + 512;
+
+    private CTFTrace trace;
+
+    private static class Event {
+        private static final int EVENT_SIZE = 16;
+        private int eventId;
+        private int eventTimestamp;
+        private int eventContent;
+
+        public Event(int id, int content) {
+            eventId = id;
+            eventTimestamp = 0;
+            eventContent = content;
+        }
+
+        public void setEventTimestamp(int eventTimestamp) {
+            this.eventTimestamp = eventTimestamp;
+        }
+
+        public void setEventContent(int eventContent) {
+            this.eventContent = eventContent;
+        }
+
+        public void writeEvent(ByteBuffer data) {
+            // Id and Timestamp
+            int timeId = eventTimestamp << 5;
+            timeId |= eventId & 0x1f;
+            data.putInt(timeId);
+
+            // Context
+            long ip = 0x0000facedecafe00L + ((data.position() /
+                    getSize()) & 0x0F);
+            data.putLong(ip);
+
+            // Content
+            data.putInt(eventContent);
+
+        }
+
+        public int getSize() {
+            return EVENT_SIZE;
+        }
+
+    }
 
     private static void deltree(File f) {
         for (File elem : f.listFiles()) {
@@ -284,123 +337,182 @@ public class IOstructgenTest {
 
     private static void createDummyTrace(String metadata) {
 
-        File f;
         try {
-            f = new File(tempTraceDir);
-            if (f.exists()) {
-                deltree(f);
+            File dir;
+            dir = new File(tempTraceDir);
+            if (dir.exists()) {
+                deltree(dir);
             }
-            f.mkdirs();
-            f = new File(tempTraceDir + "/metadata");
-            FileWriter fw = new FileWriter(f);
+            dir.mkdirs();
+            File metadataFile;
+            metadataFile = new File(tempTraceDir + "/metadata");
+            FileWriter fw = new FileWriter(metadataFile);
             fw.write(metadata);
             fw.close();
-            f.createNewFile();
 
-            byte magicLE[] = { (byte) 0xC1, (byte) 0x1F, (byte) 0xFC, (byte) 0xC1 };
-            byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7, 0x36,
-                    0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
+            byte magicLE[] = { (byte) 0xC1, (byte) 0x1F, (byte) 0xFC,
+                    (byte) 0xC1 };
+            byte uuid[] = { (byte) 0xb0, 0x4d, 0x39, 0x1b, (byte) 0xe7,
+                    0x36, 0x44, (byte) 0xc1, (byte) 0x8d, (byte) 0x89, 0x4b,
                     (byte) 0xb4, 0x38, (byte) 0x85, 0x7f, (byte) 0x8d };
-            final int size = 4096;
-            byte[] data = new byte[size];
-            for (int i = 0; i < size; i++) {
-                data[i] = 0x00;
+
+            Event ev = new Event(2, 2);
+
+            final int nbEvents = (DATA_SIZE / ev.getSize()) - 1;
+            final int contentSize = (nbEvents * ev.getSize() +
+                    HEADER_SIZE) * 8;
+
+            ByteBuffer data = ByteBuffer.allocate(PACKET_SIZE);
+            data.order(ByteOrder.LITTLE_ENDIAN);
+            data.clear();
+
+            // packet header
+            // magic number 4
+            data.put(magicLE);
+            // uuid 16
+            data.put(uuid);
+            // stream ID 4
+            data.putInt(0);
+
+            // packet context
+            // timestamp_begin 8
+            data.putLong(0xa500);
+
+            // timestamp_end 8
+            data.putLong(nbEvents * 0x10000 + 0xa5a6);
+
+            // content_size 8
+            data.putLong(contentSize);
+
+            // packet_size 8
+            data.putLong(PACKET_SIZE * 8);
+
+            // events_discarded 8
+            data.putLong(0);
+
+            // cpu_id 4
+            data.putInt(0);
+
+            // fill me
+            for (int i = 0; i < nbEvents; i++) {
+                ev.setEventTimestamp(i * 0x10000 + 0xa5a5);
+                ev.setEventContent(i);
+                ev.writeEvent(data);
             }
-            f = new File(tempTraceDir + "/dummyChan");
-            fw = new FileWriter(f);
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(magicLE);
-            fos.write(uuid);
-            fos.write(data);
+
+            File dummyFile;
+            dummyFile = new File(tempTraceDir + "/dummyChan");
+            FileOutputStream fos = new FileOutputStream(dummyFile);
+            // The byteBuffer needs to be flipped in file writing mode
+            data.flip();
+            fos.getChannel().write(data);
             fos.close();
-            fw.close();
-            f.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            f = null;
         }
 
     }
 
     /**
+     * Close trace
+     */
+    @After
+    public void tearDown(){
+        trace.dispose();
+    }
+
+    /**
      * Simple test (only the minimum)
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLSimpleTest() throws CTFReaderException {
         createDummyTrace(simpleTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
-
     }
 
     /**
      * Test with environment variables
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLEnvironmentTest() throws CTFReaderException {
         createDummyTrace(envTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
     /**
      * Test with Clocks
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLEnumTest() throws CTFReaderException {
         createDummyTrace(enumTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
     /**
      * Test with Clocks
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLClockTest() throws CTFReaderException {
         createDummyTrace(clockTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
     /**
      * Test with Contexts
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLContextTest() throws CTFReaderException {
         createDummyTrace(contextTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
     /**
      * Test with Callsites
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLCallsiteTest() throws CTFReaderException {
         createDummyTrace(callsiteTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
     }
 
     /**
      * Test everything
-     * @throws CTFReaderException something wrong happened
+     *
+     * @throws CTFReaderException
+     *             something wrong happened
      */
     @Test
     public void TSDLAllTest() throws CTFReaderException {
         createDummyTrace(allDressedTSDL);
-        CTFTrace trace = new CTFTrace(tempTraceDir);
+        trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
 
-        HashMap<Long, IEventDeclaration> events = trace.getEvents(0L);
+        Map<Long, IEventDeclaration> events = trace.getEvents(0L);
         final EventDeclaration eventDeclaration = (EventDeclaration) events.get(2L);
         assertEquals("http://example.com/path_to_model?q=ust_tests_demo:done",
                 eventDeclaration.getCustomAttribute("model.emf.uri"));

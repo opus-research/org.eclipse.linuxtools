@@ -109,6 +109,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	protected ILaunchConfiguration config;
 
 	private static final String USER_SELECTED_ALL = "ALL"; //$NON-NLS-1$
+	private static final String MAIN_FUNC_NAME = "main"; //$NON-NLS-1$
 
 	protected String name;
 	protected String binaryPath;
@@ -130,7 +131,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	private Button OKButton;
 	private boolean testMode = false;
 	protected String secondaryID = ""; //$NON-NLS-1$
-	private final String [] escapableChars = new String []  {"(", ")", " "}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 	/**
 	 * Initialize variables. Highly recommend calling this function within the
@@ -233,7 +233,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				wc.setAttribute(LaunchConfigurationConstants.BINARY_PATH,binaryPath);
 			}
 
-			outputPath = escapeSpecialCharacters(outputPath);
 			wc.setAttribute(LaunchConfigurationConstants.OUTPUT_PATH,outputPath);
 			wc.setAttribute(LaunchConfigurationConstants.ARGUMENTS, arguments);
 			wc.setAttribute(LaunchConfigurationConstants.GENERATED_SCRIPT,generatedScript);
@@ -637,7 +636,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 							if (!(validElement(c))) {
 								continue;
 							}
-							if (c.getElementName().contains("main") && !output.contains(c)) {
+							if (c.getElementName().contains(MAIN_FUNC_NAME) && !output.contains(c)) {
 								output.add(c);
 							}
 						}
@@ -796,11 +795,12 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	}
 
 	/**
-	 * Function for generating scripts. Should be overriden by interested
+	 * Function for generating scripts. Should be overridden by interested
 	 * classes
 	 *
 	 * @throws IOException
 	 */
+	@SuppressWarnings("unused")
 	public String generateScript() throws IOException {
 		return null;
 	}
@@ -935,7 +935,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 			ILaunchConfigurationWorkingCopy wc = createConfiguration(bin, name);
 			binaryPath = bin.getResource().getLocation().toString();
-			binaryPath = escapeSpecialCharacters(binaryPath);
 			arguments = binaryPath;
 			outputPath = PluginConstants.getDefaultIOPath();
 			finishLaunch(name, mode, wc);
@@ -971,18 +970,4 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		return ""; //$NON-NLS-1$
 	}
 
-	/**
-	 * Escapes special characters in the target string
-	 *
-	 * @param script the script to be executed by the shell.
-	 * @return the formatted string that will be executed.
-	 */
-	protected String escapeSpecialCharacters(String str) {
-		// Modify script to catch escapable characters.
-		String res = str;
-		for (int i = 0; i < escapableChars.length; i++) {
-			res = res.replace(escapableChars[i], "\\" + escapableChars[i]); //$NON-NLS-1$
-		}
-		return res;
-	}
 }

@@ -25,6 +25,8 @@ import org.eclipse.osgi.util.NLS;
 final public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.messages"; //$NON-NLS-1$
 
+    public static String EnableChannelDialog_DefaultMessage;
+
     // Failures
     public static String TraceControl_ConnectionFailure;
     public static String TraceControl_DisconnectionFailure;
@@ -146,6 +148,8 @@ final public class Messages extends NLS {
     public static String TraceControl_EnableChannelDiscardModeTooltip;
     public static String TraceControl_EnableChannelOverwriteModeLabel;
     public static String TraceControl_EnableChannelOverwriteModeTooltip;
+    public static String TraceControl_EnbleChannelMaxSizeTraceFilesTooltip;
+    public static String TraceControl_EnbleChannelMaxNumTraceFilesTooltip;
 
     public static String TraceControl_InvalidChannelNameError;
     public static String TraceControl_ChannelAlreadyExistsError;
@@ -221,10 +225,16 @@ final public class Messages extends NLS {
     public static String TraceControl_AllSessionsDisplayName;
     public static String TraceControl_SessionDisplayName;
     public static String TraceControl_DomainDisplayName;
+    public static String TraceControl_BufferTypeDisplayName;
     public static String TraceControl_ChannelDisplayName;
     public static String TraceControl_EventDisplayName;
     public static String TraceControl_ProviderDisplayName;
     public static String TraceControl_KernelProviderDisplayName;
+    public static String TraceControl_SharedBuffersDisplayName;
+    public static String TraceControl_PerPidBuffersDisplayName;
+    public static String TraceControl_PerPidBuffersTooltip;
+    public static String TraceControl_PerUidBuffersDisplayName;
+    public static String TraceControl_PerUidBuffersTooltip;
 
     // Property names
     public static String TraceControl_SessionNamePropertyName;
@@ -236,6 +246,7 @@ final public class Messages extends NLS {
     public static String TraceControl_StatePropertyName;
     public static String TraceControl_VersionPropertyName;
     public static String TraceControl_DomainNamePropertyName;
+    public static String TraceControl_BufferTypePropertyName;
     public static String TraceControl_ChannelNamePropertyName;
     public static String TraceControl_OverwriteModePropertyName;
     public static String TraceControl_SubBufferSizePropertyName;
@@ -251,6 +262,9 @@ final public class Messages extends NLS {
     public static String TraceControl_ProbeAddressPropertyName;
     public static String TraceControl_ProbeOffsetPropertyName;
     public static String TraceControl_ProbeSymbolPropertyName;
+    public static String TraceControl_MaxSizeTraceFilesPropertyName;
+    public static String TraceControl_MaxNumTraceFilesPropertyName;
+    public static String TraceControl_ConfigureMetadataChannelName;
 
     // Preferences
     public static String TraceControl_TracingGroupPreference;

@@ -20,8 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IFindReplaceTarget;
+import org.eclipse.linuxtools.internal.perf.IPerfData;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -34,6 +34,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 
@@ -48,8 +49,8 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 	private static String ASM = "\\s+([0-9]+\\.[0-9]+ )?:\\s+[0-9a-f]+:\\s+[0-9a-z]+\\s+.*"; //$NON-NLS-1$
 	private static String CODE = "\\s+:\\s+.*"; //$NON-NLS-1$
 	private static String WORD_BOUNDARY = "\\b"; //$NON-NLS-1$'
-	private StyledText text;
 	private static int SECONDARY_ID = 0;
+	private StyledText text;
 	public SourceDisassemblyView() {
 	}
 
@@ -60,7 +61,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		text = new StyledText(parent, SWT.WRAP | SWT.V_SCROLL);
 		text.setEditable(false);
 
-		SourceDisassemblyData data = PerfPlugin.getDefault().getSourceDisassemblyData();
+		IPerfData data = PerfPlugin.getDefault().getSourceDisassemblyData();
 		if (data != null) {
 			setStyledText(data.getPerfData());
 			setContentDescription(data.getTitle());
@@ -73,6 +74,31 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		return;
 	}
 
+	/**
+	 * Set styled text field (only used for testing).
+	 *
+	 * @param txt StyledText to set.
+	 */
+	protected void setStyledText(StyledText txt) {
+		text = txt;
+	}
+
+	/**
+	 * Get the text content of this view.
+	 *
+	 * @return String content of this view
+	 */
+	public String getContent() {
+		return (text == null) ? "" : text.getText(); //$NON-NLS-1$
+	}
+
+	/**
+	 * Set styled text field based on the specified string, which is parsed in
+	 * order to set appropriate styles to be used for rendering the widget
+	 * content.
+	 *
+	 * @param input text content of widget.
+	 */
 	private void setStyledText (String input) {
 		List<StyleRange> styles = new ArrayList<StyleRange> ();
 		int ptr = 0;
@@ -138,11 +164,12 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		findAction.setToolTipText(PerfPlugin.STRINGS_SearchSourceDisassembly);
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getToolBarManager().add(findAction);
+		bars.setGlobalActionHandler(ActionFactory.FIND.getId(), findAction);
 	}
 
 	@Override
 	public boolean canPerformFind() {
-		return text != null && !"".equals(text.getText());
+		return text != null && !text.getText().isEmpty();
 	}
 
 	@Override

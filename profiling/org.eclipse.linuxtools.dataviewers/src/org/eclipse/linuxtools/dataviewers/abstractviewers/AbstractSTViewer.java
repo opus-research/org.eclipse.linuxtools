@@ -72,7 +72,7 @@ public abstract class AbstractSTViewer {
      *
      * @param parent
      *            is the parent control
-     * @style is the SWT style bits to customize the style of the tree/table
+     * @param style is the SWT style bits to customize the style of the tree/table
      *
      */
     public AbstractSTViewer(Composite parent, int style) {
@@ -84,8 +84,8 @@ public abstract class AbstractSTViewer {
      *
      * @param parent
      *            is the parent control
-     * @style is the SWT style bits to customize the style of the tree/table
-     * @setup is a flag indicating when a customization of AbstractSTViewer needs to set up additional information
+     * @param style is the SWT style bits to customize the style of the tree/table
+     * @param init setup is a flag indicating when a customization of AbstractSTViewer needs to set up additional information
      *        useful to create the Viewer
      *
      */
@@ -262,8 +262,7 @@ public abstract class AbstractSTViewer {
     /**
      * Creates the container for the settings of this viewer
      *
-     * @param viewer
-     * @return
+     * @return The dialog settings.
      */
     protected IDialogSettings createSTAbstractDataViewersSettings() {
         IDialogSettings settings = getDialogSettings().getSection(STDataViewersSettings.TAG_SECTION_VIEWER_STATE);
@@ -286,7 +285,6 @@ public abstract class AbstractSTViewer {
     /**
      * Restores the vertical scrollbar position
      *
-     * @param settings
      * @return the position
      */
     public int restoreVerticalScrollBarPosition() {
@@ -310,7 +308,6 @@ public abstract class AbstractSTViewer {
     /**
      * Restores the horizontal scrollbar position
      *
-     * @param settings
      * @return the position
      */
     public int restoreHorizontalScrollBarPosition() {
@@ -334,7 +331,6 @@ public abstract class AbstractSTViewer {
     /**
      * Restore the order of the columns using the dialog settings
      *
-     * @param settings
      * @return column order
      */
     public int[] restoreColumnOrderSetting() {

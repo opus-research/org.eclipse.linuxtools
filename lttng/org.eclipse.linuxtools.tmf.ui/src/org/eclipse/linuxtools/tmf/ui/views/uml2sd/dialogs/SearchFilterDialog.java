@@ -29,7 +29,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -75,22 +75,22 @@ public class SearchFilterDialog extends Dialog {
     /**
      * The sequence diagram view reference.
      */
-    protected SDView fSdView = null;
+    private final SDView fSdView;
 
     /**
      * The tab with the controls for a Criteria
      */
-    protected TabFolder fTabFolder = null;
+    private final TabFolder fTabFolder = null;
 
     /**
      * The Criteria updated by this dialog
      */
-    protected Criteria fCriteria = null;
+    private Criteria fCriteria = null;
 
     /**
      * The find/filter provider telling which graph nodes are supported
      */
-    protected ISDGraphNodeSupporter fProvider = null;
+    private final ISDGraphNodeSupporter fProvider;
 
     /**
      * The okText is the text for the Ok button and title is the title of the
@@ -98,25 +98,25 @@ public class SearchFilterDialog extends Dialog {
      * Both depend (okText and title (below)) on the usage that is done of this
      * dialog (find or filter).
      */
-    protected String fOkText;
+    private String fOkText;
 
     /**
      * The title is the title of the dialog.<br>
      * Both depend (okText and title) on the usage that is done of this dialog
      * (find or filter).
      */
-    protected String fTitle;
+    private String fTitle;
 
     /**
      * List of string expressions that have been searched already
      */
-    protected String[] fExpressionList;
+    private String[] fExpressionList;
 
     /**
      * find is true if the dialog is for the find feature and false for filter
      * feature
      */
-    protected boolean fIsFind;
+    private boolean fIsFind;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -183,11 +183,11 @@ public class SearchFilterDialog extends Dialog {
         if (fOkText != null) {
             getButton(IDialogConstants.OK_ID).setText(fOkText);
         } else {
-            getButton(IDialogConstants.OK_ID).setText(SDMessages._21);
+            getButton(IDialogConstants.OK_ID).setText(Messages.SequenceDiagram_Find);
         }
 
         if (fIsFind) {
-            getButton(IDialogConstants.CANCEL_ID).setText(SDMessages._22);
+            getButton(IDialogConstants.CANCEL_ID).setText(Messages.SequenceDiagram_Close);
         }
 
         Button okButton = getButton(IDialogConstants.OK_ID);
@@ -200,7 +200,7 @@ public class SearchFilterDialog extends Dialog {
         if (fTitle != null) {
             getShell().setText(fTitle);
         } else {
-            getShell().setText(SDMessages._24);
+            getShell().setText(Messages.SequenceDiagram_SequenceDiagramFind);
         }
 
         getShell().pack();
@@ -213,7 +213,6 @@ public class SearchFilterDialog extends Dialog {
     /**
      * Loads criteria from the dialog settings which are saved in the workspace.
      */
-    @SuppressWarnings("rawtypes")
     protected void loadCriteria() {
 
         String CRITERIA = FIND_CRITERIA;
@@ -222,14 +221,14 @@ public class SearchFilterDialog extends Dialog {
         }
 
         DialogSettings section = (DialogSettings) Activator.getDefault().getDialogSettings().getSection(CRITERIA);
-        List selection = fSdView.getSDWidget().getSelection();
+        List<GraphNode> selection = fSdView.getSDWidget().getSelection();
         if ((selection == null || selection.size() != 1) || (!fIsFind)) {
             if (section != null) {
                 fCriteria = new Criteria();
                 fCriteria.load(section);
             }
         } else {
-            GraphNode gn = (GraphNode) selection.get(0);
+            GraphNode gn = selection.get(0);
             fCriteria = new Criteria();
             fCriteria.setExpression(gn.getName());
             fCriteria.setCaseSenstiveSelected(true);
@@ -406,4 +405,47 @@ public class SearchFilterDialog extends Dialog {
     public void setTitle(String title) {
         fTitle = title;
     }
+
+    /**
+     * Gets the text to be used for the ok button
+     *
+     * @return the text to be used for the ok button
+     * @since 2.0
+     */
+    public String getOkText() {
+        return fOkText;
+    }
+
+    /**
+     * Sets the IsFind flag (true for find, else for filter)
+     *
+     * @param flag value to set
+     * @since 2.0
+     */
+    protected void setIsFind(boolean flag) {
+        fIsFind = flag;
+    }
+
+    /**
+     * Gets the title to be used for the dialog box.
+     *
+     * @return the title to be used for the dialog box.
+     * @since 2.0
+     */
+    public String getTitle() {
+        return fTitle;
+    }
+
+    /**
+     * Gets the IsFind flag (true for find, else for filter)
+     *
+     * @return true for find, else for filter
+     * @since 2.0
+     */
+    protected boolean isFind() {
+        return fIsFind;
+    }
+
+
+
 }

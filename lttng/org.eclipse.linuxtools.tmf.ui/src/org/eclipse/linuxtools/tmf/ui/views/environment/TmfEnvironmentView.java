@@ -9,14 +9,20 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Bernd Hufmann - Updated to use Tree with columns to be able to group traces
+ *   Alexandre Montplaisir - Display info for any ITmfTraceProperties trace
  *******************************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.views.environment;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import java.util.Map;
+
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -25,7 +31,7 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 
 /**
- * Displays the CTF trace properties.
+ * Displays the trace's properties.
  *
  * @version 1.1
  * @author Matthew Khouzam
@@ -76,15 +82,17 @@ public class TmfEnvironmentView extends TmfView {
             return;
         }
 
-        for (ITmfTrace trace : fTraceManager.getActiveTraceSet()) {
-            if (trace instanceof CtfTmfTrace) {
+        for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
+            if (trace instanceof ITmfTraceProperties) {
                 TreeItem item = new TreeItem(fTree, SWT.NONE);
                 item.setText(0, trace.getName());
-                CtfTmfTrace ctfTrace = (CtfTmfTrace) trace;
-                for (String varName : ctfTrace.getEnvNames()) {
+
+                ITmfTraceProperties propTrace = (ITmfTraceProperties) trace;
+                Map <String, String> properties = propTrace.getTraceProperties();
+                for (Map.Entry<String, String> entry : properties.entrySet()) {
                     TreeItem subItem = new TreeItem(item, SWT.NONE);
-                    subItem.setText(0, varName);
-                    subItem.setText(1, ctfTrace.getEnvValue(varName));
+                    subItem.setText(0, entry.getKey()); // Variable name
+                    subItem.setText(1, entry.getValue()); // Variable value
                 }
             }
         }
@@ -103,6 +111,19 @@ public class TmfEnvironmentView extends TmfView {
     public void setFocus() {
         fTree.setFocus();
     }
+
+    /**
+     * Handler for the trace opened signal.
+     * @param signal
+     *            The incoming signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceOpened(TmfTraceOpenedSignal signal) {
+        fTrace = signal.getTrace();
+        updateTable();
+    }
+
 
     /**
      * Handler for the trace selected signal.

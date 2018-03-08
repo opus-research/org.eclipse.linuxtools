@@ -248,26 +248,26 @@ public class PerfCore {
 	{
 		try 
 		{
-			Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"});			
+			Process p = Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"});
+			return (p != null);
 		} 
 		catch (IOException e) 
 		{
 			return false;
 		}
-		return true;
 	}
 
 	public static boolean checkRemotePerfInPath(IProject project) {
 		try 
 		{
-			RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project);			
+			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project);
+			return (p != null);
 		} 
 		catch (IOException e) 
 		{
 			logException(e);
 			return false;
 		}
-		return true;
 	}
 
 	//Generates a perf record command string with the options set in the given config. (If null uses default).
@@ -678,8 +678,9 @@ public class PerfCore {
 			@Override
 			public void run() {
 				try {
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
-					PerfProfileView view = PerfPlugin.getDefault().getProfileView();
+					PerfProfileView view = (PerfProfileView) PlatformUI
+							.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage().showView(PerfPlugin.VIEW_ID);
 					view.setContentDescription(title);
 					view.refreshModel();
 				} catch (PartInitException e) {

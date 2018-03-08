@@ -21,13 +21,12 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.man.parser.ManPage;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
-import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
-import org.eclipse.linuxtools.systemtap.ui.ide.structures.TreeSettings;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.PreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 
@@ -75,7 +74,7 @@ public final class TapsetLibrary {
 			}
 
 			// Otherwise, get the documentation for the requested element.
-			documentation = (new ManPage(element)).getStrippedPage().toString();
+			documentation = (new ManPage(element)).getStrippedTextPage().toString();
 
 			// If the requested element is a probe and a documentation page was
 			// found for it, parse the documentation for the variables if present.
@@ -162,12 +161,6 @@ public final class TapsetLibrary {
 		probeParser.schedule();
 	}
 
-	/**
-	 * @since 2.0
-	 */
-	public static boolean isFinishSuccessful(){
-		return functionParser.isFinishSuccessful() && probeParser.isFinishSuccessful();
-	}
 	/**
 	 * This method will get all of the tree information from
 	 * the TreeSettings xml file.
@@ -348,7 +341,7 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static void waitForInitialization() {
-		while (!functionParser.isFinishSuccessful()){
+		while (functionParser.getResult() == null){
 			try {
 				synchronized (functionParser) {
 					functionParser.wait(5000);
@@ -357,7 +350,7 @@ public final class TapsetLibrary {
 				break;
 			}
 		}
-		while (!probeParser.isFinishSuccessful()){
+		while (probeParser.getResult() == null){
 			try {
 				synchronized (probeParser) {
 					probeParser.wait(5000);
@@ -385,5 +378,17 @@ public final class TapsetLibrary {
 				// continue stopping.
 			}
 		}
+		if(probeParser != null){
+			probeParser.cancel();
+			cacheProbeManpages.cancel();
+			try {
+				probeParser.join();
+			} catch (InterruptedException e) {
+				// The current thread was interrupted while waiting
+				// for the parser thread to exit. Nothing to do
+				// continue stopping.
+			}
+		}
+
 	}
 }

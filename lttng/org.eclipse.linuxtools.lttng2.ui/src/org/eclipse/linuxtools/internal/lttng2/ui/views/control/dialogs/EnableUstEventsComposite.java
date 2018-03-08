@@ -282,7 +282,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
             }
 
             String temp = fLogLevelEventNameText.getText();
-            if (!temp.matches("^[\\s]{0,}$") && !temp.matches("^[a-zA-Z0-9\\-\\_]{1,}$")) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (temp.isEmpty() ||
+                temp.matches("\\s*") || //$NON-NLS-1$
+                (!temp.matches("^[\\s]{0,}$") && !temp.matches("^[a-zA-Z0-9\\-\\_]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidLogLevelEventNameError + " (" + temp + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -290,9 +292,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
                 return false;
             }
 
-            if(!temp.matches("\\s*")) { //$NON-NLS-1$
-                fLogLevelEventName = temp;
-            }
+            fLogLevelEventName = temp;
 
             TraceLogLevel[] levels = TraceLogLevel.values();
             int id = fLogLevelCombo.getSelectionIndex();
@@ -311,7 +311,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fWildcard = null;
         if (fIsWildcard) {
             String tempWildcard = fWildcardText.getText();
-            if (!tempWildcard.matches("^[\\s]{0,}$") && !tempWildcard.matches("^[a-zA-Z0-9\\-\\_\\*]{1,}$")) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (tempWildcard.isEmpty() ||
+                tempWildcard.matches("\\s*") || //$NON-NLS-1$
+                (!tempWildcard.matches("^[\\s]{0,}$") && !tempWildcard.matches("^[a-zA-Z0-9\\-\\_\\*]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidWildcardError + " (" + tempWildcard + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -319,9 +321,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
                 return false;
             }
 
-            if(!tempWildcard.matches("\\s*")) { //$NON-NLS-1$
-                fWildcard = tempWildcard;
-            }
+            fWildcard = tempWildcard;
         }
 
         // initialize filter with null
@@ -329,7 +329,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         if (fProviderGroup.isEventFilteringSupported()) {
             String tempFilter = fFilterText.getText();
 
-            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
+            if(!tempFilter.isEmpty() && !tempFilter.matches("\\s*")) { //$NON-NLS-1$
                 fFilterExpression = tempFilter;
             }
         }
@@ -504,6 +504,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fLogLevelButton.setToolTipText(Messages.TraceControl_EnableEventsLogLevelTypeTooltip);
         data = new GridData(GridData.FILL_BOTH);
         fLogLevelButton.setLayoutData(data);
+        fLogLevelButton.setSelection(true);
 
         fLogLevelOnlyButton = new Button(logLevelGroup, SWT.RADIO);
         fLogLevelOnlyButton.setText(Messages.TraceControl_EnableEventsLogLevelOnlyTypeName);
@@ -556,7 +557,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content provider for the tracepoints tree.
      */
-    final static public class UstContentProvider extends TraceControlContentProvider {
+    public static final class UstContentProvider extends TraceControlContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof TargetNodeComponent) {
@@ -577,7 +578,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content label for the tracepoints tree.
      */
-     final static public class UstLabelProvider extends TraceControlLabelProvider {
+    public static final class UstLabelProvider extends TraceControlLabelProvider {
         @Override
         public Image getImage(Object element) {
             return null;
@@ -598,7 +599,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Check state listener for the tracepoints tree.
      */
-    final public class UstCheckStateListener implements ICheckStateListener {
+    public final class UstCheckStateListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             if (event.getChecked()) {

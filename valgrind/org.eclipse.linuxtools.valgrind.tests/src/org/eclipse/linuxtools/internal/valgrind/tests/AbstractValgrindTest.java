@@ -36,8 +36,8 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.eclipse.linuxtools.internal.valgrind.core.LaunchConfigurationConstants;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCommand;
+import org.eclipse.linuxtools.internal.valgrind.launch.LaunchConfigurationConstants;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
@@ -112,7 +112,7 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 		launches.add(launch);
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
 
-		if (ValgrindTestsPlugin.GENERATE_FILES) {
+		if (ValgrindTestsPlugin.GENERATE_FILES && ValgrindTestsPlugin.versionSupported()) {
 			unbindLocation(pathToFiles);
 		}
 		return launch;

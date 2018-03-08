@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011 IBM Corporation
+ * Copyright (c) 2011,2013 IBM Corporation
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    Otavio Busatto Pontes <obusatto@br.ibm.com> - initial API and implementation
+ *    Rafael Peria de Sene <rpsene@br.ibm.com>
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tools.launch.ui.properties;
@@ -21,7 +22,6 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.tools.launch.ui.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -63,7 +64,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 				{"Custom", ""}, //$NON-NLS-1$  //$NON-NLS-2$
 	};
 	private StringFieldEditor linuxtoolsPath;
-	private ComboFieldEditor linuxtoolsPathCombo;
+	private CustomComboFieldEditor linuxtoolsPathCombo;
 	private IAdaptable element = null;
 	private Composite result;
 	private Button systemEnvButton, customButton;
@@ -106,8 +107,12 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		GridLayout layoutRadios= new GridLayout();
 		layoutRadios.marginWidth= 0;
 		layoutRadios.numColumns= 1;
+		GridData gridData = new GridData();
+		gridData.horizontalSpan = 2;
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
 		radios.setLayout(layoutRadios);
-		Composite space = new Composite(result, SWT.NONE);
+		radios.setLayoutData(gridData);
 
 		boolean systemPathSelected = getPreferenceStore().getBoolean(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME);
 		systemEnvButton = new Button(radios, SWT.RADIO);
@@ -126,7 +131,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		customButton.setSelection(!systemPathSelected);
 
 		//Add combo box
-		linuxtoolsPathCombo = new ComboFieldEditor(
+		linuxtoolsPathCombo = new CustomComboFieldEditor(
 									LINUXTOOLS_PATH_COMBO_NAME,
 									Messages.LINUXTOOLS_PATH_COMBO,
 									paths,
@@ -138,8 +143,9 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				customSelected = event.getNewValue().toString().equals(""); //$NON-NLS-1$
-				if (!customSelected)
+				if (!customSelected){
 					linuxtoolsPath.setStringValue(event.getNewValue().toString());
+				}
 				updateOptionsEnable();
 			}
 		});
@@ -157,7 +163,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
 		customSelected = selected.equals(""); //$NON-NLS-1$
 		getPreferenceStore().setDefault(LaunchCoreConstants.LINUXTOOLS_PATH_NAME, LinuxtoolsPathProperty.getInstance().getLinuxtoolsPathDefault());
 		linuxtoolsPath.load();
-
+		linuxtoolsPathCombo.setSelectedValue(linuxtoolsPath.getStringValue());
 		Dialog.applyDialogFont(result);
 		updateOptionsEnable();
 		return result;

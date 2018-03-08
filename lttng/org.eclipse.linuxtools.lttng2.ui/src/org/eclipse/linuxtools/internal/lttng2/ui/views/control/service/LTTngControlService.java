@@ -9,6 +9,7 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
+ *   Simon Delisle - Updated for support of LTTng Tools 2.2
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.service;
 
@@ -32,6 +33,7 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BaseEventInfo;
+import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.DomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
@@ -60,12 +62,12 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * The command shell implementation
      */
-    protected ICommandShell fCommandShell = null;
+    private final ICommandShell fCommandShell;
 
     /**
      * The version string.
      */
-    protected LttngVersion fVersion = null;
+    private LttngVersion fVersion = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -105,6 +107,15 @@ public class LTTngControlService implements ILttngControlService {
     public boolean isVersionSupported(String version) {
         LttngVersion tmp = new LttngVersion(version);
         return (fVersion != null && fVersion.compareTo(tmp) >= 0) ? true : false;
+    }
+
+    /**
+     * Returns the command shell implementation.
+     *
+     * @return the command shell implementation
+     */
+    protected ICommandShell getCommandShell() {
+        return fCommandShell;
     }
 
     // ------------------------------------------------------------------------
@@ -180,9 +191,12 @@ public class LTTngControlService implements ILttngControlService {
                 // Create Domain
                 IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_KernelDomainDisplayName);
 
+                // set kernel flag
+                domainInfo.setIsKernel(true);
+
                 // in domain kernel
                 ArrayList<IChannelInfo> channels = new ArrayList<IChannelInfo>();
-                index = parseDomain(result.getOutput(), index, channels);
+                index = parseDomain(result.getOutput(), index, channels, domainInfo);
 
                 if (channels.size() > 0) {
                     // add domain
@@ -190,9 +204,6 @@ public class LTTngControlService implements ILttngControlService {
 
                     // set channels
                     domainInfo.setChannels(channels);
-
-                    // set kernel flag
-                    domainInfo.setIsKernel(true);
                 }
                 continue;
             }
@@ -201,9 +212,12 @@ public class LTTngControlService implements ILttngControlService {
             if (matcher.matches()) {
                 IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_UstGlobalDomainDisplayName);
 
+                // set kernel flag
+                domainInfo.setIsKernel(false);
+
                 // in domain UST
                 ArrayList<IChannelInfo> channels = new ArrayList<IChannelInfo>();
-                index = parseDomain(result.getOutput(), index, channels);
+                index = parseDomain(result.getOutput(), index, channels, domainInfo);
 
                 if (channels.size() > 0) {
                     // add domain
@@ -211,9 +225,6 @@ public class LTTngControlService implements ILttngControlService {
 
                     // set channels
                     domainInfo.setChannels(channels);
-
-                    // set kernel flag
-                    domainInfo.setIsKernel(false);
                 }
                 continue;
             }
@@ -566,21 +577,53 @@ public class LTTngControlService implements ILttngControlService {
             }
 //            --subbuf-size SIZE   Subbuffer size in bytes
 //                                     (default: 4096, kernel default: 262144)
-            command.append(LTTngControlServiceConstants.OPTION_SUB_BUFFER_SIZE);
-            command.append(String.valueOf(info.getSubBufferSize()));
+            if (info.getSubBufferSize() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                command.append(LTTngControlServiceConstants.OPTION_SUB_BUFFER_SIZE);
+                command.append(String.valueOf(info.getSubBufferSize()));
+            }
 
 //            --num-subbuf NUM     Number of subbufers
-//                                     (default: 8, kernel default: 4)
-            command.append(LTTngControlServiceConstants.OPTION_NUM_SUB_BUFFERS);
-            command.append(String.valueOf(info.getNumberOfSubBuffers()));
+            if (info.getNumberOfSubBuffers() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                command.append(LTTngControlServiceConstants.OPTION_NUM_SUB_BUFFERS);
+                command.append(String.valueOf(info.getNumberOfSubBuffers()));
+            }
 
-//            --switch-timer USEC  Switch timer interval in usec (default: 0)
-            command.append(LTTngControlServiceConstants.OPTION_SWITCH_TIMER);
-            command.append(String.valueOf(info.getSwitchTimer()));
+//            --switch-timer USEC  Switch timer interval in usec
+            if (info.getSwitchTimer() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                command.append(LTTngControlServiceConstants.OPTION_SWITCH_TIMER);
+                command.append(String.valueOf(info.getSwitchTimer()));
+            }
 
-//            --read-timer USEC    Read timer interval in usec (default: 200)
-            command.append(LTTngControlServiceConstants.OPTION_READ_TIMER);
-            command.append(String.valueOf(info.getReadTimer()));
+//            --read-timer USEC    Read timer interval in usec
+            if (info.getReadTimer() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                command.append(LTTngControlServiceConstants.OPTION_READ_TIMER);
+                command.append(String.valueOf(info.getReadTimer()));
+            }
+
+            if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
+//                --buffers-uid  Every application sharing the same UID use the same buffers
+//                --buffers-pid Buffers are allocated per PID
+                if (!isKernel) {
+                    if (info.getBufferType() == BufferType.BUFFER_PER_PID) {
+                        command.append(LTTngControlServiceConstants.OPTION_PER_PID_BUFFERS);
+
+                    } else if (info.getBufferType() == BufferType.BUFFER_PER_UID) {
+                        command.append(LTTngControlServiceConstants.OPTION_PER_UID_BUFFERS);
+                    }
+                }
+
+//                -C SIZE   Maximum size of trace files in bytes
+                if (info.getMaxSizeTraceFiles() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                    command.append(LTTngControlServiceConstants.OPTION_MAX_SIZE_TRACE_FILES);
+                    command.append(String.valueOf(info.getMaxSizeTraceFiles()));
+                }
+
+//                -W NUM   Maximum number of trace files
+                if (info.getMaxNumberTraceFiles() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                    command.append(LTTngControlServiceConstants.OPTION_MAX_TRACE_FILES);
+                    command.append(String.valueOf(info.getMaxNumberTraceFiles()));
+                }
+            }
         }
 
         executeCommand(command.toString(), monitor);
@@ -856,11 +899,7 @@ public class LTTngControlService implements ILttngControlService {
 
     @Override
     public void calibrate(boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
-//        String newSessionName = formatParameter(sessionName);
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CALIBRATE);
-//
-//        command.append(OPTION_SESSION);
-//        command.append(newSessionName);
 
         if (isKernel) {
             command.append(LTTngControlServiceConstants.OPTION_KERNEL);
@@ -921,7 +960,7 @@ public class LTTngControlService implements ILttngControlService {
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
         for (int i = 0; i < output.length; i++) {
-            ret.append(output[i] + "\n"); //$NON-NLS-1$
+            ret.append(output[i]).append("\n"); //$NON-NLS-1$
         }
         return ret.toString();
     }
@@ -935,10 +974,17 @@ public class LTTngControlService implements ILttngControlService {
      *            - current index in command output array
      * @param channels
      *            - list for returning channel information
+     * @param domainInfo
+     *            - The domain information
      * @return the new current index in command output array
      */
-    protected int parseDomain(String[] output, int currentIndex, List<IChannelInfo> channels) {
+    protected int parseDomain(String[] output, int currentIndex, List<IChannelInfo> channels, IDomainInfo domainInfo) {
         int index = currentIndex;
+
+        // if kernel set the buffer type to shared
+        if (domainInfo.isKernel()) {
+            domainInfo.setBufferType(BufferType.BUFFER_SHARED);
+        }
 
         // Channels:
         // -------------
@@ -955,6 +1001,21 @@ public class LTTngControlService implements ILttngControlService {
         while (index < output.length) {
             String line = output[index];
 
+            if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
+                Matcher bufferTypeMatcher = LTTngControlServiceConstants.BUFFER_TYPE_PATTERN.matcher(line);
+                if (bufferTypeMatcher.matches()) {
+                    String bufferTypeString = getAttributeValue(line);
+                    if (BufferType.BUFFER_PER_PID.getInName().equals(bufferTypeString)) {
+                        domainInfo.setBufferType(BufferType.BUFFER_PER_PID);
+                    } else if (BufferType.BUFFER_PER_UID.getInName().equals(bufferTypeString)) {
+                        domainInfo.setBufferType(BufferType.BUFFER_PER_UID);
+                    } else {
+                        domainInfo.setBufferType(BufferType.BUFFER_TYPE_UNKNOWN);
+                    }
+                }
+            } else {
+                domainInfo.setBufferType(BufferType.BUFFER_TYPE_UNKNOWN);
+            }
             Matcher outerMatcher = LTTngControlServiceConstants.CHANNELS_SECTION_PATTERN.matcher(line);
             Matcher noKernelChannelMatcher = LTTngControlServiceConstants.DOMAIN_NO_KERNEL_CHANNEL_PATTERN.matcher(line);
             Matcher noUstChannelMatcher = LTTngControlServiceConstants.DOMAIN_NO_UST_CHANNEL_PATTERN.matcher(line);
@@ -971,6 +1032,9 @@ public class LTTngControlService implements ILttngControlService {
 
                         // get channel enablement
                         channelInfo.setState(innerMatcher.group(2));
+
+                        // set BufferType
+                        channelInfo.setBufferType(domainInfo.getBufferType());
 
                         // add channel
                         channels.add(channelInfo);
@@ -1137,10 +1201,6 @@ public class LTTngControlService implements ILttngControlService {
             } else {
                 index++;
             }
-//            else if (line.matches(EVENT_NONE_PATTERN)) {
-                // do nothing
-//            } else
-
         }
 
         return index;

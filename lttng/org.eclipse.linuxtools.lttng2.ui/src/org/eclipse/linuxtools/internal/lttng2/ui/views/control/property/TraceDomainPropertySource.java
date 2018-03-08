@@ -7,13 +7,14 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Bernd Hufmann - Initial API and implementation
+ *     Bernd Hufmann - Initial API and implementation
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.property;
 
+import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceDomainComponent;
-import org.eclipse.linuxtools.tmf.core.util.ReadOnlyTextPropertyDescriptor;
+import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 /**
@@ -37,6 +38,14 @@ public class TraceDomainPropertySource extends BasePropertySource {
      *  The trace domain 'name' property name.
      */
     public static final String TRACE_DOMAIN_NAME_PROPERTY_NAME = Messages.TraceControl_DomainNamePropertyName;
+    /**
+     * The domain 'buffer type' property ID.
+     */
+    public static final String BUFFER_TYPE_PROPERTY_ID = "trace.domain.bufferType"; //$NON-NLS-1$
+    /**
+     * The domain 'buffer type' property name.
+     */
+    public static final String BUFER_TYPE_PROPERTY_NAME = Messages.TraceControl_BufferTypePropertyName;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -45,7 +54,7 @@ public class TraceDomainPropertySource extends BasePropertySource {
     /**
      * The trace domain component which this property source is for.
      */
-    private final TraceDomainComponent fBaseEvent;
+    private final TraceDomainComponent fDomain;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -56,7 +65,7 @@ public class TraceDomainPropertySource extends BasePropertySource {
      * @param component - the trace domain component
      */
     public TraceDomainPropertySource(TraceDomainComponent component) {
-        fBaseEvent = component;
+        fDomain = component;
     }
 
     // ------------------------------------------------------------------------
@@ -65,14 +74,24 @@ public class TraceDomainPropertySource extends BasePropertySource {
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
+        if (fDomain.getBufferType() == BufferType.BUFFER_TYPE_UNKNOWN) {
+            return new IPropertyDescriptor[] {
+                    new ReadOnlyTextPropertyDescriptor(TRACE_DOMAIN_NAME_PROPERTY_ID, TRACE_DOMAIN_NAME_PROPERTY_NAME) };
+        }
+
         return new IPropertyDescriptor[] {
-                new ReadOnlyTextPropertyDescriptor(TRACE_DOMAIN_NAME_PROPERTY_ID, TRACE_DOMAIN_NAME_PROPERTY_NAME)};
+                new ReadOnlyTextPropertyDescriptor(TRACE_DOMAIN_NAME_PROPERTY_ID, TRACE_DOMAIN_NAME_PROPERTY_NAME),
+                new ReadOnlyTextPropertyDescriptor(BUFFER_TYPE_PROPERTY_ID, BUFER_TYPE_PROPERTY_NAME) };
     }
 
     @Override
     public Object getPropertyValue(Object id) {
+        if(BUFFER_TYPE_PROPERTY_ID.equals(id)){
+            return fDomain.getBufferType().getInName();
+        }
+
         if(TRACE_DOMAIN_NAME_PROPERTY_ID.equals(id)) {
-            return fBaseEvent.getName();
+            return fDomain.getName();
         }
         return null;
     }

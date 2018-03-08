@@ -18,6 +18,7 @@ import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.linuxtools.tools.launch.core.factory.CdtSpawnerProcessFactory;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
+import org.eclipse.linuxtools.valgrind.core.CommandLineConstants;
 
 public class ValgrindCommand {
 	protected static final String WHICH_CMD = "which"; //$NON-NLS-1$
@@ -32,17 +33,9 @@ public class ValgrindCommand {
 
 	public String whichVersion(IProject project) throws IOException {
 		StringBuffer out = new StringBuffer();
-		String version = "";
 		Process p = RuntimeProcessFactory.getFactory().exec(new String[] { VALGRIND_CMD, CommandLineConstants.OPT_VERSION }, project);
-		if (p != null) {
-			try {
-				readIntoBuffer(out, p);
-			    version = out.toString().trim();
-			} catch(IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return version;
+		readIntoBuffer(out, p);
+		return out.toString().trim();
 	}
 	
 	public void execute(String[] commandArray, Object env, File wd, String exeFile, boolean usePty, IProject project) throws IOException {

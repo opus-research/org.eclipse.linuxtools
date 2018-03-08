@@ -12,6 +12,9 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.component;
 
+import java.util.concurrent.CountDownLatch;
+
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
@@ -56,13 +59,10 @@ public class TmfEventThread implements Runnable {
     /**
      * The thread execution state
      */
-    private volatile boolean isPaused    = false;
     private volatile boolean isCompleted = false;
 
-    /**
-     * The synchronization object
-     */
-    private final Object object = new Object();
+    /** Latch indicating if the thread is currently paused (>0 means paused) */
+    private CountDownLatch pausedLatch = new CountDownLatch(0);
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -131,7 +131,14 @@ public class TmfEventThread implements Runnable {
      * @return The request execution state
      */
     public boolean isRunning() {
-        return fRequest.isRunning() && !isPaused;
+        return fRequest.isRunning() && !isPaused();
+    }
+
+    /**
+     * @return The request execution state
+     */
+    public synchronized boolean isPaused(){
+        return (pausedLatch.getCount() > 0);
     }
 
     /**
@@ -169,16 +176,7 @@ public class TmfEventThread implements Runnable {
             TmfCoreTracer.traceRequest(fRequest, "read first event"); //$NON-NLS-1$
 
             while (event != null && !fProvider.isCompleted(fRequest, event, nbRead)) {
-                if (isPaused) {
-                    try {
-                        while (isPaused) {
-                            synchronized (object) {
-                                object.wait();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                    }
-                }
+                pausedLatch.await();
 
                 TmfCoreTracer.traceEvent(fProvider, fRequest, event);
                 if (fRequest.getDataType().isInstance(event)) {
@@ -200,6 +198,7 @@ public class TmfEventThread implements Runnable {
             }
 
         } catch (Exception e) {
+            Activator.logError("Error in " + fProvider.getName() + " handling " + fRequest, e); //$NON-NLS-1$ //$NON-NLS-2$
             fRequest.fail();
         }
 
@@ -215,7 +214,7 @@ public class TmfEventThread implements Runnable {
      * Suspend the thread
      */
     public synchronized void suspend() {
-        isPaused = true;
+        pausedLatch = new CountDownLatch(1);
         TmfCoreTracer.traceRequest(fRequest, "SUSPENDED"); //$NON-NLS-1$
     }
 
@@ -223,10 +222,7 @@ public class TmfEventThread implements Runnable {
      * Resume the thread
      */
     public synchronized void resume() {
-        isPaused = false;
-        synchronized (object) {
-            object.notifyAll();
-        }
+        pausedLatch.countDown();
         TmfCoreTracer.traceRequest(fRequest, "RESUMED"); //$NON-NLS-1$
     }
 
@@ -238,5 +234,4 @@ public class TmfEventThread implements Runnable {
             fRequest.cancel();
         }
     }
-
 }

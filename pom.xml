@@ -28,7 +28,7 @@
 
   <groupId>org.eclipse.linuxtools</groupId>
   <artifactId>linuxtools-parent</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>2.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Parent</name>
@@ -57,9 +57,9 @@
 
   <properties>
     <mirror-repo-name>updates-nightly</mirror-repo-name>
-    <tycho-version>0.17.0</tycho-version>
-    <tycho-extras-version>0.17.0</tycho-extras-version>
-    <platform-version-name>juno</platform-version-name>
+    <tycho-version>0.18.1</tycho-version>
+    <tycho-extras-version>0.18.1</tycho-extras-version>
+    <platform-version-name>kepler</platform-version-name>
     <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
     <swtbot-site>http://download.eclipse.org/technology/swtbot/snapshots</swtbot-site>
     <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20130118183705/repository</orbit-site>
@@ -92,7 +92,7 @@
   
   <profiles>
     <profile>
-      <id>platform-juno</id>
+      <id>platform-kepler</id>
       <activation>
         <activeByDefault>true</activeByDefault>
         <property>
@@ -102,24 +102,24 @@
       </activation>
       <properties>
         <eclipse-site>http://download.eclipse.org/releases/kepler</eclipse-site>
-        <platform-version>[4.2,)</platform-version>
-        <sdk-version>4.2</sdk-version>
+        <platform-version>[4.3,)</platform-version>
+        <sdk-version>4.3</sdk-version>
       </properties>
       <repositories>
         <repository>
-          <id>juno</id>
+          <id>kepler</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
       </repositories>
     </profile>
     <profile>
-      <id>platform-kepler</id>
+      <id>platform-kepler-staging</id>
       <activation>
         <activeByDefault>false</activeByDefault>
         <property>
           <name>platform-version-name</name>
-          <value>kepler</value>
+          <value>kepler-staging</value>
         </property>
       </activation>
       <properties>
@@ -129,7 +129,7 @@
       </properties>
       <repositories>
         <repository>
-          <id>kepler</id>
+          <id>kepler-staging</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
@@ -149,11 +149,11 @@
               <dependencies>
                 <dependency>
                   <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.sdk.feature.group</artifactId>
+                  <artifactId>org.eclipse.platform.feature.group</artifactId>
                   <version>${sdk-version}</version>
                 </dependency>
               </dependencies>
-              <product>org.eclipse.sdk.ide</product>
+              <product>org.eclipse.platform.ide</product>
 	      <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
 	    </configuration>
 	  </plugin>
@@ -199,6 +199,9 @@
           <groupId>org.eclipse.tycho.extras</groupId>
           <artifactId>tycho-source-feature-plugin</artifactId>
           <version>${tycho-extras-version}</version>
+          <configuration>
+            <includeBinaryFeature>false</includeBinaryFeature>
+          </configuration>
           <executions>
             <execution>
               <id>source-feature</id>
@@ -225,7 +228,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.2.201302030002</version>
+        <version>0.6.3.201306030806</version>
         <executions>
           <execution>
            <id>pre-test</id>
@@ -259,6 +262,9 @@
           <version>${tycho-version}</version>
           <configuration>
             <encoding>UTF-8</encoding>
+            <compilerArguments>
+              <properties>${project.basedir}/.settings/org.eclipse.jdt.core.prefs</properties>
+            </compilerArguments>
           </configuration>
 	 </plugin>
 	<plugin>
@@ -271,11 +277,11 @@
             <dependencies>
                <dependency>
                  <type>p2-installable-unit</type>
-                 <artifactId>org.eclipse.sdk.feature.group</artifactId>
+                 <artifactId>org.eclipse.platform.feature.group</artifactId>
                  <version>${sdk-version}</version>
                </dependency>
             </dependencies>
-            <product>org.eclipse.sdk.ide</product>
+            <product>org.eclipse.platform.ide</product>
  	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine> 
 	  </configuration>
 	</plugin>
@@ -300,17 +306,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.2</version>
+          <version>3.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>2.6</version>
+          <version>2.7</version>
         </plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-	  <version>2.9</version>
+	  <version>2.9.1</version>
           <configuration>
             <excludePackageNames>org.eclipse.linuxtools.internal.*:*.test*</excludePackageNames>
           </configuration>
