@@ -69,13 +69,16 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
      * @param event the original event
      */
     public TmfLostEvent(final ITmfLostEvent event) {
-        super(event.getTrace(),
-              event.getRank(),
-              event.getTimestamp(),
-              event.getSource(),
-              event.getType(),
-              event.getContent(),
-              event.getReference());
+        if (event == null) {
+            throw new IllegalArgumentException();
+        }
+        setTrace(event.getTrace());
+        setRank(event.getRank());
+        setTimestamp(event.getTimestamp());
+        setSource(event.getSource());
+        setType(event.getType());
+        setContent(event.getContent());
+        setReference(event.getReference());
 
         fTimeRange = event.getTimeRange();
         fNbLostEvents = event.getNbLostEvents();
@@ -117,6 +120,22 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
      */
     protected void setNbLostEvents(final long nbLostEvents) {
         fNbLostEvents = nbLostEvents;
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfLostEvent clone() {
+        TmfLostEvent clone = null;
+        clone = (TmfLostEvent) super.clone();
+        clone.fTimeRange = fTimeRange;
+        clone.fNbLostEvents = fNbLostEvents;
+        return clone;
     }
 
     // ------------------------------------------------------------------------

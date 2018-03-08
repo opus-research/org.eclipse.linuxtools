@@ -352,7 +352,8 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         expCtx.setRank(context.getRank());
         ITmfEvent[] trcEvts = expCtx.getEvents();
         for (int i = 0; i < size; i++) {
-            trcEvts[i] = expContext.getEvents()[i];
+            ITmfEvent event = expContext.getEvents()[i];
+            trcEvts[i] = (event != null) ? event.clone() : null;
         }
         return expCtx;
     }
@@ -381,7 +382,8 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         ctx.setRank(context.getRank());
         ITmfEvent[] trcEvts = expContext.getEvents();
         for (int i = 0; i < size; i++) {
-            ctx.getEvents()[i] = trcEvts[i];
+            ITmfEvent event = trcEvts[i];
+            ctx.getEvents()[i] = (event != null) ? event.clone() : null;
         }
         return ctx;
     }
