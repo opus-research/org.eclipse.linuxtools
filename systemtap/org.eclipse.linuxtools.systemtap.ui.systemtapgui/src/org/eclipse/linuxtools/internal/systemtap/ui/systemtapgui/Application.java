@@ -9,10 +9,11 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.systemtapgui;
+package org.eclipse.linuxtools.internal.systemtap.ui.systemtapgui;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
@@ -25,7 +26,7 @@ public class Application implements IApplication {
 	 *
 	 * @return an IPlatformRunnable condition, either EXIT_RESTART or EXIT_OK
 	 */
-	public Object start(IApplicationContext context) throws Exception {
+	public Object start(IApplicationContext context) {
 		Display display = PlatformUI.createDisplay();
 
 		if(!SystemTapGUISettings.settingsFolder.exists()) {
