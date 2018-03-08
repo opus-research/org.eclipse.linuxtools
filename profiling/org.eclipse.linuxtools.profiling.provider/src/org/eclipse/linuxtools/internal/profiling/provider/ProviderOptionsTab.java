@@ -8,7 +8,7 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.profiling.launch.provider;
+package org.eclipse.linuxtools.internal.profiling.provider;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -19,9 +19,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.Messages;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderFramework;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.swt.SWT;
@@ -64,7 +63,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 		setControl(top);
 		top.setLayout(new GridLayout(1, true));
 		providerCombo = new Combo(top, SWT.READ_ONLY);
-		comboItems = ProviderFramework
+		comboItems = ProfileLaunchConfigurationTabGroup
 				.getProviderNamesForType(getProfilingType());
 		Set<String> providerNames = comboItems.keySet();
 		providerCombo.setItems(providerNames.toArray(new String[0]));

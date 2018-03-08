@@ -17,8 +17,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.eclipse.linuxtools.internal.profiling.launch.provider.ProviderLaunchConfigurationTabGroup;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderFramework;
+import org.eclipse.linuxtools.internal.profiling.provider.ProviderLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
@@ -34,7 +35,10 @@ public class ExtensionPointTest {
 
 	@Test
 	public void testId() {
-		String highestProviderId = ProviderFramework.getHighestProviderId(PROFILING_TYPE);
+		String defaultId = ProviderLaunchShortcut.getDefaultLaunchShortcutProviderId(PROFILING_TYPE);
+		assertEquals(PLUGIN_ID + "1", defaultId);
+
+		String highestProviderId = ProviderLaunchConfigurationTabGroup.getHighestProviderId(PROFILING_TYPE);
 		assertEquals(PLUGIN_ID + "1", highestProviderId);
 
 		String[] providerIds = ProviderLaunchConfigurationTabGroup.getProviderIdsForType(PROFILING_TYPE);
@@ -46,13 +50,13 @@ public class ExtensionPointTest {
 
 	@Test
 	public void testShortCut () {
-		ProfileLaunchShortcut shortcut = ProviderFramework.getLaunchShortcutProviderFromId(PLUGIN_ID + "1");
+		ProfileLaunchShortcut shortcut = ProviderLaunchShortcut.getLaunchShortcutProviderFromId(PLUGIN_ID + "1");
 		assertTrue(shortcut instanceof StubbyLaunchShortcut);
 	}
 
 	@Test
 	public void testName () {
-		HashMap<String, String> providerNames = ProviderFramework.getProviderNamesForType(PROFILING_TYPE);
+		HashMap<String, String> providerNames = ProviderLaunchConfigurationTabGroup.getProviderNamesForType(PROFILING_TYPE);
 		assertEquals(3, providerNames.size());
 		for (int i = 1; i <= providerNames.size(); i++){
 			assertTrue(providerNames.values().contains(PLUGIN_ID + i));
@@ -62,7 +66,7 @@ public class ExtensionPointTest {
 
 	@Test
 	public void testDelegate () {
-		ProfileLaunchConfigurationDelegate delegate = ProviderFramework.getConfigurationDelegateFromId(PLUGIN_ID + "1");
+		ProfileLaunchConfigurationDelegate delegate = ProviderLaunchConfigurationDelegate.getConfigurationDelegateFromId(PLUGIN_ID + "1");
 		assertTrue(delegate instanceof StubbyLaunchConfigurationDelegate);
 	}
 
