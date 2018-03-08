@@ -16,23 +16,35 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
-import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewerFactory;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeRootFactory;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
-import org.eclipse.linuxtools.tmf.ui.widgets.tabsview.TmfViewerFolder;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.osgi.framework.Bundle;
 
 /**
  * The generic Statistics View displays statistics for any kind of traces.
@@ -48,7 +60,7 @@ import org.eclipse.swt.widgets.Composite;
 public class TmfStatisticsView extends TmfView {
 
     /**
-     * The ID correspond to the package in which this class is embedded.
+     * The ID correspond to the package in which this class is embedded
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.statistics"; //$NON-NLS-1$
 
@@ -56,6 +68,16 @@ public class TmfStatisticsView extends TmfView {
      * The view name.
      */
     public static final String TMF_STATISTICS_VIEW = "StatisticsView"; //$NON-NLS-1$
+
+    /**
+     * Stores the request to the experiment
+     */
+    protected ITmfEventRequest fRequest = null;
+
+    /**
+     * The viewer that builds the columns to show the statistics
+     */
+    private TmfStatisticsViewer fStatsViewer;
 
     /**
      * The initial window span (in nanoseconds)
@@ -72,19 +94,24 @@ public class TmfStatisticsView extends TmfView {
     public static final byte TIME_SCALE = -9;
 
     /**
-     * Default PAGE_SIZE for background requests.
+     * Stores a reference to the parent composite of this view
+     */
+    private Composite fParent;
+
+    /**
+     * Stores a reference to the experiment
+     */
+    private TmfExperiment fExperiment;
+
+    /**
+     * Flag to force request the data from trace
+     */
+    protected boolean fRequestData = false;
+
+    /**
+     * Default PAGE_SIZE for background requests
      */
     protected static final int PAGE_SIZE = 50000;
-
-    /**
-     * Refresh frequency.
-     */
-    protected final Long STATS_INPUT_CHANGED_REFRESH = 5000L;
-
-    /**
-     * Stores the request to the experiment
-     */
-    protected ITmfEventRequest fRequest = null;
 
     /**
      * Stores the ranged request to the experiment
@@ -93,26 +120,27 @@ public class TmfStatisticsView extends TmfView {
     protected ITmfEventRequest fRequestRange = null;
 
     /**
-     * The viewer that builds the columns to show the statistics.
-     *
-     * @since 2.0
+     * Update synchronization parameter (used for streaming): Update busy
+     * indicator
      */
-    protected TmfViewerFolder fStatsViewers;
+    protected boolean fStatisticsUpdateBusy = false;
 
     /**
-     * Flag to force request the data from trace.
+     * Update synchronization parameter (used for streaming): Update pending
+     * indicator
      */
-    protected boolean fRequestData = false;
+    protected boolean fStatisticsUpdatePending = false;
 
     /**
-     * Stores a reference to the parent composite of this view.
+     * Update synchronization parameter (used for streaming): Pending Update
+     * time range
      */
-    private Composite fParent;
+    protected TmfTimeRange fStatisticsUpdateRange = null;
 
     /**
-     * Stores a reference to the selected experiment.
+     * Update synchronization object.
      */
-    private TmfExperiment fExperiment;
+    protected final Object fStatisticsUpdateSyncObj = new Object();
 
     /**
      * Constructor of a statistics view.
@@ -148,13 +176,33 @@ public class TmfStatisticsView extends TmfView {
             experimentSelected(signal);
             return;
         }
-        fStatsViewers = createStatisticsViewers();
+        fStatsViewer = createStatisticsViewer();
         /*
          * Updates the experiment field only at the end because
          * experimentSelected signal verifies the old selected experiment to
          * avoid reloading the same trace.
          */
         fExperiment = currentExperiment;
+    }
+
+    /**
+     * Handles the signal about disposal of the current experiment.
+     *
+     * @param signal
+     *            The disposed signal
+     */
+    @TmfSignalHandler
+    public void experimentDisposed(TmfExperimentDisposedSignal signal) {
+        if (signal.getExperiment() != TmfExperiment.getCurrentExperiment()) {
+            return;
+        }
+
+        /*
+         * Make sure there is no request running before removing the statistics
+         * tree
+         */
+        cancelOngoingRequest(fRequestRange);
+        cancelOngoingRequest(fRequest);
     }
 
     /**
@@ -175,27 +223,21 @@ public class TmfStatisticsView extends TmfView {
                  * Dispose the current viewer and adapt the new one to the trace
                  * type of the experiment selected
                  */
-                if (fStatsViewers != null) {
-                    fStatsViewers.dispose();
+                if (fStatsViewer != null) {
+                    fStatsViewer.dispose();
                 }
                 // Update the current experiment
                 fExperiment = signal.getExperiment();
-                fStatsViewers = createStatisticsViewers();
+                fStatsViewer = createStatisticsViewer();
                 fParent.layout();
 
-                TmfStatisticsViewer statViewer;
-                for (ITmfViewer viewer : fStatsViewers.getViewers()) {
-                    statViewer = (TmfStatisticsViewer) viewer;
-                    setInput(statViewer, fExperiment.getTraces());
-                }
+                String experimentName = fExperiment.getName();
+                String treeID = fStatsViewer.getTreeID(experimentName);
+
+                setInput(treeID, fExperiment.getTraces());
 
                 if (fRequestData) {
-                    TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(null, fExperiment, fExperiment.getTimeRange());
-                    TmfStatisticsViewer statsViewer;
-                    for (ITmfViewer viewer : fStatsViewers.getViewers()) {
-                        statsViewer = (TmfStatisticsViewer) viewer;
-                        statsViewer.experimentRangeUpdated(updateSignal);
-                    }
+                    requestData(fExperiment, fExperiment.getTimeRange());
                     fRequestData = false;
                 }
             }
@@ -203,27 +245,16 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Handles the signal about disposal of the current experiment.
+     * Initialize the viewer with the information received.
      *
-     * @param signal
-     *            The disposed signal
-     */
-    @TmfSignalHandler
-    public void experimentDisposed(TmfExperimentDisposedSignal signal) {
-        // Nothing to do
-    }
-
-    /**
-     * Initializes the viewer with the information received.
-     *
-     * @param statViewer
-     *            The statistics viewer for which the input will be set
+     * @param treeID
+     *            The unique ID of the tree that is returned by
+     *            {@link TmfStatisticsViewer#getTreeID(String)}
      * @param traces
      *            The list of the traces to add in the tree.
      * @since 2.0
      */
-    public void setInput(TmfStatisticsViewer statViewer, ITmfTrace[] traces) {
-        String treeID = statViewer.getTreeID();
+    public void setInput(String treeID, ITmfTrace[] traces) {
         if (TmfStatisticsTreeRootFactory.containsTreeRoot(treeID)) {
             // The experiment root is already present
             TmfStatisticsTreeNode experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
@@ -248,15 +279,19 @@ public class TmfStatisticsView extends TmfView {
 
                 if (same) {
                     // no need to reload data, all traces are already loaded
-                    statViewer.setInput(experimentTreeNode);
+                    fStatsViewer.setInput(experimentTreeNode);
+
+                    resetUpdateSynchronization();
 
                     return;
                 }
                 experimentTreeNode.reset();
             }
         } else {
-            TmfStatisticsTreeRootFactory.addStatsTreeRoot(treeID, statViewer.getStatisticData());
+            TmfStatisticsTreeRootFactory.addStatsTreeRoot(treeID, fStatsViewer.getStatisticData());
         }
+
+        resetUpdateSynchronization();
 
         TmfStatisticsTreeNode treeModelRoot = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
 
@@ -266,7 +301,80 @@ public class TmfStatisticsView extends TmfView {
         }
 
         // set input to a clean data model
-        statViewer.setInput(treeModelRoot);
+        fStatsViewer.setInput(treeModelRoot);
+    }
+
+    /**
+     * Refresh the view.
+     *
+     * @param complete Should a pending update be sent afterwards or not
+     */
+    public void modelInputChanged(boolean complete) {
+        Control viewerControl = fStatsViewer.getControl();
+        // Ignore update if disposed
+        if (viewerControl.isDisposed()) {
+            return;
+        }
+
+        fStatsViewer.getControl().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!fStatsViewer.getControl().isDisposed()) {
+                    fStatsViewer.refresh();
+                }
+            }
+        });
+
+        if (complete) {
+            sendPendingUpdate();
+        }
+    }
+
+    /**
+     * Called when an experiment request has failed or has been cancelled.
+     * Remove the data retrieved from the experiment from the statistics tree.
+     *
+     * @param name
+     *            The experiment name
+     */
+    public void modelIncomplete(String name) {
+        Object input = fStatsViewer.getInput();
+        if (input != null && input instanceof TmfStatisticsTreeNode) {
+            /*
+             * The data from this experiment is invalid and shall be removed to
+             * refresh upon next selection
+             */
+            TmfStatisticsTreeRootFactory.removeStatTreeRoot(fStatsViewer.getTreeID(name));
+
+            // Reset synchronization information
+            resetUpdateSynchronization();
+            modelInputChanged(false);
+        }
+        fStatsViewer.waitCursor(false);
+    }
+
+    /**
+     * Handles the signal about new experiment range.
+     *
+     * @param signal
+     *            The experiment range updated signal
+     */
+    @TmfSignalHandler
+    public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
+        TmfExperiment experiment = signal.getExperiment();
+        // validate
+        if (!experiment.equals(TmfExperiment.getCurrentExperiment())) {
+            return;
+        }
+
+        // Calculate the selected timerange to request
+        long startTime = signal.getRange().getStartTime().normalize(0, TIME_SCALE).getValue();
+        TmfTimestamp startTS  = new TmfTimestamp(startTime, TIME_SCALE);
+        TmfTimestamp endTS    = new TmfTimestamp(startTime + INITIAL_WINDOW_SPAN, TIME_SCALE);
+        TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
+
+        requestTimeRangeData(experiment, timeRange);
+        requestData(experiment, signal.getRange());
     }
 
     /*
@@ -277,9 +385,14 @@ public class TmfStatisticsView extends TmfView {
     @Override
     public void dispose() {
         super.dispose();
-        if (fStatsViewers != null) {
-            fStatsViewers.dispose();
-        }
+        fStatsViewer.dispose();
+
+        /*
+         * Make sure there is no request running before removing the statistics
+         * tree.
+         */
+        cancelOngoingRequest(fRequestRange);
+        cancelOngoingRequest(fRequest);
         // clean the model
         TmfStatisticsTreeRootFactory.removeAll();
     }
@@ -291,64 +404,262 @@ public class TmfStatisticsView extends TmfView {
      */
     @Override
     public void setFocus() {
-        if (fStatsViewers != null) {
-            fStatsViewers.setFocus();
+        fStatsViewer.setFocus();
+    }
+
+    /**
+     * Handles the experiment updated signal. This will detect new events in
+     * case the indexing is not coalesced with a statistics request.
+     *
+     * @param signal
+     *            The experiment updated signal
+     *
+     * @since 1.1
+     */
+    @TmfSignalHandler
+    public void experimentUpdated(TmfExperimentUpdatedSignal signal) {
+        TmfExperiment experiment = signal.getExperiment();
+        if (!experiment.equals(TmfExperiment.getCurrentExperiment())) {
+            return;
+        }
+
+        int nbEvents = 0;
+        for (TmfStatisticsTreeNode node : ((TmfStatisticsTreeNode) fStatsViewer.getInput()).getChildren()) {
+            nbEvents += (int) node.getValue().getTotal();
+        }
+
+        /*
+         * In the normal case, the statistics request is coalesced with indexing
+         * and the number of events are the same, there is nothing to do. But if
+         * it's not the case, trigger a new request to count the new events.
+         */
+        if (nbEvents < experiment.getNbEvents()) {
+            requestData(experiment, experiment.getTimeRange());
         }
     }
 
     /**
-     * Creates the statistics viewers for all traces in the experiment. Each
-     * viewers are placed in a different tab and the first one is selected
-     * automatically.
+     * * Handles the time range updated signal. It updates the time range
+     * statistics.
      *
-     * It uses the extension point that defines the statistics viewer to build
-     * from the trace type. If there is no viewer defined, it will use the
-     * default viewer for the statistics. If the experiment is empty, there will
-     * still be a global statistics viewer created.
-     *
-     * @return a folder viewer containing all the appropriate viewers
+     * @param signal
+     *            Contains the information about the new selected time range.
      * @since 2.0
      */
-    protected TmfViewerFolder createStatisticsViewers() {
-        // Default style for the tabs that will be created
-        int defaultStyle = SWT.NONE;
+    @TmfSignalHandler
+    public void timeRangeUpdated(TmfRangeSynchSignal signal) {
+        /*
+         * It is possible that the time range changes while a request is
+         * processing
+         */
+        cancelOngoingRequest(fRequestRange);
 
-        // Create the list of statistics viewer.
-        TmfViewerFolder tabsView = new TmfViewerFolder(fParent);
-        // The folder composite that will contain the tabs
-        Composite folder = tabsView.getParentFolder();
+        requestTimeRangeData(TmfExperiment.getCurrentExperiment(), signal.getCurrentRange());
+    }
 
-        // Instantiation of the global viewer
-        TmfStatisticsViewer globalViewer = new TmfStatisticsViewer();
-        if (fExperiment != null) {
-            // Shows the name of the experiment in the global tab
-            globalViewer.init( folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
-            tabsView.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
-
-            String traceName;
-            IResource traceResource;
-            // Create a statistics viewer for each traces
+    /**
+     * Get the statistics viewer for an experiment. If all traces in the
+     * experiment are of the same type, use the extension point specified.
+     *
+     * @return a statistics viewer of the appropriate type
+     * @since 2.0
+     */
+    protected TmfStatisticsViewer createStatisticsViewer() {
+        if (fExperiment == null) {
+            return new TmfStatisticsViewer(fParent);
+        }
+        String commonTraceType = null;
+        try {
+            /*
+             * Determine if the traces of the experiment are of the same type.
+             * If not, it uses the most generic one.
+             */
             for (ITmfTrace trace : fExperiment.getTraces()) {
-                traceName = trace.getName();
-                traceResource = trace.getResource();
-                TmfStatisticsViewer viewer = TmfViewerFactory.getStatisticsViewer(traceResource);
-                /*
-                 * Adds a new viewer only if there is one defined for the
-                 * selected trace type, since the global tab already contains
-                 * all the basic event counts for the trace(s)
-                 */
-                if (viewer != null) {
-                    viewer.init(folder, traceName, trace);
-                    tabsView.addTab(viewer, viewer.getName(), defaultStyle);
+                IResource resource = trace.getResource();
+                if (resource == null) {
+                    return new TmfStatisticsViewer(fParent);
+                }
+                String traceType = resource.getPersistentProperty(TmfCommonConstants.TRACETYPE);
+                if (commonTraceType != null
+                        && !commonTraceType.equals(traceType)) {
+                    return new TmfStatisticsViewer(fParent);
+                }
+                commonTraceType = traceType;
+            }
+            if (commonTraceType == null) {
+                return new TmfStatisticsViewer(fParent);
+            }
+            /*
+             * Search in the configuration if there is any viewer specified for
+             * this kind of trace type.
+             */
+            for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
+                if (ce.getAttribute(TmfTraceType.ID_ATTR).equals(commonTraceType)) {
+                    IConfigurationElement[] statisticsViewerCE = ce.getChildren(TmfTraceType.STATISTICS_VIEWER_ELEM);
+                    if (statisticsViewerCE.length != 1) {
+                        break;
+                    }
+                    String statisticsViewer = statisticsViewerCE[0].getAttribute(TmfTraceType.CLASS_ATTR);
+                    if (statisticsViewer == null
+                            || statisticsViewer.length() == 0) {
+                        break;
+                    }
+                    Bundle bundle = Platform.getBundle(ce.getContributor().getName());
+                    Class<?> c = bundle.loadClass(statisticsViewer);
+                    Class<?>[] constructorArgs = new Class[] { Composite.class };
+                    Constructor<?> constructor = c.getConstructor(constructorArgs);
+                    Object[] args = new Object[] { fParent };
+                    return (TmfStatisticsViewer) constructor.newInstance(args);
                 }
             }
-        } else {
-            // There is no experiment selected. Shows an empty global tab
-            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
-            tabsView.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot find the property TmfCommonConstants.TRACETYPE", e); //$NON-NLS-1$
+        } catch (ClassNotFoundException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot load the statistics viewer class", e); //$NON-NLS-1$
+        } catch (NoSuchMethodException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : constructor of the viewer doesn't exist", e); //$NON-NLS-1$
+        } catch (InstantiationException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot instantiate the statistics viewer", e); //$NON-NLS-1$
+        } catch (IllegalAccessException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot access the constructor of the viewer", e); //$NON-NLS-1$
+        } catch (IllegalArgumentException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : argument(s) sent to the constructor are illegal", e); //$NON-NLS-1$
+        } catch (InvocationTargetException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : the constructor of the viewer sent an exception", e); //$NON-NLS-1$
         }
-        // Makes the global viewer visible
-        tabsView.setSelection(0);
-        return tabsView;
+        return new TmfStatisticsViewer(fParent);
+    }
+
+    /**
+     * Performs the request for an experiment and populates the statistics tree
+     * with events.
+     *
+     * @param experiment
+     *            Experiment for which we need the statistics data.
+     * @param timeRange
+     *            to request
+     */
+    protected void requestData(final TmfExperiment experiment, TmfTimeRange timeRange) {
+        if (experiment != null) {
+
+            // Check if an update is already ongoing
+            if (checkUpdateBusy(timeRange)) {
+                return;
+            }
+
+            int index = 0;
+            for (TmfStatisticsTreeNode node : ((TmfStatisticsTreeNode) fStatsViewer.getInput()).getChildren()) {
+                index += (int) node.getValue().getTotal();
+            }
+
+            // Prepare the global event request
+            fRequest = new TmfStatisticsRequest(this, fStatsViewer, experiment, timeRange, index, ExecutionType.BACKGROUND, true);
+
+            experiment.sendRequest(fRequest);
+            fStatsViewer.waitCursor(true);
+        }
+    }
+
+    /**
+     * Performs the time range request for an experiment and populates the
+     * statistics tree with events.
+     *
+     * @param experiment
+     *            Experiment for which we need the statistics data.
+     * @param timeRange
+     *            To request
+     * @since 2.0
+     */
+    protected void requestTimeRangeData(final TmfExperiment experiment, TmfTimeRange timeRange) {
+        if (experiment != null) {
+            resetTimeRangeValue();
+            // Prepare the partial event request
+            fRequestRange = new TmfStatisticsRequest(this, fStatsViewer, experiment, timeRange, 0, ExecutionType.FOREGROUND, false);
+            experiment.sendRequest(fRequestRange);
+        }
+    }
+
+    /**
+     * Reset the number of events within the time range
+     *
+     * @since 2.0
+     */
+    protected void resetTimeRangeValue() {
+        // Reset the number of events in the time range
+        String treeID = fStatsViewer.getTreeID(TmfExperiment.getCurrentExperiment().getName());
+        TmfStatisticsTreeNode treeModelRoot = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
+        if (treeModelRoot.hasChildren()) {
+            treeModelRoot.resetTimeRangeValue();
+        }
+    }
+
+    /**
+     * Return the size of the request when performing background request.
+     *
+     * @return the block size for background request.
+     */
+    protected int getIndexPageSize() {
+        return PAGE_SIZE;
+    }
+
+    /**
+     * Cancels the current ongoing request
+     *
+     * @param request
+     *            The request to be canceled
+     * @since 2.0
+     */
+    protected void cancelOngoingRequest(ITmfEventRequest request) {
+        if (request != null && !request.isCompleted()) {
+            request.cancel();
+        }
+    }
+
+    /**
+     * Reset update synchronization information
+     */
+    protected void resetUpdateSynchronization() {
+        synchronized (fStatisticsUpdateSyncObj) {
+            fStatisticsUpdateBusy = false;
+            fStatisticsUpdatePending = false;
+            fStatisticsUpdateRange = null;
+        }
+    }
+
+    /**
+     * Checks if statistic update is ongoing. If it is ongoing the new time
+     * range is stored as pending
+     *
+     * @param timeRange
+     *            - new time range
+     * @return true if statistic update is ongoing else false
+     */
+    protected boolean checkUpdateBusy(TmfTimeRange timeRange) {
+        synchronized (fStatisticsUpdateSyncObj) {
+            if (fStatisticsUpdateBusy) {
+                fStatisticsUpdatePending = true;
+                if (fStatisticsUpdateRange == null
+                        || timeRange.getEndTime().compareTo(fStatisticsUpdateRange.getEndTime()) > 0) {
+                    fStatisticsUpdateRange = timeRange;
+                }
+                return true;
+            }
+            fStatisticsUpdateBusy = true;
+            return false;
+        }
+    }
+
+    /**
+     * Sends pending request (if any)
+     */
+    protected void sendPendingUpdate() {
+        synchronized (fStatisticsUpdateSyncObj) {
+            fStatisticsUpdateBusy = false;
+            if (fStatisticsUpdatePending) {
+                fStatisticsUpdatePending = false;
+                requestData(TmfExperiment.getCurrentExperiment(), fStatisticsUpdateRange);
+                fStatisticsUpdateRange = null;
+            }
+        }
     }
 }
