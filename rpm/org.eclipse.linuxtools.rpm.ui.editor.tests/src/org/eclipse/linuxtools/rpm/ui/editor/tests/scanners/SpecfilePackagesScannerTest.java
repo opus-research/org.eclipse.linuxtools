@@ -8,7 +8,7 @@
  * Contributors:
  *    Alphonse Van Assche - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.tests;
+package org.eclipse.linuxtools.rpm.ui.editor.tests.scanners;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
