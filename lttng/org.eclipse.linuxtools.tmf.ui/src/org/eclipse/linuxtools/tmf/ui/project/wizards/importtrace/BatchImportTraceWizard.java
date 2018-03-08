@@ -79,9 +79,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     // ------------------
 
     private IWizardPage fSelectDirectoriesPage;
-    private IWizardPage fScanPage;
+    private ImportTraceWizardScanPage fScanPage;
     private IWizardPage fSelectTypePage;
-    private IWizardPage fOptions;
 
     private final List<String> fTraceTypesToScan = new ArrayList<String>();
     private final Set<String> fParentFilesToScan = new HashSet<String>();
@@ -128,8 +127,15 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         fSelectDirectoriesPage = new ImportTraceWizardSelectDirectoriesPage(workbench, selection);
         fScanPage = new ImportTraceWizardScanPage(workbench, selection);
         fSelectTypePage = new ImportTraceWizardSelectTraceTypePage(workbench, selection);
-        fOptions = new ImportTraceWizardPageOptions(workbench, selection);
         // keep in case it's called later
+        Iterator<?> iter = selection.iterator();
+        while (iter.hasNext()) {
+            Object selected = iter.next();
+            if (selected instanceof TmfTraceFolder) {
+                fTargetFolder = ((TmfTraceFolder) selected).getResource();
+                break;
+            }
+        }
         fResults.clear();
     }
 
@@ -138,7 +144,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         addPage(fSelectTypePage);
         addPage(fSelectDirectoriesPage);
         addPage(fScanPage);
-        addPage(fOptions);
         final WizardDialog container = (WizardDialog) getContainer();
         if (container != null) {
             container.setPageSize(800, 400);
@@ -344,7 +349,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
     @Override
     public boolean canFinish() {
-        return super.canFinish() && hasTracesToImport() && !hasConflicts() && (fTargetFolder != null);
+        return super.canFinish() && hasTracesToImport() && !hasConflicts();
     }
 
     /**
@@ -543,6 +548,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     }
 
     private void updateTracesToScan(final List<String> added) {
+        // Treeset is used instead of a hashset since the traces should be read
+        // in the order they were added.
         final Set<String> filesToScan = new TreeSet<String>();
         for (String name : fParentFiles.keySet()) {
             filesToScan.addAll(fParentFiles.get(name));
@@ -619,14 +626,14 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         fTracesToScan.put(tv);
                         monitor.subTask(tv.getTraceToScan());
                         if (monitor.isCanceled()) {
-                            ((ImportTraceWizardScanPage) fScanPage).refresh();
+                            fScanPage.refresh();
                             return CANCEL_STATUS;
                         }
                     }
                 }
             }
         }
-        ((ImportTraceWizardScanPage) fScanPage).refresh();
+        fScanPage.refresh();
         return Status.OK_STATUS;
     }
 
@@ -680,17 +687,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      */
     public void setTraceFolder(IFolder targetFolder) {
         fTargetFolder = targetFolder;
-        this.getContainer().updateButtons();
-    }
-
-    /**
-     * Gets the target folder
-     *
-     * @return the target folder
-     */
-    public IFolder getTargetFolder() {
-
-        return fTargetFolder;
     }
 
 }

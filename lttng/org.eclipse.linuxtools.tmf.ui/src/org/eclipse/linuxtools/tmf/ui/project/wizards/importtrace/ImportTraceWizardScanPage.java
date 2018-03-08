@@ -131,7 +131,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         // --------------------
         TreeViewerColumn column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
         column.getColumn().setWidth(200);
-        column.getColumn().setText(Messages.ImportTraceWizardTraceDisplayName);
+        column.getColumn().setText(Messages.ImportTraceWizardImportCaption);
         column.setLabelProvider(new FirstColumnLabelProvider());
         column.setEditingSupport(new ColumnEditorSupport(traceTypeViewer, textCellEditor));
 
@@ -141,7 +141,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
         column.getColumn().setWidth(200);
-        column.getColumn().setText(Messages.ImportTraceWizardImportCaption);
+        column.getColumn().setText(Messages.ImportTraceWizardTraceDisplayName);
         column.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -368,6 +368,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
             control.getDisplay().syncExec(new Runnable() {
                 @Override
                 public void run() {
+                    // monitor gets overwritten here so it's necessary to save it in a field.
                     fMonitor = SubMonitor.convert(getMonitor());
                     getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
