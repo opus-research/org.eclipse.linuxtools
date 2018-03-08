@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -63,7 +62,6 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkRegion()
 	 */
-	@Override
 	public IRegion getHyperlinkRegion() {
 		return region;
 	}
@@ -71,15 +69,13 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
-	@Override
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_2, fileName);
+		return Messages.SourcesFileHyperlink_2 + ' ' + fileName;
 	}
 
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getTypeLabel()
 	 */
-	@Override
 	public String getTypeLabel() {
 		return null;
 	}
@@ -90,7 +86,6 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
-	@Override
 	public void open() {
 		IContainer container = original.getParent();
 		IResource resourceToOpen = container.findMember(fileName);
