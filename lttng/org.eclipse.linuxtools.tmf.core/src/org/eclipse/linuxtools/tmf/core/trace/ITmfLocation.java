@@ -23,7 +23,7 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * <p>
  * This location is trace-specific and must be comparable.
  *
- * @param <L> The trace location type
+ * @param <L> The trace location data type
  *
  * @version 1.0
  * @author Francois Chouinard

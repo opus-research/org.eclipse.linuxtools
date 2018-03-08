@@ -51,7 +51,6 @@ public class CtfLocationTest {
     @Before
     public void setUp() {
         fixture = new CtfLocation(new CtfLocationData(1, 0));
-        fixture.setLocation(new CtfLocationData(1, 0));
     }
 
     /**
@@ -113,15 +112,6 @@ public class CtfLocationTest {
         assertEquals(1L, result.longValue());
         assertEquals(1.0f, result.floatValue(), 1.0f);
         assertEquals(1.0, result.doubleValue(), 1.0);
-    }
-
-    /**
-     * Run the void setLocation(Long) method test.
-     */
-    @Test
-    public void testSetLocation() {
-        CtfLocationData location = new CtfLocationData(1337, 7331);
-        fixture.setLocation(location);
     }
 
     /**

@@ -209,9 +209,9 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
             currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
             context.setRank(0);
         }
-        if (currentLocation.getLocationData() == CtfLocation.INVALID_LOCATION) {
+        if (currentLocation.getLocationData() == CtfLocation.INVALID_LOCATION_DATA) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
+            currentLocation = new CtfLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
         if(context.getRank() != 0) {
@@ -239,7 +239,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     public synchronized CtfTmfEvent getNext(final ITmfContext context) {
         CtfTmfEvent event = null;
         if (context instanceof CtfTmfLightweightContext) {
-            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocationData())) {
+            if (CtfLocation.INVALID_LOCATION_DATA.equals(context.getLocation().getLocationData())) {
                 return null;
             }
             CtfTmfLightweightContext ctfContext = (CtfTmfLightweightContext) context;

@@ -15,11 +15,12 @@ package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.lang.reflect.Method;
 
+
 /**
  * A convenience implementation on of ITmfLocation. The generic class (L) must
  * be comparable.
  *
- * @param <L> The trace lcoation type
+ * @param <L> The trace location data type.
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -30,18 +31,11 @@ public class TmfLocation<L extends Comparable<L>> implements ITmfLocation<L>, Cl
     // Attributes
     // ------------------------------------------------------------------------
 
-    private L fLocationData;
+    private final L fLocationData;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
-    /**
-     * Default constructor (for the 'null' location)
-     */
-    @SuppressWarnings("unused")
-    private TmfLocation() {
-    }
 
     /**
      * Standard constructor.
@@ -65,8 +59,8 @@ public class TmfLocation<L extends Comparable<L>> implements ITmfLocation<L>, Cl
     // Getters
     // ------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocation()
+    /**
+     * @since 2.0
      */
     @Override
     public L getLocationData() {
@@ -85,14 +79,17 @@ public class TmfLocation<L extends Comparable<L>> implements ITmfLocation<L>, Cl
     public TmfLocation<L> clone() {
         TmfLocation<L> clone = null;
         try {
+            /* For now, use the result of the super.clone() method */
             clone = (TmfLocation<L>) super.clone();
             if (fLocationData != null) {
                 final Class<?> clazz = fLocationData.getClass();
                 final Method method = clazz.getMethod("clone", new Class[0]); //$NON-NLS-1$
                 final Object copy = method.invoke(this.fLocationData, new Object[0]);
-                clone.fLocationData = (L) copy;
+                /* If the location data can be cloned, we'll use that instead */
+                clone = new TmfLocation<L>((L) copy);
             } else {
-                clone.fLocationData = null;
+                /* If this location data was null, just use null again */
+                clone = new TmfLocation<L>((L) null);
             }
         } catch (final CloneNotSupportedException e) {
         } catch (final NoSuchMethodException e) {
