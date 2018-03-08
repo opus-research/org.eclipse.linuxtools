@@ -177,18 +177,17 @@ public class CEditor extends AbstractDecoratedTextEditor {
 						LogManager.logInfo("Disposing", MessageDialog.class);
 					} else { */
 						sb.append("\n{\n\t\n}\n");
-						STPEditor activeSTPEditor = IDESessionSettings.getActiveSTPEditor(); 
-						if(null == activeSTPEditor) {
+						if(null == IDESessionSettings.activeSTPEditor) {
 							NewFileAction action = new NewFileAction();
 							//action.init(input.getMainWindow());
 							action.run();
 							IEditorPart ed = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 							if(ed instanceof STPEditor)
-								IDESessionSettings.setActiveSTPEditor((STPEditor)ed);
+								IDESessionSettings.activeSTPEditor = (STPEditor)ed;
 						}
-
-						if(null != activeSTPEditor)
-							activeSTPEditor.insertText(sb.toString());
+						STPEditor editor = IDESessionSettings.activeSTPEditor;
+						if(null != editor)
+							editor.insertText(sb.toString());
 					//}
 				}
 			}
@@ -201,7 +200,7 @@ public class CEditor extends AbstractDecoratedTextEditor {
 		public void mouseUp(MouseEvent e) {
 		}
 	}
-
+	
 	/**
 	 * Default Constructor for the <code>CEditor</code> class. Creates an instance of the editor which
 	 * is not associated with any given input. 

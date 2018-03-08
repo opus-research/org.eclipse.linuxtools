@@ -32,6 +32,7 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.ide.FileStoreEditorInput;
@@ -78,16 +79,16 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 			// return empty document and save later
 			return true;
 		} catch (MalformedURLException e) {
-			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", "Incorrect URL", e)); //$NON-NLS-1$ //$NON-NLS-2$
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor",Localization.getString("SimpleDocumentProvider.incorrectURL"), e)); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (IOException e) {
-			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", "Error reading file", e)); //$NON-NLS-1$ //$NON-NLS-2$
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", Localization.getString("SimpleDocumentProvider.errorCreatingFile"), e)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		
 		try {
 			setDocumentContent(document, reader);
 			return true;
 		} catch (IOException e) {
-			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", IStatus.OK, "error reading file", e)); //$NON-NLS-1$ //$NON-NLS-2$
+			throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", IStatus.OK, Localization.getString("SimpleDocumentProvider.errorCreatingFile"), e)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -152,7 +153,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 				} else
 					throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", IStatus.OK, "error creating file", null)); //$NON-NLS-1$ //$NON-NLS-2$
 			} catch (IOException e) {
-				throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", IStatus.OK, "error when saving file", e)); //$NON-NLS-1$ //$NON-NLS-2$
+				throw new CoreException(new Status(IStatus.ERROR, "org.eclipse.linuxtools.systemtap.ui.editor", IStatus.OK, Localization.getString("errorCreatingFile"), e)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 	}
