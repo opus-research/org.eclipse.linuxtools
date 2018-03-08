@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Changed to updated histogram data model
  *   Francois Chouinard - Moved from LTTng to TMF
+ *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -18,22 +19,11 @@ import org.eclipse.swt.widgets.Composite;
 
 /**
  * A basic histogram widget that displays the event distribution of a specific time range of a trace.
- * It has the following additional features:
- * <ul>
- * <li>zoom in: mouse wheel up (or forward)
- * <li>zoom out: mouse wheel down (or backward)
- * </ul>
  *
  * @version 1.1
  * @author Francois Chouinard
  */
 public class TimeRangeHistogram extends Histogram {
-
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-
-    private HistogramZoom fZoom = null;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -45,7 +35,6 @@ public class TimeRangeHistogram extends Histogram {
      */
     public TimeRangeHistogram(HistogramView view, Composite parent) {
         super(view, parent);
-        fZoom = new HistogramZoom(this, fCanvas, getStartTime(), getTimeLimit());
     }
 
     // ------------------------------------------------------------------------
@@ -57,35 +46,15 @@ public class TimeRangeHistogram extends Histogram {
         ((HistogramView) fParentView).updateTimeRange(startTime, endTime);
     }
 
-    @Override
-    public synchronized void clear() {
-        if (fZoom != null) {
-            fZoom.setFullRange(0L, 0L);
-            fZoom.setNewRange(0L, 0L);
-        }
-        super.clear();
-    }
-
     /**
      * Sets the time range of the histogram
      * @param startTime The start time
      * @param duration The duration of the time range
      */
     public synchronized void setTimeRange(long startTime, long duration) {
-        fZoom.setNewRange(startTime, duration);
         if (getDataModel().getNbEvents() == 0) {
             getDataModel().setTimeRange(startTime, startTime + duration);
         }
-    }
-
-    /**
-     * Sets the full time range of the whole trace.
-     * @param startTime The start time
-     * @param endTime The end time
-     */
-    public void setFullRange(long startTime, long endTime) {
-        long currentFirstEvent = getStartTime();
-        fZoom.setFullRange((currentFirstEvent == 0) ? startTime : currentFirstEvent, endTime);
     }
 
 }
