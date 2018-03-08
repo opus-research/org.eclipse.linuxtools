@@ -74,6 +74,10 @@ public class CtfKernelTrace extends CtfTmfTrace {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfTrace#buildStateSystem()
+     */
     @Override
     protected void buildStateSystem() throws TmfTraceException {
         /* Set up the path to the history tree file we'll use */
@@ -92,4 +96,18 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
         this.ss = StateSystemManager.loadStateHistory(htFile, htInput, STATE_ID, false);
     }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace#dispose()
+     */
+    @Override
+    public synchronized void dispose() {
+        /* Clean up the state system */
+        if (ss != null) {
+            ss.dispose();
+        }
+        super.dispose();
+    }
+
+
 }

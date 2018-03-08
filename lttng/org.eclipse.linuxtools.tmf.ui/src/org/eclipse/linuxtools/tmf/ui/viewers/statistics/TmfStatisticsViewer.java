@@ -25,13 +25,11 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewer;
@@ -72,7 +70,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     /**
      * Timestamp scale (nanosecond)
      */
-    public static final byte TIME_SCALE = -9;
+    public static final byte TIME_SCALE = ITmfTimestamp.NANOSECOND_SCALE;
 
     /**
      * Default PAGE_SIZE for background requests.
@@ -148,7 +146,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     private int fInstanceNb;
 
     /**
-     * Object to store the cursor while waiting for the experiment to load
+     * Object to store the cursor while waiting for the trace to load
      */
     private Cursor fWaitCursor = null;
 
@@ -160,7 +158,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     private int fWaitCursorCount = 0;
 
     /**
-     * Tells to send a time range request when the experiment gets updated.
+     * Tells to send a time range request when the trace gets updated.
      */
     private boolean fSendRangeRequest = true;
 
@@ -205,7 +203,7 @@ public class TmfStatisticsViewer extends TmfViewer {
         fInstanceNb = fCountInstance;
         fTrace = trace;
 
-        // The viewer will process all events if he is assigned to the experiment
+        // The viewer will process all events if he is assigned to an experiment
         fProcessAll = (trace instanceof TmfExperiment);
 
         initContent(parent);
@@ -233,16 +231,16 @@ public class TmfStatisticsViewer extends TmfViewer {
     // ------------------------------------------------------------------------
 
     /**
-     * Handles the signal about new experiment range.
+     * Handles the signal about new trace range.
      *
      * @param signal
-     *            The experiment range updated signal
+     *            The trace range updated signal
      */
     @TmfSignalHandler
-    public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
-        TmfExperiment experiment = signal.getExperiment();
+    public void traceRangeUpdated(TmfTraceRangeUpdatedSignal signal) {
+        ITmfTrace trace = signal.getTrace();
         // validate
-        if (!experiment.equals(TmfExperiment.getCurrentExperiment())) {
+        if (!isListeningTo(trace)) {
             return;
         }
 
@@ -256,10 +254,10 @@ public class TmfStatisticsViewer extends TmfViewer {
                 TmfTimestamp endTS = new TmfTimestamp(startTime + INITIAL_WINDOW_SPAN, TIME_SCALE);
                 TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
 
-                requestTimeRangeData(experiment, timeRange);
+                requestTimeRangeData(trace, timeRange);
             }
         }
-        requestData(experiment, signal.getRange());
+        requestData(trace, signal.getRange());
     }
 
     /**
@@ -271,7 +269,10 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     @TmfSignalHandler
     public void timeRangeUpdated(TmfRangeSynchSignal signal) {
-        requestTimeRangeData(TmfExperiment.getCurrentExperiment(), signal.getCurrentRange());
+        if (fTrace == null) {
+            return;
+        }
+        requestTimeRangeData(fTrace, signal.getCurrentRange());
     }
 
     /**
@@ -570,13 +571,13 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     protected void initInput() {
         String treeID = getTreeID();
-        TmfStatisticsTreeNode experimentTreeNode;
+        TmfStatisticsTreeNode statisticsTreeNode;
         if (TmfStatisticsTreeManager.containsTreeRoot(treeID)) {
-            // The experiment root is already present
-            experimentTreeNode = TmfStatisticsTreeManager.getStatTreeRoot(treeID);
+            // The statistics root is already present
+            statisticsTreeNode = TmfStatisticsTreeManager.getStatTreeRoot(treeID);
 
             // Checks if the trace is already in the statistics tree.
-            int numNodeTraces = experimentTreeNode.getNbChildren();
+            int numNodeTraces = statisticsTreeNode.getNbChildren();
 
             int numTraces = 1;
             ITmfTrace[] trace = { fTrace };
@@ -595,7 +596,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                  */
                 for (int i = 0; i < numTraces; i++) {
                     String traceName = trace[i].getName();
-                    if (!experimentTreeNode.containsChild(traceName)) {
+                    if (!statisticsTreeNode.containsChild(traceName)) {
                         same = false;
                         break;
                     }
@@ -603,24 +604,24 @@ public class TmfStatisticsViewer extends TmfViewer {
 
                 if (same) {
                     // No need to reload data, all traces are already loaded
-                    fTreeViewer.setInput(experimentTreeNode);
+                    fTreeViewer.setInput(statisticsTreeNode);
                     return;
                 }
                 // Clears the old content to start over
-                experimentTreeNode.reset();
+                statisticsTreeNode.reset();
             }
         } else {
             // Creates a new tree
-            experimentTreeNode = TmfStatisticsTreeManager.addStatsTreeRoot(treeID, getStatisticData());
+            statisticsTreeNode = TmfStatisticsTreeManager.addStatsTreeRoot(treeID, getStatisticData());
         }
 
         // Sets the input to a clean data model
-        fTreeViewer.setInput(experimentTreeNode);
+        fTreeViewer.setInput(statisticsTreeNode);
         resetUpdateSynchronization();
     }
 
     /**
-     * Tells if the viewer is listening to a trace from the selected experiment.
+     * Tells if the viewer is listening to a trace.
      *
      * @param trace
      *            The trace that the viewer may be listening
@@ -634,7 +635,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
-     * Called when an experiment request has been completed successfully.
+     * Called when an trace request has been completed successfully.
      *
      * @param global
      *            Tells if the request is a global or time range (partial)
@@ -649,7 +650,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
-     * Called when an experiment request has failed or has been cancelled.
+     * Called when an trace request has failed or has been cancelled.
      *
      * @param isGlobalRequest
      *            Tells if the request is a global or time range (partial)
@@ -671,47 +672,47 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
-     * Sends the request to the experiment for the whole trace
+     * Sends the request to the trace for the whole trace
      *
-     * @param experiment
-     *            The experiment used to send the request
+     * @param trace
+     *            The trace used to send the request
      * @param range
-     *            The range to request to the experiment
+     *            The range to request to the trace
      */
-    protected void requestData(final TmfExperiment experiment, final TmfTimeRange timeRange) {
-        buildStatisticsTree(experiment, timeRange, true);
+    protected void requestData(final ITmfTrace trace, final TmfTimeRange timeRange) {
+        buildStatisticsTree(trace, timeRange, true);
     }
 
     /**
-     * Sends the time range request from the experiment
+     * Sends the time range request from the trace
      *
-     * @param experiment
-     *            The experiment used to send the request
+     * @param trace
+     *            The trace used to send the request
      * @param range
-     *            The range to request to the experiment
+     *            The range to request to the trace
      */
-    protected void requestTimeRangeData(final TmfExperiment experiment, final TmfTimeRange timeRange) {
+    protected void requestTimeRangeData(final ITmfTrace trace, final TmfTimeRange timeRange) {
         fRequestedTimerange = timeRange;
-        buildStatisticsTree(experiment, timeRange, false);
+        buildStatisticsTree(trace, timeRange, false);
     }
 
     /**
-     * Requests all the data of the experiment to the state system which
+     * Requests all the data of the trace to the state system which
      * contains information about the statistics.
      *
-     * Since the viewer may be listening to multiple traces, it have to receive
-     * the experiment rather than a single trace. The filtering is done with the
+     * Since the viewer may be listening to multiple traces, it may receive
+     * an experiment rather than a single trace. The filtering is done with the
      * method {@link #isListeningTo(String trace)}.
      *
-     * @param experiment
-     *            The experiment for which a request must be done
+     * @param trace
+     *            The trace for which a request must be done
      * @param timeRange
      *            The time range that will be requested to the state system
      * @param isGlobal
      *            Tells if the request is for the global event count or the
      *            partial one.
      */
-    private void buildStatisticsTree(final TmfExperiment experiment, TmfTimeRange timeRange, boolean isGlobal) {
+    private void buildStatisticsTree(final ITmfTrace trace, TmfTimeRange timeRange, boolean isGlobal) {
         final TmfStatisticsTreeNode statTree = TmfStatisticsTreeManager.getStatTreeRoot(getTreeID());
         final TmfStatisticsTree statsData = TmfStatisticsTreeManager.getStatTree(getTreeID());
         if (statsData == null) {
@@ -725,17 +726,20 @@ public class TmfStatisticsViewer extends TmfViewer {
                 statTree.resetTimeRangeValue();
             }
 
-            /*
-             * Checks each trace in the experiment, since the viewer may be
-             * listening to multiple traces.
-             */
-            for (final ITmfTrace trace : experiment.getTraces()) {
-                if (!isListeningTo(trace)) {
+            ITmfTrace[] traces;
+            if (trace instanceof TmfExperiment) {
+                TmfExperiment experiment = (TmfExperiment) trace;
+                traces = experiment.getTraces();
+            } else {
+                traces = new ITmfTrace[] { trace };
+            }
+            for (final ITmfTrace aTrace : traces) {
+                if (!isListeningTo(aTrace)) {
                     continue;
                 }
 
                 /* Retrieves the statistics object */
-                final ITmfStatistics stats = trace.getStatistics();
+                final ITmfStatistics stats = aTrace.getStatistics();
                 if (stats == null) {
                     /*
                      * The statistics provider for this trace is not accessible
@@ -754,7 +758,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                  * be sent through a {@link TmfStatsUpdatedSignal}, and will be
                  * processed by the signal handler.
                  */
-                trace.getStatistics().updateStats(isGlobal, start, end);
+                aTrace.getStatistics().updateStats(isGlobal, start, end);
             }
         }
     }
@@ -770,7 +774,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
-     * When the experiment is loading the cursor will be different so the user
+     * When the trace is loading the cursor will be different so the user
      * knows that the processing is not finished yet.
      *
      * Calls to this method are stacked.
@@ -868,7 +872,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             fStatisticsUpdateBusy = false;
             if (fStatisticsUpdatePending) {
                 fStatisticsUpdatePending = false;
-                requestData(TmfExperiment.getCurrentExperiment(), fStatisticsUpdateRange);
+                requestData(fTrace, fStatisticsUpdateRange);
                 fStatisticsUpdateRange = null;
             }
         }
