@@ -7,7 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Copied and adapted from NewFolderDialog
+ *     Francois Chouinard - Copied and adapted from NewFolderDialog
+ *     Marc-Andre Laperle - Add select/deselect all
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.dialogs;
@@ -23,9 +24,13 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -89,7 +94,7 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        composite.setLayout(new GridLayout());
+        composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Group contextGroup = new Group(composite, SWT.SHADOW_NONE);
@@ -153,6 +158,39 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
       });
         fTreeViewer.setInput(fAvailableResources);
 
+        Composite btComp = new Composite(composite, SWT.NONE);
+        FillLayout layout = new FillLayout(SWT.VERTICAL);
+        layout.spacing = 4;
+        btComp.setLayout(layout);
+
+        GridData gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
+        btComp.setLayoutData(gd);
+
+        final Button selectAll = new Button(btComp, SWT.PUSH);
+        selectAll.setText(Messages.SelectSpplementaryResources_SelectAll);
+        selectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] items = fAvailableResources;
+                for (Object treeItem : items) {
+                    fTreeViewer.setChecked(treeItem, true);
+                }
+            }
+        });
+
+        final Button deselectAll = new Button(btComp, SWT.PUSH);
+        deselectAll.setText(Messages.SelectSpplementaryResources_DeselectAll);
+        deselectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] items = fAvailableResources;
+                for (Object treeItem : items) {
+                    fTreeViewer.setChecked(treeItem, false);
+                }
+            }
+        });
+
         getShell().setMinimumSize(new Point(300, 150));
 
         return composite;
@@ -160,8 +198,8 @@ public class SelectSupplementaryResourcesDialog extends Dialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
     @Override
