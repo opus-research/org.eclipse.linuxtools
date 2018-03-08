@@ -23,13 +23,13 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
+import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
- * The Transient State is used to build intervals from punctual state changes. It
- * contains a "state info" vector similar to the "current state", except here we
- * also record the start time of every state stored in it.
+ * The Transient State is used to build intervals from punctual state changes.
+ * It contains a "state info" vector similar to the "current state", except here
+ * we also record the start time of every state stored in it.
  *
  * We can then build StateInterval's, to be inserted in the State History when
  * we detect state changes : the "start time" of the interval will be the
@@ -192,19 +192,19 @@ class TransientState {
         checkValidAttribute(index);
 
         /*
-         * Make sure the state value type we're inserting is the same as the
-         * one registered for this attribute.
+         * Make sure the state value type we're inserting is the same as the one
+         * registered for this attribute.
          */
         if (expectedSvType == Type.NULL) {
             /*
-             * The value hasn't been used yet, set it to the value
-             * we're currently inserting (which might be null/-1 again).
+             * The value hasn't been used yet, set it to the value we're
+             * currently inserting (which might be null/-1 again).
              */
             stateValueTypes.set(index, value.getType());
         } else if ((value.getType() != Type.NULL) && (value.getType() != expectedSvType)) {
             /*
-             * We authorize inserting null values in any type of attribute,
-             * but for every other types, it needs to match our expectations!
+             * We authorize inserting null values in any type of attribute, but
+             * for every other types, it needs to match our expectations!
              */
             throw new StateValueTypeException();
         }
@@ -270,9 +270,9 @@ class TransientState {
     }
 
     /**
-     * Close off the Transient State, used for example when we are done reading a
-     * static trace file. All the information currently contained in it will be
-     * converted to intervals and "flushed" to the State History.
+     * Close off the Transient State, used for example when we are done reading
+     * a static trace file. All the information currently contained in it will
+     * be converted to intervals and "flushed" to the State History.
      */
     void closeTransientState(long endTime) {
         assert (this.isActive);
@@ -342,5 +342,4 @@ class TransientState {
         writer.println('\n');
         return;
     }
-
 }

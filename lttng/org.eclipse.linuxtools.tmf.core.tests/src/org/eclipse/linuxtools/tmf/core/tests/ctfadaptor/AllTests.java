@@ -29,6 +29,8 @@ import org.junit.runners.Suite;
     CtfIteratorTest.class,
     CtfLocationDataTest.class,
     CtfLocationTest.class,
+    CtfTmfMipmapStateProviderTest.class,
+    CtfTmfMipmapStateProviderWeightedTest.class,
     CtfTmfContextTest.class,
     CtfTmfEventFieldTest.class,
     CtfTmfEventTest.class,
