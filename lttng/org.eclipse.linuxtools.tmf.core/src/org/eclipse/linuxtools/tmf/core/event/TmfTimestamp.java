@@ -23,7 +23,7 @@ package org.eclipse.linuxtools.tmf.core.event;
  * @version 1.1
  * @author Francois Chouinard
  */
-public class TmfTimestamp implements ITmfTimestamp {
+public class TmfTimestamp implements ITmfTimestamp, Cloneable {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -66,17 +66,17 @@ public class TmfTimestamp implements ITmfTimestamp {
     /**
      * The timestamp raw value (mantissa)
      */
-    private final long fValue;
+    private long fValue;
 
     /**
      * The timestamp scale (magnitude)
      */
-    private final int fScale;
+    private int fScale;
 
     /**
      * The value precision (tolerance)
      */
-    private final int fPrecision;
+    private int fPrecision;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -133,6 +133,16 @@ public class TmfTimestamp implements ITmfTimestamp {
         fValue = timestamp.getValue();
         fScale = timestamp.getScale();
         fPrecision = timestamp.getPrecision();
+    }
+
+    // ------------------------------------------------------------------------
+    // Setters
+    // ------------------------------------------------------------------------
+
+    protected void setValue(long value, int scale, int precision) {
+        fValue = value;
+        fScale = scale;
+        fPrecision = precision;
     }
 
     // ------------------------------------------------------------------------
@@ -196,7 +206,7 @@ public class TmfTimestamp implements ITmfTimestamp {
 
         // Handle the trivial case
         if (fScale == scale && offset == 0) {
-            return this;
+            return new TmfTimestamp(this);
         }
 
         // In case of big bang and big crunch just return this (no need to normalize)
@@ -288,6 +298,26 @@ public class TmfTimestamp implements ITmfTimestamp {
         final ITmfTimestamp nts = ts.normalize(0, fScale);
         final long value = fValue - nts.getValue();
         return new TmfTimestamp(value, fScale, fPrecision + nts.getPrecision());
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfTimestamp clone() {
+        TmfTimestamp clone = null;
+        try {
+            clone = (TmfTimestamp) super.clone();
+            clone.fValue = fValue;
+            clone.fScale = fScale;
+            clone.fPrecision = fPrecision;
+        } catch (final CloneNotSupportedException e) {
+        }
+        return clone;
     }
 
     // ------------------------------------------------------------------------
