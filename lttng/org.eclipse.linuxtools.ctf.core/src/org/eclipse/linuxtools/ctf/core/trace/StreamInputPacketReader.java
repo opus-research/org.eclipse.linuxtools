@@ -205,10 +205,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *
      * @param currentPacket
      *            The index entry of the packet to switch to.
-     * @throws CTFReaderException
-     *             If we get an error reading the packet
      */
-    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) throws CTFReaderException {
+    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
         StreamInputPacketIndexEntry prevPacket = null;
         this.currentPacket = currentPacket;
 
@@ -327,9 +325,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
             Definition idDef = sehd.lookupDefinition("id"); //$NON-NLS-1$
             if (idDef instanceof SimpleDatatypeDefinition) {
                 eventID = ((SimpleDatatypeDefinition) idDef).getIntegerValue();
-            } else if (idDef != null) {
-                throw new CTFReaderException("Incorrect event id : " + eventID);
-            }
+            } // else, eventID remains 0
 
             /*
              * Get the timestamp from the event header (may be overridden later

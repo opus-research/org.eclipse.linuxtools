@@ -401,7 +401,7 @@ public class StreamInput implements IDefinitionScope {
 
     private void parsePacketContext(long fileSizeBytes,
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer,
-            StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
+            StreamInputPacketIndexEntry packetIndex) {
         streamPacketContextDef.read(bitBuffer);
 
         for (String field : streamPacketContextDef.getDeclaration()
@@ -441,12 +441,13 @@ public class StreamInput implements IDefinitionScope {
         /* Read the packet size in bits */
         if (packetSize != null) {
             packetIndex.setPacketSizeBits(packetSize.intValue());
-        } else if (packetIndex.getContentSizeBits() != 0) {
-            packetIndex.setPacketSizeBits(packetIndex.getContentSizeBits());
         } else {
-            packetIndex.setPacketSizeBits((int) (fileSizeBytes * 8));
+            if (packetIndex.getContentSizeBits() != 0) {
+                packetIndex.setPacketSizeBits(packetIndex.getContentSizeBits());
+            } else {
+                packetIndex.setPacketSizeBits((int) (fileSizeBytes * 8));
+            }
         }
-
 
         /* Read the begin timestamp */
         if (tsBegin != null) {

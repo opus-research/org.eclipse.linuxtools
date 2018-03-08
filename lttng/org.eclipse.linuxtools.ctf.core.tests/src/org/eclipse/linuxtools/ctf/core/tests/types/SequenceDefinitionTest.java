@@ -144,10 +144,9 @@ public class SequenceDefinitionTest {
 
     /**
      * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testRead() throws CTFReaderException {
+    public void testRead() {
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
         fixture.read(input);
     }
