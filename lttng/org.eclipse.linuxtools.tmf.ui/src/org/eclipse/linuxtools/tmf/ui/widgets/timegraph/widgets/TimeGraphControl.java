@@ -70,7 +70,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
 
     /** Max scrollbar size */
     public static final int H_SCROLLBAR_MAX = Integer.MAX_VALUE - 1;
@@ -913,13 +913,9 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * Return the x coordinate corresponding to a time
-     *
-     * @param time the time
-     * @return the x coordinate corresponding to the time
-     *
      * @since 2.0
      */
+    @Override
     public int getXForTime(long time) {
         if (null == _timeProvider) {
             return -1;
@@ -934,13 +930,9 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * Return the time corresponding to an x coordinate
-     *
-     * @param coord The X coordinate
-     * @return The time corresponding to the x coordinate
-     *
      * @since 2.0
      */
+    @Override
     public long getTimeAtX(int coord) {
         if (null == _timeProvider) {
             return -1;
@@ -1180,6 +1172,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             drawItem(item, bounds, timeProvider, i, nameSpace, gc);
         }
         fTimeGraphProvider.postDrawControl(bounds, gc);
+        fTimeGraphProvider.postDrawControl(this, bounds, gc);
     }
 
     /**
@@ -1213,12 +1206,14 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         Rectangle rect = getStatesRect(bounds, i, nameSpace);
         if (rect.isEmpty()) {
             fTimeGraphProvider.postDrawEntry(entry, rect, gc);
+            fTimeGraphProvider.postDrawEntry(this, entry, rect, gc);
             return;
         }
         if (time1 <= time0) {
             gc.setBackground(_colors.getBkColor(false, false, false));
             gc.fillRectangle(rect);
             fTimeGraphProvider.postDrawEntry(entry, rect, gc);
+            fTimeGraphProvider.postDrawEntry(this, entry, rect, gc);
             return;
         }
 
@@ -1264,6 +1259,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             }
         }
         fTimeGraphProvider.postDrawEntry(entry, rect, gc);
+        fTimeGraphProvider.postDrawEntry(this, entry, rect, gc);
     }
 
     /**
@@ -1434,6 +1430,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             gc.drawPoint(rect.x, rect.y - 2);
         }
         fTimeGraphProvider.postDrawEvent(event, rect, gc);
+        fTimeGraphProvider.postDrawEvent(this, event, rect, gc);
         return visible;
     }
 

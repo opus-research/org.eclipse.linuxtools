@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITmfTimeGraphDrawingHelper;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -92,6 +93,19 @@ public interface ITimeGraphPresentationProvider {
     public void postDrawControl(Rectangle bounds, GC gc);
 
     /**
+     * Called after drawing the control
+     *
+     * @param drawingHelper
+     *            object providing drawing helper functions
+     * @param bounds
+     *            The drawing rectangle
+     * @param gc
+     *            The graphics context
+     * @since 2.0
+     */
+    public void postDrawControl(ITmfTimeGraphDrawingHelper drawingHelper, Rectangle bounds, GC gc);
+
+    /**
      * Called after drawing an entry
      *
      * @param entry
@@ -104,6 +118,22 @@ public interface ITimeGraphPresentationProvider {
     public void postDrawEntry(ITimeGraphEntry entry, Rectangle bounds, GC gc);
 
     /**
+     * Called after drawing an entry
+     *
+     * @param drawingHelper
+     *            object providing drawing helper functions
+     * @param entry
+     *            the entry that was drawn
+     * @param bounds
+     *            the drawing rectangle
+     * @param gc
+     *            the graphics context
+     * @since 2.0
+     */
+    public void postDrawEntry(ITmfTimeGraphDrawingHelper drawingHelper, ITimeGraphEntry entry, Rectangle bounds, GC gc);
+
+
+    /**
      * Called after drawing an event
      *
      * @param event
@@ -114,6 +144,21 @@ public interface ITimeGraphPresentationProvider {
      *            the graphics context
      */
     public void postDrawEvent(ITimeEvent event, Rectangle bounds, GC gc);
+
+    /**
+     * Called after drawing an event with an helper
+     *
+     * @param drawingHelper
+     *            object providing drawing helper functions
+     * @param event
+     *            the event that was drawn
+     * @param bounds
+     *            the drawing rectangle
+     * @param gc
+     *            the graphics context
+     * @since 2.0
+     */
+    public void postDrawEvent(ITmfTimeGraphDrawingHelper drawingHelper, ITimeEvent event, Rectangle bounds, GC gc);
 
     /**
      * Returns the height of this item. This value is ignored if the time graph has a fixed item height.
