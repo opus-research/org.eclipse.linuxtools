@@ -63,14 +63,14 @@ public class LaunchTabsTest extends AbstractTest {
 	
 	//getter functions for otherwise unaccessible member variables 
 	private static class TestOptionsTab extends PerfOptionsTab {
-		protected Text get_txtKernel_Location() { return _txtKernel_Location; }
-		protected Button get_chkRecord_Realtime() { return _chkRecord_Realtime; }
-		protected Button get_chkRecord_Verbose() { return _chkRecord_Verbose; }
-		protected Button get_chkSourceLineNumbers() { return _chkSourceLineNumbers; }
-		protected Button get_chkKernel_SourceLineNumbers() { return _chkKernel_SourceLineNumbers; }
-		protected Button get_chkMultiplexEvents() { return _chkMultiplexEvents; }
-		protected Button get_chkModuleSymbols() { return _chkModuleSymbols; }
-		protected Button get_chkHideUnresolvedSymbols() { return _chkHideUnresolvedSymbols; }
+		protected Text get_txtKernel_Location() { return txtKernelLocation; }
+		protected Button get_chkRecord_Realtime() { return chkRecordRealtime; }
+		protected Button get_chkRecord_Verbose() { return chkRecordVerbose; }
+		protected Button get_chkSourceLineNumbers() { return chkSourceLineNumbers; }
+		protected Button get_chkKernel_SourceLineNumbers() { return chkKernelSourceLineNumbers; }
+		protected Button get_chkMultiplexEvents() { return chkMultiplexEvents; }
+		protected Button get_chkModuleSymbols() { return chkModuleSymbols; }
+		protected Button get_chkHideUnresolvedSymbols() { return chkHideUnresolvedSymbols; }
 	}
 	
 	public void testOptionsTab() throws CoreException {
