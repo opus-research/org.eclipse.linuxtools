@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Matthew Khouzam - Added import functionalities
- *   Geneviève Bastien - New is_experiment parameter to trace type extension
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -120,11 +119,6 @@ public final class TmfTraceType {
      * Extension point attribute 'class'
      */
     public static final String CLASS_ATTR = "class"; //$NON-NLS-1$
-    /**
-     * Extension point attribute 'is_experiment'
-     * @since 2.1
-     */
-    public static final String IS_EXPERIMENT_ATTR = "is_experiment"; //$NON-NLS-1$
 
     /**
      * Custom text label used internally and therefore should not be
@@ -334,6 +328,7 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public TraceTypeHelper getTraceType(String id) {
+        init();
         return fTraceTypes.get(id);
     }
 
@@ -354,19 +349,15 @@ public final class TmfTraceType {
             // create the trace types
             for (String typeId : fTraceTypeAttributes.keySet()) {
                 IConfigurationElement ce = fTraceTypeAttributes.get(typeId);
-                /* Do not add experiment types to the fTraceTypes list */
-                boolean isExperiment = Boolean.valueOf(ce.getAttribute(TmfTraceType.IS_EXPERIMENT_ATTR)).booleanValue();
-                if (!isExperiment) {
-                    final String category = getCategory(ce);
-                    final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
-                    ITmfTrace trace = null;
-                    try {
-                        trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                    } catch (CoreException e) {
-                    }
-                    TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
-                    fTraceTypes.put(typeId, tt);
+                final String category = getCategory(ce);
+                final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
+                ITmfTrace trace = null;
+                try {
+                    trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                } catch (CoreException e) {
                 }
+                TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
+                fTraceTypes.put(typeId, tt);
             }
         }
     }
@@ -400,20 +391,20 @@ public final class TmfTraceType {
     }
 
     /**
-     * Get the trace types
+     * Get the trace type helper classes from category name
      *
-     * @param category
-     *            the category to lookup
-     * @return the trace types
+     * @param categoryName
+     *            the categoryName to lookup
+     * @return a list of trace type helper classes {@link TraceTypeHelper}
      * @since 2.0
      */
 
-    public List<TraceTypeHelper> getTraceTypes(String category) {
+    public List<TraceTypeHelper> getTraceTypes(String categoryName) {
         init();
         List<TraceTypeHelper> traceNames = new ArrayList<TraceTypeHelper>();
         for (String key : fTraceTypes.keySet()) {
-            final String categoryName = fTraceTypes.get(key).getCategoryName();
-            if (categoryName.equals(category)) {
+            final String storedCategoryName = fTraceTypes.get(key).getCategoryName();
+            if (storedCategoryName.equals(categoryName)) {
                 traceNames.add(fTraceTypes.get(key));
             }
         }
@@ -724,8 +715,9 @@ public final class TmfTraceType {
      * @return Status.OK_Status if successful, error is otherwise.
      * @throws CoreException
      *             An exception caused by accessing eclipse project items.
+     * @since 2.1
      */
-    static IStatus setTraceType(IPath path, TraceTypeHelper traceType) throws CoreException {
+    public static IStatus setTraceType(IPath path, TraceTypeHelper traceType) throws CoreException {
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         String TRACE_NAME = path.lastSegment();
         String traceBundle = null, traceTypeId = traceType.getCanonicalName(), traceIcon = null;
