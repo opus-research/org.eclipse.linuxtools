@@ -135,6 +135,39 @@ public class TmfEventField implements ITmfEventField {
         return null;
     }
 
+    /**
+     * Gets the value of a field by its name
+     *
+     * @param name Name of the field to get
+     * @return The value of the field, null if field not present
+     * @since 2.1
+     */
+    public Object getFieldValue(final String name) {
+        ITmfEventField field = getField(name);
+        if (field != null) {
+            return field.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * Gets the value of a field recursively in the children of the current field
+     *
+     * @param names Array of field name to recursively get
+     * @return The value of the last requested field
+     * @since 2.1
+     */
+    public Object getFieldValue(final String[] names) {
+        ITmfEventField field = this;
+        for (String name : names) {
+            field = field.getField(name);
+            if (field == null) {
+                return null;
+            }
+        }
+        return field.getValue();
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
