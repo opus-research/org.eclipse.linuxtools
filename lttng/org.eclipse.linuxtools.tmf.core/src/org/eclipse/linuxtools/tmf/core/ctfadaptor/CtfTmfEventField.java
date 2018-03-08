@@ -189,7 +189,7 @@ public abstract class CtfTmfEventField implements ITmfEventField {
                     other.name);
         case FIELDTYPE_INTEGER_ARRAY:
             return new CTFIntegerArrayField(
-                    ((CTFIntegerArrayField) other).getValue(), other.name);
+                    ((CTFIntegerArrayField) other).getLongValues(), other.name);
         case FIELDTYPE_FLOAT:
             return new CTFFloatField(((CTFFloatField) other).getValue(),
                     other.name);
@@ -397,9 +397,28 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return FIELDTYPE_INTEGER_ARRAY;
     }
 
-    @Override
-    public long[] getValue() {
+    /**
+     * Gets the values of the array
+     * @return the values in the array
+     *
+     * @since 2.0
+     */
+    long[] getLongValues() {
         return this.longValues;
+    }
+
+    private String getString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(longValues[0]);
+        for (int i = 1; i < longValues.length; i++) {
+            buffer.append(", " + longValues[i]); //$NON-NLS-1$
+        }
+        return buffer.toString();
+    }
+
+    @Override
+    public String getValue() {
+        return getString();
     }
 
     @Override
@@ -407,10 +426,8 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         StringBuffer buffer = new StringBuffer();
         buffer.append("{ "); //$NON-NLS-1$
 
-        buffer.append(longValues[0]);
-        for (int i = 1; i < longValues.length; i++) {
-            buffer.append(", " + longValues[i]); //$NON-NLS-1$
-        }
+        buffer.append(getString());
+
         buffer.append('}');
         return name + '=' + buffer.toString();
     }

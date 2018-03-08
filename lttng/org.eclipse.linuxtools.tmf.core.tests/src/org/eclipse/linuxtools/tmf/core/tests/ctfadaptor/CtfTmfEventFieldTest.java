@@ -152,6 +152,17 @@ public class CtfTmfEventFieldTest {
      * Run the CtfTmfEventField parseField(Definition,String) method test.
      */
     @Test
+    public void testParseField_sequence_value() {
+        Definition fieldDef = fixture.lookupDefinition(SEQ);
+        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
+        String result2 =(String) CtfTmfEventField.copyFrom(result).getValue();
+        assertEquals( result2, "2, 2"); //$NON-NLS-1$
+    }
+
+    /**
+     * Run the CtfTmfEventField parseField(Definition,String) method test.
+     */
+    @Test
     public void testParseField_string() {
         Definition fieldDef = fixture.lookupDefinition(STR);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
