@@ -12,17 +12,20 @@
 
 package org.eclipse.linuxtools.tmf.core.signal;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
 /**
  * New experiment has been selected
  *
+ * @param <T> The experiment event type
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfExperimentSelectedSignal extends TmfSignal {
+public class TmfExperimentSelectedSignal<T extends ITmfEvent> extends TmfSignal {
 
-    private final TmfExperiment fExperiment;
+    private final TmfExperiment<T> fExperiment;
 
     /**
      * Constructor
@@ -32,7 +35,7 @@ public class TmfExperimentSelectedSignal extends TmfSignal {
      * @param experiment
      *            The experiment that was selected
      */
-    public TmfExperimentSelectedSignal(Object source, TmfExperiment experiment) {
+    public TmfExperimentSelectedSignal(Object source, TmfExperiment<T> experiment) {
         super(source);
         fExperiment = experiment;
     }
@@ -40,7 +43,7 @@ public class TmfExperimentSelectedSignal extends TmfSignal {
     /**
      * @return The experiment
      */
-    public TmfExperiment getExperiment() {
+    public TmfExperiment<? extends ITmfEvent> getExperiment() {
         return fExperiment;
     }
 

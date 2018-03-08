@@ -32,6 +32,7 @@ public interface IStateChangeInput {
      *
      * @return The associated trace
      */
+    @SuppressWarnings("rawtypes")
     public ITmfTrace getTrace();
 
     /**
