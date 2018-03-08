@@ -25,13 +25,13 @@ public class SectionRule implements IPredicateRule {
 	private StringBuilder nextHeaderBuffer = new StringBuilder();
 
 	/** The success token */
-	private IToken token;
+	IToken token;
 
 	/** The beginning token, represents a section of the spec file */
-	private String startingHeader;
+	String startingHeader;
 
 	/** A list of possible ending section headers */
-	private String[] endingHeaders;
+	String[] endingHeaders;
 
 	public SectionRule(String startingHeader, String[] endingHeaders,
 			IToken token) {

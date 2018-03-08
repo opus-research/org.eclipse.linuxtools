@@ -81,19 +81,14 @@ public class MassifPlugin extends AbstractUIPlugin {
 		if (sourceLocator instanceof ISourceLookupDirector) {
 			Object obj = ((ISourceLookupDirector) sourceLocator).getSourceElement(element.getFilename());
 			if (obj != null && obj instanceof IStorage){
-				try {
-					// Most likely a remote project
-					if (obj instanceof IFile) {
+				if (obj instanceof IFile) {
+					try {
 						ProfileUIUtils.openEditorAndSelect(((IFile)obj), element.getLine());
-					// Local projects
-					} else {
-						String fullFilePath = ((IStorage) obj).getFullPath().toOSString();
-						ProfileUIUtils.openEditorAndSelect(fullFilePath, element.getLine());
+					} catch (PartInitException e) {
+						e.printStackTrace();
+					} catch (BadLocationException e) {
+						e.printStackTrace();
 					}
-				} catch (PartInitException e) {
-					e.printStackTrace();
-				} catch (BadLocationException e) {
-					e.printStackTrace();
 				}
 			}
 		}
