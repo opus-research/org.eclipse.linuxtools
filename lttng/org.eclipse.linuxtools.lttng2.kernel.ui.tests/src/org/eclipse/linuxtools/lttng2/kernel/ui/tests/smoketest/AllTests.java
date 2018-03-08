@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,22 +7,19 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
+ *   Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.lttng2.kernel.ui.tests;
+package org.eclipse.linuxtools.lttng2.kernel.ui.tests.smoketest;
 
-import org.eclipse.linuxtools.lttng2.kernel.ui.tests.smoketest.ImportAndReadKernelSmokeTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Run the lttng2.ui unit tests.
+ *  Test suite for org.eclipse.linuxtools.tmf.ui.project.model
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ActivatorTest.class,
     ImportAndReadKernelSmokeTest.class
 })
 public class AllTests {
