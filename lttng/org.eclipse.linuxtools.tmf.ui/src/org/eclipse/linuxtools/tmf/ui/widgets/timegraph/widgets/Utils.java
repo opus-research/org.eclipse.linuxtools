@@ -56,21 +56,17 @@ public class Utils {
         NUMBER,
     }
 
-    /**
-     * Timestamp resolution
-     */
+    static public final int IMG_THREAD_RUNNING = 0;
+    static public final int IMG_THREAD_SUSPENDED = 1;
+    static public final int IMG_THREAD_STOPPED = 2;
+    static public final int IMG_METHOD_RUNNING = 3;
+    static public final int IMG_METHOD = 4;
+    static public final int IMG_NUM = 5;
+
+    static public final Object[] _empty = new Object[0];
+
     public static enum Resolution {
-        /** seconds */
-        SECONDS,
-
-        /** milliseconds */
-        MILLISEC,
-
-        /** microseconds */
-        MICROSEC,
-
-        /** nanoseconds */
-        NANOSEC
+        SECONDS, MILLISEC, MICROSEC, NANOSEC
     }
 
     static private final SimpleDateFormat stimeformat = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
