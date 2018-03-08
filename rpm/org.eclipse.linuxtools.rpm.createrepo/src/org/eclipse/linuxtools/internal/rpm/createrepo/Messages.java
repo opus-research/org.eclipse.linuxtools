@@ -66,8 +66,6 @@ public final class Messages {
 	// Createrepo
 	/****/
 	public static String Createrepo_jobName;
-	/****/
-	public static String Createrepo_errorExecuting;
 
 	// RepoFormEditor
 	/****/
@@ -92,6 +90,8 @@ public final class Messages {
 	public static String ImportRPMsPage_buttonCreateRepo;
 	/****/
 	public static String ImportRPMsPage_errorRefreshingTree;
+	/****/
+	public static String ImportRPMsPage_errorResourceChanged;
 
 	// ImportRPMsPage$ImportButtonListener
 	/****/
@@ -117,11 +117,15 @@ public final class Messages {
 	/****/
 	public static String MetadataPage_sectionInstructionTags;
 	/****/
+	public static String MetadataPage_labelTags;
+	/****/
 	public static String MetadataPage_buttonAddTag;
 	/****/
 	public static String MetadataPage_buttonEditTag;
 	/****/
 	public static String MetadataPage_buttonRemoveTag;
+	/****/
+	public static String MetadataPage_errorSavingPreferences;
 
 	// CreaterepoResourceChangeListener
 	/****/
