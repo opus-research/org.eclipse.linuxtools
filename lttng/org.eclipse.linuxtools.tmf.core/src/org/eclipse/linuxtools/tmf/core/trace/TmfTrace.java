@@ -45,6 +45,7 @@ import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -708,14 +709,16 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     @Override
-    public synchronized ITmfContext armRequest(final ITmfEventRequest request) {
+    public synchronized ITmfContext armRequest(final ITmfDataRequest request) {
         if (executorIsShutdown()) {
             return null;
         }
-        if (!TmfTimestamp.BIG_BANG.equals(request.getRange().getStartTime())
-                && (request.getIndex() == 0)) {
-            final ITmfContext context = seekEvent(request.getRange().getStartTime());
-            request.setStartIndex((int) context.getRank());
+        if ((request instanceof ITmfEventRequest)
+            && !TmfTimestamp.BIG_BANG.equals(((ITmfEventRequest) request).getRange().getStartTime())
+            && (request.getIndex() == 0))
+        {
+            final ITmfContext context = seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
+            ((ITmfEventRequest) request).setStartIndex((int) context.getRank());
             return context;
 
         }
