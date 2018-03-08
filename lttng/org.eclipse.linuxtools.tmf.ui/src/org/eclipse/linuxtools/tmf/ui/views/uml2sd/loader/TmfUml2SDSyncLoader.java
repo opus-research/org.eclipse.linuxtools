@@ -35,15 +35,16 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfSyncSequenceDiagramEvent;
+import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.Frame;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode;
@@ -57,6 +58,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvi
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -124,17 +126,18 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
     // Experiment attributes
     /**
-     * The TMF experiment reference.
+     * The TMF trace reference.
+     * @since 2.0
      */
-    protected TmfExperiment<ITmfEvent> fExperiment = null;
+    protected ITmfTrace fTrace = null;
     /**
      * The current indexing event request.
      */
-    protected ITmfEventRequest<ITmfEvent> fIndexRequest = null;
+    protected ITmfEventRequest fIndexRequest = null;
     /**
      * The current request to fill a page.
      */
-    protected ITmfEventRequest<ITmfEvent> fPageRequest = null;
+    protected ITmfEventRequest fPageRequest = null;
     /**
      * Flag whether the time range signal was sent by this loader class or not
      */
@@ -237,7 +240,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         fLock.lock();
         try {
             if (fCurrentTime != null) {
-                return fCurrentTime.clone();
+                return fCurrentTime;
             }
             return null;
         } finally {
@@ -250,7 +253,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      */
     public void waitForCompletion() {
         fLock.lock();
-        ITmfEventRequest<ITmfEvent> request = fPageRequest;
+        ITmfEventRequest request = fPageRequest;
         fLock.unlock();
         if (request != null) {
             try {
@@ -262,31 +265,41 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     }
 
     /**
-     * Signal handler for the experiment selected signal.
+     * Signal handler for the trace selected signal.
      *
-     * Spawns a request to index the experiment (checkpoints creation) as well as it fills
+     * Spawns a request to index the trace (checkpoints creation) as well as it fills
      * the first page.
      *
-     * @param signal The experiment selected signal
+     * @param signal The trace selected signal
+     * @since 2.0
      */
     @TmfSignalHandler
-    public void experimentSelected(TmfExperimentSelectedSignal<ITmfEvent> signal) {
-
-        final Job job = new IndexingJob("Indexing " + getName() + "..."); //$NON-NLS-1$ //$NON-NLS-2$
-        job.setUser(false);
-        job.schedule();
+    public void traceSelected(TmfTraceSelectedSignal signal) {
 
         fLock.lock();
         try {
             // Update the trace reference
-            TmfExperiment<ITmfEvent> exp = (TmfExperiment<ITmfEvent>) signal.getExperiment();
-            if (!exp.equals(fExperiment)) {
-                fExperiment = exp;
+            ITmfTrace trace = signal.getTrace();
+            if (!trace.equals(fTrace)) {
+                fTrace = trace;
+            } else {
+                return;
             }
+
+            final Job job = new IndexingJob("Indexing " + getName() + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+            job.setUser(false);
+            job.schedule();
+
+            if (fIndexRequest != null && !fIndexRequest.isCompleted()) {
+                fIndexRequest.cancel();
+            }
+
+            cancelOngoingRequests();
+            resetLoader();
 
             TmfTimeRange window = TmfTimeRange.ETERNITY;
 
-            fIndexRequest = new TmfEventRequest<ITmfEvent>(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, DEFAULT_BLOCK_SIZE, ITmfDataRequest.ExecutionType.BACKGROUND) {
+            fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, DEFAULT_BLOCK_SIZE, ITmfDataRequest.ExecutionType.BACKGROUND) {
 
                 private ITmfTimestamp fFirstTime = null;
                 private ITmfTimestamp fLastTime = null;
@@ -307,10 +320,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                         ++fNbSeqEvents;
 
                         if (fFirstTime == null) {
-                            fFirstTime = event.getTimestamp().clone();
+                            fFirstTime = event.getTimestamp();
                         }
 
-                        fLastTime = event.getTimestamp().clone();
+                        fLastTime = event.getTimestamp();
 
                         if ((fNbSeqEvents % MAX_NUM_OF_MSG) == 0) {
                             fLock.lock();
@@ -380,7 +393,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 }
             };
 
-            fExperiment.sendRequest(fIndexRequest);
+            fTrace.sendRequest(fIndexRequest);
         } finally {
             fLock.unlock();
         }
@@ -388,19 +401,22 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     }
 
     /**
-     * Signal handler for the experiment disposed signal.
+     * Signal handler for the trace closed signal.
      *
-     * @param signal The experiment disposed signal
+     * @param signal The trace closed signal
+     * @since 2.0
      */
     @TmfSignalHandler
-    public void experimentDisposed(TmfExperimentDisposedSignal<ITmfEvent> signal) {
-        if (signal.getExperiment() != TmfExperiment.getCurrentExperiment()) {
+    public void traceClosed(TmfTraceClosedSignal signal) {
+        if (signal.getTrace() != fTrace) {
             return;
         }
         fLock.lock();
         try {
-            if ((fIndexRequest != null) && !fIndexRequest.isCompleted()) {
-                fIndexRequest.cancel();
+            if (fIndexRequest != null) {
+                if (!fIndexRequest.isCompleted()) {
+                    fIndexRequest.cancel();
+                }
                 fIndexRequest = null;
             }
 
@@ -414,6 +430,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
             resetLoader();
         } finally {
+            fTrace = null;
             fLock.unlock();
         }
     }
@@ -482,9 +499,12 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
             resetLoader();
 
-            fExperiment = (TmfExperiment<ITmfEvent>) TmfExperiment.getCurrentExperiment();
-            if (fExperiment != null) {
-                experimentSelected(new TmfExperimentSelectedSignal<ITmfEvent>(this, fExperiment));
+            IEditorPart editor = fView.getSite().getPage().getActiveEditor();
+            if (editor instanceof ITmfTraceEditor) {
+                ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
+                if (trace != null) {
+                    traceSelected(new TmfTraceSelectedSignal(this, trace));
+                }
             }
         } finally {
             fLock.unlock();
@@ -514,6 +534,15 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
            if (window != null) {
                window.getSelectionService().removePostSelectionListener(this);
            }
+
+           if (fIndexRequest != null) {
+               if (!fIndexRequest.isCompleted()) {
+                   fIndexRequest.cancel();
+               }
+               fIndexRequest = null;
+           }
+           cancelOngoingRequests();
+
            fView.setSDFindProvider(null);
            fView.setSDPagingProvider(null);
            fView.setSDFilterProvider(null);
@@ -860,8 +889,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             fFindCriteria = null;
             fCurrentFindIndex = 0;
 
-            if ((fPageRequest != null) && !fPageRequest.isCompleted()) {
-                fPageRequest.cancel();
+            if (fPageRequest != null) {
+                if (!fPageRequest.isCompleted()) {
+                    fPageRequest.cancel();
+                }
                 fPageRequest = null;
             }
         } finally {
@@ -902,7 +933,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         fLock.lock();
         try {
             fEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>(events);
-            if (fView != null) {
+            if (fView != null && !events.isEmpty()) {
                 fView.toggleWaitCursorAsync(true);
             }
         } finally {
@@ -1113,7 +1144,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             window = TmfTimeRange.ETERNITY;
         }
 
-        fPageRequest = new TmfEventRequest<ITmfEvent>(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND) {
+        fPageRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND) {
             private final List<ITmfSyncSequenceDiagramEvent> fSdEvent = new ArrayList<ITmfSyncSequenceDiagramEvent>();
 
             @Override
@@ -1135,7 +1166,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
         };
 
-        fExperiment.sendRequest(fPageRequest);
+        fTrace.sendRequest(fPageRequest);
 
         if (notifyAll) {
             TmfTimeRange timeRange = getSignalTimeRange(window.getStartTime());
@@ -1190,7 +1221,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 return false;
             }
 
-            TmfTimeRange window = new TmfTimeRange(fCheckPoints.get(nextPage).getStartTime().clone(), fCheckPoints.get(fCheckPoints.size()-1).getEndTime().clone());
+            TmfTimeRange window = new TmfTimeRange(fCheckPoints.get(nextPage).getStartTime(), fCheckPoints.get(fCheckPoints.size()-1).getEndTime());
             fFindJob = new SearchJob(findCriteria, window);
             fFindJob.schedule();
             fView.toggleWaitCursorAsync(true);
@@ -1290,7 +1321,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         protected IStatus run(IProgressMonitor monitor) {
             fSearchRequest.setMonitor(monitor);
 
-            fExperiment.sendRequest(fSearchRequest);
+            fTrace.sendRequest(fSearchRequest);
 
             try {
                 fSearchRequest.waitForCompletion();
@@ -1357,7 +1388,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      *  TMF event request for searching within trace.
      */
-    protected class SearchEventRequest extends TmfEventRequest<ITmfEvent> {
+    protected class SearchEventRequest extends TmfEventRequest {
 
         /**
          * The find criteria.
@@ -1422,20 +1453,20 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
                 if (fCriteria.isLifeLineSelected()) {
                     if (fCriteria.matches(sdEvent.getSender())) {
-                        fFoundTime = event.getTimestamp().clone();
+                        fFoundTime = event.getTimestamp();
                         fIsFound = true;
                         super.cancel();
                     }
 
                     if (fCriteria.matches(sdEvent.getReceiver())) {
-                        fFoundTime = event.getTimestamp().clone();
+                        fFoundTime = event.getTimestamp();
                         fIsFound = true;
                         super.cancel();
                     }
                 }
 
                 if (fCriteria.isSyncMessageSelected() && fCriteria.matches(sdEvent.getName())) {
-                    fFoundTime = event.getTimestamp().clone();
+                    fFoundTime = event.getTimestamp();
                     fIsFound = true;
                     super.cancel();
                 }
@@ -1479,6 +1510,9 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      */
     protected static class IndexingJob extends Job {
 
+        /**
+         * @param name The job name
+         */
         public IndexingJob(String name) {
             super(name);
         }

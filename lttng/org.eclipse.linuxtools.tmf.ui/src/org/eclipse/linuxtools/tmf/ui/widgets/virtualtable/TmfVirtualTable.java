@@ -677,15 +677,6 @@ public class TmfVirtualTable extends Composite {
     }
 
     /**
-     * Gets the menu of this table
-     * @return a Menu
-     */
-    @Override
-    public Menu getMenu() {
-        return fTable.getMenu();
-    }
-
-    /**
      * Method clearAll empties a table.
      */
     public void clearAll() {
@@ -938,7 +929,8 @@ public class TmfVirtualTable extends Composite {
             fSelectedEventRank = i;
             if ((i < fTableTopEventRank + fFrozenRowCount && i >= fFrozenRowCount) ||
                     (i >= fTableTopEventRank + fFullyVisibleRows)) {
-                fTableTopEventRank = Math.max(0, i - fFrozenRowCount - fFullyVisibleRows / 2);
+                int lastPageTopEntryRank = Math.max(0, fTableItemCount - fFullyVisibleRows);
+                fTableTopEventRank = Math.max(0, Math.min(lastPageTopEntryRank, i - fFrozenRowCount - fFullyVisibleRows / 2));
             }
             if (fFullyVisibleRows < fTableItemCount) {
                 fSlider.setSelection(fTableTopEventRank);
