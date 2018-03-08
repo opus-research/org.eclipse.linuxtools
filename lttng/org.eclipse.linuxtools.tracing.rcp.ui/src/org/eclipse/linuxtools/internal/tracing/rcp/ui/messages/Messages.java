@@ -25,12 +25,30 @@ public class Messages extends NLS {
     public static String ApplicationWorkbenchWindowAdvisor_DefaultProjectName;
     /** The RCP title. */
     public static String ApplicationWorkbenchWindowAdvisor_WindowTitle;
-    /** Error title for error during workspace creation */
-    public static String Application_WorkspaceCreationError;
-    /** Error message if workspace root doesn't exist */
-    public static String Application_WorkspaceRootNotExistError;
-    /** Error message if workspace root is write protected */
-    public static String Application_WorkspaceRootPermissionError;
+
+    /** Malformed command */
+    public static String CliParser_MalformedCommand;
+
+    /** Unkown command */
+    public static String CliParser_UnknownCommand;
+
+    /** Select trace type title */
+    public static String OpenDirHandler_SelectTraceType;
+
+    /** Error opening a trace */
+    public static String OpenTraceHelper_ErrorOpeningTrace;
+
+    /** Could not link trace */
+    public static String OpenTraceHelper_LinkFailed;
+
+    /** Open Error */
+    public static String OpenTraceHelper_OpenError;
+
+    /** Open Error */
+    public static String OpenTraceHelper_OpenTraceError;
+
+    /** Select trace file */
+    public static String OpenFileHandler_SelectTraceFile;
 
     static {
         // initialize resource bundle
