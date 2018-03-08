@@ -20,7 +20,7 @@ import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
  * Defines the common functionality for a resolution which fix is only inserting line.
  *
  */
-public abstract class AInsertLineResolution extends ARpmlintResolution {
+abstract public class AInsertLineResolution extends ARpmlintResolution {
 
 	protected int markerLine;
 	
