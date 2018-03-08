@@ -40,13 +40,17 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 /**
- * A basic viewer to display statistics in the statistics view.
+ * <b><u>TmfStatisticsViewer</u></b> The viewer used to display the statistics
+ * tree in the statistics view.
  *
- * @author Mathieu Denis
- * @version 2.0
  * @since 2.0
  */
 public class TmfStatisticsViewer extends TmfComponent {
+
+    /**
+     * The actual tree viewer to display
+     */
+    protected TreeViewer fTreeViewer;
 
     /**
      * Refresh frequency
@@ -54,9 +58,9 @@ public class TmfStatisticsViewer extends TmfComponent {
     protected static final Long STATS_INPUT_CHANGED_REFRESH = 5000L;
 
     /**
-     * The actual tree viewer to display
+     * Object to store the cursor while waiting for the experiment to load
      */
-    protected TreeViewer fTreeViewer;
+    private Cursor fWaitCursor = null;
 
     /**
      * View instance counter (for multiple statistic views)
@@ -67,11 +71,6 @@ public class TmfStatisticsViewer extends TmfComponent {
      * Number of this instance. Used as an instance ID.
      */
     private int fInstanceNb;
-
-    /**
-     * Object to store the cursor while waiting for the experiment to load
-     */
-    private Cursor fWaitCursor = null;
 
     /**
      * Default constructor
@@ -92,45 +91,27 @@ public class TmfStatisticsViewer extends TmfComponent {
         fTreeViewer.getTree().setHeaderVisible(true);
         fTreeViewer.setUseHashlookup(true);
 
-        // Creates the columns defined by the column data provider
         for (final TmfBaseColumnData columnData : columnDataList) {
             final TreeViewerColumn treeColumn = new TreeViewerColumn(fTreeViewer, columnData.getAlignment());
             treeColumn.getColumn().setText(columnData.getHeader());
             treeColumn.getColumn().setWidth(columnData.getWidth());
             treeColumn.getColumn().setToolTipText(columnData.getTooltip());
 
-            if (columnData.getComparator() != null) { // A comparator is defined.
-                // Adds a listener on the columns header for sorting purpose.
+            if (columnData.getComparator() != null) {
                 treeColumn.getColumn().addSelectionListener(new SelectionAdapter() {
-
-                    private ViewerComparator reverseComparator;
-
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        // Initializes the reverse comparator once.
-                        if (reverseComparator == null) {
-                            reverseComparator = new ViewerComparator() {
+                        if (fTreeViewer.getTree().getSortDirection() == SWT.UP
+                                || fTreeViewer.getTree().getSortColumn() != treeColumn.getColumn()) {
+                            fTreeViewer.setComparator(columnData.getComparator());
+                            fTreeViewer.getTree().setSortDirection(SWT.DOWN);
+                        } else {
+                            fTreeViewer.setComparator(new ViewerComparator() {
                                 @Override
                                 public int compare(Viewer viewer, Object e1, Object e2) {
                                     return -1 * columnData.getComparator().compare(viewer, e1, e2);
                                 }
-                            };
-                        }
-
-                        if (fTreeViewer.getTree().getSortDirection() == SWT.UP
-                                || fTreeViewer.getTree().getSortColumn() != treeColumn.getColumn()) {
-                            /*
-                             * Puts the descendant order if the old order was
-                             * up or if the selected column has changed.
-                             */
-                            fTreeViewer.setComparator(columnData.getComparator());
-                            fTreeViewer.getTree().setSortDirection(SWT.DOWN);
-                        } else {
-                            /*
-                             * Puts the ascendant ordering if the selected
-                             * column hasn't changed.
-                             */
-                            fTreeViewer.setComparator(reverseComparator);
+                            });
                             fTreeViewer.getTree().setSortDirection(SWT.UP);
                         }
                         fTreeViewer.getTree().setSortColumn(treeColumn.getColumn());
@@ -148,30 +129,27 @@ public class TmfStatisticsViewer extends TmfComponent {
                     TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) event.item.getData();
 
                     double percentage = columnDataList.get(event.index).getPercentageProvider().getPercentage(node);
-                    if (percentage == 0) {  // No bar to draw
+                    if (percentage == 0) {
                         return;
                     }
 
-                    if ((event.detail & SWT.SELECTED) > 0) {    // The item is selected.
-                        // Draws our own background to avoid overwritten the bar.
+                    if ((event.detail & SWT.SELECTED) > 0) {
+                        Color oldForeground = event.gc.getForeground();
+                        event.gc.setForeground(event.item.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
                         event.gc.fillRectangle(event.x, event.y, event.width, event.height);
+                        event.gc.setForeground(oldForeground);
                         event.detail &= ~SWT.SELECTED;
                     }
 
-                    int barWidth = (int) ((fTreeViewer.getTree().getColumn(event.index).getWidth() - 8) * percentage);
+                    int barWidth = (int) ((fTreeViewer.getTree().getColumn(1).getWidth() - 8) * percentage);
                     int oldAlpha = event.gc.getAlpha();
                     Color oldForeground = event.gc.getForeground();
                     Color oldBackground = event.gc.getBackground();
-                    /*
-                     * Draws a transparent gradient rectangle from the color of
-                     * foreground and background.
-                     */
                     event.gc.setAlpha(64);
                     event.gc.setForeground(event.item.getDisplay().getSystemColor(SWT.COLOR_BLUE));
                     event.gc.setBackground(event.item.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                     event.gc.fillGradientRectangle(event.x, event.y, barWidth, event.height, true);
                     event.gc.drawRectangle(event.x, event.y, barWidth, event.height);
-                    // Restores old values
                     event.gc.setForeground(oldForeground);
                     event.gc.setBackground(oldBackground);
                     event.gc.setAlpha(oldAlpha);
@@ -180,7 +158,6 @@ public class TmfStatisticsViewer extends TmfComponent {
             }
         });
 
-        // Initializes the comparator parameters
         fTreeViewer.setComparator(columnDataList.get(0).getComparator());
         fTreeViewer.getTree().setSortColumn(fTreeViewer.getTree().getColumn(0));
         fTreeViewer.getTree().setSortDirection(SWT.DOWN);
@@ -301,7 +278,8 @@ public class TmfStatisticsViewer extends TmfComponent {
     }
 
     /**
-     * Constructs the ID based on the experiment name and the instance number
+     * Constructs the ID based on the experiment name and
+     * <code>fInstanceNb</code>
      *
      * @param name
      *            The name of the trace to show in the view
