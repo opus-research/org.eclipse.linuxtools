@@ -143,27 +143,10 @@ public class SDPrintDialogUI {
      * List of pages to print.
      */
     protected int fPagesList[];
-
     /**
-     * Value for dividing the sequence diagram into pages
+     * Values for dividing sequence diagram into pages.
      */
-    protected float fStepX;
-
-    /**
-     * Value for dividing the sequence diagram into pages
-     */
-    protected float fStepY;
-
-    /**
-     * Value for dividing the sequence diagram into pages
-     */
-    protected float sTX;
-
-    /**
-     * Value for dividing the sequence diagram into pages
-     */
-    protected float sTY;
-
+    protected float fStepX, fStepY, sTX, sTY;
     /**
      * Page which to print from.
      */

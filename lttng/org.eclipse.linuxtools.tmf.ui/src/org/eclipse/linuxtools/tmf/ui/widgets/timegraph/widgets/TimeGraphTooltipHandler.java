@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Map;
 

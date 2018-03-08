@@ -112,7 +112,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
     private void calcTimeDelta(int width, double pixelsPerNanoSec) {
         double minDelta = (pixelsPerNanoSec == 0) ? YEAR_IN_NS : width / pixelsPerNanoSec;
         long unit = 1;
-        if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
             if (minDelta > 6 * MONTH_IN_NS) {
                 unit = YEAR_IN_NS;
             } else if (minDelta > 3 * MONTH_IN_NS) {
@@ -299,7 +299,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
         _rect0.width = labelWidth;
 
         long time;
-        if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
             time = floorToCalendar(time0, _timeDelta);
         } else {
             time = (time0 / _timeDelta) * _timeDelta;
@@ -310,7 +310,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
 
         int y = _rect0.y + _rect0.height;
 
-        if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
             timeDraw.drawAbsHeader(gc, time, absHeaderRect);
         }
 
@@ -329,7 +329,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
             if (pixelsPerNanoSec == 0 || time > Long.MAX_VALUE - _timeDelta || _timeDelta == 0) {
                 break;
             }
-            if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+            if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
                 if (_timeDelta >= YEAR_IN_NS) {
                     long millis = time / 1000000L;
                     GREGORIAN_CALENDAR.setTime(new Date(millis));
@@ -396,7 +396,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
         int numDigits = 5;
         long timeRange = time1 - time0;
 
-        if (_timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider.isCalendarFormat()) {
             // Calculate the number of digits to represent the minutes provided
             // 11:222
             // HH:mm:ss
@@ -564,18 +564,9 @@ abstract class TimeDraw {
 
     public abstract void draw(GC gc, long time, Rectangle rect);
 
-    /**
-     * Override to draw absolute time header This is for the time information
-     * not shown in the draw of each tick
-     *
-     * @param gc
-     *            Graphics context
-     * @param time
-     *            Timestamp
-     * @param absHeaderRect
-     *            Header rectangle
-     */
     public void drawAbsHeader(GC gc, long time, Rectangle absHeaderRect) {
+        // Override to draw absolute time header
+        // This is for the time information not shown in the draw of each tick
     }
 
     public abstract String hint();
