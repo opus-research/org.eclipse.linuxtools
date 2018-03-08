@@ -29,12 +29,19 @@ import org.eclipse.jface.text.IDocument;
  */
 public abstract class AbstractValgrindMarkerResolution extends AbstractCodanCMarkerResolution {
 
+	protected IMarker marker;
 	protected IDocument document;
+	protected IASTTranslationUnit ast;
+	protected IASTNode node;
 
 	public AbstractValgrindMarkerResolution(IMarker marker) {
 		super();
+		this.marker = marker;
+		this.ast = getASTTranslationUnit(marker);
 		this.document = openDocument(marker);
 	}
+
+	public abstract String getLabel();
 
 	/**
 	 * Returns the enclosed AST node in the given marker.
@@ -78,9 +85,8 @@ public abstract class AbstractValgrindMarkerResolution extends AbstractCodanCMar
 	protected int getLength(IMarker marker) {
 		int charStart = marker.getAttribute(IMarker.CHAR_START, -1);
 		int charEnd = marker.getAttribute(IMarker.CHAR_END, -1);
-		if (charEnd != -1 && charStart != -1) {
+		if (charEnd != -1 && charStart != -1)
 			return charEnd - charStart;
-		}
 		int line = marker.getAttribute(IMarker.LINE_NUMBER, -1) -1;
 		try {
 			return document.getLineLength(line);
