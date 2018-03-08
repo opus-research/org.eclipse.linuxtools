@@ -614,8 +614,7 @@ public class HistogramView extends TmfView {
         fTimeRangeHistogram.setTimeRange(startTime, endTime - startTime);
 
         int cacheSize = fTrace.getCacheSize();
-        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(),
-                timeRange, 0, TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.BACKGROUND);
+        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(), timeRange, 0, TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.FOREGROUND);
         fTrace.sendRequest(fTimeRangeRequest);
     }
 
