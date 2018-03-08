@@ -20,7 +20,6 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
@@ -53,7 +52,6 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 * @param view	browser that fires this action
 	 */
 	public ProbeAliasAction(IWorkbenchWindow window, ProbeAliasBrowserView view) {
-		LogManager.logInfo("initialized", this); //$NON-NLS-1$
 		this.window = window;
 		setId(ID);
 		setActionDefinitionId(ID);
@@ -68,13 +66,12 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 * Updates <code>selection</code> with the current selection whenever the user changes
 	 * the current selection.
 	 */
+	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection incoming) {
 		if (incoming instanceof IStructuredSelection) {
-			LogManager.logDebug("Changing selection", this); //$NON-NLS-1$
 			selection = (IStructuredSelection) incoming;
 			setEnabled(selection.size() == 1);
 		} else {
-			LogManager.logDebug("Disabling, selection not IStructuredSelection", this); //$NON-NLS-1$
 			// Other selections, for example containing text or of other kinds.
 			setEnabled(false);
 		}
@@ -82,7 +79,6 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
-		LogManager.logInfo("disposed", this); //$NON-NLS-1$
 	}
 
 	/**
@@ -92,12 +88,10 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 	 */
 	@Override
 	public void run() {
-		LogManager.logDebug("Start run:", this); //$NON-NLS-1$
 		IWorkbenchPage page = window.getActivePage();
 		IEditorPart editor = page.getActiveEditor();
 		if(null == editor) {
 			NewFileAction action = new NewFileAction();
-			//action.init(page.getWorkbenchWindow());
 			action.run();
 			editor = page.getWorkbenchWindow().getActivePage().getActiveEditor();
 		}
@@ -134,9 +128,9 @@ public class ProbeAliasAction extends Action implements ISelectionListener, IDou
 				stpeditor.insertText(s.toString());
 			}
 		}
-		LogManager.logDebug("End run:", this); //$NON-NLS-1$
 	}
 
+	@Override
 	public void doubleClick(DoubleClickEvent event) {
 		run();
 	}
