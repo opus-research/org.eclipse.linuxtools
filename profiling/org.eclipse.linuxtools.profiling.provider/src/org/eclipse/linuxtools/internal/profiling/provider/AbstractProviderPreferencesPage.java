@@ -52,7 +52,7 @@ public class AbstractProviderPreferencesPage extends
 
 	public void init(IWorkbench workbench) {
 			final IPreferenceStore store = new ScopedPreferenceStore(
-					ConfigurationScope.INSTANCE, type);
+					ConfigurationScope.INSTANCE, ProviderProfileConstants.PLUGIN_ID);
 			setPreferenceStore(store);
 
 	}
@@ -61,8 +61,8 @@ public class AbstractProviderPreferencesPage extends
 			super.performDefaults();
 			String providerId = ProfileLaunchShortcut
 					.getDefaultLaunchShortcutProviderId(type);
-			ConfigurationScope.INSTANCE.getNode(type)
-					.put(ProviderProfileConstants.PREFS_KEY, providerId);
+			ConfigurationScope.INSTANCE.getNode(ProviderProfileConstants.PLUGIN_ID)
+					.put(ProviderProfileConstants.PREFS_KEY + type, providerId);
 
 	}
 
@@ -70,8 +70,9 @@ public class AbstractProviderPreferencesPage extends
 	protected void createFieldEditors() {
 		String providerId = ProfileLaunchShortcut
 				.getDefaultLaunchShortcutProviderId(type);
-		
-		getPreferenceStore().setDefault(ProviderProfileConstants.PREFS_KEY, providerId);
+
+		getPreferenceStore().setDefault(
+				ProviderProfileConstants.PREFS_KEY + type, providerId);
 
 		HashMap<String, String> map = ProfileLaunchConfigurationTabGroup
 				.getProviderNamesForType(type);
@@ -85,7 +86,7 @@ public class AbstractProviderPreferencesPage extends
 			i++;
 		}
 		RadioGroupFieldEditor editor = new RadioGroupFieldEditor(
-				ProviderProfileConstants.PREFS_KEY,
+				ProviderProfileConstants.PREFS_KEY + type,
 				Messages.ProviderPreferencesPage_1, 1, providerList,
 				getFieldEditorParent());
 		editor.setPreferenceStore(getPreferenceStore());
