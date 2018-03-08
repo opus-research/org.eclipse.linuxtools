@@ -41,7 +41,7 @@ class STPCompletionProcessor implements IContentAssistProcessor {
 		try {
 			prefix = completionWord(document, offset);
 			locationOffset = completionReplaceWordLocation(document, offset);
-		} catch (BadLocationException e) {
+		} catch (Exception e) {
 			return NO_COMPLETIONS;
 		}
 
@@ -77,11 +77,15 @@ class STPCompletionProcessor implements IContentAssistProcessor {
 	 * @throws BadLocationException 
 	 * 
 	 */
-	private int completionReplaceWordLocation(IDocument doc, int offset)
-			throws BadLocationException {
-		for (int n = offset - 1; n >= 0; n--) {
-			if (doc.getChar(n) == '.')
-				return n + 1;
+	private int completionReplaceWordLocation(IDocument doc, int offset) 
+		throws BadLocationException {
+		try {
+			for (int n = offset-1; n >= 0; n--) {
+				if (doc.getChar(n) == '.')
+					return n+1;
+			}
+		} catch (BadLocationException e) {
+			throw e;
 		}
 
 		return -1;
@@ -99,17 +103,21 @@ class STPCompletionProcessor implements IContentAssistProcessor {
 	 */
 	private String completionWord(IDocument doc, int offset)
 			throws BadLocationException {
-		for (int n = offset - 1; n >= 0; n--) {
-			char c = doc.getChar(n);
-			if ((Character.isSpaceChar(c)) || (c == '\n') || (c == '\0')) {
-				String word = doc.get(n + 1, offset - n - 1);
-				if (word.charAt(word.length() - 1) == '.')
-					return word.substring(0, word.length() - 1);
-				else
-					return word;
+		try {
+			for (int n = offset - 1; n >= 0; n--) {
+				char c = doc.getChar(n);
+				if ((Character.isSpaceChar(c)) || (c == '\n') || (c == '\0')) {
+					String word = doc.get(n + 1, offset - n - 1);
+					if (word.charAt(word.length() - 1) == '.')
+						return word.substring(0, word.length() - 1);
+					else
+						return word;
+				}
 			}
+		} catch (BadLocationException e) {
+			throw e;
 		}
-		return ""; //$NON-NLS-1$
+		return "";
 	}
 
 	/* (non-Javadoc)
