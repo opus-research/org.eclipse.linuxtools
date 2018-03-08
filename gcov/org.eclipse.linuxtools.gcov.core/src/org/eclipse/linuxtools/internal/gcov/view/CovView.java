@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +17,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
@@ -182,10 +180,8 @@ public class CovView extends AbstractSTDataView {
 				OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project,
 						binary, sf, 0);
 			}
-		} catch (CoreException e) {
-			reportError(e);
-		} catch (IOException e) {
-			reportError(e);
+		} catch (Exception _) {
+			reportError(_);
 		}
 	}
 
@@ -206,12 +202,8 @@ public class CovView extends AbstractSTDataView {
 			//load an Eclipse view
 			CovView cvrgeView = displayCovResults(cvrgeMnger);
 			return cvrgeView;
-		} catch (InterruptedException e) {
-			reportError(e);
-		} catch (IOException e) {
-			reportError(e);
-		} catch (CoreException e) {
-			reportError(e);
+		} catch (Exception _) {
+			reportError(_);
 		}
 		return null;
 	}
