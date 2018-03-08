@@ -164,6 +164,17 @@ public class TmfStatisticsView extends TmfView {
                     fExperiment.endSynch(new TmfEndSynchSignal(0));
                     fRequestData = false;
                 }
+            } else {
+                TmfStatisticsViewer statsViewer;
+                for (ITmfViewer viewer : fStatsViewers.getViewers()) {
+                    if (!(viewer instanceof TmfStatisticsViewer)) {
+                        Activator.getDefault().logError("Error - cannot cast viewer to a statistics viewer"); //$NON-NLS-1$
+                        continue;
+                    }
+                    statsViewer = (TmfStatisticsViewer) viewer;
+                    // Will update the partial event count if needed.
+                    statsViewer.sendPartialRequestOnNextUpdate();
+                }
             }
         }
     }
