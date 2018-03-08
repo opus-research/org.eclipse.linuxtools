@@ -20,10 +20,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -901,22 +899,19 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         final int nbEvents = (index >= 0) ? fScaledData.fData[index] : 0;
         final String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
         final StringBuffer buffer = new StringBuffer();
-        int selectionBeginBucket = Math.min(fScaledData.fSelectionBeginBucket, fScaledData.fSelectionEndBucket);
-        int selectionEndBucket = Math.max(fScaledData.fSelectionBeginBucket, fScaledData.fSelectionEndBucket);
-        if (selectionBeginBucket <= index && index <= selectionEndBucket && fSelectionBegin != fSelectionEnd) {
-            TmfTimestampDelta delta = new TmfTimestampDelta(fSelectionEnd - fSelectionBegin, ITmfTimestamp.NANOSECOND_SCALE);
-            buffer.append(NLS.bind(Messages.Histogram_selectionSpanToolTip, delta.toString()));
-            buffer.append(newLine);
-        }
-        buffer.append(NLS.bind(Messages.Histogram_bucketRangeToolTip,
-                new TmfTimestamp(startTime, ITmfTimestamp.NANOSECOND_SCALE).toString(),
-                new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE).toString()));
+        buffer.append("Range = ["); //$NON-NLS-1$
+        buffer.append(new TmfTimestamp(startTime, ITmfTimestamp.NANOSECOND_SCALE).toString());
+        buffer.append(',');
+        buffer.append(new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE).toString());
+        buffer.append(')');
         buffer.append(newLine);
-        buffer.append(NLS.bind(Messages.Histogram_eventCountToolTip, nbEvents));
+        buffer.append("Event count = "); //$NON-NLS-1$
+        buffer.append(nbEvents);
         if (!HistogramScaledData.hideLostEvents) {
             final int nbLostEvents = (index >= 0) ? fScaledData.fLostEventsData[index] : 0;
             buffer.append(newLine);
-            buffer.append(NLS.bind(Messages.Histogram_lostEventCountToolTip, nbLostEvents));
+            buffer.append("Lost events count = "); //$NON-NLS-1$
+            buffer.append(nbLostEvents);
         }
         return buffer.toString();
     }
