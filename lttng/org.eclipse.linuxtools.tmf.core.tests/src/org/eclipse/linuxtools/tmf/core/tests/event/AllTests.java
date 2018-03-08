@@ -32,6 +32,7 @@ public class AllTests {
         //$JUnit-BEGIN$
         suite.addTestSuite(TmfTimestampTest.class);
         suite.addTestSuite(TmfSimpleTimestampTest.class);
+        suite.addTestSuite(TmfIntervalTimestampTest.class);
         suite.addTestSuite(TmfTimeRangeTest.class);
         suite.addTestSuite(TmfEventFieldTest.class);
         suite.addTestSuite(TmfEventTypeTest.class);
