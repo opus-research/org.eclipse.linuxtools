@@ -34,7 +34,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
@@ -236,7 +235,7 @@ public class ResourcesView extends TmfView {
         public void run() {
             ArrayList<TraceEntry> entryList = null;
             synchronized (fEntryListSyncObj) {
-                entryList = (ArrayList<TraceEntry>) fEntryList.clone();
+                entryList = fEntryList;
             }
             if (entryList == null) {
                 return;
@@ -333,7 +332,6 @@ public class ResourcesView extends TmfView {
      */
     @Override
     public void setFocus() {
-        refresh(INITIAL_WINDOW_OFFSET);
         fTimeGraphViewer.setFocus();
     }
 
@@ -360,25 +358,6 @@ public class ResourcesView extends TmfView {
             }
         };
         thread.start();
-    }
-
-    /**
-     * Experiment is disposed: clear the data structures and the view
-     *
-     * @param signal the signal received
-     */
-    @TmfSignalHandler
-    public void experimentDisposed(final TmfExperimentDisposedSignal signal) {
-        if (signal.getExperiment().equals(fSelectedExperiment)) {
-            fSelectedExperiment = null;
-            fStartTime = 0;
-            fEndTime = 0;
-            fZoomThread.cancel();
-            synchronized(fEntryListSyncObj) {
-                fEntryList.clear();
-            }
-            refresh(INITIAL_WINDOW_OFFSET);
-        }
     }
 
     /**
@@ -631,27 +610,24 @@ public class ResourcesView extends TmfView {
                 }
                 ITimeGraphEntry[] entries = null;
                 synchronized (fEntryListSyncObj) {
-                    if (fEntryList != null) {
-                        entries = fEntryList.toArray(new ITimeGraphEntry[0]);
-                    }
+                    entries = fEntryList.toArray(new ITimeGraphEntry[0]);
                 }
-                if (entries != null) {
-                    Arrays.sort(entries, new TraceEntryComparator());
-                    fTimeGraphViewer.setInput(entries);
-                    fTimeGraphViewer.setTimeBounds(fStartTime, fEndTime);
+                Arrays.sort(entries, new TraceEntryComparator());
+                fTimeGraphViewer.setInput(entries);
+                fTimeGraphViewer.setTimeBounds(fStartTime, fEndTime);
 
-                    long endTime = fStartTime + windowRange;
+                long endTime = fStartTime + windowRange;
 
-                    if (fEndTime < endTime) {
-                        endTime = fEndTime;
-                    }
-                    fTimeGraphViewer.setStartFinishTime(fStartTime, endTime);
-
-                    startZoomThread(fStartTime, endTime);
+                if (fEndTime < endTime) {
+                    endTime = fEndTime;
                 }
+                fTimeGraphViewer.setStartFinishTime(fStartTime, endTime);
+
+                startZoomThread(fStartTime, endTime);
             }
         });
     }
+
 
     private void redraw() {
         synchronized (fSyncObj) {

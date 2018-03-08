@@ -278,11 +278,6 @@ public class TmfRawEventViewer extends Composite implements ControlListener, Sel
 	            //fSlider.setSelection((int) (SLIDER_MAX * ((double) fLines.get(fTopLineIndex).rank / fTrace.getNbEvents())));
 	            fSlider.setSelection((int) (SLIDER_MAX * fTrace.getLocationRatio(fLines.get(fTopLineIndex).location)));
 		    }
-        } else {
-            fBottomContext = null;
-            fillTextArea();
-            fSlider.setThumb(SLIDER_MAX);
-            fSlider.setSelection(0);
 		}
 	}
 

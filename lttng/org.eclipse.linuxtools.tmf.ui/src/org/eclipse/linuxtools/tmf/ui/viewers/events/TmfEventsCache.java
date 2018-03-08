@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.ui.viewers.events;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -100,7 +99,6 @@ public class TmfEventsCache {
      * Clear the current contents of this cache.
      */
     public synchronized void clear() {
-        Arrays.fill(fCache, null);
         fCacheStartIndex = 0;
         fCacheEndIndex = 0;
         fFilterIndex.clear();

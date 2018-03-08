@@ -55,8 +55,7 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
 	}
 
 	/**
-	 * Disposes this view and de-registers itself from the signal manager
-	 *
+	 * Disposes this view and deregisters itself from the signal manager
 	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
 	 */
 	@Override
@@ -87,10 +86,6 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
 		TmfSignalManager.dispatchSignal(signal);
 	}
 
-    // ------------------------------------------------------------------------
-    // View pinning support
-    // ------------------------------------------------------------------------
-
     /**
      * Returns whether the pin flag is set.
      * For example, this flag can be used to ignore time synchronization signals from other TmfViews.
@@ -118,5 +113,4 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
             toolBarManager.add(fPinAction);
         }
     }
-
 }
