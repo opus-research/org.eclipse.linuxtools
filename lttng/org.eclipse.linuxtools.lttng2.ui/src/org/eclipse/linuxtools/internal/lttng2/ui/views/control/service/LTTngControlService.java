@@ -879,40 +879,26 @@ public class LTTngControlService implements ILttngControlService {
 
                     } else if (LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE.matcher(subLine).matches()) {
                         String value = getAttributeValue(subLine);
-                        if (channelInfo != null) {
-                            channelInfo.setOverwriteMode(!LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE_FALSE.equals(value));
-                        }
+                        channelInfo.setOverwriteMode(!LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE_FALSE.equals(value));
                     } else if (LTTngControlServiceConstants.SUBBUFFER_SIZE_ATTRIBUTE.matcher(subLine).matches()) {
-                        if (channelInfo != null) {
-                            channelInfo.setSubBufferSize(Long.valueOf(getAttributeValue(subLine)));
-                        }
+                        channelInfo.setSubBufferSize(Long.valueOf(getAttributeValue(subLine)));
 
                     } else if (LTTngControlServiceConstants.NUM_SUBBUFFERS_ATTRIBUTE.matcher(subLine).matches()) {
-                        if (channelInfo != null) {
-                            channelInfo.setNumberOfSubBuffers(Integer.valueOf(getAttributeValue(subLine)));
-                        }
+                        channelInfo.setNumberOfSubBuffers(Integer.valueOf(getAttributeValue(subLine)));
 
                     } else if (LTTngControlServiceConstants.SWITCH_TIMER_ATTRIBUTE.matcher(subLine).matches()) {
-                        if (channelInfo != null) {
-                            channelInfo.setSwitchTimer(Long.valueOf(getAttributeValue(subLine)));
-                        }
+                        channelInfo.setSwitchTimer(Long.valueOf(getAttributeValue(subLine)));
 
                     } else if (LTTngControlServiceConstants.READ_TIMER_ATTRIBUTE.matcher(subLine).matches()) {
-                        if (channelInfo != null) {
-                            channelInfo.setReadTimer(Long.valueOf(getAttributeValue(subLine)));
-                        }
+                        channelInfo.setReadTimer(Long.valueOf(getAttributeValue(subLine)));
 
                     } else if (LTTngControlServiceConstants.OUTPUT_ATTRIBUTE.matcher(subLine).matches()) {
-                        if (channelInfo != null) {
-                            channelInfo.setOutputType(getAttributeValue(subLine));
-                        }
+                        channelInfo.setOutputType(getAttributeValue(subLine));
 
                     } else if (LTTngControlServiceConstants.EVENT_SECTION_PATTERN.matcher(subLine).matches()) {
                         List<IEventInfo> events = new ArrayList<IEventInfo>();
                         index = parseEvents(output, index, events);
-                        if (channelInfo != null) {
-                            channelInfo.setEvents(events);
-                        }
+                        channelInfo.setEvents(events);
                         // we want to stay at the current index to be able to
                         // exit the domain
                         continue;
