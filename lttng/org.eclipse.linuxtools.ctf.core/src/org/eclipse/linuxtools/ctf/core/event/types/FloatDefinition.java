@@ -32,7 +32,7 @@ public class FloatDefinition extends Definition {
     private double value;
 
     // ------------------------------------------------------------------------
-    // Constructors
+    // Contructors
     // ------------------------------------------------------------------------
 
     /**
@@ -52,7 +52,7 @@ public class FloatDefinition extends Definition {
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
