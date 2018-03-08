@@ -19,8 +19,8 @@
 <repository location="http://download.eclipse.org/eclipse/updates/4.3/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.feature.group" version="2.1.1.201307101628"/>
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.1.1.201307101628"/>
+<unit id="org.eclipse.swtbot.feature.group" version="2.1.1.201307101628"/>
 <repository location="http://download.eclipse.org/technology/swtbot/releases/latest"/>
 </location>
 </locations>

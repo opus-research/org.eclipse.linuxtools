@@ -28,9 +28,9 @@ import java.util.UUID;
 
 import org.antlr.runtime.ANTLRReaderStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.MismatchedTokenException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.RewriteCardinalityException;
 import org.eclipse.linuxtools.ctf.parser.CTFLexer;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
 import org.eclipse.linuxtools.ctf.parser.CTFParser.parse_return;
@@ -125,8 +125,6 @@ public class Metadata {
      *             If there was a problem parsing the metadata
      */
     public void parse() throws CTFReaderException {
-        CTFReaderException tempException = null;
-
         FileInputStream fis = null;
         FileChannel metadataFileChannel = null;
 
@@ -171,43 +169,39 @@ public class Metadata {
             gen.generate();
 
         } catch (FileNotFoundException e) {
-            tempException = new CTFReaderException("Cannot find metadata file!"); //$NON-NLS-1$
+            throw new CTFReaderException("Cannot find metadata file!"); //$NON-NLS-1$
         } catch (IOException e) {
             /* This would indicate a problem with the ANTLR library... */
-            tempException = new CTFReaderException(e);
+            throw new CTFReaderException(e);
         } catch (ParseException e) {
-            tempException = new CTFReaderException(e);
-        } catch (MismatchedTokenException e) {
-            tempException = new CtfAntlrException(e);
+            throw new CTFReaderException(e);
         } catch (RecognitionException e) {
-            tempException = new CtfAntlrException(e);
-        }
-
-        /* Ghetto resource management. Java 7 will deliver us from this... */
-        if (metadataTextInput != null) {
-            try {
-                metadataTextInput.close();
-            } catch (IOException e) {
-                // Do nothing
+            throw new CtfAntlrException(e);
+        } catch (RewriteCardinalityException e){
+            throw new CtfAntlrException(e);
+        } finally {
+            /* Ghetto resource management. Java 7 will deliver us from this... */
+            if (metadataTextInput != null) {
+                try {
+                    metadataTextInput.close();
+                } catch (IOException e) {
+                    // Do nothing
+                }
             }
-        }
-        if (metadataFileChannel != null) {
-            try {
-                metadataFileChannel.close();
-            } catch (IOException e) {
-                // Do nothing
+            if (metadataFileChannel != null) {
+                try {
+                    metadataFileChannel.close();
+                } catch (IOException e) {
+                    // Do nothing
+                }
             }
-        }
-        if (fis != null) {
-            try {
-                fis.close();
-            } catch (IOException e) {
-                // Do nothing
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    // Do nothing
+                }
             }
-        }
-
-        if (tempException != null) {
-            throw tempException;
         }
     }
 
@@ -239,8 +233,8 @@ public class Metadata {
     private boolean isPacketBased(FileChannel metadataFileChannel)
             throws CTFReaderException {
         /*
-         * Create a ByteBuffer to read the TSDL magic number (default is big
-         * endian)
+         * Create a ByteBuffer to read the TSDL magic number (default is
+         * big-endian)
          */
         ByteBuffer magicByteBuffer = ByteBuffer.allocate(Utils.TSDL_MAGIC_LEN);
 
@@ -260,7 +254,7 @@ public class Metadata {
             return true;
         }
 
-        /* Try the same thing, but with little endian */
+        /* Try the same thing, but with little-endian */
         magicByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         magic = magicByteBuffer.getInt(0);
 
@@ -291,16 +285,20 @@ public class Metadata {
         ByteBuffer headerByteBuffer = ByteBuffer.allocate(METADATA_PACKET_HEADER_SIZE);
 
         /* Read the header */
-        int nbBytesRead;
         try {
-            nbBytesRead = metadataFileChannel.read(headerByteBuffer);
+            int nbBytesRead = metadataFileChannel.read(headerByteBuffer);
+
+            /* Return null if EOF */
+            if (nbBytesRead < 0) {
+                return null;
+            }
+
+            if (nbBytesRead != METADATA_PACKET_HEADER_SIZE) {
+                throw new CTFReaderException("Error reading the metadata header."); //$NON-NLS-1$
+            }
+
         } catch (IOException e) {
             throw new CTFReaderException("Error reading the metadata header.", e); //$NON-NLS-1$
-        }
-
-        /* Return null if EOF */
-        if (nbBytesRead < 0) {
-            return null;
         }
 
         /* Set ByteBuffer's position to 0 */
@@ -308,8 +306,6 @@ public class Metadata {
 
         /* Use byte order that was detected with the magic number */
         headerByteBuffer.order(detectedByteOrder);
-
-        assert (nbBytesRead == METADATA_PACKET_HEADER_SIZE);
 
         MetadataPacketHeader header = new MetadataPacketHeader();
 
@@ -334,10 +330,8 @@ public class Metadata {
         UUID uuid = Utils.makeUUID(header.uuid);
         if (!trace.uuidIsSet()) {
             trace.setUUID(uuid);
-        } else {
-            if (!trace.getUUID().equals(uuid)) {
-                throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
-            }
+        } else if (!trace.getUUID().equals(uuid)) {
+            throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
         }
 
         /* Extract the text from the packet */
