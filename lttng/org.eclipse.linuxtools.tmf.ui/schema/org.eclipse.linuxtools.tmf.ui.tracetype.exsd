@@ -185,11 +185,9 @@ If omitted, the default statistics viewer will be used.
                <documentation>
                   The fully qualified name of a class that extends &lt;samp&gt;TmfStatisticsViewer&lt;/samp&gt; .
 If empty, the default statistics viewer will be used.
-
-A 0-argument constructor must be available.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer"/>
+                  <meta.attribute kind="java" basedOn="org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer:"/>
                </appinfo>
             </annotation>
          </attribute>

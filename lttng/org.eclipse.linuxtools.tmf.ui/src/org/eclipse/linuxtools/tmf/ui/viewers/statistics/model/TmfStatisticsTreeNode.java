@@ -26,8 +26,8 @@ import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
  * the path from the root to this node.
  *
  * @version 2.0
- * @author Mathieu Denis
  * @since 2.0
+ * @author Mathieu Denis
  */
 public class TmfStatisticsTreeNode {
 
@@ -54,7 +54,8 @@ public class TmfStatisticsTreeNode {
      * @param nodes
      *            Corresponding StatisticsData.
      */
-    public TmfStatisticsTreeNode(final TmfFixedArray<String> path, AbsTmfStatisticsTree nodes) {
+    public TmfStatisticsTreeNode(final TmfFixedArray<String> path,
+            AbsTmfStatisticsTree nodes) {
         fPath = path;
         fNodes = nodes;
         fValue = new TmfStatistics();
@@ -154,5 +155,16 @@ public class TmfStatisticsTreeNode {
     public void reset() {
         fValue = new TmfStatistics();
         fNodes.reset(fPath);
+    }
+
+    /**
+     * Resets the number of events in the time range. It doesn't remove any node
+     * and doesn't modify the global event count.
+     *
+     * @since 2.0
+     */
+    public void resetTimeRangeValue() {
+        getValue().resetPartialCount();
+        fNodes.resetTimeRangeValue(fPath);
     }
 }
