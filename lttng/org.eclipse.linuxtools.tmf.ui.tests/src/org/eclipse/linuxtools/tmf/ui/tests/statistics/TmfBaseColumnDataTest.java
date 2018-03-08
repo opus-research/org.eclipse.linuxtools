@@ -19,7 +19,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -91,7 +91,7 @@ public class TmfBaseColumnDataTest extends TestCase {
             }
         };
 
-        TmfStatisticsTree baseData = new TmfStatisticsTree();
+        TmfBaseStatisticsTree baseData = new TmfBaseStatisticsTree();
         fTraceName = "trace1";
         fTreeNode = new TmfStatisticsTreeNode(baseData, fTraceName);
 

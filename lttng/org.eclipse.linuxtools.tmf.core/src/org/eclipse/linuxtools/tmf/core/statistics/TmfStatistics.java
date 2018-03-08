@@ -54,10 +54,6 @@ public class TmfStatistics  implements ITmfStatistics {
      */
     private final ITmfStateSystem stats;
 
-    /**
-     * Empty constructor. The resulting TmfStatistics object will not be usable,
-     * but it might be needed for sub-classes.
-     */
     public TmfStatistics() {
         stats = null;
     }
