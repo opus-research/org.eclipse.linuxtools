@@ -1,4 +1,4 @@
-package org.eclipse.linuxtools.systemtap.ui.ide.launcher;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -249,7 +249,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			}
 		}
 		
-		if (pathString.endsWith(SystemtapScriptTester.STP_SUFFIX))
+		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX))
 			return pathString;
 		
 		return "";
