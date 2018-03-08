@@ -17,7 +17,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
@@ -32,7 +31,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 
 public abstract class SystemTapView extends ViewPart {
@@ -133,7 +131,7 @@ public abstract class SystemTapView extends ViewPart {
             return Status.OK_STATUS;
         }
 
-    }
+    };
 
     /**
      * Method for fetching a parser object. This method should return
@@ -233,15 +231,16 @@ public abstract class SystemTapView extends ViewPart {
     public void createHelpActions() {
         help_version = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
             public void run() {
+                Runtime rt = Runtime.getRuntime();
                 try {
-                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null);
+                    Process pr = rt.exec("stap -V"); //$NON-NLS-1$
                     BufferedReader buf = new BufferedReader(
                             new InputStreamReader(pr.getErrorStream()));
                     String line = ""; //$NON-NLS-1$
                     String message = ""; //$NON-NLS-1$
 
                     while ((line = buf.readLine()) != null) {
-                        message += line + NEW_LINE;
+                        message += line + NEW_LINE; //$NON-NLS-1$
                     }
 
                     try {
@@ -351,7 +350,7 @@ public abstract class SystemTapView extends ViewPart {
     protected void addKillButton() {
         IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
         kill = new Action(Messages.getString("SystemTapView.StopScript"), //$NON-NLS-1$
-                AbstractUIPlugin.imageDescriptorFromPlugin(CallgraphCorePlugin.PLUGIN_ID, "icons/progress_stop.gif")) { //$NON-NLS-1$
+                CallgraphCorePlugin.imageDescriptorFromPlugin(CallgraphCorePlugin.PLUGIN_ID, "icons/progress_stop.gif")) { //$NON-NLS-1$
             public void run() {
                 getParser().cancelJob();
             }

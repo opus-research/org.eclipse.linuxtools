@@ -36,7 +36,7 @@ public class UpdateManager {
 			stopped = true;
 			timer.cancel();
 			for(int i=0; i<updateListeners.size(); i++)
-				removeUpdateListener(updateListeners.get(i));
+				removeUpdateListener((IUpdateListener)updateListeners.get(i));
 		}
 	}
 	
@@ -70,9 +70,9 @@ public class UpdateManager {
 			try{
 			if(!stopped) {
 				for(int i = 0; i < updateListeners.size(); i++)
-					(updateListeners.get(i)).handleUpdateEvent();
+					((IUpdateListener)(updateListeners.get(i))).handleUpdateEvent();
 			}
-			}catch(Exception e) {}
+			}catch(Exception e) {;}
 		}
 			
 	}

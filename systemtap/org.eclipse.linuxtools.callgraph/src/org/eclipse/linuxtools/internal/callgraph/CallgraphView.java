@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.parts.ScrollableThumbnail;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -651,7 +650,7 @@ public class CallgraphView extends SystemTapView {
 	 */
 	public void createAnimateActions() {
 		//Set animation mode to slow
-		animation_slow = new Action(Messages.getString("CallgraphView.AnimationSlow"), IAction.AS_RADIO_BUTTON){ //$NON-NLS-1$
+		animation_slow = new Action(Messages.getString("CallgraphView.AnimationSlow"), Action.AS_RADIO_BUTTON){ //$NON-NLS-1$
 			public void run(){
 				g.setAnimationMode(StapGraph.CONSTANT_ANIMATION_SLOW);
 				this.setChecked(true);
@@ -663,7 +662,7 @@ public class CallgraphView extends SystemTapView {
 		animation_slow.setChecked(true);
 		
 		//Set animation mode to fast
-		animation_fast = new Action(Messages.getString("CallgraphView.AnimationFast"), IAction.AS_RADIO_BUTTON){ //$NON-NLS-1$
+		animation_fast = new Action(Messages.getString("CallgraphView.AnimationFast"), Action.AS_RADIO_BUTTON){ //$NON-NLS-1$
 			public void run(){
 				g.setAnimationMode(StapGraph.CONSTANT_ANIMATION_FASTEST);
 				animation_slow.setChecked(false);
@@ -672,7 +671,7 @@ public class CallgraphView extends SystemTapView {
 		};
 		
 		//Toggle collapse mode
-		mode_collapsednodes = new Action(Messages.getString("CallgraphView.CollapsedMode"), IAction.AS_CHECK_BOX){ //$NON-NLS-1$
+		mode_collapsednodes = new Action(Messages.getString("CallgraphView.CollapsedMode"), Action.AS_CHECK_BOX){ //$NON-NLS-1$
 			public void run(){
 				
 				if (g.isCollapseMode()) {
@@ -689,7 +688,7 @@ public class CallgraphView extends SystemTapView {
 		ImageDescriptor newImage = CallgraphPlugin.getImageDescriptor("icons/mode_collapsednodes.gif"); //$NON-NLS-1$
 		mode_collapsednodes.setImageDescriptor(newImage);
 		
-		limits = new Action(Messages.getString("CallgraphView.SetLimits"), IAction.AS_PUSH_BUTTON) { //$NON-NLS-1$
+		limits = new Action(Messages.getString("CallgraphView.SetLimits"), Action.AS_PUSH_BUTTON) { //$NON-NLS-1$
 			private Spinner limit;
 			private Spinner buffer;
 			private Shell sh;
@@ -999,9 +998,6 @@ public class CallgraphView extends SystemTapView {
 	
 	@Override
 	public void setFocus() {
-		if(masterComposite != null){
-			masterComposite.setFocus();
-		}
 	}
 
 

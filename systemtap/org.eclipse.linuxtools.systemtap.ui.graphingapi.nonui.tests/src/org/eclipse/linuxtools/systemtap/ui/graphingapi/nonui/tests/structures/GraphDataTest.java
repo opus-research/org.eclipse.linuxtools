@@ -11,10 +11,20 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.structures;
 
-import org.junit.Test;
+import junit.framework.TestCase;
 
-public class GraphDataTest {
-	@Test
+public class GraphDataTest extends TestCase {
+	public GraphDataTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+
 	public void test() {}
 	
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
 }

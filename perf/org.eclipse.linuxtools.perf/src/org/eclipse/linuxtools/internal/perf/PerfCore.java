@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.cdt.core.parser.util.ArrayUtil;
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -67,63 +66,18 @@ public class PerfCore {
 		}
 		return str;
 	}
-	// Maps event lists to host names for caching
-	private static HashMap<String,HashMap<String, ArrayList<String>>> eventsHostMap = null;
 	private static HashMap<String,ArrayList<String>> eventList = null;
 	public static HashMap<String,ArrayList<String>> getEventList() { 
 		return getEventList(null);
 	}
-
-	/**
-	 * Gets the list of events for a given launch configuration. Uses a cache for each host
-	 * @param config
-	 * @return
-	 */
 	public static HashMap<String,ArrayList<String>> getEventList(ILaunchConfiguration config) {
-		String projectHost = getHostName(config);
-
-		if(eventsHostMap == null){
-			eventsHostMap = new HashMap<String, HashMap<String,ArrayList<String>>>();
-		}
-
-		// local projects have null hosts
-		if(projectHost == null){
-			projectHost = "local";
-		}
-
-		eventList = eventsHostMap.get(projectHost);
-
-		if(eventList == null){
+		//cache'ing
+		if (eventList == null) {
+			//if (PerfPlugin.DEBUG_ON) System.out.println("Event list cache empty, loading new event list.");
 			eventList = loadEventList(config);
-			eventsHostMap.put(projectHost, eventList);
 		}
 		return eventList;
 	}
-
-
-	/**
-	 *
-	 * @param config
-	 * @return the name of the host in which the config's project is stored
-	 */
-	private static String getHostName(ILaunchConfiguration config){
-		String projectName = null;
-		try {
-			projectName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
-		} catch (CoreException e) {
-			return null;
-		}
-		if (projectName == null) {
-			return null;
-		}
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-		if(project == null){
-			return null;
-		}
-		return project.getLocationURI().getHost();
-
-	}
-
 	public static HashMap<String,ArrayList<String>> loadEventList(ILaunchConfiguration config) {
 		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		IProject project = null;
@@ -487,14 +441,9 @@ public class PerfCore {
 				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 				// line containing report information
 				if ((line.startsWith("#"))) {
-					if (line.contains("Events:") || line.contains("Samples:")) {
+					if (line.contains("Events:")) {
 						String[] tmp = line.trim().split(" ");
-						String event = tmp[tmp.length - 1];
-						// In this case, the event name is single quoted
-						if (line.contains("Samples:")){
-							event = event.substring(1, event.length() -1);
-						}
-						currentEvent = new PMEvent(event);
+						currentEvent = new PMEvent(tmp[tmp.length - 1]);
 						invisibleRoot.addChild(currentEvent);
 						currentCommand = null;
 						currentDso = null;

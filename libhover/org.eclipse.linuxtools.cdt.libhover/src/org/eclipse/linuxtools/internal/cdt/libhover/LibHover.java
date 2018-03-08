@@ -113,7 +113,7 @@ public class LibHover implements ICHelpProvider {
     public static Collection<LibHoverLibrary> getLibraries() {
     	return libraries.values();
     }
-    
+
     public static void saveLibraries() {
     	// If user preference is to cache libhover data, then save any un-saved
     	// library hover data.
@@ -224,7 +224,7 @@ public class LibHover implements ICHelpProvider {
 					File f = file.toLocalFile(EFS.NONE, null);
 					if (f != null) {
 						String name = getCleanName(fileName.substring(0,fileName.length()-9));
-						HelpBook h = new HelpBook(name, type);
+						HelpBook h = new HelpBook(name, type); //$NON-NLS-1$
 						helpBooks.add(h);
 						helpBooksMap.put(name, h);
 						String location = file.toURI().toString();
@@ -275,7 +275,7 @@ public class LibHover implements ICHelpProvider {
         }
         
 		public int compareTo (FunctionSummary x) {
-			FunctionSummary y = x;
+			FunctionSummary y = (FunctionSummary)x;
 			return getName().compareTo(y.getName());
 		}
 
@@ -315,7 +315,7 @@ public class LibHover implements ICHelpProvider {
         public IRequiredInclude[] getIncludes() {
         	IRequiredInclude[] includes = new IRequiredInclude[Includes.size()];
         	for (int i = 0; i < Includes.size(); ++i) {
-        		includes[i] = Includes.get(i);
+        		includes[i] = (IRequiredInclude)Includes.get(i);
         	}
         	return includes;
         }
@@ -378,7 +378,7 @@ public class LibHover implements ICHelpProvider {
         	try {
         		if (context instanceof IHoverHelpInvocationContext) {
         			// We know the file offset of the member reference.
-        			IRegion region = ((IHoverHelpInvocationContext)context).getHoverRegion();
+        			IRegion region = (IRegion)((IHoverHelpInvocationContext)context).getHoverRegion();
         			
         			// Now, let's find the declaration of the method.  We need to do this because we want the specific
         			// member prototype to go searching for.  There could be many members called "x" which have different
@@ -588,7 +588,7 @@ public class LibHover implements ICHelpProvider {
 			// is coming back from the indexer which will be fully-qualified and have template
 			// parameters specified.
 			if (memberParms[i].contains(unqualifiedName) && !memberParms[i].contains(className)) {
-				String classTemplate = "";
+				String classTemplate = new String("");
 				if (templateTypes.size() > 0) {
 					classTemplate = "<";
 					String separator = "";
@@ -636,7 +636,7 @@ public class LibHover implements ICHelpProvider {
 			SortedMap<String, FunctionInfo> map = cppInfo.functions.tailMap(prefix);
 			Set<Map.Entry<String, FunctionInfo>> c = map.entrySet();
 			for (Iterator<Entry<String, FunctionInfo>> i = c.iterator(); i.hasNext();) {
-				Map.Entry<String, FunctionInfo> e = i.next();
+				Map.Entry<String, FunctionInfo> e = (Map.Entry<String, FunctionInfo>)i.next();
 				FunctionInfo x = e.getValue();
 				String name = x.getName();
 				// Look for names that start with prefix, but ignore names that
@@ -661,7 +661,7 @@ public class LibHover implements ICHelpProvider {
 		}
 		IFunctionSummary[] summaries = new IFunctionSummary[fList.size()];
 		for (int k = 0; k < summaries.length; k++) {
-			summaries[k] = fList.get(k);
+			summaries[k] = (IFunctionSummary)fList.get(k);
 		}
 		return summaries;
 	}

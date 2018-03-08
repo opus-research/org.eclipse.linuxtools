@@ -44,7 +44,7 @@ public abstract class RemoteCommandShellOperation
 	implements ISystemResourceChangeListener
 {
 
-	protected static class CommandAlias
+	protected class CommandAlias
 	{
 		private String _alias;
 		private String _command;

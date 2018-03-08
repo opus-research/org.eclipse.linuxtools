@@ -72,9 +72,6 @@ public class TmfEventTypeTest extends TestCase {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /**
-     *
-     */
     public void testDefaultConstructor() {
         final ITmfEventType type = new TmfEventType();
         assertEquals("getContext", ITmfEventType.DEFAULT_CONTEXT_ID, type.getContext());
@@ -84,9 +81,6 @@ public class TmfEventTypeTest extends TestCase {
         assertNull("getFieldName", type.getFieldName(0));
     }
 
-    /**
-     *
-     */
     public void testFullConstructor() {
         final ITmfEventType type0 = new TmfEventType(fContext1, fTypeId1, TmfEventField.makeRoot(fLabels0));
         assertEquals("getContext", fContext1, type0.getContext());
@@ -122,9 +116,6 @@ public class TmfEventTypeTest extends TestCase {
         assertNull("getFieldName", type2.getFieldName(labels2.length));
     }
 
-    /**
-     *
-     */
     public void testConstructorCornerCases() {
         try {
             new TmfEventType(null, fTypeId1, null);
@@ -139,9 +130,6 @@ public class TmfEventTypeTest extends TestCase {
         }
     }
 
-    /**
-     *
-     */
     public void testCopyConstructor() {
         final TmfEventType original = new TmfEventType(fContext1, fTypeId1, TmfEventField.makeRoot(fLabels1));
         final TmfEventType copy = new TmfEventType(original);
@@ -157,9 +145,6 @@ public class TmfEventTypeTest extends TestCase {
         assertNull("getFieldName", copy.getFieldName(labels1.length));
     }
 
-    /**
-     *
-     */
     public void testCopyConstructorCornerCases() {
         try {
             new TmfEventType(null);
@@ -172,10 +157,20 @@ public class TmfEventTypeTest extends TestCase {
     // clone
     // ------------------------------------------------------------------------
 
-    /**
-     *
-     */
-    public void testClone() {
+    public static class MyEventType extends TmfEventType {
+
+        @Override
+        public boolean equals(final Object other) {
+            return super.equals(other);
+        }
+
+        @Override
+        public MyEventType clone() {
+            return (MyEventType) super.clone();
+        }
+    }
+
+    public void testClone() throws Exception {
         final ITmfEventType clone = fType1.clone();
 
         assertTrue("clone", fType1.clone().equals(fType1));
@@ -185,10 +180,7 @@ public class TmfEventTypeTest extends TestCase {
         assertEquals("clone", fType1, clone);
     }
 
-    /**
-     *
-     */
-    public void testClone2() {
+    public void testClone2() throws Exception {
         final ITmfEventType type = new TmfEventType();
         final ITmfEventType clone = type.clone();
 
@@ -203,10 +195,7 @@ public class TmfEventTypeTest extends TestCase {
     // hashCode
     // ------------------------------------------------------------------------
 
-    /**
-     *
-     */
-    public void testHashCode() {
+    public void testHashCode() throws Exception {
         final TmfEventType copy1 = new TmfEventType(fType0);
 
         assertTrue("hashCode", fType0.hashCode() == copy1.hashCode());
@@ -217,10 +206,7 @@ public class TmfEventTypeTest extends TestCase {
     // equals
     // ------------------------------------------------------------------------
 
-    /**
-     *
-     */
-    public void testEqualsReflexivity() {
+    public void testEqualsReflexivity() throws Exception {
         assertTrue("equals", fType0.equals(fType0));
         assertTrue("equals", fType3.equals(fType3));
 
@@ -228,10 +214,7 @@ public class TmfEventTypeTest extends TestCase {
         assertFalse("equals", fType3.equals(fType0));
     }
 
-    /**
-     *
-     */
-    public void testEqualsSymmetry() {
+    public void testEqualsSymmetry() throws Exception {
         final TmfEventType copy0 = new TmfEventType(fType0);
         assertTrue("equals", fType0.equals(copy0));
         assertTrue("equals", copy0.equals(fType0));
@@ -245,10 +228,7 @@ public class TmfEventTypeTest extends TestCase {
         assertTrue("equals", copy2.equals(fType2));
     }
 
-    /**
-     *
-     */
-    public void testEqualsTransivity() {
+    public void testEqualsTransivity() throws Exception {
         TmfEventType copy1 = new TmfEventType(fType1);
         TmfEventType copy2 = new TmfEventType(copy1);
         assertTrue("equals", fType1.equals(copy1));
@@ -268,28 +248,19 @@ public class TmfEventTypeTest extends TestCase {
         assertTrue("equals", fType3.equals(copy2));
     }
 
-    /**
-     *
-     */
-    public void testEqualsNull() {
+    public void testEqualsNull() throws Exception {
         assertFalse("equals", fType0.equals(null));
         assertFalse("equals", fType3.equals(null));
     }
 
-    /**
-     *
-     */
-    public void testNonEquals() {
+    public void testNonEquals() throws Exception {
         assertFalse("equals", fType0.equals(fType1));
         assertFalse("equals", fType1.equals(fType2));
         assertFalse("equals", fType2.equals(fType3));
         assertFalse("equals", fType3.equals(fType0));
     }
 
-    /**
-     *
-     */
-    public void testNonEqualsClasses() {
+    public void testNonEqualsClasses() throws Exception {
         assertFalse("equals", fType1.equals(fLabels1));
     }
 
@@ -297,9 +268,6 @@ public class TmfEventTypeTest extends TestCase {
     // toString
     // ------------------------------------------------------------------------
 
-    /**
-     *
-     */
     public void testToString() {
         final String expected1 = "TmfEventType [fContext=" + ITmfEventType.DEFAULT_CONTEXT_ID +
                 ", fTypeId=" + ITmfEventType.DEFAULT_TYPE_ID + "]";
