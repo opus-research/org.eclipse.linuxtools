@@ -134,7 +134,7 @@ public class Uml2SDTestFacility {
             // Create test trace object
             final URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path("tracesets/sdEvents"), null);
             final File test = new File(FileLocator.toFileURL(location).toURI());
-            return new TmfTraceStub(test.getPath(), 500, true, parser, null);
+            return new TmfTraceStub(test.getPath(), 500, true, parser);
         } catch (final TmfTraceException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -321,7 +321,7 @@ public class Uml2SDTestFacility {
      */
     public void createFilterCriteria() {
         // Create Filter Criteria and save tme
-        final List<FilterCriteria> filterToSave = new ArrayList<FilterCriteria>();
+        final List<FilterCriteria> filterToSave = new ArrayList<>();
         Criteria criteria = new Criteria();
         criteria.setLifeLineSelected(true);
         criteria.setExpression(IUml2SDTestConstants.FIRST_PLAYER_NAME);

@@ -14,7 +14,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -24,8 +23,6 @@ import java.util.ArrayList;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.internal.perf.BaseDataManipulator;
-import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.junit.Before;
@@ -150,30 +147,6 @@ public class StatsComparisonTest {
 		assertEquals(newStatData.toOSString(), diffData.getNewDataPath());
 		assertEquals(oldStatData.toOSString() + diffData.getDataID(),diffData.getOldDataID());
 		assertEquals(newStatData.toOSString() + diffData.getDataID(),diffData.getNewDataID());
-	}
-
-	@Test
-	public void testStatDataComparisonCaching() {
-		IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
-		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
-		StatComparisonData diffData = new StatComparisonData("title",
-				oldStatData, newStatData);
-		diffData.cacheData();
-
-		PerfPlugin plugin = PerfPlugin.getDefault();
-		BaseDataManipulator dataMan = new BaseDataManipulator();
-
-		// check data was cached
-		assertEquals(dataMan.fileToString(oldStatData.toFile()),
-				plugin.getCachedData(diffData.getOldDataID()));
-		assertEquals(dataMan.fileToString(newStatData.toFile()),
-				plugin.getCachedData(diffData.getNewDataID()));
-
-		diffData.clearCachedData();
-
-		// check cached data was cleared
-		assertNull(plugin.getCachedData(diffData.getOldDataID()));
-		assertNull(plugin.getCachedData(diffData.getNewDataID()));
 	}
 
 	@Test

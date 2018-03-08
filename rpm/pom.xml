@@ -16,12 +16,11 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.rpm</groupId>
   <artifactId>linuxtools-rpm-parent</artifactId>
-  <version>2.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools RPM Parent</name>
@@ -49,6 +48,9 @@
     <module>org.eclipse.linuxtools.rpm.ui.editor</module>
     <module>org.eclipse.linuxtools.rpm.ui.editor.doc</module>
     <module>org.eclipse.linuxtools.rpm.ui.editor.tests</module>
+    <module>org.eclipse.linuxtools.rpmstubby</module>
+    <module>org.eclipse.linuxtools.rpm.createrepo</module>
+    <module>org.eclipse.linuxtools.rpm.createrepo.tests</module>
   </modules>
 
 </project>
