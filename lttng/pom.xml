@@ -49,6 +49,7 @@
     <id>tracingRcp</id>
       <modules>
         <module>org.eclipse.linuxtools.tracing.rcp</module>
+        <module>org.eclipse.linuxtools.tracing.rcp.help</module>
         <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
         <module>org.eclipse.linuxtools.tracing.rcp.product</module>
       </modules>
@@ -91,6 +92,12 @@
     <module>org.eclipse.linuxtools.lttng2.kernel.ui</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.ui.tests</module>
 
+    <module>org.eclipse.linuxtools.lttng2.ust</module>
+    <module>org.eclipse.linuxtools.lttng2.ust.core</module>
+    <module>org.eclipse.linuxtools.lttng2.ust.core.tests</module>
+    <module>org.eclipse.linuxtools.lttng2.ust.ui</module>
+    <module>org.eclipse.linuxtools.lttng2.ust.ui.tests</module>
+
     <module>org.eclipse.linuxtools.gdbtrace</module>
     <module>org.eclipse.linuxtools.gdbtrace.core</module>
     <module>org.eclipse.linuxtools.gdbtrace.core.tests</module>
@@ -123,16 +130,6 @@
                             <arch>x86_64</arch>
                         </environment>
                         <environment>
-                            <os>solaris</os>
-                            <ws>gtk</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>solaris</os>
-                            <ws>gtk</ws>
-                            <arch>sparc</arch>
-                        </environment>
-                        <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86</arch>
@@ -141,16 +138,6 @@
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>ppc</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>ppc64</arch>
                         </environment>
                     </environments>
                 </configuration>

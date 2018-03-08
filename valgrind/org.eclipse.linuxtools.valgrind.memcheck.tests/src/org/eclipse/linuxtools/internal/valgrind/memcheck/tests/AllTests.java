@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import org.eclipse.linuxtools.internal.valgrind.memcheck.quickfix.tests.WrongDeallocationResolutionTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -20,6 +19,6 @@ import org.junit.runners.Suite;
 		LaunchConfigTabTest.class, MarkerTest.class,
 		LinkedResourceDoubleClickTest.class, LinkedResourceMarkerTest.class,
 		MultiProcessTest.class, ExpandCollapseTest.class, ShortcutTest.class,
-		SignalTest.class, MinVersionTest.class, WrongDeallocationResolutionTest.class })
+		SignalTest.class, MinVersionTest.class })
 public class AllTests {
 }
