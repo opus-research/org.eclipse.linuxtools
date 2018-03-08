@@ -42,5 +42,5 @@ public class RowParserTest {
 		assertEquals("1", entry.getRow(0)[0]);
 	}
 
-	private RowParser parser;
+	RowParser parser;
 }

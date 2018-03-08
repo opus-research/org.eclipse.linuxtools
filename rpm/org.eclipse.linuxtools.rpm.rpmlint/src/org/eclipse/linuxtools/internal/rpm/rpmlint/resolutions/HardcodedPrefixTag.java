@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2013 Alexander Kurtakov.
+ * Copyright (c) 2008 Alexander Kurtakov.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,7 +24,6 @@ public class HardcodedPrefixTag extends ARemoveLineResolution{
 	/**
 	 * @see org.eclipse.ui.IMarkerResolution2#getDescription()
 	 */
-	@Override
 	public String getDescription() {
 		return Messages.HardcodedPrefixTag_0;
 	}
@@ -32,7 +31,6 @@ public class HardcodedPrefixTag extends ARemoveLineResolution{
 	/**
 	 * @see org.eclipse.ui.IMarkerResolution#getLabel()
 	 */
-	@Override
 	public String getLabel() {
 		return ID;
 	}

@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -42,7 +42,7 @@ public class EventContextTest {
     // ------------------------------------------------------------------------
 
     /* We use test trace #2, kernel_vm, which has event contexts */
-    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL_VM;
+    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.KERNEL_VM;
 
     private static CtfTmfTrace fixture;
     private static long startTime;

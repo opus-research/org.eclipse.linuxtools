@@ -47,7 +47,6 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 	private static final String SOURCE_IDENTIFIER = "%{SOURCE"; //$NON-NLS-1$
 	private Specfile specfile;
 
-	@Override
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
 			IRegion region, boolean canShowMultipleHyperlinks) {
 

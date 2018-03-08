@@ -17,7 +17,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.nio.ByteOrder;
 
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.Metadata;
 import org.junit.Before;
@@ -33,7 +33,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class MetadataTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
 
     private Metadata fixture;
 

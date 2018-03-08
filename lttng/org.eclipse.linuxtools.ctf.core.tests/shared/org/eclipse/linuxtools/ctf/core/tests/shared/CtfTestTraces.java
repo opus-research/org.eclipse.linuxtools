@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
  *
  * @author Alexandre Montplaisir
  */
-public enum CtfTestTrace {
+public enum CtfTestTraces {
     /** Example kernel trace */
     KERNEL("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"),
     /** Another kernel trace */
@@ -37,7 +37,7 @@ public enum CtfTestTrace {
     private CTFTrace fTrace = null;
     private CTFTrace fTraceFromFile = null;
 
-    private CtfTestTrace(String path) {
+    private CtfTestTraces(String path) {
         fPath = path;
     }
 

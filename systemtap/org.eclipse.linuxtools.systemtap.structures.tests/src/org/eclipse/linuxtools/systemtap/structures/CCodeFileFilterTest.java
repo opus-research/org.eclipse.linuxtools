@@ -9,7 +9,7 @@
  *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.structures.tests;
+package org.eclipse.linuxtools.systemtap.structures;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,11 +36,11 @@ public class CCodeFileFilterTest {
 		assertTrue(filter.accept(new File("test.h")));
 		assertTrue(filter.accept(new File("test.c")));
 	}
-
+	
 	@Test
 	public void testGetDescription() {
 		filter.getDescription();
 	}
 
-	private CCodeFileFilter filter;
+	CCodeFileFilter filter;
 }

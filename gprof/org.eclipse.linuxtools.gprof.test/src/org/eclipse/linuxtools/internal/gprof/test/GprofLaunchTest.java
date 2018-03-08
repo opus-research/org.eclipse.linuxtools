@@ -10,8 +10,6 @@
 *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.test;
 
-import static org.junit.Assert.fail;
-
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -30,8 +28,6 @@ import org.eclipse.linuxtools.internal.profiling.launch.provider.ProviderProfile
 import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchShortcut;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
@@ -49,8 +45,9 @@ public class GprofLaunchTest extends AbstractTest {
 	ProviderLaunchShortcut shortcut;
 	String launchConfigTypeId;
 
-	@Before
-	public void setUp() throws Exception {
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
 		ProjectScope ps = new ProjectScope(proj.getProject());
 		ScopedPreferenceStore scoped = new ScopedPreferenceStore(ps, ProviderProfileConstants.PLUGIN_ID);
@@ -67,7 +64,7 @@ public class GprofLaunchTest extends AbstractTest {
 					shortcut = (ProviderLaunchShortcut) cfg.createExecutableExtension("class"); //$NON-NLS-1$
 					launchConfigTypeId = cfg.getChildren("class")[0].getChildren("parameter")[1].getAttribute("value"); //$NON-NLS-1$
 				} catch (Exception e){
-					fail (e.getMessage());
+					fail ();
 				}
 			}
 		}
@@ -76,11 +73,12 @@ public class GprofLaunchTest extends AbstractTest {
  		wc = config.getWorkingCopy();
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@Override
+	protected void tearDown() throws Exception {
 		deleteProject(proj);
 		wc.delete();
 		config.delete();
+		super.tearDown();
 	}
 
 	@Override

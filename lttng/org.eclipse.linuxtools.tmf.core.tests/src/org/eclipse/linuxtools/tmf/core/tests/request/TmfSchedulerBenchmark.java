@@ -18,7 +18,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
@@ -43,7 +43,7 @@ public class TmfSchedulerBenchmark {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private static CtfTmfTrace trace = CtfTmfTestTrace.KERNEL.getTrace();
+    private static CtfTmfTrace trace = CtfTmfTestTraces.KERNEL.getTrace();
     private static ForegroundRequest lastForegroundRequest = null;
     private static BackgroundRequest lastBackgroundRequest = null;
 

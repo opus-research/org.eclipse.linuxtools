@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.Test;
 
 /**
@@ -30,7 +30,7 @@ import org.junit.Test;
 public abstract class TmfStatisticsTest {
 
     /** Test trace used for these tests */
-    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
+    protected static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.KERNEL;
 
     /** The statistics back-end object */
     protected static ITmfStatistics backend;
