@@ -115,7 +115,6 @@ public final class TmfTraceType {
      */
     public static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
 
-
     // The mapping of available trace type IDs to their corresponding
     // configuration element
     private final Map<String, IConfigurationElement> fTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
@@ -123,19 +122,6 @@ public final class TmfTraceType {
     private final Map<String, TraceTypeHelper> fTraceTypes = new LinkedHashMap<String, TraceTypeHelper>();
 
     private static TmfTraceType fInstance = null;
-
-    /**
-     * The import utils instance
-     *
-     * @return the import utils instance
-     * @since 2.0
-     */
-    public static TmfTraceType getInstance() {
-        if (fInstance == null) {
-            fInstance = new TmfTraceType();
-        }
-        return fInstance;
-    }
 
     /**
      * Retrieves the category name from the platform extension registry based on
@@ -216,6 +202,19 @@ public final class TmfTraceType {
 
     private TmfTraceType() {
         init();
+    }
+
+    /**
+     * The import utils instance
+     *
+     * @return the import utils instance
+     * @since 2.0
+     */
+    public static TmfTraceType getInstance() {
+        if (fInstance == null) {
+            fInstance = new TmfTraceType();
+        }
+        return fInstance;
     }
 
     // ------------------------------------------------------------------
@@ -313,6 +312,47 @@ public final class TmfTraceType {
         return fTraceTypes.get(id);
     }
 
+    private void populateCategoriesAndTraceTypes() {
+        if (fTraceTypes.isEmpty()) {
+            // Populate the Categories and Trace Types
+            IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceType.TMF_TRACE_TYPE_ID);
+            for (IConfigurationElement ce : config) {
+                String elementName = ce.getName();
+                if (elementName.equals(TmfTraceType.TYPE_ELEM)) {
+                    String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                    fTraceTypeAttributes.put(traceTypeId, ce);
+                } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
+                    String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                    fTraceCategories.put(categoryId, ce);
+                }
+            }
+            // create the trace types
+            for (String typeId : fTraceTypeAttributes.keySet()) {
+                IConfigurationElement ce = fTraceTypeAttributes.get(typeId);
+                final String category = getCategory(ce);
+                final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
+                ITmfTrace trace = null;
+                try {
+                    trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                } catch (CoreException e) {
+                }
+                TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
+                fTraceTypes.put(typeId, tt);
+            }
+        }
+    }
+
+    private String getCategory(IConfigurationElement ce) {
+        final String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
+        if (categoryId != null) {
+            IConfigurationElement category = fTraceCategories.get(categoryId);
+            if (category != null && !category.getName().equals("")) { //$NON-NLS-1$
+                return category.getAttribute(TmfTraceType.NAME_ATTR);
+            }
+        }
+        return "[no category]"; //$NON-NLS-1$
+    }
+
     /**
      * Returns the list of trace categories
      *
@@ -331,27 +371,6 @@ public final class TmfTraceType {
     }
 
     /**
-     * Gets all the trace types that are valid for a given path
-     *
-     * @param path A path of a trace
-     * @return a list of TraceTypeHelpers
-     * @since 2.0
-     */
-    public List<TraceTypeHelper> getValidTraceTypes(String path){
-        List<TraceTypeHelper> ret = new ArrayList<TraceTypeHelper>();
-        List<String> cats = getTraceCategories();
-        for( String category: cats){
-            List<TraceTypeHelper> traceTypes = getTraceTypes(category);
-            for( TraceTypeHelper tt : traceTypes){
-                if( validate(tt.getCanonicalName(), path)) {
-                    ret.add(tt);
-                }
-            }
-        }
-        return ret;
-    }
-
-    /**
      * Get the trace types
      *
      * @param category
@@ -359,6 +378,7 @@ public final class TmfTraceType {
      * @return the trace types
      * @since 2.0
      */
+
     public List<TraceTypeHelper> getTraceTypes(String category) {
         List<TraceTypeHelper> traceNames = new ArrayList<TraceTypeHelper>();
         for (String key : fTraceTypes.keySet()) {
@@ -370,37 +390,42 @@ public final class TmfTraceType {
         return traceNames;
     }
 
-    /**
-     * Find the id of a trace type by its parameters
-     *
-     * @param category
-     *            like "ctf" or "custom text"
-     * @param traceType
-     *            like "kernel"
-     * @return an id like "org.eclipse.linuxtools.blabla...
-     * @since 2.0
-     */
-    public String getTraceTypeId(String category, String traceType) {
-        for (String key : fTraceTypes.keySet()) {
-            if (fTraceTypes.get(key).getCategoryName().equals(category.trim()) && fTraceTypes.get(key).getName().equals(traceType.trim())) {
-                return key;
+    private void init() {
+        populateCategoriesAndTraceTypes();
+        getCustomTraceTypes();
+
+    }
+
+    private static List<File> isolateTraces(List<FileSystemElement> selectedResources) {
+
+        List<File> traces = new ArrayList<File>();
+
+        // Get the selection
+        Iterator<FileSystemElement> resources = selectedResources.iterator();
+
+        // Get the sorted list of unique entries
+        Map<String, File> fileSystemObjects = new HashMap<String, File>();
+        while (resources.hasNext()) {
+            File resource = (File) resources.next().getFileSystemObject();
+            String key = resource.getAbsolutePath();
+            fileSystemObjects.put(key, resource);
+        }
+        List<String> files = new ArrayList<String>(fileSystemObjects.keySet());
+        Collections.sort(files);
+
+        // After sorting, traces correspond to the unique prefixes
+        String prefix = null;
+        for (int i = 0; i < files.size(); i++) {
+            File file = fileSystemObjects.get(files.get(i));
+            String name = file.getAbsolutePath();
+            if (prefix == null || !name.startsWith(prefix)) {
+                prefix = name; // new prefix
+                traces.add(file);
             }
         }
-        return null;
-    }
 
-    /**
-     * Get a configuration element for a given name
-     *
-     * @param traceType
-     *            the name canonical
-     * @return the configuration element, can be null
-     * @since 2.0
-     */
-    public IConfigurationElement getTraceAttributes(String traceType) {
-        return fTraceTypeAttributes.get(traceType);
+        return traces;
     }
-
 
     /**
      * Validate a trace type
@@ -469,81 +494,34 @@ public final class TmfTraceType {
         return true;
     }
 
-    private void init() {
-        populateCategoriesAndTraceTypes();
-        getCustomTraceTypes();
-
+    /**
+     * Get a configuration element for a given name
+     *
+     * @param traceType
+     *            the name canonical
+     * @return the configuration element, can be null
+     * @since 2.0
+     */
+    public IConfigurationElement getTraceAttributes(String traceType) {
+        return fTraceTypeAttributes.get(traceType);
     }
 
-    private void populateCategoriesAndTraceTypes() {
-        if (fTraceTypes.isEmpty()) {
-            // Populate the Categories and Trace Types
-            IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TmfTraceType.TMF_TRACE_TYPE_ID);
-            for (IConfigurationElement ce : config) {
-                String elementName = ce.getName();
-                if (elementName.equals(TmfTraceType.TYPE_ELEM)) {
-                    String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                    fTraceTypeAttributes.put(traceTypeId, ce);
-                } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
-                    String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                    fTraceCategories.put(categoryId, ce);
-                }
-            }
-            // create the trace types
-            for (String typeId : fTraceTypeAttributes.keySet()) {
-                IConfigurationElement ce = fTraceTypeAttributes.get(typeId);
-                final String category = getCategory(ce);
-                final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
-                ITmfTrace trace = null;
-                try {
-                    trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                } catch (CoreException e) {
-                }
-                TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
-                fTraceTypes.put(typeId, tt);
+    /**
+     * Find the id of a trace type by its parameters
+     *
+     * @param category
+     *            like "ctf" or "custom text"
+     * @param traceType
+     *            like "kernel"
+     * @return an id like "org.eclipse.linuxtools.blabla...
+     * @since 2.0
+     */
+    public String getTraceTypeId(String category, String traceType) {
+        for (String key : fTraceTypes.keySet()) {
+            if (fTraceTypes.get(key).getCategoryName().equals(category.trim()) && fTraceTypes.get(key).getName().equals(traceType.trim())) {
+                return key;
             }
         }
-    }
-
-    private String getCategory(IConfigurationElement ce) {
-        final String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-        if (categoryId != null) {
-            IConfigurationElement category = fTraceCategories.get(categoryId);
-            if (category != null && !category.getName().equals("")) { //$NON-NLS-1$
-                return category.getAttribute(TmfTraceType.NAME_ATTR);
-            }
-        }
-        return "[no category]"; //$NON-NLS-1$
-    }
-
-    private static List<File> isolateTraces(List<FileSystemElement> selectedResources) {
-
-        List<File> traces = new ArrayList<File>();
-
-        // Get the selection
-        Iterator<FileSystemElement> resources = selectedResources.iterator();
-
-        // Get the sorted list of unique entries
-        Map<String, File> fileSystemObjects = new HashMap<String, File>();
-        while (resources.hasNext()) {
-            File resource = (File) resources.next().getFileSystemObject();
-            String key = resource.getAbsolutePath();
-            fileSystemObjects.put(key, resource);
-        }
-        List<String> files = new ArrayList<String>(fileSystemObjects.keySet());
-        Collections.sort(files);
-
-        // After sorting, traces correspond to the unique prefixes
-        String prefix = null;
-        for (int i = 0; i < files.size(); i++) {
-            File file = fileSystemObjects.get(files.get(i));
-            String name = file.getAbsolutePath();
-            if (prefix == null || !name.startsWith(prefix)) {
-                prefix = name; // new prefix
-                traces.add(file);
-            }
-        }
-
-        return traces;
+        return null;
     }
 }
