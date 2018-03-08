@@ -70,10 +70,6 @@ public class RPMProject {
 		return rpmConfig;
 	}
 
-	/**
-	 *
-	 * @return the IResource that contains the specfile, null if there's no specfile in the project
-	 */
 	public IResource getSpecFile() {
 		IContainer specsFolder = getConfiguration().getSpecsFolder();
 		IResource file = null;
@@ -82,9 +78,7 @@ public class RPMProject {
 		try {
 			specsFolder.accept(specVisitor);
 			List<IResource> installedSpecs = specVisitor.getSpecFiles();
-			if(installedSpecs.size() > 0){
-				file = installedSpecs.get(0);
-			}
+			file = installedSpecs.get(0);
 		} catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
