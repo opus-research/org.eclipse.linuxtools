@@ -12,7 +12,7 @@
  *   Mathieu Denis  (mathieu.denis@polymtl.ca)  - Re-design for new stats structure (2)
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
 
 import java.util.Collection;
 
