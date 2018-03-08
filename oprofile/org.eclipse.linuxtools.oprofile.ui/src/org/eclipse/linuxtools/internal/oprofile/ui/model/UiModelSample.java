@@ -20,12 +20,6 @@ public class UiModelSample implements IUiModelElement {
 	private OpModelSample sample;			//the node in the data model
 	private int totalCount;				//total sample count for the parent session
 	
-	/**
-	 * Constructor to the UiModelSample class
-	 * @param parent The parent element
-	 * @param sample Oprofile sample node in the data model
-	 * @param totalCount The total sample count for the parent session
-	 */
 	public UiModelSample(IUiModelElement parent, OpModelSample sample, int totalCount) {
 		this.parent = parent;
 		this.sample = sample;
@@ -44,18 +38,10 @@ public class UiModelSample implements IUiModelElement {
 		return sample.getLine();
 	}
 	
-	/**
-	 * Return the path to the sample node
-	 * @return node path
-	 */
 	public String getFile(){
 		return sample.getFilePath();
 	}
 
-	/**
-	 * Returns the count percentage for the sample node
-	 * @return count percentage for the sample node
-	 */
 	public double getCountPercentage() {
 		return (double)sample.getCount() / (double)totalCount;
 	}
@@ -65,33 +51,18 @@ public class UiModelSample implements IUiModelElement {
 		return toString();
 	}
 
-	/**
-	 * Return null because this element does not have children
-	 * @return null
-	 */
 	public IUiModelElement[] getChildren() {
 		return null;
 	}
-	/**
-	 * Returns false because this is the bottom level element
-	 * @return false
-	 */
+
 	public boolean hasChildren() {
 		return false;		//bottom level element
 	}
 
-	/**
-	 * Returns the element's parent.
-	 * @return parent The parent element
-	 */
 	public IUiModelElement getParent() {
 		return parent;
 	}
 
-	/**
-	 * Returns the Image to display next to the text in the tree viewer.
-	 * @return an Image object of the icon
-	 */
 	public Image getLabelImage() {
 		return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.SAMPLE_ICON).createImage();
 	}
