@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -37,7 +36,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     private final StructDeclaration declaration;
-    private final HashMap<String, Definition> definitions = new LinkedHashMap<String, Definition>();
+    private final HashMap<String, Definition> definitions = new HashMap<String, Definition>();
 
     // ------------------------------------------------------------------------
     // Constructors
