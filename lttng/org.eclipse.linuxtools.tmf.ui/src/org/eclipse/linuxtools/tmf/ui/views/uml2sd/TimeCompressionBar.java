@@ -67,14 +67,6 @@ import org.eclipse.swt.widgets.Display;
 public class TimeCompressionBar extends ScrollView implements DisposeListener {
 
     // ------------------------------------------------------------------------
-    // Constants
-    // ------------------------------------------------------------------------
-    private static final int BASE_RED_VALUE = 255;
-    private static final int BASE_GREEN_BLUE_VALUE = 225;
-    private static final int COLOR_STEP = 25;
-    private static final int NUMBER_STEPS = 10;
-
-    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
@@ -157,13 +149,17 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setVScrollBarMode(ScrollView.ALWAYS_OFF);
         setHScrollBarMode(ScrollView.ALWAYS_OFF);
         fListenerList = new ArrayList<ITimeCompressionListener>();
-        fColors = new ColorImpl[NUMBER_STEPS];
-        int greenBlue = BASE_GREEN_BLUE_VALUE;
-        final int step = COLOR_STEP;
-        for (int i = 0; i < fColors.length; i++) {
-            fColors[i] = new ColorImpl(Display.getDefault(), BASE_RED_VALUE, greenBlue, greenBlue);
-            greenBlue -= step;
-        }
+        fColors = new ColorImpl[10];
+        fColors[0] = new ColorImpl(Display.getDefault(), 255, 229, 229);
+        fColors[1] = new ColorImpl(Display.getDefault(), 255, 204, 204);
+        fColors[2] = new ColorImpl(Display.getDefault(), 255, 178, 178);
+        fColors[3] = new ColorImpl(Display.getDefault(), 255, 153, 153);
+        fColors[4] = new ColorImpl(Display.getDefault(), 255, 127, 127);
+        fColors[5] = new ColorImpl(Display.getDefault(), 255, 102, 102);
+        fColors[6] = new ColorImpl(Display.getDefault(), 255, 76, 76);
+        fColors[7] = new ColorImpl(Display.getDefault(), 255, 51, 51);
+        fColors[8] = new ColorImpl(Display.getDefault(), 255, 25, 25);
+        fColors[9] = new ColorImpl(Display.getDefault(), 255, 0, 0);
         super.addDisposeListener(this);
 
         fAccessible = getViewControl().getAccessible();
@@ -379,7 +375,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             fMinTime = fFrame.getMinTime();
             fMaxTime = fFrame.getMaxTime();
             ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-            double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
+            double gr = (minMaxdelta.getValue()) / (double) 10;
 
             ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime()).getDelta(fMinTime);
             long absDelta = Math.abs(delta.getValue());
@@ -654,7 +650,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
 
         ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-        double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
+        double gr = (minMaxdelta.getValue()) / (double) 10;
 
         ITmfTimestamp delta = time2.getDelta(time1).getDelta(fMinTime);
         long absDelta = Math.abs(delta.getValue());
@@ -752,6 +748,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             Control[] child = getParent().getChildren();
             for (int i = 0; i < child.length; i++) {
                 if (child[i].isFocusControl()) {
+                    // getViewControl().setFocus();
                     break;
                 }
             }
@@ -896,7 +893,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                     fPrevNodeY = m1Y;
                     fNextNodeY = m2Y;
                     ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-                    double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
+                    double gr = (minMaxdelta.getValue()) / (double) 10;
 
                     ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime()).getDelta(fMinTime);
                     long absDelta = Math.abs(delta.getValue());
