@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
-import org.eclipse.linuxtools.tmf.ui.project.model.OpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -114,9 +113,86 @@ public class OpenTraceHandler extends AbstractHandler {
         }
 
         // If trace is under an experiment, use the original trace from the traces folder
-        return OpenTraceHelper.openTraceFromElement(fTrace.getElementUnderTraceFolder());
+        final TmfTraceElement traceElement = fTrace.getElementUnderTraceFolder();
 
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+
+                final ITmfTrace trace = traceElement.instantiateTrace();
+                final ITmfEvent traceEvent = traceElement.instantiateEvent();
+                if ((trace == null) || (traceEvent == null)) {
+                    displayErrorMsg(Messages.OpenTraceHandler_NoTraceType);
+                    if (trace != null) {
+                        trace.dispose();
+                    }
+                    return;
+                }
+
+                // Get the editor_id from the extension point
+                String traceEditorId = traceElement.getEditorId();
+                final String editorId = (traceEditorId != null) ? traceEditorId : TmfEventsEditor.ID;
+
+                try {
+                    trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
+                } catch (final TmfTraceException e) {
+                    displayErrorMsg(Messages.OpenTraceHandler_InitError + "\n\n" + e); //$NON-NLS-1$
+                    trace.dispose();
+                    return;
+                }
+
+                final IFile file;
+                try {
+                    file = traceElement.createBookmarksFile();
+                } catch (final CoreException e) {
+                    Activator.getDefault().logError("Error opening trace " + traceElement.getName(), e); //$NON-NLS-1$
+                    displayErrorMsg(Messages.OpenTraceHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
+                    trace.dispose();
+                    return;
+                }
+
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            final IEditorInput editorInput = new TmfEditorInput(file, trace);
+                            final IWorkbench wb = PlatformUI.getWorkbench();
+                            final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
+
+                            final IEditorPart editor = activePage.findEditor(new FileEditorInput(file));
+                            if ((editor != null) && (editor instanceof IReusableEditor)) {
+                                activePage.reuseEditor((IReusableEditor) editor, editorInput);
+                                activePage.activate(editor);
+                            } else {
+                                activePage.openEditor(editorInput, editorId);
+                                IDE.setDefaultEditor(file, editorId);
+                                // editor should dispose the trace on close
+                            }
+                        } catch (final PartInitException e) {
+                            displayErrorMsg(Messages.OpenTraceHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
+                            Activator.getDefault().logError("Error opening trace " + traceElement.getName(), e); //$NON-NLS-1$
+                            trace.dispose();
+                        }
+                    }
+                });
+
+            }
+        };
+
+        thread.start();
+        return null;
     }
 
+    private static void displayErrorMsg(final String errorMsg) {
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+                mb.setText(Messages.OpenTraceHandler_Title);
+                mb.setMessage(errorMsg);
+                mb.open();
+            }
+        });
+    }
 
 }
