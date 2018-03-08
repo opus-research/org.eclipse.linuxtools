@@ -86,18 +86,18 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
         /* Read the 'type' of the value, then react accordingly */
         valueType = buffer.get();
-        if (valueType <= 0) {
+
+        switch(valueType)
+        {
+        case ITmfStateValue.TYPE_NULL:
+            value = TmfStateValue.nullValue();
+            break;
+        case ITmfStateValue.TYPE_INTEGER:
             /* the type of ValueOrOffset is 'value' */
             valueOrOffset = buffer.getInt();
-            if (valueOrOffset == -1) {
-                /* Null value */
-                value = TmfStateValue.nullValue();
-            } else {
-                /* Normal integer value */
-                value = TmfStateValue.newValueInt(valueOrOffset);
-            }
-
-        } else { // valueType > 0
+            value = TmfStateValue.newValueInt(valueOrOffset);
+            break;
+        case ITmfStateValue.TYPE_STRING:
             /* the type is 'offset' */
             valueOrOffset = buffer.getInt();
 
@@ -133,6 +133,30 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
              * interval)
              */
             buffer.reset();
+
+            break;
+        case ITmfStateValue.TYPE_LONG:
+            /* the type is 'offset' */
+            valueOrOffset = buffer.getInt();
+
+            /*
+             * Go read the corresponding entry in the Strings section of the
+             * block
+             */
+            buffer.mark();
+            buffer.position(valueOrOffset);
+            value = TmfStateValue.newValueLong(buffer.getLong());
+
+            /*
+             * Restore the file pointer's position (so we can read the next
+             * interval)
+             */
+            buffer.reset();
+            break;
+        default:
+            value = TmfStateValue.nullValue();
+            break;
+
         }
 
         try {
@@ -168,9 +192,10 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
         buffer.putInt(attribute);
         buffer.put(sv.getType());
 
-        byteArrayToWrite = sv.toByteArray();
-
-        if (byteArrayToWrite == null) {
+        switch(sv.getType())
+        {
+        case ITmfStateValue.TYPE_NULL:
+        case ITmfStateValue.TYPE_INTEGER:
             /* We write the 'valueOffset' field as a straight value. In the case
              * of a null value, it will be unboxed as -1 */
             try {
@@ -184,27 +209,59 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             }
             return 0; /* we didn't use a Strings section entry */
 
+        case ITmfStateValue.TYPE_STRING:
+            byteArrayToWrite = sv.toByteArray();
+            /*
+             * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
+             * end)
+             */
+            sizeOfStringEntry = byteArrayToWrite.length + 2;
+
+            /* we use the valueOffset as an offset. */
+            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
+            buffer.mark();
+            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
+
+            /*
+             * write the Strings entry (1st byte = size, then the bytes, then the 0)
+             */
+            buffer.put((byte) sizeOfStringEntry);
+            buffer.put(byteArrayToWrite);
+            buffer.put((byte) 0);
+            assert (buffer.position() == endPosOfStringEntry);
+            buffer.reset();
+            return sizeOfStringEntry;
+
+        case ITmfStateValue.TYPE_LONG:
+            /*
+             * Size to write is the number of bytes in a Long
+             */
+            sizeOfStringEntry = 8;
+
+            /* we use the valueOffset as an offset. */
+            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
+            buffer.mark();
+            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
+
+            /*
+             * write the Long in the Strings section
+             */
+            try {
+                buffer.putLong(sv.unboxLong());
+            } catch (StateValueTypeException e) {
+                /*
+                 * This should not happen, since the value told us it was of
+                 * type Long (corrupted value?)
+                 */
+                e.printStackTrace();
+            }
+            assert (buffer.position() == endPosOfStringEntry);
+            buffer.reset();
+            return sizeOfStringEntry;
+
+        default:
+            return 0;
         }
-        /*
-         * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
-         * end)
-         */
-        sizeOfStringEntry = byteArrayToWrite.length + 2;
-
-        /* we use the valueOffset as an offset. */
-        buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
-        buffer.mark();
-        buffer.position(endPosOfStringEntry - sizeOfStringEntry);
-
-        /*
-         * write the Strings entry (1st byte = size, then the bytes, then the 0)
-         */
-        buffer.put((byte) sizeOfStringEntry);
-        buffer.put(byteArrayToWrite);
-        buffer.put((byte) 0);
-        assert (buffer.position() == endPosOfStringEntry);
-        buffer.reset();
-        return sizeOfStringEntry;
     }
 
     @Override
