@@ -124,7 +124,7 @@ public class TmfNetworkEventMatching extends TmfEventMatching {
          * just hope developers register NetworkMatchDefinition for Network
          * match types...
          */
-        TmfNetworkMatchDefinition def = (TmfNetworkMatchDefinition) getEventDefinition(event.getTrace());
+        ITmfNetworkMatchDefinition def = (ITmfNetworkMatchDefinition) getEventDefinition(event.getTrace());
         if (def == null) {
             return;
         }
