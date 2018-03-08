@@ -354,10 +354,9 @@ class FilterViewer extends Composite {
 
         protected String[] getFieldsList(ITmfFilterTreeNode node) {
             ArrayList<String> fieldsList = new ArrayList<String>();
-            ITmfFilterTreeNode curNode = node;
-            while (curNode != null) {
-                if (curNode instanceof TmfFilterEventTypeNode) {
-                    TmfFilterEventTypeNode eventTypeNode = (TmfFilterEventTypeNode) curNode;
+            while (node != null) {
+                if (node instanceof TmfFilterEventTypeNode) {
+                    TmfFilterEventTypeNode eventTypeNode = (TmfFilterEventTypeNode) node;
                     for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
                         if (ce.getAttribute(TmfTraceType.EVENT_TYPE_ATTR).equals(eventTypeNode.getEventType())) {
                             try {
@@ -401,7 +400,7 @@ class FilterViewer extends Composite {
                         }
                     }
                 }
-                curNode = curNode.getParent();
+                node = node.getParent();
             }
 
             fieldsList.add(Messages.FilterViewer_CommonCategory);

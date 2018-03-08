@@ -287,22 +287,19 @@ public class Utils {
     static public int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
         int len = text.length();
         int textWidth = 0;
-        boolean isReallyCentered = isCentered;
-        int realX = x;
-
         while (len > 0) {
             textWidth = gc.stringExtent(text.substring(0, len)).x;
             if (textWidth <= width) {
                 break;
             }
-            isReallyCentered = false;
+            isCentered = false;
             len--;
         }
         if (len > 0) {
-            if (isReallyCentered) {
-                realX += (width - textWidth) / 2;
+            if (isCentered) {
+                x += (width - textWidth) / 2;
             }
-            gc.drawText(text.substring(0, len), realX, y, isTransparent);
+            gc.drawText(text.substring(0, len), x, y, isTransparent);
         }
         return len;
     }
@@ -324,14 +321,13 @@ public class Utils {
         }
 
         StringBuffer str = new StringBuffer();
-        long t = time;
-        boolean neg = t < 0;
+        boolean neg = time < 0;
         if (neg) {
-            t = -t;
+            time = -time;
             str.append('-');
         }
 
-        long sec = (long) (t * 1E-9);
+        long sec = (long) (time * 1E-9);
         // TODO: Expand to make it possible to select the minute, second, nanosecond format
         //printing minutes is suppressed just sec and ns
         // if (sec / 60 < 10)
@@ -342,7 +338,7 @@ public class Utils {
         // if (sec < 10)
         // str.append('0');
         str.append(sec);
-        String ns = formatNs(t, resolution);
+        String ns = formatNs(time, resolution);
         if (!ns.equals("")) { //$NON-NLS-1$
             str.append('.');
             str.append(ns);
@@ -391,15 +387,14 @@ public class Utils {
      * seconds can be obtained by removing the last 9 digits: 1241207054 the
      * fractional portion of seconds, expressed in ns is: 171080214
      *
-     * @param srcTime
+     * @param time
      *            The source time in ns
      * @param res
      *            The Resolution to use
      * @return the formatted nanosec
      */
-    public static String formatNs(long srcTime, Resolution res) {
+    public static String formatNs(long time, Resolution res) {
         StringBuffer str = new StringBuffer();
-        long time = srcTime;
         boolean neg = time < 0;
         if (neg) {
             time = -time;
@@ -550,12 +545,11 @@ public class Utils {
     /**
      * Pretty-print a method signature.
      *
-     * @param origSig
+     * @param sig
      *            The original signature
      * @return The pretty signature
      */
-    static public String fixMethodSignature(String origSig) {
-        String sig = origSig;
+    static public String fixMethodSignature(String sig) {
         int pos = sig.indexOf('(');
         if (pos >= 0) {
             String ret = sig.substring(0, pos);
@@ -568,14 +562,12 @@ public class Utils {
     /**
      * Restore an original method signature from a pretty-printed one.
      *
-     * @param ppSig
+     * @param sig
      *            The pretty-printed signature
      * @return The original method signature
      */
-    static public String restoreMethodSignature(String ppSig) {
+    static public String restoreMethodSignature(String sig) {
         String ret = ""; //$NON-NLS-1$
-        String sig = ppSig;
-
         int pos = sig.indexOf('(');
         if (pos >= 0) {
             ret = sig.substring(0, pos);
@@ -601,14 +593,13 @@ public class Utils {
     /**
      * Get the mangled type information from an array of types.
      *
-     * @param typeStr
+     * @param type
      *            The types to convert. See method implementation for what it
      *            expects.
      * @return The mangled string of types
      */
-    public static String getTypeSignature(String typeStr) {
+    static public String getTypeSignature(String type) {
         int dim = 0;
-        String type = typeStr;
         for (int j = 0; j < type.length(); j++) {
             if (type.charAt(j) == '[') {
                 dim++;
@@ -621,7 +612,7 @@ public class Utils {
         StringBuffer sig = new StringBuffer(""); //$NON-NLS-1$
         for (int j = 0; j < dim; j++)
          {
-            sig.append("["); //$NON-NLS-1$
+            sig.append("[");                 //$NON-NLS-1$
         }
         if (type.equals("boolean")) { //$NON-NLS-1$
             sig.append('Z');
