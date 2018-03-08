@@ -232,7 +232,7 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
                     if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
                         member.delete(true, null);
                     }
-                    if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
+                    else if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
                         member.delete(true, null);
                     }
                 }

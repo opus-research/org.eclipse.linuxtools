@@ -48,6 +48,11 @@ public class Messages extends NLS {
     public static String DropAdapterAssistant_RenameTraceTitle;
     public static String DropAdapterAssistant_RenameTraceMessage;
 
+    public static String SynchronizeTracesHandler_WrongType;
+    public static String SynchronizeTracesHandler_WrongTraceNumber;
+    public static String SynchronizeTracesHandler_Title;
+    public static String SynchronizeTracesHandler_Error;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
