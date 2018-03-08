@@ -137,6 +137,12 @@ public interface ITimeDataProvider {
     int getTimeSpace();
 
     /**
+     * @return If the time format is calendar (true) or relative (false)
+     * @deprecated replaced by {@link #getTimeFormat()}
+     */
+    boolean isCalendarFormat();
+
+    /**
      * @return the time format, one of:
      * <ul>
      *   <li>{@link TimeFormat#CALENDAR} absolute time, displayed as year/month/day/hours/minutes/seconds/ms/us/ns
