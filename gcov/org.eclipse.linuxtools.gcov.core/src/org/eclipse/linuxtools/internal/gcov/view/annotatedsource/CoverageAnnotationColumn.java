@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.ISTAnnotationColumn;
 import org.eclipse.linuxtools.internal.gcov.parser.Line;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
-import org.eclipse.osgi.util.NLS;
 
 
 public class CoverageAnnotationColumn implements ISTAnnotationColumn {
@@ -46,21 +45,17 @@ public class CoverageAnnotationColumn implements ISTAnnotationColumn {
 		try {
 			Line l = lines.get(index+1);
 			if (!l.exists()) {
-				return Messages.CoverageAnnotationColumn_non_exec_line;
+				return "non executable line";
 			} else {
 				long count = l.getCount();
-				if (count == 0) {
-					return Messages.CoverageAnnotationColumn_line_never_exec;
-				}
-				if (count == 1) {
-					return Messages.CoverageAnnotationColumn_line_exec_once;
-				}
-				return NLS.bind(
-						Messages.CoverageAnnotationColumn_line_mulitiple_exec,
-						Long.toString(count));
+				if (count == 0) return "line never executed";
+				if (count == 1) return "line executed 1 time";
+				return "line executed "
+				+ Long.toString(count)
+				+ " times";
 			}
 		} catch (IndexOutOfBoundsException _) {
-			return Messages.CoverageAnnotationColumn_non_exec_line;
+			return "non executable line";
 		}
 	}
 

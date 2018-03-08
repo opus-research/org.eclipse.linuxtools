@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,6 @@ import org.eclipse.linuxtools.internal.gcov.model.CovFileTreeElement;
 import org.eclipse.linuxtools.internal.gcov.model.CovFolderTreeElement;
 import org.eclipse.linuxtools.internal.gcov.model.CovFunctionTreeElement;
 import org.eclipse.linuxtools.internal.gcov.model.CovRootTreeElement;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -139,7 +139,7 @@ public class CovManager implements Serializable {
 			traceFile = OpenTraceFileStream(gcdaPath, ".gcda", sourcePath); //$NON-NLS-1$
 			if (traceFile == null) return;
 			if (noRcrd.getFnctns().isEmpty()){
-				String message = NLS.bind(Messages.CovManager_No_Funcs_Error, gcnoPath);
+				String message = gcnoPath + " doesn't contain any function:\n";
 				Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 				throw new CoreException(status);
 			}
@@ -217,7 +217,7 @@ public class CovManager implements Serializable {
 		}		
 
 		// fill rootNode model: the entry of the contentProvider
-		rootNode = new CovRootTreeElement(Messages.CovManager_Summary, summaryTotal,summaryExecuted,
+		rootNode = new CovRootTreeElement("Summary", summaryTotal,summaryExecuted,
 				summaryInstrumented);
 		IBinaryObject binaryObject = STSymbolManager.sharedInstance.getBinaryObject(new Path(binaryPath));
 		
@@ -279,7 +279,7 @@ public class CovManager implements Serializable {
 			FileDialog fg = new FileDialog(shell, SWT.OPEN);
 			fg.setFilterExtensions(new String[] {"*" + extension, "*.*", "*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			fg.setFileName(filename);
-			fg.setText(NLS.bind(Messages.CovManager_No_FilePath_Error, new Object[]{filePath, filename}));
+			fg.setText(filePath + " not found. Please enter location of " + filename);
 			String s = fg.open();
 			if (s == null) return null;
 			else {
@@ -331,10 +331,11 @@ public class CovManager implements Serializable {
 		String binaryPath = binaryObject.getPath().toOSString();
 		List<String> l = new LinkedList<String>();
 		Process p;
-		p = getStringsProcess(Messages.CovManager_Strings, binaryPath);
+		String stringsTool = "strings";
+		p = getStringsProcess(stringsTool, binaryPath);
 		if (p == null) {
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR,
-					Messages.CovManager_Retrieval_Error, new IOException());
+					"An error occured during analysis: unable to retrieve gcov data", new IOException());
 			Activator.getDefault().getLog().log(status);
 			return l;
 		}
@@ -401,6 +402,26 @@ public class CovManager implements Serializable {
 			}
 		}
 	}
+
+	public void dumpProcessCovFilesResult(PrintStream ps) {
+		ps.println("Parse gcda and gcno files done, resolve graph algorithm executed, now display results");
+		ps.println("- PRINT FUNCTIONS ARRAY : ");
+		for (int i = 0; i < allFnctns.size(); i++) {
+			ps.println("-- FUNCTION " +i);
+			ps.println("     name = " + allFnctns.get(i).getName());
+			ps.println("     instrumentd lines = " + allFnctns.get(i).getCvrge().getLinesInstrumented());
+			ps.println("     executed lines = "+ allFnctns.get(i).getCvrge().getLinesExecuted());
+		}		
+		ps.println("- PRINT SRCS ARRAY : ");
+		for (int i = 0; i < allSrcs.size(); i++) {
+			ps.println("-- FILE " + i);
+			ps.println("     name = " + allSrcs.get(i).getName());
+			ps.println("     total lines = " + allSrcs.get(i).getNumLines());
+			ps.println("     instrumentd lines = "+ allSrcs.get(i).getLinesInstrumented());
+			ps.println("     executed lines = "+ allSrcs.get(i).getLinesExecuted());
+		}
+	}
+
 
 	/**
 	 * @return the sourceMap
