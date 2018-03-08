@@ -118,7 +118,7 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ActiveModuleBrowserView.ID);
 		ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 		boolean paused = ambv.isPaused(module);
-		String fileName = module.script.getAbsolutePath();
+		fileName = module.script.getAbsolutePath();
 		String tmpfileName = fileName;
 		String serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
 		if(ConsoleLogPlugin.getDefault().getPreferenceStore().getBoolean(ConsoleLogPreferenceConstants.REMEMBER_SERVER)!=true &&
@@ -344,6 +344,7 @@ public class RunModuleAction extends Action implements IViewActionDelegate, IWor
 
 	private IViewPart view;
 	private static ArrayList<IActionListener> listeners = new ArrayList<IActionListener>();
+	private String fileName = null;
 	protected IWorkbenchWindow fWindow = null;
 	private IAction act;
 
