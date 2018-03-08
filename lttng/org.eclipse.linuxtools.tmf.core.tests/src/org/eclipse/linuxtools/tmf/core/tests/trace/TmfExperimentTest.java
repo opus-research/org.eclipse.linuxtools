@@ -39,14 +39,13 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.Before;
@@ -62,6 +61,8 @@ public class TmfExperimentTest {
     // Attributes
     // ------------------------------------------------------------------------
 
+    private static final String DIRECTORY   = "testfiles";
+    private static final String TEST_STREAM = "A-Test-10K";
     private static final String EXPERIMENT  = "MyExperiment";
     private static int          NB_EVENTS   = 10000;
     private static int          BLOCK_SIZE  = 1000;
@@ -83,7 +84,7 @@ public class TmfExperimentTest {
             try {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 final File test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace = new TmfTraceStub(test.getPath(), 0, true, null);
+                final TmfTraceStub trace = new TmfTraceStub(test.getPath(), 0, true);
                 fTestTraces[0] = trace;
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
@@ -105,7 +106,7 @@ public class TmfExperimentTest {
 
     @Before
     public void setUp() {
-        setupTrace(TmfTestTrace.A_TEST_10K.getFullPath());
+        setupTrace(DIRECTORY + File.separator + TEST_STREAM);
         setupExperiment();
     }
 

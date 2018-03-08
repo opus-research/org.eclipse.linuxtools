@@ -101,7 +101,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
      */
     public GetEventInfoDialog(Shell shell) {
         super(shell);
-        setShellStyle(SWT.RESIZE | getShellStyle());
+        setShellStyle(SWT.RESIZE);
     }
 
     // ------------------------------------------------------------------------
@@ -271,7 +271,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
         if (fSessions[0].isEventFilteringSupported() && !fIsKernel) {
             String tempFilter = fFilterText.getText();
 
-            if(!tempFilter.isEmpty() && !tempFilter.matches("\\s*")) { //$NON-NLS-1$
+            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
                 fFilterExpression = tempFilter;
             }
         }

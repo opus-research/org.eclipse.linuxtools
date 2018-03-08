@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2007, 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -161,17 +161,6 @@ public class SpecfileParser {
 						}
 					}
 				}
-
-				// sets the last SpecfileSection's end line to that of the end of
-				// the end of the specfileDocument.
-				// SpecfileParser#parseMacro will handle correcting the end line
-				// if the last SpecfileSection was not truly the last 1
-				// This is for the purpose of making DocumentRangeNode work
-				if (lastSection != null) {
-					lastSection.setSectionEndLine(specfileDocument
-							.getNumberOfLines() - 1);
-				}
-
 				// The +1 is for the line delimiter. FIXME: will we end up off
 				// by one on the last line?
 				lineStartPosition += line.length() + 1;

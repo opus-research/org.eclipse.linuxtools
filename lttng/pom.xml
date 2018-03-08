@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.lttng</groupId>
@@ -48,6 +48,9 @@
   <profile>
     <id>tracingRcp</id>
       <modules>
+        <module>org.eclipse.linuxtools.tracing.rcp</module>
+        <module>org.eclipse.linuxtools.tracing.rcp.help</module>
+        <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
         <module>org.eclipse.linuxtools.tracing.rcp.product</module>
       </modules>
   </profile>
@@ -101,13 +104,6 @@
     <module>org.eclipse.linuxtools.gdbtrace.ui</module>
     <module>org.eclipse.linuxtools.gdbtrace.ui.tests</module>
     <module>org.eclipse.linuxtools.gdbtrace.help</module>
-
-    <module>org.eclipse.linuxtools.tracing.rcp.branding</module>
-    <module>org.eclipse.linuxtools.tracing.rcp.branding.feature</module>
-    <module>org.eclipse.linuxtools.tracing.rcp</module>
-    <module>org.eclipse.linuxtools.tracing.rcp.help</module>
-    <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
-
   </modules>
 
     <build>
@@ -134,6 +130,16 @@
                             <arch>x86_64</arch>
                         </environment>
                         <environment>
+                            <os>solaris</os>
+                            <ws>gtk</ws>
+                            <arch>x86</arch>
+                        </environment>
+                        <environment>
+                            <os>solaris</os>
+                            <ws>gtk</ws>
+                            <arch>sparc</arch>
+                        </environment>
+                        <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86</arch>
@@ -142,6 +148,16 @@
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>ppc</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>ppc64</arch>
                         </environment>
                     </environments>
                 </configuration>
@@ -154,5 +170,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>

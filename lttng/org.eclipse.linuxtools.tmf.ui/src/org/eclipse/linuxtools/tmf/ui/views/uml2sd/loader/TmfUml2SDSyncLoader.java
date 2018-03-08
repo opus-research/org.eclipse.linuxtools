@@ -621,7 +621,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                     fFindResults.addAll(msgs);
                 }
 
-                List<GraphNode> selection = fView.getSDWidget().getSelection();
+                @SuppressWarnings("rawtypes")
+                List selection = fView.getSDWidget().getSelection();
                 if ((selection != null) && (selection.size() == 1)) {
                     fCurrentFindIndex = fFindResults.indexOf(selection.get(0)) + 1;
                 } else {
@@ -649,8 +650,9 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         cancelOngoingRequests();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean filter(List<FilterCriteria> filters) {
+    public boolean filter(List<?> filters) {
         fLock.lock();
         try {
             cancelOngoingRequests();
@@ -658,7 +660,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             if (filters == null) {
                 fFilterCriteria =  new ArrayList<FilterCriteria>();
             } else {
-                List<FilterCriteria> list = filters;
+                List<FilterCriteria> list = (List<FilterCriteria>)filters;
                 fFilterCriteria =  new ArrayList<FilterCriteria>(list);
             }
 

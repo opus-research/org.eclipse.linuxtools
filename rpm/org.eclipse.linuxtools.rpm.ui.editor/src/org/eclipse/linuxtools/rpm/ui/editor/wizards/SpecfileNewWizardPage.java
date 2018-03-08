@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007 Alphonse Van Assche and others.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Alphonse Van Assche - initial API and implementation
- *    Red Hat Inc. - ongoging maintenance
  *******************************************************************************/
 
 package org.eclipse.linuxtools.rpm.ui.editor.wizards;
@@ -103,7 +102,6 @@ public class SpecfileNewWizardPage extends WizardPage {
 	/**
 	 * @see WizardPage#createControl(Composite)
 	 */
-	@Override
 	public void createControl(Composite parent) {
 		final Composite container = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
@@ -118,7 +116,6 @@ public class SpecfileNewWizardPage extends WizardPage {
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		projectText.setLayoutData(gd);
 		projectText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
@@ -144,7 +141,6 @@ public class SpecfileNewWizardPage extends WizardPage {
 		// empty label for the last row.
 		label = new Label(container, SWT.NULL);
 		templateCombo.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				selectedTemplate = ((Combo) e.getSource()).getText();
 				InputStream inputStream = runRpmdevNewSpec(selectedTemplate);
@@ -225,7 +221,6 @@ public class SpecfileNewWizardPage extends WizardPage {
 		Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
 		text.setLayoutData(gd);
 		text.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}

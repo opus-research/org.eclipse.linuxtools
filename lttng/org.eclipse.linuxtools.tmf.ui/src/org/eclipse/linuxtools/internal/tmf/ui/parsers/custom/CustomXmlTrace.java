@@ -13,21 +13,16 @@
 package org.eclipse.linuxtools.internal.tmf.ui.parsers.custom;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputElement;
@@ -37,15 +32,11 @@ import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -61,7 +52,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author Patrick Tassé
  */
-public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
+public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
 
     private static final TmfLongLocation NULL_LOCATION = new TmfLongLocation((Long) null);
     private static final int DEFAULT_CACHE_SIZE = 100;
@@ -74,8 +65,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
     /**
      * Basic constructor
      *
-     * @param definition
-     *            Trace definition
+     * @param definition Trace definition
      */
     public CustomXmlTrace(final CustomXmlTraceDefinition definition) {
         fDefinition = definition;
@@ -243,9 +233,9 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
 
         CustomXmlEvent event = null;
         try {
-            if (fFile.getFilePointer() != (Long) context.getLocation().getLocationInfo() + 1)
+            if (fFile.getFilePointer() != (Long)context.getLocation().getLocationInfo() + 1)
             {
-                fFile.seek((Long) context.getLocation().getLocationInfo() + 1); // +1 is for the <
+                fFile.seek((Long)context.getLocation().getLocationInfo() + 1); // +1 is for the <
             }
             final StringBuffer elementBuffer = new StringBuffer("<"); //$NON-NLS-1$
             readElement(elementBuffer, fFile);
@@ -280,9 +270,9 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             final DocumentBuilder db = dbf.newDocumentBuilder();
 
             // The following allows xml parsing without access to the dtd
-            final EntityResolver resolver = new EntityResolver() {
+            final EntityResolver resolver = new EntityResolver () {
                 @Override
-                public InputSource resolveEntity(final String publicId, final String systemId) {
+                public InputSource resolveEntity (final String publicId, final String systemId) {
                     final String empty = ""; //$NON-NLS-1$
                     final ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
                     return new InputSource(bais);
@@ -291,18 +281,15 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             db.setEntityResolver(resolver);
 
             // The following catches xml parsing exceptions
-            db.setErrorHandler(new ErrorHandler() {
+            db.setErrorHandler(new ErrorHandler(){
                 @Override
                 public void error(final SAXParseException saxparseexception) throws SAXException {}
-
                 @Override
                 public void warning(final SAXParseException saxparseexception) throws SAXException {}
-
                 @Override
                 public void fatalError(final SAXParseException saxparseexception) throws SAXException {
                     throw saxparseexception;
-                }
-            });
+                }});
 
             final Document doc = db.parse(new ByteArrayInputStream(elementBuffer.toString().getBytes()));
             return doc.getDocumentElement();
@@ -323,7 +310,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             int i;
             while ((i = raFile.read()) != -1) {
                 numRead++;
-                final char c = (char) i;
+                final char c = (char)i;
                 buffer.append(c);
                 if (c == '"') {
                     readQuote(buffer, raFile, '"');
@@ -357,7 +344,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
         try {
             int i;
             while ((i = raFile.read()) != -1) {
-                final char c = (char) i;
+                final char c = (char)i;
                 buffer.append(c);
                 if (c == eq)
                 {
@@ -377,7 +364,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             int i;
             while ((i = raFile.read()) != -1) {
                 numRead++;
-                final char c = (char) i;
+                final char c = (char)i;
                 buffer.append(c);
                 if (c == '>' && numRead >= 2 && buffer.substring(buffer.length() - 3, buffer.length() - 1).equals("--")) //$NON-NLS-1$
                 {
@@ -462,7 +449,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
      * @return The extracted event
      */
     public CustomXmlEvent extractEvent(final Element element, final InputElement inputElement) {
-        final CustomXmlEvent event = new CustomXmlEvent(fDefinition, this, TmfTimestamp.ZERO, "", fEventType, ""); //$NON-NLS-1$ //$NON-NLS-2$
+        final CustomXmlEvent event = new CustomXmlEvent(fDefinition, this, TmfTimestamp.ZERO, "", fEventType,""); //$NON-NLS-1$ //$NON-NLS-2$
         event.setContent(new CustomEventContent(event, new StringBuffer()));
         parseElement(element, event, inputElement);
         return event;
@@ -505,74 +492,9 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
 
     @Override
     public IStatus validate(IProject project, String path) {
-        File xmlFile = new File(path);
-        if (xmlFile.exists() && xmlFile.isFile() && xmlFile.canRead() && xmlFile.length() > 0) {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db;
-            try {
-                db = dbf.newDocumentBuilder();
-
-                // The following allows xml parsing without access to the dtd
-                EntityResolver resolver = new EntityResolver() {
-                    @Override
-                    public InputSource resolveEntity(String publicId, String systemId) {
-                        return new InputSource(new ByteArrayInputStream(new byte[0]));
-                    }
-                };
-                db.setEntityResolver(resolver);
-
-                // The following catches xml parsing exceptions
-                db.setErrorHandler(new ErrorHandler() {
-                    @Override
-                    public void error(SAXParseException saxparseexception) throws SAXException {
-                    }
-
-                    @Override
-                    public void warning(SAXParseException saxparseexception) throws SAXException {
-                    }
-
-                    @Override
-                    public void fatalError(SAXParseException saxparseexception) throws SAXException {
-                        throw saxparseexception;
-                    }
-                });
-                db.parse(new FileInputStream(xmlFile));
-                return Status.OK_STATUS;
-            } catch (ParserConfigurationException e) {
-                return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-            } catch (FileNotFoundException e) {
-                return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-            } catch (SAXException e) {
-                return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-            } catch (IOException e) {
-                return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-            }
+        if (fileExists(path)) {
+            return Status.OK_STATUS;
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CustomTrace_FileNotFound + ": " + path); //$NON-NLS-1$
-    }
-
-    private static int fCheckpointSize = -1;
-
-    @Override
-    public synchronized int getCheckpointSize() {
-        if (fCheckpointSize == -1) {
-            TmfCheckpoint c = new TmfCheckpoint(TmfTimestamp.ZERO, new TmfLongLocation(0L), 0);
-            ByteBuffer b = ByteBuffer.allocate(ITmfCheckpoint.MAX_SERIALIZE_SIZE);
-            b.clear();
-            c.serialize(b);
-            fCheckpointSize = b.position();
-        }
-
-        return fCheckpointSize;
-    }
-
-    @Override
-    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
-        return new TmfLongLocation(bufferIn);
-    }
-
-    @Override
-    protected ITmfTraceIndexer createIndexer(int interval) {
-        return new TmfBTreeTraceIndexer(this, interval);
     }
 }

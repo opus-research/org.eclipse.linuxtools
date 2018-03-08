@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -175,7 +174,7 @@ public class StreamInputReader {
      * Gets the event definition hashmap for this StreamInput
      *
      * @return Unmodifiable map with the event definitions
-     * @since 2.1
+     * @since 3.0
      */
     public Map<Long, EventDefinition> getEventDefinitions() {
         return Collections.unmodifiableMap(eventDefs);
@@ -189,7 +188,7 @@ public class StreamInputReader {
      *            existing definition with the same id.
      * @param def
      *            The matching event definition
-     * @since 2.1
+     * @since 3.0
      */
     public void addEventDefinition(Long id, EventDefinition def) {
         eventDefs.put(id, def);
@@ -227,7 +226,6 @@ public class StreamInputReader {
                  * Some problem happened, we'll assume that there are no more
                  * events
                  */
-                Activator.logError("Error reading CTF event in stream", e); //$NON-NLS-1$
                 return false;
             }
             return true;
@@ -331,6 +329,8 @@ public class StreamInputReader {
          */
         final int len = this.streamInput.getIndex().getEntries().size();
 
+        @SuppressWarnings("unused")
+        StreamInputPacketIndexEntry entry = null;
         /*
          * Go to beginning of trace.
          */

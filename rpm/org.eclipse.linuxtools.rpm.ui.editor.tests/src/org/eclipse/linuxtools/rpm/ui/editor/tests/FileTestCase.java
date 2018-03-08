@@ -41,7 +41,7 @@ import org.junit.Before;
 
 /**
  * Test case providing all the objects needed for the rpm editor tests.
- *
+ * 
  */
 public abstract class FileTestCase {
 
@@ -72,7 +72,6 @@ public abstract class FileTestCase {
 	public static void closeEditor(final IEditorPart editor) {
 		if (editor.getSite().getWorkbenchWindow().getActivePage() != null) {
 			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-				@Override
 				public void run() {
 					// close editor
 					editor.getSite().getWorkbenchWindow().getActivePage()
@@ -82,7 +81,7 @@ public abstract class FileTestCase {
 		}
 	}
 
-	protected ArrayList<SpecfileTestFailure> getFailures() {
+	protected SpecfileTestFailure[] getFailures() {
 		ArrayList<SpecfileTestFailure> failures = new ArrayList<SpecfileTestFailure>();
 		IAnnotationModel model = SpecfileEditor.getSpecfileDocumentProvider()
 				.getAnnotationModel(fei);
@@ -93,7 +92,7 @@ public abstract class FileTestCase {
 			SpecfileTestFailure t = new SpecfileTestFailure(annotation, p);
 			failures.add(t);
 		}
-		return failures;
+		return failures.toArray(new SpecfileTestFailure[failures.size()]);
 	}
 
 	protected void newFile(String contents) {
@@ -119,7 +118,7 @@ public abstract class FileTestCase {
 	/**
 	 * Set the potential rpm package list to the given list. Useful for
 	 * testing package proposals.
-	 * @param packages
+	 * @param packages 
 	 */
 	protected void setPackageList(String[] packages) {
 		ScopedPreferenceStore prefStore = new ScopedPreferenceStore(InstanceScope.INSTANCE, Activator.PLUGIN_ID);
@@ -131,7 +130,7 @@ public abstract class FileTestCase {
 		try {
 			BufferedWriter out = new BufferedWriter(new FileWriter(
 					"/tmp/pkglist1"));
-
+			
 			for (String packageName : packages){
 				out.write(packageName + "\n");
 			}
