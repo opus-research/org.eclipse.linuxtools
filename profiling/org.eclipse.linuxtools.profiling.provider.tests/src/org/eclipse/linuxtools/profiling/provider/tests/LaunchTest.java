@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.provider.tests;
 
-import static org.junit.Assert.*;
-
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -27,8 +25,6 @@ import org.eclipse.linuxtools.internal.profiling.launch.provider.ProviderProfile
 import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchShortcut;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
@@ -42,7 +38,7 @@ public class LaunchTest extends AbstractTest {
 	ProviderLaunchShortcut shortcut;
 	String launchConfigTypeId;
 
-	@Before
+	@Override
 	public void setUp() throws Exception {
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), BIN_NAME);
 
@@ -57,7 +53,7 @@ public class LaunchTest extends AbstractTest {
 		}
 	}
 
-	@After
+	@Override
 	public void tearDown () {
 		try {
 			deleteProject(proj);

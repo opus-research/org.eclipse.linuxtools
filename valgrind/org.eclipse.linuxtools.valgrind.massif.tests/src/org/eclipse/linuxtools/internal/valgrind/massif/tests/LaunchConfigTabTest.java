@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.massif.tests;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
@@ -27,9 +25,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class LaunchConfigTabTest extends AbstractMassifTest {
 
@@ -39,8 +34,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 	protected Shell testShell;
 
 	@Override
-	@Before
-	public void setUp() throws Exception {
+	protected void setUp() throws Exception {
 		super.setUp();
 		proj = createProjectAndBuild("alloctest"); //$NON-NLS-1$
 
@@ -52,8 +46,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 	}
 
 	@Override
-	@After
-	public void tearDown() throws Exception {
+	protected void tearDown() throws Exception {
 		tab.dispose();
 		testShell.dispose();
 		deleteProject(proj);
@@ -80,7 +73,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		ILaunch launch = doLaunch(config, testName);
 		return launch;
 	}
-	@Test
+
 	public void testDefaults() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		ILaunch launch = saveAndLaunch(wc, "testDefaults"); //$NON-NLS-1$
@@ -112,7 +105,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertTrue(cmd.contains("--max-snapshots=100")); //$NON-NLS-1$
 		assertFalse(cmd.contains("--alignment=")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testHeap() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getHeapButton().setSelection(false);
@@ -123,7 +116,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--heap=no")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testHeapAdmin() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getHeapAdminSpinner().setSelection(30);
@@ -134,7 +127,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--heap-admin=30")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testStacks() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getStacksButton().setSelection(true);
@@ -145,7 +138,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--stacks=yes")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testDepth() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getDepthSpinner().setSelection(50);
@@ -156,7 +149,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--depth=50")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testAllocFn() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getAllocFnList().add("foo"); //$NON-NLS-1$
@@ -167,7 +160,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--alloc-fn=foo")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testAllocFnMultiple() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getAllocFnList().add("foo"); //$NON-NLS-1$
@@ -180,7 +173,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertTrue(cmd.contains("--alloc-fn=foo")); //$NON-NLS-1$
 		assertTrue(cmd.contains("--alloc-fn=bar")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testAllocFnSpace() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getAllocFnList().add("operator new(unsigned)"); //$NON-NLS-1$
@@ -191,7 +184,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--alloc-fn=operator new(unsigned)")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testThreshold() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getThresholdSpinner().setSelection(20);
@@ -202,7 +195,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--threshold=2.0")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testPeakInaccuracy() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getPeakInaccuracySpinner().setSelection(0);
@@ -213,7 +206,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--peak-inaccuracy=0.0")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testTimeUnitBytes() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String[] items = dynamicTab.getTimeUnitCombo().getItems();
@@ -231,7 +224,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--time-unit=B")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testTimeUnitMilliseconds() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String[] items = dynamicTab.getTimeUnitCombo().getItems();
@@ -249,7 +242,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--time-unit=ms")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testDetailedFreq() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getDetailedFreqSpinner().setSelection(1);
@@ -260,7 +253,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--detailed-freq=1")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testMaxSnapshots() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getMaxSnapshotsSpinner().setSelection(200);
@@ -271,7 +264,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--max-snapshots=200")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testAlignment() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 
@@ -293,7 +286,7 @@ public class LaunchConfigTabTest extends AbstractMassifTest {
 		assertEquals(0, p[0].getExitValue());
 		assertTrue(cmd.contains("--alignment=512")); //$NON-NLS-1$
 	}
-	@Test
+
 	public void testAlignmentBad() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 
