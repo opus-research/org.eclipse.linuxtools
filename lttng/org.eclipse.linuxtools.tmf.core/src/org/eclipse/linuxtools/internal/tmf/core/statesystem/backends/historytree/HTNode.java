@@ -237,6 +237,20 @@ abstract class HTNode {
     }
 
     /**
+     * Merge the second node in the first
+     *
+     * @param node
+     *            the second node
+     */
+    public void merge(HTNode node) {
+        /* Time range of this node */
+        this.nodeEnd = node.nodeEnd;
+
+        /* Vector containing all the intervals contained in this node */
+        this.intervals.addAll(node.intervals);
+    }
+
+    /**
      * Add an interval to this node
      *
      * @param newInterval
@@ -511,4 +525,5 @@ abstract class HTNode {
     protected abstract void writeSpecificHeader(ByteBuffer buffer);
 
     protected abstract String toStringSpecific();
+
 }
