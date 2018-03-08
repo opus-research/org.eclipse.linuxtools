@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.profiling.launch;
 
 import java.net.URI;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -26,6 +25,4 @@ public interface IRemoteProxyManager {
 	public IRemoteCommandLauncher getLauncher(URI uri) throws CoreException;
 	public String getOS(IProject project) throws CoreException;
 	public String getOS(URI uri) throws CoreException;
-	public Map<String, String> getEnv(IProject project) throws CoreException;
-	public Map<String, String> getEnv(URI uri) throws CoreException;
 }
