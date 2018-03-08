@@ -7,24 +7,23 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis (mathieu.denis@polymtl.ca)  - Initial design and implementation
- *   Bernd Hufmann - Changed interface and class name
+ *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Intial API and Implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.views.statistics;
+package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
 
 /**
- * This interface provides an extension for updating the data model and to pass
- * along more information beside events.
+ * Primitive container for Statistics data
+ *
+ * Contains information about statistics that can be retrieved with any type
+ * of traces
  *
  * @version 1.0
  * @author Mathieu Denis
  */
-public interface ITmfExtraEventInfo {
-
-    /**
-     * Returns the trace name.
-     * @return the name of the trace.
-     */
-    public String getTraceName();
+public class TmfStatistics {
+	/**
+	 * <h4>Number of event</h4>
+	 */
+	public long nbEvents = 0;
 }

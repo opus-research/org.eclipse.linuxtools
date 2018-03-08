@@ -48,6 +48,7 @@ public class TmfTraceType {
      * Extension point element 'Events table type'
      */
     public static final String EVENTS_TABLE_TYPE_ELEM = "eventsTableType"; //$NON-NLS-1$
+    public static final String STATISTICS_VIEWER_ELEM = "statisticsViewerType"; //$NON-NLS-1$
 
     /**
      *  Extension point attribute 'ID'
