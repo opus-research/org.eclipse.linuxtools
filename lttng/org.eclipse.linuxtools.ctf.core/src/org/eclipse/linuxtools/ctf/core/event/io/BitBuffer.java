@@ -9,7 +9,7 @@
  * Contributors: Matthew Khouzam - Initial Design and implementation
  * Contributors: Francis Giraldeau - Initial API and implementation
  * Contributors: Philippe Proulx - Some refinement and optimization
- * Contributors: Etienne Bergeron - Helped with getLong()
+ * Contributors: Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -22,7 +22,6 @@ import java.nio.ByteOrder;
  * <b><u>BitBuffer</u></b>
  * <p>
  * A bitwise buffer capable of accessing fields with bit offsets.
- *
  * @since 2.0
  */
 public final class BitBuffer {
@@ -55,14 +54,14 @@ public final class BitBuffer {
     // Constructors
     // ------------------------------------------------------------------------
     /**
-     * Default constructor, makes a bigendian buffer
+     * Default constructor, makes a big-endian buffer
      */
     public BitBuffer() {
         this(null, ByteOrder.BIG_ENDIAN);
     }
 
     /**
-     * Constructor, makes a bigendian buffer
+     * Constructor, makes a big-endian buffer
      *
      * @param buf
      *            the bytebuffer to read
@@ -72,12 +71,12 @@ public final class BitBuffer {
     }
 
     /**
-     * Constructor that is fully parametrisable
+     * Constructor that is fully parameterizable
      *
      * @param buf
      *            the buffer to read
      * @param order
-     *            the byte order (big endian, little endian, network?)
+     *            the byte order (big-endian, little-endian, network?)
      */
     public BitBuffer(ByteBuffer buf, ByteOrder order) {
         setByteBuffer(buf);
@@ -102,28 +101,6 @@ public final class BitBuffer {
     }
 
     /**
-     * Relative <i>get</i> method for reading 64-bit integer.
-     *
-     * Reads next eight bytes from the current bit position according to current
-     * byte order.
-     *
-     * @return The long value read from the buffer
-     */
-    public long getLong() {
-        long a = getInt();
-        long b = getInt();
-
-        /* Cast the signed-extended int into a unsigned int. */
-        a &= 0xFFFFFFFFL;
-        b &= 0xFFFFFFFFL;
-
-        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
-            return (a << 32) | b;
-        }
-        return (b << 32) | a;
-    }
-
-    /**
      * Relative <i>get</i> method for reading integer of <i>length</i> bits.
      *
      * Reads <i>length</i> bits starting at the current position. The result is
@@ -137,42 +114,39 @@ public final class BitBuffer {
      * @return The int value read from the buffer
      */
     public int getInt(int length, boolean signed) {
-        int val = 0;
-        if (!canRead(length)) {
-            throw new BufferOverflowException();
-        }
-        if (length > BIT_INT) {
-            throw new IllegalArgumentException("Maximum size of value is 32 requested size" + length); //$NON-NLS-1$
-        }
-        if (length < 0) {
-            throw new IllegalArgumentException("Cannot handle negative reads"); //$NON-NLS-1$
-        }
+
+        /* Nothing to read. */
         if (length == 0) {
             return 0;
         }
+
+        /* Validate that the buffer has enough bits. */
+        if (!canRead(length)) {
+            throw new BufferOverflowException();
+        }
+
+        /* Get the value from the byte buffer. */
+        int val = 0;
         boolean gotIt = false;
 
-        // Fall back to fast ByteBuffer reader if we want to read byte-aligned
-        // bytes
+        /* Try a fast read when the position is byte-aligned by using the */
+        /* native methods of ByteBuffer. */
         if (this.pos % BitBuffer.BIT_CHAR == 0) {
             switch (length) {
             case BitBuffer.BIT_CHAR:
                 // Byte
-                if (signed) {
-                    val = this.buf.get((int) (this.pos / 8));
-                } else {
-                    val = (this.buf.get((int) (this.pos / 8))) & 0xff;
+                val = this.buf.get((int) (this.pos / 8));
+                if (!signed) {
+                    val = val & 0xff;
                 }
                 gotIt = true;
                 break;
 
             case BitBuffer.BIT_SHORT:
                 // Word
-                if (signed) {
-                    val = this.buf.getShort((int) (this.pos / 8));
-                } else {
-                    short a = this.buf.getShort((int) (this.pos / 8));
-                    val = a & 0xffff;
+                val = this.buf.getShort((int) (this.pos / 8));
+                if (!signed) {
+                    val = val & 0xffff;
                 }
                 gotIt = true;
                 break;
@@ -187,6 +161,8 @@ public final class BitBuffer {
                 break;
             }
         }
+
+        /* When not byte-aligned, fall-back to a general decoder. */
         if (!gotIt) {
             // Nothing read yet: use longer methods
             if (this.byteOrder == ByteOrder.LITTLE_ENDIAN) {
@@ -380,8 +356,8 @@ public final class BitBuffer {
             }
             cmask = correctedValue << lshift;
             /*
-             * low bits are cleared because of lshift and high bits are already
-             * cleared
+             * low bits are cleared because of left-shift and high bits are
+             * already cleared
              */
             cmask &= ~mask;
             int b = this.buf.get(startByte) & 0xFF;
@@ -445,8 +421,8 @@ public final class BitBuffer {
             }
             cmask = correctedValue << lshift;
             /*
-             * low bits are cleared because of lshift and high bits are already
-             * cleared
+             * low bits are cleared because of left-shift and high bits are
+             * already cleared
              */
             cmask &= ~mask;
             int b = this.buf.get(startByte) & 0xFF;
@@ -571,7 +547,7 @@ public final class BitBuffer {
     }
 
     /**
-     * resets the bitbuffer.
+     * Resets the bitbuffer.
      */
     public void clear() {
         position(0);
