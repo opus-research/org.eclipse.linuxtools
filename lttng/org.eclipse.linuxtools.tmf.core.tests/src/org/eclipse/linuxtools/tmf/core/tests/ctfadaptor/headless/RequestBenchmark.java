@@ -30,7 +30,7 @@ public class RequestBenchmark extends TmfEventRequest {
 
     private RequestBenchmark(final Class<? extends ITmfEvent> dataType,
             final TmfTimeRange range, final int nbRequested) {
-        super(dataType, range, nbRequested, 1);
+        super(dataType, range, 0, nbRequested, ExecutionType.FOREGROUND);
     }
 
     // Path of the trace
@@ -42,7 +42,7 @@ public class RequestBenchmark extends TmfEventRequest {
     // Work variables
     private static int nbEvent = 0;
     private static TmfExperiment fExperiment = null;
-    private static Vector<Double> benchs = new Vector<Double>();
+    private static Vector<Double> benchs = new Vector<>();
 
     /**
      * Run the benchmark

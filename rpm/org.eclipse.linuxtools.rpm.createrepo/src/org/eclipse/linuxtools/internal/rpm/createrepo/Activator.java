@@ -74,6 +74,26 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	/**
+	 * Get the enabled status of using the project specific settings of
+	 * createrepo.
+	 *
+	 * @return True if it is being used, false otherwise.
+	 */
+	public static boolean isProjectPrefEnabled() {
+		return getDefault().getPreferenceStore().getBoolean(CreaterepoPreferenceConstants.PREF_GENERAL_ENABLED);
+	}
+
+	/**
+	 * Get the enabled status of using the delta preferences of
+	 * createrepo.
+	 *
+	 * @return True if it is being used, false otherwise.
+	 */
+	public static boolean isDeltaPrefEnabled() {
+		return getDefault().getPreferenceStore().getBoolean(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE);
+	}
+
+	/**
 	 * Log an error.
 	 *
 	 * @param message A human-readable message.

@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.linuxtools.binutils.link2source.STLink2SourceSupport;
-import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.actions.AbstractOpenSourceFileAction;
+import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.STAnnotatedSourceEditorActivator;
 import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 import org.eclipse.ui.IEditorInput;
@@ -66,17 +66,20 @@ public class OpenSourceFileAction {
         GcovSourceEditorInput input = new GcovSourceEditorInput(fs, sourceFile);
         IWorkbenchPage p = CUIPlugin.getActivePage();
         IEditorPart editorPart = p.findEditor(input);
-        if (editorPart != null)
+        if (editorPart != null) {
             p.closeEditor(editorPart, false);
+        }
         return input;
     }
 
     public void openAnnotatedSourceFile(IProject project, IFile binary, SourceFile sourceFile, int lineNumber) {
-        if (sourceFile == null)
+        if (sourceFile == null) {
             return;
+        }
         String pathName = sourceFile.getName();
-        if (pathName == null)
+        if (pathName == null) {
             return;
+        }
         IPath path = new Path(pathName);
         openAnnotatedSourceFile(project, binary, sourceFile, path, lineNumber);
     }
@@ -102,7 +105,7 @@ public class OpenSourceFileAction {
             } else {
                 IEditorInput input = getInput(sourceFile, fs);
                 try {
-                    IEditorPart editor = page.openEditor(input, AbstractOpenSourceFileAction.EDITOR_ID, true);
+                    IEditorPart editor = page.openEditor(input, STAnnotatedSourceEditorActivator.EDITOR_ID, true);
                     if (lineNumber > 0 && editor instanceof ITextEditor) {
                         IDocumentProvider provider = ((ITextEditor) editor).getDocumentProvider();
                         IDocument document = provider.getDocument(editor.getEditorInput());

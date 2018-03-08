@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.window.Window;
-import org.eclipse.linuxtools.ssh.proxy.Activator;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
@@ -33,7 +32,7 @@ public class SSHBase {
 	private JSch jsch;
 	private Session session;
 	private ChannelSftp channelSftp;
-	private static HashMap<String, String> passwords = new HashMap<String, String>();
+	private static HashMap<String, String> passwords = new HashMap<>();
 
 	public SSHBase(URI uri) {
 		this.uri = uri;

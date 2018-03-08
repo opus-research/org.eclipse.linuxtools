@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,11 +13,9 @@
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
@@ -43,6 +41,8 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     /** Number of colors used for call stack events */
     public static final int NUM_COLORS = 360;
 
+    private final CallStackView fView;
+
     private enum State {
         MULTIPLE (new RGB(100, 100, 100)),
         EXEC     (new RGB(0, 200, 0));
@@ -52,6 +52,17 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
         private State (RGB rgb) {
             this.rgb = rgb;
         }
+    }
+
+    /**
+     * Constructor
+     *
+     * @param view
+     *            The callstack view that will contain the time events
+     * @since 3.0
+     */
+    public CallStackPresentationProvider(CallStackView view) {
+        fView = view;
     }
 
     @Override
@@ -93,12 +104,15 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     public String getEventName(ITimeEvent event) {
         if (event instanceof CallStackEvent) {
             CallStackEntry entry = (CallStackEntry) event.getEntry();
-            ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
+            ITmfStateSystem ss = CallStackView.getCallStackStateSystem(entry.getTrace());
+            if (ss == null) {
+                return null;
+            }
             try {
-                ITmfStateInterval value = ss.querySingleState(event.getTime(), entry.getQuark());
-                if (!value.getStateValue().isNull()) {
-                    ITmfStateValue state = value.getStateValue();
-                    return state.toString();
+                ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
+                if (!value.isNull()) {
+                    String address = value.toString();
+                    return fView.getFunctionName(address);
                 }
             } catch (AttributeNotFoundException e) {
                 Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
@@ -121,13 +135,17 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
             return;
         }
         CallStackEntry entry = (CallStackEntry) event.getEntry();
-        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
+        ITmfStateSystem ss = CallStackView.getCallStackStateSystem(entry.getTrace());
+        if (ss == null) {
+            return;
+        }
         try {
-            ITmfStateInterval value = ss.querySingleState(event.getTime(), entry.getQuark());
-            if (!value.getStateValue().isNull()) {
-                ITmfStateValue state = value.getStateValue();
+            ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
+            if (!value.isNull()) {
+                String address = value.toString();
+                String name = fView.getFunctionName(address);
                 gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
-                Utils.drawText(gc, state.toString(), bounds.x, bounds.y - 2, bounds.width, true, true);
+                Utils.drawText(gc, name, bounds.x, bounds.y - 2, bounds.width, true, true);
             }
         } catch (AttributeNotFoundException e) {
             Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$

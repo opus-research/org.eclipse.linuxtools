@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -126,7 +126,7 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
 
     @Override
     public boolean canFlipToNextPage() {
-        List<String> tracesToScan = new ArrayList<String>();
+        List<String> tracesToScan = new ArrayList<>();
         String elements[] = (String[]) fProvider.getElements(null);
         for (String traceFamily : elements) {
             final TraceTypeHelper[] children = (TraceTypeHelper[]) fProvider.getChildren(traceFamily);

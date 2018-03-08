@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -38,30 +37,35 @@ public class StreamInputReader {
     /**
      * The StreamInput we are reading.
      */
-    private final StreamInput streamInput;
+    private final StreamInput fStreamInput;
 
     /**
      * The packet reader used to read packets from this trace file.
      */
-    private final StreamInputPacketReader packetReader;
+    private final StreamInputPacketReader fPacketReader;
 
     /**
      * Iterator on the packet index
      */
-    private int packetIndex;
+    private int fPacketIndex;
 
     /**
      * Reference to the current event of this trace file (iow, the last on that
      * was read, the next one to be returned)
      */
-    private EventDefinition currentEvent = null;
+    private EventDefinition fCurrentEvent = null;
 
-    private int name;
+    private int fId;
 
-    private CTFTraceReader parent;
+    private CTFTraceReader fParent;
 
     /** Map of all the event types */
-    private final Map<Long, EventDefinition> eventDefs = new HashMap<Long,EventDefinition>();
+    private final Map<Long, EventDefinition> fEventDefs = new HashMap<>();
+
+    /**
+     * Live trace reading
+     */
+    private boolean fLive = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -72,15 +76,17 @@ public class StreamInputReader {
      *
      * @param streamInput
      *            The StreamInput to read.
+     * @throws CTFReaderException
+     *             if an error occurs
      * @since 2.0
      */
-    public StreamInputReader(StreamInput streamInput) {
-        this.streamInput = streamInput;
-        this.packetReader = new StreamInputPacketReader(this);
+    public StreamInputReader(StreamInput streamInput) throws CTFReaderException {
+        fStreamInput = streamInput;
+        fPacketReader = new StreamInputPacketReader(this);
         /*
          * Get the iterator on the packet index.
          */
-        this.packetIndex = 0;
+        fPacketIndex = 0;
         /*
          * Make first packet the current one.
          */
@@ -89,10 +95,11 @@ public class StreamInputReader {
 
     /**
      * Dispose the StreamInputReader
+     *
      * @since 2.0
      */
     public void dispose() {
-        packetReader.dispose();
+        fPacketReader.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -106,16 +113,16 @@ public class StreamInputReader {
      *         finished/empty/malformed
      */
     public EventDefinition getCurrentEvent() {
-        return this.currentEvent;
+        return fCurrentEvent;
     }
 
     /**
-     * gets the current packet context
+     * Gets the current packet context
      *
      * @return the current packet context (size, lost events and such)
      */
     public StructDefinition getCurrentPacketContext() {
-        return this.packetReader.getStreamPacketContextDef();
+        return fPacketReader.getStreamPacketContextDef();
     }
 
     /**
@@ -124,7 +131,7 @@ public class StreamInputReader {
      * @return the trace byte order
      */
     public ByteOrder getByteOrder() {
-        return streamInput.getStream().getTrace().getByteOrder();
+        return fStreamInput.getStream().getTrace().getByteOrder();
     }
 
     /**
@@ -133,7 +140,7 @@ public class StreamInputReader {
      * @return gets the stream name (it's a number)
      */
     public int getName() {
-        return this.name;
+        return fId;
     }
 
     /**
@@ -143,7 +150,7 @@ public class StreamInputReader {
      *            the name of the stream, (it's a number)
      */
     public void setName(int name) {
-        this.name = name;
+        fId = name;
     }
 
     /**
@@ -153,22 +160,23 @@ public class StreamInputReader {
      * @return The CPU id (a number)
      */
     public int getCPU() {
-        return this.packetReader.getCPU();
+        return fPacketReader.getCPU();
     }
 
     /**
      * Gets the filename of the stream being read
+     *
      * @return The filename of the stream being read
      */
     public String getFilename() {
-        return streamInput.getFilename();
+        return fStreamInput.getFilename();
     }
 
     /*
      * for internal use only
      */
     StreamInput getStreamInput() {
-        return streamInput;
+        return fStreamInput;
     }
 
     /**
@@ -178,7 +186,7 @@ public class StreamInputReader {
      * @since 2.1
      */
     public Map<Long, EventDefinition> getEventDefinitions() {
-        return Collections.unmodifiableMap(eventDefs);
+        return Collections.unmodifiableMap(fEventDefs);
     }
 
     /**
@@ -192,7 +200,28 @@ public class StreamInputReader {
      * @since 2.1
      */
     public void addEventDefinition(Long id, EventDefinition def) {
-        eventDefs.put(id, def);
+        fEventDefs.put(id, def);
+    }
+
+    /**
+     * Set the trace to live mode
+     *
+     * @param live
+     *            whether the trace is read live or not
+     * @since 3.0
+     */
+    public void setLive(boolean live) {
+        fLive = live;
+    }
+
+    /**
+     * Get if the trace is to read live or not
+     *
+     * @return whether the trace is live or not
+     * @since 3.0
+     */
+    public boolean isLive() {
+        return fLive;
     }
 
     // ------------------------------------------------------------------------
@@ -202,59 +231,54 @@ public class StreamInputReader {
      * Reads the next event in the current event variable.
      *
      * @return If an event has been successfully read.
+     * @throws CTFReaderException
+     *             if an error occurs
+     * @since 3.0
      */
-    public boolean readNextEvent() {
+    public CTFResponse readNextEvent() throws CTFReaderException {
 
         /*
          * Change packet if needed
          */
-        if (!this.packetReader.hasMoreEvents()) {
-            final StreamInputPacketIndexEntry prevPacket = this.packetReader
+        if (!fPacketReader.hasMoreEvents()) {
+            final StreamInputPacketIndexEntry prevPacket = fPacketReader
                     .getCurrentPacket();
-            if (prevPacket != null) {
+            if (prevPacket != null || fLive ) {
                 goToNextPacket();
             }
+
         }
 
         /*
          * If an event is available, read it.
          */
-        if (this.packetReader.hasMoreEvents()) {
-            try {
-                this.setCurrentEvent(this.packetReader.readNextEvent());
-            } catch (CTFReaderException e) {
-                /*
-                 * Some problem happened, we'll assume that there are no more
-                 * events
-                 */
-                Activator.logError("Error reading CTF event in stream", e); //$NON-NLS-1$
-                return false;
-            }
-            return true;
+        if (fPacketReader.hasMoreEvents()) {
+            setCurrentEvent(fPacketReader.readNextEvent());
+            return CTFResponse.OK;
         }
         this.setCurrentEvent(null);
-        return false;
+        return fLive ? CTFResponse.WAIT : CTFResponse.FINISH;
     }
 
     /**
      * Change the current packet of the packet reader to the next one.
+     *
+     * @throws CTFReaderException
+     *             if an error occurs
      */
-    private void goToNextPacket() {
-        packetIndex++;
-        if (getPacketSize() >= (packetIndex + 1)) {
-            this.packetReader.setCurrentPacket(getPacket());
+    private void goToNextPacket() throws CTFReaderException {
+        fPacketIndex++;
+        // did we already index the packet?
+        if (getPacketSize() >= (fPacketIndex + 1)) {
+            fPacketReader.setCurrentPacket(getPacket());
         } else {
-            try {
-                if (this.streamInput.addPacketHeaderIndex()) {
-                    packetIndex = getPacketSize() - 1;
-                    this.packetReader.setCurrentPacket(getPacket());
-
-                } else {
-                    this.packetReader.setCurrentPacket(null);
-                }
-
-            } catch (CTFReaderException e) {
-                this.packetReader.setCurrentPacket(null);
+            // go to the next packet if there is one, index it at the same time
+            if (fStreamInput.addPacketHeaderIndex()) {
+                fPacketIndex = getPacketSize() - 1;
+                fPacketReader.setCurrentPacket(getPacket());
+            } else {
+                // out of packets
+                fPacketReader.setCurrentPacket(null);
             }
         }
     }
@@ -263,18 +287,20 @@ public class StreamInputReader {
      * @return
      */
     private int getPacketSize() {
-        return streamInput.getIndex().getEntries().size();
+        return fStreamInput.getIndex().getEntries().size();
     }
 
     /**
      * Changes the location of the trace file reader so that the current event
-     * is the first event with a timestamp greater than the given timestamp.
+     * is the first event with a timestamp greater or equal the given timestamp.
      *
      * @param timestamp
      *            The timestamp to seek to.
      * @return The offset compared to the current position
+     * @throws CTFReaderException
+     *             if an error occurs
      */
-    public long seek(long timestamp) {
+    public long seek(long timestamp) throws CTFReaderException {
         long offset = 0;
 
         gotoPacket(timestamp);
@@ -282,23 +308,27 @@ public class StreamInputReader {
         /*
          * index up to the desired timestamp.
          */
-        while ((this.packetReader.getCurrentPacket() != null)
-                && (this.packetReader.getCurrentPacket().getTimestampEnd() < timestamp)) {
+        while ((fPacketReader.getCurrentPacket() != null)
+                && (fPacketReader.getCurrentPacket().getTimestampEnd() < timestamp)) {
             try {
-                this.streamInput.addPacketHeaderIndex();
+                fStreamInput.addPacketHeaderIndex();
                 goToNextPacket();
             } catch (CTFReaderException e) {
                 // do nothing here
             }
         }
-        if (this.packetReader.getCurrentPacket() == null) {
+        if (fPacketReader.getCurrentPacket() == null) {
             gotoPacket(timestamp);
         }
 
         /*
-         * Advance until A. we reached the end of the trace file (which means
-         * the given timestamp is after the last event), or B. we found the
-         * first event with a timestamp greater than the given timestamp.
+         * Advance until either of these conditions are met:
+         *
+         * - reached the end of the trace file (the given timestamp is after the
+         * last event)
+         *
+         * - found the first event with a timestamp greater or equal the given
+         * timestamp.
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);
@@ -312,9 +342,12 @@ public class StreamInputReader {
 
     /**
      * @param timestamp
+     *            the time to seek
+     * @throws CTFReaderException
+     *             if an error occurs
      */
-    private void gotoPacket(long timestamp) {
-        this.packetIndex = this.streamInput.getIndex().search(timestamp)
+    private void gotoPacket(long timestamp) throws CTFReaderException {
+        fPacketIndex = fStreamInput.getIndex().search(timestamp)
                 .previousIndex();
         /*
          * Switch to this packet.
@@ -324,12 +357,15 @@ public class StreamInputReader {
 
     /**
      * Seeks the last event of a stream and returns it.
+     *
+     * @throws CTFReaderException
+     *             if an error occurs
      */
-    public void goToLastEvent() {
+    public void goToLastEvent() throws CTFReaderException {
         /*
          * Search in the index for the packet to search in.
          */
-        final int len = this.streamInput.getIndex().getEntries().size();
+        final int len = fStreamInput.getIndex().getEntries().size();
 
         /*
          * Go to beginning of trace.
@@ -338,7 +374,7 @@ public class StreamInputReader {
         /*
          * if the trace is empty.
          */
-        if ((len == 0) || (this.packetReader.hasMoreEvents() == false)) {
+        if ((len == 0) || (fPacketReader.hasMoreEvents() == false)) {
             /*
              * This means the trace is empty. abort.
              */
@@ -348,9 +384,9 @@ public class StreamInputReader {
          * Go to the last packet that contains events.
          */
         for (int pos = len - 1; pos > 0; pos--) {
-            packetIndex = pos;
-            this.packetReader.setCurrentPacket(getPacket());
-            if (this.packetReader.hasMoreEvents()) {
+            fPacketIndex = pos;
+            fPacketReader.setCurrentPacket(getPacket());
+            if (fPacketReader.hasMoreEvents()) {
                 break;
             }
         }
@@ -359,8 +395,8 @@ public class StreamInputReader {
          * Go until the end of that packet
          */
         EventDefinition prevEvent = null;
-        while (this.currentEvent != null) {
-            prevEvent = this.currentEvent;
+        while (fCurrentEvent != null) {
+            prevEvent = fCurrentEvent;
             this.readNextEvent();
         }
         /*
@@ -373,7 +409,7 @@ public class StreamInputReader {
      * @return the parent
      */
     public CTFTraceReader getParent() {
-        return parent;
+        return fParent;
     }
 
     /**
@@ -381,42 +417,44 @@ public class StreamInputReader {
      *            the parent to set
      */
     public void setParent(CTFTraceReader parent) {
-        this.parent = parent;
+        fParent = parent;
     }
 
     /**
      * Sets the current event in a stream input reader
-     * @param currentEvent the event to set
+     *
+     * @param currentEvent
+     *            the event to set
      */
     public void setCurrentEvent(EventDefinition currentEvent) {
-        this.currentEvent = currentEvent;
+        fCurrentEvent = currentEvent;
     }
 
     /**
      * @return the packetIndexIt
      */
     private int getPacketIndex() {
-        return packetIndex;
+        return fPacketIndex;
     }
 
     private StreamInputPacketIndexEntry getPacket() {
-        return streamInput.getIndex().getEntries().get(getPacketIndex());
+        return fStreamInput.getIndex().getEntries().get(getPacketIndex());
     }
 
     /**
      * @return the packetReader
      */
     public StreamInputPacketReader getPacketReader() {
-        return packetReader;
+        return fPacketReader;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + name;
+        result = (prime * result) + fId;
         result = (prime * result)
-                + ((streamInput == null) ? 0 : streamInput.hashCode());
+                + ((fStreamInput == null) ? 0 : fStreamInput.hashCode());
         return result;
     }
 
@@ -432,14 +470,14 @@ public class StreamInputReader {
             return false;
         }
         StreamInputReader other = (StreamInputReader) obj;
-        if (name != other.name) {
+        if (fId != other.fId) {
             return false;
         }
-        if (streamInput == null) {
-            if (other.streamInput != null) {
+        if (fStreamInput == null) {
+            if (other.fStreamInput != null) {
                 return false;
             }
-        } else if (!streamInput.equals(other.streamInput)) {
+        } else if (!fStreamInput.equals(other.fStreamInput)) {
             return false;
         }
         return true;
@@ -448,6 +486,6 @@ public class StreamInputReader {
     @Override
     public String toString() {
         // this helps debugging
-        return this.name + ' ' + this.currentEvent.toString();
+        return fId + ' ' + fCurrentEvent.toString();
     }
 }

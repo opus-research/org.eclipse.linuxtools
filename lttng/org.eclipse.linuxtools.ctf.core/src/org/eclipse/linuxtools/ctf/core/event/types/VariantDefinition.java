@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF variant definition (similar to a C union).
@@ -37,7 +38,7 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
     private VariantDeclaration declaration;
 
     private EnumDefinition tagDefinition;
-    private Map<String, Definition> definitions = new HashMap<String, Definition>();
+    private Map<String, Definition> definitions = new HashMap<>();
     private String currentField;
 
     // ------------------------------------------------------------------------
@@ -147,11 +148,13 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) {
+    public void read(BitBuffer input) throws CTFReaderException {
         currentField = tagDefinition.getValue();
 
         Definition field = definitions.get(currentField);
-
+        if (field == null) {
+            throw new CTFReaderException("Variant was not defined for: "+ currentField); //$NON-NLS-1$
+        }
         field.read(input);
     }
 

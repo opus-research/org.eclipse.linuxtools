@@ -36,63 +36,58 @@ public class RPMQuery {
 	private RPMQuery() {
 	}
 
-	public static String getHeaderInfo(IFile rpmFile) throws CoreException {
+	public static String getHeaderInfo(IFile rpmFile) {
 		return query(rpmFile, "-qip"); //$NON-NLS-1$
 	}
 
-	public static String getChangelog(IFile rpmFile) throws CoreException {
+	public static String getChangelog(IFile rpmFile) {
 		return query(rpmFile, "--changelog", QP); //$NON-NLS-1$
 	}
 
-	public static String getArch(IFile rpmFile) throws CoreException {
+	public static String getArch(IFile rpmFile) {
 		return query(rpmFile, QF, "%{ARCH}", QP); //$NON-NLS-1$
 	}
 
-	public static String getPlatform(IFile rpmFile) throws CoreException {
+	public static String getPlatform(IFile rpmFile) {
 		return query(rpmFile, QF, "%{PLATFORM}", QP); //$NON-NLS-1$
 	}
 
-	public static String getOS(IFile rpmFile) throws CoreException {
+	public static String getOS(IFile rpmFile) {
 		return query(rpmFile, QF, "%{OS}", QP); //$NON-NLS-1$
 	}
 
-	public static String getBuildHost(IFile rpmFile) throws CoreException {
+	public static String getBuildHost(IFile rpmFile) {
 		return query(rpmFile, QF, "%{BUILDHOST}", QP); //$NON-NLS-1$
 	}
 
-	public static String getBuildTime(IFile rpmFile) throws CoreException {
+	public static String getBuildTime(IFile rpmFile) {
 		return query(rpmFile, QF, "%{BUILDTIME:date}", QP); //$NON-NLS-1$
 	}
 
-	public static String getPreInstallScript(IFile rpmFile)
-			throws CoreException {
+	public static String getPreInstallScript(IFile rpmFile) {
 		return query(rpmFile, QF, "%{PREIN}", QP); //$NON-NLS-1$
 	}
 
-	public static String getPostInstallScript(IFile rpmFile)
-			throws CoreException {
+	public static String getPostInstallScript(IFile rpmFile) {
 		return query(rpmFile, QF, "%{POSTIN}", QP); //$NON-NLS-1$
 	}
 
-	public static String getPreUninstallScript(IFile rpmFile)
-			throws CoreException {
+	public static String getPreUninstallScript(IFile rpmFile) {
 		return query(rpmFile, QF, "%{PREUN}", QP); //$NON-NLS-1$
 	}
 
-	public static String getPostUninstallScript(IFile rpmFile)
-			throws CoreException {
+	public static String getPostUninstallScript(IFile rpmFile) {
 		return query(rpmFile, QF, "%{POSTUN}", QP); //$NON-NLS-1$
 	}
 
-	public static String getProvides(IFile rpmFile) throws CoreException {
+	public static String getProvides(IFile rpmFile) {
 		return query(rpmFile, "-qlp"); //$NON-NLS-1$
 	}
 
-	private static String query(IFile rpmFile, String... args)
-			throws CoreException {
+	private static String query(IFile rpmFile, String... args) {
 		IEclipsePreferences node = DefaultScope.INSTANCE.getNode(IRPMConstants.RPM_CORE_ID);
 		String rpmCmd = node.get(IRPMConstants.RPM_CMD, ""); //$NON-NLS-1$
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		command.add(rpmCmd);
 		command.addAll(Arrays.asList(args));
 		command.add(rpmFile.getLocation().toOSString());
@@ -100,9 +95,9 @@ public class RPMQuery {
 			return Utils.runCommandToString(command.toArray(new String[command
 			                                                           .size()]));
 		} catch (IOException e) {
-			throw new CoreException(new Status(IStatus.ERROR, IRPMConstants.RPM_CORE_ID,
-					e.getMessage(), e));
+			// ignore - nothing that deserves showing to the user 
 		}
+		return ""; //$NON-NLS-1$
 	}
 
 	/**
@@ -127,7 +122,7 @@ public class RPMQuery {
 		IEclipsePreferences node = DefaultScope.INSTANCE
 				.getNode(IRPMConstants.RPM_CORE_ID);
 		String rpmCmd = node.get(IRPMConstants.RPM_CMD, ""); //$NON-NLS-1$
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		command.add(rpmCmd);
 		command.add("--eval"); //$NON-NLS-1$
 		command.add(toEval);

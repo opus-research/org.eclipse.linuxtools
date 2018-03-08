@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -35,7 +35,7 @@ public abstract class SimpleDatatypeDefinition extends Definition {
     }
 
     /**
-     * gets the value in integer form
+     * Gets the value in integer form
      *
      * @return the integer in a Long, can be null
      */
@@ -44,7 +44,7 @@ public abstract class SimpleDatatypeDefinition extends Definition {
     }
 
     /**
-     * gets the value in string form
+     * Gets the value in string form
      *
      * @return the integer in a String, can be null
      */

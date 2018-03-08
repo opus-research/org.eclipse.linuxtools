@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -22,15 +23,16 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
-public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut {
+public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut implements ILaunchShortcut2 {
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
@@ -69,7 +71,7 @@ public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut {
 
 	protected ILaunchConfiguration findLaunchConfiguration(String scriptPath, String scriptProject) {
 		ILaunchConfiguration configuration = null;
-		ArrayList<ILaunchConfiguration> candidateConfigurations = new ArrayList<ILaunchConfiguration>();
+		ArrayList<ILaunchConfiguration> candidateConfigurations = new ArrayList<>();
 		try {
 			ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 			ILaunchConfiguration[] configs = launchManager
@@ -83,7 +85,7 @@ public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut {
 
 			int candidateCount = candidateConfigurations.size();
 			if (candidateCount == 0) {
-				LinkedList<String> configNames = new LinkedList<String>();
+				LinkedList<String> configNames = new LinkedList<>();
 				configs = launchManager.getLaunchConfigurations();
 				for (ILaunchConfiguration config : configs) {
 					configNames.add(config.getName());
@@ -122,6 +124,26 @@ public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut {
 
 	@Override
 	protected void setDefaultProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
+	}
+
+	@Override
+	public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
+		return null;
+	}
+
+	@Override
+	public ILaunchConfiguration[] getLaunchConfigurations(IEditorPart editorpart) {
+		return null;
+	}
+
+	@Override
+	public IResource getLaunchableResource(ISelection selection) {
+		return null;
+	}
+
+	@Override
+	public IResource getLaunchableResource(IEditorPart editorpart) {
+		return null;
 	}
 
 

@@ -15,7 +15,7 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="org.eclipse.linuxtools.rpm.createrepo"
-            name="%category.name">
+            name="%main.name">
       </category>
       <wizard
             category="org.eclipse.linuxtools.rpm.createrepo"
@@ -56,9 +56,23 @@
             locationURI="toolbar:formsToolbar">
          <command
                commandId="org.eclipse.linuxtools.rpm.createrepo.executeCommand"
+               icon="icons/refresh.gif"
+               style="push"
+               tooltip="%update.command">
+            <parameter
+                  name="executionType"
+                  value="refresh">
+            </parameter>
+         </command>
+         <command
+               commandId="org.eclipse.linuxtools.rpm.createrepo.executeCommand"
                icon="icons/run_exc.gif"
                style="push"
-               tooltip="%execute.command">
+               tooltip="%main.name">
+            <parameter
+                  name="executionType"
+                  value="createrepo">
+            </parameter>
          </command>
       </menuContribution>
    </extension>
@@ -67,6 +81,92 @@
       <command
             id="org.eclipse.linuxtools.rpm.createrepo.executeCommand"
             name="%execute.command">
+         <commandParameter
+               id="executionType"
+               name="executionType"
+               optional="false">
+         </commandParameter>
       </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.linuxtools.internal.rpm.createrepo.handler.CreaterepoCommandHandler"
+            commandId="org.eclipse.linuxtools.rpm.createrepo.executeCommand">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.linuxtools.internal.rpm.createrepo.preference.CreaterepoPreferencePage"
+            id="org.eclipse.linuxtools.rpm.createrepo.preferences"
+            name="%main.name">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.equinox.preferences.preferences">
+      <initializer
+            class="org.eclipse.linuxtools.internal.rpm.createrepo.preference.CreaterepoPreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         id="createreponature"
+         name="%nature.name"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProjectNature">
+         </run>
+      </runtime>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="org.eclipse.linuxtools.internal.rpm.createrepo.preference.CreaterepoGeneralPropertyPage"
+            id="org.eclipse.linuxtools.rpm.createrepo.CreaterepoGeneralPropertyPage"
+            name="%main.name">
+         <enabledWhen>
+            <or>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+                  <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="org.eclipse.linuxtools.rpm.createrepo.createreponature">
+                  </test>
+               </adapt>
+               <adapt
+                     type="org.eclipse.core.resources.IResource">
+                  <test
+                        property="org.eclipse.core.resources.name"
+                        value="*.repo">
+                  </test>
+               </adapt>
+            </or>
+         </enabledWhen>
+      </page>
+      <page
+            category="org.eclipse.linuxtools.rpm.createrepo.CreaterepoGeneralPropertyPage"
+            class="org.eclipse.linuxtools.internal.rpm.createrepo.preference.CreaterepoDeltaPropertyPage"
+            id="org.eclipse.linuxtools.rpm.createrepo.CreaterepoDeltaPropertyPage"
+            name="%delta.preference.name">
+         <enabledWhen>
+            <or>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+                  <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="org.eclipse.linuxtools.rpm.createrepo.createreponature">
+                  </test>
+               </adapt>
+               <adapt
+                     type="org.eclipse.core.resources.IResource">
+                  <test
+                        property="org.eclipse.core.resources.name"
+                        value="*.repo">
+                  </test>
+               </adapt>
+            </or>
+         </enabledWhen>
+      </page>
    </extension>
 </plugin>

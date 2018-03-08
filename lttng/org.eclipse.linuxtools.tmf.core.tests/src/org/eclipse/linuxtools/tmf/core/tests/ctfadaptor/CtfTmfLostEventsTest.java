@@ -22,14 +22,14 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -48,13 +48,13 @@ public class CtfTmfLostEventsTest {
 
     private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.HELLO_LOST;
 
-    private static CtfTmfTrace fixture = null;
+    private CtfTmfTrace fixture = null;
 
     /**
      * Class setup
      */
-    @BeforeClass
-    public static void setUpClass() {
+    @Before
+    public void setUp() {
         assumeTrue(testTrace.exists());
         fixture = testTrace.getTrace();
         fixture.indexTrace(true);
@@ -63,8 +63,8 @@ public class CtfTmfLostEventsTest {
     /**
      * Clean-up
      */
-    @AfterClass
-    public static void tearDownClass() {
+    @After
+    public void tearDown() {
         if (fixture != null) {
             fixture.dispose();
         }
@@ -192,7 +192,7 @@ public class CtfTmfLostEventsTest {
         private CtfTmfEvent event = null;
 
         public OneEventRequestPerRank(long rank) {
-            super(CtfTmfEvent.class, TmfTimeRange.ETERNITY, rank, 1, 1, ExecutionType.FOREGROUND);
+            super(CtfTmfEvent.class, TmfTimeRange.ETERNITY, rank, 1, ExecutionType.FOREGROUND);
         }
 
         @Override
@@ -213,7 +213,7 @@ public class CtfTmfLostEventsTest {
         public OneEventRequestPerTs(ITmfTimestamp ts) {
             super(CtfTmfEvent.class,
                     new TmfTimeRange(ts, TmfTimestamp.PROJECT_IS_CANNED),
-                    0, 1, 1, ExecutionType.FOREGROUND);
+                    0, 1, ExecutionType.FOREGROUND);
         }
 
         @Override
@@ -233,7 +233,7 @@ public class CtfTmfLostEventsTest {
 
         public EventCountRequest() {
             super(CtfTmfEvent.class, TmfTimeRange.ETERNITY, 0,
-                    TmfDataRequest.ALL_DATA, 1, ExecutionType.FOREGROUND);
+                    ITmfEventRequest.ALL_DATA, ExecutionType.FOREGROUND);
         }
 
         @Override

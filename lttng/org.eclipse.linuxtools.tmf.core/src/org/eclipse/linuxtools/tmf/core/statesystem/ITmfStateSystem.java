@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -33,6 +33,14 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 public interface ITmfStateSystem {
 
     /**
+     * Get the ID of this state system.
+     *
+     * @return The state system's ID
+     * @since 3.0
+     */
+    String getSSID();
+
+    /**
      * Return the start time of this history. It usually matches the start time
      * of the original trace.
      *
@@ -48,6 +56,18 @@ public interface ITmfStateSystem {
     long getCurrentEndTime();
 
     /**
+     * Check if the construction of this state system was cancelled or not. If
+     * false is returned, it can mean that the building was finished
+     * successfully, or that it is still ongoing. You can check independently
+     * with {@link #waitUntilBuilt()} if it is finished or not.
+     *
+     * @return If the construction was cancelled or not. In true is returned, no
+     *         queries should be run afterwards.
+     * @since 3.0
+     */
+    boolean isCancelled();
+
+    /**
      * While it's possible to query a state history that is being built,
      * sometimes we might want to wait until the construction is finished before
      * we start doing queries.
@@ -56,12 +76,32 @@ public interface ITmfStateSystem {
      * building. If it's already built (ie, opening a pre-existing file) this
      * should return immediately.
      *
-     * @return If the build was successful. If false is returned, this either
-     *         means there was a problem during the build, or it got cancelled
-     *         before it could finished. In that case, no queries should be run
-     *         afterwards.
+     * You should always check with {@link #isCancelled()} if it is safe to
+     * query this state system before doing queries.
+     *
+     * @since 3.0
      */
-    boolean waitUntilBuilt();
+    void waitUntilBuilt();
+
+    /**
+     * Wait until the state system construction is finished. Similar to
+     * {@link #waitUntilBuilt()}, but we also specify a timeout. If the timeout
+     * elapses before the construction is finished, the method will return.
+     *
+     * The return value determines if the return was due to the construction
+     * finishing (true), or the timeout elapsing (false).
+     *
+     * This can be useful, for example, for a component doing queries
+     * periodically to the system while it is being built.
+     *
+     * @param timeout
+     *            Timeout value in milliseconds
+     * @return True if the return was due to the construction finishing, false
+     *         if it was because the timeout elapsed. Same logic as
+     *         {@link java.util.concurrent.CountDownLatch#await(long, java.util.concurrent.TimeUnit)}
+     * @since 3.0
+     */
+    boolean waitUntilBuilt(long timeout);
 
     /**
      * Notify the state system that the trace is being closed, so it should
@@ -139,6 +179,30 @@ public interface ITmfStateSystem {
             throws AttributeNotFoundException;
 
     /**
+     * Return the sub-attributes of the target attribute, as a List of quarks,
+     * similarly to {@link #getSubAttributes(int, boolean)}, but with an added
+     * regex pattern to filter on the return attributes.
+     *
+     * @param quark
+     *            The attribute of which you want to sub-attributes. You can use
+     *            "-1" here to specify the root node.
+     * @param recursive
+     *            True if you want all recursive sub-attributes, false if you
+     *            only want the first level. Note that the returned value will
+     *            be flattened.
+     * @param pattern
+     *            The regular expression to match the attribute base name.
+     * @return A List of integers, matching the quarks of the sub-attributes
+     *         that match the regex. An empty list is returned if there is no
+     *         matching attribute.
+     * @throws AttributeNotFoundException
+     *             If the 'quark' was not existing or invalid.
+     * @since 3.0
+     */
+    List<Integer> getSubAttributes(int quark, boolean recursive, String pattern)
+            throws AttributeNotFoundException;
+
+    /**
      * Batch quark-retrieving method. This method allows you to specify a path
      * pattern which includes a wildcard "*" somewhere. It will check all the
      * existing attributes in the attribute tree and return those who match the
@@ -183,6 +247,17 @@ public interface ITmfStateSystem {
      * @return One single string separated with '/', like a filesystem path
      */
     String getFullAttributePath(int attributeQuark);
+
+    /**
+     * Returns the parent quark of the attribute.
+     *
+     * @param attributeQuark
+     *            The quark of the attribute
+     * @return Quark of the parent attribute or <code>-1</code> if root quark or
+     *         no parent.
+     * @since 3.0
+     */
+    int getParentAttributeQuark(int attributeQuark);
 
     /**
      * @name Query methods
@@ -239,7 +314,7 @@ public interface ITmfStateSystem {
      *             If the query is sent after the state system has been disposed
      */
     List<ITmfStateInterval> queryFullState(long t)
-            throws TimeRangeException, StateSystemDisposedException;
+            throws StateSystemDisposedException;
 
     /**
      * Singular query method. This one does not update the whole stateInfo
@@ -264,8 +339,7 @@ public interface ITmfStateSystem {
      *             If the query is sent after the state system has been disposed
      */
     ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException;
+            throws AttributeNotFoundException, StateSystemDisposedException;
 
     /**
      * Convenience method to query attribute stacks (created with
@@ -295,8 +369,7 @@ public interface ITmfStateSystem {
      * @since 2.0
      */
     ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
-            throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException, StateSystemDisposedException;
+            throws  AttributeNotFoundException, StateSystemDisposedException;
 
     /**
      * Return a list of state intervals, containing the "history" of a given
@@ -323,9 +396,8 @@ public interface ITmfStateSystem {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2) throws TimeRangeException,
-            AttributeNotFoundException, StateSystemDisposedException;
+    List<ITmfStateInterval> queryHistoryRange(int attributeQuark, long t1, long t2)
+            throws AttributeNotFoundException, StateSystemDisposedException;
 
     /**
      * Return the state history of a given attribute, but with at most one
@@ -359,6 +431,5 @@ public interface ITmfStateSystem {
      */
     List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException;
+            throws AttributeNotFoundException, StateSystemDisposedException;
 }

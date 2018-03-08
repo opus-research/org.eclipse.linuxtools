@@ -16,9 +16,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
+import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.internal.rpm.createrepo.listener.CreaterepoResourceChangeListener;
-import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -127,7 +127,7 @@ public class RepoFormEditor extends FormEditor {
 	 */
 	void createPage1() {
 		try {
-			FormPage composite = new MetadataPage(this);
+			FormPage composite = new MetadataPage(this, project);
 			addPage(composite);
 		} catch (PartInitException e) {
 			Activator.logError(Messages.RepoFormEditor_errorInitializingForm, e);

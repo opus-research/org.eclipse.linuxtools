@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import java.nio.ByteBuffer;
+
 /**
  * The data object to go in a {@link CtfLocation}.
  *
@@ -18,8 +20,8 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
  */
 public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
 
-    private final long timestamp;
-    private final long index;
+    private final long fTimestamp;
+    private final long fIndex;
 
     /**
      * @param ts
@@ -29,22 +31,35 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
      *            timestamp, which one is it.)
      */
     public CtfLocationInfo(long ts, long index) {
-        this.timestamp = ts;
-        this.index = index;
+        fTimestamp = ts;
+        fIndex = index;
+    }
+
+    /**
+     * Construct the location from the ByteBuffer.
+     *
+     * @param bufferIn
+     *            the buffer to read from
+     *
+     * @since 3.0
+     */
+    public CtfLocationInfo(ByteBuffer bufferIn) {
+        fTimestamp = bufferIn.getLong();
+        fIndex = bufferIn.getLong();
     }
 
     /**
      * @return The timestamp
      */
     public long getTimestamp() {
-        return timestamp;
+        return fTimestamp;
     }
 
     /**
      * @return The index of the element
      */
     public long getIndex() {
-        return index;
+        return fIndex;
     }
 
     // ------------------------------------------------------------------------
@@ -55,8 +70,8 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + (int) (index ^ (index >>> 32));
-        result = (prime * result) + (int) (timestamp ^ (timestamp >>> 32));
+        result = (prime * result) + (int) (fIndex ^ (fIndex >>> 32));
+        result = (prime * result) + (int) (fTimestamp ^ (fTimestamp >>> 32));
         return result;
     }
 
@@ -72,10 +87,10 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
             return false;
         }
         CtfLocationInfo other = (CtfLocationInfo) obj;
-        if (index != other.index) {
+        if (fIndex != other.fIndex) {
             return false;
         }
-        if (timestamp != other.timestamp) {
+        if (fTimestamp != other.fTimestamp) {
             return false;
         }
         return true;
@@ -83,7 +98,7 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
 
     @Override
     public String toString() {
-        return "Element [" + timestamp + '/' + index + ']'; //$NON-NLS-1$
+        return "Element [" + fTimestamp + '/' + fIndex + ']'; //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
@@ -92,19 +107,31 @@ public class CtfLocationInfo implements Comparable<CtfLocationInfo> {
 
     @Override
     public int compareTo(CtfLocationInfo other) {
-        if (this.timestamp > other.getTimestamp()) {
+        if (fTimestamp > other.getTimestamp()) {
             return 1;
         }
-        if (this.timestamp < other.getTimestamp()) {
+        if (fTimestamp < other.getTimestamp()) {
             return -1;
         }
-        if (this.index > other.getIndex()) {
+        if (fIndex > other.getIndex()) {
             return 1;
         }
-        if (this.index < other.getIndex()) {
+        if (fIndex < other.getIndex()) {
             return -1;
         }
         return 0;
     }
 
+    /**
+     * Write the location to the ByteBuffer so that it can be saved to disk.
+     *
+     * @param bufferOut
+     *            the buffer to write to
+     *
+     * @since 3.0
+     */
+    public void serialize(ByteBuffer bufferOut) {
+        bufferOut.putLong(fTimestamp);
+        bufferOut.putLong(fIndex);
+    }
 }

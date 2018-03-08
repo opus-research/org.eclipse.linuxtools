@@ -12,6 +12,8 @@ package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.resources.IProject;
@@ -20,16 +22,20 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpUnitMask;
@@ -48,7 +54,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
@@ -80,12 +90,17 @@ AbstractLaunchConfigurationTab {
 		//tabs for each of the counters
 		counters = getOprofileCounters(null);
 		TabItem[] counterTabs = new TabItem[counters.length];
-		counterSubTabs = new CounterSubTab[counters.length];
+
+		// create only one counter for operf/opcontrol
+		counterSubTabs = new CounterSubTab[1];
 
 		TabFolder tabFolder = new TabFolder(top, SWT.NONE);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 
+		// As per Roland suggestion if we decide to list all the selected events
+		// in a separate list viewer, then it makes sense to always show just one tab.
+		// This approach would make operf/opcontrol event selection more similar.
 		for (int i = 0; i < counters.length; i++) {
 			Composite c = new Composite(tabFolder, SWT.NONE);
 			CounterSubTab currentTab = new CounterSubTab(c, counters[i]);
@@ -93,7 +108,9 @@ AbstractLaunchConfigurationTab {
 
 			counterTabs[i] = new TabItem(tabFolder, SWT.NONE);
 			counterTabs[i].setControl(c);
-			counterTabs[i].setText(OprofileLaunchMessages.getString("tab.event.counterTab.counterText") + String.valueOf(i)); //$NON-NLS-1$
+			counterTabs[i].setText(OprofileLaunchMessages.getString("tab.event.counterTab.counterText")); //$NON-NLS-1$
+			// just one tab for operf/opcontrol
+			break;
 		}
 
 		getTabFolderComposite();
@@ -115,9 +132,6 @@ AbstractLaunchConfigurationTab {
 		}
 	}
 
-	/**
-	 * @see ILaunchConfigurationTab#initializeFrom(ILaunchConfiguration)
-	 */
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 
@@ -192,9 +206,6 @@ AbstractLaunchConfigurationTab {
 		}
 	}
 
-	/**
-	 * @see ILaunchConfigurationTab#isValid(ILaunchConfiguration)
-	 */
 	@Override
 	public boolean isValid(ILaunchConfiguration config) {
 		IProject project = getProject(config);
@@ -229,7 +240,22 @@ AbstractLaunchConfigurationTab {
 					counters[i].loadConfiguration(config);
 
 					for (CounterSubTab counterSubTab : counterSubTabs){
-						if(counterSubTab.enabledCheck.getSelection() && counterSubTab.eventList.getList().getSelectionIndex() == -1){
+						int nr = counterSubTab.counter.getNumber();
+						if(counterSubTab.enabledCheck.getSelection() && config.getAttribute(OprofileLaunchPlugin.ATTR_NUMBER_OF_EVENTS(nr), 0) == 0){
+							valid = false;
+						}
+						// if target list is empty valid is false
+						// target event list item count
+						int count = counterSubTab.selectedEventList.getList().getItemCount();
+						if(count == 0)
+						{
+							valid = false;
+						}
+						// number of event is  allowed in opcontrol binary is equal to number of h/w counter
+						if(OprofileProject.OPCONTROL_BINARY.equals(OprofileProject.getProfilingBinary()) && count > counters.length)
+						{
+							Object[] args = new Object[] { counters.length };
+							setErrorMessage(MessageFormat.format(OprofileLaunchMessages.getString("tab.event.opcontrol.validation.msg"),args)); //$NON-NLS-1$
 							valid = false;
 						}
 					}
@@ -237,22 +263,32 @@ AbstractLaunchConfigurationTab {
 					if (counters[i].getEnabled()) {
 						++numEnabledEvents;
 
-						if (counters[i].getEvent() == null) {
-							valid = false;
-							break;
-						}
+						for (OpEvent event : counters[i].getEvents()) {
+							if (event == null) {
+								valid = false;
+								break;
+							}
 
-						// First check min count
-						int min = counters[i].getEvent().getMinCount();
-						if (counters[i].getCount() < min) {
-							valid = false;
-							break;
-						}
+							// First check min count
+							int min = event.getMinCount();
+							if (counters[i].getCount() < min) {
+								Object[] args = new Object[] { min };
+								setErrorMessage(MessageFormat
+										.format(OprofileLaunchMessages
+												.getString("tab.event.counterSettings.count.too-small"), //$NON-NLS-1$
+												args));
+								valid = false;
+								break;
+							}
 
-						// Next ask oprofile if it is valid
-						if (!checkEventSetupValidity(counters[i].getNumber(), counters[i].getEvent().getText(), counters[i].getEvent().getUnitMask().getMaskValue())) {
-							valid = false;
-							break;
+							// Next ask oprofile if it is valid
+							if (!checkEventSetupValidity(
+									counters[i].getNumber(), event.getText(), event.getUnitMask().getMaskValue())) {
+								Object[] args = new Object[] { event.getText() };
+								setErrorMessage(MessageFormat.format(OprofileLaunchMessages.getString("tab.event.validation.msg"), args)); //$NON-NLS-1$
+								valid = false;
+								break;
+							}
 						}
 					}
 				}
@@ -264,9 +300,6 @@ AbstractLaunchConfigurationTab {
 		return (numEnabledEvents > 0 && valid);
 	}
 
-	/**
-	 * @see ILaunchConfigurationTab#performApply(ILaunchConfigurationWorkingCopy)
-	 */
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		if (getOprofileTimerMode() || counterSubTabs == null) {
@@ -279,9 +312,6 @@ AbstractLaunchConfigurationTab {
 		}
 	}
 
-	/**
-	 * @see ILaunchConfigurationTab#setDefaults(ILaunchConfigurationWorkingCopy)
-	 */
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		boolean useDefault = true;
@@ -301,17 +331,11 @@ AbstractLaunchConfigurationTab {
 		config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, useDefault);
 	}
 
-	/**
-	 * @see ILaunchConfigurationTab#getName()
-	 */
 	@Override
 	public String getName() {
 		return OprofileLaunchMessages.getString("tab.event.name"); //$NON-NLS-1$
 	}
 
-	/**
-	 * @see ILaunchConfigurationTab#getImage()
-	 */
 	@Override
 	public Image getImage() {
 		return OprofileLaunchPlugin.getImageDescriptor(OprofileLaunchPlugin.ICON_EVENT_TAB).createImage();
@@ -432,6 +456,22 @@ AbstractLaunchConfigurationTab {
 		protected Button enabledCheck;
 		protected ListViewer eventList;
 
+		protected Button add;
+		protected Button addAll;
+		protected Button remove;
+		protected Button removeAll;
+		protected Button customizeBtn;
+		protected ListViewer selectedEventList;
+		protected ScrolledComposite unitmaskScrollComposite;
+		protected Composite unitMaskSubComposite ;
+		private final int ADD = 1;
+		private final int ADD_ALL = 2;
+		private final int REMOVE = 3;
+		private final int REMOVE_ALL = 4;
+		private final int CUSTOMIZE = 5;
+		private List<OpEvent> sourceList = new ArrayList<>(0);
+		private List<OpEvent> targetList = new ArrayList<>(0);
+
 
 		public Composite getTabTopContainer() {
 			return tabTopContainer;
@@ -489,31 +529,17 @@ AbstractLaunchConfigurationTab {
 			layout = new GridLayout();
 			layout.marginHeight = 0;
 			layout.marginWidth = 0;
+			layout.numColumns = 3;
 			eventListComp.setLayout(layout);
+			eventListComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			//layoutdata is set later
 
 			createLeftCell(eventListComp);
 
 
-			//right side composite group for other event config and unit mask
-			Composite eventConfigComp = new Composite(tabTopContainer, SWT.NONE);
-			layout = new GridLayout();
-			layout.numColumns = 2;
-			layout.marginHeight = 0;
-			layout.marginWidth = 0;
-			eventConfigComp.setLayout(layout);
-			eventConfigComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-			createRightCell(eventConfigComp);
-
-
-			//set the list's composite layout based on the right cell's size
-			GridData data = new GridData(SWT.FILL, SWT.FILL, false, true);
-			data.heightHint = eventConfigComp.getSize().x;
-			eventListComp.setLayoutData(data);
-
 			scrolledTop = scrolledContainer;
 			this.tabTopContainer = tabTopContainer;
+			resizeScrollContainer();
 		}
 
 		/**
@@ -564,10 +590,71 @@ AbstractLaunchConfigurationTab {
 				}
 			});
 
-			eventList = new ListViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-			eventList.getList().setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
+			// profile user binary and profile kernel
+			createRightCell(parent);
 
-			eventList.setLabelProvider(new ILabelProvider(){
+			int options =  SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER;
+			if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
+				options |= SWT.MULTI;
+			} else {
+				options |= SWT.SINGLE;
+			}
+			eventList = new ListViewer(parent, options);
+			GridData gdata = new GridData(SWT.FILL, SWT.FILL, true, true);
+			gdata.verticalSpan = 5;
+			eventList.getList().setLayoutData(gdata);
+
+			eventList.setLabelProvider(new LabelProvider(){
+				@Override
+				public String getText(Object element) {
+					OpEvent e = (OpEvent) element;
+					return e.getText();
+				}
+				@Override
+				public Image getImage(Object element) { return null; }
+				@Override
+				public boolean isLabelProperty(Object element, String property) { return false; }
+			});
+
+			eventList.setContentProvider(new IStructuredContentProvider() {
+				@Override
+				public Object[] getElements(Object inputElement) {
+					List<OpEvent> list = (List<OpEvent>)inputElement;
+					return list.toArray();
+				}
+				@Override
+				public void dispose() { }
+				@Override
+				public void inputChanged(Viewer arg0, Object arg1, Object arg2) { }
+			});
+
+			// sorter
+			ListviewerSorter sorter = new ListviewerSorter();
+			eventList.setSorter(sorter);
+
+			//adds the events to the list from the counter
+			sourceList.addAll(Arrays.asList(counter.getValidEvents()));
+			eventList.setInput(sourceList);
+
+			eventList.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
+				public void selectionChanged(SelectionChangedEvent sce) {
+					handleEventListSelectionChange();
+				}
+			});
+
+			HandleButtonClick listener = new HandleButtonClick();
+			add = new Button(parent, SWT.PUSH);
+			add.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			add.setText(OprofileLaunchMessages.getString("tab.event.addevent.button.text")); //$NON-NLS-1$
+			add.setData(ADD);
+			add.addListener(SWT.Selection, listener);
+
+			selectedEventList = new ListViewer(parent, options);
+			selectedEventList.getList().setLayoutData(gdata);
+
+
+			selectedEventList.setLabelProvider(new ILabelProvider(){
 				@Override
 				public String getText(Object element) {
 					OpEvent e = (OpEvent) element;
@@ -585,11 +672,11 @@ AbstractLaunchConfigurationTab {
 				public void removeListener(ILabelProviderListener listener) { }
 			});
 
-			eventList.setContentProvider(new IStructuredContentProvider() {
+			selectedEventList.setContentProvider(new IStructuredContentProvider() {
 				@Override
 				public Object[] getElements(Object inputElement) {
-					OprofileCounter ctr = (OprofileCounter) inputElement;
-					return ctr.getValidEvents();
+					List<OpEvent> list = (List<OpEvent>)inputElement;
+					return list.toArray();
 				}
 				@Override
 				public void dispose() { }
@@ -597,15 +684,57 @@ AbstractLaunchConfigurationTab {
 				public void inputChanged(Viewer arg0, Object arg1, Object arg2) { }
 			});
 
-			//adds the events to the list from the counter
-			eventList.setInput(counter);
+			// sorter
+			 sorter = new ListviewerSorter();
+			 selectedEventList.setSorter(sorter);
 
-			eventList.addSelectionChangedListener(new ISelectionChangedListener() {
+			//adds the events to the list from the counter
+			if(counter.getEvents().length != 0 && null != counter.getEvents()[0])
+			{
+			targetList.addAll(Arrays.asList(counter.getEvents()));
+			}
+			selectedEventList.setInput(targetList);
+
+			selectedEventList.addSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent sce) {
-					handleEventListSelectionChange();
+					handleListSelection(selectedEventList);
+					eventList.getList().deselectAll();
+					updateLaunchConfigurationDialog();
 				}
 			});
+
+
+
+
+
+			addAll = new Button(parent, SWT.PUSH);
+			addAll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			addAll.setText(OprofileLaunchMessages.getString("tab.event.addallevent.button.text")); //$NON-NLS-1$
+			addAll.setData(ADD_ALL);
+			addAll.addListener(SWT.Selection, listener);
+
+
+			remove = new Button(parent, SWT.PUSH);
+			remove.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			remove.setText(OprofileLaunchMessages.getString("tab.event.removeevent.button.text")); //$NON-NLS-1$
+			remove.setData(REMOVE);
+			remove.addListener(SWT.Selection, listener);
+
+
+			removeAll = new Button(parent, SWT.PUSH);
+			removeAll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			removeAll.setText(OprofileLaunchMessages.getString("tab.event.removeallevent.button.text")); //$NON-NLS-1$
+			removeAll.setData(REMOVE_ALL);
+			removeAll.addListener(SWT.Selection, listener);
+
+			customizeBtn = new Button(parent, SWT.PUSH);
+			customizeBtn.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+			customizeBtn.setText(OprofileLaunchMessages.getString("tab.event.customizeevent.button.text")); //$NON-NLS-1$
+			customizeBtn.addListener(SWT.Selection, listener);
+			customizeBtn.setData(CUSTOMIZE);
+
+
 		}
 
 		/**
@@ -633,27 +762,6 @@ AbstractLaunchConfigurationTab {
 				}
 			});
 
-			//event count label/text
-			countTextLabel = new Label(parent, SWT.NONE);
-			countTextLabel.setText(OprofileLaunchMessages.getString("tab.event.counterSettings.count.label.text")); //$NON-NLS-1$
-			countText = new Text(parent, SWT.SINGLE | SWT.BORDER);
-			countText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			countText.addModifyListener(new ModifyListener() {
-				@Override
-				public void modifyText(ModifyEvent me) {
-					handleCountTextModify();
-				}
-			});
-
-			//unit mask widget
-			Composite unitMaskComp = new Composite(parent, SWT.NONE);
-			GridLayout layout = new GridLayout();
-			layout.marginHeight = 0;
-			layout.marginWidth = 0;
-			unitMaskComp.setLayout(layout);
-			unitMaskComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-
-			unitMaskViewer = new UnitMaskViewer(unitMaskComp);
 		}
 
 		/**
@@ -712,18 +820,30 @@ AbstractLaunchConfigurationTab {
 			boolean enabled = counter.getEnabled();
 			enabledCheck.setSelection(enabled);
 
-			if (counter.getEvent() == null) {
+			if (counter.getEvents().length == 0 || counter.getEvents()[0] == null) {
 				// Default to first in list
-				counter.setEvent(counter.getValidEvents()[0]);
+				counter.setEvents(new OpEvent [] {counter.getValidEvents()[0]});
 			}
 
 			//load default states
 			profileKernelCheck.setSelection(counter.getProfileKernel());
 			profileUserCheck.setSelection(counter.getProfileUser());
-			countText.setText(Integer.toString(counter.getCount()));
-			eventDescText.setText(counter.getEvent().getTextDescription());
-			unitMaskViewer.displayEvent(counter.getEvent());
-			eventList.setSelection(new StructuredSelection(counter.getEvent()));
+
+			eventDescText.setText(counter.getEvents()[0].getTextDescription());
+
+
+			// add opevent to target event list
+			ArrayList<OpEvent> tmp = new ArrayList<>(Arrays.asList(counter.getEvents()));
+			targetList.addAll(tmp);
+			selectedEventList.add(tmp.toArray());
+			selectedEventList.refresh();
+			selectedEventList.setSelection(new StructuredSelection(tmp.toArray()));
+
+			// remove selected opevent from source list
+
+			sourceList.removeAll(tmp);
+			eventList.remove(tmp.toArray());
+			eventList.refresh();
 		}
 
 		/**
@@ -756,11 +876,17 @@ AbstractLaunchConfigurationTab {
 		private void internalSetEnabledState(boolean state) {
 			profileKernelCheck.setEnabled(state);
 			profileUserCheck.setEnabled(state);
-			countText.setEnabled(state);
 			eventDescText.setEnabled(state);
-			unitMaskViewer.setEnabled(state);
 			eventList.getList().setEnabled(state);
+			selectedEventList.getList().setEnabled(state);
 			eventFilterText.setEnabled(state);
+			add.setEnabled(state);
+			addAll.setEnabled(state);
+			remove.setEnabled(state);
+			removeAll.setEnabled(state);
+			customizeBtn.setEnabled(state);
+
+
 		}
 
 		/**
@@ -768,28 +894,64 @@ AbstractLaunchConfigurationTab {
 		 * and updates the UnitMask and event description text box.
 		 */
 		private void handleEventListSelectionChange() {
-			int index = eventList.getList().getSelectionIndex();
-			if (index != -1){
-				OpEvent event = (OpEvent) eventList.getElementAt(index);
-				counter.setEvent(event);
-				eventDescText.setText(event.getTextDescription());
-				unitMaskViewer.displayEvent(event);
+			handleListSelection(eventList);
+			int[] indices = eventList.getList().getSelectionIndices();
+			if (indices.length != 0) {
+				customizeBtn.setEnabled(true);
+				// unselected other list element
+				// to keep customize button enable
+				// for both list selection
+				selectedEventList.getList().deselectAll();
+			}
+			updateLaunchConfigurationDialog();
 
-				// Check the min count to update the error message (events can have
+		}
+
+		/**
+		 * Generic method for handling source & target selection list
+		 * @param eventList - list to be handled
+		 * @since 3.0
+		 */
+		private void handleListSelection(ListViewer eventList)
+		{
+			setErrorMessage(null);
+			int [] indices = eventList.getList().getSelectionIndices();
+			if (indices.length != 0) {
+				ArrayList<OpEvent> tmp = new ArrayList<> ();
+				for (int index : indices) {
+					OpEvent event = (OpEvent) eventList.getElementAt(index);
+					tmp.add(event);
+					eventDescText.setText(event.getTextDescription());
+
+				}
+
+				// Check the min count to update the error message (events
+				// can have
 				// different minimum reset counts)
-				int min = counter.getEvent().getMinCount();
-				if ((counter.getCount() < min) && (!defaultEventCheck.getSelection())){
+				int min = Integer.MIN_VALUE;
+				for (OpEvent ev : tmp) {
+					// We want the largest of the min values
+					if (ev.getMinCount() > min) {
+						min = ev.getMinCount();
+					}
+				}
+				if(counter.getEvents().length == 0 || counter.getEvents()[0] == null)
+				{
+					counter.setEvents(new OpEvent [] {counter.getValidEvents()[0]});
+				}
+				if ((counter.getCount() < min)
+						&& (!defaultEventCheck.getSelection())) {
 					setErrorMessage(getMinCountErrorMessage(min));
 				}
+
+				//counter.setEvents(tmp.toArray(new OpEvent[0]));
 			} else {
-				counter.setEvent(null);
 				eventDescText.setText(""); //$NON-NLS-1$
-				if(unitMaskViewer != null){
-					unitMaskViewer.displayEvent(null);
-				}
+
 			}
 
-			updateLaunchConfigurationDialog();
+
+
 		}
 
 		/**
@@ -821,7 +983,13 @@ AbstractLaunchConfigurationTab {
 				counter.setCount(count);
 
 				// Check minimum count
-				int min = counter.getEvent().getMinCount();
+				int min = Integer.MIN_VALUE;
+				for (OpEvent event : counter.getEvents()) {
+					// We want the largest of the min values
+					if (event != null && event.getMinCount() > min) {
+						min = event.getMinCount();
+					}
+				}
 				if ((count < min) && (!defaultEventCheck.getSelection())) {
 					errorMessage = getMinCountErrorMessage(min);
 				}
@@ -935,7 +1103,7 @@ AbstractLaunchConfigurationTab {
 				//creates these buttons with the default masks
 				mask.setDefaultMaskValue();
 
-				ArrayList<Button> maskButtons = new ArrayList<Button>();
+				ArrayList<Button> maskButtons = new ArrayList<>();
 
 				for (int i = 0; i < totalMasks; i++) {
 					Button maskButton;
@@ -978,7 +1146,8 @@ AbstractLaunchConfigurationTab {
 				unitMaskButtons = new Button[maskButtons.size()];
 				maskButtons.toArray(unitMaskButtons);
 
-				resizeScrollContainer();
+
+				resizeUnitMaskContainer();
 			}
 
 			/**
@@ -994,6 +1163,293 @@ AbstractLaunchConfigurationTab {
 					}
 				}
 			}
+		}
+
+		/**
+		 * Dialog box for unit mask field modification
+		 * @since 3.0
+		 *
+		 */
+		protected class UnitMaskDialog extends Dialog {
+			private OpEvent event;
+			public UnitMaskDialog(IShellProvider parentShell) {
+				super(parentShell);
+			}
+
+			public UnitMaskDialog(Shell parentShell,OpEvent event) {
+				super(parentShell);
+				this.event = event;
+			}
+
+			@Override
+			protected Control createDialogArea(Composite parent) {
+				Composite child = (Composite)super.createDialogArea(parent);
+				ScrolledComposite scrolledContainer = new ScrolledComposite(child, SWT.H_SCROLL|SWT.V_SCROLL);
+				scrolledContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+				GridLayout layout = new GridLayout();
+				layout.marginHeight = 0;
+				layout.marginWidth = 0;
+				scrolledContainer.setLayout(layout);
+				scrolledContainer.setExpandHorizontal(true);
+				scrolledContainer.setExpandVertical(true);
+				Composite unitMaskSubComposite  = new Composite(scrolledContainer, SWT.None);
+				unitMaskSubComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+				layout = new GridLayout();
+				layout.numColumns=2;
+				unitMaskSubComposite.setLayout(layout);
+				createUnitMaskComponents(unitMaskSubComposite);
+				scrolledContainer.setContent(unitMaskSubComposite);
+				CounterSubTab.this.unitmaskScrollComposite = scrolledContainer;
+				CounterSubTab.this.unitMaskSubComposite = unitMaskSubComposite;
+				unitMaskViewer.displayEvent(event);
+				return child;
+			}
+
+			@Override
+			protected boolean isResizable() {
+				return true;
+			}
+
+			@Override
+			protected void configureShell(Shell newShell) {
+				super.configureShell(newShell);
+				newShell.setText(event.getText());
+				newShell.setSize(400, 400);
+			}
+		}
+
+
+		private void createUnitMaskComponents(Composite parent)
+		{
+			//event count label/text
+			countTextLabel = new Label(parent, SWT.NONE);
+			countTextLabel.setText(OprofileLaunchMessages.getString("tab.event.counterSettings.count.label.text")); //$NON-NLS-1$
+			countText = new Text(parent, SWT.SINGLE | SWT.BORDER);
+			countText.setText(Integer.toString(counter.getCount()));
+			countText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			countText.addModifyListener(new ModifyListener() {
+				@Override
+				public void modifyText(ModifyEvent me) {
+					handleCountTextModify();
+				}
+			});
+
+			//unit mask widget
+			Composite unitMaskComp = new Composite(parent, SWT.NONE);
+			GridLayout layout = new GridLayout();
+			layout.marginHeight = 0;
+			layout.marginWidth = 0;
+			unitMaskComp.setLayout(layout);
+			unitMaskComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
+			unitMaskViewer = new UnitMaskViewer(unitMaskComp);
+		}
+		private void resizeUnitMaskContainer() {
+			unitmaskScrollComposite.setMinSize(unitMaskSubComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		}
+
+		/**
+		 * Events selection/removal button listener
+		 * @since 3.0
+		 *
+		 */
+		protected class HandleButtonClick implements Listener
+ {
+
+			@Override
+			public void handleEvent(Event event) {
+				int btn_value = (Integer) event.widget.getData();
+				switch (btn_value) {
+				case ADD:
+					addButtonClicked();
+					updateLaunchConfigurationDialog();
+					break;
+				case ADD_ALL:
+					addAllButtonClicked();
+					updateLaunchConfigurationDialog();
+					break;
+				case REMOVE:
+					removeButtonClicked();
+					updateLaunchConfigurationDialog();
+					break;
+				case REMOVE_ALL:
+					removeAllButtonClicked();
+					updateLaunchConfigurationDialog();
+					break;
+				case CUSTOMIZE:
+					customizeButtonClicked();
+					break;
+				default:
+					break;
+				}
+
+			}
+
+			private void addButtonClicked() {
+				int[] indices = eventList.getList().getSelectionIndices();
+				if (indices.length != 0) {
+					ArrayList<OpEvent> tmp = new ArrayList<>();
+					for (int index : indices) {
+						OpEvent event = (OpEvent) eventList.getElementAt(index);
+						tmp.add(event);
+					}
+					// add to target list
+					targetList.addAll(tmp);
+					selectedEventList.add(tmp.toArray());
+
+					sourceList.removeAll(tmp);
+					eventList.remove(tmp.toArray());
+
+					int count = selectedEventList.getList().getItemCount();
+					tmp = new ArrayList<>();
+					for (int i = 0; i < count; i++) {
+						OpEvent event = (OpEvent) selectedEventList
+								.getElementAt(i);
+						tmp.add(event);
+
+					}
+					if (!tmp.isEmpty())
+						counter.setEvents(tmp.toArray(new OpEvent[0]));
+
+					eventList.refresh();
+					selectedEventList.refresh();
+
+
+				}
+			}
+
+			private void addAllButtonClicked() {
+				int count = eventList.getList().getItemCount();
+				ArrayList<OpEvent> tmp = new ArrayList<>();
+				for (int i = 0; i < count; i++) {
+					OpEvent event = (OpEvent) eventList.getElementAt(i);
+					tmp.add(event);
+
+				}
+
+				targetList.addAll(tmp);
+				selectedEventList.add(tmp.toArray());
+				eventList.remove(tmp.toArray());
+				sourceList.removeAll(tmp);
+
+				count = selectedEventList.getList().getItemCount();
+				tmp = new ArrayList<>();
+				for (int i = 0; i < count; i++) {
+					OpEvent event = (OpEvent) selectedEventList.getElementAt(i);
+					tmp.add(event);
+
+				}
+				if (!tmp.isEmpty())
+					counter.setEvents(tmp.toArray(new OpEvent[0]));
+
+				eventList.refresh();
+				selectedEventList.refresh();
+
+
+			}
+
+			private void removeButtonClicked() {
+				int[] indices = selectedEventList.getList()
+						.getSelectionIndices();
+				if (indices.length != 0) {
+					ArrayList<OpEvent> tmp = new ArrayList<>();
+					for (int index : indices) {
+						OpEvent event = (OpEvent) selectedEventList
+								.getElementAt(index);
+						tmp.add(event);
+					}
+					// add to target list
+					sourceList.addAll(tmp);
+					eventList.add(tmp.toArray());
+
+					targetList.removeAll(tmp);
+					selectedEventList.remove(tmp.toArray());
+
+					int count = selectedEventList.getList().getItemCount();
+					tmp = new ArrayList<>();
+					for (int i = 0; i < count; i++) {
+						OpEvent event = (OpEvent) selectedEventList
+								.getElementAt(i);
+						tmp.add(event);
+
+					}
+					if (!tmp.isEmpty())
+						counter.setEvents(tmp.toArray(new OpEvent[0]));
+					else
+						// add first valid element to counter due to NPE
+						counter.setEvents(new OpEvent[]{counter.getValidEvents()[0]});
+
+					eventList.refresh();
+					selectedEventList.refresh();
+
+				}
+			}
+
+			private void removeAllButtonClicked() {
+
+				int count = selectedEventList.getList().getItemCount();
+				ArrayList<OpEvent> tmp = new ArrayList<>();
+				for (int i = 0; i < count; i++) {
+					OpEvent event = (OpEvent) selectedEventList.getElementAt(i);
+					tmp.add(event);
+
+				}
+
+				if (!tmp.isEmpty()) {
+					sourceList.addAll(tmp);
+					eventList.add(tmp.toArray());
+
+					selectedEventList.remove(tmp.toArray());
+					targetList.removeAll(tmp);
+
+				}
+				counter.setEvents(new OpEvent[] { counter.getValidEvents()[0] });
+
+				eventList.refresh();
+				selectedEventList.refresh();
+
+			}
+
+			private void customizeButtonClicked() {
+				UnitMaskDialog d = null;
+
+				if(eventList.getList().getSelectionIndex() != -1)
+				{
+					d = new UnitMaskDialog(Display.getCurrent()
+							.getActiveShell(),
+							(OpEvent) eventList.getElementAt(eventList.getList()
+									.getSelectionIndex()));
+				}
+				else if(selectedEventList.getList().getSelectionIndex() != -1)
+				{
+					d = new UnitMaskDialog(Display.getCurrent()
+							.getActiveShell(),
+							(OpEvent) selectedEventList.getElementAt(selectedEventList.getList()
+									.getSelectionIndex()));
+				}
+				if(d != null)
+				d.open();
+			}
+
+		}
+	}
+
+	/**
+	 *
+	 * Event sorting for selected as well as all available events
+	 * @since 3.0
+	 */
+	protected class ListviewerSorter extends ViewerSorter
+	{
+		@Override
+		public int compare(Viewer viewer, Object e1, Object e2) {
+			OpEvent op1 = (OpEvent) e1;
+			OpEvent op2 = (OpEvent) e2;
+			String op1txt = op1.getText();
+			String op2txt = op2.getText();
+			if(op1txt !=null && op2txt !=null && op1txt.trim().length() !=0 && op2txt.trim().length() !=0)
+				return collator.compare(op1txt, op2txt);
+			return super.compare(viewer, e1, e2);
 		}
 	}
 }

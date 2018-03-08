@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.callgraph.core;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -40,7 +39,6 @@ public class SystemTapErrorHandler {
         errorMessage.append(Messages
              .getString("SystemTapErrorHandler.ErrorMessage") + //$NON-NLS-1$
              Messages.getString("SystemTapErrorHandler.ErrorMessage1")); //$NON-NLS-1$
-
         logContents = new StringBuilder();
     }
 
@@ -55,50 +53,43 @@ public class SystemTapErrorHandler {
 
         // READ FROM THE PROP FILE AND DETERMINE TYPE OF ERROR
         File file = new File(PluginConstants.getPluginLocation() + FILE_PROP);
-        BufferedReader buff = null;
-        try {
-			buff = new BufferedReader(new FileReader(file));
+        try (BufferedReader buff1 = new BufferedReader(new FileReader(file))) {
             String line;
-
             for (String message : errorsList) {
-                buff = new BufferedReader(new FileReader(file));
-                while ((line = buff.readLine()) != null) {
-                    if (m != null && m.isCanceled()) {
-                        return;
-                    }
-                    int index = line.indexOf('=');
-                    Pattern pat = Pattern.compile(line.substring(0, index),Pattern.DOTALL);
-                    Matcher matcher = pat.matcher(message);
+				try (BufferedReader innerBuff = new BufferedReader(
+						new FileReader(file))) {
+					while ((line = innerBuff.readLine()) != null) {
+						if (m != null && m.isCanceled()) {
+							return;
+						}
+						int index = line.indexOf('=');
+						Pattern pat = Pattern.compile(line.substring(0, index),
+								Pattern.DOTALL);
+						Matcher matcher = pat.matcher(message);
 
-                    if (matcher.matches()) {
-                        if (!isErrorRecognized()) {
-                        	//First error
-                            errorMessage.append(Messages.getString("SystemTapErrorHandler.ErrorMessage2")); //$NON-NLS-1$
-                            setErrorRecognized(true);
-                        }
-                        String errorFound = line.substring(index+1);
+						if (matcher.matches()) {
+							if (!isErrorRecognized()) {
+								// First error
+								errorMessage
+										.append(Messages
+												.getString("SystemTapErrorHandler.ErrorMessage2")); //$NON-NLS-1$
+								setErrorRecognized(true);
+							}
+							String errorFound = line.substring(index + 1);
 
-                        if (!errorMessage.toString().contains(errorFound)) {
-                            errorMessage.append(errorFound + PluginConstants.NEW_LINE);
-                        }
-                        break;
-                    }
-                }
-                buff.close();
+							if (!errorMessage.toString().contains(errorFound)) {
+								errorMessage.append(errorFound
+										+ PluginConstants.NEW_LINE);
+							}
+							break;
+						}
+					}
+				}
             }
 
             logContents.append(errors);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-        	if (buff != null) {
-        		try {
-					buff.close();
-				} catch (IOException e) {
-				}
-        	}
         }
 
     }
@@ -143,7 +134,7 @@ public class SystemTapErrorHandler {
      * the error pop-up message and writes to log.Currently relaunch only works 
      * for the callgraph script.
      */
-    public void finishHandling(IProgressMonitor m, String scriptPath) {
+    public void finishHandling() {
         if (!isErrorRecognized()) {
             errorMessage.append(Messages.getString("SystemTapErrorHandler.NoErrRecognized") + //$NON-NLS-1$
                     Messages.getString("SystemTapErrorHandler.NoErrRecognizedMsg")); //$NON-NLS-1$

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -90,7 +90,6 @@ public class CtfTmfTraceTest {
         assertEquals(0L, result.getNbEvents());
         assertEquals(0L, result.getStreamingInterval());
         assertNull(result.getResource());
-        assertEquals(1000, result.getQueueSize());
         assertNull(result.getType());
     }
 
@@ -189,7 +188,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetEventType() {
-        Class<ITmfEvent> result = fixture.getEventType();
+        Class<? extends ITmfEvent> result = fixture.getEventType();
         assertNotNull(result);
     }
 
@@ -362,4 +361,14 @@ public class CtfTmfTraceTest {
         assertTrue(fixture.hasAtLeastOneOfEvents(names));
         assertFalse(fixture.hasAllEvents(names));
     }
+
+    /**
+     * Run the String getHostId() method test
+     */
+    @Test
+    public void testCtfHostId() {
+        String a = fixture.getHostId();
+        assertEquals("\"84db105b-b3f4-4821-b662-efc51455106a\"", a);
+    }
+
 }

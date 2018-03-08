@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
+ *   Alexandre Montplaisir - Add UST callstack state system
  *   Marc-Andre Laperle - Handle BufferOverflowException (Bug 420203)
  **********************************************************************/
 
@@ -22,6 +23,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.lttng2.ust.core.Activator;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
 
 /**
  * Class to contain LTTng-UST traces
@@ -31,6 +33,8 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
  */
 public class LttngUstTrace extends CtfTmfTrace {
 
+    private static final int CONFIDENCE = 100;
+
     /**
      * Default constructor
      */
@@ -38,6 +42,12 @@ public class LttngUstTrace extends CtfTmfTrace {
         super();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation sets the confidence to 100 if the trace is a valid
+     * CTF trace in the "ust" domain.
+     */
     @Override
     public IStatus validate(final IProject project, final String path)  {
         CTFTrace temp;
@@ -60,7 +70,7 @@ public class LttngUstTrace extends CtfTmfTrace {
         String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
         temp.dispose();
         if (dom != null && dom.equals("\"ust\"")) { //$NON-NLS-1$
-            return Status.OK_STATUS;
+            return new TraceValidationStatus(CONFIDENCE, Activator.PLUGIN_ID);
         }
         status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngUstTrace_DomainError);
         return status;

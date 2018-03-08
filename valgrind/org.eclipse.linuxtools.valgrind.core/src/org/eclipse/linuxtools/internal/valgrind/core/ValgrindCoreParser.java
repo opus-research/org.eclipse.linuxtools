@@ -24,8 +24,6 @@ import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.linuxtools.valgrind.core.ValgrindParserUtils;
 
 public class ValgrindCoreParser {
-	private static final String SPACE = " "; //$NON-NLS-1$
-	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 	private static final String AT = "at"; //$NON-NLS-1$
 	private static final String BY = "by"; //$NON-NLS-1$
 
@@ -35,27 +33,26 @@ public class ValgrindCoreParser {
 
 	public ValgrindCoreParser(File inputFile, ILaunch launch) throws IOException {
 		this.launch = launch;
-		BufferedReader br = new BufferedReader(new FileReader(inputFile));
 		// keep track of nested messages and their corresponding indents
-		Stack<IValgrindMessage> messageStack = new Stack<IValgrindMessage>();
-		Stack<Integer> indentStack = new Stack<Integer>();
-		messages = new ArrayList<IValgrindMessage>();
+		Stack<IValgrindMessage> messageStack = new Stack<>();
+		Stack<Integer> indentStack = new Stack<>();
+		messages = new ArrayList<>();
 
-		try { 
+		try (BufferedReader br = new BufferedReader(new FileReader(inputFile))) { 
 			pid = ValgrindParserUtils.parsePID(inputFile.getName(), CommandLineConstants.LOG_PREFIX);
 			String line;
 			while ((line = br.readLine()) != null) {
 				// remove PID string
 				// might encounter warnings also #325130
-				line = line.replaceFirst("==\\d+==|\\*\\*\\d+\\*\\*", EMPTY_STRING); //$NON-NLS-1$
+				// fixed #423371 - handle timestamp (e.g. ==00:00:00:01.175 52756728==)
+				line = line.replaceFirst("==([\\d:\\.]+\\s)?\\d+==|\\*\\*\\d+\\*\\*", ""); //$NON-NLS-1$ //$NON-NLS-2$
 
 				int indent;
 				for (indent = 0; indent < line.length()
-				&& line.charAt(indent) == ' '; indent++)
-					;
+				&& line.charAt(indent) == ' '; indent++){}
 
 				line = line.trim();
-				if (!line.equals(EMPTY_STRING)) { 
+				if (!line.isEmpty()) { 
 					/*
 					 * indent == 1 -> top level message
 					 * indent > 1 -> child message
@@ -97,10 +94,6 @@ public class ValgrindCoreParser {
 					}
 				}
 			}
-		} finally {
-			if (br != null) {
-				br.close();
-			}
 		}
 	}
 
@@ -120,7 +113,7 @@ public class ValgrindCoreParser {
 	
 	public void printMessages(IValgrindMessage m, int indent) {
 		for (int i = 0; i < indent; i++) {
-			System.out.print(SPACE);
+			System.out.print(" "); //$NON-NLS-1$
 		}
 		System.out.println(m.getText());
 		for (IValgrindMessage child : m.getChildren()) {

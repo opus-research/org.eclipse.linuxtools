@@ -19,8 +19,7 @@ public class FunctionInfo implements Serializable {
 	private String prototype;
 	private String desc;
 	private String returnType;
-	private ArrayList<String> headers = new ArrayList<String>();
-	private ArrayList<FunctionInfo> children = null;
+	private ArrayList<String> headers = new ArrayList<>();
 	
 	/**
 	 * Constructor for function.
@@ -110,25 +109,5 @@ public class FunctionInfo implements Serializable {
 	 */
 	public void addHeader(String header) {
 		headers.add(header);
-	}
-	
-	/**
-	 * Add a function with the same name as a child of this function (C++-only).
-	 * 
-	 * @param info a function with same name as this function.
-	 */
-	public void addChild(FunctionInfo info) {
-		if (children == null)
-			children = new ArrayList<FunctionInfo>();
-		children.add(info);
-	}
-
-	/**
-	 * Get the children functions with same name as this function.
-	 * 
-	 * @return an ArrayList of functions with same name or null.
-	 */
-	public ArrayList<FunctionInfo> getChildren() {
-		return children;
 	}
 }

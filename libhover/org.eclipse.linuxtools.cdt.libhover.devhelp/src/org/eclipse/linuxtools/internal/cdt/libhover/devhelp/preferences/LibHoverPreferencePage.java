@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.cdt.libhover.devhelp.preferences;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -61,9 +60,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * be accessed directly via the preference store.
  */
 
-public class LibHoverPreferencePage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+public class LibHoverPreferencePage extends FieldEditorPreferencePage implements
+		IWorkbenchPreferencePage {
 
 	private final static String DEVHELP_DIR = "Libhover.Devhelp.Directory"; //$NON-NLS-1$
 	private final static String GENERATE = "Libhover.Devhelp.Generate.lbl"; //$NON-NLS-1$
@@ -92,7 +90,6 @@ public class LibHoverPreferencePage
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				// TODO Auto-generated method stub
 				IPreferenceStore ps = DevHelpPlugin.getDefault().getPreferenceStore();
 				ParseDevHelp.DevHelpParser p =
 					new ParseDevHelp.DevHelpParser(ps.getString(PreferenceConstants.DEVHELP_DIRECTORY));
@@ -111,14 +108,12 @@ public class LibHoverPreferencePage
 					File ldir = new File(location.toOSString());
 					ldir.mkdir();
 					location = location.append("devhelp.libhover"); //$NON-NLS-1$
-					FileOutputStream f = new FileOutputStream(location.toOSString());
-					ObjectOutputStream out = new ObjectOutputStream(f);
-					out.writeObject(hover);
-					out.close();
+					try (FileOutputStream f = new FileOutputStream(
+							location.toOSString());
+							ObjectOutputStream out = new ObjectOutputStream(f)) {
+						out.writeObject(hover);
+					}
 					monitor.done();
-				} catch(FileNotFoundException e) {
-					monitor.done();
-					return new Status(IStatus.ERROR, DevHelpPlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
 				} catch(IOException e) {
 					monitor.done();
 					return new Status(IStatus.ERROR, DevHelpPlugin.PLUGIN_ID, e.getLocalizedMessage(), e);

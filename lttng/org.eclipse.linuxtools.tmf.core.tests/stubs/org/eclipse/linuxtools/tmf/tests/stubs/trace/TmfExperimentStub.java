@@ -12,9 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
 
 /**
  * <b><u>TmfExperimentStub</u></b>
@@ -25,13 +27,26 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 @SuppressWarnings("javadoc")
 public class TmfExperimentStub extends TmfExperiment {
 
+    public TmfExperimentStub() {
+        super();
+    }
+
     public TmfExperimentStub(String name, ITmfTrace[] traces, int blockSize) {
         super(ITmfEvent.class, name, traces, blockSize);
-        setIndexer(new TmfIndexerStub(this, blockSize));
+    }
+
+    @Override
+    protected ITmfTraceIndexer createIndexer(int interval) {
+        return new TmfIndexerStub(this, interval);
     }
 
     @Override
     public TmfIndexerStub getIndexer() {
         return (TmfIndexerStub) super.getIndexer();
+    }
+
+    @Override
+    public void initExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
+        super.initExperiment(type, path, traces, indexPageSize, resource);
     }
 }

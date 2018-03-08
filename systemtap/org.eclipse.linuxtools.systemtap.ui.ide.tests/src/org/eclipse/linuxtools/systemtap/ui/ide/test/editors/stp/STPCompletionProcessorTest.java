@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
@@ -44,7 +45,6 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 			this.setupDocument(document);
 		}
 
-		@Override
 		protected IDocument createDocument(Object element) {
 			return document;
 		}
@@ -127,7 +127,7 @@ public class STPCompletionProcessorTest extends SystemtapTest{
 	@Test
 	public void testGlobalInvalidCompletion() throws BadLocationException {
 		ICompletionProposal[] proposals = getCompletionsForPrefix("probe fake.fake");
-		assertTrue(proposals.length == 0);
+		assertEquals(proposals.length, 0);
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -31,7 +31,7 @@ public class TmfStatisticsTreeManager {
     /**
      * Contains the experiment name as the key and the traces data
      */
-    private static final Map<String, TmfStatisticsTree> fTreeInstances = new HashMap<String, TmfStatisticsTree>();
+    private static final Map<String, TmfStatisticsTree> fTreeInstances = new HashMap<>();
 
     /**
      * Provide a statisticsTree instance per trace

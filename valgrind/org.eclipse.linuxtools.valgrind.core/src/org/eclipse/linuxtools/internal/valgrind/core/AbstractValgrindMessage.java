@@ -23,7 +23,7 @@ public class AbstractValgrindMessage implements IValgrindMessage {
 	protected String text;
 
 	public AbstractValgrindMessage(IValgrindMessage parent, String text, ILaunch launch) {
-		children = new ArrayList<IValgrindMessage>();
+		children = new ArrayList<>();
 		this.parent = parent;
 		this.text = text;
 		this.launch = launch;
@@ -33,22 +33,27 @@ public class AbstractValgrindMessage implements IValgrindMessage {
 		}
 	}
 
+	@Override
 	public void addChild(IValgrindMessage message) {
 		children.add(message);
 	}
 
+	@Override
 	public ILaunch getLaunch() {
 		return launch;
 	}
 	
+	@Override
 	public IValgrindMessage getParent() {
 		return parent;
 	}
 
+	@Override
 	public IValgrindMessage[] getChildren() {
 		return children.toArray(new IValgrindMessage[children.size()]);
 	}
 
+	@Override
 	public String getText() {
 		return text;
 	}

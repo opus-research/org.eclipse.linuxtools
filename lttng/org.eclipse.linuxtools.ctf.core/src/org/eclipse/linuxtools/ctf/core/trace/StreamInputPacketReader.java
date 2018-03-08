@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,8 +12,7 @@
 package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel.MapMode;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 
 import org.eclipse.linuxtools.ctf.core.CTFStrings;
@@ -44,25 +43,25 @@ public class StreamInputPacketReader implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     /** BitBuffer used to read the trace file. */
-    private final BitBuffer bitBuffer;
+    private final BitBuffer fBitBuffer;
 
     /** StreamInputReader that uses this StreamInputPacketReader. */
-    private final StreamInputReader streamInputReader;
+    private final StreamInputReader fStreamInputReader;
 
     /** Trace packet header. */
-    private final StructDefinition tracePacketHeaderDef;
+    private final StructDefinition fTracePacketHeaderDef;
 
     /** Stream packet context definition. */
-    private final StructDefinition streamPacketContextDef;
+    private final StructDefinition fStreamPacketContextDef;
 
     /** Stream event header definition. */
-    private final StructDefinition streamEventHeaderDef;
+    private final StructDefinition fStreamEventHeaderDef;
 
     /** Stream event context definition. */
-    private final StructDefinition streamEventContextDef;
+    private final StructDefinition fStreamEventContextDef;
 
     /** Reference to the index entry of the current packet. */
-    private StreamInputPacketIndexEntry currentPacket = null;
+    private StreamInputPacketIndexEntry fCurrentPacket = null;
 
     /**
      * Last timestamp recorded.
@@ -70,16 +69,16 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * Needed to calculate the complete timestamp values for the events with
      * compact headers.
      */
-    private long lastTimestamp = 0;
+    private long fLastTimestamp = 0;
 
     /** CPU id of current packet. */
-    private int currentCpu = 0;
+    private int fCurrentCpu = 0;
 
-    private int lostEventsInThisPacket;
+    private int fLostEventsInThisPacket;
 
-    private long lostEventsDuration;
+    private long fLostEventsDuration;
 
-    private boolean hasLost = false;
+    private boolean fHasLost = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -92,43 +91,43 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *            The StreamInputReader to which this packet reader belongs to.
      */
     public StreamInputPacketReader(StreamInputReader streamInputReader) {
-        this.streamInputReader = streamInputReader;
+        fStreamInputReader = streamInputReader;
 
         /* Set the BitBuffer's byte order. */
-        bitBuffer = new BitBuffer();
-        bitBuffer.setByteOrder(streamInputReader.getByteOrder());
+        fBitBuffer = new BitBuffer();
+        fBitBuffer.setByteOrder(streamInputReader.getByteOrder());
 
         /* Create trace packet header definition. */
         final Stream currentStream = streamInputReader.getStreamInput().getStream();
         StructDeclaration tracePacketHeaderDecl = currentStream.getTrace().getPacketHeader();
         if (tracePacketHeaderDecl != null) {
-            tracePacketHeaderDef = tracePacketHeaderDecl.createDefinition(this, "trace.packet.header"); //$NON-NLS-1$
+            fTracePacketHeaderDef = tracePacketHeaderDecl.createDefinition(this, "trace.packet.header"); //$NON-NLS-1$
         } else {
-            tracePacketHeaderDef = null;
+            fTracePacketHeaderDef = null;
         }
 
         /* Create stream packet context definition. */
         StructDeclaration streamPacketContextDecl = currentStream.getPacketContextDecl();
         if (streamPacketContextDecl != null) {
-            streamPacketContextDef = streamPacketContextDecl.createDefinition(this, "stream.packet.context"); //$NON-NLS-1$
+            fStreamPacketContextDef = streamPacketContextDecl.createDefinition(this, "stream.packet.context"); //$NON-NLS-1$
         } else {
-            streamPacketContextDef = null;
+            fStreamPacketContextDef = null;
         }
 
         /* Create stream event header definition. */
         StructDeclaration streamEventHeaderDecl = currentStream.getEventHeaderDecl();
         if (streamEventHeaderDecl != null) {
-            streamEventHeaderDef = streamEventHeaderDecl.createDefinition(this, "stream.event.header"); //$NON-NLS-1$
+            fStreamEventHeaderDef = streamEventHeaderDecl.createDefinition(this, "stream.event.header"); //$NON-NLS-1$
         } else {
-            streamEventHeaderDef = null;
+            fStreamEventHeaderDef = null;
         }
 
         /* Create stream event context definition. */
         StructDeclaration streamEventContextDecl = currentStream.getEventContextDecl();
         if (streamEventContextDecl != null) {
-            streamEventContextDef = streamEventContextDecl.createDefinition(this, "stream.event.context"); //$NON-NLS-1$
+            fStreamEventContextDef = streamEventContextDecl.createDefinition(this, "stream.event.context"); //$NON-NLS-1$
         } else {
-            streamEventContextDef = null;
+            fStreamEventContextDef = null;
         }
 
         /* Create event definitions */
@@ -148,7 +147,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @since 2.0
      */
     public void dispose() {
-        bitBuffer.setByteBuffer(null);
+        fBitBuffer.setByteBuffer(null);
     }
 
     // ------------------------------------------------------------------------
@@ -161,7 +160,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @return the current packet
      */
     StreamInputPacketIndexEntry getCurrentPacket() {
-        return this.currentPacket;
+        return fCurrentPacket;
     }
 
     /**
@@ -170,7 +169,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @return steamPacketContext Definition
      */
     public StructDefinition getStreamPacketContextDef() {
-        return this.streamPacketContextDef;
+        return fStreamPacketContextDef;
     }
 
     /**
@@ -179,7 +178,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @return The streamEventContext definition
      */
     public StructDefinition getStreamEventContextDef() {
-        return streamEventContextDef;
+        return fStreamEventContextDef;
     }
 
     /**
@@ -188,7 +187,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @return the CPU (core) number
      */
     public int getCPU() {
-        return this.currentCpu;
+        return fCurrentCpu;
     }
 
     @Override
@@ -205,67 +204,64 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *
      * @param currentPacket
      *            The index entry of the packet to switch to.
+     * @throws CTFReaderException
+     *             If we get an error reading the packet
      */
-    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
+    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) throws CTFReaderException {
         StreamInputPacketIndexEntry prevPacket = null;
-        this.currentPacket = currentPacket;
+        fCurrentPacket = currentPacket;
 
-        if (this.currentPacket != null) {
+        if (fCurrentPacket != null) {
             /*
              * Change the map of the BitBuffer.
              */
-            MappedByteBuffer bb = null;
+            ByteBuffer bb = null;
             try {
-                bb = streamInputReader.getStreamInput().getFileChannel()
-                        .map(MapMode.READ_ONLY,
-                                this.currentPacket.getOffsetBytes(),
-                                (this.currentPacket.getPacketSizeBits() + 7) / 8);
+                bb = fStreamInputReader.getStreamInput().getByteBufferAt(
+                                fCurrentPacket.getOffsetBytes(),
+                                (fCurrentPacket.getPacketSizeBits() + 7) / 8);
             } catch (IOException e) {
-                /*
-                 * The streamInputReader object is already allocated, so this
-                 * shouldn't fail bar some very bad kernel or RAM errors...
-                 */
-                e.printStackTrace();
+                throw new CTFReaderException(e.getMessage(), e);
             }
 
-            bitBuffer.setByteBuffer(bb);
+            fBitBuffer.setByteBuffer(bb);
 
             /*
              * Read trace packet header.
              */
-            if (tracePacketHeaderDef != null) {
-                tracePacketHeaderDef.read(bitBuffer);
+            if (fTracePacketHeaderDef != null) {
+                fTracePacketHeaderDef.read(fBitBuffer);
             }
 
             /*
              * Read stream packet context.
              */
             if (getStreamPacketContextDef() != null) {
-                getStreamPacketContextDef().read(bitBuffer);
+                getStreamPacketContextDef().read(fBitBuffer);
 
                 /* Read CPU ID */
-                if (this.getCurrentPacket().getTarget() != null) {
-                    this.currentCpu = (int) this.getCurrentPacket().getTargetId();
+                if (getCurrentPacket().getTarget() != null) {
+                    fCurrentCpu = (int) getCurrentPacket().getTargetId();
                 }
 
                 /* Read number of lost events */
-                lostEventsInThisPacket = (int) this.getCurrentPacket().getLostEvents();
-                if (lostEventsInThisPacket != 0) {
-                    hasLost = true;
+                fLostEventsInThisPacket = (int) getCurrentPacket().getLostEvents();
+                if (fLostEventsInThisPacket != 0) {
+                    fHasLost = true;
                     /*
                      * Compute the duration of the lost event time range. If the
                      * current packet is the first packet, duration will be set
                      * to 1.
                      */
                     long lostEventsStartTime;
-                    int index = this.streamInputReader.getStreamInput().getIndex().getEntries().indexOf(currentPacket);
+                    int index = fStreamInputReader.getStreamInput().getIndex().getEntries().indexOf(currentPacket);
                     if (index == 0) {
                         lostEventsStartTime = currentPacket.getTimestampBegin() + 1;
                     } else {
-                        prevPacket = this.streamInputReader.getStreamInput().getIndex().getEntries().get(index - 1);
+                        prevPacket = fStreamInputReader.getStreamInput().getIndex().getEntries().get(index - 1);
                         lostEventsStartTime = prevPacket.getTimestampEnd();
                     }
-                    lostEventsDuration = Math.abs(lostEventsStartTime - currentPacket.getTimestampBegin());
+                    fLostEventsDuration = Math.abs(lostEventsStartTime - currentPacket.getTimestampBegin());
                 }
             }
 
@@ -273,11 +269,11 @@ public class StreamInputPacketReader implements IDefinitionScope {
              * Use the timestamp begin of the packet as the reference for the
              * timestamp reconstitution.
              */
-            lastTimestamp = currentPacket.getTimestampBegin();
+            fLastTimestamp = currentPacket.getTimestampBegin();
         } else {
-            bitBuffer.setByteBuffer(null);
+            fBitBuffer.setByteBuffer(null);
 
-            lastTimestamp = 0;
+            fLastTimestamp = 0;
         }
     }
 
@@ -287,8 +283,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @return True if it is possible to read any more events from this packet.
      */
     public boolean hasMoreEvents() {
-        if (currentPacket != null) {
-            return hasLost || (bitBuffer.position() < currentPacket.getContentSizeBits());
+        if (fCurrentPacket != null) {
+            return fHasLost || (fBitBuffer.position() < fCurrentPacket.getContentSizeBits());
         }
         return false;
     }
@@ -305,18 +301,18 @@ public class StreamInputPacketReader implements IDefinitionScope {
         /* Default values for those fields */
         long eventID = EventDeclaration.UNSET_EVENT_ID;
         long timestamp = 0;
-        if (hasLost) {
-            hasLost = false;
-            EventDefinition eventDef = EventDeclaration.getLostEventDeclaration().createDefinition(streamInputReader);
-            ((IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_FIELD)).setValue(lostEventsInThisPacket);
-            ((IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_DURATION)).setValue(lostEventsDuration);
-            eventDef.setTimestamp(this.lastTimestamp);
+        if (fHasLost) {
+            fHasLost = false;
+            EventDefinition eventDef = EventDeclaration.getLostEventDeclaration().createDefinition(fStreamInputReader);
+            ((IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_FIELD)).setValue(fLostEventsInThisPacket);
+            ((IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_DURATION)).setValue(fLostEventsDuration);
+            eventDef.setTimestamp(fLastTimestamp);
             return eventDef;
         }
 
-        final StructDefinition sehd = streamEventHeaderDef;
-        final BitBuffer currentBitBuffer = bitBuffer;
-
+        final StructDefinition sehd = fStreamEventHeaderDef;
+        final BitBuffer currentBitBuffer = fBitBuffer;
+        final long posStart = currentBitBuffer.position();
         /* Read the stream event header. */
         if (sehd != null) {
             sehd.read(currentBitBuffer);
@@ -325,7 +321,9 @@ public class StreamInputPacketReader implements IDefinitionScope {
             Definition idDef = sehd.lookupDefinition("id"); //$NON-NLS-1$
             if (idDef instanceof SimpleDatatypeDefinition) {
                 eventID = ((SimpleDatatypeDefinition) idDef).getIntegerValue();
-            } // else, eventID remains 0
+            } else if (idDef != null) {
+                throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
+            }
 
             /*
              * Get the timestamp from the event header (may be overridden later
@@ -364,12 +362,12 @@ public class StreamInputPacketReader implements IDefinitionScope {
         }
 
         /* Read the stream event context. */
-        if (streamEventContextDef != null) {
-            streamEventContextDef.read(currentBitBuffer);
+        if (fStreamEventContextDef != null) {
+            fStreamEventContextDef.read(currentBitBuffer);
         }
 
         /* Get the right event definition using the event id. */
-        EventDefinition eventDef = streamInputReader.getEventDefinitions().get(eventID);
+        EventDefinition eventDef = fStreamInputReader.getEventDefinitions().get(eventID);
         if (eventDef == null) {
             throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
         }
@@ -389,6 +387,10 @@ public class StreamInputPacketReader implements IDefinitionScope {
          * updateTimestamp.
          */
         eventDef.setTimestamp(timestamp);
+
+        if (posStart == currentBitBuffer.position()) {
+            throw new CTFReaderException("Empty event not allowed, event: " + eventDef.getDeclaration().getName()); //$NON-NLS-1$
+        }
 
         return eventDef;
     }
@@ -410,8 +412,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
          * If the timestamp length is 64 bits, it is a full timestamp.
          */
         if (timestampDef.getDeclaration().getLength() == 64) {
-            lastTimestamp = timestampDef.getValue();
-            return lastTimestamp;
+            fLastTimestamp = timestampDef.getValue();
+            return fLastTimestamp;
         }
 
         /*
@@ -424,17 +426,17 @@ public class StreamInputPacketReader implements IDefinitionScope {
          * timestamp, we assume an overflow of the compact representation.
          */
         newval = timestampDef.getValue();
-        if (newval < (lastTimestamp & majorasbitmask)) {
+        if (newval < (fLastTimestamp & majorasbitmask)) {
             newval = newval + (1L << len);
         }
 
         /* Keep only the high bits of the old value */
-        lastTimestamp = lastTimestamp & ~majorasbitmask;
+        fLastTimestamp = fLastTimestamp & ~majorasbitmask;
 
         /* Then add the low bits of the new value */
-        lastTimestamp = lastTimestamp + newval;
+        fLastTimestamp = fLastTimestamp + newval;
 
-        return lastTimestamp;
+        return fLastTimestamp;
     }
 
     @Override

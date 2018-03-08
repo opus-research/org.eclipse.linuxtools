@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -34,7 +34,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
     /**
      * The channels information of the domain.
      */
-    private final List<IChannelInfo> fChannels = new ArrayList<IChannelInfo>();
+    private final List<IChannelInfo> fChannels = new ArrayList<>();
     private boolean fIsKernel = false;
     private BufferType fBufferType = BufferType.BUFFER_TYPE_UNKNOWN;
 

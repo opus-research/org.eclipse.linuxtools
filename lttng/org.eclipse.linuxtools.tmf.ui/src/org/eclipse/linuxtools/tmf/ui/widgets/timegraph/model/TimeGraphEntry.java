@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An entry for use in the time graph views
@@ -28,14 +29,14 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     private TimeGraphEntry fParent = null;
 
     /** List of child entries */
-    private final List<TimeGraphEntry> fChildren = new ArrayList<TimeGraphEntry>();
+    private final List<TimeGraphEntry> fChildren = new CopyOnWriteArrayList<>();
 
     /** Name of this entry (text to show) */
     private String fName;
     private long fStartTime = -1;
     private long fEndTime = -1;
-    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
-    private List<ITimeEvent> fZoomedEventList = new ArrayList<ITimeEvent>();
+    private List<ITimeEvent> fEventList = new ArrayList<>();
+    private List<ITimeEvent> fZoomedEventList = new ArrayList<>();
 
     /**
      * Constructor
@@ -106,6 +107,18 @@ public class TimeGraphEntry implements ITimeGraphEntry {
         return fEndTime;
     }
 
+    /**
+     * Updates the end time
+     *
+     * @param endTime
+     *            the end time
+     *
+     * @since 3.0
+     */
+    public void updateEndTime(long endTime) {
+        fEndTime = Math.max(endTime, fEndTime);
+    }
+
     @Override
     public boolean hasTimeEvents() {
         return true;
@@ -129,16 +142,22 @@ public class TimeGraphEntry implements ITimeGraphEntry {
 
     /**
      * Add an event to this entry's event list. If necessary, update the start
-     * and end time of the entry.
+     * and end time of the entry. If the event list's last event starts at the
+     * same time as the event to add, it is replaced by the new event.
      *
      * @param event
-     *            The time event
+     *            The time event to add
      */
     public void addEvent(ITimeEvent event) {
         long start = event.getTime();
         long end = start + event.getDuration();
         synchronized (fEventList) {
-            fEventList.add(event);
+            int lastIndex = fEventList.size() - 1;
+            if (lastIndex >= 0 && fEventList.get(lastIndex).getTime() == event.getTime()) {
+                fEventList.set(lastIndex, event);
+            } else {
+                fEventList.add(event);
+            }
             if (fStartTime == -1 || start < fStartTime) {
                 fStartTime = start;
             }
@@ -156,9 +175,9 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      */
     public void setEventList(List<ITimeEvent> eventList) {
         if (eventList != null) {
-            fEventList = new ArrayList<ITimeEvent>(eventList);
+            fEventList = new ArrayList<>(eventList);
         } else {
-            fEventList = new ArrayList<ITimeEvent>();
+            fEventList = new ArrayList<>();
         }
     }
 
@@ -170,9 +189,9 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
         if (eventList != null) {
-            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+            fZoomedEventList = new ArrayList<>(eventList);
         } else {
-            fZoomedEventList = new ArrayList<ITimeEvent>();
+            fZoomedEventList = new ArrayList<>();
         }
     }
 
@@ -190,26 +209,6 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     @Override
     public String toString() {
         return getClass().getSimpleName() + '(' + fName + ')';
-    }
-
-    /**
-     * This function says if an entry is active or not during an interval. This property depends
-     * on the view and allows the use of the button "Check Current Active"
-     *
-     * @param startTime start time in nanoseconds
-     * @param endTime stop time in nanoseconds
-     * @return true if the entry is active during the interval
-     * @since 2.2
-     */
-    public boolean isActive(long startTime, long endTime) {
-        for (ITimeEvent event : fEventList) {
-            if ((event.getTime() <= endTime && (event.getTime() + event.getDuration() >= startTime))) {
-                if (event instanceof TimeEvent) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
 }

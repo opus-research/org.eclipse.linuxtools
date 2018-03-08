@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.internal.oprofile.core.opxml.info;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +26,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
+import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -38,6 +36,7 @@ import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This class takes the XML that is output from 'ophelp -X' for and uses that
@@ -131,19 +130,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 	}
 
 	/**
-	 * Use {@link InfoAdapter(IFileStore)}
-	 */
-	@Deprecated
-	public InfoAdapter(File resourceFile) {
-		try {
-			FileInputStream fileInpStr = new FileInputStream(resourceFile);
-			createDOM(fileInpStr);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Set up the DOM for later manipulation
 	 * @param is the InpuStream resulting from running the ophelp command.
 	 * This will be passed in as null for timer mode.
@@ -153,20 +139,24 @@ public class InfoAdapter extends AbstractDataAdapter{
 		DocumentBuilder builder;
 		try {
 			builder = factory.newDocumentBuilder();
-			try {
-				if (is != null) {
+			if (is != null) {
+				try {
 					Document oldDoc = builder.parse(is);
 					Element elem = (Element) oldDoc.getElementsByTagName(HELP_EVENTS).item(0);
 					oldRoot = elem;
+				} catch (SAXException | IOException e) {
+					e.printStackTrace();
+					OpcontrolException opcontrolException = new OpcontrolException(OprofileCorePlugin.createErrorStatus("ophelpRun", null)); //$NON-NLS-1$
+					OprofileCorePlugin.showErrorDialog("opxmlSAXParseException",opcontrolException);
 				}
-				
-				newDoc = builder.newDocument();
+			}
+
+			newDoc = builder.newDocument();
+			try {
 				newRoot = newDoc.createElement(INFO);
-				newDoc.appendChild(newRoot);	
+				newDoc.appendChild(newRoot);
 			} catch (Exception e) {
 				e.printStackTrace();
-				OpcontrolException opcontrolException = new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolRun", null)); //$NON-NLS-1$
-				OprofileCorePlugin.showErrorDialog("opcontrolProvider",opcontrolException);
 			}
 		} catch (ParserConfigurationException e1) {
 			e1.printStackTrace();
@@ -228,7 +218,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	}
 
 	/**
-	 * @since 2.1
+	 * @since 3.0
 	 */
 	public static void setOprofileDir (String dir) {
 		DEV_OPROFILE = dir;
@@ -249,19 +239,21 @@ public class InfoAdapter extends AbstractDataAdapter{
 	public static void checkTimerSupport() {
 
 		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
+			proxy = RemoteProxyManager.getInstance().getFileProxy(
+					Oprofile.OprofileProject.getProject());
 			IFileStore fileStore = proxy.getResource(CPUTYPE);
-			if(fileStore.fetchInfo().exists()){
-				InputStream is = fileStore.openInputStream(EFS.NONE, new NullProgressMonitor());
-				BufferedReader bi = new BufferedReader(new InputStreamReader(is));
-			String cpuType = bi.readLine();
-			bi.close();
-			if (cpuType.equals(TIMER)) {
-				hasTimerSupport = true;
-			} else {
-				hasTimerSupport = false;
-			}
-
+			if (fileStore.fetchInfo().exists()) {
+				try (InputStream is = fileStore.openInputStream(EFS.NONE,
+						new NullProgressMonitor());
+						BufferedReader bi = new BufferedReader(
+								new InputStreamReader(is))) {
+					String cpuType = bi.readLine();
+					if (cpuType.equals(TIMER)) {
+						hasTimerSupport = true;
+					} else {
+						hasTimerSupport = false;
+					}
+				}
 			}
 		} catch (FileNotFoundException e) {
 			hasTimerSupport = true;
@@ -280,54 +272,47 @@ public class InfoAdapter extends AbstractDataAdapter{
 	 */
 	private int getCPUFrequency() {
 		int val = 0;
-		BufferedReader bi = null;
 		try {
-			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
+			proxy = RemoteProxyManager.getInstance().getFileProxy(
+					Oprofile.OprofileProject.getProject());
 			IFileStore fileStore = proxy.getResource(CPUINFO);
-			if(fileStore.fetchInfo().exists()){
-				InputStream is = fileStore.openInputStream(EFS.NONE, new NullProgressMonitor());
-				bi = new BufferedReader(new InputStreamReader(is));
-			String line;
-			while ((line = bi.readLine()) != null) {
-				int index = line.indexOf(':');
-				if (index != -1) {
-					String substr;
+			if (fileStore.fetchInfo().exists()) {
+				InputStream is = fileStore.openInputStream(EFS.NONE,
+						new NullProgressMonitor());
+				try (BufferedReader bi = new BufferedReader(
+						new InputStreamReader(is))) {
+					String line;
+					while ((line = bi.readLine()) != null) {
+						int index = line.indexOf(':');
+						if (index != -1) {
+							String substr;
 
-					// x86/ia64/x86_64
-					if (line.startsWith("cpu MHz")) { //$NON-NLS-1$
-						substr = line.substring(index + 1).trim();
-						return (int) Double.parseDouble(substr);
-					// ppc/pc64
-					} else if (line.startsWith("clock")) { //$NON-NLS-1$
-						int MHzLoc = line.indexOf("MHz"); //$NON-NLS-1$
-						substr = line.substring(index + 1, MHzLoc);
-						return (int) Double.parseDouble(substr);
-					// alpha
-					} else if (line.startsWith("cycle frequency [Hz]")) { //$NON-NLS-1$
-						substr = line.substring(index + 1).trim();
-						return (int) (Double.parseDouble(substr) / 1E6);
-					// sparc64
-					} else if (line.startsWith("Cpu0ClkTck")) { //$NON-NLS-1$
-						substr = line.substring(index + 1).trim();
-						return (int) (Double.parseDouble(substr) / 1E6);
+							// x86/ia64/x86_64
+							if (line.startsWith("cpu MHz")) { //$NON-NLS-1$
+								substr = line.substring(index + 1).trim();
+								return (int) Double.parseDouble(substr);
+								// ppc/pc64
+							} else if (line.startsWith("clock")) { //$NON-NLS-1$
+								int MHzLoc = line.indexOf("MHz"); //$NON-NLS-1$
+								substr = line.substring(index + 1, MHzLoc);
+								return (int) Double.parseDouble(substr);
+								// alpha
+							} else if (line.startsWith("cycle frequency [Hz]")) { //$NON-NLS-1$
+								substr = line.substring(index + 1).trim();
+								return (int) (Double.parseDouble(substr) / 1E6);
+								// sparc64
+							} else if (line.startsWith("Cpu0ClkTck")) { //$NON-NLS-1$
+								substr = line.substring(index + 1).trim();
+								return (int) (Double.parseDouble(substr) / 1E6);
+							}
+						}
 					}
+				} catch (IOException|NumberFormatException e) {
+					e.printStackTrace();
 				}
 			}
-			bi.close();
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (CoreException e) {
 			e.printStackTrace();
-		} finally {
-			if (null != bi) {
-				try {
-					bi.close();
-				} catch (IOException e) {
-				}
-			}
 		}
 
 		return val;
@@ -470,7 +455,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	}
 
 	/**
-	 * @since 2.1
+	 * @since 3.0
 	 */
 	public void setEventIdCacheDoc (Element elem) {
 		EventIdCache.getInstance().setCacheDoc(elem);
