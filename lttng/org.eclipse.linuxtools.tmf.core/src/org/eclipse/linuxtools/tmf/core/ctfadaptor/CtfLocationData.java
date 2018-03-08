@@ -16,7 +16,7 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
  * @author Matthew Khouzam
  * @since 2.0
  */
-public final class CtfLocationData implements Comparable<CtfLocationData> {
+public class CtfLocationData implements Comparable<CtfLocationData> {
 
     private final long timestamp;
     private final long index;
