@@ -20,10 +20,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
 /**
- * Definitions used by all tests using CTF-TMF trace files.
- *
- * To run these tests, you will first need to run the "get-traces.sh" script
- * located under lttng/org.eclipse.linuxtools.ctf.core.tests/traces/ .
+ * Definitions used by all tests using CTF-TMF trace files
  *
  * @author Alexandre Montplaisir
  */
@@ -31,7 +28,13 @@ public final class CtfTmfTestTraces {
 
     private CtfTmfTestTraces() {}
 
+    /*
+     * To run these tests, you will first need to run the get-traces.sh script
+     * located under lttng/org.eclipse.linuxtools.ctf.core.tests/traces/ .
+     */
+
     private static final File emptyFile = new File(""); //$NON-NLS-1$
+
     private static CtfTmfTrace emptyTrace = new CtfTmfTrace();
 
     private static CtfTmfTrace[] testTraces = new CtfTmfTrace[2];
@@ -77,24 +80,6 @@ public final class CtfTmfTestTraces {
             }
         }
         return testTraces[idx];
-    }
-
-    // ------------------------------------------------------------------------
-    // Wrappers around direct CtfTestTraces methods
-    // ------------------------------------------------------------------------
-
-    /**
-     * Get the (string) path to a given test trace.
-     *
-     * You should call {@link #tracesExist()} before calling this if you are
-     * going to use this trace for real.
-     *
-     * @param idx
-     *            The index of the trace among all the available ones
-     * @return The path to the test trace
-     */
-    public static String getTestTracePath(int idx) {
-        return CtfTestTraces.getTestTracePath(idx);
     }
 
     /**
