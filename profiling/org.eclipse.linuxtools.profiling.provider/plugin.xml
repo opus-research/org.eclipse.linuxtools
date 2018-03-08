@@ -14,7 +14,6 @@
          name="Profile Timing"
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            icon="icons/time_obj.gif"
             id="org.eclipse.linuxtools.profiling.provider.TimingLaunchShortcut"
             label="%shortcut.label"
             modes="profile"
@@ -111,7 +110,6 @@
          name="Profile Memory"
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            icon="icons/memory_view.gif"
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchShortcut"
             label="%shortcut.label.0"
             modes="profile"
@@ -208,8 +206,6 @@
          name="Profile Memory"
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            class="org.eclipse.debug.ui.ILaunchShortcut2"
-            icon="icons/toggle.gif"
             id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchShortcut"
             label="%shortcut.label.1"
             modes="profile"
