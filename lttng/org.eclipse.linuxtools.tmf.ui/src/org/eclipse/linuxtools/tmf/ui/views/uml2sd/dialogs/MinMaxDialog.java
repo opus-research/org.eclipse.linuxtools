@@ -44,41 +44,25 @@ public class MinMaxDialog extends Dialog {
     // Attributes
     // ------------------------------------------------------------------------
     /**
-     * Label for minimum.
-     */
-    protected Label fMinLabel;
-    /**
-     * Label for maximum.
-     */
-    protected Label fMaxLabel;
-    /**
-     * Label for scale
-     */
-    protected Label fScaleLabel;
-    /**
-     * Label for precision.
-     */
-    protected Label fPrecisionLabel;
-    /**
      * Text field for minimum.
      */
-    protected Text fMinText;
+    private Text fMinText;
     /**
      * Text field for maximum.
      */
-    protected Text fMaxText;
+    private Text fMaxText;
     /**
      * Text field for scale.
      */
-    protected Text fScaleText;
+    private Text fScaleText;
     /**
      * Text field for precision.
      */
-    protected Text fPrecisionText;
+    private Text fPrecisionText;
     /**
      * The sequence diagram widget reference.
      */
-    protected SDWidget fSdWidget;
+    private SDWidget fSdWidget;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -122,34 +106,34 @@ public class MinMaxDialog extends Dialog {
         g1layout.numColumns = 3;
         g1.setLayout(g1layout);
 
-        fMinLabel = new Label(g1, SWT.RADIO);
-        fMinLabel.setText(Messages.SequenceDiagram_MinTime);
-        fMinLabel.setLayoutData(newGridData(1));
+        Label minLabel = new Label(g1, SWT.RADIO);
+        minLabel.setText(Messages.SequenceDiagram_MinTime);
+        minLabel.setLayoutData(newGridData(1));
 
         fMinText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fMinText.setLayoutData(newGridData(2));
         fMinText.setText(String.valueOf(fSdWidget.getFrame().getMinTime().getValue()));
 
-        fMaxLabel = new Label(g1, SWT.RADIO);
-        fMaxLabel.setText(Messages.SequenceDiagram_MaxTime);
-        fMaxLabel.setLayoutData(newGridData(1));
+        Label maxLabel = new Label(g1, SWT.RADIO);
+        maxLabel.setText(Messages.SequenceDiagram_MaxTime);
+        maxLabel.setLayoutData(newGridData(1));
 
         fMaxText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fMaxText.setLayoutData(newGridData(2));
         fMaxText.setText(String.valueOf(fSdWidget.getFrame().getMaxTime().getValue()));
 
-        fScaleLabel = new Label(g1, SWT.RADIO);
-        fScaleLabel.setText(Messages.SequenceDiagram_Scale);
-        fScaleLabel.setLayoutData(newGridData(1));
+        Label scaleLabel = new Label(g1, SWT.RADIO);
+        scaleLabel.setText(Messages.SequenceDiagram_Scale);
+        scaleLabel.setLayoutData(newGridData(1));
 
         fScaleText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fScaleText.setLayoutData(newGridData(2));
         fScaleText.setText(String.valueOf(fSdWidget.getFrame().getMinTime().getScale()));
 
 
-        fPrecisionLabel = new Label(g1, SWT.RADIO);
-        fPrecisionLabel.setText(Messages.SequenceDiagram_Precision);
-        fPrecisionLabel.setLayoutData(newGridData(1));
+        Label precisionLabel = new Label(g1, SWT.RADIO);
+        precisionLabel.setText(Messages.SequenceDiagram_Precision);
+        precisionLabel.setLayoutData(newGridData(1));
 
         fPrecisionText = new Text(g1, SWT.SINGLE | SWT.BORDER);
         fPrecisionText.setLayoutData(newGridData(2));

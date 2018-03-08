@@ -93,10 +93,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
      */
     private Button fOverwriteButton;
     /**
-     * The button to open import wizard for import locally.
-     */
-    private Button fImportLocallyButton;
-    /**
      * List of available LTTng 2.0 projects
      */
     private List<IProject> fProjects;
@@ -189,9 +185,9 @@ public class ImportDialog extends Dialog implements IImportDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        fImportLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
+        Button importLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
         if (fSession.isStreamedTrace()) {
-            fImportLocallyButton.setText("&Next..."); //$NON-NLS-1$
+            importLocallyButton.setText("&Next..."); //$NON-NLS-1$
         }
     }
 
@@ -425,14 +421,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
         fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
         fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
-
-//        Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-//        layout = new GridLayout(1, true);
-//        overrideGroup.setLayout(layout);
-//        overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//
-//        fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
-//        fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
 
         getShell().setMinimumSize(new Point(500, 50));
     }
