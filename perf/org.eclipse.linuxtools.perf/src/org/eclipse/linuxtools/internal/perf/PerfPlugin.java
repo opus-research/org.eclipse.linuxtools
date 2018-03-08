@@ -116,10 +116,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 	private TreeParent _modelRoot;
 
 	// Source Disassembly Data
-	private IPerfData sourceDisassemblyData;
+	private SourceDisassemblyData sourceDisassemblyData;
 
 	// Stat Data
-	private IPerfData statData;
+	private StatData statData;
 
 	// Profile view
 	private PerfProfileView _ProfileView = null;
@@ -131,17 +131,17 @@ public class PerfPlugin extends AbstractUIPlugin {
 	private IPath curWorkingDir;
 
 	// Current stat comparison data
-	private IPerfData statDiffData;
+	private StatComparisonData statDiffData;
 
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
 
-	public IPerfData getSourceDisassemblyData () {
+	public SourceDisassemblyData getSourceDisassemblyData () {
 		return sourceDisassemblyData;
 	}
 
-	public IPerfData getStatData () {
+	public StatData getStatData () {
 		return statData;
 	}
 
@@ -149,7 +149,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 		return curProfileData;
 	}
 
-	public IPerfData getStatDiffData() {
+	public StatComparisonData getStatDiffData() {
 		return statDiffData;
 	}
 
@@ -189,11 +189,11 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this._modelRoot = rootnode;
 	}
 
-	public void setSourceDisassemblyData (IPerfData sourceDisassemblyData) {
+	public void setSourceDisassemblyData (SourceDisassemblyData sourceDisassemblyData) {
 		this.sourceDisassemblyData = sourceDisassemblyData;
 	}
 
-	public void setStatData (IPerfData statData) {
+	public void setStatData (StatData statData) {
 		this.statData = statData;
 	}
 
@@ -201,7 +201,7 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this.curProfileData = perfProfileData;
 	}
 
-	public void setStatDiffData(IPerfData diffData){
+	public void setStatDiffData(StatComparisonData diffData){
 		this.statDiffData = diffData;
 	}
 

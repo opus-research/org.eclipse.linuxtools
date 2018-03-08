@@ -175,7 +175,7 @@ public class StatsComparisonTest {
 				oldStatData, newStatData);
 
 		diffData.runComparison();
-		String actualResult = diffData.getPerfData();
+		String actualResult = diffData.getResult();
 		String[] actualResultLines = actualResult.split("\n");
 
 		String curLine;

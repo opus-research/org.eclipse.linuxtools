@@ -25,8 +25,6 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseWheelListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -37,6 +35,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -68,26 +67,59 @@ import org.eclipse.ui.PlatformUI;
 public class TmfVirtualTable extends Composite {
 
     // The table
+    /**
+     * Field fTable.
+     */
     private Table   fTable;
+    /**
+     * Field fTableRows.
+     */
     private int     fTableRows         = 0;      // Number of table rows
+    /**
+     * Field fFullyVisibleRows.
+     */
     private int     fFullyVisibleRows  = 0;      // Number of fully visible table rows
+    /**
+     * Field fFrozenRowCount.
+     */
     private int     fFrozenRowCount    = 0;      // Number of frozen table rows at top of table
 
+    /**
+     * Field fTableTopEventRank.
+     */
     private int     fTableTopEventRank = 0;      // Global rank of the first entry displayed
+    /**
+     * Field fSelectedEventRank.
+     */
     private int     fSelectedEventRank = 0;      // Global rank of the selected event
+    /**
+     * Field fPendingSelection.
+     */
     private boolean fPendingSelection  = false;  // Pending selection update
 
+    /**
+     * Field fTableItemCount.
+     */
     private int       fTableItemCount  = 0;
 
     // The slider
+    /**
+     * Field fSlider.
+     */
     private Slider fSlider;
 
+    /**
+     * Field fLinuxItemHeight.
+     */
     private int fLinuxItemHeight = 0;            // Calculated item height for Linux workaround
+    /**
+     * Field tooltipProvider.
+     */
     private TooltipProvider tooltipProvider = null;
+    /**
+     * Field doubleClickListener.
+     */
     private IDoubleClickListener doubleClickListener = null;
-
-    private boolean fResetTopIndex = false;      // Flag to trigger reset of top index
-    private ControlAdapter fResizeListener;      // Resize listener to update visible rows
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -155,7 +187,7 @@ public class TmfVirtualTable extends Composite {
             }
         });
 
-        fResizeListener = new ControlAdapter() {
+        fTable.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent event) {
                 int tableHeight = Math.max(0, fTable.getClientArea().height - fTable.getHeaderHeight());
@@ -164,9 +196,7 @@ public class TmfVirtualTable extends Composite {
                     fSlider.setThumb(Math.max(1, Math.min(fTableRows, fFullyVisibleRows)));
                 }
             }
-        };
-        fTable.addControlListener(fResizeListener);
-
+        });
         // Implement a "fake" tooltip
         final String TOOLTIP_DATA_KEY = "_TABLEITEM"; //$NON-NLS-1$
         final Listener labelListener = new Listener () {
@@ -323,24 +353,6 @@ public class TmfVirtualTable extends Composite {
                     }
                 }
                 );
-
-        /*
-         * Feature in Windows. When a partially visible table item is selected,
-         * after ~500 ms the top index is changed to ensure the selected item is
-         * fully visible. This leaves a blank space at the bottom of the virtual
-         * table. The workaround is to reset the top index to 0 if it is not 0.
-         * Also reset the top index to 0 if indicated by the flag that was set
-         * at table selection of a partially visible table item.
-         */
-        fTable.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                if (fTable.getTopIndex() != 0 || fResetTopIndex) {
-                    fTable.setTopIndex(0);
-                }
-                fResetTopIndex = false;
-            }
-        });
     }
 
     /**
@@ -355,14 +367,39 @@ public class TmfVirtualTable extends Composite {
         }
 
         /*
-         * Feature in Linux. When a partially visible table item is selected,
-         * the origin is changed to ensure the selected item is fully visible.
-         * This makes the first row partially visible. The solution is to force
-         * reset the origin by setting the top index to 0. This should happen
-         * only once at the next redraw by the paint listener.
+         * Feature in Windows. When a partially visible table item is selected,
+         * after ~500 ms the top index is changed to ensure the selected item is
+         * fully visible. This leaves a blank space at the bottom of the virtual
+         * table. The workaround is to update the top event rank, refresh the
+         * table and reset the top index to 0 after a sufficient delay.
          */
         if (selectedRow >= fFullyVisibleRows) {
-            fResetTopIndex = true;
+            final Display display = fTable.getDisplay();
+            Thread thread = new Thread("Top index check") { //$NON-NLS-1$
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                    }
+                    display.asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (fTable.isDisposed()) {
+                                return;
+                            }
+                            int topIndex = fTable.getTopIndex();
+                            if (topIndex != 0) {
+                                fTableTopEventRank += topIndex;
+                                refreshTable();
+                                fSlider.setSelection(fTableTopEventRank);
+                                fTable.setTopIndex(0);
+                            }
+                        }
+                    });
+                }
+            };
+            thread.start();
         }
     }
 
@@ -833,13 +870,6 @@ public class TmfVirtualTable extends Composite {
         for (int i = 0; i < columnData.length; i++) {
             TableColumn column = new TableColumn(fTable, columnData[i].alignment, i);
             column.setText(columnData[i].header);
-            /*
-             * In Linux the table does not receive a control resized event when
-             * a table column resize causes the horizontal scroll bar to become
-             * visible or invisible, so a resize listener must be added to every
-             * table column to properly update the number of fully visible rows.
-             */
-            column.addControlListener(fResizeListener);
             if (columnData[i].width > 0) {
                 column.setWidth(columnData[i].width);
             } else {
