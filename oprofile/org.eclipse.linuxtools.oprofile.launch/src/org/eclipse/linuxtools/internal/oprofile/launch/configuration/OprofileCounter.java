@@ -56,6 +56,18 @@ public class OprofileCounter {
 	}
 
 	/**
+	 * Constructor for OprofileCounter.
+	 * @param nr the counter number
+	 * @param events the given events for counter number <code>nr</code>
+	 */
+	public OprofileCounter(int nr, OpEvent[] events) {
+		number = nr;
+		_enabled = false;
+		eventList = events;
+		daemonEvent = new OprofileDaemonEvent();
+	}
+
+	/**
 	 * Constructs all of the counters in  the given launch configuration.
 	 * @param config the launch configuration
 	 * @return an array of all counters
