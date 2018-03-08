@@ -88,7 +88,7 @@ class StatsProviderEventTypes extends AbstractTmfStateProvider {
             /* Special handling for lost events */
             if (event instanceof ITmfLostEvent) {
                 ITmfLostEvent le = (ITmfLostEvent) event;
-                quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+                quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, Messages.LostEventsName);
 
                 int curVal = ss.queryOngoingState(quark).unboxInt();
                 if (curVal == -1) {
