@@ -16,7 +16,6 @@ import org.eclipse.cdt.core.model.IFunction;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -51,10 +50,10 @@ public class DoubleClickTest extends AbstractCachegrindTest {
 
 	private void doDoubleClick(TreePath path) {
 		CachegrindViewPart view = (CachegrindViewPart) ValgrindUIPlugin.getDefault().getView().getDynamicView();
-		TreeViewer treeViewer = view.getViewer();
+		TreeViewer treeViewer = (TreeViewer) view.getViewer();
 
 		ICachegrindElement element = (ICachegrindElement) path.getLastSegment();
-		treeViewer.expandToLevel(element, AbstractTreeViewer.ALL_LEVELS);
+		treeViewer.expandToLevel(element, TreeViewer.ALL_LEVELS);
 		TreeSelection selection = new TreeSelection(path);
 
 		IDoubleClickListener listener = view.getDoubleClickListener();

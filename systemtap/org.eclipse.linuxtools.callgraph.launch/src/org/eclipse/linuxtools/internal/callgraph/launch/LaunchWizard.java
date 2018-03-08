@@ -22,7 +22,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -132,7 +131,7 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
 						Messages.getString("LaunchWizard.NamePrefix")), null);  //$NON-NLS-1$
 		id.open();
 		
-		if (id.getReturnCode() == Window.CANCEL){			
+		if (id.getReturnCode() == InputDialog.CANCEL){			
 			return;
 		}
 		
@@ -232,7 +231,7 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
 			public void widgetSelected(SelectionEvent e) {
 				argumentsLocation.setText(
 						argumentsLocation.getText() + " process(\""  //$NON-NLS-1$
-						+ binaryLocation.getText() + "\").function(\"\")"); //$NON-NLS-1$
+						+ binaryLocation.getText() + "\").function(\"\")"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		});
 		

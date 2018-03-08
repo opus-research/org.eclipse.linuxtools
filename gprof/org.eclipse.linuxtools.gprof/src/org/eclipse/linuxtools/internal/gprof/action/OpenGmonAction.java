@@ -27,7 +27,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.gprof.Activator;
 import org.eclipse.linuxtools.internal.gprof.dialog.OpenGmonDialog;
 import org.eclipse.linuxtools.internal.gprof.view.GmonView;
@@ -46,7 +45,7 @@ public class OpenGmonAction implements IEditorLauncher {
 		String s = getDefaultBinary(file);
 		Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
 		OpenGmonDialog d = new OpenGmonDialog(shell, s, file);
-		if (d.open() != Window.OK) {
+		if (d.open() != OpenGmonDialog.OK) {
 			return;
 		}
 		String binaryPath = d.getBinaryFile();
@@ -115,7 +114,7 @@ public class OpenGmonAction implements IEditorLauncher {
 			}
 		} catch (FileNotFoundException e) {
 			Status status = new Status(
-					IStatus.WARNING,
+					Status.WARNING,
 					Activator.PLUGIN_ID,
 					IStatus.WARNING,
 					e.getMessage(),
@@ -124,7 +123,7 @@ public class OpenGmonAction implements IEditorLauncher {
 			Activator.getDefault().getLog().log(status);
 		} catch (IOException e) {
 			Status status = new Status(
-					IStatus.ERROR,
+					Status.ERROR,
 					Activator.PLUGIN_ID,
 					IStatus.ERROR,
 					e.getMessage(),

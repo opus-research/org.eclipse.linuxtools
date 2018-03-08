@@ -42,7 +42,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -102,7 +101,7 @@ public class STSymbolManager {
 						cleanup();
 					} while (true);
 				} catch (Exception _) {
-					Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, _.getMessage(), _);
+					Status s = new Status(Status.ERROR, Activator.PLUGIN_ID, _.getMessage(), _);
 					Activator.getDefault().getLog().log(s);
 				}
 			}

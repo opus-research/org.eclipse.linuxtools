@@ -123,12 +123,12 @@ public class CEditor extends AbstractDecoratedTextEditor {
 				{
 					if(chars[needle-1] == '/' && chars[needle] == '*')
 					{
-						commentChunks.add(needle);
+						commentChunks.add(new Integer(needle));
 						while(needle < chars.length)
 						{
 							if(chars[needle-1] == '*' && chars[needle] == '/')
 							{
-								commentChunks.add(needle);
+								commentChunks.add(new Integer(needle));
 								needle++;
 								break;
 							}
@@ -139,11 +139,11 @@ public class CEditor extends AbstractDecoratedTextEditor {
 				}
 				for(int i=0, pair, start, end; i < commentChunks.size(); i++)
 				{
-					if(!(commentChunks.get(i).intValue() < offset))
+					if(!(((Integer)(commentChunks.get(i))).intValue() < offset))
 					{
 						pair = i - i%2;
-						start = commentChunks.get(pair).intValue();
-						end = commentChunks.get(pair+1).intValue();
+						start = ((Integer)(commentChunks.get(pair))).intValue();
+						end = ((Integer)(commentChunks.get(pair+1))).intValue();
 						if(offset >= start && offset <= end)
 							die=true;
 					}
