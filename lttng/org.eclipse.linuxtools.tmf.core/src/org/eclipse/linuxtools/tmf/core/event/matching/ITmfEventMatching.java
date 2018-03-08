@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event.matching;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-
 /**
  * Interface for matching trace events
  *
@@ -21,18 +19,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  *
  */
 public interface ITmfEventMatching {
-
-    /**
-     * Matches one event
-     *
-     * @param event
-     *            The event to match
-     * @param traceno
-     *            The number of the trace this event belongs to
-     *
-     * @return A pair of event if a match was found, false otherwise
-     */
-    abstract TmfEventDependency matchEvent(ITmfEvent event, int traceno);
 
     /**
      * Method that start the process of matching events
@@ -56,13 +42,5 @@ public interface ITmfEventMatching {
      * somewhere to be reused later?
      */
     public void finalizeMatching();
-
-    /**
-     * Prints stats from the matching
-     *
-     * @return string of statistics
-     *
-     */
-    public String printMatchingStats();
 
 }
