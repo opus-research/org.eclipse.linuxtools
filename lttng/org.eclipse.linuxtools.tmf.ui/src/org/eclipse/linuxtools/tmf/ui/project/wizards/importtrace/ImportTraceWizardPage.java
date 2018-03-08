@@ -732,7 +732,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             boolean traceTypeOK = false;
             if (traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY)) {
                 for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                    if (traceType.equals(TmfTraceType.CUSTOM_TXT_CATEGORY + ":" + def.definitionName)) { //$NON-NLS-1$
+                    if (traceType.equals(TmfTraceType.CUSTOM_TXT_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
                         traceTypeOK = true;
                         traceBundle = Activator.getDefault().getBundle().getSymbolicName();
                         traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
@@ -742,7 +742,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
                 }
             } else if (traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY)) {
                 for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                    if (traceType.equals(TmfTraceType.CUSTOM_XML_CATEGORY + ":" + def.definitionName)) { //$NON-NLS-1$
+                    if (traceType.equals(TmfTraceType.CUSTOM_XML_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
                         traceTypeOK = true;
                         traceBundle = Activator.getDefault().getBundle().getSymbolicName();
                         traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
