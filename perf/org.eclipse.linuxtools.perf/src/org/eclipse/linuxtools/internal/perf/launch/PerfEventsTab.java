@@ -72,6 +72,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 
 		if(parent.getChildren().length > 0){
 			top = (Composite) parent.getChildren()[0];
+			setControl(top);
 		} else {
 			top = new Composite(parent, SWT.NONE);
 			setControl(top);
