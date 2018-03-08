@@ -13,7 +13,7 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.test.stub.model;
 
 import java.util.Date;
 
-@SuppressWarnings({"javadoc", "nls"})
+@SuppressWarnings("nls")
 public class TraceModelImplFactory {
 
 	// ========================================================================
@@ -57,10 +57,10 @@ public class TraceModelImplFactory {
 		TraceImpl trace;
 		TraceImpl[] traceArr = new TraceImpl[number];
 		for (int i = 0; i < traceArr.length; i++) {
-			int counter = i%17;
+			int count = i%17;
 			long sTime = i * (long) 1E6;
-			trace = new TraceImpl(traceNames[counter].name, sTime  , sTime + 20000,
-					traceNames[counter].classNmme);
+			trace = new TraceImpl(traceNames[count].name, sTime  , sTime + 20000,
+					traceNames[count].classNmme);
 			create5000Events(trace);
 			traceArr[i] = trace;
 		}

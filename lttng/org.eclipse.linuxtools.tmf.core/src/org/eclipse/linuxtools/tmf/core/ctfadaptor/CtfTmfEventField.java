@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
@@ -25,29 +24,13 @@ import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 
 /**
- * The CTF implementation of the TMF event field model
- *
+ * The CTF implementation of the TMF event field model 
+ * 
  * @version 1.0
- * @author Matthew Khouzam
+ * @author Matthew khouzam
  * @author Alexandre Montplaisir
  */
 public abstract class CtfTmfEventField implements ITmfEventField {
-
-    // ------------------------------------------------------------------------
-    // Class attributes
-    // ------------------------------------------------------------------------
-
-    /** @since 1.2 */
-    protected static final int FIELDTYPE_INTEGER = 0;
-
-    /** @since 1.2 */
-    protected static final int FIELDTYPE_STRING = 1;
-
-    /** @since 1.2 */
-    protected static final int FIELDTYPE_INTEGER_ARRAY = 2;
-
-    /** @since 1.2 */
-    protected static final int FIELDTYPE_FLOAT = 3;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -56,19 +39,16 @@ public abstract class CtfTmfEventField implements ITmfEventField {
     protected final String name;
 
     // ------------------------------------------------------------------------
-    // Constructor
+    // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Standard constructor. Only to be used internally, call parseField() to
-     * generate a new field object.
-     *
-     * @param name
-     *            The name of this field
+     * Constructor for CtfTmfEventField.
+     * @param name String
      */
     protected CtfTmfEventField(String name) {
-        /* Strip the underscore */
-        if (name.startsWith("_")) { //$NON-NLS-1$
+        /* Strip the underscore*/
+        if ( name.startsWith("_") ) { //$NON-NLS-1$
             this.name = name.substring(1);
         } else {
             this.name = name;
@@ -79,6 +59,11 @@ public abstract class CtfTmfEventField implements ITmfEventField {
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
+    /**
+     * Method getName.
+     * @return String
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getName()
+     */
     @Override
     public String getName() {
         return this.name;
@@ -89,13 +74,10 @@ public abstract class CtfTmfEventField implements ITmfEventField {
     // ------------------------------------------------------------------------
 
     /**
-     * Factory method to instantiate CtfTmfEventField objects.
-     *
-     * @param fieldDef
-     *            The CTF Definition of this event field
-     * @param fieldName
-     *            String The name to assign to this field
-     * @return The resulting CtfTmfEventField object
+     * Method parseField.
+     * @param fieldDef Definition
+     * @param fieldName String
+     * @return CtfTmfEventField
      */
     public static CtfTmfEventField parseField(Definition fieldDef,
             String fieldName) {
@@ -103,13 +85,8 @@ public abstract class CtfTmfEventField implements ITmfEventField {
 
         /* Determine the Definition type */
         if (fieldDef instanceof IntegerDefinition) {
-            IntegerDefinition intDef = (IntegerDefinition) fieldDef;
-            int base = intDef.getDeclaration().getBase();
-            field = new CTFIntegerField(intDef.getValue(), fieldName, base);
-
-        } else if (fieldDef instanceof EnumDefinition) {
-            EnumDefinition enumDef = (EnumDefinition) fieldDef;
-            field = new CTFStringField(enumDef.getValue(), fieldName);
+            field = new CTFIntegerField(
+                    ((IntegerDefinition) fieldDef).getValue(), fieldName);
 
         } else if (fieldDef instanceof StringDefinition) {
             field = new CTFStringField(
@@ -127,8 +104,7 @@ public abstract class CtfTmfEventField implements ITmfEventField {
                 /* This is a an array of CTF Integers */
                 long[] values = new long[arrayDecl.getLength()];
                 for (int i = 0; i < arrayDecl.getLength(); i++) {
-                    values[i] = ((IntegerDefinition) arrayDef.getElem(i))
-                            .getValue();
+                    values[i] = ((IntegerDefinition) arrayDef.getElem(i)).getValue();
                 }
                 field = new CTFIntegerArrayField(values, fieldName);
             }
@@ -148,99 +124,121 @@ public abstract class CtfTmfEventField implements ITmfEventField {
                 /* Sequence of integers => CTFIntegerArrayField */
                 long[] values = new long[seqDef.getLength()];
                 for (int i = 0; i < seqDef.getLength(); i++) {
-                    values[i] = ((IntegerDefinition) seqDef.getElem(i))
-                            .getValue();
+                    values[i] = ((IntegerDefinition) seqDef.getElem(i)).getValue();
                 }
                 field = new CTFIntegerArrayField(values, fieldName);
             }
             /* Add other Sequence types here */
-
-        } else if (fieldDef instanceof FloatDefinition) {
+        } else if (fieldDef instanceof FloatDefinition){
             FloatDefinition floatDef = (FloatDefinition) fieldDef;
-            field = new CTFFloatField(floatDef.getValue(), fieldName);
+            field = new CTFFloatField( floatDef.getValue(), fieldName);
         }
+
 
         return field;
     }
 
     /**
-     * Copy factory. Create a new field by (deep-) copying the information in an
-     * existing one.
-     *
-     * @param other
-     *            The other CtfTmfEventField to copy
-     * @return The new CtfTmfEventField
+     * Method copyFrom.
+     * @param other CtfTmfEventField
+     * @return CtfTmfEventField
      */
     public static CtfTmfEventField copyFrom(CtfTmfEventField other) {
         switch (other.getFieldType()) {
-        case FIELDTYPE_INTEGER:
-            CTFIntegerField intOther = (CTFIntegerField) other;
-            return new CTFIntegerField(intOther.getValue(), intOther.name,
-                    intOther.getBase());
-        case FIELDTYPE_STRING:
+        case 0:
+            return new CTFIntegerField(((CTFIntegerField) other).getValue(),
+                    other.name);
+        case 1:
             return new CTFStringField(((CTFStringField) other).getValue(),
                     other.name);
-        case FIELDTYPE_INTEGER_ARRAY:
+        case 2:
             return new CTFIntegerArrayField(
                     ((CTFIntegerArrayField) other).getValue(), other.name);
-        case FIELDTYPE_FLOAT:
-            return new CTFFloatField(((CTFFloatField) other).getValue(),
-                    other.name);
+        case 3:
+            return new CTFFloatField(
+                    ((CTFFloatField) other).getValue(), other.name);
         default:
             return null;
         }
     }
 
+    /**
+     * Method clone.
+     * @return CtfTmfEventField
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#clone()
+     */
     @Override
     public CtfTmfEventField clone() {
         return CtfTmfEventField.copyFrom(this);
     }
 
-    // ------------------------------------------------------------------------
-    // Abstract methods (to be implemented by each specific field type)
-    // ------------------------------------------------------------------------
-
     /**
      * Return the int representing this field's value type
      *
-     * @return The field type
-     */
+
+     * @return the field type */
     public abstract int getFieldType();
 
     /**
      * Return this field's value. You can cast it to the correct type depending
      * on what getFieldType says.
      *
-     * @return The field's value
+
+     * @return the field value * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
      */
     @Override
     public abstract Object getValue();
 
-    // ------------------------------------------------------------------------
-    // Other methods defined by ITmfEventField, but not used here.
-    // CTF fields do not have sub-fields (yet!)
-    // ------------------------------------------------------------------------
+    /**
+     * Other methods defined by ITmfEventField, but not used here: the CTF
+     *       fields do not have sub-fields (yet!)
+     *
 
+     * @return the field names * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldNames()
+     */
     @Override
     public String[] getFieldNames() {
         return null;
     }
 
+    /**
+     * Method getFieldName.
+     * @param index int
+     * @return String
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFieldName(int)
+     */
     @Override
     public String getFieldName(int index) {
         return null;
     }
 
+    /**
+     * Method getFields.
+     * @return ITmfEventField[]
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getFields()
+     */
     @Override
     public ITmfEventField[] getFields() {
         return null;
     }
 
+    /**
+     * Method getField.
+     * @param fieldName String
+     * @return ITmfEventField
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(String)
+     */
     @Override
     public ITmfEventField getField(String fieldName) {
         return null;
     }
 
+    /**
+     * Method getField.
+     * @param index int
+     * @return ITmfEventField
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getField(int)
+     */
     @Override
     public ITmfEventField getField(int index) {
         return null;
@@ -248,84 +246,59 @@ public abstract class CtfTmfEventField implements ITmfEventField {
 }
 
 /**
- * The CTF field implementation for integer fields.
- *
- * @author alexmont
+ * <b><u>CTFIntegerField</u></b>
+ * @author ematkho
+ * @version $Revision: 1.0 $
  */
 final class CTFIntegerField extends CtfTmfEventField {
 
     private final long longValue;
-    private final int base;
 
     /**
      * A CTF "IntegerDefinition" can be an integer of any byte size, so in the
      * Java parser this is interpreted as a long.
-     *
-     * @param longValue
-     *            The integer value of this field
-     * @param name
-     *            The name of this field
+     * @param longValue long
+     * @param name String
      */
-    CTFIntegerField(long longValue, String name, int base) {
+    CTFIntegerField(long longValue, String name) {
         super(name);
         this.longValue = longValue;
-        this.base = base;
     }
 
     /**
-     * Return the integer's base. (Not made public until it's needed.)
-     *
-     * @return The base, usually 10 or 16.
+     * Method getFieldType.
+     * @return int
      */
-    int getBase() {
-        return base;
-    }
-
     @Override
     public int getFieldType() {
-        return FIELDTYPE_INTEGER;
+        return 0;
     }
 
+    /**
+     * Method getValue.
+     * @return Long
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
+     */
     @Override
     public Long getValue() {
         return this.longValue;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(name);
-        sb.append('=');
-
-        /* Format the number correctly according to the integer's base */
-        switch (base) {
-        case 2:
-            sb.append("0b"); //$NON-NLS-1$
-            sb.append(Long.toBinaryString(longValue));
-            break;
-        case 8:
-            sb.append('0');
-            sb.append(Long.toOctalString(longValue));
-            break;
-        case 10:
-            sb.append(longValue);
-            break;
-        case 16:
-            sb.append("0x"); //$NON-NLS-1$
-            sb.append(Long.toHexString(longValue));
-            break;
-        default:
-            /* Non-standard base, we'll just print it as a decimal number */
-            sb.append(longValue);
-            break;
-        }
-        return sb.toString();
+        return name + '=' + longValue;
     }
 }
 
 /**
- * The CTF field implementation for string fields
- *
- * @author alexmont
+ * <b><u>CTFStringField</u></b>
+ * @author ematkho
+ * @version $Revision: 1.0 $
  */
 final class CTFStringField extends CtfTmfEventField {
 
@@ -333,27 +306,38 @@ final class CTFStringField extends CtfTmfEventField {
 
     /**
      * Constructor for CTFStringField.
-     *
-     * @param strValue
-     *            The string value of this field
-     * @param name
-     *            The name of this field
+     * @param strValue String
+     * @param name String
      */
     CTFStringField(String strValue, String name) {
         super(name);
         this.strValue = strValue;
     }
 
+    /**
+     * Method getFieldType.
+     * @return int
+     */
     @Override
     public int getFieldType() {
-        return FIELDTYPE_STRING;
+        return 1;
     }
 
+    /**
+     * Method getValue.
+     * @return String
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
+     */
     @Override
     public String getValue() {
         return this.strValue;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return name + '=' + strValue;
@@ -361,9 +345,9 @@ final class CTFStringField extends CtfTmfEventField {
 }
 
 /**
- * CTF field implementation for arrays of integers.
- *
- * @author alexmont
+ * <b><u>CTFIntegerArrayField</u></b>
+ * @author ematkho
+ * @version $Revision: 1.0 $
  */
 final class CTFIntegerArrayField extends CtfTmfEventField {
 
@@ -371,28 +355,37 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
 
     /**
      * Constructor for CTFIntegerArrayField.
-     *
-     * @param longValues
-     *            The array of integers (as longs) that compose this field's
-     *            value
-     * @param name
-     *            The name of this field
+     * @param longValues long[]
+     * @param name String
      */
     CTFIntegerArrayField(long[] longValues, String name) {
         super(name);
         this.longValues = longValues;
     }
 
+    /**
+     * Method getFieldType.
+     * @return int
+     */
     @Override
     public int getFieldType() {
-        return FIELDTYPE_INTEGER_ARRAY;
+        return 2;
     }
 
+    /**
+     * Method getValue.
+     * @return long[]
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
+     */
     @Override
     public long[] getValue() {
         return this.longValues;
     }
 
+    /**
+     * Method toString.
+     * @return String
+     */
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
@@ -408,41 +401,47 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
 }
 
 /**
- * CTF field implementation for floats.
- *
- * @author emathko
  */
 final class CTFFloatField extends CtfTmfEventField {
 
-    private final Double value;
-
+    Double value;
     /**
      * Constructor for CTFFloatField.
-     *
-     * @param value
-     *            The float value (actually a double) of this field
-     * @param name
-     *            The name of this field
+     * @param value double
+     * @param name String
      */
-    protected CTFFloatField(double value, String name) {
+    protected CTFFloatField(double value ,String name) {
         super(name);
         this.value = value;
     }
 
+    /**
+     * Method getFieldType.
+     * @return int
+     */
     @Override
     public int getFieldType() {
-        return FIELDTYPE_FLOAT;
+        return 3;
     }
 
+    /**
+     * Method getValue.
+     * @return Object
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventField#getValue()
+     */
     @Override
     public Double getValue() {
         return this.value;
     }
 
+    /**
+     * Method toString.
+     * @return String
+     */
     @Override
-    public String toString() {
+    public String toString(){
         return name + '=' + value;
     }
-}
 
+}
 /* Implement other possible fields types here... */

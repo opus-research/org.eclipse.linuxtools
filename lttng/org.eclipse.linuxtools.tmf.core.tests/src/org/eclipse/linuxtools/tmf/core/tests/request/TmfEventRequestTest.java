@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.request.TmfEventRequestStub;
  * <p>
  * Test suite for the TmfEventRequest class.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("nls")
 public class TmfEventRequestTest extends TestCase {
 
 	// ------------------------------------------------------------------------
@@ -49,10 +49,7 @@ public class TmfEventRequestTest extends TestCase {
 	// Housekeeping
 	// ------------------------------------------------------------------------
 
-    /**
-     * @param name the test name
-     */
-    public TmfEventRequestTest(final String name) {
+	public TmfEventRequestTest(String name) {
 		super(name);
 	}
 
@@ -188,7 +185,7 @@ public class TmfEventRequestTest extends TestCase {
 	// equals
 	// ------------------------------------------------------------------------
 
-	public void testEqualsReflexivity() {
+	public void testEqualsReflexivity() throws Exception {
         assertTrue("equals", fRequest1.equals(fRequest1));
         assertTrue("equals", fRequest2.equals(fRequest2));
 
@@ -196,7 +193,7 @@ public class TmfEventRequestTest extends TestCase {
         assertFalse("equals", fRequest2.equals(fRequest1));
 	}
 
-	public void testEqualsSymmetry() {
+	public void testEqualsSymmetry() throws Exception {
         assertTrue("equals", fRequest1.equals(fRequest1b));
         assertTrue("equals", fRequest1b.equals(fRequest1));
 
@@ -206,13 +203,13 @@ public class TmfEventRequestTest extends TestCase {
         assertFalse("equals", fRequest3.equals(fRequest2));
 	}
 
-	public void testEqualsTransivity() {
+	public void testEqualsTransivity() throws Exception {
         assertTrue("equals", fRequest1.equals(fRequest1b));
         assertTrue("equals", fRequest1b.equals(fRequest1c));
         assertTrue("equals", fRequest1.equals(fRequest1c));
 	}
 
-	public void testEqualsNull() {
+	public void testEqualsNull() throws Exception {
         assertFalse("equals", fRequest1.equals(null));
         assertFalse("equals", fRequest2.equals(null));
 	}
@@ -221,7 +218,7 @@ public class TmfEventRequestTest extends TestCase {
 	// hashCode
 	// ------------------------------------------------------------------------
 
-	public void testHashCode() {
+	public void testHashCode() throws Exception {
         assertTrue("hashCode", fRequest1.hashCode() == fRequest1.hashCode());
         assertTrue("hashCode", fRequest2.hashCode() == fRequest2.hashCode());
 		assertTrue("hashCode", fRequest1.hashCode() != fRequest2.hashCode());
