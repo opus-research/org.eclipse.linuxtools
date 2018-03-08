@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Geneviève Bastien - Experiment instantiates with an experiment type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -84,7 +83,7 @@ public class OpenExperimentHandler extends AbstractHandler {
         // Check if we are closing down
         final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (window == null) {
-            return false;
+            return null;
         }
 
         // Check that the experiment is valid
@@ -92,7 +91,8 @@ public class OpenExperimentHandler extends AbstractHandler {
             return null;
         }
 
-        return TmfOpenTraceHelper.openTraceFromElement(fExperiment);
+        TmfOpenTraceHelper.openExperimentFromElement(fExperiment);
+        return null;
     }
 
 }
