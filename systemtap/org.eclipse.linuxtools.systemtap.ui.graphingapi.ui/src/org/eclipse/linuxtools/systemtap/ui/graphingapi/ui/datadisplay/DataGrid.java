@@ -26,8 +26,9 @@ import org.eclipse.linuxtools.systemtap.ui.structures.IFormattingStyles;
 import org.eclipse.linuxtools.systemtap.ui.structures.StringFormatter;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.events.MenuEvent;
-import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -93,6 +94,7 @@ public class DataGrid implements IUpdateListener {
 		table.setMenu(this.initMenus());
 		
 		table.addListener(SWT.MouseDown, new Listener() {
+			@Override
 			public void handleEvent(Event event) {
 				clickLocation.x = event.x;
 				clickLocation.y = event.y;
@@ -155,24 +157,23 @@ public class DataGrid implements IUpdateListener {
 		return cols.length-1;
 	}
 	
-	public class MainMenuListener implements MenuListener {
-		public void menuHidden(MenuEvent e) {}
-
+	public class MainMenuListener extends MenuAdapter {
+		@Override
 		public void menuShown(MenuEvent e) {
 			MenuItem item = ((Menu)e.widget).getItem(1);
 			item.setSelection(manualResize);
 		}
 	}
 
-	public class MenuManualyResizedSelection implements SelectionListener {
+	public class MenuManualyResizedSelection extends SelectionAdapter {
+		@Override
 		public void widgetSelected(SelectionEvent e) {
 			manualResize = !manualResize;
 		}
-		
-		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 
-	public class AddFilterSelection implements SelectionListener {
+	public class AddFilterSelection extends SelectionAdapter {
+		@Override
 		public void widgetSelected(SelectionEvent e) {
 			SelectFilterWizard wizard = new SelectFilterWizard(dataSet.getTitles());
 			IWorkbench workbench = PlatformUI.getWorkbench();
@@ -195,11 +196,10 @@ public class DataGrid implements IUpdateListener {
 				item.addSelectionListener(new RemoveFilterSelection());
 			}
 		}
-		
-		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 
 	public class RemoveFilterSelection implements SelectionListener {
+		@Override
 		public void widgetSelected(SelectionEvent e) {
 			IDataSetFilter idsf = (IDataSetFilter)((MenuItem)e.widget).getData();
 			e.widget.dispose();
@@ -210,12 +210,12 @@ public class DataGrid implements IUpdateListener {
 			}
 		}
 		
+		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 	
-	public class FormatMenuListener implements MenuListener {
-		public void menuHidden(MenuEvent e) {}
-
+	public class FormatMenuListener extends MenuAdapter {
+		@Override
 		public void menuShown(MenuEvent e) {
 			MenuItem[] items = ((Menu)e.widget).getItems();
 			boolean doubleValid = false, longValid = false;
@@ -249,7 +249,8 @@ public class DataGrid implements IUpdateListener {
 		}
 	}
 	
-	public class MenuFormatSelection implements SelectionListener {
+	public class MenuFormatSelection extends SelectionAdapter {
+		@Override
 		public void widgetSelected(SelectionEvent e) {
 			int format = IFormattingStyles.UNFORMATED;
 			int column = Math.max(1, getSelectedColumn());
@@ -264,14 +265,14 @@ public class DataGrid implements IUpdateListener {
 				table.getItem(i).setText(column, columnFormat[column-1].format(data[i].toString()));
 			table.redraw();
 		}
-		
-		public void widgetDefaultSelected(SelectionEvent e) {}
 	}
 	
+	@Override
 	public void handleUpdateEvent() {
 		if(table.isDisposed()) return;
 		
 		table.getDisplay().asyncExec(new Runnable() {
+			@Override
 			public void run() {
 				TableItem item;
 				int startLocation, endLocation = filteredDataSet.getRowCount();

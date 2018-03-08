@@ -82,11 +82,6 @@ public class GraphComposite extends Composite {
 		data.width = 15;
 		pluslabel.setLayoutData(data);
 
-	
-		//this.setLayout(new FillLayout());
-		//System.out.println("In graphcomposite style" + style);
-		//for (int i=0; i<gd.ySeries.length; i++)
-			//System.out.println("In graphcomposite, y: " + gd.ySeries[i]);
 		builder = GraphFactory.createGraph(this, style,gd, ds);
 		data = new FormData();
 		data.top = new FormAttachment(0,0);
@@ -220,6 +215,7 @@ public class GraphComposite extends Composite {
 	 *  propertyChangeListener - Detects changes in user preferences and applies them
 	 */
 	private SelectionListener scaleListener = new SelectionListener() {
+		@Override
 		public void widgetSelected(SelectionEvent e) {
 			
 			Scale scaler = (Scale) e.widget;
@@ -232,6 +228,7 @@ public class GraphComposite extends Composite {
 			}
 		}
 
+		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {}
 	};
 	
