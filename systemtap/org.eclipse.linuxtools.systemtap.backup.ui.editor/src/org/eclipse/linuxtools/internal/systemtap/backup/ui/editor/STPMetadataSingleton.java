@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 
+import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
+
 /**
  * 
  * Build and hold completion metadata fo Systemtap. This originally is generated from stap coverage data
@@ -264,8 +266,7 @@ public class STPMetadataSingleton {
 
 		try {
 			String a;
-			Process p = Runtime.getRuntime().exec(
-					"stap -L " + tapset + ".*");
+			Process p = RuntimeProcessFactory.getFactory().exec("stap -L " + tapset + ".*", null);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p
 					.getInputStream()), 5000);
 			while ((a = in.readLine()) != null) {
