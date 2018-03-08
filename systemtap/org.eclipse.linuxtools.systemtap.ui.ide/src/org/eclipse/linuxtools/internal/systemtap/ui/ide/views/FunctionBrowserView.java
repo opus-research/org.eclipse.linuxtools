@@ -39,7 +39,7 @@ public class FunctionBrowserView extends BrowserView {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		TapsetLibrary.init();
-		TapsetLibrary.addFunctionListener(new ViewUpdater());
+		TapsetLibrary.addListener(new ViewUpdater());
 		refresh();
 		makeActions();
 	}
@@ -50,9 +50,7 @@ public class FunctionBrowserView extends BrowserView {
 	@Override
 	public void refresh() {
 		functions = TapsetLibrary.getFunctions();
-		if (functions != null){
-			addLocalFunctions(localFunctions);
-		}
+		addLocalFunctions(localFunctions);
 	}
 
 	/**
