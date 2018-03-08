@@ -379,7 +379,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
         modifyAttribute(t, value, subAttributeQuark);
     }
 
-    private ITmfStateValue popAttribute(long t, int attributeQuark, boolean keepValue)
+    @Override
+    public ITmfStateValue popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
         /* These are the state values of the stack-attribute itself */
@@ -416,36 +417,20 @@ public class StateSystem implements ITmfStateSystemBuilder {
         int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
         ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
 
-        if (!keepValue) {
-            /* Update the state value of the stack-attribute */
-            ITmfStateValue nextSV;
-            if (--stackDepth == 0) {
-                /* Jump over "0" and store -1 (a null state value) */
-                nextSV = TmfStateValue.nullValue();
-            } else {
-                nextSV = TmfStateValue.newValueInt(stackDepth);
-            }
-            modifyAttribute(t, nextSV, attributeQuark);
-
-            /* Delete the sub-attribute that contained the user's state value */
-            removeAttribute(t, subAttributeQuark);
+        /* Update the state value of the stack-attribute */
+        ITmfStateValue nextSV;
+        if (--stackDepth == 0 ) {
+            /* Jump over "0" and store -1 (a null state value) */
+            nextSV = TmfStateValue.nullValue();
+        } else {
+            nextSV = TmfStateValue.newValueInt(stackDepth);
         }
+        modifyAttribute(t, nextSV, attributeQuark);
+
+        /* Delete the sub-attribute that contained the user's state value */
+        removeAttribute(t, subAttributeQuark);
 
         return poppedValue;
-    }
-
-    @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateValueTypeException {
-        return popAttribute(t, attributeQuark, false);
-    }
-
-    @Override
-    public ITmfStateValue peekAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateValueTypeException {
-        return popAttribute(t, attributeQuark, true);
     }
 
     @Override
