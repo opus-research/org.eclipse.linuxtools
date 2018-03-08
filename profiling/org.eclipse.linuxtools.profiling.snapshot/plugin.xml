@@ -66,8 +66,7 @@
             modes="profile"
             name="Profile As Snapshot"
             public="true"
-            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
-            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
+            sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator">
       </launchConfigurationType>
    </extension>
    <extension
