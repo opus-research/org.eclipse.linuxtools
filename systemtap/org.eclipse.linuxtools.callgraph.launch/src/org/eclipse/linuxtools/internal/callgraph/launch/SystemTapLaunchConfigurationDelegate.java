@@ -50,6 +50,7 @@ public class SystemTapLaunchConfigurationDelegate extends
 
 	private static final String TEMP_ERROR_OUTPUT =
 		PluginConstants.getDefaultOutput() + "stapTempError.error"; //$NON-NLS-1$
+	private static final String PROFILE_PLUGIN_ID = "org.eclipse.linuxtools.profiling.launch"; //$NON-NLS-1$
 	private String cmd;
 	private File temporaryScript = null;
 	private String arguments = ""; //$NON-NLS-1$
@@ -58,8 +59,6 @@ public class SystemTapLaunchConfigurationDelegate extends
 	private String outputPath = ""; //$NON-NLS-1$
 	private boolean needsBinary = false; // Set to false if we want to use SystemTap
 	private boolean needsArguments = false;
-	@SuppressWarnings("unused")
-	private boolean useColour = false;
 	private String binaryArguments = ""; //$NON-NLS-1$
 	private String partialCommand = ""; //$NON-NLS-1$
 	private String stap = ""; //$NON-NLS-1$
@@ -80,7 +79,6 @@ public class SystemTapLaunchConfigurationDelegate extends
 		 outputPath = ""; //$NON-NLS-1$
 		 needsBinary = false; // Set to false if we want to use SystemTap
 		 needsArguments = false;
-		 useColour = false;
 		 binaryArguments = ""; //$NON-NLS-1$
 	}
 	
@@ -103,9 +101,6 @@ public class SystemTapLaunchConfigurationDelegate extends
 		/*
 		 * Set variables
 		 */
-		if (config.getAttribute(LaunchConfigurationConstants.USE_COLOUR,
-				LaunchConfigurationConstants.DEFAULT_USE_COLOUR))
-			useColour = true; 
 		if (!config.getAttribute(LaunchConfigurationConstants.ARGUMENTS,
 				LaunchConfigurationConstants.DEFAULT_ARGUMENTS).equals(
 				LaunchConfigurationConstants.DEFAULT_ARGUMENTS)) {
@@ -260,7 +255,7 @@ public class SystemTapLaunchConfigurationDelegate extends
 
 			//Put command into a shell script
 			String cmd = generateCommand(config);
-			File script = File.createTempFile("org.eclipse.linuxtools.profiling.launch" + System.currentTimeMillis(), ".sh");
+			File script = File.createTempFile(PROFILE_PLUGIN_ID + System.currentTimeMillis(), ".sh"); //$NON-NLS-1$
 			String data = "#!/bin/sh\nexec " + cmd; //$NON-NLS-1$
 			FileOutputStream out = null;
 			try {
