@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.rpm.createrepo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.osgi.framework.FrameworkUtil;
 
@@ -128,20 +126,6 @@ public class CreaterepoProject {
 	}
 
 	/**
-	 * Execute the createrepo command.
-	 *
-	 * @param os Direct execution stream to this.
-	 * @return The status of the execution.
-	 * @throws CoreException Thrown when failure to execute command.
-	 */
-	public IStatus createrepo(OutputStream os) throws CoreException {
-		Createrepo createrepo = new Createrepo();
-		IStatus result = createrepo.execute(os, this, getCommandArguments());
-		getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-		return result;
-	}
-
-	/**
 	 * Get the project.
 	 *
 	 * @return The project.
@@ -185,18 +169,6 @@ public class CreaterepoProject {
 			}
 		}
 		return rpms;
-	}
-
-	/**
-	 * Get the command arguments to pass to the createrepo command. The
-	 * arguments come from the stored preferences from the preference page
-	 * and the project preferences.
-	 *
-	 * @return The command arguments.
-	 */
-	private static List<String> getCommandArguments() {
-		List<String> commands = new ArrayList<String>();
-		return commands;
 	}
 
 }
