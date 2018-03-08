@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
@@ -72,6 +73,8 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
 
     private final TmfBaseStatisticsTree fStatsData;
 
+    private final ITmfExtraEventInfo fExtraInfo;
+
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
@@ -95,17 +98,26 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
         fEvent3 = new TmfEvent(null, fTimestamp3, fSource, fType2, fContent3, fReference);
 
         fStatsData = new TmfBaseStatisticsTree();
-
-        fStatsData.setGlobalTotal(fTestName, 9);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent1.getType().getName(), 2);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent2.getType().getName(), 3);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent3.getType().getName(), 4);
+        fExtraInfo = new ITmfExtraEventInfo() {
+            @Override
+            public String getTraceName() {
+                return fTestName;
+            }
+        };
+        fStatsData.registerEvent(fEvent1, fExtraInfo);
+        fStatsData.registerEvent(fEvent1, fExtraInfo, 2);
+        fStatsData.registerEvent(fEvent2, fExtraInfo);
+        fStatsData.registerEvent(fEvent2, fExtraInfo, 3);
+        fStatsData.registerEvent(fEvent3, fExtraInfo);
+        fStatsData.registerEvent(fEvent3, fExtraInfo, 4);
 
         // Registers some events in time range
-        fStatsData.setTimeRangeTotal(fTestName, 9);
-        fStatsData.setTimeRangeTypeCount(fTestName, fEvent1.getType().getName(), 2);
-        fStatsData.setTimeRangeTypeCount(fTestName, fEvent2.getType().getName(), 3);
-        fStatsData.setTimeRangeTypeCount(fTestName, fEvent3.getType().getName(), 4);
+        fStatsData.registerEventInTimeRange(fEvent1, fExtraInfo);
+        fStatsData.registerEventInTimeRange(fEvent1, fExtraInfo, 3);
+        fStatsData.registerEventInTimeRange(fEvent2, fExtraInfo);
+        fStatsData.registerEventInTimeRange(fEvent2, fExtraInfo, 4);
+        fStatsData.registerEventInTimeRange(fEvent3, fExtraInfo);
+        fStatsData.registerEventInTimeRange(fEvent3, fExtraInfo, 5);
     }
 
     // ------------------------------------------------------------------------
@@ -356,16 +368,16 @@ public class TmfStatisticsTreeNodeTest extends TestCase {
         TmfStatisticsTreeNode elementNode3 = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fType2.getName()));
 
         assertEquals("getValue", 0, rootNode.getValue().getTotal());
-        assertEquals("getValue", 9, traceNode.getValue().getTotal());
+        assertEquals("getValue", 12, traceNode.getValue().getTotal());
         assertEquals("getValue", 0, catNode.getValue().getTotal());
-        assertEquals("getValue", 3, elementNode1.getValue().getTotal());
-        assertEquals("getValue", 4, elementNode3.getValue().getTotal());
+        assertEquals("getValue", 7, elementNode1.getValue().getTotal());
+        assertEquals("getValue", 5, elementNode3.getValue().getTotal());
 
         assertEquals("getValue", 0, rootNode.getValue().getPartial());
-        assertEquals("getValue", 9, traceNode.getValue().getPartial());
+        assertEquals("getValue", 15, traceNode.getValue().getPartial());
         assertEquals("getValue", 0, catNode.getValue().getPartial());
-        assertEquals("getValue", 3, elementNode1.getValue().getPartial());
-        assertEquals("getValue", 4, elementNode3.getValue().getPartial());
+        assertEquals("getValue", 9, elementNode1.getValue().getPartial());
+        assertEquals("getValue", 6, elementNode3.getValue().getPartial());
     }
 
     // ------------------------------------------------------------------------

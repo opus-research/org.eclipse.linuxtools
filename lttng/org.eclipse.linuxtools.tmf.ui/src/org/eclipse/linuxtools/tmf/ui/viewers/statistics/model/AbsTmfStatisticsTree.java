@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 
 /**
  * Base class for the statistics storage. It allow to implement a tree structure
@@ -149,52 +151,54 @@ public abstract class AbsTmfStatisticsTree {
     }
 
     /**
-     * Set the value to display in the "global total" cell. This means the total
-     * count of events for a trace, over its whole range.
+     * Register an event and increase his value by <i>qty</i>
      *
-     * @param traceName
-     *            The name of the trace (will be used as a sub-tree in the view)
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
      * @param qty
-     *            The value to display
+     *            The number of events that must be counted.
      */
-    public abstract void setGlobalTotal(String traceName, long qty);
+    public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty);
 
     /**
-     * Set the value to display in the "time range total" cell. This is the
-     * total number of events in the selected time range.
+     * Register an event.
      *
-     * @param traceName
-     *            The name of the trace (will be used as a sub-tree in the view)
-     * @param qty
-     *            The value to display
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
      */
-    public abstract void setTimeRangeTotal(String traceName, long qty);
+    public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
 
     /**
-     * Set the value to display in the "global type count" cells. These are the
-     * counts for each event types, over the whole range of the trace.
+     * Register an event within a time range and increase his value by qty
      *
-     * @param traceName
-     *            The name of the trace (will be used as a sub-tree in the view)
-     * @param type
-     *            The event type
+     * This method must be implemented by subclasses.
+     *
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
      * @param qty
-     *            The value to display
+     *            The number of events that must be counted.
+     * @since 2.0
      */
-    public abstract void setGlobalTypeCount(String traceName, String type, long qty);
+    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty);
 
     /**
-     * Set the value to display in the "time range type count" cells. These are
-     * the counts for each event types, in the selected time range.
+     * Register an event within a time range.
      *
-     * @param traceName
-     *            The name of the trace (will be used as a sub-tree in the view)
-     * @param type
-     *            The event type
-     * @param qty
-     *            The value to display
+     * This method must be implemented by subclasses.
+     *
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
+     * @since 2.0
      */
-    public abstract void setTimeRangeTypeCount(String traceName, String type, long qty);
+    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo);
 
     /**
      * Register that a new node was created.

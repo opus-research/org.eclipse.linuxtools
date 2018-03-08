@@ -52,26 +52,44 @@ public class TmfStatisticsValues {
     }
 
     /**
-     * Set the "global" count to the given value.
+     * Increments by one the total number of events.
+     */
+    public void incrementTotal() {
+        ++fNbEvents;
+    }
+
+    /**
+     * Increments <b>nb</b> times the total number of events.
      *
      * @param nb
-     *            The new value to use
+     *            Amount that will be added to the total events count. Ignored
+     *            if negative.
      */
-    public void setTotal(long nb) {
+    public void incrementTotal(int nb) {
         if (nb > 0) {
-            fNbEvents = nb;
+            fNbEvents += nb;
         }
     }
 
     /**
-     * Set the "time range" (or "partial") count to the given value.
+     * Increments by one the number of events within a time range (partial events
+     * count).
+     */
+    public void incrementPartial() {
+        ++fNbEventsInTimeRange;
+    }
+
+    /**
+     * Increments <b>nb</b> times the number of events within a time range
+     * (partial events count).
      *
      * @param nb
-     *            The new value to use
+     *            Amount that will be added to the partial events count. Ignored
+     *            if negative.
      */
-    public void setPartial(long nb) {
+    public void incrementPartial(int nb) {
         if (nb > 0) {
-            fNbEventsInTimeRange = nb;
+            fNbEventsInTimeRange += nb;
         }
     }
 

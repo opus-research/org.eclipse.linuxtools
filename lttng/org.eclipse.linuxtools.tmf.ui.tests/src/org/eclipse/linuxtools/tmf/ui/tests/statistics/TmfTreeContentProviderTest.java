@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
@@ -69,6 +70,8 @@ public class TmfTreeContentProviderTest extends TestCase {
 
     private final TmfBaseStatisticsTree fStatsData;
 
+    private final ITmfExtraEventInfo fExtraInfo;
+
     private final TmfTreeContentProvider treeProvider;
 
     // ------------------------------------------------------------------------
@@ -91,10 +94,14 @@ public class TmfTreeContentProviderTest extends TestCase {
         fEvent2 = new TmfEvent(null, fTimestamp2, fSource, fType2, fContent2, fReference);
 
         fStatsData = new TmfBaseStatisticsTree();
-
-        fStatsData.setGlobalTotal(fTestName, 2);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent1.getType().getName(), 1);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent2.getType().getName(), 1);
+        fExtraInfo = new ITmfExtraEventInfo() {
+            @Override
+            public String getTraceName() {
+                return name;
+            }
+        };
+        fStatsData.registerEvent(fEvent1, fExtraInfo);
+        fStatsData.registerEvent(fEvent2, fExtraInfo);
 
         treeProvider = new TmfTreeContentProvider();
     }

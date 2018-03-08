@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
@@ -72,6 +73,8 @@ public class TmfBaseStatisticsDataTest extends TestCase {
 
     private final TmfBaseStatisticsTree fStatsData;
 
+    private final ITmfExtraEventInfo fExtraInfo;
+
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
@@ -95,11 +98,15 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         fEvent3 = new TmfEvent(null, fTimestamp3, fSource, fType3, fContent3, fReference);
 
         fStatsData = new TmfBaseStatisticsTree();
-
-        fStatsData.setGlobalTotal(fTestName, 3);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent1.getType().getName(), 1);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent2.getType().getName(), 1);
-        fStatsData.setGlobalTypeCount(fTestName, fEvent3.getType().getName(), 1);
+        fExtraInfo = new ITmfExtraEventInfo() {
+            @Override
+            public String getTraceName() {
+                return name;
+            }
+        };
+        fStatsData.registerEvent(fEvent1, fExtraInfo);
+        fStatsData.registerEvent(fEvent2, fExtraInfo);
+        fStatsData.registerEvent(fEvent3, fExtraInfo);
     }
 
     // ------------------------------------------------------------------------
@@ -209,7 +216,7 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsData.getChildren(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes));
         for (TmfStatisticsTreeNode child : childrenTreeNode) {
             if (child.getKey().compareTo(fEvent1.getType().getName()) == 0) {
-                assertEquals("registerEvent", 1, child.getValue().getTotal());
+                assertEquals("registerEvent", 2, child.getValue().getTotal());
             } else if (child.getKey().compareTo(fEvent3.getType().getName()) == 0) {
                 assertEquals("registerEvent", 1, child.getValue().getTotal());
             }
