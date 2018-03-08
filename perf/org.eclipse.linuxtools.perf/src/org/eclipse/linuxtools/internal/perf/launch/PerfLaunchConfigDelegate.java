@@ -63,7 +63,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		// check if Perf exists in $PATH
 		if (! PerfCore.checkPerfInPath()) {
 			IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID,
-					Messages.PerfLaunchConfigDelegate_perf_not_found); //$NON-NLS-1$
+					Messages.PerfLaunchConfigDelegate_perf_not_found);
 			throw new CoreException(status);
 		}
 
@@ -148,6 +148,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				}
 
 				PerfCore.Report(config, getEnvironment(config), workingDir, monitor, null, print);
+				PerfPlugin.getDefault().getPerfProfileData().toFile().setReadOnly();
 				PerfCore.RefreshView(renderProcessLabel(exePath.toOSString()));
 
 				if (config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly,
@@ -190,7 +191,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 
 		// Get working directory
 		IPath workingDir = PerfPlugin.getDefault().getWorkingDir();
-		File wd = workingDir.toFile();
 
 		int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount,
 				PerfPlugin.ATTR_StatRunCount_default);
@@ -214,7 +214,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			statEvents = (configEvents == null) ? statEvents : configEvents.toArray(new String[]{});
 		}
 
-		StatData sd = new StatData(title, wd, exePath.toOSString(), arguments, runCount, statEvents);
+		StatData sd = new StatData(title, workingDir, exePath.toOSString(), arguments, runCount, statEvents);
 		sd.setLaunch(launch);
 		sd.parse();
 		PerfPlugin.getDefault().setStatData(sd);

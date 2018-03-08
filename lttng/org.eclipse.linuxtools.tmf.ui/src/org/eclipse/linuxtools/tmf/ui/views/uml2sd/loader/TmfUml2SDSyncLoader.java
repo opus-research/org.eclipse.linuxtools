@@ -106,14 +106,12 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
+
     /**
      * Default title name.
      */
     protected static final String TITLE = Messages.TmfUml2SDSyncLoader_ViewName;
-    /**
-     * Default block size for background request.
-     */
-    protected static final int DEFAULT_BLOCK_SIZE = 50000;
+
     /**
      * Maximum number of messages per page.
      */
@@ -314,7 +312,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
             TmfTimeRange window = TmfTimeRange.ETERNITY;
 
-            fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, DEFAULT_BLOCK_SIZE, ITmfDataRequest.ExecutionType.BACKGROUND) {
+            fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, 0, TmfDataRequest.ALL_DATA, ITmfDataRequest.ExecutionType.BACKGROUND) {
 
                 private ITmfTimestamp fFirstTime = null;
                 private ITmfTimestamp fLastTime = null;
@@ -462,7 +460,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         fLock.lock();
         try {
             if ((signal.getSource() != this) && (fFrame != null) && (fCheckPoints.size() > 0)) {
-                fCurrentTime = signal.getCurrentTime();
+                fCurrentTime = signal.getBeginTime();
                 fIsSelect = true;
                 moveToMessage();
             }
@@ -623,8 +621,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                     fFindResults.addAll(msgs);
                 }
 
-                @SuppressWarnings("rawtypes")
-                List selection = fView.getSDWidget().getSelection();
+                List<GraphNode> selection = fView.getSDWidget().getSelection();
                 if ((selection != null) && (selection.size() == 1)) {
                     fCurrentFindIndex = fFindResults.indexOf(selection.get(0)) + 1;
                 } else {
@@ -652,9 +649,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         cancelOngoingRequests();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean filter(List<?> filters) {
+    public boolean filter(List<FilterCriteria> filters) {
         fLock.lock();
         try {
             cancelOngoingRequests();
@@ -662,7 +658,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             if (filters == null) {
                 fFilterCriteria =  new ArrayList<FilterCriteria>();
             } else {
-                List<FilterCriteria> list = (List<FilterCriteria>)filters;
+                List<FilterCriteria> list = filters;
                 fFilterCriteria =  new ArrayList<FilterCriteria>(list);
             }
 
@@ -1079,7 +1075,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             window = TmfTimeRange.ETERNITY;
         }
 
-        fPageRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND) {
+        fPageRequest = new TmfEventRequest(ITmfEvent.class, window, 0, TmfDataRequest.ALL_DATA, ITmfDataRequest.ExecutionType.FOREGROUND) {
             private final List<ITmfSyncSequenceDiagramEvent> fSdEvent = new ArrayList<ITmfSyncSequenceDiagramEvent>();
 
             @Override
@@ -1105,7 +1101,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
         if (notifyAll) {
             TmfTimeRange timeRange = getSignalTimeRange(window.getStartTime());
-            broadcast(new TmfRangeSynchSignal(this, timeRange, timeRange.getStartTime()));
+            broadcast(new TmfRangeSynchSignal(this, timeRange));
         }
     }
 
@@ -1250,7 +1246,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          */
         public SearchJob(Criteria findCriteria, TmfTimeRange window) {
             super(Messages.TmfUml2SDSyncLoader_SearchJobDescrition);
-            fSearchRequest = new SearchEventRequest(window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND, findCriteria);
+            fSearchRequest = new SearchEventRequest(window, TmfDataRequest.ALL_DATA, ITmfDataRequest.ExecutionType.FOREGROUND, findCriteria);
         }
 
         @Override
@@ -1343,25 +1339,23 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          * Constructor
          * @param range @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param nbRequested @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#handleData(...)
-         * @param blockSize @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#handleData(...)
          * @param execType @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#handleData(...)
          * @param criteria The search criteria
          */
-        public SearchEventRequest(TmfTimeRange range, int nbRequested, int blockSize, ExecutionType execType, Criteria criteria) {
-            this(range, nbRequested, blockSize, execType, criteria, null);
+        public SearchEventRequest(TmfTimeRange range, int nbRequested, ExecutionType execType, Criteria criteria) {
+            this(range, nbRequested, execType, criteria, null);
         }
 
         /**
          * Constructor
          * @param range @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param nbRequested @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
-         * @param blockSize @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param execType @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param criteria The search criteria
          * @param monitor progress monitor
          */
-        public SearchEventRequest(TmfTimeRange range, int nbRequested, int blockSize, ExecutionType execType, Criteria criteria, IProgressMonitor monitor) {
-            super(ITmfEvent.class, range, nbRequested, blockSize, execType);
+        public SearchEventRequest(TmfTimeRange range, int nbRequested, ExecutionType execType, Criteria criteria, IProgressMonitor monitor) {
+            super(ITmfEvent.class, range, 0, nbRequested, execType);
             fCriteria = new Criteria(criteria);
             fMonitor = monitor;
         }

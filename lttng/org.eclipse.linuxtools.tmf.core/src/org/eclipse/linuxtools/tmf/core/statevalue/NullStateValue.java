@@ -23,6 +23,8 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
  */
 final class NullStateValue extends TmfStateValue {
 
+    private final String value = "nullValue"; //$NON-NLS-1$
+
     @Override
     public Type getType() {
         return Type.NULL;
@@ -35,11 +37,35 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public Object getValue() {
-        return null;
+        return value;
     }
 
     @Override
     public String toString() {
+        return value;
+    }
+
+    // ------------------------------------------------------------------------
+    // Unboxing methods. Null values can be unboxed into any type.
+    // ------------------------------------------------------------------------
+
+    @Override
+    public int unboxInt() {
+        return -1;
+    }
+
+    @Override
+    public long unboxLong() {
+        return -1;
+    }
+
+    @Override
+    public double unboxDouble() {
+        return Double.NaN;
+    }
+
+    @Override
+    public String unboxStr() {
         return "nullValue"; //$NON-NLS-1$
     }
 }

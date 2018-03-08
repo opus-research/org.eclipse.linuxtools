@@ -45,6 +45,10 @@ public class Messages extends NLS {
     /** Label for the "value" column */
     public static String ValueColumnLabel;
 
+    /** Label for the "type" column
+     * @since 2.1*/
+    public static String TypeColumnLabel;
+
     /** Label for the "start time" column */
     public static String StartTimeColumLabel;
 
@@ -59,4 +63,23 @@ public class Messages extends NLS {
      * outside of the SS's range.
      */
     public static String OutOfRangeMsg;
+
+    /** Label for the Filter button
+     * @since 2.1*/
+    public static String FilterButton;
+
+    /** Label for the type Interger
+     * @since 2.1*/
+    public static String TypeInteger;
+
+    /** Label for the type Long
+     * @since 2.1*/
+    public static String TypeLong;
+
+    /** Label for type Double */
+    public static String TypeDouble;
+
+    /** Label for the type String
+     * @since 2.1*/
+    public static String TypeString;
 }
