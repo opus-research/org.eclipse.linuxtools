@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -370,7 +371,7 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.addTreeListener(new ITreeViewerListener() {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
-                fTimeGraphViewer.setExpandedState((ITimeGraphEntry) event.getElement(), false);
+                expandElement((ITimeGraphEntry) event.getElement(), false);
                 ArrayList<TreeItem> treeItems = getVisibleExpandedItems(tree);
                 if (treeItems.size() == 0) {
                     return;
@@ -381,7 +382,7 @@ public class TimeGraphCombo extends Composite {
 
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
-                fTimeGraphViewer.setExpandedState((ITimeGraphEntry) event.getElement(), true);
+                expandElement((ITimeGraphEntry) event.getElement(), true);
                 ArrayList<TreeItem> treeItems = getVisibleExpandedItems(tree);
                 if (treeItems.size() == 0) {
                     return;
@@ -937,6 +938,31 @@ public class TimeGraphCombo extends Composite {
             }
         }
         return items;
+    }
+
+    private void expandElement(ITimeGraphEntry element, boolean expandedState) {
+        ITimeGraphEntry el;
+
+        // Expand requested element
+        fTimeGraphViewer.setExpandedState(element, expandedState);
+
+        // Copy children to a list
+        List<ITimeGraphEntry> elements = new ArrayList<ITimeGraphEntry>();
+        elements.addAll(element.getChildren());
+
+        /*
+         * For all recursive children of the element, set the expanded state to
+         * the state of the same element in the tree viewer
+         */
+        while (!elements.isEmpty()) {
+            el = elements.remove(0);
+            fTimeGraphViewer.setExpandedState(el, fTreeViewer.getExpandedState(el));
+
+            /* Add the element's children to the list of elements to expand */
+            if (el.hasChildren()) {
+                elements.addAll(el.getChildren());
+            }
+        }
     }
 
     /**
