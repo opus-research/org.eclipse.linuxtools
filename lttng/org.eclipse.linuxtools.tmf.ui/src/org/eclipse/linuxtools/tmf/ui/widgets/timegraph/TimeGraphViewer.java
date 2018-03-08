@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson, others
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
  *   Alexander N. Alexeev, Intel - Add monitors statistics support
  *   Alvaro Sanchez-Leon - Adapted for TMF
  *   Patrick Tasse - Refactoring
- *   Geneviève Bastien - Add event links between entries
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
@@ -26,10 +25,9 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.TimeGraphLegend;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider2;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
@@ -62,7 +60,7 @@ import org.eclipse.swt.widgets.Slider;
  * @version 1.0
  * @author Patrick Tasse, and others
  */
-public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
+public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
 
     private static final int DEFAULT_NAME_WIDTH = 200;
     private static final int MIN_NAME_WIDTH = 6;
@@ -71,13 +69,12 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private static final long RECENTERING_MARGIN_FACTOR = 50;
 
     private long fMinTimeInterval;
+    private long fSelectedTime;
     private ITimeGraphEntry fSelectedEntry;
     private long fBeginTime;
     private long fEndTime;
     private long fTime0;
     private long fTime1;
-    private long fSelectionBegin = 0;
-    private long fSelectionEnd = 0;
     private long fTime0Bound;
     private long fTime1Bound;
     private long fTime0ExtSynch = 0;
@@ -152,23 +149,9 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
             setTimeRange(realInput);
             fVerticalScrollBar.setEnabled(true);
             setTopIndex(0);
-            fSelectionBegin = 0;
-            fSelectionEnd = 0;
+            fSelectedTime = 0;
             fSelectedEntry = null;
             refreshAllData(realInput);
-        }
-    }
-
-    /**
-     * Sets (or clears if null) the list of links to display on this combo
-     *
-     * @param links
-     *            the links to display in this time graph combo
-     * @since 2.1
-     */
-    public void setLinks(List<ILinkEvent> links) {
-        if (fTimeGraphCtrl != null) {
-            fTimeGraphCtrl.refreshArrows(links);
         }
     }
 
@@ -245,8 +228,7 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
 
     void loadOptions() {
         fMinTimeInterval = 1;
-        fSelectionBegin = -1;
-        fSelectionEnd = -1;
+        fSelectedTime = -1;
         fNameWidth = Utils.loadIntOption(getPreferenceString("namewidth"), //$NON-NLS-1$
                 fNameWidthPref, fMinNameWidth, MAX_NAME_WIDTH);
     }
@@ -300,7 +282,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         fTimeGraphCtrl = createTimeGraphControl(fDataViewer, fColorScheme);
 
         fTimeGraphCtrl.setTimeProvider(this);
-        fTimeGraphCtrl.setTimeGraphScale(fTimeScaleCtrl);
         fTimeGraphCtrl.addSelectionListener(this);
         fTimeGraphCtrl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
         fTimeGraphCtrl.addMouseWheelListener(new MouseWheelListener() {
@@ -450,15 +431,10 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
      */
     private void refreshAllData(ITimeGraphEntry[] traces) {
         setTimeBounds();
-        if (fSelectionBegin < fBeginTime) {
-            fSelectionBegin = fBeginTime;
-        } else if (fSelectionBegin > fEndTime) {
-            fSelectionBegin = fEndTime;
-        }
-        if (fSelectionEnd < fBeginTime) {
-            fSelectionEnd = fBeginTime;
-        } else if (fSelectionEnd > fEndTime) {
-            fSelectionEnd = fEndTime;
+        if (fSelectedTime < fBeginTime) {
+            fSelectedTime = fBeginTime;
+        } else if (fSelectedTime > fEndTime) {
+            fSelectedTime = fEndTime;
         }
         fTimeGraphCtrl.refreshData(traces);
         fTimeScaleCtrl.redraw();
@@ -542,11 +518,9 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         return w - fNameWidth;
     }
 
-    @SuppressWarnings("deprecation")
-    @Deprecated
     @Override
     public long getSelectedTime() {
-        return fSelectionBegin;
+        return fSelectedTime;
     }
 
     @Override
@@ -567,22 +541,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     @Override
     public long getMinTime() {
         return fTime0Bound;
-    }
-
-    /**
-     * @since 2.1
-     */
-    @Override
-    public long getSelectionBegin() {
-        return fSelectionBegin;
-    }
-
-    /**
-     * @since 2.1
-     */
-    @Override
-    public long getSelectionEnd() {
-        return fSelectionEnd;
     }
 
     @Override
@@ -653,32 +611,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         setSelectedTimeInt(time, ensureVisible, false);
     }
 
-    /**
-     * @since 2.1
-     */
-    @Override
-    public void setSelectionRangeNotify(long beginTime, long endTime) {
-        boolean changed = (beginTime != fSelectionBegin || endTime != fSelectionEnd);
-        fSelectionBegin = Math.max(fTime0Bound, Math.min(fTime1Bound, beginTime));
-        fSelectionEnd = Math.max(fTime0Bound, Math.min(fTime1Bound, endTime));
-        fTimeGraphCtrl.redraw();
-        fTimeScaleCtrl.redraw();
-        if (changed) {
-            notifyTimeListeners(fSelectionBegin, fSelectionEnd);
-        }
-    }
-
-    /**
-     * @since 2.1
-     */
-    @Override
-    public void setSelectionRange(long beginTime, long endTime) {
-        fSelectionBegin = Math.max(fTime0Bound, Math.min(fTime1Bound, beginTime));
-        fSelectionEnd = Math.max(fTime0Bound, Math.min(fTime1Bound, endTime));
-        fTimeGraphCtrl.redraw();
-        fTimeScaleCtrl.redraw();
-    }
-
     private void setSelectedTimeInt(long time, boolean ensureVisible, boolean doNotify) {
         long time0 = fTime0;
         long time1 = fTime1;
@@ -709,16 +641,16 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         fTimeGraphCtrl.redraw();
         fTimeScaleCtrl.redraw();
 
-        boolean notifySelectedTime = (time != fSelectionBegin || time != fSelectionEnd);
-        fSelectionBegin = time;
-        fSelectionEnd = time;
+
+        boolean notifySelectedTime = (time != fSelectedTime);
+        fSelectedTime = time;
 
         if (doNotify && ((time0 != fTime0) || (time1 != fTime1))) {
             notifyRangeListeners(fTime0, fTime1);
         }
 
         if (doNotify && notifySelectedTime) {
-            notifyTimeListeners(fSelectionBegin, fSelectionEnd);
+            notifyTimeListeners(fSelectedTime);
         }
     }
 
@@ -847,8 +779,8 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
         fTimeListeners.remove(listener);
     }
 
-    private void notifyTimeListeners(long startTime, long endTime) {
-        TimeGraphTimeEvent event = new TimeGraphTimeEvent(this, startTime, endTime);
+    private void notifyTimeListeners(long time) {
+        TimeGraphTimeEvent event = new TimeGraphTimeEvent(this, time);
 
         for (ITimeGraphTimeListener listener : fTimeListeners) {
             listener.timeSelected(event);
