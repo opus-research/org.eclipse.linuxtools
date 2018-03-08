@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,8 +7,6 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Added support for pre-emption
  *   Simon Delisle - Added scheduler for requests
  *******************************************************************************/
 
@@ -18,42 +16,44 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 
 /**
- * The request scheduler works with 5 slots with a specific time. It has 4 slots
- * for foreground requests and 1 slot for background requests, and it passes
- * through all the slots (foreground first and background after).
+ * This request scheduler works with 5 slots with a specific time. It has 4
+ * slots (configurable) for foreground requests and 1 slot for background
+ * requests, and it passes through all the slots (foregrounds first, and
+ * background after).
  *
  * Example: if we have one foreground and one background request, the foreground
  * request will be executed four times more often than the background request.
  *
- * @author Francois Chouinard
  * @author Simon Delisle
- * @version 1.1
  */
-public class TmfRequestExecutor implements Executor {
+public class TmfFiveSlotsScheduler extends AbstractTmfRequestScheduler {
 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
 
+    /**
+     * The time slice, or "tick", of the scheduler, in ms.
+     */
     private static final long REQUEST_TIME = 100;
+
+    /**
+     * Number of slots for the foreground requests (there is always one slot for
+     * the background requests).
+     */
     private static final int FOREGROUND_SLOT = 4;
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
-    // The request executor
-    private final ExecutorService fExecutor = Executors.newCachedThreadPool();
-    private final String fExecutorName;
 
     // The request queues
     private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
@@ -74,53 +74,12 @@ public class TmfRequestExecutor implements Executor {
     /**
      * Default constructor
      */
-    public TmfRequestExecutor() {
-        String canonicalName = fExecutor.getClass().getCanonicalName();
-        fExecutorName = canonicalName.substring(canonicalName.lastIndexOf('.') + 1);
-        if (TmfCoreTracer.isComponentTraced()) {
-            TmfCoreTracer.trace(fExecutor + " created"); //$NON-NLS-1$
-        }
+    public TmfFiveSlotsScheduler() {
+        super(Executors.newCachedThreadPool());
 
         // Initialize the timer for the schedSwitch
         fTimerTask = new SchedSwitch();
         fTimer.schedule(fTimerTask, 0, REQUEST_TIME);
-    }
-
-    /**
-     * Standard constructor
-     *
-     * @param executor
-     *            The executor service to use
-     */
-    @Deprecated
-    public TmfRequestExecutor(ExecutorService executor) {
-        this();
-    }
-
-    // ------------------------------------------------------------------------
-    // Getters
-    // ------------------------------------------------------------------------
-
-    /**
-     * @return the number of pending requests
-     */
-    @Deprecated
-    public synchronized int getNbPendingRequests() {
-        return fForegroundTasks.size() + fBackgroundTasks.size();
-    }
-
-    /**
-     * @return the shutdown state (i.e. if it is accepting new requests)
-     */
-    public synchronized boolean isShutdown() {
-        return fExecutor.isShutdown();
-    }
-
-    /**
-     * @return the termination state
-     */
-    public synchronized boolean isTerminated() {
-        return fExecutor.isTerminated();
     }
 
     // ------------------------------------------------------------------------
@@ -132,7 +91,7 @@ public class TmfRequestExecutor implements Executor {
 
         // We are expecting MyEventThread:s
         if (!(command instanceof TmfEventThread)) {
-            // TODO: Log an error
+            Activator.logError(command + " Wrong thread type. Expecting TmfEventThread"); //$NON-NLS-1$
             return;
         }
 
@@ -176,7 +135,7 @@ public class TmfRequestExecutor implements Executor {
     /**
      * Executes the next pending request, if applicable.
      */
-    protected synchronized void scheduleNext() {
+    private synchronized void scheduleNext() {
         if (!isShutdown()) {
             if (fActiveTask == null) {
                 schedule();
@@ -208,6 +167,7 @@ public class TmfRequestExecutor implements Executor {
     /**
      * Stops the executor
      */
+    @Override
     public synchronized void stop() {
         fTimerTask.cancel();
         fTimer.cancel();
@@ -223,9 +183,9 @@ public class TmfRequestExecutor implements Executor {
             fActiveTask.cancel();
         }
 
-        fExecutor.shutdown();
+        getExecutorService().shutdown();
         if (TmfCoreTracer.isComponentTraced()) {
-            TmfCoreTracer.trace(fExecutor + " terminated"); //$NON-NLS-1$
+            TmfCoreTracer.trace(getExecutorService() + " terminated"); //$NON-NLS-1$
         }
     }
 
@@ -277,25 +237,16 @@ public class TmfRequestExecutor implements Executor {
         if (fActiveTask.getThread().isPaused()) {
             fActiveTask.getThread().resume();
         } else {
-            fExecutor.execute(fActiveTask);
+            getExecutorService().execute(fActiveTask);
         }
     }
 
     /**
      * Check if the scheduler has tasks
+     *
+     * @return if the scheduler has tasks
      */
     private boolean hasTasks() {
         return !(fForegroundTasks.isEmpty() && fBackgroundTasks.isEmpty());
     }
-
-    // ------------------------------------------------------------------------
-    // Object
-    // ------------------------------------------------------------------------
-
-    @Override
-    @SuppressWarnings("nls")
-    public String toString() {
-        return "[TmfRequestExecutor(" + fExecutorName + ")]";
-    }
-
 }

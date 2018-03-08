@@ -12,15 +12,18 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.request;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -38,30 +41,48 @@ import org.junit.Test;
 
 /**
  * Test suite for the scheduler.
+ *
+ * For now you can change the scheduler by changing the fExecutor in
+ * {@link TmfDataProvider#TmfDataProvider} and {@link TmfDataProvider#init}
  */
-public class TmfSchedulerTest {
+public abstract class AbstractTmfRequestSchedulerTest {
 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
 
-    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
-    private static final int NB_EVENTS_TRACE = 695319;
-    private static final int NB_EVENTS_TIME_RANGE = 155133;
+    /** Test trace */
+    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
+
+    /** Expected number of events in the test trace */
+    protected static final int NB_EVENTS_TRACE = 695319;
+
+    /** Expected number of events in the given time range */
+    protected static final int NB_EVENTS_TIME_RANGE = 155133;
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private CtfTmfTrace fixture;
+    /** The test trace */
+    protected CtfTmfTrace fixture;
 
     private long fStartTime;
     private long fEndTime;
     private TmfTimeRange fForegroundTimeRange;
 
-    private final List<String> fOrderList = Collections.synchronizedList(new ArrayList<String>());
-    private int fForegroundId = 0;
-    private int fBackgroundId = 0;
+    /** The list of requests that will be executed, in order */
+    protected final List<String> fOrderList = Collections.synchronizedList(new ArrayList<String>());
+
+    /** The ID of the current foreground request */
+    protected int fForegroundId = 0;
+
+    /** The ID of the current background request */
+    protected int fBackgroundId = 0;
+
+    // ------------------------------------------------------------------------
+    // Maintenance
+    // ------------------------------------------------------------------------
 
     /**
      * Perform pre-test initialization.
@@ -323,59 +344,14 @@ public class TmfSchedulerTest {
         assertFalse(background9.isCompleted());
     }
 
-    /**
-     * Test if the scheduler is working as expected
-     */
-    @Test
-    public void executionOrder() {
-        List<String> expectedOrder = new LinkedList<String>();
-        expectedOrder.add("FOREGROUND1");
-        expectedOrder.add("FOREGROUND2");
-        expectedOrder.add("FOREGROUND3");
-        expectedOrder.add("FOREGROUND4");
-        expectedOrder.add("BACKGROUND1");
-        expectedOrder.add("FOREGROUND1");
-        expectedOrder.add("FOREGROUND2");
-        expectedOrder.add("FOREGROUND3");
-        expectedOrder.add("FOREGROUND4");
-        expectedOrder.add("BACKGROUND2");
-
-        fOrderList.clear();
-        fForegroundId = 0;
-        fBackgroundId = 0;
-
-        BackgroundRequest background1 = new BackgroundRequest(TmfTimeRange.ETERNITY);
-        BackgroundRequest background2 = new BackgroundRequest(TmfTimeRange.ETERNITY);
-
-        ForegroundRequest foreground1 = new ForegroundRequest(TmfTimeRange.ETERNITY);
-        ForegroundRequest foreground2 = new ForegroundRequest(TmfTimeRange.ETERNITY);
-        ForegroundRequest foreground3 = new ForegroundRequest(TmfTimeRange.ETERNITY);
-        ForegroundRequest foreground4 = new ForegroundRequest(TmfTimeRange.ETERNITY);
-
-        fixture.sendRequest(foreground1);
-        fixture.sendRequest(foreground2);
-        fixture.sendRequest(foreground3);
-        fixture.sendRequest(foreground4);
-        fixture.sendRequest(background1);
-        fixture.sendRequest(background2);
-        try {
-            foreground1.waitForCompletion();
-            foreground2.waitForCompletion();
-            foreground3.waitForCompletion();
-            foreground4.waitForCompletion();
-            background1.waitForCompletion();
-            background2.waitForCompletion();
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertEquals(expectedOrder, fOrderList.subList(0, expectedOrder.size()));
-    }
-
     // ------------------------------------------------------------------------
     // Helper methods
     // ------------------------------------------------------------------------
 
-    private class BackgroundRequest extends TmfEventRequest {
+    /**
+     * Background request test stub
+     */
+    protected class BackgroundRequest extends TmfEventRequest {
         private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String backgroundName;
@@ -397,12 +373,18 @@ public class TmfSchedulerTest {
             ++nbEvents;
         }
 
+        /**
+         * @return The number of events seen so far
+         */
         public int getNbEvents() {
             return nbEvents;
         }
     }
 
-    private class ForegroundRequest extends TmfEventRequest {
+    /**
+     * Foreground request test stub
+     */
+    protected class ForegroundRequest extends TmfEventRequest {
         private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String foregroundName;
@@ -424,6 +406,9 @@ public class TmfSchedulerTest {
             ++nbEvents;
         }
 
+        /**
+         * @return The number of events seen so far
+         */
         public int getNbEvents() {
             return nbEvents;
         }

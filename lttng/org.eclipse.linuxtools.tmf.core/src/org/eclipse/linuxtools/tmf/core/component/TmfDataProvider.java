@@ -22,7 +22,8 @@ import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedDataRequest;
-import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
+import org.eclipse.linuxtools.internal.tmf.core.request.AbstractTmfRequestScheduler;
+import org.eclipse.linuxtools.internal.tmf.core.request.TmfFiveSlotsScheduler;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
@@ -76,7 +77,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     /** Size of the fDataQueue */
     protected int fQueueSize = DEFAULT_QUEUE_SIZE;
 
-    private TmfRequestExecutor fExecutor;
+    private AbstractTmfRequestScheduler fExecutor;
 
     private int fSignalDepth = 0;
     private final Object fLock = new Object();
@@ -94,7 +95,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
         fDataQueue = new LinkedBlockingQueue<ITmfEvent>(fQueueSize);
-        fExecutor = new TmfRequestExecutor();
+        fExecutor = new TmfFiveSlotsScheduler();
     }
 
     /**
@@ -110,7 +111,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         fType = type;
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
-        fExecutor = new TmfRequestExecutor();
+        fExecutor = new TmfFiveSlotsScheduler();
         fSignalDepth = 0;
 
         fLogData = TmfCoreTracer.isEventTraced();
