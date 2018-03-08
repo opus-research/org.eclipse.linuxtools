@@ -33,6 +33,13 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 public interface ITmfStateSystem {
 
     /**
+     * Get the ID, or name, of this state system.
+     *
+     * @return This state system's ID
+     */
+    public String getId();
+
+    /**
      * Return the start time of this history. It usually matches the start time
      * of the original trace.
      *

@@ -45,7 +45,8 @@ public class StateSystemPushPopTest extends TestCase {
 
     private final File testHtFile;
 
-    private final static String errMsg = "Caught exception: "; //$NON-NLS-1$
+    private static final String STATE_ID = "test-ss"; //$NON-NLS-1$
+    private static final String errMsg = "Caught exception: "; //$NON-NLS-1$
 
     /* State values that will be used */
     //private final static ITmfStateValue nullValue = TmfStateValue.nullValue();
@@ -88,7 +89,7 @@ public class StateSystemPushPopTest extends TestCase {
         ITmfStateValue value;
 
         IStateHistoryBackend backend = new HistoryTreeBackend(testHtFile, 0);
-        ss = new StateSystem(backend, true);
+        ss = new StateSystem(STATE_ID, backend, true);
 
         /* Build the thing */
         final int attrib = ss.getQuarkAbsoluteAndAdd("Test", "stack"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -137,6 +138,15 @@ public class StateSystemPushPopTest extends TestCase {
     @Override
     public void tearDown() {
         testHtFile.delete();
+    }
+
+
+    /**
+     * Test the {@link StateSystem#getId()} method.
+     */
+    public void testGetId() {
+        String id = ss.getId();
+        assertEquals(STATE_ID, id);
     }
 
     /**

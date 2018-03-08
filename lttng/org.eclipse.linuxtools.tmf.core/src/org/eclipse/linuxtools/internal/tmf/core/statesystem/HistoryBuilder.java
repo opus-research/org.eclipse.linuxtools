@@ -81,7 +81,7 @@ public class HistoryBuilder extends TmfComponent {
         sci = stateChangeInput;
         hb = backend;
         this.id = id;
-        ss = new StateSystem(hb, true);
+        ss = new StateSystem(id, hb, true);
 
         sci.assignTargetStateSystem(ss);
 
@@ -98,6 +98,8 @@ public class HistoryBuilder extends TmfComponent {
      * Factory-style method to open an existing history, you only have to
      * provide the already-instantiated IStateHistoryBackend object.
      *
+     * @param id
+     *            The ID that should be assigned to this state system
      * @param hb
      *            The history-backend object
      * @return A IStateSystemBuilder reference to the new state system. If you
@@ -106,9 +108,9 @@ public class HistoryBuilder extends TmfComponent {
      * @throws IOException
      *             If there was something wrong.
      */
-    public static ITmfStateSystemBuilder openExistingHistory(
+    public static ITmfStateSystemBuilder openExistingHistory(String id,
             IStateHistoryBackend hb) throws IOException {
-        return new StateSystem(hb, false);
+        return new StateSystem(id, hb, false);
     }
 
     /**
