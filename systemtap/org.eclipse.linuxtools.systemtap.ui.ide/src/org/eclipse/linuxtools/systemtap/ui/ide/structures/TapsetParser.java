@@ -332,8 +332,6 @@ public class TapsetParser implements Runnable {
 						break;
 					}
 				}
-				// clear token
-				token.delete(0, token.length());
 			}
 		}
 	}
