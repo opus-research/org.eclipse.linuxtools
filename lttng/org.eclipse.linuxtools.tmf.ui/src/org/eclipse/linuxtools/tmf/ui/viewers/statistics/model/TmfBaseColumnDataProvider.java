@@ -21,6 +21,7 @@ import java.util.Vector;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseColumnData.ITmfColumnPercentageProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
