@@ -195,9 +195,9 @@ public abstract class SystemTapParser extends Job {
 	}
 	
 	public void printArrayListMap(HashMap<Integer, ArrayList<Integer>> blah) {
-		for (int a : blah.keySet()) {
-			MP.print(a + " ::> "); //$NON-NLS-1$
-			for (int c : blah.get(a)) {
+		for (Map.Entry<Integer, ArrayList<Integer>> a : blah.entrySet()) {
+			MP.print(a.getKey() + " ::> "); //$NON-NLS-1$
+			for (int c : a.getValue()) {
 				System.out.print(c + " "); //$NON-NLS-1$
 			}
 			MP.println(""); //$NON-NLS-1$
@@ -205,8 +205,8 @@ public abstract class SystemTapParser extends Job {
 	}
 
 	public void printMap(Map<?, ?> blah) {
-		for (Object a : blah.keySet()) {
-			MP.println(a + " ::> " + blah.get(a)); //$NON-NLS-1$
+		for (Map.Entry<?, ?> a : blah.entrySet()) {
+			MP.println(a.getKey() + " ::> " + a.getValue()); //$NON-NLS-1$
 		}
 	}
 
@@ -314,10 +314,8 @@ public abstract class SystemTapParser extends Job {
 	/**
 	 * Set whether or not this parser runs in real time. If viewID has already
 	 * been set, this will also attempt to open the view.
-	 * 
-	 * @throws InterruptedException
 	 */
-	public void setRealTime(boolean val) throws InterruptedException {
+	public void setRealTime(boolean val) {
 		realTime = val;
 
 	}
@@ -326,10 +324,8 @@ public abstract class SystemTapParser extends Job {
 	 * Set the viewID to use for this parser -- see the callgraph.core view
 	 * extension point. If realTime is set to true, this will also attempt to
 	 * open the view.
-	 * 
-	 * @throws InterruptedException
 	 */
-	public void setViewID(String value) throws InterruptedException {
+	public void setViewID(String value) {
 		viewID = value;
 	}
 	

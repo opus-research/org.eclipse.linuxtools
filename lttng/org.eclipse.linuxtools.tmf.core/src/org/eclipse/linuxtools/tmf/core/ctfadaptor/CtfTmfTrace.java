@@ -91,7 +91,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
             /* Set the start and (current) end times for this trace */
             ctx = (CtfTmfLightweightContext) seekEvent(0L);
             CtfTmfEvent event = getNext(ctx);
-            if(ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) {
+            if((ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) || (ctx.getCurrentEvent() == null)) {
                 /* Handle the case where the trace is empty */
                 this.setStartTime(TmfTimestamp.BIG_BANG);
             } else {
@@ -166,8 +166,8 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         final CtfLocation curLocation = (CtfLocation) location;
         final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         context.setLocation(curLocation);
-        context.seek(curLocation.getLocationData());
-        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocationData());
+        context.seek(curLocation.getLocation());
+        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocation());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
         return ((double) currentTime.getTimestamp() - startTime)
@@ -209,7 +209,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
             currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
             context.setRank(0);
         }
-        if (currentLocation.getLocationData() == CtfLocation.INVALID_LOCATION) {
+        if (currentLocation.getLocation() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
             currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
         }
@@ -249,7 +249,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     public synchronized CtfTmfEvent getNext(final ITmfContext context) {
         CtfTmfEvent event = null;
         if (context instanceof CtfTmfLightweightContext) {
-            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocationData())) {
+            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocation())) {
                 return null;
             }
             CtfTmfLightweightContext ctfContext = (CtfTmfLightweightContext) context;
