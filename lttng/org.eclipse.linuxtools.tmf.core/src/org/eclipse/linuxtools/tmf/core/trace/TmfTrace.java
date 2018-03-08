@@ -642,8 +642,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
         boolean signalIsForUs = false;
-        for (ITmfTrace expTrace : TmfTraceManager.getTraceSet(signal.getTrace())) {
-            if (expTrace == this) {
+        for (ITmfTrace trace : TmfTraceManager.getTraceSet(signal.getTrace())) {
+            if (trace == this) {
                 signalIsForUs = true;
                 break;
             }
