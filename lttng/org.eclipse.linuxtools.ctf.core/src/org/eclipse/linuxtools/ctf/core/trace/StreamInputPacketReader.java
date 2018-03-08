@@ -17,7 +17,6 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.linuxtools.ctf.core.CTFStrings;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
@@ -297,9 +296,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
 
         if (lostEventsInThisPacket > lostSoFar) {
             EventDefinition eventDef = EventDeclaration.getLostEventDeclaration().createDefinition(streamInputReader);
-            ((IntegerDefinition) eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_FIELD)).setValue(lostEventsInThisPacket);
             eventDef.setTimestamp(this.lastTimestamp);
-            lostSoFar = lostEventsInThisPacket;
+            ++lostSoFar;
             return eventDef;
         }
 
