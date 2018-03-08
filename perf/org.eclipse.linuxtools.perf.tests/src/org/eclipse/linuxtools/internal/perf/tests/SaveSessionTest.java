@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,9 +41,7 @@ public class SaveSessionTest {
 	@After
 	public void tearDown(){
 		for (File file : testFiles) {
-			if(!file.delete()){
-				fail();
-			}
+			file.delete();
 		}
 	}
 
