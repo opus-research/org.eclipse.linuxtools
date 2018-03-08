@@ -150,7 +150,11 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		chkShowStat.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent se) {
-				handleShowStatSelection();
+				if (chkShowStat.getSelection()) {
+					statRunCount.setEnabled(true);
+				}else{
+					statRunCount.setEnabled(false);
+				}
 			}
 		});
 		statRunCount = new Spinner(showStatComp, SWT.BORDER);
@@ -219,16 +223,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		updateLaunchConfigurationDialog();
 	}
 
-	private void handleShowStatSelection() {
-		if (chkShowStat.getSelection()) {
-			statRunCount.setEnabled(true);
-			toggleButtonsEnablement(false);
-		} else {
-			statRunCount.setEnabled(false);
-			toggleButtonsEnablement(true);
-		}
-	}
-
 	// Displays a file dialog to allow the user to select the kernel image file
 	private void showFileDialog(Shell shell) {
 		FileDialog fDialog = new FileDialog(shell, SWT.OPEN);
@@ -259,22 +253,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
-	/**
-	 * Toggle enablement of all buttons, excluding the stat button.
-	 * @param enable enablement of buttons
-	 */
-	public void toggleButtonsEnablement(boolean enable) {
-		txtKernelLocation.setEnabled(enable);
-		chkRecordRealtime.setEnabled(enable);
-		chkRecordVerbose.setEnabled(enable);
-		chkSourceLineNumbers.setEnabled(enable);
-		chkKernelSourceLineNumbers.setEnabled(enable);
-		chkMultiplexEvents.setEnabled(enable);
-		chkModuleSymbols.setEnabled(enable);
-		chkHideUnresolvedSymbols.setEnabled(enable);
-		chkShowSourceDisassembly.setEnabled(enable);
-	}
-
 	@Override
 	public String getName() {
 		return "Perf Options";
@@ -302,7 +280,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 			} else {
 				statRunCount.setEnabled(true);
 			}
-			handleShowStatSelection();
 		} catch (CoreException e) {
 			// do nothing
 		}		
