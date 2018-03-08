@@ -271,8 +271,9 @@ public class RunScriptHandler extends AbstractHandler {
 	 * Checks the current script to determine if guru mode is required in order to run. This is determined
 	 * by the presence of embedded C.
 	 * @return True if the script contains embedded C code.
+	 * @since 2.0
 	 */
-	private boolean isGuru() {
+	protected boolean isGuru() {
 		try {
 			File f = new File(fileName);
 			FileReader fr = new FileReader(f);
@@ -305,9 +306,9 @@ public class RunScriptHandler extends AbstractHandler {
 				return true;
 			}
 		} catch (FileNotFoundException fnfe) {
-			ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.0"), fnfe); //$NON-NLS-1$
+			fnfe.printStackTrace();
 		} catch (IOException ie) {
-			ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.4"), ie); //$NON-NLS-1$
+			ie.printStackTrace();
 		}
 		return false;
 	}
