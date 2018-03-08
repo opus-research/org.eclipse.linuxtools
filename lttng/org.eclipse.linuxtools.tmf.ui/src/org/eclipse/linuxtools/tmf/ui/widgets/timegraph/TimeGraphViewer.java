@@ -142,7 +142,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
             _verticalScrollBar.setEnabled(true);
             setTopIndex(0);
             _selectedTime = 0;
-            _selectedEntry = null;
             refreshAllData(input);
         }
     }
