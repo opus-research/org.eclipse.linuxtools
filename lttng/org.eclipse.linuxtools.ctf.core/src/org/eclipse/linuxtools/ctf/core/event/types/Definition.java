@@ -35,15 +35,19 @@ public abstract class Definition {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final String fieldName;
+    /** The name of the field in its container */
+    protected final String fieldName;
 
     /** The complete path of this field */
-    private final String path;
+    protected final String path;
 
     /**
+     * The definition scope in which this definition is found.
      *
+     * The complete path of a definition is thus the path of the definition
+     * scope DOT the name of the definition (name of the field in its container)
      */
-    private final IDefinitionScope definitionScope;
+    protected final IDefinitionScope definitionScope;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -71,43 +75,11 @@ public abstract class Definition {
         } else {
             path = fieldName;
         }
-    }
 
-    // ------------------------------------------------------------------------
-    // Getters
-    // ------------------------------------------------------------------------
-
-    /**
-     * Get the field name in its container.
-     *
-     * @return The field name
-     * @since 2.0
-     */
-    protected String getFieldName() {
-        return fieldName;
-    }
-
-    /**
-     * Get the complete path of this field.
-     *
-     * @return The path
-     * @since 2.0
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * Get the definition scope in which this definition is found.
-     *
-     * The complete path of a definition is thus the path of the definition
-     * scope DOT the name of the definition (name of the field in its container)
-     *
-     * @return The definition scope
-     * @since 2.0
-     */
-    protected IDefinitionScope getDefinitionScope() {
-        return definitionScope;
+        /*
+         * System.out.println("[definition] " + this.getClass().getSimpleName()
+         * + " " + path + " created");
+         */
     }
 
     // ------------------------------------------------------------------------
