@@ -48,10 +48,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.binutils.Activator;
 
 /**
- * This class Is a utility on top of c++filt and addr2line.
- * 
- * It allows an easy conversion between address and source location, and between mangled and demangled symbols.
- * 
+ * This class Is a utility on top of c++filt and addr2line. It allows an easy conversion between address and source
+ * location, and between mangled and demangled symbols.
  * @author Xavier Raynaud <xavier.raynaud@st.com>
  */
 public class STSymbolManager {
@@ -110,6 +108,28 @@ public class STSymbolManager {
     }
 
     /**
+	 * @since 4.1
+	 */
+    public synchronized void reset() {
+        Iterator<Entry<IBinaryObject, AutoDisposeAddr2line>> iter = addr2lines.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<IBinaryObject, AutoDisposeAddr2line> entry = iter.next();
+            AutoDisposeAddr2line ada2l = entry.getValue();
+            ada2l.addr2line.dispose();
+            ada2l.addr2line = null;
+            iter.remove();
+        }
+
+        Iterator<Entry<String, AutoDisposeCPPFilt>> iter2 = cppfilts.entrySet().iterator();
+        while (iter2.hasNext()) {
+            Entry<String, AutoDisposeCPPFilt> entry = iter2.next();
+            AutoDisposeCPPFilt adcppf = entry.getValue();
+            adcppf.cppfilt.dispose();
+            adcppf.cppfilt = null;
+        }
+    }
+
+    /**
      * each {@link #AUTO_DISPOSE_TIMEOUT} ms, the unused addr2line and c++filt programs are disposed.
      */
     private synchronized void cleanup() {
@@ -143,9 +163,8 @@ public class STSymbolManager {
 
     /**
      * Demangle the given symbol
-     * 
      * @param symbol
-     * @return
+     * @return The demangled symbol.
      */
     public synchronized String demangle(ISymbol symbol, IProject project) {
         String cpu = symbol.getBinaryObject().getCPU();
@@ -155,10 +174,9 @@ public class STSymbolManager {
 
     /**
      * Demangle the given symbol
-     * 
      * @param program
      * @param symbolName
-     * @return
+     * @return The demangled symbol.
      */
     public synchronized String demangle(IBinaryObject program, String symbolName, IProject project) {
         String cpu = program.getCPU();
@@ -167,7 +185,6 @@ public class STSymbolManager {
 
     /**
      * Demangle the given symbol
-     * 
      * @param symbol
      * @return
      */
@@ -273,7 +290,6 @@ public class STSymbolManager {
     }
 
     /**
-     * 
      * @param symbol
      * @return the line number of the given symbol
      */
@@ -284,7 +300,6 @@ public class STSymbolManager {
     }
 
     /**
-     * 
      * @param program
      * @param address
      * @return the file name of the given address
@@ -304,7 +319,6 @@ public class STSymbolManager {
     }
 
     /**
-     * 
      * @param program
      * @param address
      * @return the file name of the given address
@@ -315,7 +329,6 @@ public class STSymbolManager {
     }
 
     /**
-     * 
      * @param program
      * @param address
      * @return the file name of the given address
@@ -326,7 +339,6 @@ public class STSymbolManager {
     }
 
     /**
-     * 
      * @param symbol
      * @return the filename of the given symbol
      */
@@ -381,7 +393,6 @@ public class STSymbolManager {
     /**
      * Gets the c++filt support for the given program Note that the instance if kept in a local hashmap, and discarded
      * after 30 seconds of inactivity.
-     * 
      * @param program
      * @return an instance of CPPFilt suitable for the given program
      */
@@ -408,7 +419,6 @@ public class STSymbolManager {
     /**
      * Gets the addr2line support for the given program Note that the instance if kept in a local hashmap, and discarded
      * after 30 seconds of inactivity.
-     * 
      * @param program
      * @return an instance of Addr2line suitable for the given program
      */
@@ -438,8 +448,7 @@ public class STSymbolManager {
      * corresponding to the given path has been already built by eclipse, return it. Otherwise build a new
      * IBinaryObject, according to project preferences. Note that it may return null if the path is invalid, or is not a
      * valid binary file.
-     * 
-     * @param path
+     * @param loc
      * @return a IBinaryObject
      */
     public IBinaryObject getBinaryObject(String loc) {
@@ -452,7 +461,6 @@ public class STSymbolManager {
      * corresponding to the given path has been already built by eclipse, return it. Otherwise build a new
      * IBinaryObject, according to project preferences. Note that it may return null if the path is invalid, or is not a
      * valid binary file.
-     * 
      * @param path
      * @return a IBinaryObject
      */
@@ -466,9 +474,8 @@ public class STSymbolManager {
      * corresponding to the given path has been already built by eclipse, return it. Otherwise build a new
      * IBinaryObject, according to project preferences. Note that it may return null if the path is invalid, or is not a
      * valid binary file.
-     * 
      * @param path
-     * @param default parser
+     * @param defaultparser
      * @return a IBinaryObject
      */
     public IBinaryObject getBinaryObject(IPath path, IBinaryParser defaultparser) {
@@ -496,8 +503,9 @@ public class STSymbolManager {
         IBinaryObject ret = buildBinaryObject(path, parsers);
         if (ret == null) { // trying all BinaryParsers...
             parsers.clear();
-            IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(CCorePlugin.PLUGIN_ID, CCorePlugin.BINARY_PARSER_SIMPLE_ID);
-            for (IExtension extension: extensionPoint.getExtensions()) {
+            IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(CCorePlugin.PLUGIN_ID,
+                    CCorePlugin.BINARY_PARSER_SIMPLE_ID);
+            for (IExtension extension : extensionPoint.getExtensions()) {
                 if (extension != null) {
                     IConfigurationElement element[] = extension.getConfigurationElements();
                     for (IConfigurationElement element2 : element) {
@@ -519,7 +527,6 @@ public class STSymbolManager {
 
     /**
      * Validate the binary file. In particular, verify that this binary file can be decoded.
-     * 
      * @param o
      * @return the binary object, or null.
      */

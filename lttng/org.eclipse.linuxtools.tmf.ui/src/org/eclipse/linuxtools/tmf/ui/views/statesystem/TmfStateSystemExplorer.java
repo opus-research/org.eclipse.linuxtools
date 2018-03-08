@@ -9,6 +9,7 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Alexandre Montplaisir - Refactoring, performance tweaks
+ *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
@@ -25,12 +26,14 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -135,7 +138,7 @@ public class TmfStateSystemExplorer extends TmfView {
             }
         });
 
-        for (final ITmfTrace currentTrace : fTrace.getTraces()) {
+        for (final ITmfTrace currentTrace : TmfTraceManager.getTraceSet(fTrace)) {
             /*
              * We will first do all the queries for this trace, then update that
              * sub-tree in the UI thread.
@@ -228,7 +231,7 @@ public class TmfStateSystemExplorer extends TmfView {
      * column as-is, but update the values to the ones at a new timestamp.
      */
     private synchronized void updateTable() {
-        ITmfTrace[] traces = fTrace.getTraces();
+        ITmfTrace[] traces = TmfTraceManager.getTraceSet(fTrace);
         long ts = fCurrentTimestamp;
 
         /* For each trace... */
@@ -379,6 +382,17 @@ public class TmfStateSystemExplorer extends TmfView {
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
+    /**
+     * Handler for the trace opened signal.
+     * @param signal
+     *            The incoming signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceOpened(TmfTraceOpenedSignal signal) {
+        fTrace = signal.getTrace();
+        loadTrace();
+    }
 
     /**
      * Handler for the trace selected signal. This will make the view display
@@ -392,13 +406,7 @@ public class TmfStateSystemExplorer extends TmfView {
         ITmfTrace trace = signal.getTrace();
         if (trace != fTrace) {
             fTrace = trace;
-            Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
-                @Override
-                public void run() {
-                    createTable();
-                }
-            };
-            thread.start();
+            loadTrace();
         }
     }
 
@@ -436,4 +444,15 @@ public class TmfStateSystemExplorer extends TmfView {
         };
         thread.start();
     }
+
+    private void loadTrace() {
+        Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
+            @Override
+            public void run() {
+                createTable();
+            }
+        };
+        thread.start();
+    }
+
 }
