@@ -55,6 +55,7 @@ import org.eclipse.swt.widgets.Text;
 
 public abstract class AbstractEventConfigTab extends
 AbstractLaunchConfigurationTab {
+	private static final String EMPTY_STRING = "";
 	protected Button defaultEventCheck;
 	protected OprofileCounter[] counters = null;
 	protected CounterSubTab[] counterSubTabs;
@@ -65,7 +66,6 @@ AbstractLaunchConfigurationTab {
 	 * checkbox and an appropriate number of counter tabs.
 	 * @param parent the parent composite
 	 */
-	@Override
 	public void createControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
 		setControl(top);
@@ -118,7 +118,6 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#initializeFrom(ILaunchConfiguration)
 	 */
-	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 
 		IProject previousProject = getOprofileProject();
@@ -267,8 +266,8 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#performApply(ILaunchConfigurationWorkingCopy)
 	 */
-	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
+		IProject project = getProject(config);
 		if (getOprofileTimerMode() || counterSubTabs == null) {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 		} else {
@@ -282,7 +281,6 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#setDefaults(ILaunchConfigurationWorkingCopy)
 	 */
-	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		boolean useDefault = true;
 		IProject project = getProject(config);
@@ -304,7 +302,6 @@ AbstractLaunchConfigurationTab {
 	/**
 	 * @see ILaunchConfigurationTab#getName()
 	 */
-	@Override
 	public String getName() {
 		return OprofileLaunchMessages.getString("tab.event.name"); //$NON-NLS-1$
 	}
@@ -358,11 +355,11 @@ AbstractLaunchConfigurationTab {
 	protected IProject getProject(ILaunchConfiguration config){
 		String name = null;
 		try {
-			name = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""); //$NON-NLS-1$
+			name = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
 		} catch (CoreException e) {
 			return null;
 		}
-		if (name.isEmpty()) {
+		if (name.equals(EMPTY_STRING)) {
 			return null;
 		}
 
@@ -552,13 +549,12 @@ AbstractLaunchConfigurationTab {
 		private void createLeftCell(Composite parent) {
 			// Text box used to filter the event list
 			eventFilterText = new Text(parent, SWT.BORDER | SWT.SINGLE | SWT.ICON_CANCEL | SWT.SEARCH);
-			eventFilterText.setMessage(OprofileLaunchMessages.getString("tab.event.eventfilter.message")); //$NON-NLS-1$
+			eventFilterText.setMessage(OprofileLaunchMessages.getString("tab.event.eventfilter.message"));
 			GridData eventFilterLayout = new GridData();
 			eventFilterLayout.horizontalAlignment = SWT.FILL;
 			eventFilterLayout.grabExcessHorizontalSpace = true;
 			eventFilterText.setLayoutData(eventFilterLayout);
 			eventFilterText.addModifyListener(new ModifyListener() {
-				@Override
 				public void modifyText(ModifyEvent e) {
 					eventList.refresh(false);
 				}
@@ -568,32 +564,23 @@ AbstractLaunchConfigurationTab {
 			eventList.getList().setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
 
 			eventList.setLabelProvider(new ILabelProvider(){
-				@Override
 				public String getText(Object element) {
 					OpEvent e = (OpEvent) element;
 					return e.getText();
 				}
-				@Override
 				public Image getImage(Object element) { return null; }
-				@Override
 				public void addListener(ILabelProviderListener listener) { }
-				@Override
 				public void dispose() { }
-				@Override
 				public boolean isLabelProperty(Object element, String property) { return false; }
-				@Override
 				public void removeListener(ILabelProviderListener listener) { }
 			});
 
 			eventList.setContentProvider(new IStructuredContentProvider() {
-				@Override
 				public Object[] getElements(Object inputElement) {
 					OprofileCounter ctr = (OprofileCounter) inputElement;
 					return ctr.getValidEvents();
 				}
-				@Override
 				public void dispose() { }
-				@Override
 				public void inputChanged(Viewer arg0, Object arg1, Object arg2) { }
 			});
 
@@ -601,7 +588,6 @@ AbstractLaunchConfigurationTab {
 			eventList.setInput(counter);
 
 			eventList.addSelectionChangedListener(new ISelectionChangedListener() {
-				@Override
 				public void selectionChanged(SelectionChangedEvent sce) {
 					handleEventListSelectionChange();
 				}
@@ -639,7 +625,6 @@ AbstractLaunchConfigurationTab {
 			countText = new Text(parent, SWT.SINGLE | SWT.BORDER);
 			countText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			countText.addModifyListener(new ModifyListener() {
-				@Override
 				public void modifyText(ModifyEvent me) {
 					handleCountTextModify();
 				}
@@ -672,7 +657,7 @@ AbstractLaunchConfigurationTab {
 
 				@Override
 				public boolean select(Viewer viewer, Object parentElement, Object element) {
-					String[] filterTerms = eventFilterText.getText().trim().toLowerCase().split(" "); //$NON-NLS-1$
+					String[] filterTerms = eventFilterText.getText().trim().toLowerCase().split(" ");
 					String eventName = ((OpEvent)element).getText().toLowerCase();
 					String eventDescription = ((OpEvent)element).getTextDescription().toLowerCase();
 
@@ -783,7 +768,7 @@ AbstractLaunchConfigurationTab {
 				}
 			} else {
 				counter.setEvent(null);
-				eventDescText.setText(""); //$NON-NLS-1$
+				eventDescText.setText("");
 				if(unitMaskViewer != null){
 					unitMaskViewer.displayEvent(null);
 				}
