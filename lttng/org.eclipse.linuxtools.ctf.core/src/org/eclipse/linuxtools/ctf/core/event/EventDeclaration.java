@@ -12,9 +12,6 @@
 
 package org.eclipse.linuxtools.ctf.core.event;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
@@ -58,9 +55,6 @@ public class EventDeclaration {
      * Loglevel of an event
      */
     private long logLevel;
-
-    /** Map of this event type's custom CTF attributes */
-    private final Map<String, String> customAttributes = new HashMap<String, String>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -249,16 +243,6 @@ public class EventDeclaration {
         logLevel = level;
     }
 
-    /**
-     * Get the map of custom CTF attribute.
-     *
-     * @return The map of custom attributes
-     * @since 2.0
-     */
-    public Map<String, String> getCustomAttributes() {
-        return customAttributes;
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -310,9 +294,6 @@ public class EventDeclaration {
         } else if (!stream.equals(other.stream)) {
             return false;
         }
-        if (!customAttributes.equals(other.customAttributes)) {
-            return false;
-        }
         return true;
     }
 
@@ -326,7 +307,6 @@ public class EventDeclaration {
         result = (prime * result) + ((id == null) ? 0 : id.hashCode());
         result = (prime * result) + ((name == null) ? 0 : name.hashCode());
         result = (prime * result) + ((stream == null) ? 0 : stream.hashCode());
-        result = (prime * result) + ((customAttributes == null) ? 0 : customAttributes.hashCode());
         return result;
     }
 
