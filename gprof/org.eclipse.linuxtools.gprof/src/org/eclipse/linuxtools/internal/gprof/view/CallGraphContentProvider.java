@@ -87,15 +87,12 @@ public class CallGraphContentProvider implements ITreeContentProvider {
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
 	 */
 	@Override
-	public TreeElement getParent(Object element) {
-	    if (element instanceof TreeElement) {
-	        TreeElement cge = (TreeElement) element;
-	        if (cge instanceof HistFunction) {
-	            return cge.getParent().getParent();
-	        }
-	        return cge.getParent();
-	    }
-	    return null;
+	public Object getParent(Object element) {
+		TreeElement cge = (TreeElement) element;
+		if (cge instanceof HistFunction) {
+			return cge.getParent().getParent();
+		}
+		return cge.getParent();
 	}
 
 	/*
@@ -128,12 +125,10 @@ public class CallGraphContentProvider implements ITreeContentProvider {
 	 */
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if (inputElement instanceof GmonDecoder) {
-		    GmonDecoder obj = (GmonDecoder) inputElement;
-	        HistRoot root   = obj.getRootNode();
-	        return new Object[] { root };
-		}
-        return new Object[0];
+		if (inputElement == null) return new Object[0];
+		GmonDecoder obj = (GmonDecoder) inputElement;
+		HistRoot root   = obj.getRootNode();
+		return new Object[] { root };
 	}
 
 	/*

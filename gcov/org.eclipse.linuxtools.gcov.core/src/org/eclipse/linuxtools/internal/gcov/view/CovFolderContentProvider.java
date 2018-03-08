@@ -29,42 +29,32 @@ public class CovFolderContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-	    if (parentElement instanceof TreeElement) {
-	        TreeElement elem = (TreeElement) parentElement;
-	        LinkedList<? extends TreeElement> list = elem.getChildren();
-	        if (list != null)
-	            return list.toArray();
-	    }
-		return null;
+		TreeElement elem = (TreeElement) parentElement;
+		LinkedList<? extends TreeElement> list = elem.getChildren();
+		if (list != null)
+			return list.toArray();
+		else return null;
 	}
 
 	@Override
 	public Object getParent(Object element) {
-	    if (element instanceof TreeElement) {
-	        TreeElement elem = (TreeElement) element;
-	        return elem.getParent();
-	    }
-	    return null;
+		TreeElement elem = (TreeElement) element;
+		return elem.getParent();
 	}
 
 	@Override
 	public boolean hasChildren(Object element) {
-	    if (element instanceof TreeElement) {
-	        TreeElement elem = (TreeElement) element;
-	        return elem.hasChildren();
-	    }
-	    return false;
+		TreeElement elem = (TreeElement) element;
+		return elem.hasChildren();
 	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if (inputElement instanceof CovManager) {
-		    CovManager cvrgMnger = (CovManager)inputElement;
-		    return new Object[] {
-	                cvrgMnger.getRootNode() 
-	        };
-		}
-		return new Object[0];
+		if (inputElement == null) return new Object[0];
+		CovManager cvrgMnger = (CovManager)inputElement;
+		return new Object[] {
+				cvrgMnger.getRootNode()	
+		};
 	}
 
 	@Override
