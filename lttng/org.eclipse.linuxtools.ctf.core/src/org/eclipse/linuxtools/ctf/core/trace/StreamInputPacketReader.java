@@ -99,8 +99,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
     /**
      * number of lost events in this packet
      */
-    private int lostEvents;
-
     private int lostSoFar;
 
     private int lostEventsInThisPacket;
@@ -130,7 +128,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
          */
         createDefinitions();
 
-        lostEvents = 0;
         lostSoFar = 0;
     }
 
@@ -302,11 +299,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
                  * Read number of lost events
                  */
 
-                int totalLostEvents = (int) this.getCurrentPacket()
+                lostEventsInThisPacket = (int) this.getCurrentPacket()
                         .getLostEvents();
-                lostEventsInThisPacket = totalLostEvents - lostEvents;
-                lostEvents = totalLostEvents;
-                currentPacket.setLostEvents(lostEventsInThisPacket);
                 lostSoFar = 0;
 
             }
@@ -357,6 +351,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
             ++lostSoFar;
             return eventDef;
         }
+
         StructDefinition sehd = getStreamEventHeaderDef(); // acronym for a long
                                                            // variable name
         BitBuffer currentBitBuffer = getBitBuffer();
