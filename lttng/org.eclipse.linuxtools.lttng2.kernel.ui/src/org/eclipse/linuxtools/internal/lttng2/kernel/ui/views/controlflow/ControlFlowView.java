@@ -19,10 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
-import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -33,14 +30,11 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeLinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
@@ -87,24 +81,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
      * Constructor
      */
     public ControlFlowView() {
-        super(ID, new ControlFlowPresentationProvider());
-        setTreeColumns(COLUMN_NAMES);
+        super(ID, COLUMN_NAMES, FILTER_COLUMN_NAMES, new ControlFlowPresentationProvider());
         setTreeLabelProvider(new ControlFlowTreeLabelProvider());
-        setFilterColumns(FILTER_COLUMN_NAMES);
         setEntryComparator(new ControlFlowEntryComparator());
-    }
-
-    @Override
-    protected void fillLocalToolBar(IToolBarManager manager) {
-        super.fillLocalToolBar(manager);
-        IDialogSettings settings = Activator.getDefault().getDialogSettings();
-        IDialogSettings section = settings.getSection(getClass().getName());
-        if (section == null) {
-            section = settings.addNewSection(getClass().getName());
-        }
-        manager.add(getTimeGraphCombo().getTimeGraphViewer().getHideArrowsAction(section));
-        manager.add(getTimeGraphCombo().getTimeGraphViewer().getFollowArrowBwdAction());
-        manager.add(getTimeGraphCombo().getTimeGraphViewer().getFollowArrowFwdAction());
     }
 
     @Override
@@ -191,13 +170,13 @@ public class ControlFlowView extends AbstractTimeGraphView {
         setStartTime(Long.MAX_VALUE);
         setEndTime(Long.MIN_VALUE);
 
-        ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        ArrayList<TimeGraphEntry> rootList = new ArrayList<TimeGraphEntry>();
+        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
             if (monitor.isCanceled()) {
                 return;
             }
             if (aTrace instanceof LttngKernelTrace) {
-                ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
+                ArrayList<TimeGraphEntry> entryList = new ArrayList<TimeGraphEntry>();
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
                 ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
@@ -235,7 +214,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                         if (monitor.isCanceled()) {
                             return;
                         }
-                        ControlFlowEntry entry = null;
+                        TimeGraphEntry entry = null;
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -276,26 +255,28 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 buildTree(entryList, rootList);
             }
             Collections.sort(rootList, getEntryComparator());
-            putEntryList(trace, new ArrayList<TimeGraphEntry>(rootList));
+            putEntryList(trace, (ArrayList<TimeGraphEntry>) rootList.clone());
 
             if (trace.equals(getTrace())) {
                 refresh();
             }
         }
-        for (ControlFlowEntry entry : rootList) {
+        for (TimeGraphEntry entry : rootList) {
             if (monitor.isCanceled()) {
                 return;
             }
-            buildStatusEvents(entry.getTrace(), entry, monitor);
+            buildStatusEvents(trace, entry, monitor);
         }
     }
 
-    private static void buildTree(ArrayList<ControlFlowEntry> entryList,
-            ArrayList<ControlFlowEntry> rootList) {
-        for (ControlFlowEntry entry : entryList) {
+    private static void buildTree(ArrayList<TimeGraphEntry> entryList,
+            ArrayList<TimeGraphEntry> rootList) {
+        for (TimeGraphEntry listentry : entryList) {
+            ControlFlowEntry entry = (ControlFlowEntry) listentry;
             boolean root = true;
             if (entry.getParentThreadId() > 0) {
-                for (ControlFlowEntry parent : entryList) {
+                for (TimeGraphEntry parententry : entryList) {
+                    ControlFlowEntry parent = (ControlFlowEntry) parententry;
                     if (parent.getThreadId() == entry.getParentThreadId() &&
                             entry.getStartTime() >= parent.getStartTime() &&
                             entry.getStartTime() <= parent.getEndTime()) {
@@ -311,7 +292,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         }
     }
 
-    private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
+    private void buildStatusEvents(ITmfTrace trace, TimeGraphEntry entry, IProgressMonitor monitor) {
         ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
 
         long start = ssq.getStartTime();
@@ -329,7 +310,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
             if (monitor.isCanceled()) {
                 return;
             }
-            buildStatusEvents(trace, (ControlFlowEntry) child, monitor);
+            buildStatusEvents(trace, (TimeGraphEntry) child, monitor);
         }
     }
 
@@ -432,7 +413,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
     protected void synchingToTime(long time) {
         int selected = getSelectionValue(time);
         if (selected > 0) {
-            for (Object element : getTimeGraphViewer().getExpandedElements()) {
+            for (Object element : getTimeGraphCombo().getTimeGraphViewer().getExpandedElements()) {
                 if (element instanceof ControlFlowEntry) {
                     ControlFlowEntry entry = (ControlFlowEntry) element;
                     if (entry.getThreadId() == selected) {
@@ -442,73 +423,5 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 }
             }
         }
-    }
-
-    @Override
-    protected List<ILinkEvent> getLinkList(long startTime, long endTime, long resolution, IProgressMonitor monitor) {
-        List<ILinkEvent> list = new ArrayList<ILinkEvent>();
-        ITmfTrace[] traces = TmfTraceManager.getTraceSet(getTrace());
-        List<TimeGraphEntry> entryList = getEntryListMap().get(getTrace());
-        if (traces == null || entryList == null) {
-            return list;
-        }
-        for (ITmfTrace trace : traces) {
-            if (trace instanceof LttngKernelTrace) {
-                ITmfStateSystem ssq = trace.getStateSystems().get(LttngKernelTrace.STATE_ID);
-                try {
-                    long start = Math.max(startTime, ssq.getStartTime());
-                    long end = Math.min(endTime, ssq.getCurrentEndTime());
-                    if (end < start) {
-                        continue;
-                    }
-                    List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
-                    for (int currentThreadQuark : currentThreadQuarks) {
-                        List<ITmfStateInterval> currentThreadIntervals = ssq.queryHistoryRange(currentThreadQuark, start, end, resolution, monitor);
-                        int prevThread = 0;
-                        long prevEnd = 0;
-                        for (ITmfStateInterval currentThreadInterval : currentThreadIntervals) {
-                            if (monitor.isCanceled()) {
-                                return null;
-                            }
-                            long time = currentThreadInterval.getStartTime();
-                            int thread = currentThreadInterval.getStateValue().unboxInt();
-                            if (thread > 0 && prevThread > 0 && thread != prevThread && time == prevEnd) {
-                                ITimeGraphEntry prevEntry = findEntry(entryList, trace, prevThread);
-                                ITimeGraphEntry nextEntry = findEntry(entryList, trace, thread);
-                                list.add(new TimeLinkEvent(prevEntry, nextEntry, time, 0, 0));
-                            }
-                            prevThread = thread;
-                            prevEnd = currentThreadInterval.getEndTime() + 1;
-                        }
-                    }
-                } catch (TimeRangeException e) {
-                    e.printStackTrace();
-                } catch (AttributeNotFoundException e) {
-                    e.printStackTrace();
-                } catch (StateValueTypeException e) {
-                    e.printStackTrace();
-                } catch (StateSystemDisposedException e) {
-                    /* Ignored */
-                }
-            }
-        }
-        return list;
-    }
-
-    private ControlFlowEntry findEntry(List<TimeGraphEntry> entryList, ITmfTrace trace, int threadId) {
-        for (TimeGraphEntry entry : entryList) {
-            if (entry instanceof ControlFlowEntry) {
-                ControlFlowEntry controlFlowEntry = (ControlFlowEntry) entry;
-                if (controlFlowEntry.getThreadId() == threadId && controlFlowEntry.getTrace() == trace) {
-                    return controlFlowEntry;
-                } else if (entry.hasChildren()) {
-                    controlFlowEntry = findEntry(entry.getChildren(), trace, threadId);
-                    if (controlFlowEntry != null) {
-                        return controlFlowEntry;
-                    }
-                }
-            }
-        }
-        return null;
     }
 }
