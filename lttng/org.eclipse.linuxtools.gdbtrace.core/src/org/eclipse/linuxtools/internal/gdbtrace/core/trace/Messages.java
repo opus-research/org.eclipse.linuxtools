@@ -19,11 +19,11 @@ import org.eclipse.osgi.util.NLS;
  *
  * @author Matthew Khouzam
  */
+@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.gdbtrace.core.trace.messages"; //$NON-NLS-1$
 
-    /** File not found */
     public static String GdbTrace_FileNotFound;
 
     static {
