@@ -39,9 +39,9 @@ public class STPMetadataSingleton {
 	public static String[] NO_MATCHES = new String[] {"No completion data found."};
 
 	private static STPMetadataSingleton instance = null;
+	private static HashMap<String, ArrayList<String>> builtMetadata = new HashMap<String, ArrayList<String>>();
 
-	private HashMap<String, ArrayList<String>> builtMetadata = new HashMap<String, ArrayList<String>>();
-	private boolean barLookups = false;
+	private static boolean barLookups = false;
 	
 	// Not a true singleton, but enough for the simplistic purpose
 	// it has to serve.
@@ -64,7 +64,7 @@ public class STPMetadataSingleton {
 	 * @return - completion proposals.
 	 * 
 	 */
-	public String[] getCompletionResults(String match) {
+	public static String[] getCompletionResults(String match) {
 		// TODO: Until an error strategy is devised to better inform
 		// the user that there was a problem compiling completions other than
 		// a modal error dialog, or a log message use this.
@@ -92,7 +92,7 @@ public class STPMetadataSingleton {
 		return getMatchingChildren(node, match);
 	}
 
-	private TreeNode getChildByName(TreeNode node, String name){
+	private static TreeNode getChildByName(TreeNode node, String name){
 		int n = node.getChildCount();
 
 		for (int i = 0; i < n; i++) {
@@ -103,7 +103,7 @@ public class STPMetadataSingleton {
 		return null;
 	}
 
-	private String[] getMatchingChildren(TreeNode node, String prefix) {
+	private static String[] getMatchingChildren(TreeNode node, String prefix) {
 		ArrayList<String> matches = new ArrayList<String>();
 
 		int n = node.getChildCount();
@@ -136,8 +136,8 @@ public class STPMetadataSingleton {
 			try {
 				String line = null;
 				while ((line = input.readLine()) != null) {
-					String tapset = ""; //$NON-NLS-1$
-					String probe = ""; //$NON-NLS-1$
+					String tapset = "";
+					String probe = "";
 					try {
 						tapset = getTapset(line);
 						probe = getTapsetProbe(line);
@@ -166,7 +166,7 @@ public class STPMetadataSingleton {
 	 * @param data - hint data
 	 * @return
 	 */
-	private boolean isTapsetAndProbe(String data) {
+	private static boolean isTapsetAndProbe(String data) {
 		if (data.indexOf('.') >= 0)
 			return true;
 		
@@ -179,7 +179,7 @@ public class STPMetadataSingleton {
 	 * @param data - hint data
 	 * @return
 	 */
-	private String getTapset(String data) {
+	private static String getTapset(String data) {
 		int i = data.indexOf('.');
 		if (i < 0)
 			throw new StringIndexOutOfBoundsException();
@@ -192,7 +192,7 @@ public class STPMetadataSingleton {
 	 * @param data - hint data
 	 * @return
 	 */
-	private String getTapsetProbe(String data) {
+	private static String getTapsetProbe(String data) {
 		int i = data.indexOf('.');
 		if (i < 0)
 			throw new StringIndexOutOfBoundsException();
