@@ -39,7 +39,6 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -457,10 +456,6 @@ public class TmfTraceTest {
         /* Open the trace, the modules should be populated */
         fTrace.traceOpened(new TmfTraceOpenedSignal(this, fTrace, null));
 
-        // Simulate TmfTraceRangeUpdatedSignal begin received by trace which triggers the state system analysis
-        final TmfTimeRange range = new TmfTimeRange(fTrace.getStartTime(), TmfTimestamp.BIG_CRUNCH);
-        fTrace.traceRangeUpdated(new TmfTraceRangeUpdatedSignal(this, fTrace, range));
-
         modules = fTrace.getAnalysisModules();
         Map<String, TestAnalysis> testModules = fTrace.getAnalysisModules(TestAnalysis.class);
         assertFalse(modules.isEmpty());
@@ -472,6 +467,7 @@ public class TmfTraceTest {
                 assertTrue(testModules.containsKey(module.getKey()));
             }
         }
+
     }
 
     // ------------------------------------------------------------------------

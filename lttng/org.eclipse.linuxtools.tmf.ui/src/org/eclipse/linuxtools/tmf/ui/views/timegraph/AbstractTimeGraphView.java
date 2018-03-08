@@ -43,7 +43,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
@@ -793,18 +792,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
         }
         fTrace = signal.getTrace();
 
-        loadTrace();
-    }
-
-    /**
-     * @param signal
-     *          - the signal to handle
-     */
-    @TmfSignalHandler
-    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        if (signal.getTrace() != fTrace) {
-            return;
-        }
         loadTrace();
     }
 

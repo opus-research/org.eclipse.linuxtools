@@ -747,9 +747,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             return;
         }
 
+        /*
+         * The signal is either for this trace, or for an experiment containing
+         * this trace.
+         */
         MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
         status.add(buildStatistics());
         status.add(buildStateSystem());
+        status.add(executeAnalysis());
         if (!status.isOK()) {
             Activator.log(status);
         }
@@ -799,14 +804,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @TmfSignalHandler
     public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
         if (signal.getTrace() == this) {
-            /*
-             * The signal is either for this trace, or for an experiment containing
-             * this trace.
-             */
-            IStatus status = executeAnalysis();
-            if (!status.isOK()) {
-                Activator.log(status);
-            }
             getIndexer().buildIndex(getNbEvents(), signal.getRange(), false);
         }
     }
