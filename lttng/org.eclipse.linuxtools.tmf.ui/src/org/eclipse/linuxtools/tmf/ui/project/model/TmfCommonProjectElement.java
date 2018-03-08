@@ -11,11 +11,12 @@
  *   Geneviève Bastien - Copied supplementary files handling from TmfTracElement
  *                 Moved to this class code to copy a model element
  *                 Added trace type in this class so experiments can use it
- *                 Deprecated, renamed to TmfCommonProjectElement
+ *                 Renamed from TmfWithFolderElement to TmfCommonProjectElement
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -25,44 +26,82 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Base class for project elements who will have folder elements under them to
  * store supplementary files.
  *
  * @author gbastien
- * @since 2.0
- * @deprecated This class has been moved(renamed) to TmfCommonProjectElement
- *             that describe more what it is
+ * @since 2.1
+ * TODO: Replace extension of TmfWithFolderElement with TmfProjectModelElement
+ * when API 3.0 is under development.  For now it extends TmfWithFolderElement
+ * to avoid API breakage, but all functions of that class have been moved here
  */
-@Deprecated
-public abstract class TmfWithFolderElement extends TmfProjectModelElement {
+@SuppressWarnings("deprecation")
+public abstract class TmfCommonProjectElement extends TmfWithFolderElement {
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+
+    // This trace type ID as defined in plugin.xml
+    private String fTraceTypeId = null;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-
     /**
-     * Constructor.
-     * Creates model element.
-     * @param name The name of the element
-     * @param resource The resource.
-     * @param parent The parent element
+     * Constructor. Creates model element.
+     *
+     * @param name
+     *            The name of the element
+     * @param resource
+     *            The resource.
+     * @param parent
+     *            The parent element
      */
-    public TmfWithFolderElement(String name, IResource resource, TmfProjectModelElement parent) {
+    public TmfCommonProjectElement(String name, IResource resource, TmfProjectModelElement parent) {
         super(name, resource, parent);
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+    /**
+     * Returns the trace type ID.
+     *
+     * @return trace type ID.
+     */
+    public String getTraceType() {
+        return fTraceTypeId;
+    }
+
+    /**
+     * Refreshes the trace type filed by reading the trace type persistent
+     * property of the resource referenece.
+     */
+    public void refreshTraceType() {
+        try {
+            fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error refreshing trace type pesistent property for trace " + getName(), e); //$NON-NLS-1$
+        }
+    }
 
     /**
      * Return the resource name for this element
      *
      * @return The name of the resource for this element
      */
+    @Override
     protected String getResourceName() {
         return fResource.getName() + getSuffix();
     }
@@ -70,13 +109,98 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     /**
      * @return The suffix for resource names
      */
+    @Override
     protected String getSuffix() {
         return ""; //$NON-NLS-1$
     }
 
     /**
+     * Copy this model element
+     *
+     * @param newName
+     *            The name of the new element
+     * @param copySuppFiles
+     *            Whether to copy supplementary files or not
+     * @return the new Resource object
+     */
+    @Override
+    public IResource copy(final String newName, final boolean copySuppFiles) {
+
+        final IPath newPath = getParent().getResource().getFullPath().addTrailingSeparator().append(newName);
+
+        /* Copy supplementary files first, only if needed */
+        if (copySuppFiles) {
+            copySupplementaryFolder(newName);
+        }
+        /* Copy the trace */
+        try {
+            getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
+
+            /* Delete any bookmarks file found in copied trace folder */
+            IFolder folder = ((IFolder) getParent().getResource()).getFolder(newName);
+            if (folder.exists()) {
+                for (IResource member : folder.members()) {
+                    if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
+                        member.delete(true, null);
+                    }
+                    if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
+                        member.delete(true, null);
+                    }
+                }
+            }
+            return folder;
+        } catch (CoreException e) {
+
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the file resource used to store bookmarks. The file may not
+     * exist.
+     *
+     * @return the bookmarks file
+     * @since 2.0
+     */
+    public IFile getBookmarksFile() {
+        final IFolder folder = (IFolder) fResource;
+        IFile file = folder.getFile(getName() + '_');
+        return file;
+    }
+
+    /**
+     * Close open editors associated with this experiment.
+     *
+     * @since 2.0
+     */
+    public void closeEditors() {
+        IFile file = getBookmarksFile();
+        FileEditorInput input = new FileEditorInput(file);
+        IWorkbench wb = PlatformUI.getWorkbench();
+        for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+            for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                    try {
+                        if (editorReference.getEditorInput().equals(input)) {
+                            wbPage.closeEditor(editorReference.getEditor(false), false);
+                        }
+                    } catch (PartInitException e) {
+                        Activator.getDefault().logError("Error closing editor for " + getName(), e); //$NON-NLS-1$
+                    }
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Supplementary files operations
+    // ------------------------------------------------------------------------
+
+    /**
      * Deletes this element specific supplementary folder.
      */
+    @Override
     public void deleteSupplementaryFolder() {
         IFolder supplFolder = getTraceSupplementaryFolder(getResourceName());
         if (supplFolder.exists()) {
@@ -89,13 +213,16 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     }
 
     /**
-     * Renames the element specific supplementary folder according to the new element name.
+     * Renames the element specific supplementary folder according to the new
+     * element name.
      *
-     * @param newName The new element name
+     * @param newName
+     *            The new element name
      */
+    @Override
     public void renameSupplementaryFolder(String newName) {
         IFolder oldSupplFolder = getTraceSupplementaryFolder(getResourceName());
-        IFolder newSupplFolder =  getTraceSupplementaryFolder(newName + getSuffix());
+        IFolder newSupplFolder = getTraceSupplementaryFolder(newName + getSuffix());
 
         // Rename supplementary folder
         if (oldSupplFolder.exists()) {
@@ -110,8 +237,10 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     /**
      * Copies the element specific supplementary folder to the new element name.
      *
-     * @param newName The new element name
+     * @param newName
+     *            The new element name
      */
+    @Override
     public void copySupplementaryFolder(String newName) {
         IFolder oldSupplFolder = getTraceSupplementaryFolder(getResourceName());
         IFolder newSupplFolder = getTraceSupplementaryFolder(newName + getSuffix());
@@ -129,8 +258,10 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     /**
      * Copies the element specific supplementary folder a new folder.
      *
-     * @param destination The destination folder to copy to.
+     * @param destination
+     *            The destination folder to copy to.
      */
+    @Override
     public void copySupplementaryFolder(IFolder destination) {
         IFolder oldSupplFolder = getTraceSupplementaryFolder(getResourceName());
 
@@ -144,11 +275,12 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
         }
     }
 
-
     /**
-     * Refreshes the element specific supplementary folder information. It creates the folder if not exists.
-     * It sets the persistence property of the trace resource
+     * Refreshes the element specific supplementary folder information. It
+     * creates the folder if not exists. It sets the persistence property of the
+     * trace resource
      */
+    @Override
     public void refreshSupplementaryFolder() {
         createSupplementaryDirectory();
     }
@@ -156,8 +288,10 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     /**
      * Checks if supplementary resource exist or not.
      *
-     * @return <code>true</code> if one or more files are under the element supplementary folder
+     * @return <code>true</code> if one or more files are under the element
+     *         supplementary folder
      */
+    @Override
     public boolean hasSupplementaryResources() {
         IResource[] resources = getSupplementaryResources();
         return (resources.length > 0);
@@ -168,6 +302,7 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
      *
      * @return array of resources under the trace supplementary folder.
      */
+    @Override
     public IResource[] getSupplementaryResources() {
         IFolder supplFolder = getTraceSupplementaryFolder(getResourceName());
         if (supplFolder.exists()) {
@@ -183,8 +318,10 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     /**
      * Deletes the given resources.
      *
-     * @param resources array of resources to delete.
+     * @param resources
+     *            array of resources to delete.
      */
+    @Override
     public void deleteSupplementaryResources(IResource[] resources) {
 
         for (int i = 0; i < resources.length; i++) {
@@ -199,6 +336,7 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     /**
      * Deletes all supplementary resources in the supplementary directory
      */
+    @Override
     public void deleteSupplementaryResources() {
         deleteSupplementaryResources(getSupplementaryResources());
     }
@@ -218,47 +356,5 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
         } catch (CoreException e) {
             Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
         }
-
     }
-
-    /**
-     * Copy this model element
-     *
-     * @param newName The name of the new element
-     * @param copySuppFiles Whether to copy supplementary files or not
-     * @return the new Resource object
-     */
-    public IResource copy(final String newName, final boolean copySuppFiles) {
-
-        final IPath newPath = getParent().getResource().getFullPath().addTrailingSeparator().append(newName);
-
-        /* Copy supplementary files first, only if needed */
-        if (copySuppFiles) {
-            copySupplementaryFolder(newName);
-        }
-        /* Copy the trace */
-        try {
-            getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
-
-            /* Delete any bookmarks file found in copied trace folder */
-            IFolder folder = ((IFolder)getParent().getResource()).getFolder(newName);
-            if (folder.exists()) {
-                for (IResource member : folder.members()) {
-                    if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
-                        member.delete(true, null);
-                    }
-                    if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
-                        member.delete(true, null);
-                    }
-                }
-            }
-            return folder;
-        } catch (CoreException e) {
-
-        }
-
-        return null;
-
-    }
-
 }

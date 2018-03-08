@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Geneviève Bastien - Experiment instantiates with an experiment type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -111,6 +112,13 @@ public class OpenExperimentHandler extends AbstractHandler {
             @Override
             public void run() {
 
+                /* Experiment element now has an experiment type associated with it */
+                final TmfExperiment experiment = experimentElement.instantiateTrace();
+                if (experiment == null) {
+                    displayErrorMsg(Messages.OpenTraceHandler_NoTraceType);
+                    return;
+                }
+
                 final IFile file;
                 try {
                     file = experimentElement.createBookmarksFile();
@@ -173,7 +181,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                 }
 
                 // Create the experiment
-                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+                experiment.initExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
                 experiment.setBookmarksFile(file);
 
                 final String editorId = commonEditorId;

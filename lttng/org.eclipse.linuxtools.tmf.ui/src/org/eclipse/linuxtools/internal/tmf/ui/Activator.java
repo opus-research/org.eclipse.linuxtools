@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.properties.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventAdapterFactory;
@@ -79,6 +80,7 @@ public class Activator extends AbstractUIPlugin {
         plugin = this;
         TmfUiTracer.init();
         TmfTraceElement.init();
+        TmfExperimentElement.init();
         TmfTimePreferences.init();
 
         fTmfEventAdapterFactory = new TmfEventAdapterFactory();

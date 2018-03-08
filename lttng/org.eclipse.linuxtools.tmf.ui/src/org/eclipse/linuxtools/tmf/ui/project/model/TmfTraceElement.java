@@ -12,6 +12,7 @@
  *   Geneviève Bastien - Moved supplementary files handling to parent class,
  *                       added code to copy trace
  *   Patrick Tasse - Close editors to release resources
+ *   Geneviève Bastien - New is_experiment parameter to trace type extension
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -42,13 +43,6 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.IActionFilter;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
 
@@ -60,7 +54,7 @@ import org.eclipse.ui.views.properties.IPropertySource2;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfTraceElement extends TmfWithFolderElement implements IActionFilter, IPropertySource2 {
+public class TmfTraceElement extends TmfCommonProjectElement implements IActionFilter, IPropertySource2 {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -104,13 +98,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     private static final String BOOKMARKS_HIDDEN_FILE = ".bookmarks"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-
-    // This trace type ID as defined in plugin.xml
-    private String fTraceTypeId = null;
-
-    // ------------------------------------------------------------------------
     // Static initialization
     // ------------------------------------------------------------------------
 
@@ -128,11 +115,17 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         for (IConfigurationElement ce : config) {
             String elementName = ce.getName();
             if (elementName.equals(TmfTraceType.TYPE_ELEM)) {
-                String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                sfTraceTypeAttributes.put(traceTypeId, ce);
+                boolean isExperiment = Boolean.valueOf(ce.getAttribute(TmfTraceType.IS_EXPERIMENT_ATTR)).booleanValue();
+                if (!isExperiment) {
+                    String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                    sfTraceTypeAttributes.put(traceTypeId, ce);
+                }
             } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
-                String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                sfTraceCategories.put(categoryId, ce);
+                boolean isExperiment = Boolean.valueOf(ce.getAttribute(TmfTraceType.IS_EXPERIMENT_ATTR)).booleanValue();
+                if (!isExperiment) {
+                    String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                    sfTraceCategories.put(categoryId, ce);
+                }
             }
         }
     }
@@ -177,26 +170,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /**
-     * Returns the trace type ID.
-     *
-     * @return trace type ID.
-     */
-    public String getTraceType() {
-        return fTraceTypeId;
-    }
-
-    /**
-     * Refreshes the trace type filed by reading the trace type persistent
-     * property of the resource referenece.
-     */
-    public void refreshTraceType() {
-        try {
-            fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
-        } catch (CoreException e) {
-            Activator.getDefault().logError("Error refreshing trace type pesistent property for trace " + getName(), e); //$NON-NLS-1$
-        }
-    }
 
     /**
      * Instantiate a <code>ITmfTrace</code> object based on the trace type and
@@ -210,22 +183,22 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             // make sure that supplementary folder exists
             refreshSupplementaryFolder();
 
-            if (fTraceTypeId != null) {
-                if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
+            if (getTraceType() != null) {
+                if (getTraceType().startsWith(CustomTxtTrace.class.getCanonicalName())) {
                     for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                        if (fTraceTypeId.equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomTxtTrace(def);
                         }
                     }
                 }
-                if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
+                if (getTraceType().startsWith(CustomXmlTrace.class.getCanonicalName())) {
                     for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                        if (fTraceTypeId.equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomXmlTrace(def);
                         }
                     }
                 }
-                IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
+                IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
                 if (ce == null) {
                     return null;
                 }
@@ -246,22 +219,22 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      */
     public ITmfEvent instantiateEvent() {
         try {
-            if (fTraceTypeId != null) {
-                if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
+            if (getTraceType() != null) {
+                if (getTraceType().startsWith(CustomTxtTrace.class.getCanonicalName())) {
                     for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                        if (fTraceTypeId.equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomTxtEvent(def);
                         }
                     }
                 }
-                if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
+                if (getTraceType().startsWith(CustomXmlTrace.class.getCanonicalName())) {
                     for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                        if (fTraceTypeId.equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomXmlEvent(def);
                         }
                     }
                 }
-                IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
+                IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
                 if (ce == null) {
                     return null;
                 }
@@ -280,14 +253,14 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * @return the editor ID or <code>null</code> if not defined.
      */
     public String getEditorId() {
-        if (fTraceTypeId != null) {
-            if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
+        if (getTraceType() != null) {
+            if (getTraceType().startsWith(CustomTxtTrace.class.getCanonicalName())) {
                 return TmfEventsEditor.ID;
             }
-            if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
+            if (getTraceType().startsWith(CustomXmlTrace.class.getCanonicalName())) {
                 return TmfEventsEditor.ID;
             }
-            IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
+            IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
             IConfigurationElement[] defaultEditorCE = ce.getChildren(TmfTraceType.DEFAULT_EDITOR_ELEM);
             if (defaultEditorCE.length == 1) {
                 return defaultEditorCE[0].getAttribute(TmfTraceType.ID_ATTR);
@@ -332,6 +305,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * @return the bookmarks file
      * @since 2.0
      */
+    @Override
     public IFile getBookmarksFile() {
         IFile file = null;
         if (fResource instanceof IFile) {
@@ -433,8 +407,8 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         }
 
         if (sfEventType.equals(id)) {
-            if (fTraceTypeId != null) {
-                IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
+            if (getTraceType() != null) {
+                IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
                 return (ce != null) ? (getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR)) : ""; //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
@@ -490,24 +464,9 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * Close opened editors associated with this trace.
      * @since 2.0
      */
+    @Override
     public void closeEditors() {
-        // Close the trace if open
-        IFile file = getBookmarksFile();
-        FileEditorInput input = new FileEditorInput(file);
-        IWorkbench wb = PlatformUI.getWorkbench();
-        for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
-            for (IWorkbenchPage wbPage : wbWindow.getPages()) {
-                for (IEditorReference editorReference : wbPage.getEditorReferences()) {
-                    try {
-                        if (editorReference.getEditorInput().equals(input)) {
-                            wbPage.closeEditor(editorReference.getEditor(false), false);
-                        }
-                    } catch (PartInitException e) {
-                        Activator.getDefault().logError("Error closing editor for trace " + getName(), e); //$NON-NLS-1$
-                    }
-                }
-            }
-        }
+        super.closeEditors();
 
         // Close experiments that contain the trace if open
         if (getParent() instanceof TmfTraceFolder) {
