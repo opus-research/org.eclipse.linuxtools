@@ -175,11 +175,11 @@ public class Metadata {
         } catch (ParseException e) {
             tempException = new CTFReaderException(e);
         } catch (RecognitionException e) {
-            try {
-                tempException = new CTFReaderException(e);
-            } catch (IllegalAccessException e1) {
-                // Don't worry about this, we're error handling.
-            }
+            /*
+             * We don't want to expose this ANTLR-specific exception type to the
+             * outside..
+             */
+            tempException = new CTFReaderException(e);
         }
 
         /* Ghetto resource management. Java 7 will deliver us from this... */
