@@ -152,7 +152,7 @@ public class RunScriptAction extends Action implements IWorkbenchWindowActionDel
 		return true;
 	}
 	
-	private boolean isValidDirectory(String fileName) {
+	protected boolean isValidDirectory(String fileName) {
 		this.fileName = fileName;
 		if(0 == IDESessionSettings.tapsetLocation.trim().length())
 			TapsetLibrary.getTapsetLocation(IDEPlugin.getDefault().getPreferenceStore());
