@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @version 1.0
  * @author Matthew Khouzam
  */
-public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
+public class CtfLocation implements ITmfLocation, Cloneable {
 
     private CtfLocationData fLocation;
 
@@ -93,11 +93,11 @@ public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
      * Get the Location Data of this location
      *
      * @return The CtfLocationData
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationData()
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationInfo()
      * @since 2.0
      */
     @Override
-    public CtfLocationData getLocationData() {
+    public CtfLocationData getLocationInfo() {
         return fLocation;
     }
 
@@ -149,10 +149,10 @@ public class CtfLocation implements ITmfLocation<CtfLocationData>, Cloneable {
      */
     @Override
     public String toString() {
-        if( this.getLocationData().equals(CtfLocation.INVALID_LOCATION )) {
+        if( this.getLocationInfo().equals(CtfLocation.INVALID_LOCATION )) {
             return "CtfLocation: INVALID"; //$NON-NLS-1$
         }
-        return "CtfLocation: " + getLocationData().toString(); //$NON-NLS-1$
+        return "CtfLocation: " + getLocationInfo().toString(); //$NON-NLS-1$
     }
 
 

@@ -73,7 +73,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
     }
 
     @Override
-    public ITmfLocation<? extends Comparable<?>> getLocation() {
+    public ITmfLocation getLocation() {
         return curLocation;
     }
 
@@ -83,9 +83,9 @@ public class CtfTmfLightweightContext implements ITmfContext {
     }
 
     @Override
-    public void setLocation(ITmfLocation<? extends Comparable<?>> location) {
+    public void setLocation(ITmfLocation location) {
         curLocation = (CtfLocation) location;
-        getIterator().seek(curLocation.getLocationData());
+        getIterator().seek(curLocation.getLocationInfo());
     }
 
     @Override
@@ -120,7 +120,7 @@ public class CtfTmfLightweightContext implements ITmfContext {
      * @return success or not
      */
     public synchronized boolean advance() {
-        final CtfLocationData curLocationData = this.curLocation.getLocationData();
+        final CtfLocationData curLocationData = this.curLocation.getLocationInfo();
         boolean retVal = getIterator().advance();
         CtfTmfEvent currentEvent = getIterator().getCurrentEvent();
 
