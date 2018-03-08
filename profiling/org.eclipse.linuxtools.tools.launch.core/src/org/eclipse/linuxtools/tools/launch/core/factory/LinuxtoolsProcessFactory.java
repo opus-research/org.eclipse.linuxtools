@@ -81,30 +81,22 @@ public abstract class LinuxtoolsProcessFactory {
 			//there is nothing to add
 			return envp;
 
-		String[] newEnvp = new String[] {};
-		
+		String[] newEnvp;
 		if (envpPath != null) {
 			newEnvp = new String[envp.length];
-			for (int i = 0; i < envp.length; i++) {
+			for (int i = 0; i < envp.length; i++)
 				if (envp[i].startsWith(PATH_EQUAL))
 					newEnvp[i] = newPath.toString();
 				else
 					newEnvp[i] = envp[i];
-			}
 		} else if (systemEnvMap != null) {
-			Map<String, String> envVars = systemEnvMap;
+			Map<String, String> envVars = System.getenv();
 			Set<String> keySet = envVars.keySet();
 			newEnvp = new String[envVars.size()];
 
 			int i = 0;
 			for (String key : keySet) {
-				if(key.startsWith(PATH))
-					if (ltPath!=null)
-						newEnvp[i] = key + "=" + ltPath + SEPARATOR + envVars.get(key);
-					else 
-						newEnvp[i] = key + "=" + envVars.get(key);
-				else
-					newEnvp[i] = key + "=" + envVars.get(key);
+				newEnvp[i] = key + "=" + envVars.get(key);
 				i++;
 			}
 		} else {
