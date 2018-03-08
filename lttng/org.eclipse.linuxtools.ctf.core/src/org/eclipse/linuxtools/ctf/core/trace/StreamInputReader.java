@@ -291,11 +291,10 @@ public class StreamInputReader {
         }
 
         /*
-         * Advance until either of these conditions are met
-         * <ul>
-         *  <li> reached the end of the trace file (the given timestamp is after the last event), </li>
-         *  <li> found the first event with a timestamp greater  or equal the given timestamp. </li>
-         * </ul>
+         * Advance until either of these conditions are met <ul> <li> reached
+         * the end of the trace file (the given timestamp is after the last
+         * event), </li> <li> found the first event with a timestamp greater or
+         * equal the given timestamp. </li> </ul>
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);

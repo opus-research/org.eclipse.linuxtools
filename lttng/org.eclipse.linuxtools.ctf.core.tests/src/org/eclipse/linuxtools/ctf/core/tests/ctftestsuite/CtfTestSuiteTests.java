@@ -31,9 +31,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Parameterized test class running the CTF Test Suite
- *
- * (from https://github.com/efficios/ctf-testsuite).
+ * Parametrized test class running the CTF Test Suite (from
+ * https://github.com/efficios/ctf-testsuite).
  *
  * @author Alexandre Montplaisir
  */
@@ -132,11 +131,13 @@ public class CtfTestSuiteTests {
                 assertNotNull(reader.getCurrentEventDef());
             }
 
-            checkIfWeShoudlSucceed();
+            if (!fExpectSuccess) {
+                fail("Trace was expected to fail parsing: " + fTracePath);
+            }
         } catch (CTFReaderException e) {
-            checkIfWeShouldFail(e);
-        } catch (OutOfMemoryError e) {
-            checkIfWeShouldFail(e);
+            if (fExpectSuccess) {
+                fail("Trace was expected to succeed, but failed parsing: " + fTracePath + " " + e.getMessage());
+            }
         } finally {
             if (reader != null) {
                 reader.dispose();
@@ -145,19 +146,6 @@ public class CtfTestSuiteTests {
                 trace.dispose();
             }
 
-        }
-    }
-
-    private void checkIfWeShoudlSucceed() {
-        if (!fExpectSuccess) {
-            fail("Trace was expected to fail parsing: " + fTracePath);
-        }
-    }
-
-    private void checkIfWeShouldFail(Throwable e) {
-        if (fExpectSuccess) {
-            fail("Trace was expected to succeed, but failed parsing: " +
-                    fTracePath + " (" + e.getMessage() + ")");
         }
     }
 }

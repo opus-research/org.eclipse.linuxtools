@@ -113,11 +113,12 @@ public abstract class CtfTmfEventField extends TmfEventField {
 
             } else if (arrayDecl.getElementType() instanceof IntegerDeclaration) {
                 /* This is a an array of CTF Integers */
-                long[] values = new long[arrayDecl.getLength()];
+                List<Long> values = new ArrayList<Long>(arrayDecl.getLength());
                 for (int i = 0; i < arrayDecl.getLength(); i++) {
-                    values[i] = ((IntegerDefinition) arrayDef.getElem(i)).getValue();
+                    values.add(((IntegerDefinition) arrayDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values,
+                long[] valuesArray = convertListToArray(values);
+                field = new CTFIntegerArrayField(fieldName, valuesArray,
                         ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) arrayDecl.getElementType()).isSigned());
             }
@@ -135,14 +136,14 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 field = new CTFStringField(fieldName, seqDef.toString());
             } else if (seqDecl.getElementType() instanceof IntegerDeclaration) {
                 /* Sequence of integers => CTFIntegerArrayField */
-                long[] values = new long[seqDef.getLength()];
+                List<Long> values = new ArrayList<Long>(seqDef.getLength());
                 for (int i = 0; i < seqDef.getLength(); i++) {
-                    values[i] = ((IntegerDefinition) seqDef.getElem(i)).getValue();
+                    values.add(((IntegerDefinition) seqDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values,
+                long[] valuesArray = convertListToArray(values);
+                field = new CTFIntegerArrayField(fieldName, valuesArray,
                         ((IntegerDeclaration) seqDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) seqDecl.getElementType()).isSigned());
-
             }
             /* Add other Sequence types here */
 
@@ -188,6 +189,17 @@ public abstract class CtfTmfEventField extends TmfEventField {
     @Override
     public String toString() {
         return getName() + '=' + getFormattedValue();
+    }
+
+    /**
+     * We cannot use List.toArray(T[]) for primitives types, so do it manually.
+     */
+    private static long[] convertListToArray(List<Long> list) {
+        long[] array = new long[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
     }
 
 }

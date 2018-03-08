@@ -121,9 +121,17 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
         if (length > 64) {
             throw new CTFReaderException("Cannot read an integer with over 64 bits. Length given: " + length); //$NON-NLS-1$
-        }
+        } else if (length > 32) {
+                bits = input.get(length, signed);
+        } else {
+            /* Read an int and perform a signed-extension to a long. */
+            bits = input.get(length, signed);
 
-        bits = input.get(length, signed);
+            /* Truncate when unsigned integer is requested. */
+            if (!signed) {
+                bits = bits & 0x00000000FFFFFFFFL;
+            }
+        }
 
         /*
          * Put the input buffer's endianness back to original if it was changed

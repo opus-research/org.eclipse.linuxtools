@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 /**
  * A state value that contains no particular value. It is sometimes needed over
  * a "null" reference, since we avoid NPE's this way.
@@ -38,13 +36,8 @@ final class NullStateValue extends TmfStateValue {
     }
 
     @Override
-    public boolean equals(@Nullable Object object) {
-        return (object instanceof NullStateValue);
-    }
-
-    @Override
-    public int hashCode() {
-       return 0;
+    public Object getValue() {
+        return value;
     }
 
     @Override
@@ -73,6 +66,6 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public String unboxStr() {
-        return value;
+        return "nullValue"; //$NON-NLS-1$
     }
 }
