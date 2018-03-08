@@ -35,9 +35,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * An invalid location
      */
     public static final CtfLocation NULL_LOCATION = new CtfLocation(CtfLocation.INVALID_LOCATION);
-    private static final CtfIterator NULL_ITERATOR = new CtfNullIterator();
-
-
 
     private CtfLocation curLocation;
     private long curRank;
@@ -60,22 +57,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             setUnknownLocation();
         }
-    }
-
-    /**
-     * Used for NullIterators
-     */
-    public CtfIterator(){
-        super();
-        ctfTmfTrace = null;
-    }
-
-    /**
-     * @return a null iterator
-     */
-    public static CtfIterator getNullIterator(){
-       return NULL_ITERATOR;
-
     }
 
     private void setUnknownLocation() {
