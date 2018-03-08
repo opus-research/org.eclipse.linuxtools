@@ -35,9 +35,14 @@ public class TmfStateStatisticsTest extends TmfStatisticsTest {
     public static void setUpClass() {
         assumeTrue(testTrace.exists());
         try {
-            File htFile = File.createTempFile("stats-test", ".ht");
-            htFile.deleteOnExit();
-            backend = new TmfStateStatistics(testTrace.getTrace(), htFile);
+            File totalsFileKernel = File.createTempFile("stats-test-kernel-totals", ".ht");
+            File typesFileKernel = File.createTempFile("stats-test-kernel-types", ".ht");
+            totalsFileKernel.deleteOnExit();
+            typesFileKernel.deleteOnExit();
+
+            backend = new TmfStateStatistics(testTrace.getTrace(),
+                    totalsFileKernel, typesFileKernel);
+
         } catch (TmfTraceException e) {
             e.printStackTrace();
         } catch (IOException e) {
