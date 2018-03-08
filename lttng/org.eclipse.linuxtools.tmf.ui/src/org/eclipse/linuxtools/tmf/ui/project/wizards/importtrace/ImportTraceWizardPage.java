@@ -12,6 +12,7 @@
  *   Francois Chouinard - Complete re-design
  *   Anna Dushistova(Montavista) - [383047] NPE while importing a CFT trace
  *   Matthew Khouzam - Moved out some common functions
+ *   Patrick Tasse - Add sorting of file system elements
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
@@ -106,11 +107,29 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     // ------------------------------------------------------------------------
+    // Classes
+    // ------------------------------------------------------------------------
+
+    private static class FileSystemElementComparator implements Comparator<Object> {
+
+        FileSystemStructureProvider provider = FileSystemStructureProvider.INSTANCE;
+
+        @Override
+        public int compare(Object o1, Object o2) {
+            String label1 = provider.getLabel(o1);
+            String label2 = provider.getLabel(o2);
+            return label1.compareTo(label2);
+        }
+
+    }
+
+    // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
 
-    static private final String IMPORT_WIZARD_PAGE = "ImportTraceWizardPage"; //$NON-NLS-1$
+    private static final String IMPORT_WIZARD_PAGE = "ImportTraceWizardPage"; //$NON-NLS-1$
     private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
+    private static final FileSystemElementComparator FILE_SYSTEM_ELEMENT_COMPARATOR = new FileSystemElementComparator();
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -284,6 +303,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             Object fileSystemObject = parent.getFileSystemObject();
             List<?> children = provider.getChildren(fileSystemObject);
             if (children != null) {
+                Collections.sort(children, FILE_SYSTEM_ELEMENT_COMPARATOR);
                 Iterator<?> iterator = children.iterator();
                 while (iterator.hasNext()) {
                     Object child = iterator.next();
@@ -731,12 +751,32 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
                     }
                 }
             } else {
-                IConfigurationElement ce = TmfTraceType.getInstance().getTraceAttributes(traceType);
-                if (ce != null) {
-                    traceTypeOK = true;
-                    traceBundle = ce.getContributor().getName();
-                    traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                    traceIcon = ce.getAttribute(TmfTraceType.ICON_ATTR);
+                if (!traceType.equals("")) { //$NON-NLS-1$
+                    // Trace type was selected
+                    String temp[] = traceType.split(":", 2); //$NON-NLS-1$
+                    if (temp.length < 2) {
+                        Activator.getDefault().logError("Error with trace type " + traceType); //$NON-NLS-1$
+                        return false;
+                    }
+                    final String traceId = TmfTraceType.getInstance().getTraceTypeId(temp[0], temp[1]);
+                    if (traceId != null) {
+                        if (!TmfTraceType.getInstance().validateTrace(traceId, getSelectedResources())) {
+                            setMessage(null);
+                            setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
+                            return false;
+                        }
+                    } else {
+                        setMessage(null);
+                        setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
+                        return false;
+                    }
+                    IConfigurationElement ce = TmfTraceType.getInstance().getTraceAttributes(traceId);
+                    if (ce != null) {
+                        traceTypeOK = true;
+                        traceBundle = ce.getContributor().getName();
+                        traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                        traceIcon = ce.getAttribute(TmfTraceType.ICON_ATTR);
+                    }
                 }
             }
             if (ok && traceTypeOK && !traceType.equals("")) { //$NON-NLS-1$
