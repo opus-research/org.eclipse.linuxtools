@@ -332,13 +332,4 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     private static CtfIterator getIterator(CtfTmfTrace trace,  CtfTmfLightweightContext context) {
         return CtfIteratorManager.getIterator(trace, context);
     }
-
-    /**
-     * Get an iterator to the trace
-     *
-     * @return an iterator to the trace
-     */
-    public CtfIterator createIterator(){
-        return new CtfIterator(this);
-    }
 }
