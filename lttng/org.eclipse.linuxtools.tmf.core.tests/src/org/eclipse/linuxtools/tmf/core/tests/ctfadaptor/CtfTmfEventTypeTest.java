@@ -28,6 +28,7 @@ import org.junit.Test;
  * @author ematkho
  * @version 1.0
  */
+@SuppressWarnings("nls")
 public class CtfTmfEventTypeTest {
 
     /**

@@ -39,17 +39,17 @@ public class ChangelogPage extends AbstractRPMPropertyPage {
 		Label rpmChangelogEntriesLabel = new Label(composite, SWT.NONE);
 		rpmChangelogEntriesLabel.setText(Messages
 				.getString("ChangelogPage.entries")); //$NON-NLS-1$
-		Text rpmChangelogEntriesText = new Text(composite, SWT.MULTI | SWT.BORDER
+		Text rpm_ChangelogEntriesText = new Text(composite, SWT.MULTI | SWT.BORDER
 				| SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
 		GridData gdEntries = new GridData();
 		gdEntries.widthHint = convertWidthInCharsToPixels(CL_ENTRIES_FIELD_WIDTH);
 		gdEntries.heightHint = convertWidthInCharsToPixels(CL_ENTRIES_FIELD_HEIGHT);
-		rpmChangelogEntriesText.setLayoutData(gdEntries);
+		rpm_ChangelogEntriesText.setLayoutData(gdEntries);
 
 		try {
 			String rpm_ChangelogEntries = RPMQuery
 					.getChangelog((IFile) getElement());
-			rpmChangelogEntriesText.setText(rpm_ChangelogEntries);
+			rpm_ChangelogEntriesText.setText(rpm_ChangelogEntries);
 		} catch (CoreException e) {
 			StatusManager.getManager().handle(new StatusAdapter(e.getStatus()),
 					StatusManager.LOG | StatusManager.SHOW);

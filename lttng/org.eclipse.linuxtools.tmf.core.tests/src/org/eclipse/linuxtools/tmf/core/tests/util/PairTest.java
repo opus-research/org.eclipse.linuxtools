@@ -24,7 +24,7 @@ import org.junit.Test;
  *
  * @author Bernd Hufmann
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({ "nls", "javadoc" })
 public class PairTest {
 
     // ------------------------------------------------------------------------

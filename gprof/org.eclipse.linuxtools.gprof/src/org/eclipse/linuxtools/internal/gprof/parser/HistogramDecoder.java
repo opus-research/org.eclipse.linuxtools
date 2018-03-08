@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.cdt.core.IBinaryParser.ISymbol;
-import org.eclipse.linuxtools.internal.gprof.Messages;
 import org.eclipse.linuxtools.internal.gprof.symbolManager.Bucket;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.HistRoot;
 
@@ -94,7 +93,7 @@ public class HistogramDecoder {
 		if (!isCompatible(lowpc, highpc, prof_rate, hist_num_bins))
 		{
 			// TODO exception to normalize
-			throw new RuntimeException(Messages.HistogramDecoder_INCOMPATIBLE_HIST_HEADER_ERROR_MSG);
+			throw new RuntimeException("Histogram header's incompatibility among gmon files");
 		}
 		this.lowpc     = lowpc;
 		this.highpc    = highpc;
@@ -142,7 +141,7 @@ public class HistogramDecoder {
 		if (!isCompatible(low_pc, high_pc, profrate, hist_num_bins))
 		{
 			// TODO exception to normalize
-			throw new RuntimeException(Messages.HistogramDecoder_INCOMPATIBLE_HIST_HEADER_ERROR_MSG);
+			throw new RuntimeException("Histogram header's incompatibility among gmon files");
 		}
 
 
@@ -150,7 +149,7 @@ public class HistogramDecoder {
 		this.highpc    = high_pc;
 		this.prof_rate = profrate;
 		hist_sample    = new int[hist_num_bins]; // Impl note: JVM sets all integers to 0
-		dimen          = "s"; //$NON-NLS-1$
+		dimen          = "s";
 		dimen_abbrev   = 's';
 		long temp = highpc - lowpc;
 		bucketSize = Math.round(temp/(double)hist_num_bins);
@@ -199,18 +198,18 @@ public class HistogramDecoder {
 	 */
 	public void printHistHeader(PrintStream ps)
 	{
-		ps.println(" \nHistogram Header : \n"); //$NON-NLS-1$
-		ps.print("  Base pc address of sample buffer = 0x"); //$NON-NLS-1$
+		ps.println(" \nHistogram Header : \n");
+		ps.print("  Base pc address of sample buffer = 0x");
 		ps.println(Long.toHexString(lowpc));
-		ps.print("  Max pc address of sampled buffer = 0x"); //$NON-NLS-1$
+		ps.print("  Max pc address of sampled buffer = 0x");
 		ps.println(Long.toHexString(highpc));
-		ps.print("  Number of histogram samples      = "); //$NON-NLS-1$
+		ps.print("  Number of histogram samples      = ");
 		ps.println(hist_sample.length);
-		ps.print("  Profiling clock rate             = "); //$NON-NLS-1$
+		ps.print("  Profiling clock rate             = ");
 		ps.println(prof_rate);
 //		ps.print("  Physical dimension usually \"seconds\" = ");
 //		ps.println(dimen);
-		ps.print("  Physical dimension abreviation : 's' for \"seconds\"  'm' for \"milliseconds\" = "); //$NON-NLS-1$
+		ps.print("  Physical dimension abreviation : 's' for \"seconds\"  'm' for \"milliseconds\" = ");
 		ps.println(dimen_abbrev);
 	}
 
@@ -220,8 +219,8 @@ public class HistogramDecoder {
 	 */
 	public void printHistRecords(PrintStream ps) {
 		ps.println();
-		ps.println(" ==  HISTOGRAM RECORDS  == "); //$NON-NLS-1$
-		ps.println(" ========================= "); //$NON-NLS-1$
+		ps.println(" ==  HISTOGRAM RECORDS  == ");
+		ps.println(" ========================= ");
 
 		printHistHeader(ps);
 
