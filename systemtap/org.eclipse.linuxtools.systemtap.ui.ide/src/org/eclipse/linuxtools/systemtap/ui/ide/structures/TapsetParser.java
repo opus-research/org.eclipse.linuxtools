@@ -146,12 +146,18 @@ public class TapsetParser implements Runnable {
 	 * know that they can update.
 	 */
 	public void run() {
+		long a = System.currentTimeMillis();
 		String s = readPass1(null);
 		s = addStaticProbes(s);
 		parseProbes(s);
+		long b = System.currentTimeMillis();
+		System.out.println(b-a);
 		sortTrees();
 
+		a = System.currentTimeMillis();
 		runPass2Functions();
+		b = System.currentTimeMillis();
+		System.out.println(b-a);
 		fireUpdateEvent();	//Inform listeners that a new batch of functions has variable info
 		successfulFinish = true;
 		fireUpdateEvent();	//Inform listeners that everything is done
@@ -356,16 +362,17 @@ public class TapsetParser implements Runnable {
 		StringTokenizer st = new StringTokenizer(result, "\n", false); //$NON-NLS-1$
 		st.nextToken(); //skip that stap command
 		String tok = ""; //$NON-NLS-1$
+		String regex = "^function .*\\)\n$"; //match ^function and ending the line with ')' //$NON-NLS-1$
+		Pattern p = Pattern.compile(regex, Pattern.MULTILINE | Pattern.UNIX_LINES | Pattern.COMMENTS);
+		Pattern secondp = Pattern.compile("[\\W]"); //take our function line and split it up //$NON-NLS-1$
+		Pattern underscorep = Pattern.compile("^function _.*"); //remove any lines that "^function _" //$NON-NLS-1$
+		Pattern allCaps = Pattern.compile("[A-Z_1-9]*"); //$NON-NLS-1$
 		while(st.hasMoreTokens()) {
 			tok = st.nextToken().toString();
-			String regex = "^function .*\\)\n$"; //match ^function and ending the line with ')' //$NON-NLS-1$
-			Pattern p = Pattern.compile(regex, Pattern.MULTILINE | Pattern.UNIX_LINES | Pattern.COMMENTS);
 			Matcher m = p.matcher(tok);
 			while(m.find()) {
 				// this gives us function foo (bar, bar)
 				// we need to strip the ^function and functions with a leading _
-				Pattern secondp = Pattern.compile("[\\W]"); //take our function line and split it up //$NON-NLS-1$
-				Pattern underscorep = Pattern.compile("^function _.*"); //remove any lines that "^function _" //$NON-NLS-1$
 				String[] us = underscorep.split(m.group().toString());
 
 				for(String s : us) {
@@ -375,7 +382,7 @@ public class TapsetParser implements Runnable {
 						// If i== 1 this is a function name.
 						// Ignore ALL_CAPS functions; they are not meant for end
 						// user use.
-						if(i == 1 && !t.matches("[A-Z_1-9]*")) { //$NON-NLS-1$
+						if(i == 1 && !allCaps.matcher(t).matches()) {
 							functions.add(new TreeNode(t, t, true));
 						}
 						else if(i > 1 && t.length() >= 1) {
@@ -386,8 +393,8 @@ public class TapsetParser implements Runnable {
 					}
 				}
 			}
-			functions.sortTree();
 		}
+		functions.sortTree();
 	}
 
 	protected void sortTrees() {
