@@ -91,9 +91,9 @@ public class SelectDataSetWizardPage extends WizardPage {
 			if(e.widget instanceof Button) {
 				Button target = (Button)e.widget;
 
-				for(Button button: btnDataSets) {
-					if(target == button) {
-						dataSetID = button.getData().toString();
+				for(int i=0; i<btnDataSets.length; i++) {
+					if(target == btnDataSets[i]) {
+						dataSetID = btnDataSets[i].getData().toString();
 						wizard.getContainer().updateButtons();
 					}
 				}

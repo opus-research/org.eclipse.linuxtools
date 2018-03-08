@@ -69,7 +69,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
         /* Make sure the domain is "kernel" in the trace's env vars */
         String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
-        temp.dispose();
         if (dom != null && dom.equals("\"kernel\"")) { //$NON-NLS-1$
             return true;
         }
@@ -94,7 +93,7 @@ public class CtfKernelTrace extends CtfTmfTrace {
         final File htFile = new File(supplDirectory + File.separator + HISTORY_TREE_FILE_NAME);
         final IStateChangeInput htInput = new CtfKernelStateInput(this);
 
-        ITmfStateSystem ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
+        ITmfStateSystem ss = StateSystemManager.loadStateHistory(htFile, htInput, STATE_ID, false);
         fStateSystems.put(STATE_ID, ss);
     }
 

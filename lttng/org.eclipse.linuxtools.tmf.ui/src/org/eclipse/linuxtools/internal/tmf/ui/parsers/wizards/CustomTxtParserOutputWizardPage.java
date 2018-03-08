@@ -1,15 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- *
- * All rights reserved. This program and the accompanying materials are
- * made available under the terms of the Eclipse Public License v1.0 which
- * accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Patrick Tassé - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards;
 
 import java.io.File;
@@ -28,6 +16,8 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -40,11 +30,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * Output wizard page for custom text trace parsers.
- *
- * @author Patrick Tassé
- */
 public class CustomTxtParserOutputWizardPage extends WizardPage {
 
     private static final Image upImage = Activator.getDefault().getImageFromPath("/icons/elcl16/up_button.gif"); //$NON-NLS-1$
@@ -64,12 +49,6 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
     CustomEventsTable previewTable;
     File tmpFile;
 
-    /**
-     * Constructor
-     *
-     * @param wizard
-     *            The wizard to which this page belongs
-     */
     protected CustomTxtParserOutputWizardPage(final CustomTxtParserWizard wizard) {
         super("CustomParserOutputWizardPage"); //$NON-NLS-1$
         setTitle(wizard.inputPage.getTitle());
@@ -123,8 +102,8 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
         super.dispose();
     }
 
-    private void loadDefinition(final CustomTxtTraceDefinition def) {
-        for (final OutputColumn outputColumn : def.outputs) {
+    private void loadDefinition(final CustomTxtTraceDefinition definition) {
+        for (final OutputColumn outputColumn : definition.outputs) {
             final Output output = new Output(outputsContainer, outputColumn.name);
             outputs.add(output);
         }
@@ -243,11 +222,6 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
         container.layout();
     }
 
-    /**
-     * Extract the list of output columns from the page's contents.
-     *
-     * @return The output columns
-     */
     public List<OutputColumn> extractOutputs() {
         int numColumns = 0;
         for (int i = 0; i < outputs.size(); i++) {
@@ -327,11 +301,6 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
         }
     }
 
-    /**
-     * Get the trace definition.
-     *
-     * @return The trace definition
-     */
     public CustomTxtTraceDefinition getDefinition() {
         return definition;
     }
