@@ -143,4 +143,24 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 		URI projectURI = project.getLocationURI();
 		return getOS(projectURI);
 	}
+
+	public Map<String, String> getEnv(IProject project) throws CoreException {
+		String scheme = mapping.getSchemeFromNature(project);
+		if (scheme!=null) {
+			IRemoteProxyManager manager = getRemoteManager(scheme);
+			return manager.getEnv(project);
+		}
+		URI projectURI = project.getLocationURI();
+		return getEnv(projectURI);
+	}
+
+	public Map<String, String> getEnv(URI uri) throws CoreException {
+		String scheme = uri.getScheme();
+		if (scheme != null && !scheme.equals(LOCALSCHEME)){
+			IRemoteProxyManager manager = getRemoteManager(scheme);
+			if (manager != null)
+			  return manager.getEnv(uri);
+		}
+		return System.getenv();
+	}
 }
