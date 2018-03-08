@@ -70,17 +70,17 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
     /**
      * @return the timestamp value (magnitude)
      */
-    long getValue();
+    public long getValue();
 
     /**
      * @return the timestamp scale (exponent)
      */
-    int getScale();
+    public int getScale();
 
     /**
      * @return the timestamp precision (measurement tolerance)
      */
-    int getPrecision();
+    public int getPrecision();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -93,7 +93,7 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      * @param scale the new timestamp scale
      * @return a new 'adjusted' ITmfTimestamp
      */
-    ITmfTimestamp normalize(long offset, int scale);
+    public ITmfTimestamp normalize(long offset, int scale);
 
     /**
      * Compares [this] and [ts] within timestamp precision
@@ -102,7 +102,7 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      * @param withinPrecision consider the precision when testing for equality
      * @return -1, 0 or 1 (less than, equals, greater than)
      */
-    int compareTo(ITmfTimestamp ts, boolean withinPrecision);
+    public int compareTo(ITmfTimestamp ts, boolean withinPrecision);
 
     /**
      * Returns the difference between [this] and [ts] as a timestamp
@@ -110,7 +110,7 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      * @param ts the other timestamp
      * @return the time difference (this - other) as an ITmfTimestamp
      */
-    ITmfTimestamp getDelta(ITmfTimestamp ts);
+    public ITmfTimestamp getDelta(ITmfTimestamp ts);
 
     /**
      * Returns if this timestamp intersects the given time range. Borders are
@@ -121,7 +121,7 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      *            The time range to compare to
      * @return True if this timestamp is part of the time range, false if not
      */
-    boolean intersects(TmfTimeRange range);
+    public boolean intersects(TmfTimeRange range);
 
     // ------------------------------------------------------------------------
     // Comparable
@@ -137,6 +137,6 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      * @return the formatted timestamp
      * @since 2.0
      */
-    String toString(final TmfTimestampFormat format);
+    public String toString(final TmfTimestampFormat format);
 
 }
