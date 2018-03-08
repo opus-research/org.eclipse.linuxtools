@@ -22,25 +22,17 @@ public class STPAutoEditStrategy extends
 	@Override
 	public void customizeDocumentCommand(IDocument document,
 			DocumentCommand command) {
-		boolean modified = false;
 		if (command.text.equals("\"")) { //$NON-NLS-1$
 			command.text = "\"\""; //$NON-NLS-1$
-			modified = true;
 		} else if (command.text.equals("(")){ //$NON-NLS-1$
 			command.text = "()"; //$NON-NLS-1$
-			modified = true;
 		} else if (command.text.equals("{")) { //$NON-NLS-1$
 			command.text = "{}"; //$NON-NLS-1$
-			modified = true;
 		} else if (command.text.equals("[")) { //$NON-NLS-1$
 			command.text = "[]"; //$NON-NLS-1$
-			modified = true;
 		}
-
-		if (modified) {
-			command.caretOffset = command.offset + 1;
-			command.shiftsCaret = false;
-		}
+		command.caretOffset = command.offset + 1;
+		command.shiftsCaret = false;
 
 	}
 }
