@@ -30,6 +30,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
+import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.launch.PerfEventsTab;
 import org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab;
 import org.eclipse.linuxtools.internal.perf.model.PMCommand;
@@ -38,7 +39,6 @@ import org.eclipse.linuxtools.internal.perf.model.PMEvent;
 import org.eclipse.linuxtools.internal.perf.model.PMFile;
 import org.eclipse.linuxtools.internal.perf.model.PMSymbol;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
-import org.eclipse.linuxtools.internal.perf.ui.PerfDoubleClickAction;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.osgi.framework.FrameworkUtil;
 
