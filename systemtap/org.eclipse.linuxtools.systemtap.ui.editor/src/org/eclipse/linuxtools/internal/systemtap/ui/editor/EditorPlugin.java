@@ -21,7 +21,7 @@ import org.osgi.framework.BundleContext;
  */
 public class EditorPlugin extends AbstractUIPlugin implements IStartup {
 
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.editor"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.editor";
 
 	//The shared instance.
 	private static EditorPlugin plugin;

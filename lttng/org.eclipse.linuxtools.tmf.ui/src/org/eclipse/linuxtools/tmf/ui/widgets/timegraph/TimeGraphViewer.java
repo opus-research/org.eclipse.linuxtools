@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2010, 2011, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
@@ -33,7 +32,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphTooltipHandler;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -91,8 +89,9 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     ArrayList<ITimeGraphTimeListener> fTimeListeners = new ArrayList<ITimeGraphTimeListener>();
     ArrayList<ITimeGraphRangeListener> fRangeListeners = new ArrayList<ITimeGraphRangeListener>();
 
-    // Time format, using Epoch reference, Relative time format(default) or Number
-    private TimeFormat timeFormat = TimeFormat.RELATIVE;
+    // Calender Time format, using Epoch reference or Relative time
+    // format(default
+    private boolean calendarTimeFormat = false;
     private int borderWidth = 0;
     private int timeScaleHeight = 22;
 
@@ -133,21 +132,19 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Sets or clears the input for this time graph viewer.
      * The input array should only contain top-level elements.
      *
-     * @param input The input of this time graph viewer, or <code>null</code> if none
+     * @param input the input of this time graph viewer, or <code>null</code> if none
      */
     public void setInput(ITimeGraphEntry[] input) {
-        ITimeGraphEntry[] realInput = input;
-
-        if (_stateCtrl != null) {
-            if (realInput == null) {
-                realInput = new ITimeGraphEntry[0];
+        if (null != _stateCtrl) {
+            if (null == input) {
+                input = new ITimeGraphEntry[0];
             }
-            setTimeRange(realInput);
+            setTimeRange(input);
             _verticalScrollBar.setEnabled(true);
             setTopIndex(0);
             _selectedTime = 0;
             _selectedEntry = null;
-            refreshAllData(realInput);
+            refreshAllData(input);
         }
     }
 
@@ -206,18 +203,15 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         }
     }
 
-    /**
-     * @return The string representing the view type
-     */
     protected String getViewTypeStr() {
         return "viewoption.threads"; //$NON-NLS-1$
     }
 
-    int getMarginWidth() {
+    int getMarginWidth(int idx) {
         return 0;
     }
 
-    int getMarginHeight() {
+    int getMarginHeight(int idx) {
         return 0;
     }
 
@@ -232,15 +226,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         Utils.saveIntOption(getPreferenceString("namewidth"), _nameWidth); //$NON-NLS-1$
     }
 
-    /**
-     * Create a data viewer.
-     *
-     * @param parent
-     *            Parent composite
-     * @param style
-     *            Style to use
-     * @return The new data viewer
-     */
     protected Control createDataViewer(Composite parent, int style) {
         loadOptions();
         _colors = new TimeGraphColorScheme();
@@ -321,17 +306,9 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * Create a new time graph control.
-     *
-     * @param parent
-     *            The parent composite
-     * @param colors
-     *            The color scheme
-     * @return The new TimeGraphControl
      * @since 2.0
      */
-    protected TimeGraphControl createTimeGraphControl(Composite parent,
-            TimeGraphColorScheme colors) {
+    protected TimeGraphControl createTimeGraphControl(Composite parent, TimeGraphColorScheme colors) {
         return new TimeGraphControl(parent, colors);
     }
 
@@ -408,21 +385,19 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * @param end
      */
     void updateInternalData(ITimeGraphEntry[] traces, long start, long end) {
-        ITimeGraphEntry[] realTraces = traces;
-
-        if (null == realTraces) {
-            realTraces = new ITimeGraphEntry[0];
+        if (null == traces) {
+            traces = new ITimeGraphEntry[0];
         }
         if ((start == 0 && end == 0) || start < 0 || end < 0) {
             // Start and end time are unspecified and need to be determined from
             // individual processes
-            setTimeRange(realTraces);
+            setTimeRange(traces);
         } else {
             _beginTime = start;
             _endTime = end;
         }
 
-        refreshAllData(realTraces);
+        refreshAllData(traces);
     }
 
     /**
@@ -499,9 +474,9 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     @Override
     public void setNameSpace(int width) {
         _nameWidth = width;
-        int w = _stateCtrl.getClientArea().width;
-        if (_nameWidth > w - 6) {
-            _nameWidth = w - 6;
+        width = _stateCtrl.getClientArea().width;
+        if (_nameWidth > width - 6) {
+            _nameWidth = width - 6;
         }
         if (_nameWidth < 6) {
             _nameWidth = 6;
@@ -923,19 +898,18 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * @since 2.0
+     * Set the calendar format
+     *
+     * @param toAbsoluteCaltime
+     *            True for absolute time, false for relative
      */
-    @Override
-    public TimeFormat getTimeFormat() {
-        return timeFormat;
+    public void setTimeCalendarFormat(boolean toAbsoluteCaltime) {
+        calendarTimeFormat = toAbsoluteCaltime;
     }
 
-    /**
-     * @param tf the {@link TimeFormat} used to display timestamps
-     * @since 2.0
-     */
-    public void setTimeFormat(TimeFormat tf) {
-        this.timeFormat = tf;
+    @Override
+    public boolean isCalendarFormat() {
+        return calendarTimeFormat;
     }
 
     /**

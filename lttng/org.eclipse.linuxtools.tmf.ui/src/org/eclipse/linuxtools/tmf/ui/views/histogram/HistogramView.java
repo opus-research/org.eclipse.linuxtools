@@ -56,7 +56,6 @@ import org.eclipse.ui.IEditorPart;
  * @version 2.0
  * @author Francois Chouinard
  */
-@SuppressWarnings("deprecation")
 public class HistogramView extends TmfView {
 
     // ------------------------------------------------------------------------
@@ -342,22 +341,20 @@ public class HistogramView extends TmfView {
     }
 
     private void setNewRange(long startTime, long duration) {
-        long realStart = startTime;
-
-        if (realStart < fTraceStartTime) {
-            realStart = fTraceStartTime;
+        if (startTime < fTraceStartTime) {
+            startTime = fTraceStartTime;
         }
 
-        long endTime = realStart + duration;
+        long endTime = startTime + duration;
         if (endTime > fTraceEndTime) {
             endTime = fTraceEndTime;
             if ((endTime - duration) > fTraceStartTime) {
-                realStart = endTime - duration;
+                startTime = endTime - duration;
             } else {
-                realStart = fTraceStartTime;
+                startTime = fTraceStartTime;
             }
         }
-        updateTimeRange(realStart, endTime);
+        updateTimeRange(startTime, endTime);
     }
 
     // ------------------------------------------------------------------------

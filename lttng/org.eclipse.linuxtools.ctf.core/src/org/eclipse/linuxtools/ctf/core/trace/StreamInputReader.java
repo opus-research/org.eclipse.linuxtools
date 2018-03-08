@@ -66,7 +66,6 @@ public class StreamInputReader {
      *
      * @param streamInput
      *            The StreamInput to read.
-     * @since 2.0
      */
     public StreamInputReader(StreamInput streamInput) {
         this.streamInput = streamInput;
@@ -79,14 +78,6 @@ public class StreamInputReader {
          * Make first packet the current one.
          */
         goToNextPacket();
-    }
-
-    /**
-     * Dispose the StreamInputReader
-     * @since 2.0
-     */
-    public void dispose() {
-        packetReader.dispose();
     }
 
     // ------------------------------------------------------------------------

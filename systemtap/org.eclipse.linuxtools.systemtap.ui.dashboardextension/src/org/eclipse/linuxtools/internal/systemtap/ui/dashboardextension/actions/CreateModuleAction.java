@@ -301,6 +301,14 @@ public class CreateModuleAction extends Action implements
 		}
 	}
 
+	/**
+	 * Removes all internal references to objects. No other method should be
+	 * called after this.
+	 */
+	/*
+	 * public void dispose() { super.dispose(); }
+	 */
+
 	public void selectionChanged(IAction action, ISelection selection) {
 		// TODO Auto-generated method stub
 

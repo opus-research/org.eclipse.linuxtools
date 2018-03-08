@@ -82,6 +82,11 @@ public class GraphComposite extends Composite {
 		data.width = 15;
 		pluslabel.setLayoutData(data);
 
+	
+		//this.setLayout(new FillLayout());
+		//System.out.println("In graphcomposite style" + style);
+		//for (int i=0; i<gd.ySeries.length; i++)
+			//System.out.println("In graphcomposite, y: " + gd.ySeries[i]);
 		builder = GraphFactory.createGraph(this, style,gd, ds);
 		data = new FormData();
 		data.top = new FormAttachment(0,0);
