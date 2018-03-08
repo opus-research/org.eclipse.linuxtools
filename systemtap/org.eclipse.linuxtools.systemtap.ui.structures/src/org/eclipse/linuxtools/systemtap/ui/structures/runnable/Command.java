@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -19,8 +18,6 @@ import java.util.ArrayList;
 import org.eclipse.linuxtools.internal.systemtap.ui.structures.Localization;
 import org.eclipse.linuxtools.systemtap.ui.structures.IPasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
-
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 
 
 
@@ -87,8 +84,8 @@ public class Command implements Runnable {
 	 */
 	protected boolean init() {
 		try {
-			process = RuntimeProcessFactory.getFactory().exec(cmd, envVars, null);
-
+			process = Runtime.getRuntime().exec(cmd, envVars);
+	
 			errorGobbler = new StreamGobbler(process.getErrorStream());            
 			inputGobbler = new StreamGobbler(process.getInputStream());
 			
