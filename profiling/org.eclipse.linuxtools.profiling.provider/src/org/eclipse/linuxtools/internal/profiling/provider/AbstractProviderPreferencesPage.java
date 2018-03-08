@@ -68,28 +68,22 @@ public class AbstractProviderPreferencesPage extends
 
 	@Override
 	protected void createFieldEditors() {
-		String providerId = ProfileLaunchShortcut
-				.getDefaultLaunchShortcutProviderId(type);
-		
-		getPreferenceStore().setDefault(ProviderProfileConstants.PREFS_KEY, providerId);
-
-		HashMap<String, String> map = ProfileLaunchConfigurationTabGroup
-				.getProviderNamesForType(type);
-		// 2d array containing launch provider names on the first column and
-		// corresponding id's on the second.
-		String[][] providerList = new String[map.size()][2];
-		int i = 0;
-		for (Entry<String, String> entry : map.entrySet()) {
-			providerList[i][0] = entry.getKey();
-			providerList[i][1] = entry.getValue();
-			i++;
-		}
+			HashMap<String, String> map = ProfileLaunchConfigurationTabGroup
+					.getProviderNamesForType(type);
+			// 2d array containing launch provider names on the first column and
+			// corresponding id's on the second.
+			String[][] providerList = new String[map.size()][2];
+			int i = 0;
+			for (Entry<String, String> entry : map.entrySet()) {
+				providerList[i][0] = entry.getKey();
+				providerList[i][1] = entry.getValue();
+				i++;
+			}
 		RadioGroupFieldEditor editor = new RadioGroupFieldEditor(
 				ProviderProfileConstants.PREFS_KEY,
 				Messages.ProviderPreferencesPage_1, 1, providerList,
 				getFieldEditorParent());
-		editor.setPreferenceStore(getPreferenceStore());
-		addField(editor);
+			addField(editor);
 
 	}
 
