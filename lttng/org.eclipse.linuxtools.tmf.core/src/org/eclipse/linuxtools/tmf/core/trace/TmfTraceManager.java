@@ -116,7 +116,7 @@ public final class TmfTraceManager {
      * @return the current window time range
      */
     public synchronized TmfTimeRange getCurrentRange() {
-        return getCurrentTraceContext().getTimerange();
+        return getCurrentTraceContext().getWindowRange();
     }
 
     /**
@@ -313,7 +313,7 @@ public final class TmfTraceManager {
 
             /* Determine the new time range */
             TmfTimeRange targetTr = signal.getCurrentRange().getIntersection(validTr);
-            TmfTimeRange newTr = (targetTr == null ? curCtx.getTimerange() : targetTr);
+            TmfTimeRange newTr = (targetTr == null ? curCtx.getWindowRange() : targetTr);
 
             /* Update the values */
             TmfTraceContext newCtx = new TmfTraceContext(curCtx, newTr);

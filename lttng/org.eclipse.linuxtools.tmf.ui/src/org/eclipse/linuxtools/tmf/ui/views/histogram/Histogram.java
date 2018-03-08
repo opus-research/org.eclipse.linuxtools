@@ -140,15 +140,13 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
     /**
      * The current selection begin time
-     * @since 2.1
      */
-    protected long fSelectionBegin = 0L;
+    private long fSelectionBegin = 0L;
 
     /**
      * The current selection end time
-     * @since 2.1
      */
-    protected long fSelectionEnd = 0L;
+    private long fSelectionEnd = 0L;
 
     // ------------------------------------------------------------------------
     // Construction
