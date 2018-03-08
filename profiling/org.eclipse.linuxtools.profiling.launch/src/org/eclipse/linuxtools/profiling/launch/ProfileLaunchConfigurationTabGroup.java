@@ -12,8 +12,6 @@ package org.eclipse.linuxtools.profiling.launch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 
 import org.eclipse.cdt.launch.ui.CArgumentsTab;
@@ -135,60 +133,9 @@ public abstract class ProfileLaunchConfigurationTabGroup extends AbstractLaunchC
 	 * @since 1.2
 	 */
 	public static String getHighestProviderId(String type) {
-		IExtensionPoint extPoint = Platform.getExtensionRegistry()
-				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID,
-						"launchProvider"); //$NON-NLS-1$
-		IConfigurationElement[] configs = extPoint.getConfigurationElements();
-		ArrayList<IConfigurationElement> configList = new ArrayList<IConfigurationElement>();
+		ArrayList<IConfigurationElement> list = ProfileLaunchShortcut.getOrderedConfigElements(type);
 
-		for (IConfigurationElement config : configs) {
-			if (config.getName().equals("provider")) { //$NON-NLS-1$
-				String currentName = config.getAttribute("name"); //$NON-NLS-1$
-				String currentType = config.getAttribute("type"); //$NON-NLS-1$
-				String tabgroup = config.getAttribute("tabgroup"); //$NON-NLS-1$
-				if (currentType != null && tabgroup != null
-						&& currentName != null && currentType.equals(type)) {
-
-					String priority = config.getAttribute("priority");
-					if (priority != null) {
-						try {
-							Integer.parseInt(priority);
-							configList.add(config);
-						} catch (NumberFormatException e) {
-							// continue
-						}
-					}
-				}
-			}
-		}
-
-		Collections.sort(configList, new Comparator<IConfigurationElement>() {
-			public int compare(IConfigurationElement c1,
-					IConfigurationElement c2) {
-				int p1, p2;
-				// If priority is not an int or is < 0, corresponding config has
-				// lowest priority.
-				try {
-					p1 = Integer.parseInt(c1.getAttribute("priority"));
-					if (p1 <= 0) {
-						return 1;
-					}
-				} catch (NumberFormatException e) {
-					return 1;
-				}
-				try {
-					p2 = Integer.parseInt(c2.getAttribute("priority"));
-					if (p2 <= 0) {
-						return -1;
-					}
-				} catch (NumberFormatException e) {
-					return -1;
-				}
-				return p1 < p2 ? -1 : 1;
-			}
-		});
-
-		for (IConfigurationElement config : configList) {
+		for (IConfigurationElement config : list) {
 			try {
 				Object obj = config.createExecutableExtension("tabgroup"); //$NON-NLS-1$
 				if (obj instanceof ProfileLaunchConfigurationTabGroup) {
