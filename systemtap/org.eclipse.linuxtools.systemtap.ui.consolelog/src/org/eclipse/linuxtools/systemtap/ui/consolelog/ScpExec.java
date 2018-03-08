@@ -7,6 +7,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.structures.process.RemoteSystemtapProcess;
+import org.eclipse.linuxtools.systemtap.structures.process.SystemtapProcessFactory;
 import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.structures.runnable.StreamGobbler;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
@@ -14,8 +16,6 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPref
 import org.eclipse.ui.PlatformUI;
 
 import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
@@ -41,21 +41,18 @@ public class ScpExec extends Command {
 				.getString(ConsoleLogPreferenceConstants.SCP_USER);
 		String host = ConsoleLogPlugin.getDefault().getPreferenceStore()
 				.getString(ConsoleLogPreferenceConstants.HOST_NAME);
+		String password = ConsoleLogPlugin.getDefault()
+				.getPreferenceStore()
+				.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD);
+
 		try {
-			JSch jsch = new JSch();
 
-			session = jsch.getSession(user, host, 22);
+			RemoteSystemtapProcess systemtapProcess = SystemtapProcessFactory
+					.getRemoteSystemtapProcess(user, host, password);
 
-			session.setPassword(ConsoleLogPlugin.getDefault()
-					.getPreferenceStore()
-					.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD));
+			session = systemtapProcess.getSession();
 
-			java.util.Properties config = new java.util.Properties();
-			config.put("StrictHostKeyChecking", "no"); //$NON-NLS-1$//$NON-NLS-2$
-			session.setConfig(config);
-			session.connect();
-			channel = session.openChannel("exec"); //$NON-NLS-1$
-			((ChannelExec) channel).setCommand(command);
+			channel = systemtapProcess.executeRemote(command);
 
 			channel.setInputStream(null, true);
 			channel.setOutputStream(System.out, true);

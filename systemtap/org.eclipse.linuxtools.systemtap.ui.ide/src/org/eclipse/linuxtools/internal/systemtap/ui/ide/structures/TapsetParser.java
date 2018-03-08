@@ -18,17 +18,15 @@ import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
-import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
+import org.eclipse.linuxtools.systemtap.structures.process.SystemtapProcessFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -132,8 +130,9 @@ public abstract class TapsetParser extends Job {
 			}
 		}
 		if(null != options && options.length > 0 && options[0].trim().length() > 0) {
-			for(int i=0; i<options.length; i++)
+			for(int i=0; i<options.length; i++) {
 				args[args.length-options.length-1+i] = options[i];
+			}
 		}
 
 		StringOutputStream str = new StringOutputStream();
@@ -145,12 +144,10 @@ public abstract class TapsetParser extends Job {
 			} else {
 				uri = new URI(Path.ROOT.toOSString());
 			}
-			IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(uri);
-			Process process = launcher.execute(new Path("stap"), args, null, null, null); //$NON-NLS-1$
+			Process process = SystemtapProcessFactory.getSystemtapProcess().execute(args, uri, str, strErr);
 			if(process == null){
 				displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
 			}
-			launcher.waitAndRead(str, strErr, new NullProgressMonitor());
 		} catch (URISyntaxException e) {
 			ExceptionErrorDialog.openError(Messages.TapsetParser_ErrorRunningSystemtap, e);
 		} catch (CoreException e) {
