@@ -45,7 +45,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 public class HistoryBuilder extends TmfComponent {
 
     private final IStateChangeInput sci;
-    private final StateHistorySystem shs;
+    private final StateSystem ss;
     private final IStateHistoryBackend hb;
     private boolean started = true; /* Don't handle signals until we're ready */
 
@@ -74,9 +74,9 @@ public class HistoryBuilder extends TmfComponent {
         }
         sci = stateChangeInput;
         hb = backend;
-        shs = new StateHistorySystem(hb, true);
+        ss = new StateSystem(hb, true);
 
-        sci.assignTargetStateSystem(shs);
+        sci.assignTargetStateSystem(ss);
 
         if (buildManually) {
             TmfSignalManager.deregister(this);
@@ -101,7 +101,7 @@ public class HistoryBuilder extends TmfComponent {
      */
     public static IStateSystemBuilder openExistingHistory(
             IStateHistoryBackend hb) throws IOException {
-        return new StateHistorySystem(hb, false);
+        return new StateSystem(hb, false);
     }
 
     /**
@@ -111,7 +111,7 @@ public class HistoryBuilder extends TmfComponent {
      * @return Reference to the state system, with access to everything.
      */
     public IStateSystemBuilder getStateSystemBuilder() {
-        return shs;
+        return ss;
     }
 
     /**
@@ -121,7 +121,7 @@ public class HistoryBuilder extends TmfComponent {
      *         available.
      */
     public IStateSystemQuerier getStateSystemQuerier() {
-        return shs;
+        return ss;
     }
 
     /**
@@ -157,12 +157,12 @@ public class HistoryBuilder extends TmfComponent {
     @TmfSignalHandler
     public void experimentRangeUpdated(final TmfExperimentRangeUpdatedSignal signal) {
         StateSystemBuildRequest request;
-        TmfExperiment<ITmfEvent> exp;
+        TmfExperiment exp;
 
         if (!started) {
             started = true;
             request = new StateSystemBuildRequest(this);
-            exp = (TmfExperiment<ITmfEvent>) TmfExperiment.getCurrentExperiment();
+            exp = TmfExperiment.getCurrentExperiment();
             if (exp == null) {
                 return;
             }
@@ -197,17 +197,17 @@ public class HistoryBuilder extends TmfComponent {
     }
 }
 
-class StateSystemBuildRequest extends TmfEventRequest<ITmfEvent> {
+class StateSystemBuildRequest extends TmfEventRequest {
 
     /** The amount of events queried at a time through the requests */
     private final static int chunkSize = 50000;
 
     private final HistoryBuilder builder;
     private final IStateChangeInput sci;
-    private final ITmfTrace<ITmfEvent> trace;
+    private final ITmfTrace trace;
 
     StateSystemBuildRequest(HistoryBuilder builder) {
-        super((Class<ITmfEvent>) builder.getInputPlugin().getExpectedEventType().getClass(),
+        super(builder.getInputPlugin().getExpectedEventType().getClass(),
                 TmfTimeRange.ETERNITY,
                 TmfDataRequest.ALL_DATA,
                 chunkSize,
