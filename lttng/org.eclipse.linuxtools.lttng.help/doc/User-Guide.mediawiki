@@ -580,48 +580,33 @@ It is possible to export the content of the trace to a text file based on the co
 
 The Histogram View displays the trace events distribution with respect to time. When streaming a trace, this view is dynamically updated as the events are received.
 
+
 [[Image:images/HistogramView.png]]
 
 The '''Hide Lost Events''' toggle button [[Image:images/hide_lost_events.gif]] in the local toolbar allows to hide the bars of lost events. When the button is selected it can be toggled again to show the lost events.
 
-On the top left, there are three text controls:
+On the top left, there are two data controls:
 
-* '''Selection Start''': Displays the start time of the current selection
-* '''Selection End''': Displays the end time of the current selection
-* '''Window Span''': Displays the current zoom window size in seconds
+* '''Current Event (sec)''': Displays the current time or selected time range begin time
+* '''Window Span (sec)''': Displays the current time range window size
 
-The controls can be used to modify their respective value. After validation, the other controls and views will be synchronized and updated accordingly. To modify both selection times simultaneously, press the link icon [[Image:images/link.gif]] which disables the '''Selection End''' control input.
+Both control can be used to modify their respective value. After validation, the other controls and views will be synchronized and updated accordingly.
 
-The large (full) histogram, at the bottom, shows the event distribution over the whole trace or set of traces. It also has a smaller semi-transparent orange window, with a cross-hair, that shows the current zoom window.
+The large histogram, at the bottom, shows the event distribution over the whole trace or set of traces. It also has a smaller semi-transparent window, with a cross-hair, that shows the currently selected time range window. The time range window can be zoomed in/out by using the mouse wheel. It can also be selected by the mouse and dragged to another region of the trace.
 
-The smaller (zoom) histogram, on top right, corresponds to the current zoom window, a sub-range of the event set.
+The smaller histogram, on top right, corresponds to the currently selected time range window, a sub-range of the event set. Its size can also be zoomed in/out using the mouse wheel.
 
-The x-axis of each histogram corresponds to the event timestamps. The start time and end time of the histogram range is displayed. The y-axis shows the maximum number of events in the corresponding histogram bars.
+The x-axis of each histogram corresponds to the events timestamps. The timestamp of the first and the last event of the respective ranges is displayed. The y-axis of each histogram shows the minimum/maximum number of events in the corresponding histogram bars.
 
-The vertical blue line(s) show the current selection time (or range). If applicable, the region in the selection range will be shaded.
+The dashed vertical magenta bar, on the right, shows the position of the last event. The vertical blue bar shows the currently selected time. The current time can be changed by clicking on the histogram. Shift-clicking the histogram will select a time range, in which case there will be vertical blue bars at the begin and end time and the region in between will be shaded.
 
-The mouse can be used to control the histogram:
-
-* '''Left-click''': Set a selection time
-* '''Left-drag''': Set a selection range
-* '''Shift-left-click or drag''': Extend or shrink the selection range
-
-* '''Middle-click or Ctrl-left-click''': Center the zoom window on mouse (full histogram only)
-* '''Middle-drag or Ctrl-left-drag''': Move the zoom window
-
-* '''Right-drag''': Set the zoom window
-* '''Shift-right-click or drag''': Extend or shrink the zoom window (full histogram only)
-
-* '''Mouse wheel up''': Zoom in
-* '''Mouse wheel down''': Zoom out
-
-Hovering the mouse over an histogram bar pops up an information window that displays the start/end time of the corresponding bar, as well as the number of events (and lost events) it represents. If the mouse is over the selection range, the selection span in seconds is displayed.
+Hovering the mouse over an histogram bar pops up an information window that displays the start/end time of the corresponding bar as well as the number of events it represents.
 
 In each histogram, the following keys are handled:
 
-* '''Left Arrow''': Moves the current event to the previous non-empty bar
-* '''Right Arrow''': Moves the current event to the next non-empty bar
-* '''Home''': Sets the current time to the first non-empty bar
+* '''Left''': Moves the current event to the previous non-empty bar
+* '''Right''': Moves the current event to the next non-empty bar
+* '''Home''': Sets the current time to the first histogram bar
 * '''End''': Sets the current time to the last non-empty histogram bar
 
 == Statistics View ==
@@ -1675,6 +1660,90 @@ The LTTng Kernel Events editor '''is''' the plain TMF [[#Events_Editor | Events 
 
 
 [[Image:images/LTTng2EventsEditor.png]]
+
+= Trace synchronization =
+
+It is possible to synchronize traces from different machines so that they have the same time reference. Events from the reference trace will have the same timestamps as usual, but the events from traces synchronized with the first one will have their timestamps transformed according to the formula obtained after synchronization.
+
+== Obtain synchronizable traces ==
+
+To synchronize traces from different machines, they need to exchange packets through the network and have events enabled such that the data can be matched from one trace to the other. For now, only TCP packets can be matched between two traces.
+
+LTTng traces that can be synchronized are obtained using one of two methods (both methods are compatible):
+
+=== LTTng-module network tracepoint with complete data ===
+
+The tracepoints '''net_dev_queue''' and '''netif_receive_skb''' will be used for synchronization. Both tracepoints are available in lttng-modules since version 2.2, but they do not contain sufficient data to be used to synchronize traces.
+
+An experimental branch introduces this extra data: lttng-modules will need to be compiled by hand.
+
+Obtain the source code for the experimental lttng-modules
+
+    # git clone git://git.dorsal.polymtl.ca/~gbastien/lttng-modules.git
+    # cd lttng-modules
+
+Checkout the ''net_data_experimental'' branch, compile and install lttng-modules as per the lttng-modules documentation
+
+    # git checkout net_data_experimental
+    # make
+    # sudo make modules_install
+    # sudo depmod -a
+
+This experimental branch adds IP, IPv6 and TCP header data to the tracepoints. Packets received and sent with other protocols do not have this extra header data, but all packets are captured.
+
+=== LTTng-modules addons kernel module with dynamic tracepoints ===
+
+This method adds dynamic instrumentation on TCP packets via extra kernel modules. Only TCP packets are captured.
+
+Obtain the source code, along with lttng-modules
+
+    # git clone https://github.com/giraldeau/lttng-modules.git
+    # cd lttng-modules
+
+Checkout the addons branch, compile and install lttng-modules as per the lttng-modules documentation. The ''make'' command will fail at first with a message about the unset SYSMAP variable. Instructions on how to generate a System.map are mentioned in the error message.
+
+    # git checkout addons
+    # make
+    # (follow the instructions to obtain the System.map file and set the SYSMAP variable)
+    # make
+    # sudo make modules_install
+    # sudo depmod -a
+
+The lttng-addons modules must be inserted manually for the TCP tracepoints to be made available.
+
+    # sudo modprobe lttng-addons
+    # sudo modprobe lttng-probe-addons
+
+The following tracepoints will be available
+
+    # sudo lttng list -k
+    Kernel events:
+    -------------
+      ...
+      inet_sock_create (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_delete (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_clone (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_accept (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_connect (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_local_in (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_local_out (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      ...
+
+The ones used for trace synchronization are '''inet_sock_local_in''' and '''inet_sock_local_out'''.
+
+== Synchronize traces in TMF ==
+
+In order to synchronize traces, create a new experiment and select all traces that need to be synchronized. Right-click on the experiment and select '''Synchronize traces'''. For each trace whose time needs to be transformed, a new trace named as the original but followed by a '_' will be created with the transformed timestamps, and the original trace will be replaced in the experiment. The original trace can still be accessed under the '''Traces''' folder.
+
+[[Image:images/Sync_menu.png| Right-click synchronize traces to perform the trace synchronization]]
+
+When opening the experiment now, all the views will be synchronized. The following screenshot presents the differences in the filtered Control Flow View before and after the time synchronization.
+
+[[Image:images/Sync_cfv.png| Example of Control Flow View before and after trace synchronization]]
+
+Information on the quality of the synchronization, the timestamp transformation formula and some synchronization statistics can be visualized in the '''Synchronization''' view. To open the '''Synchronization''' view, use the Eclipse Show View dialog ('''Window''' -> '''Show View''' -> '''Other...'''). Then select '''Synchronization''' under '''Tracing'''.
+
+[[Image:images/Sync_view.png| Example of Synchronization view]]
 
 = Timestamp formatting =
 
