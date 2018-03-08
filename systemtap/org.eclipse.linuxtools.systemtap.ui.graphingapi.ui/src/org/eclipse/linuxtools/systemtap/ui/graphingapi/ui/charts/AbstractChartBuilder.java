@@ -1,36 +1,34 @@
 /****************************************************************
- * Copyright (c) 2006-2013 IBM Corp.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors:
- *     IBM - initial API and implementation
+ * Licensed Material - Property of IBM
+ *
+ * ****-***
+ *
+ * (c) Copyright IBM Corp. 2006.  All rights reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication or
+ * disclosure restricted by GSA ADP Schedule Contract with
+ * IBM Corp.
  *
  ****************************************************************
  */
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-
 import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.GraphingAPIUIPlugin;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters.IAdapter;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
-
+import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters.IAdapter;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.widgets.Display;
-
 import org.swtchart.Chart;
 import org.swtchart.ITitle;
 
 /**
  * Provides the common members and the framework to build one chart.
- * 
+ *
  * @author Qi Liang
  */
 public abstract class AbstractChartBuilder extends Composite implements IUpdateListener{
@@ -38,7 +36,7 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	/**
 	 * Font name for all titles, labels, and values.
 	 */
-	protected final static String FONT_NAME = "MS Sans Serif";
+	protected final static String FONT_NAME = "MS Sans Serif"; //$NON-NLS-1$
 	protected int maxItems;
 	protected double scale = 1.0;
 
@@ -75,9 +73,11 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 */
 	protected String title = null;
 
+	public abstract void updateDataSet();
+
 	/**
 	 * Constructs one chart builder and associate it to one data set.
-	 * 
+	 *
 	 * @param dataSet
 	 *            data set
 	 */
@@ -125,34 +125,26 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	/**
 	 * Builds X axis.
 	 */
-	protected void buildXAxis() {
-
-	}
+	protected void buildXAxis() {}
 
 	/**
 	 * Builds Y axis.
 	 */
-	protected void buildYAxis() {
-
-	}
+	protected void buildYAxis() {}
 
 	/**
 	 * Builds X series.
 	 */
-	protected void buildXSeries() {
-
-	}
+	protected void buildXSeries() {}
 
 	/**
 	 * Builds Y series.
 	 */
-	protected void buildYSeries() {
-
-	}
+	protected void buildYSeries() {}
 
 	/**
 	 * Builds legend.
-	 * 
+	 *
 	 */
 	protected void buildLegend() {
 		chart.getLegend().setPosition(SWT.RIGHT);
@@ -169,15 +161,11 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 
 	/**
 	 * Returns the chart instance.
-	 * 
+	 *
 	 * @return the chart instance
 	 */
 	public Chart getChart() {
 		return chart;
-	}
-
-	public void updateDataSet() {
-
 	}
 
 	public void setScale(double scale) {
@@ -194,25 +182,13 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	}
 
 	public void handleUpdateEvent() {
-		try{
-			repaint();
-		}catch(Exception e)
-		{
-			//e.printStackTrace();
-		}
+		repaint();
 	}
 
 	protected void repaint() {
 		getDisplay().syncExec(new Runnable() {
-			boolean stop = false;
 			public void run() {
-				if(stop)
-					return;
-				try {
-					updateDataSet();
-				} catch (Exception e) {
-					stop = true;
-				}
+				updateDataSet();
             }
 		});
 	}

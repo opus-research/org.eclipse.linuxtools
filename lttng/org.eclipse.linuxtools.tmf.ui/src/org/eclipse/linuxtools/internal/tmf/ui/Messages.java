@@ -1,8 +1,22 @@
+/*******************************************************************************
+ * Copyright (c)  2012 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.internal.tmf.ui;
 
 import org.eclipse.osgi.util.NLS;
 
+/**
+ * TMF message bundle
+ */
+@SuppressWarnings("javadoc")
 public class Messages extends NLS {
+
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.ui.messages"; //$NON-NLS-1$
 
     public static String ManageCustomParsersDialog_DeleteButtonLabel;
@@ -50,7 +64,7 @@ public class Messages extends NLS {
     public static String CustomXmlTraceDefinition_timestampOutputFormat;
 
     public static String TmfEventsTable_AddBookmarkActionText;
-    public static String TmfEventsTable_AddBookmarkDialogText;
+    public static String TmfEventsTable_AddBookmarkDialogMessage;
     public static String TmfEventsTable_AddBookmarkDialogTitle;
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
