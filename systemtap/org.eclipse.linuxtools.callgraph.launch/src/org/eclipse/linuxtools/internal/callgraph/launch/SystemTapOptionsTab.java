@@ -894,7 +894,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 			ICProject project =  CDebugUtils.verifyCProject(config);
 			IBinary[] binaries = project.getBinaryContainer().getBinaries();
 			if (binaries != null && binaries.length > 0) {
-				if (binaries.length == 1 && binaries[0] != null) {
+				if (binaries.length == 1 && binaries[0] instanceof IBinary) {
 					return binaries[0];
 				} else
 					return chooseBinary(binaries);
