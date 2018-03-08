@@ -13,10 +13,8 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -118,15 +116,6 @@ public final class TmfTraceManager {
     public synchronized ITmfTrace[] getActiveTraceSet() {
         final ITmfTrace trace = fCurrentTrace;
         return getTraceSet(trace);
-    }
-
-    /**
-     * Get the currently-opened traces, as an unmodifiable set.
-     *
-     * @return A set containing the opened traces
-     */
-    public synchronized Set<ITmfTrace> getOpenedTraces() {
-        return Collections.unmodifiableSet(fTraces.keySet());
     }
 
     private TmfTraceContext getCurrentTraceContext() {
@@ -285,18 +274,28 @@ public final class TmfTraceManager {
      */
     @TmfSignalHandler
     public synchronized void timeRangeUpdated(final TmfRangeSynchSignal signal) {
+        final ITmfTimestamp signalTs = signal.getCurrentTime();
+
         for (Map.Entry<ITmfTrace, TmfTraceContext> entry : fTraces.entrySet()) {
             final ITmfTrace trace = entry.getKey();
             final TmfTraceContext curCtx = entry.getValue();
 
             final TmfTimeRange validTr = getValidTimeRange(trace);
 
+            /* Determine the new time stamp */
+            ITmfTimestamp newTs;
+            if (signalTs != null && signalTs.intersects(validTr)) {
+                newTs = signalTs;
+            } else {
+                newTs = curCtx.getTimestamp();
+            }
+
             /* Determine the new time range */
             TmfTimeRange targetTr = signal.getCurrentRange().getIntersection(validTr);
             TmfTimeRange newTr = (targetTr == null ? curCtx.getTimerange() : targetTr);
 
             /* Update the values */
-            TmfTraceContext newCtx = new TmfTraceContext(curCtx.getTimestamp(), newTr);
+            TmfTraceContext newCtx = new TmfTraceContext(newTs, newTr);
             entry.setValue(newCtx);
         }
     }

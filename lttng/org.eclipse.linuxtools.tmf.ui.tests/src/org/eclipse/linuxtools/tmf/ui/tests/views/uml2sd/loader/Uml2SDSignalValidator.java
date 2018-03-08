@@ -76,6 +76,9 @@ public class Uml2SDSignalValidator extends TmfComponent implements IUml2SdSignal
         if (getSource() != null) {
             setSourceError(getSource() != signal.getSource());
         }
+        if (getCurrentTime() != null) {
+            setCurrentTimeError(!getCurrentTime().equals(signal.getCurrentTime()));
+        }
         if (getCurrentRange() != null) {
             setRangeError(!getCurrentRange().equals(signal.getCurrentRange()));
         }

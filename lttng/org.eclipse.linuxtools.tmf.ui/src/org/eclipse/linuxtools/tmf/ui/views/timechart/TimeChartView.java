@@ -524,7 +524,8 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         final ITmfTimestamp startTimestamp = new TmfTimestamp(event.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
         final ITmfTimestamp endTimestamp = new TmfTimestamp(event.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
         TmfTimeRange range = new TmfTimeRange(startTimestamp, endTimestamp);
-        broadcast(new TmfRangeSynchSignal(this, range));
+        TmfTimestamp timestamp = new TmfTimestamp(fViewer.getSelectedTime(), ITmfTimestamp.NANOSECOND_SCALE);
+        broadcast(new TmfRangeSynchSignal(this, range, timestamp));
     }
 
     @Override
@@ -699,6 +700,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         }
         final long startTime = signal.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         final long endTime = signal.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -706,6 +708,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
                 fStopTime = endTime;
                 itemize(fStartTime, fStopTime);
                 fViewer.setStartFinishTime(startTime, endTime);
+                fViewer.setSelectedTime(time, false);
             }
         });
     }

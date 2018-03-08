@@ -329,12 +329,13 @@ public class HistogramView extends TmfView {
             TmfTimeRange timeRange = new TmfTimeRange(
                     new TmfTimestamp(startTime, ITmfTimestamp.NANOSECOND_SCALE),
                     new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE));
+            ITmfTimestamp currentTime = new TmfTimestamp(fCurrentTimestamp, ITmfTimestamp.NANOSECOND_SCALE);
             fTimeSpanControl.setValue(endTime - startTime);
 
             updateDisplayedTimeRange(startTime, endTime);
 
             // Send the FW signal
-            TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange);
+            TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange, currentTime);
             fTimeRangeSyncThrottle.queue(signal);
         }
     }
