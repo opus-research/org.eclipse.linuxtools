@@ -228,12 +228,19 @@ public class TmfStatisticsView extends TmfView {
         Composite folder = fStatsViewers.getParentFolder();
 
         // Instantiation of the global viewer
-        TmfStatisticsViewer globalViewer = getGlobalViewer();
+        TmfStatisticsViewer globalViewer;
+        try {
+            globalViewer = getGlobalViewerClass().newInstance();
+        } catch (InstantiationException e) {
+            Activator.getDefault().logError("Statistics: cannot instantiate the global viewer!"); //$NON-NLS-1$
+            return;
+        } catch (IllegalAccessException e) {
+            Activator.getDefault().logError("Statistics: cannot instantiate the global viewer!"); //$NON-NLS-1$
+            return;
+        }
         if (fExperiment != null) {
-            if (globalViewer != null) {
-                // Shows the name of the experiment in the global tab
-                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
-            }
+            // Shows the name of the experiment in the global tab
+            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
 
             String traceName;
@@ -254,10 +261,8 @@ public class TmfStatisticsView extends TmfView {
                 }
             }
         } else {
-            if (globalViewer != null) {
-                // There is no experiment selected. Shows an empty global tab
-                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
-            }
+            // There is no experiment selected. Shows an empty global tab
+            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
         }
         // Makes the global viewer visible
@@ -286,7 +291,7 @@ public class TmfStatisticsView extends TmfView {
      * @return The class to use to instantiate the global statistics viewer
      * @since 2.0
      */
-    protected TmfStatisticsViewer getGlobalViewer() {
-        return new TmfStatisticsViewer();
+    protected Class<? extends TmfStatisticsViewer> getGlobalViewerClass() {
+        return TmfStatisticsViewer.class;
     }
 }
