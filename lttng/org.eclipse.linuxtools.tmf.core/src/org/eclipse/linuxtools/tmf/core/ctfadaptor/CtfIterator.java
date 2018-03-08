@@ -48,7 +48,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         super(trace.getCTFTrace());
         this.ctfTmfTrace = trace;
         if (this.hasMoreEvents()) {
-            this.curLocation = new CtfLocation(trace.getStartTime());
+            this.curLocation = new CtfLocation(trace.getStartTime(), 0);
             this.curRank = 0;
         } else {
             setUnknownLocation();
@@ -122,7 +122,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
 
         /* Adjust the timestamp depending on the trace's offset */
         long currTimestamp = ctfLocationData.getTimestamp();
-        final long offsetTimestamp = currTimestamp - this.getTrace().getOffset();
+        final long offsetTimestamp = ctfTmfTrace.getCTFTrace().timestampNanoToCycles(currTimestamp);
         if (offsetTimestamp < 0) {
             ret = super.seek(0L);
         } else {

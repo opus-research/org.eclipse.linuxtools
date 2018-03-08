@@ -64,22 +64,9 @@ public class CTFTrace implements IDefinitionScope {
     // Attributes
     // ------------------------------------------------------------------------
 
+    private static final String FREQ = "freq"; //$NON-NLS-1$
+
     private static final String OFFSET = "offset"; //$NON-NLS-1$
-
-
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
-    @SuppressWarnings("nls")
-    @Override
-    public String toString() {
-        /* Only for debugging, shouldn't be externalized */
-        return "CTFTrace [path=" + path + ", major=" + major + ", minor="
-                + minor + ", uuid=" + uuid + "]";
-    }
 
     /**
      * The trace directory on the filesystem.
@@ -144,17 +131,22 @@ public class CTFTrace implements IDefinitionScope {
 
     /** Handlers for the metadata files */
     private final static FileFilter metadataFileFilter = new MetadataFileFilter();
-    private final static Comparator<File> metadataComparator = new MetadataComparator(); // $codepro.audit.disable
-                                                                                         // fieldJavadoc
+    private final static Comparator<File> metadataComparator = new MetadataComparator();
 
     /** map of all the event types */
     private final HashMap<Long,HashMap<Long, EventDeclaration>> eventDecs;
+
     /** map of all the event types */
     private final HashMap<StreamInput,HashMap<Long, EventDefinition>> eventDefs;
+
     /** map of all the indexes */
     private final HashMap<StreamInput, StreamInputPacketIndex> indexes;
 
-
+    /* Fields related to the trace clock */
+    private CTFClock singleClock;
+    private long singleOffset = 0;
+    private double singleScale = 1.0;
+    private double antiScale = 1.0;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -688,11 +680,10 @@ public class CTFTrace implements IDefinitionScope {
         return clocks.get(name);
     }
 
-    private CTFClock singleClock;
-    private long singleOffset;
-
     /**
-     * gets the clock if there is only one. (this is 100% of the use cases as of June 2012)
+     * Get the clock if there is only one. (this is 100% of the use cases as of
+     * June 2012)
+     *
      * @return the clock
      */
     public final CTFClock getClock() {
@@ -704,6 +695,10 @@ public class CTFTrace implements IDefinitionScope {
                 } else {
                     singleClock.addAttribute(OFFSET, 0);
                 }
+                if (singleClock.getProperty(FREQ) != null) {
+                    singleScale = 1000000000.0 / ((Long) singleClock.getProperty(FREQ)).doubleValue();
+                    antiScale = 1.0 / singleScale;
+                }
             }
             return singleClock;
         }
@@ -711,8 +706,7 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * gets the time offset of a clock with respect to UTC in nanoseconds
-     * @return the time offset of a clock with respect to UTC in nanoseconds
+     * @return The time offset of a clock with respect to UTC in nanoseconds
      */
     public final long getOffset() {
         if (getClock() == null) {
@@ -722,9 +716,54 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
+     * @return The time offset of a clock with respect to UTC in nanoseconds
+     */
+    public final double getTimeScale() {
+        if (getClock() == null) {
+            return 1.0;
+        }
+        return singleScale;
+    }
+
+    private final double getInverseTimeScale() {
+        if (getClock() == null) {
+            return 1.0;
+        }
+        return antiScale;
+    }
+
+    /**
+     * Convert a timestamp from clock cycles to nanoseconds for this specific
+     * trace.
+     *
+     * @param cycles
+     *            Clock cycles since boot
+     * @return Time in nanoseconds UTC offset
+     */
+    public long timestampCyclesToNanos(long cycles) {
+        long retVal = cycles + getOffset();
+        return (long) (retVal * getTimeScale());
+    }
+
+    /**
+     * Convert a timestamp from nanoseconds to clock cycles count, for this
+     * specific trace.
+     *
+     * @param nanos
+     *            Time in nanoseconds UTC offset
+     * @return clock Cycles since boot.
+     */
+    public long timestampNanoToCycles(long nanos) {
+        long retVal = (long) (nanos * getInverseTimeScale());
+        return retVal - getOffset();
+    }
+
+    /**
      * Does a given stream contain any events?
-     * @param id the stream ID
-     * @return true if the stream has events.
+     *
+     * @param id
+     *            The stream ID
+     * @return True if the stream has events.
      */
     public boolean hasEvents(Long id){
         return eventDecs.containsKey(id);
@@ -732,8 +771,10 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Add an event declaration map to the events map.
-     * @param id the id of a stream
-     * @return the hashmap containing events.
+     *
+     * @param id
+     *            The id of a stream
+     * @return The hashmap containing events.
      */
     public HashMap<Long, EventDeclaration> createEvents(Long id){
         HashMap<Long, EventDeclaration> value = eventDecs.get(id);
@@ -744,32 +785,42 @@ public class CTFTrace implements IDefinitionScope {
         return value;
     }
 
-}
-
-class MetadataFileFilter implements FileFilter {
-
+    @SuppressWarnings("nls")
     @Override
-    public boolean accept(File pathname) {
-        if (pathname.isDirectory()) {
-            return false;
-        }
-        if (pathname.isHidden()) {
-            return false;
-        }
-        if (pathname.getName().equals("metadata")) { //$NON-NLS-1$
-            return false;
-        }
-        return true;
+    public String toString() {
+        /* Only for debugging, shouldn't be externalized */
+        return "CTFTrace [path=" + path + ", major=" + major + ", minor="
+                + minor + ", uuid=" + uuid + "]";
     }
 
-}
 
-class MetadataComparator implements Comparator<File>, Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static class MetadataFileFilter implements FileFilter {
 
-    @Override
-    public int compare(File o1, File o2) {
-        return o1.getName().compareTo(o2.getName());
+        @Override
+        public boolean accept(File pathname) {
+            if (pathname.isDirectory()) {
+                return false;
+            }
+            if (pathname.isHidden()) {
+                return false;
+            }
+            if (pathname.getName().equals("metadata")) { //$NON-NLS-1$
+                return false;
+            }
+            return true;
+        }
+
     }
+
+    private static class MetadataComparator implements Comparator<File>, Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(File o1, File o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    }
+
 }
