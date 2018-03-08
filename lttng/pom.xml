@@ -87,9 +87,6 @@
   
   <profile>
     <id>lttngPackage</id>
-      <properties>
-          <lttngPackageDestination>/var/www/technology/linuxtools/lttng/update-nightly/</lttngPackageDestination>
-      </properties>
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
@@ -111,7 +108,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
-        <version>2.0</version>
+        <version>2.0-beta-2</version>
       </plugin>
 
     </plugins>
