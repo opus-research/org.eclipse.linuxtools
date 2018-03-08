@@ -8,7 +8,7 @@
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
  *    Patrick Hofer (Noser Engineering AG) - fix for Bug 275685
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.valgrind.launch;
 
 import java.io.IOException;
@@ -55,23 +55,32 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 
 	protected static final String EXT_ELEMENT_PROVIDER = "provider"; //$NON-NLS-1$
 	protected static final String EXT_ATTR_CLASS = "class"; //$NON-NLS-1$
-
+	
 	public static final Version VER_3_3_0 = new Version(3, 3, 0);
+	public static final Version VER_3_3_1 = new Version(3, 3, 1);
 	public static final Version VER_3_4_0 = new Version(3, 4, 0);
+	public static final Version VER_3_4_1 = new Version(3, 4, 1);
+	public static final Version VER_3_5_0 = new Version(3, 5, 0);
 	public static final Version VER_3_6_0 = new Version(3, 6, 0);
-
+	
 	private static final Version MIN_VER = VER_3_3_0;
 	private static final String VERSION_PREFIX = "valgrind-"; //$NON-NLS-1$
 	private static final char VERSION_DELIMITER = '-';
-
+	
 	protected HashMap<String, IConfigurationElement> toolMap;
-
+	
 	private ValgrindCommand valgrindCommand;
 	private ILaunchConfiguration config;
 	private ILaunch launch;
 
 	// The shared instance
 	private static ValgrindLaunchPlugin plugin;
+
+	/**
+	 * The constructor
+	 */
+	public ValgrindLaunchPlugin() {
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -112,7 +121,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 			verString = verString.replace(VERSION_PREFIX, ""); //$NON-NLS-1$
 			if (verString.indexOf(VERSION_DELIMITER) > 0) {
 				verString = verString.substring(0, verString.indexOf(VERSION_DELIMITER));
-			}
+			} 
 			if (verString.length() > 0) {
 				valgrindVersion = Version.parseVersion(verString);
 			}
@@ -130,11 +139,11 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 		}
 		return valgrindVersion;
 	}
-
+	
 	public void setValgrindCommand(ValgrindCommand command) {
 		valgrindCommand = command;
 	}
-
+	
 	/**
 	 * @since 0.10
 	 */
@@ -144,7 +153,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 		}
 		return valgrindCommand;
 	}
-
+	
 	public String[] getRegisteredToolIDs() {
 		Set<String> ids = getToolMap().keySet();
 		return ids.toArray(new String[ids.size()]);
@@ -204,7 +213,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 				}
 			}
 		}
-
+		
 		// if no extender, use default
 		if (provider == null) {
 			provider = new ValgrindOutputDirectoryProvider();
@@ -212,9 +221,9 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 
 		return provider;
 	}
-
+	
 	public void setCurrentLaunchConfiguration(ILaunchConfiguration config) {
-		this.config = config;
+		this.config = config;		
 	}
 
 	/**
@@ -228,7 +237,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 	public void setCurrentLaunch(ILaunch launch) {
 		this.launch = launch;
 	}
-
+	
 	/**
 	 * @return ILaunch associated with Valgrind execution currently displayed
 	 * in the Valgrind view.
@@ -236,7 +245,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 	public ILaunch getCurrentLaunch() {
 		return launch;
 	}
-
+	
 	IPath parseWSPath(String strpath) throws CoreException {
 		strpath = LaunchUtils.getStringVariableManager().performStringSubstitution(strpath, false);
 		IPath path = new Path(strpath);
@@ -245,7 +254,7 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
 			if (res != null) {
 				path = res.getLocation();
 			}
-		}
+		}		
 		return path;
 	}
 

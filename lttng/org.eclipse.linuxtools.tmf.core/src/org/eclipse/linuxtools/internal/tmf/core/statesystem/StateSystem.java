@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -18,22 +18,19 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier2;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -48,37 +45,18 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
  * @author alexmont
  *
  */
-public class StateSystem implements ITmfStateSystemBuilder {
+public class StateSystem implements IStateSystemBuilder, IStateSystemQuerier2{
 
     /* References to the inner structures */
     private final AttributeTree attributeTree;
     private final TransientState transState;
     private final IStateHistoryBackend backend;
 
-    /* Latch tracking if the state history is done building or not */
-    private final CountDownLatch finishedLatch = new CountDownLatch(1);
-
-    private boolean buildCancelled = false;
-    private boolean isDisposed = false;
-
-    /**
-     * New-file constructor. For when you build a state system with a new file,
-     * or if the back-end does not require a file on disk.
-     *
-     * @param backend
-     *            Back-end plugin to use
-     */
-    public StateSystem(IStateHistoryBackend backend) {
-        this.backend = backend;
-        this.transState = new TransientState(backend);
-        this.attributeTree = new AttributeTree(this);
-    }
-
     /**
      * General constructor
      *
      * @param backend
-     *            The "state history storage" back-end to use.
+     *            The "state history storage" backend to use.
      * @param newFile
      *            Put true if this is a new history started from scratch. It is
      *            used to tell the state system where to get its attribute tree.
@@ -96,28 +74,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* We're opening an existing file */
             this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
             transState.setInactive();
-            finishedLatch.countDown(); /* The history is already built */
         }
-    }
-
-    @Override
-    public boolean waitUntilBuilt() {
-        try {
-            finishedLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return !buildCancelled;
-    }
-
-    @Override
-    public synchronized void dispose() {
-        isDisposed = true;
-        if (transState.isActive()) {
-            transState.setInactive();
-            buildCancelled = true;
-        }
-        backend.dispose();
     }
 
     //--------------------------------------------------------------------------
@@ -125,43 +82,26 @@ public class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     /**
-     * Get the attribute tree associated with this state system. This should be
-     * the only way of accessing it (and if subclasses want to point to a
-     * different attribute tree than their own, they should only need to
-     * override this).
-     *
-     * @return The attribute tree
-     */
-    public AttributeTree getAttributeTree() {
-        return attributeTree;
-    }
-
-    /**
      * Method used by the attribute tree when creating new attributes, to keep
      * the attribute count in the transient state in sync.
      */
-    protected void addEmptyAttribute() {
+    void addEmptyAttribute() {
         transState.addEmptyEntry();
     }
 
     @Override
     public int getNbAttributes() {
-        return getAttributeTree().getNbAttributes();
-    }
-
-    @Override
-    public boolean isLastAttribute(int quark) {
-        return (quark == getNbAttributes() - 1) ? true : false;
+        return attributeTree.getNbAttributes();
     }
 
     @Override
     public String getAttributeName(int attributeQuark) {
-        return getAttributeTree().getAttributeName(attributeQuark);
+        return attributeTree.getAttributeName(attributeQuark);
     }
 
     @Override
     public String getFullAttributePath(int attributeQuark) {
-        return getAttributeTree().getFullAttributeName(attributeQuark);
+        return attributeTree.getFullAttributeName(attributeQuark);
     }
 
     //--------------------------------------------------------------------------
@@ -201,9 +141,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * If null was returned, we simply won't save the attribute tree,
              * too bad!
              */
-            getAttributeTree().writeSelf(attributeTreeFile, attributeTreeFilePos);
+            attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
-        finishedLatch.countDown(); /* Mark the history as finished building */
     }
 
     //--------------------------------------------------------------------------
@@ -213,29 +152,29 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public int getQuarkAbsolute(String... attribute)
             throws AttributeNotFoundException {
-        return getAttributeTree().getQuarkDontAdd(-1, attribute);
+        return attributeTree.getQuarkDontAdd(-1, attribute);
     }
 
     @Override
     public int getQuarkAbsoluteAndAdd(String... attribute) {
-        return getAttributeTree().getQuarkAndAdd(-1, attribute);
+        return attributeTree.getQuarkAndAdd(-1, attribute);
     }
 
     @Override
     public int getQuarkRelative(int startingNodeQuark, String... subPath)
             throws AttributeNotFoundException {
-        return getAttributeTree().getQuarkDontAdd(startingNodeQuark, subPath);
+        return attributeTree.getQuarkDontAdd(startingNodeQuark, subPath);
     }
 
     @Override
     public int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath) {
-        return getAttributeTree().getQuarkAndAdd(startingNodeQuark, subPath);
+        return attributeTree.getQuarkAndAdd(startingNodeQuark, subPath);
     }
 
     @Override
     public List<Integer> getSubAttributes(int quark, boolean recursive)
             throws AttributeNotFoundException {
-        return getAttributeTree().getSubAttributes(quark, recursive);
+        return attributeTree.getSubAttributes(quark, recursive);
     }
 
     @Override
@@ -299,7 +238,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
             } else {
                 startingAttribute = getQuarkAbsolute(prefixStr);
             }
-            directChildren = getSubAttributes(startingAttribute, false);
+            directChildren = attributeTree.getSubAttributes(startingAttribute,
+                    false);
         } catch (AttributeNotFoundException e) {
             /* That attribute path did not exist, return the empty array */
             return quarks;
@@ -359,7 +299,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * If the StateValue was null, this means this is the first time we
              * use this attribute. Leave stackDepth at 0.
              */
-        } else if (previousSV.getType() == Type.INTEGER) {
+        } else if (previousSV.getType() == 0) {
             /* Previous value was an integer, all is good, use it */
             stackDepth = previousSV.unboxInt();
         } else {
@@ -377,64 +317,61 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         stackDepth++;
-        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, stackDepth.toString());
+        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark,
+                stackDepth.toString());
 
-        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
     }
 
     @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public void popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
-        /* These are the state values of the stack-attribute itself */
-        ITmfStateValue previousSV = queryOngoingState(attributeQuark);
+        Integer stackDepth;
+        int subAttributeQuark;
+        ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
+            /* Same as if stackDepth == 0, see below */
+            return;
+        }
+        if (previousSV.getType() != 0) {
+            /*
+             * The existing value was a string, this doesn't look like a valid
+             * stack attribute.
+             */
+            throw new StateValueTypeException();
+        }
+
+        stackDepth = previousSV.unboxInt();
+
+        if (stackDepth == 0) {
             /*
              * Trying to pop an empty stack. This often happens at the start of
              * traces, for example when we see a syscall_exit, without having
              * the corresponding syscall_entry in the trace. Just ignore
              * silently.
              */
-            return null;
-        }
-        if (previousSV.getType() != Type.INTEGER) {
-            /*
-             * The existing value was not an integer (which is expected for
-             * stack tops), this doesn't look like a valid stack attribute.
-             */
-            throw new StateValueTypeException();
+            return;
         }
 
-        Integer stackDepth = previousSV.unboxInt();
-
-        if (stackDepth <= 0) {
+        if (stackDepth < 0) {
             /* This on the other hand should not happen... */
-            /* the case where == -1 was handled previously by .isNull() */
-            String message = "A top-level stack attribute cannot " + //$NON-NLS-1$
-                    "have a value of 0 or less (except -1/null)."; //$NON-NLS-1$
+            String message = "A top-level stack attribute " + //$NON-NLS-1$
+                    "cannot have a negative integer value."; //$NON-NLS-1$
             throw new StateValueTypeException(message);
         }
 
-        /* The attribute should already exist at this point */
-        int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
-        ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
+        /* The attribute should already exist... */
+        subAttributeQuark = getQuarkRelative(attributeQuark,
+                stackDepth.toString());
 
-        /* Update the state value of the stack-attribute */
-        ITmfStateValue nextSV;
-        if (--stackDepth == 0 ) {
-            /* Jump over "0" and store -1 (a null state value) */
-            nextSV = TmfStateValue.nullValue();
-        } else {
-            nextSV = TmfStateValue.newValueInt(stackDepth);
-        }
-        modifyAttribute(t, nextSV, attributeQuark);
-
-        /* Delete the sub-attribute that contained the user's state value */
+        stackDepth--;
+        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth),
+                attributeQuark);
         removeAttribute(t, subAttributeQuark);
-
-        return poppedValue;
     }
 
     @Override
@@ -447,7 +384,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * "Nullify our children first, recursively. We pass 'false' because we
          * handle the recursion ourselves.
          */
-        childAttributes = getSubAttributes(attributeQuark, false);
+        childAttributes = attributeTree.getSubAttributes(attributeQuark, false);
         for (Integer childNodeQuark : childAttributes) {
             assert (attributeQuark != childNodeQuark);
             removeAttribute(t, childNodeQuark);
@@ -476,28 +413,12 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public long getOngoingStartTime(int attribute)
-            throws AttributeNotFoundException {
-        return transState.getOngoingStartTime(attribute);
-    }
-
-    @Override
     public void updateOngoingState(ITmfStateValue newValue, int attributeQuark)
             throws AttributeNotFoundException {
         transState.changeOngoingStateValue(attributeQuark, newValue);
     }
 
-    /**
-     * Modify the whole "ongoing state" (state values + start times). This can
-     * be used when "seeking" a state system to a different point in the trace
-     * (and restoring the known stateInfo at this location). Use with care!
-     *
-     * @param newStateIntervals
-     *            The new List of state values to use as ongoing state info
-     */
-    protected void replaceOngoingState(List<ITmfStateInterval> newStateIntervals) {
-        transState.replaceOngoingState(newStateIntervals);
-   }
+
 
     //--------------------------------------------------------------------------
     //        Regular query methods (sent to the back-end)
@@ -505,15 +426,12 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public synchronized List<ITmfStateInterval> queryFullState(long t)
-            throws TimeRangeException, StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
-        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(getNbAttributes());
+            throws TimeRangeException {
+        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
+                attributeTree.getNbAttributes());
 
         /* Bring the size of the array to the current number of attributes */
-        for (int i = 0; i < getNbAttributes(); i++) {
+        for (int i = 0; i < attributeTree.getNbAttributes(); i++) {
             stateInfo.add(null);
         }
 
@@ -544,13 +462,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            throws AttributeNotFoundException, TimeRangeException {
         ITmfStateInterval ret;
+
         if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
             ret = transState.getOngoingInterval(attributeQuark);
         } else {
@@ -570,35 +484,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
-            throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException, StateSystemDisposedException {
-        Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
-
-        if (curStackDepth == -1) {
-            /* There is nothing stored in this stack at this moment */
-            return null;
-        } else if (curStackDepth < -1 || curStackDepth == 0) {
-            /*
-             * This attribute is an integer attribute, but it doesn't seem like
-             * it's used as a stack-attribute...
-             */
-            throw new StateValueTypeException();
-        }
-
-        int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
-        ITmfStateInterval ret = querySingleState(t, subAttribQuark);
-        return ret;
-    }
-
-    @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2) throws TimeRangeException,
-            AttributeNotFoundException, StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
@@ -633,21 +521,18 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
+            long t1, long t2, long resolution) throws TimeRangeException,
+            AttributeNotFoundException {
+        return queryHistoryRange(attributeQuark, t1, t2, resolution, new NullProgressMonitor());
+    }
 
+    @Override
+    public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
+            long t1, long t2, long resolution, IProgressMonitor monitor) throws TimeRangeException,
+            AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
-
-        IProgressMonitor mon = monitor;
-        if (mon == null) {
-            mon = new NullProgressMonitor();
-        }
 
         /* Make sure the time range makes sense */
         if (t2 < t1 || resolution <= 0) {
@@ -672,7 +557,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          */
         for (ts = t1; (currentInterval.getEndTime() != -1) && (ts < tEnd);
                 ts += resolution) {
-            if (mon.isCanceled()) {
+            if (monitor.isCanceled()) {
                 return intervals;
             }
             if (ts <= currentInterval.getEndTime()) {
@@ -695,7 +580,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     static void logMissingInterval(int attribute, long timestamp) {
-        Activator.logInfo("No data found in history for attribute " + //$NON-NLS-1$
+        Tracer.traceInfo("No data found in history for attribute " + //$NON-NLS-1$
                 attribute + " at time " + timestamp + //$NON-NLS-1$
                 ", returning dummy interval"); //$NON-NLS-1$
     }
@@ -707,7 +592,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
      *            The PrintWriter in which to print the output
      */
     public void debugPrint(PrintWriter writer) {
-        getAttributeTree().debugPrint(writer);
+        attributeTree.debugPrint(writer);
         transState.debugPrint(writer);
         backend.debugPrint(writer);
     }

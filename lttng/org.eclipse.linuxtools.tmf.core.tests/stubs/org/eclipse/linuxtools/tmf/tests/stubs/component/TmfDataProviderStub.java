@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,7 +20,7 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -33,8 +33,8 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings("javadoc")
-public class TmfDataProviderStub extends TmfDataProvider {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfDataProviderStub extends TmfDataProvider<TmfEvent> {
 
     private static final String DIRECTORY   = "testfiles";
     private static final String TEST_STREAM = "M-Test-10K";
@@ -42,7 +42,7 @@ public class TmfDataProviderStub extends TmfDataProvider {
     private TmfTraceStub fTrace;
 
     public TmfDataProviderStub(final String path) throws IOException {
-        super("TmfDataProviderStub", ITmfEvent.class);
+        super("TmfDataProviderStub", TmfEvent.class);
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
         try {
             final File test = new File(FileLocator.toFileURL(location).toURI());
@@ -63,21 +63,21 @@ public class TmfDataProviderStub extends TmfDataProvider {
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfContext armRequest(final ITmfDataRequest request) {
-        if (request instanceof ITmfEventRequest) {
-            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
+    public ITmfContext armRequest(final ITmfDataRequest<TmfEvent> request) {
+        if (request instanceof ITmfEventRequest<?>) {
+            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest<?>) request).getRange().getStartTime());
             return context;
         }
         return null;
     }
 
     @Override
-    public ITmfEvent getNext(final ITmfContext context) {
+    public TmfEvent getNext(final ITmfContext context) {
         return fTrace.getNext(context);
     }
 
     @Override
-    public boolean isCompleted(final ITmfDataRequest request, final ITmfEvent data, final int nbRead) {
+    public boolean isCompleted(final ITmfDataRequest<TmfEvent> request, final TmfEvent data, final int nbRead) {
         return false;
     }
 

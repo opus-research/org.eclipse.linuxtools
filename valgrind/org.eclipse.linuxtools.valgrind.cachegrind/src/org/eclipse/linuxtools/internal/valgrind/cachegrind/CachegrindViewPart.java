@@ -20,7 +20,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -91,7 +90,6 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 				| SWT.FULL_SELECTION);
 
 		labelProvider = new CachegrindLabelProvider();
-		ColumnViewerToolTipSupport.enableFor(viewer);
 
 		Tree tree = viewer.getTree();
 		tree.setHeaderVisible(true);

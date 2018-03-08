@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson.
+ * Copyright (c) 2007 Intel Corporation, 2010, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,11 +10,10 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
+ *
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
-
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 
 /**
  * Time data provider interface, for use in the timegraph widget.
@@ -22,7 +21,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
  * @version 1.0
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
- * @author Xavier Raynaud
  */
 public interface ITimeDataProvider {
 
@@ -135,13 +133,7 @@ public interface ITimeDataProvider {
     int getTimeSpace();
 
     /**
-     * @return the time format, one of:
-     * <ul>
-     *   <li>{@link TimeFormat#CALENDAR} absolute time, displayed as year/month/day/hours/minutes/seconds/ms/us/ns
-     *   <li>{@link TimeFormat#RELATIVE} relative time, displayed as seconds/ms/us/ns
-     *   <li>{@link TimeFormat#NUMBER}   number, displayed as long values.
-     * </ul>
-     * @since 2.0
+     * @return If the calendar format is absolute (true) or relative (false)
      */
-    TimeFormat getTimeFormat();
+    boolean isCalendarFormat();
 }

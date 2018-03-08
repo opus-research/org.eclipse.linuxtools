@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,9 +18,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.tmf.core.component.ITmfComponent;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.ViewPart;
 
@@ -35,63 +32,66 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class TmfView extends ViewPart implements ITmfComponent {
 
-    private final String fName;
-    /**
-     * Action class for pinning of TmfView.
-     *
-     * @since 2.0
-     */
-    protected PinTmfViewAction fPinAction;
+	private final String fName;
+	/**
+	 * Action class for pinning of TmfView.
+	 * @since 1.2
+	 */
+	protected PinTmfViewAction fPinAction;
 
-    // ------------------------------------------------------------------------
-    // Constructor
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Constructor
+	// ------------------------------------------------------------------------
 
-    /**
-     * Constructor. Creates a TMF view and registers to the signal manager.
-     *
-     * @param viewName
-     *            A view name
-     */
-    public TmfView(String viewName) {
-        super();
-        fName = viewName;
-        TmfSignalManager.register(this);
-    }
+	/**
+	 * Constructor. Creates a TMF view and registers to the signal manager.
+	 *
+	 * @param viewName A view name
+	 */
+	public TmfView(String viewName) {
+		super();
+		fName = viewName;
+		TmfSignalManager.register(this);
+	}
 
-    /**
-     * Disposes this view and de-registers itself from the signal manager
-     */
-    @Override
-    public void dispose() {
-        TmfSignalManager.deregister(this);
-        super.dispose();
-    }
+	/**
+	 * Disposes this view and deregisters itself from the signal manager
+	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
+	 */
+	@Override
+	public void dispose() {
+		TmfSignalManager.deregister(this);
+		super.dispose();
+	}
 
-    // ------------------------------------------------------------------------
-    // ITmfComponent
-    // ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// ITmfComponent
+	// ------------------------------------------------------------------------
 
-    @Override
-    public String getName() {
-        return fName;
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.linuxtools.tmf.core.component.ITmfComponent#getName()
+	 */
+	@Override
+	public String getName() {
+		return fName;
+	}
 
-    @Override
-    public void broadcast(TmfSignal signal) {
-        TmfSignalManager.dispatchSignal(signal);
-    }
-
-    // ------------------------------------------------------------------------
-    // View pinning support
-    // ------------------------------------------------------------------------
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.linuxtools.tmf.core.component.ITmfComponent#broadcast(org.eclipse.linuxtools.tmf.core.signal.TmfSignal)
+	 */
+	@Override
+	public void broadcast(TmfSignal signal) {
+		TmfSignalManager.dispatchSignal(signal);
+	}
 
     /**
      * Returns whether the pin flag is set.
      * For example, this flag can be used to ignore time synchronization signals from other TmfViews.
      *
      * @return pin flag
-     * @since 2.0
+     * @since 1.2
      */
     public boolean isPinned() {
         return ((fPinAction != null) && (fPinAction.isChecked()));
@@ -101,7 +101,7 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
      * Method adds a pin action to the TmfView. The pin action allows to toggle the <code>fIsPinned</code> flag.
      * For example, this flag can be used to ignore time synchronization signals from other TmfViews.
      *
-     * @since 2.0
+     * @since 1.2
      */
     protected void contributePinActionToToolBar() {
         if (fPinAction == null) {
@@ -113,21 +113,4 @@ public abstract class TmfView extends ViewPart implements ITmfComponent {
             toolBarManager.add(fPinAction);
         }
     }
-
-    /**
-     * Get the currently selected trace, or 'null' if the active editor is not a
-     * TMF trace.
-     *
-     * @return The active trace, or 'null' if not a trace
-     * @since 2.0
-     */
-    public ITmfTrace getActiveTrace() {
-        IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor instanceof ITmfTraceEditor) {
-            ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
-            return trace;
-        }
-        return null;
-    }
-
 }

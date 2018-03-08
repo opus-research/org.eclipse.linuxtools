@@ -95,7 +95,6 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 			launch = il;
 			this.exePath = exePath;
 		}
-		@Override
 		public void launchesTerminated(ILaunch[] launches) {
 
 			for (ILaunch l : launches) {
@@ -109,7 +108,6 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 					//need to run this in the ui thread otherwise get SWT Exceptions
 					// based on concurrency issues
 					Display.getDefault().syncExec(new Runnable() {
-						@Override
 						public void run() {
 							try {
 								String s = exePath.toOSString();			
@@ -149,18 +147,15 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 			}
 		}
 
-		@Override
 		public void launchesAdded(ILaunch[] launches) { /* dont care */}
-		@Override
 		public void launchesChanged(ILaunch[] launches) { /* dont care */ }
-		@Override
 		public void launchesRemoved(ILaunch[] launches) { /* dont care */ }
 
 	}
 	
 	@Override
 	protected String getPluginID() {
-		return GprofLaunchPlugin.PLUGIN_ID;
+		return GprofLaunchPlugin.getUniqueIdentifier();
 	}
 	
 	/* all these functions exist to be overridden by the test class in order to allow launch testing */
@@ -188,4 +183,8 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 		return exePath;
 	}
 
+	@Override
+	public String generateCommand(ILaunchConfiguration config) {
+		return "";
+	}
 }

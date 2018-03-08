@@ -1,23 +1,24 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -391,7 +392,6 @@ public class BasicFrame extends GraphNode {
      * Return the minimum time stored in the frame taking all GraphNodes into account
      *
      * @return the minimum GraphNode time
-     * @since 2.0
      */
     public ITmfTimestamp getMinTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
@@ -410,7 +410,6 @@ public class BasicFrame extends GraphNode {
      *
      * @param min
      *            The minimum timestamp
-     * @since 2.0
      */
     public void setMin(ITmfTimestamp min) {
         fMinTime = min;
@@ -422,7 +421,6 @@ public class BasicFrame extends GraphNode {
      *
      * @param max
      *            The maximum timestamp
-     * @since 2.0
      */
     public void setMax(ITmfTimestamp max) {
         fMaxTime = max;
@@ -441,7 +439,6 @@ public class BasicFrame extends GraphNode {
      * Return the maximum time stored in the frame taking all GraphNodes into account
      *
      * @return the maximum GraphNode time
-     * @since 2.0
      */
     public ITmfTimestamp getMaxTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
@@ -486,7 +483,6 @@ public class BasicFrame extends GraphNode {
      * Returns the minimum time between consecutive messages.
      *
      * @return the minimum time between consecutive messages
-     * @since 2.0
      */
     public ITmfTimestamp getSDMinTime() {
         computeMaxMinTime();
@@ -497,7 +493,6 @@ public class BasicFrame extends GraphNode {
      * Returns the maximum time between consecutive messages.
      *
      * @return the maximum time between consecutive messages
-     * @since 2.0
      */
     public ITmfTimestamp getSDMaxTime() {
         computeMaxMinTime();
@@ -530,20 +525,20 @@ public class BasicFrame extends GraphNode {
     protected void updateMinMax(SDTimeEvent m1, SDTimeEvent m2) {
         ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime());
         if (fComputeMinMax) {
-            fMinTime = delta;
+            fMinTime = delta.clone();
             if (fMinTime.compareTo(TmfTimestamp.ZERO, false) < 0) {
                 fMinTime = new TmfTimestamp(0, m1.getTime().getScale(), m1.getTime().getPrecision());
             }
-            fMaxTime = fMinTime;
+            fMaxTime = fMinTime.clone();
             fComputeMinMax = false;
         }
 
         if ((delta.compareTo(fMinTime, true) < 0) && (delta.compareTo(TmfTimestamp.ZERO, false) > 0)) {
-            fMinTime = delta;
+            fMinTime = delta.clone();
         }
 
         if ((delta.compareTo(fMaxTime, true) > 0) && (delta.compareTo(TmfTimestamp.ZERO, false) > 0)) {
-            fMaxTime = delta;
+            fMaxTime = delta.clone();
         }
     }
 

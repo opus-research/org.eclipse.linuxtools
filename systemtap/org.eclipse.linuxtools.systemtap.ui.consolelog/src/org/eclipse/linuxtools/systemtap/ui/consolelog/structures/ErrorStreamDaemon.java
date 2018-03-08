@@ -29,24 +29,23 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
 			errorView.clear();
 		}
 	}
-
+	
 	/**
 	 * Prints out the new output data to the console and parses it and sends it to the
 	 * ErrorView.
 	 */
 	@Override
 	protected void pushData() {
-		if(output.startsWith(Localization.getString("ErrorStreamDaemon.Password"))) { //$NON-NLS-1$
-			output = output.substring(Localization.getString("ErrorStreamDaemon.Password").length()); //$NON-NLS-1$
-		}
+		if(output.startsWith(Localization.getString("ErrorStreamDaemon.Password")))
+			output = output.substring(Localization.getString("ErrorStreamDaemon.Password").length());
 
 		super.pushData();
 
 		outputData.append(output);
-
-		/* Since we never know when the last set of data is comming we don't clear the
-		 * errorStream in the hope of getting a more complete error message. As a result
-		 * the parser will always return what we already had.  Clear removes anything
+		
+		/* Since we never know when the last set of data is comming we don't clear the 
+		 * errorStream in the hope of getting a more complete error message. As a result 
+		 * the parser will always return what we already had.  Clear removes anything 
 		 * that was added before.
 		 */
 		if(null != errorView) {
@@ -54,13 +53,12 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
 
 			if(null != errors) {
 				errorView.clear();
-				for(String[] error :errors) {
-					errorView.add(error);
-				}
+				for(int i=0; i<errors.length; i++)
+					errorView.add(errors[i]);
 			}
 		}
 	}
-
+	
 	/**
 	 * Disposes of all internal references in the class. No method should be called after this.
 	 */
@@ -74,7 +72,7 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
 			parser = null;
 		}
 	}
-
+	
 	private ErrorView errorView;
 	private StringBuilder outputData;
 	private IErrorParser parser;

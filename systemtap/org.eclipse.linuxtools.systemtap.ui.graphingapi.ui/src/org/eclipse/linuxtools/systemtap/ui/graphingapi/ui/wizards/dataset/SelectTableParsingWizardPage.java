@@ -32,20 +32,20 @@ import org.eclipse.ui.XMLMemento;
 
 public class SelectTableParsingWizardPage extends ParsingWizardPage {
 	public SelectTableParsingWizardPage() {
-		super("selectTableDataSetParsing"); //$NON-NLS-1$
-		setTitle(Localization.getString("SelectTableParsingWizardPage.SelectTableDataSetParsing")); //$NON-NLS-1$
+		super("selectTableDataSetParsing");
+		setTitle(Localization.getString("SelectTableParsingWizardPage.SelectTableDataSetParsing"));
 	}
-
+	
 	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 
 		Composite comp = new Composite(parent, SWT.NONE);
 		Label l = new Label(comp, SWT.NONE);
-		l.setText(Localization.getString("SelectTableParsingWizardPage.TableDelimiter")); //$NON-NLS-1$
+		l.setText(Localization.getString("SelectTableParsingWizardPage.TableDelimiter"));
 		l.setBounds(5, 350, 150, 25);
 		txtDelim = new Text(comp, SWT.SINGLE | SWT.BORDER);
-
+		
 		createColumnSelector(comp);
 
 		txtDelim.setBounds(160, 350, 200, 25);
@@ -56,9 +56,8 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 
 	@Override
 	protected boolean readParsingExpression() {
-		if(null == wizard.metaFile && !wizard.openFile()) {
+		if(null == wizard.metaFile && !wizard.openFile())
 			return false;
-		}
 
 		try {
 			FileReader reader = new FileReader(wizard.metaFile);
@@ -73,33 +72,29 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 			IMemento[] children = data.getChildren(IDataSetParser.XMLFile);
 			int i;
 			for(i=0; i<children.length; i++) {
-				if(children[i].getID().equals(wizard.scriptFile)) {
+				if(children[i].getID().equals(wizard.scriptFile))
 					break;
-				}
 			}
 
-			if(i>=children.length) {
+			if(i>=children.length)	//Didn't find file
 				return false;
-			}
-
-			if(0 != children[i].getString(IDataSetParser.XMLdataset).compareTo(TableDataSet.ID)) {
+			
+			if(0 != children[i].getString(IDataSetParser.XMLdataset).compareTo(TableDataSet.ID))
 				return false;
-			}
-
+			
 			IMemento[] children2 = children[i].getChildren(IDataSetParser.XMLColumn);
-			txtSeries.setText("" + children2.length); //$NON-NLS-1$
-			for(int j=0; j<children2.length; j++) {
+			txtSeries.setText("" + children2.length);
+			for(int j=0; j<children2.length; j++)
 				txtRegExpr[j*COLUMNS].setText(children2[j].getString(IDataSetParser.XMLname));
-			}
 
 			children2 = children[i].getChildren(IDataSetParser.XMLSeries);
-			txtSeries.setText("" + children2.length); //$NON-NLS-1$
+			txtSeries.setText("" + children2.length);
 			for(int j=0; j<children2.length; j++) {
 				txtRegExpr[j*COLUMNS+1].setText(children2[j].getString(IDataSetParser.XMLparsingExpression));
 				txtRegExpr[j*COLUMNS+2].setText(children2[j].getString(IDataSetParser.XMLparsingSpacer));
 			}
 			txtDelim.setText(children[i].getChild(IDataSetParser.XMLDelimiter).getString(IDataSetParser.XMLparsingExpression));
-
+			
 			reader.close();
 		} catch(FileNotFoundException fnfe) {
 			return false;
@@ -108,27 +103,27 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 		} catch(IOException ioe) {
 			return false;
 		}
-
+		
 		return true;
 	}
-
+	
 	@Override
 	protected void copyExisting(IMemento oldMeta, IMemento newMeta) {
 		IMemento[] children = oldMeta.getChildren(IDataSetParser.XMLColumn);
 		IMemento child;
-		for(IMemento memento:children) {
+		for(int j=0; j<children.length; j++) {
 			child = newMeta.createChild(IDataSetParser.XMLColumn);
-			child.putString(IDataSetParser.XMLname, memento.getString(IDataSetParser.XMLname));
+			child.putString(IDataSetParser.XMLname, children[j].getString(IDataSetParser.XMLname));
 		}
 		children = oldMeta.getChildren(IDataSetParser.XMLSeries);
-		for(IMemento memento:children) {
+		for(int j=0; j<children.length; j++) {
 			child = newMeta.createChild(IDataSetParser.XMLSeries);
-			child.putString(IDataSetParser.XMLparsingExpression, memento.getString(IDataSetParser.XMLparsingExpression));
-			child.putString(IDataSetParser.XMLparsingSpacer, memento.getString(IDataSetParser.XMLparsingSpacer));
+			child.putString(IDataSetParser.XMLparsingExpression, children[j].getString(IDataSetParser.XMLparsingExpression));
+			child.putString(IDataSetParser.XMLparsingSpacer, children[j].getString(IDataSetParser.XMLparsingSpacer));
 		}
 		newMeta.createChild(IDataSetParser.XMLDelimiter).putString(IDataSetParser.XMLparsingExpression, oldMeta.getChild(IDataSetParser.XMLDelimiter).getString(IDataSetParser.XMLparsingExpression));
 	}
-
+	
 	@Override
 	public boolean checkComplete() {
 		if(super.checkComplete() && txtDelim.getText().length() > 0) {
@@ -142,7 +137,7 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 		wizard.dataSet = null;
 		return false;
 	}
-
+	
 	@Override
 	public void dispose() {
 		super.dispose();
@@ -152,6 +147,6 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 			txtDelim = null;
 		}
 	}
-
+	
 	protected Text txtDelim;
 }

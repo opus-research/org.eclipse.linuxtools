@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2012 Ericsson
+ * Copyright (c) 2010 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -163,7 +163,8 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
     protected Object getFieldValue(ITmfEvent event, String field) {
         Object value = null;
         if (ITmfEvent.EVENT_FIELD_CONTENT.equals(field)) {
-            value = event.getContent().toString();
+            ITmfEventField content = event.getContent();
+            value = (content.getValue() != null) ? content.getValue().toString() : content.toString();
         }
         else if (ITmfEvent.EVENT_FIELD_TYPE.equals(field)) {
             value = event.getType().getName();

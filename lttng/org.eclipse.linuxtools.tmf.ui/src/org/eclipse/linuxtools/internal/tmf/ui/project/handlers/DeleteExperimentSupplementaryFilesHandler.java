@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -58,9 +58,6 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -79,16 +76,13 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
 
                 TmfExperimentElement trace = (TmfExperimentElement) element;
 
-                IResource[] resources = trace.getSupplementaryResources();
-                resourcesList.addAll(Arrays.asList(resources));
-
                 for (TmfTraceElement aTrace : trace.getTraces()) {
 
                     // If trace is under an experiment, use the original trace from the traces folder
                     aTrace = aTrace.getElementUnderTraceFolder();
 
                     // Delete the selected resources
-                    resources = aTrace.getSupplementaryResources();
+                    IResource[] resources = aTrace.getSupplementaryResources();
                     resourcesList.addAll(Arrays.asList(resources));
                 }
 

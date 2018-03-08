@@ -11,12 +11,9 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 
-import java.util.Arrays;
-
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Image;
@@ -28,7 +25,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 
 
@@ -38,10 +34,10 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  */
 public class ErrorTableDisplay {
 	public ErrorTableDisplay(Composite parent, String[] titles) {
-		this.titles = Arrays.copyOf(titles, titles.length);
+		this.titles = titles;
 		createControl(parent);
 	}
-
+	
 	/**
 	 * Creates the table for displaying error messages in.
 	 * @param parent The container for the new error table.
@@ -52,11 +48,11 @@ public class ErrorTableDisplay {
 		table.getVerticalBar().setVisible(true);
 		table.setLinesVisible(true);
 		table.addMouseListener(mouseListener);
-
+		
 		TableColumn column;
-		for(String title: titles) {
+		for(int i = 0; i < titles.length; i++) {
 			column = new TableColumn(table, SWT.NONE);
-			column.setText(title);
+			column.setText(titles[i]);
 		}
 
 		updateColumns();
@@ -67,19 +63,25 @@ public class ErrorTableDisplay {
 	 */
 	public void clear() {
 		table.getDisplay().syncExec(new Runnable() {
-			@Override
+			boolean stop = false;
 			public void run() {
-				table.removeAll();
+				if(stop) return;
+				try {
+					table.removeAll();
+				} catch (Exception e) {
+					stop = true;
+				}
 			}
+			
 		});
 	}
-
+	
 	/**
 	 * Adds a new row to the table with an error icon.
 	 * @param row The pre-divied sections of the error message.
 	 */
 	public void addRow(final String[] row) {
-		addRow(row, AbstractUIPlugin.imageDescriptorFromPlugin(ConsoleLogPlugin.PLUGIN_ID, "icons/views/error_st_obj.gif").createImage()); //$NON-NLS-1$
+		addRow(row, ConsoleLogPlugin.getImageDescriptor("icons/views/error_st_obj.gif").createImage());
 	}
 
 	/**
@@ -89,31 +91,35 @@ public class ErrorTableDisplay {
 	 */
 	public void addRow(final String[] row, final Image img) {
 		table.getDisplay().syncExec(new Runnable() {
-			@Override
+			boolean stop = false;
 			public void run() {
-				item = new TableItem(table, SWT.NULL);
-				for(int i=0; i<row.length; i++) {
-					item.setText(i+1, row[i]);
+				if(stop) return;
+				try {
+					item = new TableItem(table, SWT.NULL);
+					for(int i=0; i<row.length; i++)
+						item.setText(i+1, row[i]);
+					item.setImage(img);
+					updateColumns();
+				} catch (Exception e) {
+					stop = true;
 				}
-				item.setImage(img);
-				updateColumns();
 			}
-
+			
 		});
 	}
-
+	
 	/**
 	 * Updates each of the columns in the table to ensure that the entries all fit
 	 * as well as possible.
 	 */
 	private void updateColumns() {
 		TableColumn[] columns = table.getColumns();
-		for (TableColumn column: columns) {
-			column.pack();
-			column.setMoveable(true);
+		for (int i = 0; i < columns.length; i++) {
+			columns[i].pack();
+			columns[i].setMoveable(true);
 		}
 	}
-
+	
 	public Control getControl() {
 		return table;
 	}
@@ -128,50 +134,50 @@ public class ErrorTableDisplay {
 			table = null;
 		}
 
-		if(titles != null) {
-			for(int i=0; i<titles.length; i++) {
+		if(titles != null)
+			for(int i=0; i<titles.length; i++)
 				titles[i] = null;
-			}
-		}
 		titles = null;
 
-		if(null != item) {
+		if(null != item)
 			item.dispose();
-		}
 		item = null;
 	}
-
+	
 	/**
 	 * MouseListener that is used to detect when the user clicks on a row in the table.
 	 * When clicked it will find the line number the error occured on and then set the
 	 * cursor location to that location in the active editor.
 	 */
-	private final MouseListener mouseListener = new MouseAdapter() {
-		@Override
+	private final MouseListener mouseListener = new MouseListener() {
+		public void mouseDown(MouseEvent me) {}
+		public void mouseUp(MouseEvent me) {}
+
 		public void mouseDoubleClick(MouseEvent me) {
-			String location = table.getSelection()[0].getText(4);
+			try {
+				String location = table.getSelection()[0].getText(4);
 
-			if(location.length() > 0) {
-				int line = 0;
-				if(location.indexOf(':') > 0) {
-					String[] pos = location.split(":"); //$NON-NLS-1$
-					line = Integer.parseInt(pos[0]);
-				} else {
-					line = Integer.parseInt(location);
+				if(location.length() > 0) {
+					int line = 0;
+					if(location.indexOf(':') > 0) {
+						String[] pos = location.split(":");
+						line = Integer.parseInt(pos[0]);
+					} else
+						line = Integer.parseInt(location);
+					
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+					IEditorPart ed = page.getActiveEditor();
+
+					if(ed instanceof SimpleEditor) {
+						SimpleEditor editor = ((SimpleEditor)ed);
+						editor.selectLine(line);
+						editor.setFocus();
+					}
 				}
-
-				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-				IEditorPart ed = page.getActiveEditor();
-
-				if(ed instanceof SimpleEditor) {
-					SimpleEditor editor = ((SimpleEditor)ed);
-					editor.selectLine(line);
-					editor.setFocus();
-				}
-			}
+			} catch(Exception e) {}
 		}
 	};
-
+	
 	private Table table;
 	private String[] titles;
 	private TableItem item;

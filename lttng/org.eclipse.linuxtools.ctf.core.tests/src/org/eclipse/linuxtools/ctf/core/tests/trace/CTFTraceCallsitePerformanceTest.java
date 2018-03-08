@@ -1,25 +1,13 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.util.List;
 import java.util.Random;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
+import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.junit.Before;
@@ -27,19 +15,21 @@ import org.junit.Test;
 
 /**
  * Test the performance of the callsite storage in the CTF trace.
- *
  * @author Matthew Khouzam
+ *
  */
 public class CTFTraceCallsitePerformanceTest {
 
     private static final int NUMBER_OF_SEEKS = 100000;
 
+    @SuppressWarnings("nls")
     private final String[] callsites = { "Alligator", "Bunny", "Cat",
             "Dolphin", "Echidna", "Gazelle", "Heron", "Ibex", "Jackalope",
             "Koala", "Lynx", "Meerkat", "Narwhal", "Ocelot", "Pangolin",
             "Quetzal", "Ringtail", "Sandpiper", "Tiger", "Urchin", "Vulture",
             "Walrus", "X-Ray Tetra", "Zonkey" };
 
+    @SuppressWarnings("nls")
     private final String[] functions = { "sentence", "together", "children",
             "mountain", "chipmunk", "crashing", "drinking", "insisted",
             "insulted", "invented", "squinted", "standing", "swishing",
@@ -48,6 +38,7 @@ public class CTFTraceCallsitePerformanceTest {
             "birthday", "bluebird", "cheerful", "colorful", "daylight",
             "doghouse", "driveway", "everyone" };
 
+    @SuppressWarnings("nls")
     private final String[] files = { "Adult.java", "Aeroplane.java",
             "Air.java", "Airforce.java", "Airport.java", "Album.java",
             "Alphabet.java", "Apple.java", "Arm.java", "Army.java", "Babby.java" };
@@ -73,8 +64,7 @@ public class CTFTraceCallsitePerformanceTest {
     @Before
     public void setup() throws CTFReaderException, SecurityException,
             IllegalArgumentException {
-        assumeTrue(CtfTestTraces.tracesExist());
-        fTrace = new CTFTrace(CtfTestTraces.getTraceFile().getParentFile());
+        fTrace = new CTFTrace(TestParams.getTraceFile().getParentFile());
     }
 
     private void addCallsites(int numCallsites) {
@@ -116,7 +106,7 @@ public class CTFTraceCallsitePerformanceTest {
     private void test(int callsiteSize) {
         addCallsites(callsiteSize);
         long ns = testMain();
-        System.out.println( "perf ( " + callsiteSize + ", " + ns + ")");
+        System.out.println( "perf ( " + callsiteSize + ", " + ns + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     private void perfTest() {
@@ -196,5 +186,5 @@ public class CTFTraceCallsitePerformanceTest {
     public void test2MCallsites() {
         test(2000000);
     }
-}
 
+}

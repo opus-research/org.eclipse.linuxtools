@@ -17,6 +17,8 @@ import java.util.ArrayList;
 
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
 
+
+
 /**
  * A separate thread to listen to an InputStream and pull all the data
  * out of it. When data is found a new event is fired share the data with
@@ -24,7 +26,6 @@ import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener
  * @author Ryan Morse
  */
 public class StreamGobbler implements Runnable {
-
 	public StreamGobbler(InputStream is) {
 		if(null != is) {
 			this.is = is;
@@ -32,7 +33,7 @@ public class StreamGobbler implements Runnable {
 			listeners = new ArrayList<IGobblerListener>();
 		}
 	}
-
+	
 	/**
 	 * Spawns the new thread that this class will run in.  From the Runnable
 	 * interface spawning the new thread automatically calls the run() method.
@@ -44,7 +45,7 @@ public class StreamGobbler implements Runnable {
 		reader = new Thread(this, "StreamGobbler"); //$NON-NLS-1$
 		reader.start();
 	}
-
+	
 	/**
 	 * Checks to see if the gobbler is still running.
 	 * @return boolean representing whether or not it is sill running
@@ -59,9 +60,8 @@ public class StreamGobbler implements Runnable {
 	 * data.  When a new line is read it will fire a DataEvent for listeners
 	 * to get a hold of the data.
 	 */
-	@Override
 	public void run() {
-		if (reader != Thread.currentThread())
+		if (reader == Thread.currentThread())
 			return;
 
 		try {
@@ -83,28 +83,27 @@ public class StreamGobbler implements Runnable {
 	 * from the stream.
 	 */
 	public synchronized void stop() {
-		if (reader != null){
-			try {
-				// Wait for the reader thread to finish.
-				reader.join();
-			} catch (InterruptedException e) {
-				// The thread was interrupted; nothing to do; finish stopping.
-			}
-			reader = null;
+		try {
+			// Wait for the reader thread to finish reading the stream.
+			reader.join();
+		} catch (InterruptedException e) {
+			// The thread was interrupted; nothing to do; finish stopping.
 		}
+		reader = null;
 		notify();
 		// Fire one last time to ensure listeners have gotten everything.
 		this.fireNewDataEvent();
 	}
-
-	/**	 * Method for getting the most recently read line from the stream.
-	 * @return String representing the current line being read from the
+	
+	/**
+	 * Method for getting the most recently read line from the stream.
+	 * @return String representing the current line being read from the 
 	 * <code>InputStream</code>
 	 */
 	public String readLine() {
 		return line.toString();
 	}
-
+	
 	/**
 	 * Gets rid of all internal references to objects.
 	 */
@@ -115,34 +114,40 @@ public class StreamGobbler implements Runnable {
 		reader = null;
 		is = null;
 	}
-
+	
 	/**
 	 * Fires new events to everything that is monitoring this stream. Then clears
 	 * the current line of data.
 	 */
 	private void fireNewDataEvent() {
-		this.fireNewDataEvent(line.toString());
+		for(int i = 0; i < listeners.size(); i++)
+		{
+		
+			listeners.get(i).handleDataEvent(line.toString());
+		}
 		line.delete(0, line.length());
 	}
-
+	
 	public void fireNewDataEvent(String l) {
-		synchronized (listeners) {
-			for(int i = 0; i < listeners.size(); i++){
-				listeners.get(i).handleDataEvent(l);
-			}
+		for(int i = 0; i < listeners.size(); i++)
+		{
+			listeners.get(i).handleDataEvent(l);
 		}
 	}
-
+	
 	/**
 	 * Registers the provided listener to get data events.
 	 * @param l A listener that needs to monitor the stream.
 	 */
 	public void addDataListener(IGobblerListener l) {
-		synchronized (listeners) {
-			if(l != null && !listeners.contains(l)){
-				listeners.add(l);
-			}
+		
+		if(l != null && !listeners.contains(l))
+		{
+			
+			listeners.add(l);
+			
 		}
+		
 	}
 
 	/**
@@ -150,10 +155,9 @@ public class StreamGobbler implements Runnable {
 	 * @param l A listener that is monitoring the stream and should be removed
 	 */
 	public void removeDataListener(IGobblerListener l) {
-		synchronized (listeners) {
-			if(listeners.contains(l))
-				listeners.remove(l);
-		}
+		
+		if(listeners.contains(l))
+			listeners.remove(l);
 	}
 
 	/**
@@ -164,9 +168,9 @@ public class StreamGobbler implements Runnable {
 	public ArrayList<IGobblerListener> getDataListeners() {
 		return listeners;
 	}
-
+	
 	private ArrayList<IGobblerListener> listeners;
 	private StringBuilder line;
 	private Thread reader;
-	private InputStream is;
+	private InputStream is;	
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,16 +12,15 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF structure definition (similar to a C structure).
- *
+ * 
  * A structure is similar to a C structure, it is a compound data type that
  * contains other datatypes in fields. they are stored in an hashmap and indexed
  * by names which are strings.
@@ -37,7 +36,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     private final StructDeclaration declaration;
-    private final Map<String, Definition> definitions = new LinkedHashMap<String, Definition>();
+    private final HashMap<String, Definition> definitions = new HashMap<String, Definition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -79,9 +78,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     /**
      * @return The definitions of all the fields
-     * @since 2.0
      */
-    public Map<String, Definition> getDefinitions() {
+    public HashMap<String, Definition> getDefinitions() {
         return definitions;
     }
 
@@ -222,24 +220,28 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("{ "); //$NON-NLS-1$
+        int size = this.declaration.getFieldsList().size();
+        int n = 0;
+
+        if (size > 1) {
+            builder.append("{ "); //$NON-NLS-1$
+        }
 
         ListIterator<String> listIterator = this.declaration.getFieldsList()
                 .listIterator();
 
         while (listIterator.hasNext()) {
             String field = listIterator.next();
-
-            builder.append(field);
-            builder.append(" = "); //$NON-NLS-1$
             builder.append(lookupDefinition(field).toString());
-
-            if (listIterator.hasNext()) {
+            n++;
+            if (n != size) {
                 builder.append(", "); //$NON-NLS-1$
             }
         }
 
-        builder.append(" }"); //$NON-NLS-1$
+        if (size > 1) {
+            builder.append(" }"); //$NON-NLS-1$
+        }
 
         return builder.toString();
     }

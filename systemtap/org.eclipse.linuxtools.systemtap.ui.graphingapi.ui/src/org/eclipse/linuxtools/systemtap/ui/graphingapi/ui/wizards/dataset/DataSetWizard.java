@@ -32,37 +32,37 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.XMLMemento;
 
+
+
 public class DataSetWizard extends Wizard implements INewWizard {
 	public DataSetWizard(File metaFile, String scriptFile) {
 		this.metaFile = metaFile;
 		this.scriptFile = scriptFile;
 	}
-
-	@Override
+	
 	public void init(IWorkbench workbench, IStructuredSelection selection) {}
-
+	
 	@Override
 	public void addPages() {
-		setWindowTitle(Localization.getString("DataSetWizard.CreateDataSet")); //$NON-NLS-1$
+		setWindowTitle(Localization.getString("DataSetWizard.CreateDataSet"));
 		dataSetPage = new SelectDataSetWizardPage();
 		addPage(dataSetPage);
-
+		
 		String[] ids = DataSetFactory.getIDs();
 		parsingPages = new ParsingWizardPage[ids.length];
 		for(int i=0; i<ids.length; i++) {
 			parsingPages[i] = DataSetFactory.getParsingWizardPage(ids[i]);
 			addPage(parsingPages[i]);
 		}
-
+		
 		((WizardDialog)getContainer()).addPageChangedListener(pageListener);
 	}
 
 	@Override
 	public boolean canFinish() {
 		IWizardPage page = this.getContainer().getCurrentPage();
-		if((null != dataSet) && (null != parser) && (page instanceof ParsingWizardPage)) {
+		if((null != dataSet) && (null != parser) && (page instanceof ParsingWizardPage))
 			return true;
-		}
 		return false;
 	}
 
@@ -72,45 +72,44 @@ public class DataSetWizard extends Wizard implements INewWizard {
 		dataSet = null;
 		return true;
 	}
-
+	
 	@Override
 	public boolean performFinish() {
 		writeParsingExpression();
 		return true;
 	}
-
+	
 	public IDataSetParser getParser() {
 		return parser;
 	}
-
+	
 	public IDataSet getDataSet() {
 		return dataSet;
 	}
-
+	
 	private boolean writeParsingExpression() {
 		XMLMemento data = copyExisting();
-		if(null == data) {
+		if(null == data)
 			data = XMLMemento.createWriteRoot(IDataSetParser.XMLDataSetSettings);
-		}
 
 		try {
 			IMemento child = data.createChild(IDataSetParser.XMLFile, scriptFile);
-
+			
 			saveColumns(child, dataSet.getTitles());
 			parser.saveXML(child);
-
+			
 			FileWriter writer = new FileWriter(metaFile);
 			data.save(writer);
 			writer.close();
 		} catch(FileNotFoundException fnfe) {
 			return false;
-		} catch(IOException e) {
+		} catch(Exception e) {
 			return false;
 		}
-
+		
 		return true;
 	}
-
+	
 	protected XMLMemento copyExisting() {
 		XMLMemento data = null;
 		try {
@@ -119,12 +118,12 @@ public class DataSetWizard extends Wizard implements INewWizard {
 				reader.close();
 				return null;
 			}
-
+				
 			data = XMLMemento.createReadRoot(reader, IDataSetParser.XMLDataSetSettings);
 			IMemento[] children = data.getChildren(IDataSetParser.XMLFile);
-
+			
 			data = XMLMemento.createWriteRoot(IDataSetParser.XMLDataSetSettings);
-
+			
 			IMemento child;
 			String dataSetID;
 			for(int i=0; i<children.length; i++) {
@@ -132,46 +131,43 @@ public class DataSetWizard extends Wizard implements INewWizard {
 					child = data.createChild(IDataSetParser.XMLFile, children[i].getID());
 					dataSetID = children[i].getString(IDataSetParser.XMLdataset);
 					child.putString(IDataSetParser.XMLdataset, dataSetID);
-
+					
 					DataSetFactory.getParsingWizardPage(dataSetID).copyExisting(children[i], child);
 				}
 			}
 		} catch(FileNotFoundException fnfe) {
 		} catch(IOException ioe) {
 		} catch(WorkbenchException we) {}
-
+			
 		return data;
 	}
 
 	protected boolean saveColumns(IMemento target, String[] columns) {
 		IMemento child;
-		for(String column: columns) {
+		for(int i=0; i<columns.length; i++) {
 			child = target.createChild(IDataSetParser.XMLColumn);
-			child.putString(IDataSetParser.XMLname, column);
+			child.putString(IDataSetParser.XMLname, columns[i]);
 		}
 		return true;
 	}
-
+	
 	protected boolean openFile() {
 		try {
-			if (!metaFile.exists()) {
+			if (!metaFile.exists())
 				metaFile.createNewFile();
-			}
 		} catch(IOException ioe) {
 			return false;
 		}
 
 		return true;
 	}
-
+	
 	@Override
 	public void dispose() {
-		if(null != getContainer()) {
+		if(null != getContainer())
 			((WizardDialog)getContainer()).removePageChangedListener(pageListener);
-		}
-		if(null != dataSetPage) {
+		if(null != dataSetPage)
 			dataSetPage.dispose();
-		}
 		if(null != parsingPages) {
 			for(int i=0; i<parsingPages.length; i++) {
 				if(null != parsingPages[i]) {
@@ -182,9 +178,8 @@ public class DataSetWizard extends Wizard implements INewWizard {
 			parsingPages = null;
 		}
 	}
-
+	
 	private IPageChangedListener pageListener = new IPageChangedListener() {
-		@Override
 		public void pageChanged(PageChangedEvent e) {
 			if(e.getSelectedPage() instanceof ParsingWizardPage) {
 				((ParsingWizardPage)e.getSelectedPage()).checkComplete();
@@ -192,9 +187,9 @@ public class DataSetWizard extends Wizard implements INewWizard {
 			}
 		}
 	};
-
+	
 	private SelectDataSetWizardPage dataSetPage;
-
+	
 	private ParsingWizardPage[] parsingPages;
 	public String scriptFile;
 	public File metaFile;

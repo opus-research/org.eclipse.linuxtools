@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,11 +13,13 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 
 /**
  * The generic trace indexer in TMF with support for incremental indexing.
+ *
+ * @param <T> The trace event type
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -25,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
  * @see ITmfTrace
  * @see ITmfEvent
  */
-public interface ITmfTraceIndexer {
+public interface ITmfTraceIndexer<T extends ITmfTrace<ITmfEvent>> {
 
     /**
      * Start an asynchronous index building job and waits for the job completion
@@ -66,7 +68,6 @@ public interface ITmfTraceIndexer {
      * @param waitForCompletion
      *            Should we block the calling thread until the build is
      *            complete?
-     * @since 2.0
      */
     public void buildIndex(long offset, TmfTimeRange range, boolean waitForCompletion);
 
@@ -83,7 +84,6 @@ public interface ITmfTraceIndexer {
      *
      * @param context The trace context to save
      * @param timestamp The timestamp matching this context
-     * @since 2.0
      */
     public void updateIndex(ITmfContext context, ITmfTimestamp timestamp);
 
@@ -93,7 +93,6 @@ public interface ITmfTraceIndexer {
      *
      * @param timestamp the requested timestamp
      * @return the checkpoint context
-     * @since 2.0
      */
     public ITmfContext seekIndex(ITmfTimestamp timestamp);
 

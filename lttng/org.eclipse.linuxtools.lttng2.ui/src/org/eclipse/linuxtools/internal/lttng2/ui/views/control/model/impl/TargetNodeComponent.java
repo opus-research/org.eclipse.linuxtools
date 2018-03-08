@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -19,7 +18,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TargetNodeState;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
@@ -37,8 +35,6 @@ import org.eclipse.rse.core.model.ISystemRegistry;
 import org.eclipse.rse.core.subsystems.CommunicationsEvent;
 import org.eclipse.rse.core.subsystems.ICommunicationsListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
@@ -221,23 +217,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         return ""; //$NON-NLS-1$
     }
 
-    /**
-     * Returns if node supports filtering of events
-     * @return <code>true</code> if node supports filtering else <code>false</code>
-     */
-    public boolean isEventFilteringSupported() {
-        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
-    }
-
-    /**
-     * Returns if node supports networks streaming or not
-     * @return <code>true</code> if node supports filtering else <code>false</code>
-     *
-     */
-    public boolean isNetworkStreamingSupported() {
-        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -334,7 +313,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
                     sessionGroup.getSessionsFromNode(monitor);
                 } catch (ExecutionException e) {
                     removeAllChildren();
-                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_RetrieveNodeConfigurationFailure, e);
+                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ListSessionFailure, e);
                 }
 
                 return Status.OK_STATUS;
@@ -384,24 +363,8 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         try {
             createControlService();
             getConfigurationFromNode();
-        } catch (final ExecutionException e) {
-            // Disconnect only if no control service, otherwise stay connected.
-            if (getControlService() == null) {
-                disconnect();
-            }
-
-            // Notify user
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog er = new ErrorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                            Messages.TraceControl_ErrorTitle, Messages.TraceControl_RetrieveNodeConfigurationFailure,
-                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e),
-                            IStatus.ERROR);
-                    er.open();
-                }
-            });
-            Activator.getDefault().logError(Messages.TraceControl_RetrieveNodeConfigurationFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
+        } catch (ExecutionException e) {
+            Activator.getDefault().logError(Messages.TraceControl_ListSessionFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 

@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd;
 
 import java.util.Iterator;
@@ -55,7 +56,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDCollapseP
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDExtendedActionBarProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPropertiesProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
@@ -754,7 +754,7 @@ public class SDView extends ViewPart {
      * @param resetPosition boolean Flag whether to reset the position or not.
      */
     protected void setFrame(Frame frame, boolean resetPosition) {
-        if (getSDWidget() == null) {
+        if (fSdWidget == null) {
             return;
         }
 
@@ -764,30 +764,27 @@ public class SDView extends ViewPart {
         }
 
         IUml2SDLoader loader = LoadersManager.getInstance().getCurrentLoader(getViewSite().getId(), this);
-        if (loader == null) {
-            return;
-        }
 
-        if (loader.getTitleString() != null) {
+        if ((loader != null) && (loader.getTitleString() != null)) {
             setContentDescription(loader.getTitleString());
         }
 
-        getSDWidget().setFrame(frame, resetPosition);
+        if (getSDWidget() != null) {
+            getSDWidget().setFrame(frame, resetPosition);
+        }
 
         if (fTimeCompressionBar != null) {
             fTimeCompressionBar.setFrame(frame);
         }
         updateCoolBar();
-        if (fTimeCompressionBar != null) {
-            if (!frame.hasTimeInfo()) {
-                Composite parent = fTimeCompressionBar.getParent();
-                fTimeCompressionBar.setVisible(false);
-                parent.layout(true);
-            } else {
-                Composite parent = fTimeCompressionBar.getParent();
-                fTimeCompressionBar.setVisible(true);
-                parent.layout(true);
-            }
+        if (!frame.hasTimeInfo()) {
+            Composite parent = fTimeCompressionBar.getParent();
+            fTimeCompressionBar.setVisible(false);
+            parent.layout(true);
+        } else {
+            Composite parent = fTimeCompressionBar.getParent();
+            fTimeCompressionBar.setVisible(true);
+            parent.layout(true);
         }
         IContributionItem shortKeysMenu = getViewSite().getActionBars().getMenuManager().find("org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers");//$NON-NLS-1$
         MenuManager shortKeys = (MenuManager) shortKeysMenu;
@@ -838,8 +835,7 @@ public class SDView extends ViewPart {
         getSDWidget().getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
-                if (getSDWidget() == null || getSDWidget().isDisposed() ||
-                        ((fTimeCompressionBar != null) && fTimeCompressionBar.isDisposed())) {
+                if (getSDWidget() == null || getSDWidget().isDisposed()) {
                     return;
                 }
                 setFrame(frame);

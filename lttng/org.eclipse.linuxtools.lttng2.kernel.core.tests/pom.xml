@@ -14,14 +14,14 @@
   <parent>
     <artifactId>linuxtools-lttng-parent</artifactId>
     <groupId>org.eclipse.linuxtools.lttng</groupId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.lttng2.kernel.core.tests</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-test-plugin</packaging>
 
-  <name>Linux Tools LTTng Kernel Analysis Core Tests Plug-in</name>
+  <name>Linux Tools LTTng Kernel Analysis Core Unit Test Suite</name>
 
  <build>
      <!-- workaround for https://issues.sonatype.org/browse/TYCHO-168 -->
@@ -58,9 +58,8 @@
             <artifactId>tycho-surefire-plugin</artifactId>
             <version>${tycho-version}</version>
             <configuration>
-                <includes>
-                    <include>**/AllTests.*</include>
-                </includes>
+                <testSuite>org.eclipse.linuxtools.lttng2.kernel.core.tests</testSuite>
+                <testClass>org.eclipse.linuxtools.lttng2.kernel.core.tests.AllTests</testClass>
                 <useUIHarness>false</useUIHarness>
                 <useUIThread>false</useUIThread>
                 <product>org.eclipse.sdk.ide</product>

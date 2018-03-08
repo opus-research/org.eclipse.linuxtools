@@ -11,23 +11,32 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension;
 
+import org.eclipse.ui.IStartup;
+import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class to be used in the desktop.
  */
-public class DashboardExtensionPlugin extends AbstractUIPlugin {
+public class DashboardExtensionPlugin extends AbstractUIPlugin implements IStartup {
 
 	//The shared instance.
 	private static DashboardExtensionPlugin plugin;
-
+	
 	/**
 	 * The constructor.
 	 */
 	public DashboardExtensionPlugin() {
 		plugin = this;
+	}
+
+	/**
+	 * This method is called upon plug-in activation
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
 	}
 
 	/**
@@ -54,7 +63,8 @@ public class DashboardExtensionPlugin extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.dashboardextension", path); //$NON-NLS-1$
+		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.dashboardextension", path);
 	}
-
+	
+	public void earlyStartup() {}
 }

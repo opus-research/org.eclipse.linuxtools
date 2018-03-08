@@ -1,14 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
- *
+ * Copyright (c) 2011 Ericsson
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Fix propagation to experiment traces
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -48,9 +47,9 @@ public class SelectTraceTypeHandler extends AbstractHandler {
     // Constants
     // ------------------------------------------------------------------------
 
-    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.bundle"; //$NON-NLS-1$
-    private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.type"; //$NON-NLS-1$
-    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"; //$NON-NLS-1$
+    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.project.trace.select_trace_type.bundle"; //$NON-NLS-1$
+    private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.project.trace.select_trace_type.type"; //$NON-NLS-1$
+    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.project.trace.select_trace_type.icon"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -67,26 +66,22 @@ public class SelectTraceTypeHandler extends AbstractHandler {
 
         // Check if we are closing down
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        if (window == null) {
+        if (window == null)
             return false;
-        }
 
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
-        if (part == null) {
-            return false;
-        }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
-        if (selectionProvider == null) {
+        if (selectionProvider == null)
             return false;
-        }
         ISelection selection = selectionProvider.getSelection();
 
         // Make sure selection contains only traces
         fSelection = null;
         if (selection instanceof TreeSelection) {
             fSelection = (TreeSelection) selection;
+            @SuppressWarnings("unchecked")
             Iterator<Object> iterator = fSelection.iterator();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
@@ -109,9 +104,8 @@ public class SelectTraceTypeHandler extends AbstractHandler {
 
         // Check if we are closing down
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        if (window == null) {
+        if (window == null)
             return null;
-        }
 
         boolean ok = true;
         for (Object element : fSelection.toList()) {
@@ -167,7 +161,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
                 for (final ITmfProjectModelElement child : experiment.getChildren()) {
                     if (child instanceof TmfTraceElement) {
                         TmfTraceElement linkedTrace = (TmfTraceElement) child;
-                        if (linkedTrace.getName().equals(trace.getName())) {
+                        if (linkedTrace.equals(trace)) {
                             IResource resource = linkedTrace.getResource();
                             setProperties(resource, bundleName, traceType, iconUrl);
                             linkedTrace.refreshTraceType();
@@ -189,14 +183,13 @@ public class SelectTraceTypeHandler extends AbstractHandler {
 
     private static boolean validateTraceType(TmfTraceElement trace) {
         IProject project = trace.getProject().getResource();
-        ITmfTrace tmfTrace = null;
+        ITmfTrace<?> tmfTrace = null;
         try {
             tmfTrace = trace.instantiateTrace();
             return (tmfTrace != null && tmfTrace.validate(project, trace.getLocation().getPath()));
         } finally {
-            if (tmfTrace != null) {
+            if (tmfTrace != null)
                 tmfTrace.dispose();
-            }
         }
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 
 /**
@@ -40,12 +39,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
      * The file name of the History Tree
      */
     public final static String HISTORY_TREE_FILE_NAME = "stateHistory.ht"; //$NON-NLS-1$
-
-    /**
-     * ID of the state system we will build
-     * @since 2.0
-     * */
-    public static final String STATE_ID = "org.eclipse.linuxtools.lttng2.kernel"; //$NON-NLS-1$
 
     /**
      * Default constructor
@@ -69,7 +62,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
         /* Make sure the domain is "kernel" in the trace's env vars */
         String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
-        temp.dispose();
         if (dom != null && dom.equals("\"kernel\"")) { //$NON-NLS-1$
             return true;
         }
@@ -78,8 +70,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
     @Override
     protected void buildStateSystem() throws TmfTraceException {
-        super.buildStateSystem();
-
         /* Set up the path to the history tree file we'll use */
         IResource resource = this.getResource();
         String supplDirectory = null;
@@ -94,8 +84,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
         final File htFile = new File(supplDirectory + File.separator + HISTORY_TREE_FILE_NAME);
         final IStateChangeInput htInput = new CtfKernelStateInput(this);
 
-        ITmfStateSystem ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
-        fStateSystems.put(STATE_ID, ss);
+        this.ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
     }
-
 }

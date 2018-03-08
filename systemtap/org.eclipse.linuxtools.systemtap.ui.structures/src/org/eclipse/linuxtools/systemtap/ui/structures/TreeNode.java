@@ -19,13 +19,12 @@ public class TreeNode {
 		data = d;
 		clickable = c;
 
-		if(null == data) {
+		if(null == data)
 			display = null;
-		} else {
+		else
 			display = d.toString();
-		}
 	}
-
+	
 	public TreeNode(Object d, String disp, boolean c) {
 		children = new ArrayList<TreeNode>();
 		data = d;
@@ -36,46 +35,44 @@ public class TreeNode {
 	public void add(TreeNode item) {
 		children.add(item);
 	}
-
+	
 	public void addAt(TreeNode item, int location) {
 		children.add(Math.min(children.size(), location), item);
 	}
-
+	
 	public int getChildCount() {
 		return children.size();
 	}
-
+	
 	public TreeNode getChildAt(int i){
-		if(children.size() > i) {
+		if(children.size() > i)
 			return children.get(i);
-		} else {
+		else
 			return null;
-		}
 	}
-
+	
 	public Object getData() {
 		return data;
 	}
-
+	
 	public boolean isClickable() {
 		return clickable;
 	}
-
+	
 	public boolean remove(int i) {
-		if(children.size() > i) {
+		if(children.size() > i)
 			return(null != children.remove(i));
-		} else {
+		else 
 			return false;
-		}
 	}
-
+	
 	public boolean removeAll() {
 		for(int i=children.size()-1; i>=0; i--) {
-			remove(i);
+			this.remove(i);
 		}
 		return true;
 	}
-
+	
 	public void setData(Object d) {
 		data = d;
 	}
@@ -89,8 +86,12 @@ public class TreeNode {
 	 * functions are sorted alphabetically.
 	 */
 	public void sortTree() {
+		TreeNode temp = null;
+		
 		sortLevel();
-		for (TreeNode temp : children) {
+		for(int i=0; i<this.getChildCount(); i++) {
+			temp = this.getChildAt(i);
+			
 			temp.sortTree();
 		}
 	}
@@ -99,44 +100,30 @@ public class TreeNode {
 	 * Performs quicksort on the level.
 	 */
 	public void sortLevel() {
-		TreeNode[] children = this.children.toArray(new TreeNode[0]);
-		removeAll();
-		Sort.quicksort(children, 0, children.length - 1);
-
-		for (TreeNode child : children) {
-			add(child);
-		}
+		int j;
+		
+		Object children[] = this.children.toArray();
+		this.removeAll();
+		Sort.quicksort(children, 0, children.length-1);
+		
+		for(j=0; j<children.length; j++)
+			this.add((TreeNode)children[j]);
 	}
-
+	
 	@Override
 	public String toString() {
 		return display;
 	}
-
+	
 	public void dispose() {
-		if (null != children) {
-			for (TreeNode child : children) {
-				child.dispose();
-			}
-		}
+		if(null != children)
+			for(int i=children.size()-1; i>=0; i--)
+				children.get(i).dispose();
 		children = null;
 		data = null;
 		display = null;
 	}
-
-	/**
-	 * @since 2.0
-	 */
-	public TreeNode getChildByName(String name){
-		for (TreeNode child : children) {
-			if (child.toString().equals(name)) {
-				return child;
-			}
-		}
-
-		return null;
-	}
-
+	
 	private ArrayList<TreeNode> children;
 	private Object data;
 	private String display;

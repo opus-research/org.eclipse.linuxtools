@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
+ * Copyright (c) 2007, 2008 Intel Corporation, 2010, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,17 +10,16 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
+ *
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -111,7 +110,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
     private void calcTimeDelta(int width, double pixelsPerNanoSec) {
         double minDelta = (pixelsPerNanoSec == 0) ? YEAR_IN_NS : width / pixelsPerNanoSec;
         long unit = 1;
-        if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
             if (minDelta > 6 * MONTH_IN_NS) {
                 unit = YEAR_IN_NS;
             } else if (minDelta > 3 * MONTH_IN_NS) {
@@ -149,9 +148,6 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
         } else {
             _timeDelta = 10 * (long) Math.pow(10, pow10) * unit;
         }
-        if (_timeDelta<=0) {
-            _timeDelta=1;
-        }
     }
 
     private static TimeDraw TIMEDRAW_NANOSEC = new TimeDrawNanosec();
@@ -167,38 +163,30 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
     private static TimeDraw TIMEDRAW_ABS_DAY = new TimeDrawAbsDay();
     private static TimeDraw TIMEDRAW_ABS_MONTH = new TimeDrawAbsMonth();
     private static TimeDraw TIMEDRAW_ABS_YEAR = new TimeDrawAbsYear();
-    private static TimeDraw TIMEDRAW_NUMBER = new TimeDrawNumber();
 
     TimeDraw getTimeDraw(long timeDelta) {
         TimeDraw timeDraw;
-        if (_timeProvider != null) {
-
-            if (_timeProvider.getTimeFormat() == TimeFormat.CALENDAR) {
-                if (timeDelta >= YEAR_IN_NS) {
-                    timeDraw = TIMEDRAW_ABS_YEAR;
-                } else if (timeDelta >= MONTH_IN_NS) {
-                    timeDraw = TIMEDRAW_ABS_MONTH;
-                } else if (timeDelta >= DAY_IN_NS) {
-                    timeDraw = TIMEDRAW_ABS_DAY;
-                } else if (timeDelta >= HOUR_IN_NS) {
-                    timeDraw = TIMEDRAW_ABS_HRS;
-                } else if (timeDelta >= MIN_IN_NS) {
-                    timeDraw = TIMEDRAW_ABS_MIN;
-                } else if (timeDelta >= SEC_IN_NS) {
-                    timeDraw = TIMEDRAW_ABS_SEC;
-                } else if (timeDelta >= 1000000) {
-                    timeDraw = TIMEDRAW_ABS_MILLISEC;
-                } else if (timeDelta >= 1000) {
-                    timeDraw = TIMEDRAW_ABS_MICROSEC;
-                } else {
-                    timeDraw = TIMEDRAW_ABS_NANOSEC;
-                }
-                return timeDraw;
-            } else if (_timeProvider.getTimeFormat() == TimeFormat.NUMBER) {
-                timeDraw = TIMEDRAW_NUMBER;
-                return timeDraw;
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
+            if (timeDelta >= YEAR_IN_NS) {
+                timeDraw = TIMEDRAW_ABS_YEAR;
+            } else if (timeDelta >= MONTH_IN_NS) {
+                timeDraw = TIMEDRAW_ABS_MONTH;
+            } else if (timeDelta >= DAY_IN_NS) {
+                timeDraw = TIMEDRAW_ABS_DAY;
+            } else if (timeDelta >= HOUR_IN_NS) {
+                timeDraw = TIMEDRAW_ABS_HRS;
+            } else if (timeDelta >= MIN_IN_NS) {
+                timeDraw = TIMEDRAW_ABS_MIN;
+            } else if (timeDelta >= SEC_IN_NS) {
+                timeDraw = TIMEDRAW_ABS_SEC;
+            } else if (timeDelta >= 1000000) {
+                timeDraw = TIMEDRAW_ABS_MILLISEC;
+            } else if (timeDelta >= 1000) {
+                timeDraw = TIMEDRAW_ABS_MICROSEC;
+            } else {
+                timeDraw = TIMEDRAW_ABS_NANOSEC;
             }
-
+            return timeDraw;
         }
         if (timeDelta >= 1000000000) {
             timeDraw = TIMEDRAW_SEC;
@@ -298,7 +286,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
         _rect0.width = labelWidth;
 
         long time;
-        if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
             time = floorToCalendar(time0, _timeDelta);
         } else {
             time = (time0 / _timeDelta) * _timeDelta;
@@ -309,7 +297,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
 
         int y = _rect0.y + _rect0.height;
 
-        if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
             timeDraw.drawAbsHeader(gc, time, absHeaderRect);
         }
 
@@ -328,7 +316,7 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
             if (pixelsPerNanoSec == 0 || time > Long.MAX_VALUE - _timeDelta || _timeDelta == 0) {
                 break;
             }
-            if (_timeProvider != null && _timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+            if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
                 if (_timeDelta >= YEAR_IN_NS) {
                     long millis = time / 1000000L;
                     GREGORIAN_CALENDAR.setTime(new Date(millis));
@@ -357,10 +345,8 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
     }
 
     private long floorToCalendar(long time, long timeDelta) {
-        long ret = time;
-
         if (_timeDelta >= YEAR_IN_NS) {
-            GREGORIAN_CALENDAR.setTime(new Date(ret / 1000000));
+            GREGORIAN_CALENDAR.setTime(new Date(time / 1000000));
             int year = GREGORIAN_CALENDAR.get(Calendar.YEAR);
             int yearDelta = (int) (timeDelta / YEAR_IN_NS);
             year = (year / yearDelta) * yearDelta;
@@ -371,9 +357,9 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
             GREGORIAN_CALENDAR.set(Calendar.MINUTE, 0);
             GREGORIAN_CALENDAR.set(Calendar.SECOND, 0);
             GREGORIAN_CALENDAR.set(Calendar.MILLISECOND, 0);
-            ret = GREGORIAN_CALENDAR.getTimeInMillis() * 1000000;
+            time = GREGORIAN_CALENDAR.getTimeInMillis() * 1000000;
         } else if (_timeDelta >= MONTH_IN_NS) {
-            GREGORIAN_CALENDAR.setTime(new Date(ret / 1000000));
+            GREGORIAN_CALENDAR.setTime(new Date(time / 1000000));
             int month = GREGORIAN_CALENDAR.get(Calendar.MONTH);
             int monthDelta = (int) (timeDelta / MONTH_IN_NS);
             month = (month / monthDelta) * monthDelta;
@@ -383,21 +369,21 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
             GREGORIAN_CALENDAR.set(Calendar.MINUTE, 0);
             GREGORIAN_CALENDAR.set(Calendar.SECOND, 0);
             GREGORIAN_CALENDAR.set(Calendar.MILLISECOND, 0);
-            ret = GREGORIAN_CALENDAR.getTimeInMillis() * 1000000;
+            time = GREGORIAN_CALENDAR.getTimeInMillis() * 1000000;
         } else {
-            long offset = GREGORIAN_CALENDAR.getTimeZone().getOffset(ret / 1000000L) * 1000000L;
-            ret += offset;
-            ret = (ret / timeDelta) * timeDelta;
-            ret -= offset;
+            long offset = GREGORIAN_CALENDAR.getTimeZone().getOffset(time / 1000000L) * 1000000L;
+            time += offset;
+            time = (time / timeDelta) * timeDelta;
+            time -= offset;
         }
-        return ret;
+        return time;
     }
 
     private int calculateDigits(long time0, long time1) {
         int numDigits = 5;
         long timeRange = time1 - time0;
 
-        if (_timeProvider.getTimeFormat().equals(TimeFormat.CALENDAR)) {
+        if (_timeProvider.isCalendarFormat()) {
             // Calculate the number of digits to represent the minutes provided
             // 11:222
             // HH:mm:ss
@@ -516,7 +502,6 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
     public void mouseDoubleClick(MouseEvent e) {
         if (e.button == 1 && null != _timeProvider && _timeProvider.getTime0() != _timeProvider.getTime1() && (e.stateMask & SWT.BUTTON_MASK) == 0) {
             _timeProvider.resetStartFinishTime();
-            _timeProvider.notifyStartFinishTime();
             _time0bak = _timeProvider.getTime0();
             _time1bak = _timeProvider.getTime1();
         }
@@ -565,18 +550,9 @@ abstract class TimeDraw {
 
     public abstract void draw(GC gc, long time, Rectangle rect);
 
-    /**
-     * Override to draw absolute time header This is for the time information
-     * not shown in the draw of each tick
-     *
-     * @param gc
-     *            Graphics context
-     * @param time
-     *            Timestamp
-     * @param absHeaderRect
-     *            Header rectangle
-     */
     public void drawAbsHeader(GC gc, long time, Rectangle absHeaderRect) {
+        // Override to draw absolute time header
+        // This is for the time information not shown in the draw of each tick
     }
 
     public abstract String hint();
@@ -587,8 +563,8 @@ class TimeDrawSec extends TimeDraw {
 
     @Override
     public void draw(GC gc, long time, Rectangle rect) {
-        long correctTime = time / 1000000000;
-        Utils.drawText(gc, sep(correctTime), rect, true);
+        time /= 1000000000;
+        Utils.drawText(gc, sep(time), rect, true); //$NON-NLS-1$
     }
 
     @Override
@@ -602,10 +578,10 @@ class TimeDrawMillisec extends TimeDraw {
 
     @Override
     public void draw(GC gc, long time, Rectangle rect) {
-        long correctTime = time / 1000000;
-        long ms = correctTime % 1000;
-        correctTime /= 1000;
-        Utils.drawText(gc, sep(correctTime) + "." + pad(ms), rect, true); //$NON-NLS-1$
+        time /= 1000000;
+        long ms = time % 1000;
+        time /= 1000;
+        Utils.drawText(gc, sep(time) + "." + pad(ms), rect, true); //$NON-NLS-1$
     }
 
     @Override
@@ -619,12 +595,12 @@ class TimeDrawMicrosec extends TimeDraw {
 
     @Override
     public void draw(GC gc, long time, Rectangle rect) {
-        long correctTime = time / 1000;
-        long mcs = correctTime % 1000;
-        correctTime /= 1000;
-        long ms = correctTime % 1000;
-        correctTime /= 1000;
-        Utils.drawText(gc, sep(correctTime) + "." + pad(ms) + " " + pad(mcs), rect, true); //$NON-NLS-1$ //$NON-NLS-2$
+        time /= 1000;
+        long mcs = time % 1000;
+        time /= 1000;
+        long ms = time % 1000;
+        time /= 1000;
+        Utils.drawText(gc, sep(time) + "." + pad(ms) + " " + pad(mcs), rect, true); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -639,12 +615,12 @@ class TimeDrawNanosec extends TimeDraw {
     @Override
     public void draw(GC gc, long time, Rectangle rect) {
         long ns = time % 1000;
-        long correctTime = time / 1000;
-        long mcs = correctTime % 1000;
-        correctTime /= 1000;
-        long ms = correctTime % 1000;
-        correctTime /= 1000;
-        Utils.drawText(gc, sep(correctTime) + "." + pad(ms) + " " + pad(mcs) + " " + pad(ns), rect, true); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        time /= 1000;
+        long mcs = time % 1000;
+        time /= 1000;
+        long ms = time % 1000;
+        time /= 1000;
+        Utils.drawText(gc, sep(time) + "." + pad(ms) + " " + pad(mcs) + " " + pad(ns), rect, true); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
@@ -860,30 +836,5 @@ class TimeDrawAbsNanoSec extends TimeDraw {
     @Override
     public String hint() {
         return _hint;
-    }
-}
-
-
-class TimeDrawNumber extends TimeDraw {
-
-    @Override
-    public void draw(GC gc, long time, Rectangle rect) {
-        String stime = NumberFormat.getInstance().format(time);
-        Utils.drawText(gc, stime, rect, true);
-    }
-
-    @Override
-    public void drawAbsHeader(GC gc, long time, Rectangle rect) {
-        String header = NumberFormat.getInstance().format(time);
-        int headerwidth = gc.stringExtent(header).x + 4;
-        if (headerwidth <= rect.width) {
-            rect.x += (rect.width - headerwidth);
-            Utils.drawText(gc, header, rect, true);
-        }
-    }
-
-    @Override
-    public String hint() {
-        return "cycle"; //$NON-NLS-1$
     }
 }

@@ -55,13 +55,24 @@ public class GcovTestC {
 			bot.sleep(1000);
 			bot.button("Apply").click();
 			bot.button("OK").click();
-
-			System.out.println("Test: " + GcovTestC.class.getName());
-			GcovTest.createProject(bot, PROJECT_NAME, PROJECT_TYPE);
-			GcovTest.populateProject(bot, PROJECT_NAME);
-			GcovTest.compileProject(bot, PROJECT_NAME);
 		}
 
+			@Test
+			public void createProject() {
+				System.out.println("Test: " + getClass().getName());
+				GcovTest.createProject(bot, PROJECT_NAME, PROJECT_TYPE);
+			}
+
+			@Test
+			public void populateProject() throws Exception {
+				GcovTest.populateProject(bot, PROJECT_NAME);
+			}
+
+			@Test
+			public void compileProject() {
+				GcovTest.compileProject(bot, PROJECT_NAME);
+			}
+		
 			@Test
 			public void openGcovFileDetails() throws Exception {
 				GcovTest.openGcovFileDetails(bot, PROJECT_NAME);
@@ -70,10 +81,5 @@ public class GcovTestC {
 			@Test
 			public void openGcovSummary() throws Exception {
 				GcovTest.openGcovSummary(bot, PROJECT_NAME, true);
-			}
-			
-			@Test
-			public void testGcovSummaryByLaunch() throws Exception {
-				GcovTest.openGcovSummaryByLaunch(bot, PROJECT_NAME);
 			}
 }

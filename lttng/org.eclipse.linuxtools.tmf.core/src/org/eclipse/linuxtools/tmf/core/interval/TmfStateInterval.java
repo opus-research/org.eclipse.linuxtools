@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -88,7 +88,7 @@ public final class TmfStateInterval implements ITmfStateInterval {
     public String toString() {
         /* Only used for debugging */
         StringBuffer buf = new StringBuffer(start + " to "); //$NON-NLS-1$
-        buf.append(end + ", "); //$NON-NLS-1$
+        buf.append(end + ' ');
         buf.append(String.format("key = %4d, ", attribute)); //$NON-NLS-1$
         buf.append("value = " + sv.toString()); //$NON-NLS-1$
         return buf.toString();

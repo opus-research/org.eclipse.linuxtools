@@ -11,32 +11,28 @@
 
 package org.eclipse.linuxtools.rpm.ui.editor.tests;
 
-import static org.junit.Assert.fail;
-
 import java.util.Map;
+
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.internal.rpm.ui.editor.RpmMacroProposalsList;
 import org.eclipse.linuxtools.rpm.core.utils.Utils;
-import org.junit.Before;
-import org.junit.Test;
 
-public class RpmMacroProposalsListTest {
+public class RpmMacroProposalsListTest extends TestCase {
 
 	RpmMacroProposalsList macroProposalsList;
 
-	@Before
-	public void setUp() {
+	@Override
+	protected void setUp() throws Exception {
 		macroProposalsList = new RpmMacroProposalsList();
 	}
 
-	@Test
 	public final void testBuildMacroList() {
 		macroProposalsList.buildMacroList();
 		if (!macroProposalsList.findKey("%_libdir"))
 			fail("buildMacroList faild, %_libdir macro was not found!");
 	}
 
-	@Test
 	public final void testGetProposals() {
 		Map<String, String> proposals = macroProposalsList
 				.getProposals("%_libdir");
@@ -45,7 +41,6 @@ public class RpmMacroProposalsListTest {
 		}
 	}
 
-	@Test
 	public final void testGetProposals2() {
 		Map<String, String> proposals = macroProposalsList
 				.getProposals("%_unexistingmacro");
@@ -54,21 +49,18 @@ public class RpmMacroProposalsListTest {
 		}
 	}
 
-	@Test
 	public final void testGetValue() {
 		if (macroProposalsList.getValue("_libdir").indexOf("lib") == -1) {
 			fail("getValue faild, %_libdir value don't end with '%{_lib}'");
 		}
 	}
 
-	@Test
 	public final void testGetValue2() {
 		if (macroProposalsList.getValue("_unexistingmacro") != null) {
 			fail("getValue faild, %_libdir value don't end with '%{_lib}'");
 		}
 	}
 
-	@Test
 	public final void testGetMacroEval() {
 		if (Utils.fileExist("/bin/rpm")) {
 			if (RpmMacroProposalsList.getMacroEval("%_libdir").indexOf("lib") == -1) {
@@ -77,7 +69,6 @@ public class RpmMacroProposalsListTest {
 		}
 	}
 
-	@Test
 	public final void testGetMacroEval2() {
 		if (!RpmMacroProposalsList.getMacroEval("%_unexistingmacro").equals(
 				"%_unexistingmacro")) {

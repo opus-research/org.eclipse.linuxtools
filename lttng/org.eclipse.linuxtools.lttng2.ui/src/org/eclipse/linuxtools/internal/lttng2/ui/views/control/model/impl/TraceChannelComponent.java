@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -17,6 +16,7 @@ import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
@@ -263,6 +263,17 @@ public class TraceChannelComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
+    /**
+     * Enables a list of events with no additional parameters.
+     *
+     * @param eventNames
+     *            - a list of event names to enabled.
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public void enableEvents(List<String> eventNames) throws ExecutionException {
+        enableEvents(eventNames, new NullProgressMonitor());
+    }
 
     /**
      * Enables a list of events with no additional parameters.
@@ -275,23 +286,17 @@ public class TraceChannelComponent extends TraceControlComponent {
      *             If the command fails
      */
     public void enableEvents(List<String> eventNames, IProgressMonitor monitor) throws ExecutionException {
-        enableEvents(eventNames, null,  monitor);
+        getControlService().enableEvents(getSessionName(), getName(), eventNames, isKernel(), monitor);
     }
 
     /**
-     * Enables a list of events with no additional parameters.
+     * Enables all syscalls (for kernel domain)
      *
-     * @param eventNames
-     *            - a list of event names to enabled.
-     * @param filterExpression
-     *            - a filter expression
-     * @param monitor
-     *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableEvents(List<String> eventNames, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
-        getControlService().enableEvents(getSessionName(), getName(), eventNames, isKernel(), filterExpression,  monitor);
+    public void enableSyscalls() throws ExecutionException {
+        enableSyscalls(new NullProgressMonitor());
     }
 
     /**
@@ -304,6 +309,23 @@ public class TraceChannelComponent extends TraceControlComponent {
      */
     public void enableSyscalls(IProgressMonitor monitor) throws ExecutionException {
         getControlService().enableSyscalls(getSessionName(), getName(), monitor);
+    }
+
+    /**
+     * Enables a dynamic probe (for kernel domain)
+     *
+     * @param eventName
+     *            - event name for probe
+     * @param isFunction
+     *            - true for dynamic function entry/return probe else false
+     * @param probe
+     *            - the actual probe
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public void enableProbe(String eventName, boolean isFunction, String probe)
+            throws ExecutionException {
+        enableProbe(eventName, isFunction, probe, new NullProgressMonitor());
     }
 
     /**
@@ -334,17 +356,44 @@ public class TraceChannelComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public void enableLogLevel(String eventName, LogLevelType logLevelType,
+            TraceLogLevel level) throws ExecutionException {
+        enableLogLevel(eventName, logLevelType, level, new NullProgressMonitor());
+    }
+
+    /**
+     * Enables events using log level.
+     *
+     * @param eventName
+     *            - a event name
+     * @param logLevelType
+     *            - a log level type
+     * @param level
+     *            - a log level
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression, IProgressMonitor monitor)
+            TraceLogLevel level, IProgressMonitor monitor)
             throws ExecutionException {
-        getControlService().enableLogLevel(getSessionName(), getName(), eventName, logLevelType, level, filterExpression, monitor);
+        getControlService().enableLogLevel(getSessionName(), getName(), eventName, logLevelType, level, monitor);
+    }
+
+    /**
+     * Enables a list of events with no additional parameters.
+     *
+     * @param eventNames
+     *            - a list of event names to enabled.
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public void disableEvent(List<String> eventNames) throws ExecutionException {
+        disableEvent(eventNames, new NullProgressMonitor());
     }
 
     /**
@@ -361,6 +410,18 @@ public class TraceChannelComponent extends TraceControlComponent {
             throws ExecutionException {
         getControlService().disableEvent(getParent().getParent().getName(),
                 getName(), eventNames, isKernel(), monitor);
+    }
+
+    /**
+     * Add contexts to given channels and or events
+     *
+     * @param contexts
+     *            - a list of contexts to add
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public void addContexts(List<String> contexts) throws ExecutionException {
+        addContexts(contexts, new NullProgressMonitor());
     }
 
     /**
