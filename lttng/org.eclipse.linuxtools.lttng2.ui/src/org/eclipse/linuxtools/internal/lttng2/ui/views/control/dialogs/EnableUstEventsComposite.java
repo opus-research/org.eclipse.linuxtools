@@ -99,11 +99,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
      */
     private Button fLogLevelOnlyButton;
     /**
-     * The filter text
-     */
-    private Text fFilterText;
-
-    /**
      * The referenced trace provider group containing the UST providers
      * component which contains a list of available tracepoints.
      */
@@ -144,10 +139,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
      * The actual selected log level.
      */
     private TraceLogLevel fLogLevel;
-    /**
-     * The filter expression
-     */
-    private String fFilterExpression;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -248,15 +239,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         return fLogLevelEventName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getFilterExpression()
-     */
-    @Override
-    public String getFilterExpression() {
-        return fFilterExpression;
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -274,9 +256,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
         // Log Level Group
         createLogLevelGroup();
-
-        // Filter Group
-        createFilterGroup();
 
         // Set default enablements
         setEnablements(GroupEnum.TRACEPOINTS);
@@ -345,7 +324,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
             fLogLevel = levels[id];
         }
 
-        // initialize wildcard with null
+        // initialize wildcard with the event name string
         fWildcard = null;
         if (fIsWildcard) {
             String tempWildcard = fWildcardText.getText();
@@ -359,16 +338,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
             if(!tempWildcard.matches("\\s*")) { //$NON-NLS-1$
                 fWildcard = tempWildcard;
-            }
-        }
-
-        // initialize filter with null
-        fFilterExpression = null;
-        if (fProviderGroup.isEventFilteringSupported()) {
-            String tempFilter = fFilterText.getText();
-
-            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
-                fFilterExpression = tempFilter;
             }
         }
 
@@ -548,22 +517,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fLogLevelOnlyButton.setToolTipText(Messages.TraceControl_EnableEventsLogLevelOnlyTypeTooltip);
         data = new GridData(GridData.FILL_BOTH);
         fLogLevelButton.setLayoutData(data);
-    }
-
-    void createFilterGroup() {
-        if (fProviderGroup.isEventFilteringSupported()) {
-            Group filterMainGroup = new Group(this, SWT.SHADOW_NONE);
-            filterMainGroup.setText(Messages.TraceControl_EnableEventsFilterGroupName);
-            GridLayout layout = new GridLayout(3, false);
-            filterMainGroup.setLayout(layout);
-            GridData data = new GridData(GridData.FILL_HORIZONTAL);
-            filterMainGroup.setLayoutData(data);
-
-            fFilterText = new Text(filterMainGroup, SWT.LEFT);
-            fFilterText.setToolTipText(Messages.TraceControl_EnableEventsFilterTooltip);
-            data = new GridData(GridData.FILL_HORIZONTAL);
-            fFilterText.setLayoutData(data);
-        }
     }
 
     /**

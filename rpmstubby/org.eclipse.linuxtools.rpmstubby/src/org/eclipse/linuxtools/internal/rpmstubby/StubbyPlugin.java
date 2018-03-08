@@ -12,11 +12,11 @@ package org.eclipse.linuxtools.internal.rpmstubby;
 
 
 /**
- * The Stubby constants.
+ * The activator class controls the plug-in life cycle
  */
-public interface StubbyPlugin {
+public class StubbyPlugin {
 
 	/** The plug-in ID. */
-	String PLUGIN_ID = "org.eclipse.linuxtools.internal.rpmstubby";
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.internal.rpmstubby";
 
 }
