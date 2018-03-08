@@ -147,9 +147,4 @@ public class PerfProfileView extends ViewPart {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-
-	@Override
-	public void setContentDescription (String name) {
-		super.setContentDescription(name);
-	}
 }
