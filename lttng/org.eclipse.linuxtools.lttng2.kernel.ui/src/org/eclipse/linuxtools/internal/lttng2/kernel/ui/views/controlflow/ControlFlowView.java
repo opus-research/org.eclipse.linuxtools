@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventList;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
@@ -330,7 +331,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
             List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
-            eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
+            eventList = new EventList(statusIntervals.size(), realStart, realEnd);
             long lastEndTime = -1;
             for (ITmfStateInterval statusInterval : statusIntervals) {
                 if (monitor.isCanceled()) {

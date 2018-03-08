@@ -100,9 +100,9 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (value == StateValues.CPU_STATUS_SOFTIRQ) {
                     return State.SOFT_IRQ;
                 }
-            } else if ((entry.getType() == Type.IRQ) && (tcEvent.hasValue()) && (value != ResourcesView.NO_VALUE_EVENT)) {
+            } else if (entry.getType() == Type.IRQ) {
                 return State.IRQ_ACTIVE;
-            } else if ((entry.getType() == Type.SOFT_IRQ) && (tcEvent.hasValue()) && (value != ResourcesView.NO_VALUE_EVENT)) {
+            } else if (entry.getType() == Type.SOFT_IRQ) {
                 if (value == StateValues.SOFT_IRQ_RAISED) {
                     return State.SOFT_IRQ_RAISED;
                 }
@@ -117,12 +117,6 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
         State state = getEventState(event);
         if (state != null) {
             return state.ordinal();
-        }
-        if (event instanceof TimeEvent) {
-            TimeEvent tcEvent = (TimeEvent) event;
-            if (tcEvent.hasValue()) {
-                return INVISIBLE;
-            }
         }
         return TRANSPARENT;
     }
@@ -143,12 +137,6 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
         State state = getEventState(event);
         if (state != null) {
             return state.toString();
-        }
-        if (event instanceof TimeEvent) {
-            TimeEvent tcEvent = (TimeEvent) event;
-            if (tcEvent.hasValue()) {
-                return null;
-            }
         }
         return Messages.ResourcesView_multipleStates;
     }
