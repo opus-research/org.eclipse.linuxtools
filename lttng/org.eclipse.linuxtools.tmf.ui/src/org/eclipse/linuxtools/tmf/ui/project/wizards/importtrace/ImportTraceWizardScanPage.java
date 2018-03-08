@@ -112,6 +112,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         final Composite control = (Composite) this.getControl();
+        setTitle(Messages.ImportTraceWizardScanPageTitle);
         traceTypeViewer = new CheckboxTreeViewer(control, SWT.CHECK);
         traceTypeViewer.setContentProvider(getBatchWizard().getScannedTraces());
         traceTypeViewer.getTree().setHeaderVisible(true);
@@ -354,10 +355,13 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
     private final class ScanRunnable extends Job {
 
+        // monitor is stored here, starts as the main monitor but becomes a
+        // submonitor
         private IProgressMonitor fMonitor;
 
         public ScanRunnable(String name) {
             super(name);
+            this.setSystem(true);
         }
 
         private synchronized IProgressMonitor getMonitor() {
@@ -366,18 +370,26 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         @Override
         public IStatus run(IProgressMonitor monitor) {
+            /*
+             * Set up phase, it is synchronous
+             */
             fMonitor = monitor;
             final Control control = traceTypeViewer.getControl();
+            // please note the sync exec here is to allow us to set
             control.getDisplay().syncExec(new Runnable() {
                 @Override
                 public void run() {
-                    // monitor gets overwritten here so it's necessary to save it in a field.
+                    // monitor gets overwritten here so it's necessary to save
+                    // it in a field.
                     fMonitor = SubMonitor.convert(getMonitor());
                     getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
                 }
             });
-
+            /*
+             * At this point we start calling async execs and updating the view.
+             * This is a good candidate to parallelise.
+             */
             while (fCanRun == true) {
                 boolean updated = false;
                 boolean validCombo;
@@ -389,6 +401,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                             if (!control.isDisposed()) {
                                 getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                                 getMonitor().subTask(Messages.ImportTraceWizardPageScanDone);
+                                ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScanScanning + ' ' + Messages.ImportTraceWizardPageScanDone);
                             }
                         }
                     });
@@ -399,6 +412,10 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                     if (!getBatchWizard().hasScanned(traceToScan)) {
                         getBatchWizard().addResult(traceToScan, TmfTraceType.getInstance().validate(traceToScan));
                     }
+
+                    /*
+                     * The following is to update the UI
+                     */
                     validCombo = getBatchWizard().getResult(traceToScan);
                     if (validCombo) {
                         // Synched on it's parent
@@ -406,7 +423,16 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         getBatchWizard().getScannedTraces().addCandidate(traceToScan.getTraceType(), new File(traceToScan.getTraceToScan()));
                         updated = true;
                     }
-
+                    final int scanned = getBatchWizard().getNumberOfResults();
+                    final int total = scanned + fTracesToScan.size();
+                    final int prevVal = (int) ((scanned - 1) * 100.0 / total);
+                    final int curVal = (int) ((scanned) * 100.0 / total);
+                    if (curVal != prevVal) {
+                        updated = true;
+                    }
+                    /*
+                     * update the progress
+                     */
                     if (updated) {
                         if (!control.isDisposed()) {
                             control.getDisplay().asyncExec(new Runnable() {
@@ -416,6 +442,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                                         getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                                         getMonitor().subTask(traceToScan.getTraceToScan());
                                         getMonitor().worked(1);
+                                        ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScanScanning + ' '
+                                                + Integer.toString(curVal)
+                                                + '%');
                                     }
                                 }
                             }
@@ -423,6 +452,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         }
                     }
 
+                    /*
+                     * here we update the table
+                     */
                     final boolean editing = traceTypeViewer.isCellEditorActive();
                     if (updated && !editing) {
                         if (!control.isDisposed()) {
