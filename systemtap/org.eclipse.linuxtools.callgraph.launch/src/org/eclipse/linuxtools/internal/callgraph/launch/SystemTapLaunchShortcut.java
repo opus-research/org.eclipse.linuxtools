@@ -178,10 +178,11 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 					.getLaunchManager().getLaunchConfigurations(configType);
 
 			for (int i = 0; i < configs.length; i++) {
-				if (configs[i] != null && configs[i].exists()
-						&& checkIfAttributesAreEqual(wc, configs[i])) {
-					config = configs[i];
-					return true;
+				if (configs[i] != null && configs[i].exists()) {
+					if (checkIfAttributesAreEqual(wc, configs[i])){
+						config = configs[i];
+						return true;
+					}
 				}
 			}
 
@@ -678,10 +679,12 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 						if (!output.contains(c))
 							output.add(c);
 					}
-				} else if ((obj instanceof ICElement)
-						&& validElement((ICElement) obj)
-						&& !output.contains(obj)) {
-					output.add(obj);
+				} else if (obj instanceof ICElement) {
+					if (validElement((ICElement) obj)) {
+						if (!output.contains(obj)) {
+							output.add(obj);
+						}
+					}
 				}
 			}
 
@@ -706,13 +709,14 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 						output += numberOfValidFiles(((ICContainer) ele)
 								.getChildren());
 					}
-					if ((ele instanceof ICElement) && validElement(ele)) {
-						output++;
+					if (ele instanceof ICElement) {
+						if (validElement(ele))
+							output++;
 					}
 				}
-			} else if ((parent instanceof ICElement)
-					&& validElement((ICElement) parent)) {
-				output++;
+			} else if (parent instanceof ICElement) {
+				if (validElement((ICElement) parent))
+					output++;
 			}
 		}
 		return output;
