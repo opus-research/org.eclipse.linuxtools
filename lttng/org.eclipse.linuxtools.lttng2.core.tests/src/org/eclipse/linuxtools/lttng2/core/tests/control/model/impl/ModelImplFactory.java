@@ -134,7 +134,6 @@ public class ModelImplFactory {
         fSessionInfo2.setSessionState(TraceSessionState.INACTIVE);
         fSessionInfo2.addDomain(fDomainInfo1);
         fSessionInfo2.addDomain(fDomainInfo2);
-        fSessionInfo2.setStreamedTrace(true);
 
         fProbeEventInfo1 = new ProbeEventInfo("probeEvent1");
         fProbeEventInfo1.setEventType(TraceEventType.TRACEPOINT);
