@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     Red Hat Incorporated - initial API and implementation
- *     Neil Guzman - stub specfile in proper dir (B#414589)
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpmstubby;
 
