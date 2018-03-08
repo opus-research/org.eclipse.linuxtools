@@ -31,10 +31,10 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public final class AttributeTree {
+public class AttributeTree {
 
     /* "Magic number" for attribute tree files or file sections */
-    private static final int ATTRIB_TREE_MAGIC_NUMBER = 0x06EC3671;
+    private final static int ATTRIB_TREE_MAGIC_NUMBER = 0x06EC3671;
 
     private final StateSystem ss;
     private final List<Attribute> attributeList;
@@ -296,14 +296,14 @@ public final class AttributeTree {
                 ss.modifyAttribute(ss.getStartTime(), TmfStateValue.nullValue(), newAttrib);
             } catch (TimeRangeException e) {
                 /* Should not happen, we're inserting at ss's start time */
-                throw new IllegalStateException(e);
+                throw new RuntimeException();
             } catch (AttributeNotFoundException e) {
                 /* Should not happen, we just created this attribute! */
-                throw new IllegalStateException(e);
+                throw new RuntimeException();
             } catch (StateValueTypeException e) {
                 /* Should not happen, there is no existing state value, and the
                  * one we insert is a null value anyway. */
-                throw new IllegalStateException(e);
+                throw new RuntimeException();
             }
 
             return newAttrib;
@@ -316,7 +316,7 @@ public final class AttributeTree {
     }
 
     int getSubAttributesCount(int quark) {
-        return attributeList.get(quark).getSubAttributes().size();
+        return attributeList.get(quark).getSubAttributesList().size();
     }
 
     /**
@@ -352,7 +352,7 @@ public final class AttributeTree {
 
     private void addSubAttributes(List<Integer> list, Attribute curAttribute,
             boolean recursive) {
-        for (Attribute childNode : curAttribute.getSubAttributes()) {
+        for (Attribute childNode : curAttribute.getSubAttributesList()) {
             list.add(childNode.getQuark());
             if (recursive) {
                 addSubAttributes(list, childNode, true);
