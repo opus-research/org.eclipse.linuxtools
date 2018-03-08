@@ -417,6 +417,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return Collections.unmodifiableMap(fStateSystems);
     }
 
+    /**
+     * @since 2.0
+     */
+    @Override
+    public final void registerStateSystem(String id, ITmfStateSystem ss) {
+        fStateSystems.put(id, ss);
+    }
+
     // ------------------------------------------------------------------------
     // ITmfTrace - Trace characteristics getters
     // ------------------------------------------------------------------------
