@@ -196,7 +196,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     @Override
     public void sendRequest(final ITmfDataRequest request) {
         synchronized (fLock) {
-            if (fSignalDepth > 0) {
+            if ((fSignalDepth > 0) || (fRequestPendingCounter > 0)) {
                 coalesceDataRequest(request);
             } else {
                 dispatchRequest(request);
@@ -232,9 +232,9 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     public void notifyPendingRequest(boolean isIncrement) {
         synchronized (fLock) {
             if (isIncrement) {
-                if (fSignalDepth > 0) {
+//                if (fSignalDepth > 0) {
                     fRequestPendingCounter++;
-                }
+//                }
             } else {
                 if (fRequestPendingCounter > 0) {
                     fRequestPendingCounter--;
