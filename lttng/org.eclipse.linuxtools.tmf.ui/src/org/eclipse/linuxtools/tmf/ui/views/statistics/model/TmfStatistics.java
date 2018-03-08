@@ -18,6 +18,9 @@ package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
  * Contains information about statistics that can be retrieved with any type of
  * traces
  *
+ * There are two counters : one for the global number of events in the trace and
+ * another for the number of events in the selected time range
+ *
  * @version 1.0
  * @author Mathieu Denis
  */
@@ -26,4 +29,9 @@ public class TmfStatistics {
      * Number of events.
      */
     public long nbEvents = 0;
+    /**
+     * Number of event within a time range.
+     * @since 2.0
+     */
+    public long nbEventsInTimeRange = 0;
 }

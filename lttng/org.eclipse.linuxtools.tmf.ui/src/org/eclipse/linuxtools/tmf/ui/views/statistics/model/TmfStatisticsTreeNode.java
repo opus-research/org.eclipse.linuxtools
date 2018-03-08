@@ -154,4 +154,12 @@ public class TmfStatisticsTreeNode {
         fValue = new TmfStatistics();
         fNodes.reset(fPath);
     }
+
+    /**
+     * Reset the number of events in the time range.
+     */
+    public void resetTimeRangeValue() {
+        getValue().nbEventsInTimeRange = 0;
+        fNodes.resetTimeRangeValue(fPath);
+    }
 }
