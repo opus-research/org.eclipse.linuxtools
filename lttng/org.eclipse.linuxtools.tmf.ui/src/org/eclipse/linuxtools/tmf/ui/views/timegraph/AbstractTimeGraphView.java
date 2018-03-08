@@ -394,7 +394,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
             if (columnIndex == 0) {
                 return entry.getName();
             }
-            return new String();
+            return ""; //$NON-NLS-1$
         }
 
     }
