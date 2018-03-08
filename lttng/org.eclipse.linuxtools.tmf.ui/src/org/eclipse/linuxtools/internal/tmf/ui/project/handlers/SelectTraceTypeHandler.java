@@ -135,8 +135,6 @@ public class SelectTraceTypeHandler extends AbstractHandler {
 
                     if (status.isOK()) {
                         if ((previousTraceType != null) && (!traceType.equals(previousTraceType))) {
-                            // Close the trace if open
-                            trace.closeEditors();
                             // Delete all supplementary resources
                             trace.deleteSupplementaryResources();
                         }
