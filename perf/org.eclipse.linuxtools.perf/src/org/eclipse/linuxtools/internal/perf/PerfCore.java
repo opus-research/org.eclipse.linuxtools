@@ -248,26 +248,26 @@ public class PerfCore {
 	{
 		try 
 		{
-			Process p = Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"});
-			return (p != null);
+			Runtime.getRuntime().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"});			
 		} 
 		catch (IOException e) 
 		{
 			return false;
 		}
+		return true;
 	}
 
 	public static boolean checkRemotePerfInPath(IProject project) {
 		try 
 		{
-			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project);
-			return (p != null);
+			RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project);			
 		} 
 		catch (IOException e) 
 		{
 			logException(e);
 			return false;
 		}
+		return true;
 	}
 
 	//Generates a perf record command string with the options set in the given config. (If null uses default).
