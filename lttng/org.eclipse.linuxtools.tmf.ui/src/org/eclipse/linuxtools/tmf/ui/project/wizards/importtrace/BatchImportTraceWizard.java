@@ -467,7 +467,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      * @param element
      *            add the file and tracetype to import
      */
-    public void addFileToImport(FileAndName element) {
+    void addFileToImport(FileAndName element) {
         fTraces.add(element);
         updateConflicts();
     }
