@@ -17,22 +17,28 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row.RowDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row.RowParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.GraphFactory;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.SelectGraphWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -40,6 +46,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class SystemTapScriptGraphOptionsTab extends
@@ -68,6 +78,11 @@ public class SystemTapScriptGraphOptionsTab extends
 	private ScrolledComposite regexTextScrolledComposite;
 	private Group outputParsingGroup;
 	private Button runWithChartCheckButton;
+
+	private Tree treeGraphs;
+	private Button addGraphButton, removeGraphButton;
+	private TreeItem selectedTreeItem;
+	private Group graphsGroup;
 
 	public static IDataSetParser createDatasetParser(ILaunchConfiguration configuration) {
 		int n;
@@ -142,6 +157,11 @@ public class SystemTapScriptGraphOptionsTab extends
 
 		setGraphingEnabled(false);
 		runWithChartCheckButton.setSelection(false);
+
+		this.graphsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
+		graphsGroup.setText("Graphs:");
+		graphsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		createGraphCreateArea(graphsGroup);
 	}
 
 	protected void createColumnSelector(Composite parent) {
@@ -211,6 +231,116 @@ public class SystemTapScriptGraphOptionsTab extends
 		lblRegEx.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		refreshRegexRows();
+	}
+
+	private IDataSetParser getDatasetParser() {
+		int n;
+		n = this.numberOfColumnsSpinner.getSelection();
+		ArrayList<String> regEx = new ArrayList<String>(n * (COLUMNS - 1));
+		Control[] regExTexts = textFieldsComposite.getChildren();
+		for (int i = 0; i < (n * COLUMNS); i++) {
+			if (i % COLUMNS != 0) {
+				String text = ((Text)regExTexts[i]).getText();
+				regEx.add(text);
+			}
+		}
+
+		return new RowParser(regEx.toArray(new String[] {}));
+	}
+
+	private IDataSet getDataset() {
+		int n = this.numberOfColumnsSpinner.getSelection();
+		ArrayList<String> labels = new ArrayList<String>(n);
+		Control[] regExTexts = textFieldsComposite.getChildren();
+
+		for (int i = 0; i < (n * COLUMNS); i++) {
+			if (i % COLUMNS == 0) {
+				String text = ((Text)regExTexts[i]).getText();
+				labels.add(text);
+			}
+		}
+
+		return DataSetFactory.createDataSet(RowDataSet.ID, labels.toArray(new String[] {}));
+	}
+
+	private void createGraphCreateArea(Composite comp){
+		GridLayout twoColumnsLayout = new GridLayout();
+		comp.setLayout(twoColumnsLayout);
+		twoColumnsLayout.numColumns = 2;
+
+		Composite treeComposite = new Composite(comp, SWT.NONE);
+		GridData layoutData = new GridData(GridData.FILL_BOTH);
+		layoutData.horizontalSpan = 2;
+		treeComposite.setLayoutData(layoutData);
+		GridLayout treeLayout = new GridLayout();
+		treeLayout.numColumns = 2;
+		treeLayout.makeColumnsEqualWidth = false;
+		treeComposite.setLayout(treeLayout);
+
+		treeGraphs = new Tree(treeComposite, SWT.SINGLE | SWT.BORDER);
+		layoutData = new GridData();
+		layoutData.verticalSpan = 3;
+		layoutData.grabExcessHorizontalSpace = true;
+		layoutData.horizontalAlignment = SWT.FILL;
+		treeGraphs.setLayoutData(layoutData);
+
+		// Button to add another graph
+		Composite buttonComposite = new Composite(treeComposite, SWT.None);
+		RowLayout buttonLayout = new RowLayout(SWT.VERTICAL);
+		buttonLayout.pack = false;
+		buttonLayout.marginHeight = 5;
+		buttonComposite.setLayout(buttonLayout);
+		addGraphButton = new Button(buttonComposite, SWT.PUSH);
+		addGraphButton.setText("Add...");
+		addGraphButton.setToolTipText("Add a new graph");
+
+		// Button to remove the selected graph/filter
+		removeGraphButton = new Button(buttonComposite, SWT.PUSH);
+		removeGraphButton.setText("Remove"); //$NON-NLS-1$
+		removeGraphButton.setToolTipText("Remove the selected graph");
+		removeGraphButton.setEnabled(false);
+
+		// Action to notify the buttons when to enable/disable themselves based
+		// on list selection
+		treeGraphs.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selectedTreeItem = (TreeItem) e.item;
+				removeGraphButton.setEnabled(true);
+			}
+		});
+
+		// Brings up a new dialog box when user clicks the add button. Allows
+		// selecting a new graph to display.
+		addGraphButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SelectGraphWizard wizard = new SelectGraphWizard(getDataset());
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				wizard.init(workbench, null);
+				WizardDialog dialog = new WizardDialog(workbench
+						.getActiveWorkbenchWindow().getShell(), wizard);
+				dialog.create();
+				dialog.open();
+
+				GraphData gd = wizard.getGraphData();
+				if (null != gd) {
+					TreeItem item = new TreeItem(treeGraphs, SWT.NONE);
+					item.setText(GraphFactory.getGraphName(gd.graphID) + ":" //$NON-NLS-1$
+							+ gd.title);
+					item.setData(gd);
+				}
+			}
+		});
+
+		// Removes the selected graph/filter from the tree
+		removeGraphButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selectedTreeItem.dispose();
+				removeGraphButton.setEnabled(false);
+			}
+		});
 	}
 
 	private void refreshRegexRows() {
