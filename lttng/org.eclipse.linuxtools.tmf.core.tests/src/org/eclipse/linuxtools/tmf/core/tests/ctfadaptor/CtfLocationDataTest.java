@@ -93,7 +93,7 @@ public class CtfLocationDataTest {
      */
     @Test
     public void testToString() {
-        String expected = "Element [1/0]";
+        String expected = "Element [1/0]"; //$NON-NLS-1$
         assertEquals(expected, fixture.toString());
     }
 }

@@ -34,7 +34,7 @@ public class RequestBenchmark extends TmfEventRequest {
     }
 
     // Path of the trace
-    private static final String TRACE_PATH = "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel";
+    private static final String TRACE_PATH = "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"; //$NON-NLS-1$
 
     // Change this to run several time over the same trace
     private static final int NB_OF_PASS = 100;
@@ -58,7 +58,7 @@ public class RequestBenchmark extends TmfEventRequest {
             traces[0] = new CtfTmfTrace();
             traces[0].initTrace(null, TRACE_PATH, CtfTmfEvent.class);
             /* Create our new experiment */
-            fExperiment = new TmfExperiment(CtfTmfEvent.class, "Headless", traces);
+            fExperiment = new TmfExperiment(CtfTmfEvent.class, "Headless", traces); //$NON-NLS-1$
 
             /*
              * We will issue a request for each "pass". TMF will then process
@@ -103,10 +103,10 @@ public class RequestBenchmark extends TmfEventRequest {
         benchs.add(val);
         if (benchs.size() == NB_OF_PASS) {
             try {
-                System.out.println("Nb events : " + nbEvent2);
+                System.out.println("Nb events : " + nbEvent2); //$NON-NLS-1$
 
                 for (final double value : benchs) {
-                    System.out.print(value + ", ");
+                    System.out.print(value + ", "); //$NON-NLS-1$
                 }
                 fExperiment.sendRequest(null);
 

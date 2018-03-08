@@ -33,7 +33,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
  *
  * @author alexmont
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class VerifyHistoryFile {
 
     // Enter the .ht file name to test here

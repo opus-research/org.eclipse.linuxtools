@@ -39,11 +39,11 @@ public class TraceControlTestFacility {
     public final static int WAIT_FOR_JOBS_DELAY = 1000;
     public final static int GUI_REFESH_DELAY = 500;
 
-    public final static String DIRECTORY = "testfiles";
-    public final static String COMMAND_CATEGORY_PREFIX = "org.eclipse.linuxtools.internal.lttng2.ui.commands.control.";
-    public final static String SCEN_INIT_TEST = "Initialize";
-    public final static String SCEN_SCENARIO_SESSION_HANDLING = "SessionHandling";
-    public final static String SCEN_SCENARIO_SESSION_HANDLING_WITH_PATH = "SessionHandlingWithPath";
+    public final static String DIRECTORY = "testfiles"; //$NON-NLS-1$
+    public final static String COMMAND_CATEGORY_PREFIX = "org.eclipse.linuxtools.internal.lttng2.ui.commands.control."; //$NON-NLS-1$
+    public final static String SCEN_INIT_TEST = "Initialize"; //$NON-NLS-1$
+    public final static String SCEN_SCENARIO_SESSION_HANDLING = "SessionHandling"; //$NON-NLS-1$
+    public final static String SCEN_SCENARIO_SESSION_HANDLING_WITH_PATH = "SessionHandlingWithPath"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -81,7 +81,7 @@ public class TraceControlTestFacility {
                 view = PlatformUI.getWorkbench()
                         .getActiveWorkbenchWindow()
                         .getActivePage()
-                        .findView("org.eclipse.ui.internal.introview");
+                        .findView("org.eclipse.ui.internal.introview"); //$NON-NLS-1$
 
                 if (view != null) {
                     PlatformUI.getWorkbench()
@@ -232,6 +232,7 @@ public class TraceControlTestFacility {
      * @throws NotEnabledException
      * @throws NotHandledException
      */
+    @SuppressWarnings("nls")
     public TraceSessionComponent createSession(ITraceControlComponent group) throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
         executeCommand(group, "createSession");
 
@@ -250,6 +251,7 @@ public class TraceControlTestFacility {
      * @throws NotEnabledException
      * @throws NotHandledException
      */
+    @SuppressWarnings("nls")
     public void destroySession(TraceSessionComponent session) throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
         executeCommand(session, "destroySession");
     }
@@ -262,6 +264,7 @@ public class TraceControlTestFacility {
      * @throws NotEnabledException
      * @throws NotHandledException
      */
+    @SuppressWarnings("nls")
     public void startSession(TraceSessionComponent session) throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
         executeCommand(session, "start");
     }
@@ -274,6 +277,7 @@ public class TraceControlTestFacility {
      * @throws NotEnabledException
      * @throws NotHandledException
      */
+    @SuppressWarnings("nls")
     public void stopSession(TraceSessionComponent session) throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
         executeCommand(session, "stop");
     }

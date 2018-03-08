@@ -57,14 +57,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
-@SuppressWarnings("javadoc")
+@SuppressWarnings({ "javadoc", "nls" })
 public class TsfTraceAnalysisView extends ViewPart implements
         ITimeGraphSelectionListener, ITimeGraphTimeListener, ITimeGraphRangeListener {
 
     // ========================================================================
     // Data
     // ========================================================================
-
     private TreeViewer viewer;
     private DrillDownAdapter drillDownAdapter;
     private Action action1;

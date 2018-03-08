@@ -29,6 +29,7 @@ import org.junit.Test;
  * The class <code>EventInfoTest</code> contains test for the class
  * <code>{@link EventInfo}</code>.
  */
+@SuppressWarnings("nls")
 public class EventInfoTest {
 
     // ------------------------------------------------------------------------

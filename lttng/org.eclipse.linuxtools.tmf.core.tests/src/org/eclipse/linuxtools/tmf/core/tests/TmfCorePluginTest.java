@@ -21,6 +21,7 @@ import org.junit.Test;
 /**
  * Test the TMF core plug-in activator
  */
+@SuppressWarnings("nls")
 public class TmfCorePluginTest {
 
     // ------------------------------------------------------------------------

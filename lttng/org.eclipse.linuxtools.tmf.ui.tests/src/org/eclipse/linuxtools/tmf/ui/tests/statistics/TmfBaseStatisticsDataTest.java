@@ -39,6 +39,7 @@ import org.junit.Test;
 /**
  * TmfBaseStatistics Test Cases.
  */
+@SuppressWarnings("nls")
 public class TmfBaseStatisticsDataTest {
 
     // ------------------------------------------------------------------------

@@ -37,6 +37,7 @@ import org.junit.Test;
 /**
  * TmfTreeContentProvider Test Cases.
  */
+@SuppressWarnings("nls")
 public class TmfTreeContentProviderTest {
 
     // ------------------------------------------------------------------------

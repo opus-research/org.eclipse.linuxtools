@@ -29,6 +29,7 @@ import org.junit.Test;
  * The class <code>ChannelInfoTest</code> contains tests for the class
  * <code>{@link UstProviderInfo}</code>.
  */
+@SuppressWarnings("nls")
 public class UstProviderInfoTest {
 
     // ------------------------------------------------------------------------

@@ -187,9 +187,9 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetEnvValue() {
-        String key = "tracer_name";
+        String key = "tracer_name"; //$NON-NLS-1$
         String result = fixture.getEnvValue(key);
-        assertEquals("\"lttng-modules\"",result);
+        assertEquals("\"lttng-modules\"",result); //$NON-NLS-1$
     }
 
     /**
