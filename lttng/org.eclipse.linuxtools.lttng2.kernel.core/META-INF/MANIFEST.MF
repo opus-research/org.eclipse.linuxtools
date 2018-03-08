@@ -14,5 +14,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.linuxtools.tmf.core;bundle-version="2.0.0"
 Export-Package: org.eclipse.linuxtools.internal.lttng2.kernel.core;x-friends:="org.eclipse.linuxtools.lttng2.kernel.ui",
  org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider;x-internal:=true,
- org.eclipse.linuxtools.lttng2.kernel.core.trace,
- org.eclipse.linuxtools.lttng2.kernel.core.event.matching
+ org.eclipse.linuxtools.lttng2.kernel.core.trace
