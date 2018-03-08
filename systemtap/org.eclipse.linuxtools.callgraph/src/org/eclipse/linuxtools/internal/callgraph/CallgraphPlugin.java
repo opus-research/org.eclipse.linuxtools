@@ -1,35 +1,40 @@
 /*******************************************************************************
- * Copyright (c) 2009 STMicroelectronics.
+ * Copyright (c) 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
- *    Marzia Maugeri <marzia.maugeri@st.com> - initial API and implementation
+ *     Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.dataviewers.charts;
+package org.eclipse.linuxtools.internal.callgraph;
 
+import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class CallgraphPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.dataviewers.charts";
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.callgraph"; //$NON-NLS-1$
 
 	// The shared instance
-	private static Activator plugin;
+	private static CallgraphPlugin plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public Activator() {
+	public CallgraphPlugin() {
 	}
 
 	/*
@@ -40,6 +45,9 @@ public class Activator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		
+		//TODO: Is this too slow?
+		CallGraphConstants.setPluginLocation(getPluginLocation());
 	}
 
 	/*
@@ -57,10 +65,10 @@ public class Activator extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static CallgraphPlugin getDefault() {
 		return plugin;
 	}
-	
+
 	/**
 	 * Returns an image descriptor for the image file at the given
 	 * plug-in relative path
@@ -72,19 +80,18 @@ public class Activator extends AbstractUIPlugin {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 	
-	/**
-	 * Returns an image from the path
-	 * 
-	 * @param path the path
-	 * @return the image
-	 */
-	public static Image getImage(String path) {
-		Image image = plugin.getImageRegistry().get(path);
-		if (image == null) {
-			image = getImageDescriptor(path).createImage();
-			plugin.getImageRegistry().put(path, image);
+	public String getPluginLocation() {
+		Bundle bundle = getBundle();
+
+		URL locationUrl = FileLocator.find(bundle,new Path("/"), null); //$NON-NLS-1$
+		URL fileUrl = null;
+		try {
+			fileUrl = FileLocator.toFileURL(locationUrl);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		return image;
+		return fileUrl.getFile();
+		
 	}
 
 }

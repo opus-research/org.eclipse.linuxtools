@@ -11,20 +11,21 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.editor;
 
+import org.eclipse.ui.IStartup;
+import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class to be used in the desktop.
  */
-public class EditorPlugin extends AbstractUIPlugin {
+public class EditorPlugin extends AbstractUIPlugin implements IStartup {
 
 	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.editor"; //$NON-NLS-1$
 
 	//The shared instance.
 	private static EditorPlugin plugin;
-
+	
 	/**
 	 * The constructor.
 	 */
@@ -66,5 +67,6 @@ public class EditorPlugin extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return AbstractUIPlugin.imageDescriptorFromPlugin(ID, path);
 	}
-
+	
+	public void earlyStartup() {}
 }
