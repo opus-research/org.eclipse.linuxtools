@@ -47,8 +47,4 @@ public class LocalFileProxy implements IRemoteFileProxy {
 		return EFS.getLocalFileSystem().getStore(new Path(path));
 	}
 
-	public URI getRemoteDir() {
-		return null;
-	}
-
 }
