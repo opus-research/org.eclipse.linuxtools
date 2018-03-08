@@ -59,10 +59,8 @@ public class TmfLostEventStatisticsTest {
     public static void setUpClass() {
         try {
             assumeTrue(lostEventsTrace.exists());
-            File htFileTotals = File.createTempFile("stats-test-lostevents-totals", ".ht");
-            File htFileTypes = File.createTempFile("stats-test-lostevents-types", ".ht");
-
-            backend = new TmfStateStatistics(lostEventsTrace.getTrace(), htFileTotals, htFileTypes);
+            File htFile = File.createTempFile("stats-test-lostevents", ".ht");
+            backend = new TmfStateStatistics(lostEventsTrace.getTrace(), htFile);
 
         } catch (IOException e) {
             fail();
@@ -80,6 +78,9 @@ public class TmfLostEventStatisticsTest {
      * Trace end   = 1376592665108210547
      */
 
+    private static final long rangeStart = 1376592664900000000L;
+    private static final long rangeEnd =   1376592665000000000L;
+
     /**
      * Test the total number of "real" events. Make sure the lost events aren't
      * counted in the total.
@@ -96,9 +97,7 @@ public class TmfLostEventStatisticsTest {
      */
     @Test
     public void testLostEventsTotalInRange() {
-        long start = 1376592664900000000L;
-        long end =   1376592665000000000L;
-        long realEventsInRange = backend.getEventsInRange(start, end);
+        long realEventsInRange = backend.getEventsInRange(rangeStart, rangeEnd);
         assertEquals(11209L, realEventsInRange);
     }
 
@@ -117,9 +116,7 @@ public class TmfLostEventStatisticsTest {
      */
     @Test
     public void testLostEventsTypesInRange() {
-        long start = 1376592664900000000L;
-        long end =   1376592665000000000L;
-        Map<String, Long> eventsInRange = backend.getEventTypesInRange(start, end);
+        Map<String, Long> eventsInRange = backend.getEventTypesInRange(rangeStart, rangeEnd);
         long lostEventsInRange = eventsInRange.get(CTFStrings.LOST_EVENT_NAME);
         assertEquals(363494L, lostEventsInRange);
     }
