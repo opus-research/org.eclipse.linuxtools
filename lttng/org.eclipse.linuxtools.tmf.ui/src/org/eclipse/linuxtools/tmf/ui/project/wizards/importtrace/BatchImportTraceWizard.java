@@ -185,7 +185,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         if ((updateFiles(sm, fileName).getSeverity() & IStatus.CANCEL) != 0) {
                             // leaving the if statement as a snippet
                         }
-
                         sm.done();
                     }
                 }
@@ -335,7 +334,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                     }
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError("Error importing trace resource " + resource.getName(), e); //$NON-NLS-1$
+                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
+                        + " " + resource.getName(), e); //$NON-NLS-1$
             }
         }
     }
