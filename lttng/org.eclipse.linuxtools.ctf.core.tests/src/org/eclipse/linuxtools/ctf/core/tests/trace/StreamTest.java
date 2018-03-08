@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.nio.channels.FileChannel;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
@@ -129,7 +129,7 @@ public class StreamTest {
      */
     @Test
     public void testGetEvents() {
-        Map<Long, IEventDeclaration> result = fixture.getEvents();
+        HashMap<Long, IEventDeclaration> result = fixture.getEvents();
         assertNotNull(result);
     }
 
