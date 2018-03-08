@@ -13,7 +13,6 @@
  *   Yuriy Vashchuk - Histogram Canvas Heritage correction
  *   Francois Chouinard - Cleanup and refactoring
  *   Francois Chouinard - Moved from LTTng to TMF
- *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -36,7 +35,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -246,13 +244,6 @@ public class HistogramView extends TmfView {
 
         // Histogram
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
-
-        // Add mouse wheel listener to controls
-        MouseWheelListener listener = fFullTraceHistogram.getZoom();
-        fFullTraceHistogram.addMouseWheelListener(listener);
-        fTimeRangeHistogram.addMouseWheelListener(listener);
-        fCurrentEventTimeControl.addMouseWheelListener(listener);
-        fTimeSpanControl.addMouseWheelListener(listener);
 
         ITmfTrace trace = getActiveTrace();
         if (trace != null) {
@@ -469,6 +460,7 @@ public class HistogramView extends TmfView {
         fTraceEndTime = fullRange.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
         fFullTraceHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
+        fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
 
         sendFullRangeRequest(fullRange);
     }
@@ -488,6 +480,7 @@ public class HistogramView extends TmfView {
         fTraceEndTime = fullRange.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
         fFullTraceHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
+        fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
 
         fFullTraceHistogram.setTimeRange(fTimeRangeHistogram.getStartTime(), fWindowSpan);
         fTimeRangeHistogram.setTimeRange(fTimeRangeHistogram.getStartTime(), fWindowSpan);
@@ -554,6 +547,7 @@ public class HistogramView extends TmfView {
             fTimeRangeRequest.cancel();
         }
         fTimeRangeHistogram.clear();
+        fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
         fTimeRangeHistogram.setTimeRange(startTime, duration);
         fTimeRangeHistogram.setCurrentEvent(timestamp);
 
@@ -616,6 +610,7 @@ public class HistogramView extends TmfView {
         TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
 
         fTimeRangeHistogram.clear();
+        fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
         fTimeRangeHistogram.setTimeRange(startTime, endTime - startTime);
 
         int cacheSize = fTrace.getCacheSize();
