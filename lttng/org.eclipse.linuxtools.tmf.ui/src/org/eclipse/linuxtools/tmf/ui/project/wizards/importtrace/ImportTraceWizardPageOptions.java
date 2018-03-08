@@ -91,6 +91,7 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
                 final String listItem = fProjects.getSelection()[0];
                 IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
                 getBatchWizard().setTraceFolder(folder);
+                ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
 
             @Override
@@ -98,11 +99,16 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
                 final String listItem = fProjects.getSelection()[0];
                 IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
                 getBatchWizard().setTraceFolder(folder);
+                ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
         });
         if( proj != null ){
             getBatchWizard().setTraceFolder(originalFolder);
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
+            this.setErrorMessage(null);
+        }else{
+            this.setErrorMessage(Messages.ImportTraceWizardPageOptions_NoProjectSelected);
+
         }
     }
 

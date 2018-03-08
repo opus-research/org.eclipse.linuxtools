@@ -158,7 +158,6 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         init();
         getBatchWizard().setTracesToScan(fTracesToScan);
-        getBatchWizard().setTraceFolder(fTargetFolder);
         backgroundJob = new Job("Scan job") { //$NON-NLS-1$
 
             @Override
