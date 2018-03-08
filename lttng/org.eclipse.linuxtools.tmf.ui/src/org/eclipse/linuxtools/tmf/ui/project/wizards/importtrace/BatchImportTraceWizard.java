@@ -15,8 +15,6 @@ package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,13 +45,10 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceValidationHelper;
 import org.eclipse.ui.IWorkbench;
@@ -174,6 +169,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      */
     public void removeFile(final String fileName) {
         fParentFiles.remove(fileName);
+        fParentFilesToScan.remove(fileName);
         startUpdateTask(Messages.BatchImportTraceWizard_remove + " " + fileName, null);//$NON-NLS-1$
     }
 
@@ -190,9 +186,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         sm = SubMonitor.convert(monitor);
                         sm.setTaskName(taskName);
                         sm.setWorkRemaining(TOTALWORK);
-                        if ((updateFiles(sm, fileName).getSeverity() & IStatus.CANCEL) != 0) {
-                            // leaving the if statement as a snippet
-                        }
+                        updateFiles(sm, fileName);
                         sm.done();
                     }
                 }
@@ -245,37 +239,17 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             try {
                 if (fLinked) {
                     createLink(fTargetFolder, Path.fromOSString(traceToImport.getFile().getAbsolutePath()), traceToImport.getName());
-                    success= setTraceType(traceToImport).isOK();
+                    success = setTraceType(traceToImport).isOK();
                 }
                 else {
                     List<File> subList = new ArrayList<File>();
-                    IPath path = fTargetFolder.getFullPath();
-                    File parentFile = traceToImport.getFile();
-                    if (parentFile.isFile()) {
-                        subList.add(parentFile);
-                        parentFile = parentFile.getParentFile();
-                    } else {
-                        path = fTargetFolder.getFullPath().append(traceToImport.getName());
-                        File[] fileList = traceToImport.getFile().listFiles();
-                        for (File child : fileList) {
-                            subList.add(child);
-                        }
-                    }
-                    Collections.sort(subList, new Comparator<File>() {
-                        @Override
-                        public int compare(File o1, File o2) {
-                            return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
-                        }
-                    });
-
-                    ImportOperation operation = new ImportOperation(
-                            path,
-                            parentFile,
-                            fileSystemStructureProvider,
-                            overwriteQuery,
+                    subList.add(traceToImport.getFile());
+                    IPath path = fTargetFolder.getFullPath().append(traceToImport.getName());
+                    final File parentFile = traceToImport.getFile().getParentFile();
+                    ImportOperation operation = new ImportOperation(path,
+                            parentFile, fileSystemStructureProvider, overwriteQuery,
                             subList);
                     operation.setContext(getShell());
-                    operation.setCreateContainerStructure(false);
                     if (executeImportOperation(operation)) {
                         setTraceType(traceToImport);
                         success = true;
@@ -314,8 +288,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         }
     }
 
-    private IStatus setTraceType(FileAndName traceToImport) {
-        IStatus validate = Status.OK_STATUS;
+    private void setTraceType(FileAndName traceToImport) {
         IPath path = fTargetFolder.getFullPath().append(traceToImport.getName());
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         if (resource != null) {
@@ -332,25 +305,16 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                     traceIcon = ce.getAttribute(TmfTraceType.ICON_ATTR);
                 }
                 final String traceType = traceTypeId;
-                final boolean startsWithTxt = traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY);
-                final boolean startsWithXML = traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY);
-                if (!traceTypeOK && (startsWithTxt || startsWithXML)) {
+                if (!traceTypeOK &&
+                        (traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY) ||
+                        traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY))) {
                     // do custom trace stuff here
                     traceTypeOK = true;
-                    String traceTypeToken[] = traceType.split(":", 2); //$NON-NLS-1$
-                    if (traceTypeToken.length == 2) {
-                        traceBundle =
-                                Activator.getDefault().getBundle().getSymbolicName();
-                        if (startsWithTxt) {
-                            traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + traceTypeToken[1]; //$NON-NLS-1$
-                        }
-                        else {
-                            traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + traceTypeToken[1]; //$NON-NLS-1$
-                        }
-                        traceIcon = DEFAULT_TRACE_ICON_PATH;
-                    } else {
-                        traceTypeOK = false;
-                    }
+                    traceBundle =
+                            Activator.getDefault().getBundle().getSymbolicName();
+
+                    traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + traceType; //$NON-NLS-1$
+                    traceIcon = DEFAULT_TRACE_ICON_PATH;
                 }
                 if (traceTypeOK) {
                     resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE,
@@ -363,51 +327,18 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 TmfProjectElement tmfProject =
                         TmfProjectRegistry.getProject(resource.getProject());
                 if (tmfProject != null) {
-                    final TmfTraceFolder tracesFolder = tmfProject.getTracesFolder();
-                    tracesFolder.refresh();
-
-                    List<TmfTraceElement> traces = tracesFolder.getTraces();
-                    boolean found = false;
-                    for (TmfTraceElement traceElement : traces) {
+                    for (TmfTraceElement traceElement : tmfProject.getTracesFolder().getTraces()) {
                         if (traceElement.getName().equals(resource.getName())) {
                             traceElement.refreshTraceType();
-                            found = true;
                             break;
                         }
                     }
-                    if (!found) {
-                        TmfTraceElement te = new TmfTraceElement(traceToImport.getName(), resource, tracesFolder);
-                        te.refreshTraceType();
-                        traces = tracesFolder.getTraces();
-                        for (TmfTraceElement traceElement : traces) {
-                            if (traceElement.getName().equals(resource.getName())) {
-                                traceElement.refreshTraceType();
-                                ITmfTrace tmfTrace = null;
-                                try {
-                                    tmfTrace = traceElement.instantiateTrace();
-                                    if (tmfTrace != null) {
-                                        validate = tmfTrace.validate(tmfProject.getResource(), traceElement.getLocation().getPath());
-                                    } else {
-                                        return new Status(IStatus.ERROR, traceElement.getName(), "File does not exist : " + traceElement.getLocation().getPath()); //$NON-NLS-1$
-                                    }
-                                } finally {
-                                    if (tmfTrace != null) {
-                                        tmfTrace.dispose();
-                                    }
-                                }
-                                break;
-                            }
-                        }
-
-                    }
-
                 }
             } catch (CoreException e) {
                 Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
                         + " " + resource.getName(), e); //$NON-NLS-1$
             }
         }
-        return validate;
     }
 
     @Override
@@ -537,6 +468,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     private static void initializeOperation(ImportOperation op) {
         op.setCreateContainerStructure(false);
         op.setOverwriteResources(false);
+        op.setCreateLinks(true);
         op.setVirtualFolders(false);
     }
 
@@ -663,7 +595,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 fParentFilesToScan.add(name);
             }
             IStatus cancelled = updateScanQueue(monitor, filesToScan, traceTypes);
-            if ((cancelled.getSeverity() & IStatus.CANCEL) != 0) {
+            if (cancelled.matches(IStatus.CANCEL)) {
                 fParentFilesToScan.remove(traceToScan);
                 fParentFiles.remove(traceToScan);
             }
@@ -709,7 +641,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
+                    if (retVal.matches(IStatus.CANCEL)) {
                         return retVal;
                     }
                     monitor.worked(step);
@@ -730,7 +662,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
+                    if (retVal.matches(IStatus.CANCEL)) {
                         return retVal;
                     }
                 }
