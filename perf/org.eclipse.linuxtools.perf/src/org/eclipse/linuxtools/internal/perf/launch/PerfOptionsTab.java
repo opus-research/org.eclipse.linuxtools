@@ -253,6 +253,22 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
+	/**
+	 * Toggle enablement of all buttons, excluding the stat button.
+	 * @param enable enablement of buttons
+	 */
+	public void toggleButtonsEnablement(boolean enable) {
+		txtKernelLocation.setEnabled(enable);
+		chkRecordRealtime.setEnabled(enable);
+		chkRecordVerbose.setEnabled(enable);
+		chkSourceLineNumbers.setEnabled(enable);
+		chkKernelSourceLineNumbers.setEnabled(enable);
+		chkMultiplexEvents.setEnabled(enable);
+		chkModuleSymbols.setEnabled(enable);
+		chkHideUnresolvedSymbols.setEnabled(enable);
+		chkShowSourceDisassembly.setEnabled(enable);
+	}
+
 	@Override
 	public String getName() {
 		return "Perf Options";
@@ -279,6 +295,7 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 				statRunCount.setEnabled(false);
 			} else {
 				statRunCount.setEnabled(true);
+				toggleButtonsEnablement(false);
 			}
 		} catch (CoreException e) {
 			// do nothing
@@ -298,6 +315,12 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		wconfig.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, chkShowSourceDisassembly.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_ShowStat, chkShowStat.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_StatRunCount, statRunCount.getSelection());
+
+		if(chkShowStat.getSelection()){
+			toggleButtonsEnablement(false);
+		} else{
+			toggleButtonsEnablement(true);
+		}
 	}
 
 	@Override
