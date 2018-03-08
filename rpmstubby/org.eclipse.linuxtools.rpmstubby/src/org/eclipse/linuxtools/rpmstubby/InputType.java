@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     Alexander Kurtakov - initial API and implementation
- *     Neil Guzman        - python, ruby implementation
+ *     Neil Guzman        - python, ruby, perl implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.rpmstubby;
@@ -25,7 +25,9 @@ public enum InputType {
 	/** Python Egg setup.py file */
 	PYTHON_EGG("setup.py"),
 	/** Ruby *.gemspec file */
-	RUBY_GEM("*.gemspec");
+	RUBY_GEM("*.gemspec"),
+	/** Perl Makefile.PL file */
+	PERL_MAKEFILE("Makefile.PL");
 
 	private String fileNamePattern;
 
