@@ -45,19 +45,19 @@ public class DrawableToolTip implements PaintListener {
     /**
      * The parent control where the tooltip must be drawn
      */
-    private Composite fParent = null;
+    protected Composite fParent = null;
     /**
      * The tooltip shell
      */
-    private Shell fToolTipShell = null;
+    protected Shell fToolTipShell = null;
     /**
      * The Time range data.
      */
-    private TmfTimeRange fMinMaxRange;
+    protected TmfTimeRange fMinMaxRange;
     /**
      * The current time.
      */
-    private ITmfTimestamp fCurrentValue;
+    protected ITmfTimestamp fCurrentValue;
     /**
      * The horizontal margin used for drawing.
      */
@@ -77,11 +77,11 @@ public class DrawableToolTip implements PaintListener {
     /**
      * The text to display
      */
-    private String fMessage;
+    protected String fMessage;
     /**
      * The color array used to represent the 10 time range slices
      */
-    private Color[] fColors;
+    protected Color[] fColors;
 
     // ------------------------------------------------------------------------
     // Constructors

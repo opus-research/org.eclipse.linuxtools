@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
@@ -25,7 +26,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
  * @version 1.0
  * @author sveyrier
  */
-public class OpenSDFiltersDialog extends BaseSDAction {
+public class OpenSDFiltersDialog extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -35,10 +36,18 @@ public class OpenSDFiltersDialog extends BaseSDAction {
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.sdFilters"; //$NON-NLS-1$
 
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /**
+     * The sequence diagram view reference
+     */
+    protected SDView fView;
+
     /**
      * The filter provider reference
      */
-    private final ISDFilterProvider fProvider;
+    protected ISDFilterProvider fProvider;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -52,11 +61,11 @@ public class OpenSDFiltersDialog extends BaseSDAction {
      *            The provider
      */
     public OpenSDFiltersDialog(SDView view, ISDFilterProvider provider) {
-        super(view);
-        setText(Messages.SequenceDiagram_HidePatterns);
+        super(Messages.SequenceDiagram_HidePatterns);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FILTERS));
         setId(ID);
         setToolTipText(Messages.SequenceDiagram_HidePatterns);
+        fView = view;
         fProvider = provider;
     }
 
@@ -66,10 +75,10 @@ public class OpenSDFiltersDialog extends BaseSDAction {
 
     @Override
     public void run() {
-        if (getView() == null) {
+        if (fView == null) {
             return;
         }
-        FilterListDialog dialog = new FilterListDialog(getView(), fProvider);
+        FilterListDialog dialog = new FilterListDialog(fView, fProvider);
         dialog.open();
     }
 }
