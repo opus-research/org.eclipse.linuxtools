@@ -84,7 +84,7 @@ public final class BitBuffer {
     public BitBuffer(ByteBuffer buf, ByteOrder order) {
         setByteBuffer(buf);
         setByteOrder(order);
-        position(0);
+        pos = 0; // avoid the exception
     }
 
     // ------------------------------------------------------------------------
@@ -589,8 +589,14 @@ public final class BitBuffer {
      *
      * @param newPosition
      *            The new position of the buffer.
+     * @throws CTFReaderException
+     *             Thrown on out of bounds exceptions
      */
-    public void position(long newPosition) {
+    public void position(long newPosition) throws CTFReaderException {
+
+        if ((this.buf != null) && (newPosition / 8) > this.buf.capacity()) {
+            throw new CTFReaderException("Out of bounds exception on a position move, attempting to access position: " + newPosition); //$NON-NLS-1$
+        }
         this.pos = newPosition;
     }
 
@@ -631,8 +637,7 @@ public final class BitBuffer {
      * Resets the bitbuffer.
      */
     public void clear() {
-        position(0);
-
+        pos = 0; // avoid the exception
         if (this.buf == null) {
             return;
         }
