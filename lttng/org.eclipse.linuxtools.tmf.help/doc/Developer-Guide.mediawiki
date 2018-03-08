@@ -914,15 +914,17 @@ Received by components that need to be notified of a new trace event count.
 
 ''Purpose''
 
-This signal is used to indicate that a new time has been selected.
+This signal is used to indicate that a new time or time range has been
+selected. It contains a begin and end time. If a single time is selected then
+the begin and end time are the same.
 
 ''Senders''
 
-Sent by any component that allows the user to select a time.
+Sent by any component that allows the user to select a time or time range.
 
 ''Receivers''
 
-Received by any component that needs to be notified of the currently selected time.
+Received by any component that needs to be notified of the currently selected time or time range.
 
 === TmfRangeSynchSignal ===
 
@@ -1262,29 +1264,6 @@ trace.
 
 For an example, you can look at StatsStateProvider in the TMF tree, or at the
 small example below.
-
-==== AbstractTmfMipmapStateProvider ====
-
-AbstractTmfMipmapStateProvider is an abstract provider that allows to add
-features to a specific attribute into the tree. It extends
-AbstractTmfStateProvider.
-If a provider want to add mipmap attributes to its tree, it must extend
-AbstractTmfMipmapStateProvider and call computeMipmapAttribute() in the event
-handler. Then the structure of the tree will be :
-
-<pre>
-|- ParentNode
-|    |- AttributeNode
-|    |   |- mipmapFeatureNameNbLevel
-|    |   |   |- mipmapFeatureName1
-|    |   |   |- mipmapFeatureName2
-|    |   |   |- mipmapFeatureName3
-|    |   |   |   ...
-|   ...
-</pre>
-
-the state system explorer view will show: <br>
-[[Image:images/mipmapSSE.png]]<br>
 
 ==== TmfStateSystemFactory ====
 

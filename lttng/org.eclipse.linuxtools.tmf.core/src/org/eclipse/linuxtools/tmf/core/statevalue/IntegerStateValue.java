@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 /**
  * A state value containing a simple integer.
  *
@@ -48,28 +46,18 @@ final class IntegerStateValue extends TmfStateValue {
         return String.format("%3d", valueInt); //$NON-NLS-1$
     }
 
+    // ------------------------------------------------------------------------
+    // Unboxing methods
+    // ------------------------------------------------------------------------
+
     @Override
-    public int compareTo(ITmfStateValue value) {
-        if (value.getType() == Type.NULL) {
-            return 0;
-        }
-        try {
-            return Integer.valueOf(this.unboxInt()).compareTo(Integer.valueOf(value.unboxInt()));
-        } catch (StateValueTypeException e) {
-            return 0;
-        }
+    public int unboxInt() {
+        return valueInt;
     }
 
     @Override
-    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
-        if (val.getType() == Type.NULL) {
-            throw new StateValueTypeException();
-        }
-        return TmfStateValue.newValueInt(valueInt + val.unboxInt());
-    }
-
-    @Override
-    public ITmfStateValue increment() throws StateValueTypeException {
-        return TmfStateValue.newValueInt(valueInt + 1);
+    public long unboxLong() {
+        /* It's always safe to up-cast a int into a long */
+        return valueInt;
     }
 }

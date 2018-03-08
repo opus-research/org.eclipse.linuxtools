@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.tests.project.model;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +19,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
@@ -42,7 +41,7 @@ public class ProjectModelTraceTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
+        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
         try {
             fixture = ProjectModelTestData.getFilledProject();
         } catch (CoreException e) {
@@ -94,8 +93,8 @@ public class ProjectModelTraceTest {
 
         ITmfTrace trace2 = TmfTraceManager.getInstance().getActiveTrace();
 
-        /* The trace was reopened, it is not the same as before */
-        assertFalse(trace2 == trace);
+        /* The trace was reopened, it should be the same as before */
+        assertTrue(trace2 == trace);
 
         /* Here, the getTrace() should return the same as active trace */
         trace = traceElement.getTrace();
