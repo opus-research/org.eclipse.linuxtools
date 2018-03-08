@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
+import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpUnitMask;
@@ -56,7 +57,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
 public abstract class AbstractEventConfigTab extends
-		AbstractLaunchConfigurationTab {
+AbstractLaunchConfigurationTab {
 	private static final String EMPTY_STRING = "";
 	protected Button defaultEventCheck;
 	protected OprofileCounter[] counters = null;
@@ -80,7 +81,7 @@ public abstract class AbstractEventConfigTab extends
 	 * @param top
 	 */
 	private void createCounterTabs(Composite top){
-			//tabs for each of the counters
+		//tabs for each of the counters
 		counters = getOprofileCounters(null);
 		TabItem[] counterTabs = new TabItem[counters.length];
 		counterSubTabs = new CounterSubTab[counters.length];
@@ -145,12 +146,14 @@ public abstract class AbstractEventConfigTab extends
 		IProject project = getProject(config);
 		setOprofileProject(project);
 
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
 			if(!hasPermissions(project)){
 				OpcontrolException e = new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null));
 				OprofileCorePlugin.showErrorDialog("opcontrolProvider", e); //$NON-NLS-1$
 				createTimerModeTab(top);
 				return;
 			}
+		}
 		updateOprofileInfo();
 
 		String previousHost = null;
@@ -200,14 +203,14 @@ public abstract class AbstractEventConfigTab extends
 		}
 
 		if(!getOprofileTimerMode()){
-				for (int i = 0; i < counters.length; i++) {
-					counters[i].loadConfiguration(config);
-				}
+			for (int i = 0; i < counters.length; i++) {
+				counters[i].loadConfiguration(config);
+			}
 
-				for (CounterSubTab tab : counterSubTabs) {
-					tab.initializeTab(config);
-					tab.createEventsFilter();
-				}
+			for (CounterSubTab tab : counterSubTabs) {
+				tab.initializeTab(config);
+				tab.createEventsFilter();
+			}
 			try{
 				boolean enabledState = config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
 				defaultEventCheck.setSelection(enabledState);
@@ -226,8 +229,10 @@ public abstract class AbstractEventConfigTab extends
 		IProject project = getProject(config);
 		setOprofileProject(project);
 
-		if(!hasPermissions(project)){
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+			if(!hasPermissions(project)){
 				return false;
+			}
 		}
 
 		if (getOprofileTimerMode()) {
@@ -300,8 +305,10 @@ public abstract class AbstractEventConfigTab extends
 	 */
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		IProject project = getProject(config);
-		if (!hasPermissions(project)) {
-			return;
+		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+			if (!hasPermissions(project)) {
+				return;
+			}
 		}
 		if (getOprofileTimerMode()) {
 			config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, true);
@@ -322,8 +329,10 @@ public abstract class AbstractEventConfigTab extends
 		IProject project = getProject(config);
 		setOprofileProject(project);
 		if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
-			if(!hasPermissions(project)){
-				return;
+			if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+				if(!hasPermissions(project)){
+					return;
+				}
 			}
 		}
 
