@@ -13,8 +13,7 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.Collection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -183,15 +182,24 @@ public interface ITmfTrace extends ITmfDataProvider {
     public ITmfStatistics getStatistics();
 
     /**
-     * Return the map of state systems associated with this trace.
+     * Retrieve a state system that belongs to this trace
      *
-     * This view should be read-only (implementations should use
-     * {@link Collections#unmodifiableMap}).
-     *
-     * @return The map of state systems
+     * @param id
+     *            The ID of the state system to retrieve.
+     * @return The state system that is associated with this trace and ID, or
+     *         'null' if such a match doesn't exist.
      * @since 2.0
      */
-    public Map<String, ITmfStateSystem> getStateSystems();
+    public ITmfStateSystem getStateSystem(String id);
+
+    /**
+     * Return the list of existing state systems registered with this trace.
+     *
+     * @return A Collection view of the available state systems. The collection
+     *         could be empty, but should not be null.
+     * @since 2.0
+     */
+    public Collection<String> listStateSystems();
 
     /**
      * If a state system is not build by the trace itself, it's possible to
