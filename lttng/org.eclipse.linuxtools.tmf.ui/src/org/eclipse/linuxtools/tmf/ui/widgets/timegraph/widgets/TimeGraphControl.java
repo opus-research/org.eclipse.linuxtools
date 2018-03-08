@@ -33,7 +33,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphColorListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
@@ -81,10 +80,8 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl
-        implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener,
-        ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider,
-        MenuDetectListener, ITmfTimeGraphDrawingHelper, ITimeGraphColorListener {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
+
 
     /** Max scrollbar size */
     public static final int H_SCROLLBAR_MAX = Integer.MAX_VALUE - 1;
@@ -232,11 +229,22 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
         if (timeGraphProvider instanceof ITimeGraphPresentationProvider2) {
             ((ITimeGraphPresentationProvider2) timeGraphProvider).setDrawingHelper(this);
-            ((ITimeGraphPresentationProvider2) timeGraphProvider).addColorListener(this);
         }
 
+        if (fEventColorMap != null) {
+            for (Color color : fEventColorMap) {
+                fResourceManager.destroyColor(color.getRGB());
+            }
+        }
         StateItem[] stateItems = fTimeGraphProvider.getStateTable();
-        colorSettingsChanged(stateItems);
+        if (stateItems != null) {
+            fEventColorMap = new Color[stateItems.length];
+            for (int i = 0; i < stateItems.length; i++) {
+                fEventColorMap[i] = fResourceManager.createColor(stateItems[i].getStateColor());
+            }
+        } else {
+            fEventColorMap = new Color[] { };
+        }
     }
 
     /**
@@ -1471,13 +1479,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
         int x0 = getXForTime(event.getTime());
         int x1 = getXForTime(event.getTime() + event.getDuration());
-
-        // limit the x-coordinates to prevent integer overflow in calculations
-        // and also GC.drawLine doesn't draw properly with large coordinates
-        final int limit = Integer.MAX_VALUE / 1024;
-        x0 = Math.max(-limit, Math.min(x0, limit));
-        x1 = Math.max(-limit, Math.min(x1, limit));
-
         int y0 = src.y + src.height / 2;
         int y1 = dst.y + dst.height / 2;
         drawArrow(getColorScheme(), event, new Rectangle(x0, y0, x1 - x0, y1 - y0), gc);
@@ -1539,8 +1540,8 @@ public class TimeGraphControl extends TimeGraphBaseControl
         int factor = 10;
         double cos = 0.9510;
         double sin = 0.3090;
-        long lenx = x1 - x0;
-        long leny = y1 - y0;
+        int lenx = x1 - x0;
+        int leny = y1 - y0;
         double len = Math.sqrt(lenx * lenx + leny * leny);
 
         double dx = factor * lenx / len;
@@ -1917,8 +1918,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
     }
 
     private void updateStatusLine(int x) {
-        if (fStatusLineManager == null || null == fTimeProvider ||
-                fTimeProvider.getTime0() == fTimeProvider.getTime1()) {
+        if (fStatusLineManager == null) {
             return;
         }
         StringBuilder message = new StringBuilder();
@@ -2032,9 +2032,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
     @Override
     public void mouseDown(MouseEvent e) {
-        if (fDragState != DRAG_NONE || null == fTimeProvider ||
-                fTimeProvider.getTime0() == fTimeProvider.getTime1() ||
-                getCtrlSize().x - fTimeProvider.getNameSpace() <= 0) {
+        if (fDragState != DRAG_NONE || null == fTimeProvider) {
             return;
         }
         int idx;
@@ -2120,6 +2118,9 @@ public class TimeGraphControl extends TimeGraphBaseControl
                 updateCursor(e.x, e.stateMask);
             }
         } else if (3 == e.button) {
+            if (fTimeProvider.getTime0() == fTimeProvider.getTime1() || getCtrlSize().x - fTimeProvider.getNameSpace() <= 0) {
+                return;
+            }
             setCapture(true);
             fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), getCtrlSize().x - RIGHT_MARGIN);
             fDragX0 = fDragX;
@@ -2408,28 +2409,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
      */
     public void removeFilter(ViewerFilter filter) {
         fFilters.remove(filter);
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public void colorSettingsChanged(StateItem[] stateItems) {
-        /* Destroy previous colors from the resource manager */
-        if (fEventColorMap != null) {
-            for (Color color : fEventColorMap) {
-                fResourceManager.destroyColor(color.getRGB());
-            }
-        }
-        if (stateItems != null) {
-            fEventColorMap = new Color[stateItems.length];
-            for (int i = 0; i < stateItems.length; i++) {
-                fEventColorMap[i] = fResourceManager.createColor(stateItems[i].getStateColor());
-            }
-        } else {
-            fEventColorMap = new Color[] { };
-        }
-        redraw();
     }
 
     private class ItemData {

@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF enum definition.
@@ -103,8 +102,10 @@ public class EnumDefinition extends SimpleDatatypeDefinition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
-        alignRead(input, this.declaration);
+    public void read(BitBuffer input) {
+        int align = (int) declaration.getAlignment();
+        int pos = input.position() + ((align-(input.position() % align))%align);
+        input.position(pos);
         integerValue.read(input);
         long val = integerValue.getValue();
 

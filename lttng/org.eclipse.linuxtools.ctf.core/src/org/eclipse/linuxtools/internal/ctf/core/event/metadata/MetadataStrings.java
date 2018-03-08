@@ -103,9 +103,9 @@ public interface MetadataStrings {
     static final String TRUE2 = "TRUE";
     /** True */
     static final String TRUE = "true";
-    /** Minor (Version)*/
+    /** Minor (Vresion)*/
     static final String MINOR = "minor";
-    /** Major (Version)*/
+    /** Major (Vresion)*/
     static final String MAJOR = "major";
 
 }

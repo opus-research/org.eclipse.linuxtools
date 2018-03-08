@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
@@ -450,9 +450,8 @@ public class TmfStatisticsViewer extends TmfViewer {
      *
      * @param request
      *            The request to be canceled
-     * @since 3.0
      */
-    protected void cancelOngoingRequest(ITmfEventRequest request) {
+    protected void cancelOngoingRequest(ITmfDataRequest request) {
         if (request != null && !request.isCompleted()) {
             request.cancel();
         }

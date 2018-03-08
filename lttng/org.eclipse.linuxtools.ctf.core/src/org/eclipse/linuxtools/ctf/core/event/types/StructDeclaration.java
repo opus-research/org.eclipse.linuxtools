@@ -116,6 +116,9 @@ public class StructDeclaration implements IDeclaration {
         this.fields.put(name, declaration);
         this.fieldsList.add(name);
         maxAlign = Math.max(maxAlign, declaration.getAlignment());
+        if (maxAlign == 1) {
+            maxAlign = 1;
+        }
     }
 
     @Override

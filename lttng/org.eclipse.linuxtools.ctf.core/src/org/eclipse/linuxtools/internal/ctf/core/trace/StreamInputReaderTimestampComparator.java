@@ -15,9 +15,8 @@ package org.eclipse.linuxtools.internal.ctf.core.trace;
 import java.io.Serializable;
 import java.util.Comparator;
 
-import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
-import org.eclipse.linuxtools.ctf.core.trace.Utils;
+
 
 /**
  * <b><u>StreamInputReaderTimestampComparator</u></b>
@@ -37,19 +36,25 @@ public class StreamInputReaderTimestampComparator implements
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @throws NullPointerException
-     *             If any {@link StreamInputReader} parameter is null, of if any
-     *             of them does not contain a current event.
-     */
     @Override
     public int compare(StreamInputReader a, StreamInputReader b) {
-        EventDefinition event_a = a.getCurrentEvent();
-        EventDefinition event_b = b.getCurrentEvent();
+        // TODO: use unsigned comparison to avoid sign errors if needed
+        if (a.getCurrentEvent() == null) {
+            return 0;
+        }
+        if (b.getCurrentEvent() == null) {
+            return 0;
+        }
+        long ta = a.getCurrentEvent().getTimestamp();
+        long tb = b.getCurrentEvent().getTimestamp();
 
-        long ta = event_a.getTimestamp();
-        long tb = event_b.getTimestamp();
-        return Utils.unsignedCompare(ta, tb);
+        if (ta < tb) {
+            return -1;
+        } else if (ta > tb) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
 }

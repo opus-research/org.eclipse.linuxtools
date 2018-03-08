@@ -10,10 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -153,8 +150,8 @@ public class CovView extends AbstractSTDataView {
         });
     }
 
-    public static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
-        String viewText = NLS.bind(Messages.CovView_view_title, new Object[] { title, binaryPath, timestamp });
+    public static void setCovViewTitle(CovView view, String title, String binaryPath) {
+        String viewText = NLS.bind(Messages.CovView_view_title, new Object[] { title, binaryPath });
         view.label.setText(viewText);
         view.label.getParent().layout(true);
     }
@@ -169,7 +166,7 @@ public class CovView extends AbstractSTDataView {
 
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
-            List<String> gcdaPaths = new LinkedList<>();
+            List<String> gcdaPaths = new LinkedList<String>();
             gcdaPaths.add(gcdaFile);
             cvrgeMnger.processCovFiles(gcdaPaths, gcdaFile);
             // generate model for view
@@ -178,7 +175,9 @@ public class CovView extends AbstractSTDataView {
             for (SourceFile sf : cvrgeMnger.getSourceMap().values()) {
                 OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project, binary, sf, 0);
             }
-        } catch (CoreException|IOException e) {
+        } catch (CoreException e) {
+            reportError(e);
+        } catch (IOException e) {
             reportError(e);
         }
     }
@@ -198,18 +197,13 @@ public class CovView extends AbstractSTDataView {
             // generate model for view
             cvrgeMnger.fillGcovView();
             // load an Eclipse view
-            Date date = new Date(0);
-            Date dateCandidate;
-            for (String file : gcdaPaths) {
-                dateCandidate = new Date(new File(file).lastModified());
-                if (dateCandidate.after(date)) {
-                    date = dateCandidate;
-                }
-            }
-            String timestamp = DateFormat.getInstance().format(date);
-            CovView cvrgeView = displayCovResults(cvrgeMnger, timestamp);
+            CovView cvrgeView = displayCovResults(cvrgeMnger);
             return cvrgeView;
-        } catch (InterruptedException|IOException|CoreException e) {
+        } catch (InterruptedException e) {
+            reportError(e);
+        } catch (IOException e) {
+            reportError(e);
+        } catch (CoreException e) {
             reportError(e);
         }
         return null;
@@ -233,7 +227,7 @@ public class CovView extends AbstractSTDataView {
      * Used by Test engine and OpenSerAction
      * @param cvrgeMnger
      */
-    public static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
+    public static CovView displayCovResults(CovManager cvrgeMnger) throws PartInitException {
         // load an Eclipse view
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
@@ -241,7 +235,7 @@ public class CovView extends AbstractSTDataView {
 
         // view title
         CovView.setCovViewTitle(cvrgeView, Integer.toString((int) cvrgeMnger.getNbrPgmRuns()),
-                cvrgeMnger.getBinaryPath(), timestamp);
+                cvrgeMnger.getBinaryPath());
 
         // load the controller
         cvrgeView.setInput(cvrgeMnger);

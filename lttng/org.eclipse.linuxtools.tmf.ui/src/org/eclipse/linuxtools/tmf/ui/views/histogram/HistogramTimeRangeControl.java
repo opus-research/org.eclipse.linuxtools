@@ -72,9 +72,6 @@ public class HistogramTimeRangeControl extends HistogramTextControl {
         long value = getValue();
         try {
             value = TmfTimestampFormat.getDefaulIntervalFormat().parseValue(string);
-            if (value < 1) {
-                value = getValue();
-            }
         } catch (ParseException e) {
         }
         if (getValue() != value) {

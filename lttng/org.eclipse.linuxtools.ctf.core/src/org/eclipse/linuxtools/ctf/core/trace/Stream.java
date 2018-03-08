@@ -86,6 +86,7 @@ public class Stream {
      */
     public void setId(long id) {
         this.id = id;
+        this.events = trace.createEvents(this.id);
     }
 
     /**

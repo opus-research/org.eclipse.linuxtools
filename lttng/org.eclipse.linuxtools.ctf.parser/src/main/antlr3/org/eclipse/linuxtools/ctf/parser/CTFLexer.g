@@ -1,17 +1,17 @@
 lexer grammar CTFLexer;
 
 options {
-    language = Java;
+  language = Java;
 }
 
 @lexer::header {
-    package org.eclipse.linuxtools.ctf.parser;
+ package org.eclipse.linuxtools.ctf.parser;
 }
 
 /*
- * Lexer tokens
+ * Lexer grammers 
  */
-
+ 
 /*
  * Keywords
  */
@@ -43,14 +43,13 @@ IMAGINARYTOK     : '_Imaginary' ;
 ENVTOK           : 'env' ;
 CLOCKTOK         : 'clock' ;
 /*
- * Callsite tokens (CTF v1.9)
+ * Callsite tokens (v1.9)
  */
 CALLSITETOK      : 'callsite' ;
 
 
 /*
- * These tokens are not part of the CTF standard.
- * There are planned to be in CTF v1.9
+ * Spec still to come.
  */
 NANNUMBERTOK  : 'NaN' ;
 INFINITYTOK   : '+inf' ;
@@ -79,48 +78,59 @@ ARROW              : '->' ;
 DOT                : '.' ;
 fragment BACKSLASH : '\\' ;
 
-/* Helpers for integer literals */
-fragment DIGIT : '0'..'9' ;
-fragment OCT_DIGIT : '0'..'7' ;
-fragment OCT_PREFIX : '0' ;
-fragment NONZERO_DIGIT : '1'..'9' ;
-fragment HEX_DIGIT : DIGIT | ('a'..'f') | ('A'..'F') ;
-fragment HEX_PREFIX : '0' ('x' | 'X') ;
+/*
+ * Boolean literals
+ * - We better leave them as identifiers and numbers...
+ */
+/*TRUE  : 'true'  | 'TRUE' ;
+FALSE : 'false' | 'FALSE' ;
+ZERO  : '0' ;
+ONE   : '1' ;*/
+
 
 /*
  * Integer literals
  */
-OCTAL_LITERAL : OCT_PREFIX (OCT_DIGIT)+ INTEGER_TYPES_SUFFIX? ;
+OCTAL_LITERAL : '0' ('0'..'7')+ INTEGER_TYPES_SUFFIX? ;
+
 DECIMAL_LITERAL : DIGIT+ INTEGER_TYPES_SUFFIX? ;
+
 HEX_LITERAL : HEX_PREFIX HEX_DIGIT+ INTEGER_TYPES_SUFFIX? ;
+fragment HEX_DIGIT : DIGIT | ('a'..'f') | ('A'..'F') ;
+fragment HEX_PREFIX : '0' ('x' | 'X') ;
+
+/* Helpers for integer literals */
+fragment DIGIT : '0'..'9' ;
+fragment NONZERO_DIGIT : '1'..'9' ;
+
 
 /**
  * Integer suffix for long, long long and unsigned.
  *
  * Matches all possible combination of L, LL and U.
- */
-fragment INTEGER_TYPES_SUFFIX
-  : ('l' ('l')? | 'L' ('L')?)             // l, ll
-  | ('u' | 'U')                           // u
-  | ('u' | 'U') ('l' ('l')? | 'L' ('L')?) // ul, ull
-  | ('l' ('l')? | 'L' ('L')?) ('u'| 'U')  // lu, llu
-  ;
+ */ 
+fragment INTEGER_TYPES_SUFFIX :
+	  ('l' ('l')? | 'L' ('L')?)             // l, ll
+	| ('u' | 'U')                           // u
+	| ('u' | 'U') ('l' ('l')? | 'L' ('L')?) // ul, ull 
+	| ('l' ('l')? | 'L' ('L')?) ('u'| 'U')  // lu, llu
+	;
 
 /**
  * Escape sequences
  */
-fragment ESCAPE_SEQUENCE
-  : BACKSLASH ('\'' | '"' | '?' | BACKSLASH | 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' )
-  | OCTAL_ESCAPE
-  | UNICODE_ESCAPE
-  | HEXADECIMAL_ESCAPE
-    ;
+fragment ESCAPE_SEQUENCE :
+	  BACKSLASH ('\'' | '"' | '?' | BACKSLASH | 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' )
+	| OCTAL_ESCAPE
+	| UNICODE_ESCAPE
+	| HEXADECIMAL_ESCAPE
+	;
 
 /**
  * Octal escape sequence
  */
-fragment OCTAL_ESCAPE
-  : BACKSLASH ('0'..'3') ('0'..'7') ('0'..'7')
+fragment OCTAL_ESCAPE :
+    BACKSLASH ('0'..'3') ('0'..'7') ('0'..'7')
   | BACKSLASH ('0'..'7') ('0'..'7')
   | BACKSLASH ('0'..'7')
   ;
@@ -133,8 +143,8 @@ fragment HEXADECIMAL_ESCAPE : BACKSLASH 'x' HEX_DIGIT+ ;
 /**
  * Unicode escape sequence
  */
-fragment UNICODE_ESCAPE
-  : BACKSLASH 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
+fragment UNICODE_ESCAPE :
+    BACKSLASH 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
   | BACKSLASH 'U' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
   ;
 
@@ -159,13 +169,13 @@ fragment DOUBLEQUOTE : '"' ;
 /**
  * Whitespaces
  */
-WS : (' ' | '\r' | '\t' | '\u000C' | '\n') { $channel = HIDDEN; } ;
+WS : (' ' | '\r' | '\t' | '\u000C' | '\n') { $channel=HIDDEN; } ;
 
 /**
  * Multiline comment
- */
+ */ 
 // About the greedy option: see page 100-101 of The Definitive ANTLR reference
-// COMMENT : '/*' ( options { greedy = false; } : . )* '*/' { $channel = HIDDEN; } ;
+// COMMENT : '/*' ( options {greedy=false;} : . )* '*/' {$channel=HIDDEN;} ;
 COMMENT : COMMENT_OPEN .* COMMENT_CLOSE { $channel = HIDDEN; } ;
 fragment COMMENT_OPEN : '/*';
 fragment COMMENT_CLOSE : '*/';
@@ -173,7 +183,7 @@ fragment COMMENT_CLOSE : '*/';
 /**
  * Single line comment
  */
-LINE_COMMENT : '//' ~('\n')* '\n' { $channel = HIDDEN; } ;
+LINE_COMMENT : '//' ~('\n'|'\r')* '\r'? '\n' {$channel=HIDDEN;} ;
 
 /**
  * Identifiers

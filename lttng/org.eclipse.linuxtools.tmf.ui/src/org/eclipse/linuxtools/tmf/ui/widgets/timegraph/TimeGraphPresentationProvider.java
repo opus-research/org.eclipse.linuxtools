@@ -14,8 +14,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
@@ -37,9 +35,6 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
 
     private ITmfTimeGraphDrawingHelper fDrawingHelper;
     private final String fStateTypeName;
-
-    // The list of listeners for graph color changes
-    private final List<ITimeGraphColorListener> fListeners = new ArrayList<ITimeGraphColorListener>();
 
     // ------------------------------------------------------------------------
     // Constants
@@ -148,42 +143,6 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
     @Override
     public Map<String, String> getEventHoverToolTipInfo(ITimeEvent event, long hoverTime) {
         return getEventHoverToolTipInfo(event);
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public boolean displayTimesInTooltip() {
-        return true;
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public void addColorListener(ITimeGraphColorListener listener) {
-        if (!fListeners.contains(listener)) {
-            fListeners.add(listener);
-        }
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public void removeColorListener(ITimeGraphColorListener listener) {
-        fListeners.remove(listener);
-    }
-
-    /**
-     * Notifies listeners of the state table change
-     * @since 3.0
-     */
-    protected void fireColorSettingsChanged() {
-        for (ITimeGraphColorListener listener : fListeners) {
-            listener.colorSettingsChanged(getStateTable());
-        }
     }
 
 }

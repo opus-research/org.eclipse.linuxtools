@@ -23,8 +23,8 @@ public class SourceFile implements Serializable {
 	private static final long serialVersionUID = -9182882194956475711L;
 	private final String name;
 	private final int index;
-	private final ArrayList<Line> lines = new ArrayList<>();
-	private final TreeSet<GcnoFunction> fnctns = new TreeSet<>();
+	private final ArrayList<Line> lines = new ArrayList<Line>();
+	private final TreeSet<GcnoFunction> fnctns = new TreeSet<GcnoFunction>();
 	private int numLines = 1;
 	private final CoverageInfo cvrge = new CoverageInfo();
 	private long maxCount = -1;
@@ -42,9 +42,8 @@ public class SourceFile implements Serializable {
 		for (Line line : lines) {
 			if (line.exists()) {
 				cvrge.incLinesInstrumented();
-				if (line.getCount() != 0) {
+				if (line.getCount() != 0)
 					cvrge.incLinesExecuted();
-				}
 			}
 		}
 	}
@@ -52,9 +51,8 @@ public class SourceFile implements Serializable {
 	public long getmaxLineCount() {
 		if (maxCount < 0) {
 			for (Line line : lines) {
-				if (line.getCount() > maxCount) {
+				if (line.getCount() > maxCount)
 					maxCount = line.getCount();
-				}
 			}
 		}
 		return maxCount;
@@ -103,7 +101,7 @@ public class SourceFile implements Serializable {
 	public void createLines() {
 		int n = getNumLines();
 		lines.ensureCapacity(n);
-		for (int j = 0; j < n; j++) {
+		for (int j = 0; j<n ; j++) {
 			lines.add(new Line());
 		}
 	}

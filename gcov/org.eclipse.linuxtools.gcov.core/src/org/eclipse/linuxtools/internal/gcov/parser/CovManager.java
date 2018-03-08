@@ -58,10 +58,10 @@ public class CovManager implements Serializable {
     // input
     private final String binaryPath;
     // results
-    private final ArrayList<Folder> allFolders = new ArrayList<>();
-    private final ArrayList<SourceFile> allSrcs = new ArrayList<>();
-    private final ArrayList<GcnoFunction> allFnctns = new ArrayList<>();
-    private final HashMap<String, SourceFile> sourceMap = new HashMap<>();
+    private final ArrayList<Folder> allFolders = new ArrayList<Folder>();
+    private final ArrayList<SourceFile> allSrcs = new ArrayList<SourceFile>();
+    private final ArrayList<GcnoFunction> allFnctns = new ArrayList<GcnoFunction>();
+    private final HashMap<String, SourceFile> sourceMap = new HashMap<String, SourceFile>();
     private long nbrPgmRuns = 0;
     // for view
     private CovRootTreeElement rootNode;
@@ -98,7 +98,7 @@ public class CovManager implements Serializable {
         GcdaRecordsParser daRcrd = null;
         DataInput traceFile;
 
-        Map<File, File> sourcePath = new HashMap<>();
+        Map<File, File> sourcePath = new HashMap<File, File>();
 
         if (initialGcda != null) {
             File initialGcdaFile = new File(initialGcda).getAbsoluteFile();
@@ -121,9 +121,8 @@ public class CovManager implements Serializable {
             String gcnoPath = gcdaPath.replace(".gcda", ".gcno"); //$NON-NLS-1$ //$NON-NLS-2$
             // parse GCNO file
             traceFile = OpenTraceFileStream(gcnoPath, ".gcno", sourcePath); //$NON-NLS-1$
-            if (traceFile == null) {
+            if (traceFile == null)
                 return;
-            }
             GcnoRecordsParser noRcrd = new GcnoRecordsParser(sourceMap, allSrcs);
             noRcrd.parseData(traceFile);
 
@@ -133,9 +132,8 @@ public class CovManager implements Serializable {
             }
 
             // close the input stream
-            if (traceFile.getClass() == DataInputStream.class) {
+            if (traceFile.getClass() == DataInputStream.class)
                 ((DataInputStream) traceFile).close();
-            }
 
             // parse GCDA file
             traceFile = OpenTraceFileStream(gcdaPath, ".gcda", sourcePath); //$NON-NLS-1$
@@ -150,9 +148,8 @@ public class CovManager implements Serializable {
             daRcrd.parseGcdaRecord(traceFile);
 
             // close the input stream
-            if (traceFile.getClass() == DataInputStream.class) {
+            if (traceFile.getClass() == DataInputStream.class)
                 ((DataInputStream) traceFile).close();
-            }
         }
 
         // to fill the view title
@@ -190,9 +187,8 @@ public class CovManager implements Serializable {
                 folderName = "?"; //$NON-NLS-1$
             Folder folder = null;
             for (Folder f : allFolders) {
-                if (f.getPath().equals(folderName)) {
+                if (f.getPath().equals(folderName))
                     folder = f;
-                }
             }
             if (folder == null) {
                 folder = new Folder(folderName);
@@ -262,17 +258,14 @@ public class CovManager implements Serializable {
             String postfix = ""; //$NON-NLS-1$
             File dir = null;
             do {
-                if (postfix.isEmpty()) {
-                	postfix = f.getName();
-                } else {
-                	postfix = f.getName() + File.separator + postfix;
-                }
+                if ("".equals(postfix))postfix = f.getName(); //$NON-NLS-1$
+                else
+                    postfix = f.getName() + File.separator + postfix;
                 f = f.getParentFile();
                 if (f != null) {
                     dir = sourcePath.get(f);
-                } else {
+                } else
                     break;
-                }
             } while (dir == null);
 
             if (dir != null) {
@@ -288,9 +281,9 @@ public class CovManager implements Serializable {
             fg.setFileName(filename);
             fg.setText(NLS.bind(Messages.CovManager_No_FilePath_Error, new Object[] { filePath, filename }));
             String s = fg.open();
-            if (s == null) {
-            	return null;
-            } else {
+            if (s == null)
+                return null;
+            else {
                 f = new File(s).getAbsoluteFile();
                 addSourceLookup(sourcePath, f, new File(filePath).getAbsoluteFile());
                 if (f.isFile() && f.canRead()) {
@@ -335,7 +328,7 @@ public class CovManager implements Serializable {
     public List<String> getGCDALocations() throws InterruptedException {
         IBinaryObject binaryObject = STSymbolManager.sharedInstance.getBinaryObject(new Path(binaryPath));
         String binaryPath = binaryObject.getPath().toOSString();
-        List<String> l = new LinkedList<>();
+        List<String> l = new LinkedList<String>();
         Process p;
         p = getStringsProcess(Messages.CovManager_Strings, binaryPath);
         if (p == null) {
@@ -353,8 +346,9 @@ public class CovManager implements Serializable {
 
     private Process getStringsProcess(String stringsTool, String binaryPath) {
         try {
-            return Runtime.getRuntime().exec(new String[] { stringsTool, binaryPath });
-        } catch (IOException e) {
+            Process p = Runtime.getRuntime().exec(new String[] { stringsTool, binaryPath });
+            return p;
+        } catch (Exception _) {
             return null;
         }
     }
@@ -373,7 +367,7 @@ public class CovManager implements Serializable {
         public void run() {
             try {
                 populateGCDAFiles(p.getInputStream());
-            } catch (IOException e) {
+            } catch (Exception _) {
             }
         }
 
@@ -394,9 +388,8 @@ public class CovManager implements Serializable {
                     IPath p = new Path(line);
                     String filename = p.toString();
 
-                    if (!list.contains(filename)) {
+                    if (!list.contains(filename))
                         list.add(filename);
-                    }
                 }
             }
         }

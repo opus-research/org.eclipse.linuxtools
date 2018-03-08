@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF float definition.
@@ -33,7 +32,7 @@ public class FloatDefinition extends Definition {
     private double value;
 
     // ------------------------------------------------------------------------
-    // Constructors
+    // Contructors
     // ------------------------------------------------------------------------
 
     /**
@@ -53,11 +52,11 @@ public class FloatDefinition extends Definition {
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
-     * The value of a float stored, fit into a double. This should be extended
+     * THe value of a float stored, fit into a double. This should be extended
      * for exotic floats if this is necessary.
      *
      * @return the value of the float field fit into a double.
@@ -86,12 +85,9 @@ public class FloatDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
-        /* Offset the buffer position wrt the current alignment */
-        alignRead(input, this.declaration);
-        final int exp = declaration.getExponent();
-        final int mant = declaration.getMantissa();
-
+    public void read(BitBuffer input) {
+        int exp = declaration.getExponent();
+        int mant = declaration.getMantissa();
         if ((exp + mant) == 32) {
             value = readRawFloat32(input, mant, exp);
         } else if ((exp + mant) == 64) {
@@ -102,8 +98,12 @@ public class FloatDefinition extends Definition {
     }
 
     private static double readRawFloat64(BitBuffer input, final int manBits,
-            final int expBits) throws CTFReaderException {
-        long temp = input.get(64, false);
+            final int expBits) {
+        long low = input.getInt(32, false);
+        low = low & 0x00000000FFFFFFFFL;
+        long high = input.getInt(32, false);
+        high = high & 0x00000000FFFFFFFFL;
+        long temp = (high << 32) | low;
         return createFloat(temp, manBits - 1, expBits);
     }
 
@@ -120,8 +120,7 @@ public class FloatDefinition extends Definition {
 
         int exp = (int) ((rawValue >> (manBits)) & expMask) + 1;
         long man = (rawValue & manMask);
-        final int offsetExponent = exp - (1 << (expBits - 1));
-        double expPow = Math.pow(2.0, offsetExponent);
+        double expPow = Math.pow(2.0, exp - (1 << (expBits - 1)));
         double ret = man * 1.0f;
         ret /= manShift;
         ret += 1.0;
@@ -130,8 +129,8 @@ public class FloatDefinition extends Definition {
     }
 
     private static double readRawFloat32(BitBuffer input, final int manBits,
-            final int expBits) throws CTFReaderException {
-        long temp = input.get(32, false);
+            final int expBits) {
+        long temp = input.getInt(32, false);
         return createFloat(temp, manBits - 1, expBits);
     }
 

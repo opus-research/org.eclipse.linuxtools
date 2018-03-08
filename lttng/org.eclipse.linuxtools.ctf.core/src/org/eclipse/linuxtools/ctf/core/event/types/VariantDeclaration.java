@@ -41,9 +41,10 @@ public class VariantDeclaration implements IDeclaration {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * constructor
      */
     public VariantDeclaration() {
+
     }
 
     // ------------------------------------------------------------------------
@@ -75,7 +76,7 @@ public class VariantDeclaration implements IDeclaration {
     }
 
     /**
-     * Gets current variant tag
+     * gets current variant tag
      * @return the variant tag.
      */
     public String getTag() {

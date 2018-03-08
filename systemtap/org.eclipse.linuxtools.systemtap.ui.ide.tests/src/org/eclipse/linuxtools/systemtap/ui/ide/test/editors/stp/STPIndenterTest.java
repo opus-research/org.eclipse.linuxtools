@@ -38,10 +38,18 @@ import org.osgi.framework.BundleReference;
  * @since 4.0
  */
 public class STPIndenterTest extends TestCase {
-
+	
 	private static class MockSTPDocumentProvider extends STPDocumentProvider{
+		private IDocument document;
+
 		MockSTPDocumentProvider(IDocument document){
+			this.document = document;
 			this.setupDocument(document);
+		}
+
+		@Override
+		protected IDocument createDocument(Object element) {
+			return document;
 		}
 	}
 
@@ -58,7 +66,7 @@ public class STPIndenterTest extends TestCase {
 		return getContentsForTest(bundle, "src",  //$NON-NLs-1$
 				getClass(), getName(), sections);
 	}
-
+	
 	/**
 	 * Returns an array of StringBuilder objects for each comment section found preceding the named
 	 * test in the source code.
@@ -74,7 +82,7 @@ public class STPIndenterTest extends TestCase {
 	 *     test in the source code.
 	 * @throws IOException
 	 */
-	public static StringBuilder[] getContentsForTest(Bundle bundle, String srcRoot, Class<?> clazz,
+	public static StringBuilder[] getContentsForTest(Bundle bundle, String srcRoot, Class clazz,
 			final String testName, int numSections) throws IOException {
 		// Walk up the class inheritance chain until we find the test method.
 		try {
@@ -95,7 +103,7 @@ public class STPIndenterTest extends TestCase {
 			IPath filePath= new Path(srcRoot + '/' + classFile);
 
 			InputStream in;
-			Class<?> superclass = clazz.getSuperclass();
+			Class superclass = clazz.getSuperclass();
 			try {
 				if (bundle != null) {
 					in = FileLocator.openStream(bundle, filePath, false);
@@ -147,7 +155,7 @@ public class STPIndenterTest extends TestCase {
 			clazz = superclass;
 		}
 	}
-
+	
 	protected void assertIndenterResult() throws Exception {
 		StringBuilder[] contents= getContentsForTest(2);
 		String before= contents[0].toString();
@@ -164,51 +172,51 @@ public class STPIndenterTest extends TestCase {
 
 	//if (a == b) {
 	// k = 7
-
+	
 	//if (a == b) {
 	//	k = 7
 	public void testIfStatement() throws Exception {
-		assertIndenterResult();
+		assertIndenterResult();	
 	}
-
+	
 	//if (a == b)
 	// k = 7
 	//   else
 	//k = 9
-
+	
 	//if (a == b)
 	//	k = 7
 	//else
 	//	k = 9
 	public void testIfElseStatement() throws Exception {
-		assertIndenterResult();
+		assertIndenterResult();	
 	}
-
+	
 	//for (i = 0; i < 3; ++i) {
 	// k = 7
-
+	
 	//for (i = 0; i < 3; ++i) {
 	//	k = 7
 	public void testForStatement() throws Exception {
-		assertIndenterResult();
+		assertIndenterResult();	
 	}
-
+	
 	//while (i < 3) {
 	// k = 7
-
+	
 	//while (i < 3) {
 	//	k = 7
 	public void testWhileStatement() throws Exception {
-		assertIndenterResult();
+		assertIndenterResult();	
 	}
 
 	//foreach (i+ in arr) {
 	// k = 7
-
+	
 	//foreach (i+ in arr) {
 	//	k = 7
 	public void testForeachStatement() throws Exception {
-		assertIndenterResult();
+		assertIndenterResult();	
 	}
 
 	//foo(arg,
@@ -224,7 +232,7 @@ public class STPIndenterTest extends TestCase {
 	//if (1)
 	//foo->bar();
 	//dontIndent();
-
+	
 	//if (1)
 	//	foo->bar();
 	//dontIndent();
@@ -235,7 +243,7 @@ public class STPIndenterTest extends TestCase {
 	//if (1)
 	//foo>>bar;
 	//  dontIndent();
-
+	
 	//if (1)
 	//	foo>>bar;
 	//dontIndent();
@@ -246,7 +254,7 @@ public class STPIndenterTest extends TestCase {
 	//if (1)
 	//foo >= bar();
 	//  dontIndent();
-
+	
 	//if (1)
 	//	foo >= bar();
 	//dontIndent();
@@ -272,7 +280,7 @@ public class STPIndenterTest extends TestCase {
 
 	//x =
 	//0;
-
+	
 	//x =
 	//		0;
 	public void testWrappedAssignment_1_Bug277624() throws Exception {
@@ -297,7 +305,7 @@ public class STPIndenterTest extends TestCase {
 	//if (1 > 0) {
 	//double d = a * b /
 	//c;
-
+	
 	//if (1 > 0) {
 	//	double d = a * b /
 	//			c;
@@ -320,7 +328,7 @@ public class STPIndenterTest extends TestCase {
 
 	//for (int i = 0;
 	//i < 2; i++)
-
+	
 	//for (int i = 0;
 	//		i < 2; i++)
 	public void testWrappedFor_1_Bug277625() throws Exception {
@@ -329,7 +337,7 @@ public class STPIndenterTest extends TestCase {
 
 	//for (int i = 0; i < 2;
 	//i++)
-
+	
 	//for (int i = 0; i < 2;
 	//		i++)
 	public void testWrappedFor_2_Bug277625() throws Exception {
@@ -340,7 +348,7 @@ public class STPIndenterTest extends TestCase {
 	//i < 2;
 	//i++)
 	//{
-
+	
 	//for (int i = 0;
 	//		i < 2;
 	//		i++)
