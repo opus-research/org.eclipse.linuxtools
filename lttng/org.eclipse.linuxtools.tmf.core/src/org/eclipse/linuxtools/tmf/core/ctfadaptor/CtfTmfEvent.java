@@ -87,8 +87,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
         }
 
         /* Read the base event info */
-        Long offset = originTrace.getCTFTrace().getOffset();
-        this.timestamp = eventDef.getTimestamp() + offset;
+        this.timestamp = this.getTrace().getCTFTrace().timestampCyclesToNanos(eventDef.getTimestamp());
         this.sourceCPU = eventDef.getCPU();
         this.typeId = eventDef.getDeclaration().getId();
         this.eventName = eventDef.getDeclaration().getName();
@@ -164,6 +163,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
 
         /* Copy the fields over */
         this.fContent = (CtfTmfContent) other.fContent.clone();
+        this.fTimestamp = other.fTimestamp.clone();
     }
 
     /**
