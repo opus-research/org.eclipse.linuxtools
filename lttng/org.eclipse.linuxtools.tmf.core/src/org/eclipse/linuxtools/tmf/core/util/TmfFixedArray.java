@@ -7,8 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Godin (copelnug@gmail.com)        - Initial design and implementation
- *   Mathieu Denis  (mathieu.denis@polymtl.ca)  - Correction and refactoring
+ *   Francois Godin <copelnug@gmail.com> - Initial design and implementation
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Correction and refactoring
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.util;

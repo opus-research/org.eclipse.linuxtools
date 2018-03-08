@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial API and Implementation
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
@@ -34,19 +34,16 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
 public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
 
     /**
-     * <h4>Header for the event types categories.</h4>
+     * Header for the event types categories.
      */
     public static final String HEADER_EVENT_TYPES = Messages.TmfStatisticsData_EventTypes;
 
     /**
-     * <h4>Indicate that it's a value.</h4>
-     * <p>
+     * Indicate that it's a value.
+     *
      * Used when checking the possible child node for a node.
-     * </p>
-     * *
-     * <p>
+     *
      * It differentiate a category of a value by being appended to a value.
-     * </p>
      */
     protected static final String NODE = "z"; //$NON-NLS-1$
     /**
@@ -154,12 +151,10 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     }
 
     /**
-     * <h4>Get the event types paths.</h4>
+     * Get the event types paths.
      *
-     * @param event
-     *            Event to get the path for.
-     * @param extraInfo
-     *            Extra information to pass along with the event
+     * @param event Event to get the path for.
+     * @param extraInfo Extra information to pass along with the event
      * @return Array of FixedArray representing the paths.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -175,12 +170,10 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     }
 
     /**
-     * <h4>Get the standard paths for an event.</h4>
+     * Get the standard paths for an event.
      *
-     * @param event
-     *            Event to get the path for.
-     * @param extraInfo
-     *            Extra information to pass along with the event
+     * @param event Event to get the path for.
+     * @param extraInfo Extra information to pass along with the event
      * @return Array of FixedArray representing the paths.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -215,6 +208,21 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
         for (TmfFixedArray<String> path : paths) {
             ++(getOrCreate(path).getValue().nbEvents);
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree#registerEventInTimeRange(org.eclipse.linuxtools.tmf.core.event.ITmfEvent, org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo)
+     */
+    @Override
+    public void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo) {
+        TmfFixedArray<String>[] paths = getNormalPaths(event, extraInfo);
+        for (TmfFixedArray<String> path : paths)
+            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
+
+        paths = getTypePaths(event, extraInfo);
+        for (TmfFixedArray<String> path : paths)
+            ++(getOrCreate(path).getValue().nbEventsInTimeRange);
     }
 
     /*

@@ -7,8 +7,9 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis  (mathieu.denis@polymtl.ca)  - Generalized version based on LTTng
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Generalized version based on LTTng
  *   Bernd Hufmann - Updated to use trace reference in TmfEvent and streaming
+ *   Mathieu Denis - New request added to update the statistics from the selected time range
  *
  *******************************************************************************/
 
@@ -22,14 +23,14 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
@@ -56,9 +57,9 @@ import org.eclipse.swt.widgets.Listener;
 /**
  * The generic Statistics View displays statistics for any kind of traces.
  *
- * It is implemented according to the MVC pattern. - The model is a TmfStatisticsTreeNode built by the State Manager. - The view is built with a
- * TreeViewer. - The controller that keeps model and view synchronized is an observer of the model.
- * </p>
+ * It is implemented according to the MVC pattern. - The model is a TmfStatisticsTreeNode built by the State Manager. -
+ * The view is built with a TreeViewer. - The controller that keeps model and view synchronized is an observer of the
+ * model.
  *
  * @version 1.0
  * @author @author Mathieu Denis
@@ -81,13 +82,29 @@ public class TmfStatisticsView extends TmfView {
      */
     protected static final int PAGE_SIZE = 50000;
     /**
+     * The initial window span (in nanoseconds)
+     * @since 1.1
+     */
+    public static final long INITIAL_WINDOW_SPAN = (1L * 100 * 1000 * 1000); // .1sec
+    /**
+     * Timestamp scale (nanosecond)
+     * @since 1.1
+     */
+    public static final byte TIME_SCALE = -9;
+    /**
      *  The actual tree viewer to display
      */
     protected TreeViewer fTreeViewer;
     /**
-     *  Stores the request to the experiment
+     *  Stores the global request to the experiment
+     * @since 1.1
      */
     protected ITmfEventRequest<ITmfEvent> fRequest = null;
+    /**
+     *  Stores the ranged request to the experiment
+     * @since 1.1
+     */
+    protected ITmfEventRequest<ITmfEvent> fRequestRange = null;
     /**
      *  Update synchronization parameter (used for streaming): Update busy indicator
      */
@@ -124,8 +141,7 @@ public class TmfStatisticsView extends TmfView {
     /**
      * Constructor of a statistics view.
      *
-     * @param viewName
-     *            The name to give to the view.
+     * @param viewName The name to give to the view.
      */
     public TmfStatisticsView(String viewName) {
         super(viewName);
@@ -203,7 +219,7 @@ public class TmfStatisticsView extends TmfView {
                         event.detail &= ~SWT.SELECTED;
                     }
 
-                    int barWidth = (int) ((fTreeViewer.getTree().getColumn(1).getWidth() - 8) * percentage);
+                    int barWidth = (int) ((fTreeViewer.getTree().getColumn(event.index).getWidth() - 8) * percentage);
                     int oldAlpha = event.gc.getAlpha();
                     Color oldForeground = event.gc.getForeground();
                     Color oldBackground = event.gc.getBackground();
@@ -247,7 +263,8 @@ public class TmfStatisticsView extends TmfView {
         }
 
         // Make sure there is no request running before removing the statistics tree
-        cancelOngoingRequest();
+        cancelOngoingRequest(fRequestRange);
+        cancelOngoingRequest(fRequest);
         // clean the model
         TmfStatisticsTreeRootFactory.removeAll();
     }
@@ -264,8 +281,7 @@ public class TmfStatisticsView extends TmfView {
     /**
      * Refresh the view.
      *
-     * @param complete
-     *            Should a pending update be sent afterwards or not
+     * @param complete Should a pending update be sent afterwards or not
      */
     public void modelInputChanged(boolean complete) {
         // Ignore update if disposed
@@ -288,7 +304,8 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Called when an experiment request has failed or has been canceled Remove the data retrieved from the experiment from the statistics tree.
+     * Called when an experiment request has failed or has been canceled. Remove the data retrieved from the experiment
+     * from the statistics tree.
      *
      * @param name The experiment name
      */
@@ -316,7 +333,10 @@ public class TmfStatisticsView extends TmfView {
         if (signal.getExperiment() != TmfExperiment.getCurrentExperiment()) {
             return;
         }
-        cancelOngoingRequest();
+        // The range request must be canceled first, since the global one remove the statistics tree
+        cancelOngoingRequest(fRequestRange);
+        cancelOngoingRequest(fRequest);
+        resetTimeRangeValue();
     }
 
     /**
@@ -333,7 +353,8 @@ public class TmfStatisticsView extends TmfView {
 
             if (TmfStatisticsTreeRootFactory.containsTreeRoot(getTreeID(experimentName))) {
                 // The experiment root is already present
-                TmfStatisticsTreeNode experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(getTreeID(experimentName));
+                String treeID = getTreeID(experimentName);
+                TmfStatisticsTreeNode experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
 
                 @SuppressWarnings("rawtypes")
                 ITmfTrace[] traces = experiment.getTraces();
@@ -391,7 +412,6 @@ public class TmfStatisticsView extends TmfView {
      * Handles the signal about new experiment range.
      * @param signal The experiment range updated signal
      */
-    @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void experimentRangeUpdated(TmfExperimentRangeUpdatedSignal signal) {
         TmfExperiment<ITmfEvent> experiment = (TmfExperiment<ITmfEvent>) signal.getExperiment();
@@ -400,6 +420,13 @@ public class TmfStatisticsView extends TmfView {
             return;
         }
 
+        // Calculate the selected timerange for the request
+        long startTime = signal.getRange().getStartTime().getValue();
+        TmfTimestamp startTS  = new TmfTimestamp(startTime, TIME_SCALE);
+        TmfTimestamp endTS    = new TmfTimestamp(startTime + INITIAL_WINDOW_SPAN, TIME_SCALE);
+        TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
+
+        requestTimeRangeData(experiment, timeRange);
         requestData(experiment, signal.getRange());
     }
 
@@ -428,6 +455,21 @@ public class TmfStatisticsView extends TmfView {
         if (nbEvents < experiment.getNbEvents()) {
             requestData(experiment, experiment.getTimeRange());
         }
+    }
+
+    /**
+     * Handles the time range updated signal. It updates the time ranged statistics.
+     *
+     * @param signal Contains the information about the new selected time range.
+     * @since 1.1
+     */
+    @TmfSignalHandler
+    public void timeRangeUpdated(TmfRangeSynchSignal signal) {
+        // It is possible that the time range changes while a request is processing
+        cancelOngoingRequest(fRequestRange);
+        resetTimeRangeValue();
+
+        requestTimeRangeData(TmfExperiment.getCurrentExperiment(), signal.getCurrentRange());
     }
 
     /**
@@ -509,14 +551,14 @@ public class TmfStatisticsView extends TmfView {
     /**
      * Perform the request for an experiment and populates the statistics tree with event.
      *
-     * @param experiment experiment for which we need the statistics data.
+     * @param experiment Experiment for which we need the statistics data.
      * @param timeRange to request
      */
     @SuppressWarnings("unchecked")
     protected void requestData(final TmfExperiment<?> experiment, TmfTimeRange timeRange) {
         if (experiment != null) {
 
-            // Check if update is already ongoing
+            // Check if the update is already ongoing
             if (checkUpdateBusy(timeRange)) {
                 return;
             }
@@ -526,64 +568,68 @@ public class TmfStatisticsView extends TmfView {
                 index += (int) node.getValue().nbEvents;
             }
 
-            // Preparation of the event request
-            fRequest = new TmfEventRequest<ITmfEvent>(ITmfEvent.class, timeRange, index, TmfDataRequest.ALL_DATA, getIndexPageSize(), ExecutionType.BACKGROUND) {
+            // Prepare the global event request
+            fRequest = new TmfStatisticsRequest(this, experiment, timeRange, index, ExecutionType.BACKGROUND, true);
 
-                private final AbsTmfStatisticsTree statisticsData = TmfStatisticsTreeRootFactory.getStatTree(getTreeID(experiment.getName()));
-
-                @Override
-                public void handleData(ITmfEvent data) {
-                    super.handleData(data);
-                    if (data != null) {
-                        final String traceName = data.getTrace().getName();
-                        ITmfExtraEventInfo extraInfo = new ITmfExtraEventInfo() {
-                            @Override
-                            public String getTraceName() {
-                                if (traceName == null) {
-                                    return Messages.TmfStatisticsView_UnknownTraceName;
-                                }
-                                return traceName;
-                            }
-                        };
-                        statisticsData.registerEvent(data, extraInfo);
-                        statisticsData.increase(data, extraInfo, 1);
-                        // Refresh View
-                        if ((getNbRead() % getInputChangedRefresh()) == 0) {
-                            modelInputChanged(false);
-                        }
-                    }
-                }
-
-                @Override
-                public void handleSuccess() {
-                    super.handleSuccess();
-                    modelInputChanged(true);
-                    waitCursor(false);
-                }
-
-                @Override
-                public void handleFailure() {
-                    super.handleFailure();
-                    modelIncomplete(experiment.getName());
-                }
-
-                @Override
-                public void handleCancel() {
-                    super.handleCancel();
-                    modelIncomplete(experiment.getName());
-                }
-            };
             ((TmfExperiment<ITmfEvent>) experiment).sendRequest(fRequest);
             waitCursor(true);
         }
     }
 
     /**
-     * Cancels the current ongoing request
+     * Perform the time range request for an experiment and populates the statistics tree with event.
+     *
+     * @param experiment experiment for which we need the statistics data.
+     * @param timeRange to request
+     * @since 1.1
      */
+    @SuppressWarnings("unchecked")
+    protected void requestTimeRangeData(final TmfExperiment<?> experiment, TmfTimeRange timeRange) {
+        if (experiment != null) {
+
+            // Prepare the partial event request
+            fRequestRange = new TmfStatisticsRequest(this, experiment, timeRange, 0, ExecutionType.FOREGROUND, false);
+            ((TmfExperiment<ITmfEvent>) experiment).sendRequest(fRequestRange);
+        }
+    }
+
+    /**
+     * Reset the number of events within the time range
+     * @since 1.1
+     */
+    protected void resetTimeRangeValue()
+    {
+        // Reset the number of events in the time range
+        String treeID = getTreeID(TmfExperiment.getCurrentExperiment().getName());
+        TmfStatisticsTreeNode treeModelRoot = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
+        if (treeModelRoot.hasChildren()) {
+            treeModelRoot.resetTimeRangeValue();
+        }
+    }
+
+    /**
+     * Cancels the current ongoing request
+     * @param request The request to be canceled
+     * @since 1.1
+     */
+    protected void cancelOngoingRequest(ITmfEventRequest<?> request) {
+        if (request != null && !request.isCompleted()) {
+            request.cancel();
+        }
+    }
+
+    /**
+     * Cancels all ongoing requests.
+     * @deprecated Use {@link #cancelOngoingRequest(ITmfEventRequest)} instead
+     */
+    @Deprecated
     protected void cancelOngoingRequest() {
-        if (fRequest != null && !fRequest.isCompleted()) {
+        if (fRequest != null && fRequest.isRunning()) {
             fRequest.cancel();
+        }
+
+        if (fRequestRange != null && fRequestRange.isRunning()) {
+            fRequestRange.cancel();
         }
     }
 

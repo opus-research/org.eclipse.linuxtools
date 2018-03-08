@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Intial API and Implementation
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Intial API and Implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
@@ -18,12 +18,20 @@ package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
  * Contains information about statistics that can be retrieved with any type
  * of traces
  *
+ * There are two counters : one for the global number of events in the trace and another for the number of events in the
+ * selected time range
+ *
  * @version 1.0
  * @author Mathieu Denis
  */
 public class TmfStatistics {
-	/**
-	 * <h4>Number of event</h4>
-	 */
-	public long nbEvents = 0;
+    /**
+     * Number of event.
+     */
+    public long nbEvents = 0;
+    /**
+     * Number of event within a time range.
+     * @since 1.1
+     */
+    public long nbEventsInTimeRange = 0;
 }

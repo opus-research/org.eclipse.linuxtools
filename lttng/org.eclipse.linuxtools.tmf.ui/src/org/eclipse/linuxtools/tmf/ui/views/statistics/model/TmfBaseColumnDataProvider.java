@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2011 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca>  - Implementation and Initial API
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Implementation and Initial API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
@@ -49,6 +49,10 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
      */
     protected final static String EVENTS_COUNT_COLUMN = Messages.TmfStatisticsView_NbEventsColumn;
     /**
+     * Number of events in time range column names
+     */
+    protected final static String PARTIAL_EVENTS_COUNT_COLUMN = Messages.TmfStatisticsView_NbEventsTimeRangeColumn;
+    /**
      * Level column tooltips
      */
     protected final static String LEVEL_COLUMN_TIP = Messages.TmfStatisticsView_LevelColumnTip;
@@ -57,6 +61,10 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
      */
     protected final static String EVENTS_COUNT_COLUMN_TIP = Messages.TmfStatisticsView_NbEventsTip;
     /**
+     * Number of events in time range column tooltips
+     */
+    protected final static String PARTIAL_COUNT_COLUMN_TIP = Messages.TmfStatisticsView_NbEventsTimeRangeTip;
+    /**
      * Level for which statistics should not be displayed.
      */
     protected Set<String> fFolderLevels = new HashSet<String>(Arrays.asList(new String[] { "Event Types" })); //$NON-NLS-1$
@@ -64,8 +72,9 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
      * Create basic columns to represent the statistics data
      */
     public TmfBaseColumnDataProvider() {
-        // List that will be used to create the table.
+        /* List that will be used to create the table. */
         fColumnData = new Vector<TmfBaseColumnData>();
+        /* Column showing the name of the events and its level in the tree */
         fColumnData.add(new TmfBaseColumnData(LEVEL_COLUMN, 200, SWT.LEFT, LEVEL_COLUMN_TIP, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -90,7 +99,8 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
             }
         }, null));
 
-        fColumnData.add(new TmfBaseColumnData(EVENTS_COUNT_COLUMN, 125, SWT.LEFT, EVENTS_COUNT_COLUMN_TIP, new ColumnLabelProvider() {
+        /* Column showing the total number of events */
+        fColumnData.add(new TmfBaseColumnData(EVENTS_COUNT_COLUMN, 110, SWT.LEFT, EVENTS_COUNT_COLUMN_TIP, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
@@ -120,6 +130,41 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                     return 0;
                 }
                 return (double) node.getValue().nbEvents / parent.getValue().nbEvents;
+            }
+        }));
+
+        /* Column showing the number of events within the selected time range */
+        fColumnData.add(new TmfBaseColumnData(PARTIAL_EVENTS_COUNT_COLUMN, 120, SWT.LEFT, PARTIAL_COUNT_COLUMN_TIP,
+                new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
+                if (!fFolderLevels.contains(node.getKey())) {
+                    return Long.toString(node.getValue().nbEventsInTimeRange);
+                }
+                return ""; //$NON-NLS-1$
+            }
+        }, new ViewerComparator() {
+            @Override
+            public int compare(Viewer viewer, Object e1, Object e2) {
+                TmfStatisticsTreeNode n1 = (TmfStatisticsTreeNode) e1;
+                TmfStatisticsTreeNode n2 = (TmfStatisticsTreeNode) e2;
+
+                return (int) (n1.getValue().nbEventsInTimeRange - n2.getValue().nbEventsInTimeRange);
+            }
+        }, new ITmfColumnPercentageProvider() {
+
+            @Override
+            public double getPercentage(TmfStatisticsTreeNode node) {
+                TmfStatisticsTreeNode parent = node;
+                do {
+                    parent = parent.getParent();
+                } while (parent != null && parent.getValue().nbEventsInTimeRange == 0);
+
+                if (parent == null) {
+                    return 0;
+                }
+                return (double) node.getValue().nbEventsInTimeRange / parent.getValue().nbEventsInTimeRange;
             }
         }));
     }

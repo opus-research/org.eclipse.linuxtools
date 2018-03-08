@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial API and Implementation
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics;
@@ -38,6 +38,16 @@ public class Messages extends NLS {
      * Number of events column tool tip.
      */
     public static String TmfStatisticsView_NbEventsTip;
+    /**
+     * Partial number of events column.
+     * @since 1.1
+     */
+    public static String TmfStatisticsView_NbEventsTimeRangeColumn;
+    /**
+     * Partial number of events column tool tip.
+     * @since 1.1
+     */
+    public static String TmfStatisticsView_NbEventsTimeRangeTip;
     /**
      * String for unknown trace name.
      */

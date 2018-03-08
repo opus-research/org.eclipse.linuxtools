@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis (mathieu.denis@polymtl.ca) - Initial API and Implementation
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
  *   Bernd Hufmann - Fixed header and warnings
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
