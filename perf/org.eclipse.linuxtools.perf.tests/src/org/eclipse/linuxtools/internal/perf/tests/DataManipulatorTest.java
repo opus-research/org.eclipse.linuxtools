@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.internal.perf.PerfDataFile;
 import org.eclipse.linuxtools.internal.perf.ReportComparisonData;
 import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.linuxtools.internal.perf.StatData;
@@ -92,15 +91,6 @@ public class DataManipulatorTest {
 				+ " " + newData.getAbsolutePath();  //$NON-NLS-1$
 
 		assertEquals(expected, diffData.getPerfData().trim());
-	}
-
-	@Test
-	public void testPerfDataFile() {
-		String expected = "perf stat data stub file\n";
-		File statFile = new File(StatsComparisonTest.STAT_RES + "stub.stat");
-		PerfDataFile dataFile = new PerfDataFile(statFile);
-		assertEquals(statFile.getPath(), dataFile.getTitle());
-		assertEquals(expected, dataFile.getPerfData());
 	}
 
 	/**

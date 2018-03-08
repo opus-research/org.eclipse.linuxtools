@@ -56,22 +56,6 @@ public class StatComparisonData implements IPerfData {
 	}
 
 	/**
-	 * Get old perf data file.
-	 * @return File corresponding to old perf data.
-	 */
-	public File getOldData(){
-		return oldFile;
-	}
-
-	/**
-	 * Get new perf data file.
-	 * @return File corresponding to new perf data.
-	 */
-	public File getNewData(){
-		return newFile;
-	}
-
-	/**
 	 * Compare stat data files and store the result in the result field.
 	 */
 	public void runComparison() {

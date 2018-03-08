@@ -24,9 +24,6 @@ public class Messages extends NLS {
 	public static String PerfSaveStat_error_msg;
 	public static String PerfSaveSession_failure_title;
 	public static String PerfSaveSession_failure_msg;
-	public static String PerfStatDiffMenuAction_new_stats;
-	public static String PerfStatDiffMenuAction_old_stats;
-	public static String PerfStatDiffMenuAction_stats_diff;
 	public static String PerfResourceLeak_title;
 	public static String PerfResourceLeak_msg;
 
