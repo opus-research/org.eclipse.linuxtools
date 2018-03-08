@@ -132,21 +132,19 @@ public abstract class Definition {
      *
      * @param input
      *            The bitbuffer that is being read
-     * @param declaration
-     *            The declaration which has an alignment
+     * @param alignmentMask
+     *            Mask of the alignment, so for an alignment 2^n it is 2^n-1
      * @since 2.2
      */
-    protected static void alignRead(BitBuffer input, IDeclaration declaration) {
-        int mask = (int) declaration.getAlignment() - 1;
-
+    protected static void alignRead(BitBuffer input, long alignmentMask) {
         /*
          * The alignment is a power of 2
          */
         int pos = input.position();
-        if ((pos & mask) == 0) {
+        if ((pos & alignmentMask) == 0) {
             return;
         }
-        pos = (pos + mask) & ~mask;
+        pos = (int) ((pos + alignmentMask) & ~alignmentMask);
 
         input.position(pos);
     }
