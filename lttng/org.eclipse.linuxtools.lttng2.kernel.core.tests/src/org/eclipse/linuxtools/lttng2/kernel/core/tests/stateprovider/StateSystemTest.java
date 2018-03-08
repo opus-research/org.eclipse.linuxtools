@@ -157,10 +157,7 @@ public abstract class StateSystemTest {
         try {
             int quark = ssq.getQuarkAbsolute(Attributes.RESOURCES, Attributes.IRQS, "1");
             long ts1 = ssq.getStartTime(); /* start of the trace */
-            long ts2 = startTime + 20L * NANOSECS_PER_SEC; /*
-                                                            * invalid, but
-                                                            * ignored
-                                                            */
+            long ts2 = startTime + 20L * NANOSECS_PER_SEC; /* invalid, but ignored */
 
             intervals = ssq.queryHistoryRange(quark, ts1, ts2);
 
@@ -413,10 +410,10 @@ public abstract class StateSystemTest {
 
     @Test
     public void testFirstIntervalIsConsidered() {
-        List<ITmfStateInterval> list;
-        ITmfStateInterval interval;
-        int quark = interestingQuark, valueInt;
         try {
+            List<ITmfStateInterval> list;
+            ITmfStateInterval interval;
+            int quark = interestingQuark, valueInt;
             list = ssq.queryFullState(interestingTimestamp2);
             interval = list.get(quark);
             assertEquals(1331668247516664825L, interval.getStartTime());
