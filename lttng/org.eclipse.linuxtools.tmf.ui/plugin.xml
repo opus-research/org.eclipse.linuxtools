@@ -1162,14 +1162,6 @@
             name="%tracetype.type.ctf"
             trace_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace">
       </type>
-      <type
-            category="org.eclipse.linuxtools.tmf.tests.category.tracetype"
-            event_type="org.eclipse.linuxtools.tmf.core.chrometrace.ChromeEvent"
-            icon="icons/chrome.png"
-            id="org.eclipse.linuxtools.tmf.core.chrome"
-            name="Chrome Trace"
-            trace_type="org.eclipse.linuxtools.tmf.core.chrometrace.ChromeTrace">
-      </type>
    </extension>
    <extension
          point="org.eclipse.ui.navigator.linkHelper">
