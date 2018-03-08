@@ -19,7 +19,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileElement;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -46,7 +45,7 @@ public class SpecfileElementHyperlink implements IHyperlink {
 	}
 
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_4, source.getName());
+		return null;
 	}
 
 	public String getTypeLabel() {

@@ -27,9 +27,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
 public class SourcesFileDownloadHyperlink implements IHyperlink {
-	String fileName;
-	IFile original;
-	IRegion region;
+	private String fileName;
+	private IFile original;
+	private IRegion region;
 
 	/**
 	 * Creates hyperlink for the following file name, region and file whether
@@ -60,7 +60,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_1, fileName);
+		return Messages.SourcesFileHyperlink_1 + ' ' + fileName;
 	}
 
 	/**
