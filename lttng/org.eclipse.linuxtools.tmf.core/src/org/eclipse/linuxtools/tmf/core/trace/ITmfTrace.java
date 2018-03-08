@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -99,8 +100,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
  * }
  * </pre>
  *
- * @param <T> The trace event type
- *
  * @version 1.0
  * @author Francois Chouinard
  *
@@ -109,7 +108,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
  * @see ITmfTraceIndexer
  * @see ITmfEventParser
  */
-public interface ITmfTrace<T extends ITmfEvent> extends ITmfDataProvider<T> {
+public interface ITmfTrace extends ITmfDataProvider {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -137,7 +136,7 @@ public interface ITmfTrace<T extends ITmfEvent> extends ITmfDataProvider<T> {
      * @param type the trace event type
      * @throws TmfTraceException If we couldn't open the trace
      */
-    public void initTrace(IResource resource, String path, Class<T> type) throws TmfTraceException;
+    public void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException;
 
     /**
      * Validate that the trace is of the correct type.
@@ -156,7 +155,7 @@ public interface ITmfTrace<T extends ITmfEvent> extends ITmfDataProvider<T> {
     /**
      * @return the trace event type
      */
-    public Class<T> getEventType();
+    public Class<? extends ITmfEvent> getEventType();
 
     /**
      * @return the associated trace resource
@@ -201,6 +200,12 @@ public interface ITmfTrace<T extends ITmfEvent> extends ITmfDataProvider<T> {
      * @return the streaming interval in ms (0 if not a streaming trace)
      */
     public long getStreamingInterval();
+
+    /**
+     * @return The state system associated with this trace
+     * @since 2.0
+     */
+    public IStateSystemQuerier getStateSystem();
 
     // ------------------------------------------------------------------------
     // Trace positioning getters
