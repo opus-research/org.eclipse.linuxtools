@@ -29,9 +29,7 @@ import org.junit.runners.Suite;
     TraceControlTreeModelNoProvidersTest.class,
     TraceControlTreeModelTest.class,
     TraceControlUstProviderTests.class,
-    TraceControlUstSessionTests.class,
-    TraceControlUstSessionTests2.class,
-    TraceControlSnapshotSessionTests.class
+    TraceControlUstSessionTests.class
 })
 public class AllTests {
 

@@ -25,7 +25,7 @@ import org.junit.runners.Suite;
     TmfCoalescedEventRequestTest.class,
     TmfDataRequestTest.class,
     TmfEventRequestTest.class,
-    TmfFiveSlotsSchedulerTest.class
+    TmfSchedulerTest.class
 })
 public class AllTests {
 

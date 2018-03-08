@@ -42,12 +42,6 @@
              id="rpmstubby.stubifyGem"
              name="%action.label">
        </command>
-       <command
-             categoryId="rpmstubby.commands"
-             description="%action.label"
-             id="rpmstubby.stubifyMakefilePL"
-             name="%action.label">
-       </command>
        
  </extension>
  <extension
@@ -68,10 +62,6 @@
            class="org.eclipse.linuxtools.internal.rpmstubby.popup.actions.StubifyGemHandler"
            commandId="rpmstubby.stubifyGem">
      </handler>
-     <handler
-           class="org.eclipse.linuxtools.internal.rpmstubby.popup.actions.StubifyMakefilePLHandler"
-           commandId="rpmstubby.stubifyMakefilePL">
-     </handler>
  </extension>
   <extension
          point="org.eclipse.ui.menus">
@@ -86,6 +76,14 @@
             <adapt type="org.eclipse.core.resources.IResource">
                 <test property="org.eclipse.core.resources.name"
                          value="feature.xml"/>
+            </adapt>
+        </iterate>
+    </with>
+    <with variable="selection">
+        <iterate ifEmpty="false">
+            <adapt type="org.eclipse.core.resources.IResource">
+                <test property="org.eclipse.core.resources.projectNature"
+                         value="org.eclipse.pde.FeatureNature"/>
             </adapt>
         </iterate>
     </with>
@@ -135,24 +133,6 @@
                         <test
                               property="org.eclipse.core.resources.name"
                               value="*.gemspec">
-                        </test>
-                     </adapt>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="rpmstubby.stubifyMakefilePL">
-            <visibleWhen>
-               <with
-                     variable="selection">
-                  <iterate
-                        ifEmpty="false">
-                     <adapt
-                           type="org.eclipse.core.resources.IResource">
-                        <test
-                              property="org.eclipse.core.resources.name"
-                              value="*.PL">
                         </test>
                      </adapt>
                   </iterate>

@@ -143,7 +143,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     // Target import directory ('Traces' folder)
     private IFolder fTargetFolder;
-    private static final String SEPARATOR = ":"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -671,7 +670,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
         // Perform trace validation
         String traceTypeName = fTraceTypes.getText();
-        String tokens[] = traceTypeName.split(SEPARATOR, 2);
+        String tokens[] = traceTypeName.split(":", 2); //$NON-NLS-1$
         if (tokens.length >= 2) {
             String id = TmfTraceType.getInstance().getTraceTypeId(tokens[0], tokens[1]);
             if (!TmfTraceType.getInstance().validateTrace(id, getSelectedResources())) {
@@ -733,20 +732,20 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             boolean traceTypeOK = false;
             if (traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY)) {
                 for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                    if (traceType.equals(TmfTraceType.CUSTOM_TXT_CATEGORY + SEPARATOR + def.definitionName)) {
+                    if (traceType.equals(TmfTraceType.CUSTOM_TXT_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
                         traceTypeOK = true;
                         traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-                        traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
+                        traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
                         traceIcon = DEFAULT_TRACE_ICON_PATH;
                         break;
                     }
                 }
             } else if (traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY)) {
                 for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                    if (traceType.equals(TmfTraceType.CUSTOM_XML_CATEGORY + SEPARATOR + def.definitionName)) {
+                    if (traceType.equals(TmfTraceType.CUSTOM_XML_CATEGORY + " : " + def.definitionName)) { //$NON-NLS-1$
                         traceTypeOK = true;
                         traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-                        traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
+                        traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
                         traceIcon = DEFAULT_TRACE_ICON_PATH;
                         break;
                     }
@@ -754,7 +753,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             } else {
                 if (!traceType.equals("")) { //$NON-NLS-1$
                     // Trace type was selected
-                    String temp[] = traceType.split(SEPARATOR, 2);
+                    String temp[] = traceType.split(":", 2); //$NON-NLS-1$
                     if (temp.length < 2) {
                         Activator.getDefault().logError("Error with trace type " + traceType); //$NON-NLS-1$
                         return false;

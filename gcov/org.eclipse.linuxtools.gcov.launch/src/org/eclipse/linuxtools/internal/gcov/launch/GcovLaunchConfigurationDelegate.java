@@ -16,6 +16,7 @@
 package org.eclipse.linuxtools.internal.gcov.launch;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
@@ -134,7 +135,8 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 
 	protected IProject getProject(){
 		try{
-			return CDebugUtils.verifyCProject(config).getProject();
+			IProject project = CDebugUtils.verifyCProject(config).getProject();
+			return project;
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -149,7 +151,9 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 	  * @since 1.1
 	  */
 	protected IPath getExePath(ILaunchConfiguration config) throws CoreException{
-		return CDebugUtils.verifyProgramPath( config );
+		IPath exePath = CDebugUtils.verifyProgramPath( config );
+
+		return exePath;
 	}
 
 }
