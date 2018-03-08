@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.Image;
 /**
  * Children of images in the view -- a function name in the profiled 
  *  image's source code. May or may not have child samples.
- * @since 1.1
  */
 public class UiModelSymbol implements IUiModelElement {
 	private IUiModelElement parent;	//parent element
