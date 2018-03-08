@@ -122,9 +122,19 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 field = new CTFIntegerArrayField(fieldName, valuesArray,
                         ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) arrayDecl.getElementType()).isSigned());
-            }
-            /* Add other types of arrays here */
+            } else {
+                Definition[] definitions = arrayDef.getDefinitions();
+                CtfTmfEventField[] elements = new CtfTmfEventField[definitions.length];
 
+                /* Parse the elements of the array. */
+                for (int i = 0; i < definitions.length; ++i) {
+                    CtfTmfEventField curField = CtfTmfEventField.parseField(
+                            definitions[i], fieldName + '[' + i + ']');
+                    elements[i] = curField;
+                }
+
+                field = new CTFArrayField(fieldName, elements);
+            }
         } else if (fieldDef instanceof SequenceDefinition) {
             SequenceDefinition seqDef = (SequenceDefinition) fieldDef;
             SequenceDeclaration seqDecl = seqDef.getDeclaration();
@@ -364,6 +374,36 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return formattedValue;
     }
 
+}
+
+/**
+ * CTF field implementation for arrays of arbitrary types.
+ *
+ * @author fdoray
+ */
+final class CTFArrayField extends CtfTmfEventField {
+
+    /**
+     * Constructor for CTFArrayField.
+     *
+     * @param name
+     *            The name of this field
+     * @param elements
+     *            The array elements of this field
+     */
+    CTFArrayField(String name, ITmfEventField[] elements) {
+        super(name, elements, elements);
+    }
+
+    @Override
+    public CtfTmfEventField[] getValue() {
+        return (CtfTmfEventField[]) super.getValue();
+    }
+
+    @Override
+    public String getFormattedValue() {
+        return Arrays.toString(getValue());
+    }
 }
 
 /**
