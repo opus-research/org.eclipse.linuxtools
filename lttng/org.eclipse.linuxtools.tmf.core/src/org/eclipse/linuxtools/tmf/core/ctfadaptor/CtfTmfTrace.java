@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Patrick Tasse - Updated for removal of context clone
- *   Geneviève Bastien - Added the createTimestamp function
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -21,6 +20,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -30,9 +30,9 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
@@ -308,6 +308,63 @@ public class CtfTmfTrace extends TmfTrace
         return 0;
     }
 
+    /**
+     * Returns whether or not an event is in the metadata of the trace,
+     * therefore if it can possibly be in the trace. It does not verify whether
+     * or not the event is actually in the trace
+     *
+     * @param eventName
+     *            The name of the event to check
+     * @return Whether the event is in the metadata or not
+     * @since 2.1
+     */
+    public boolean hasEvent(final String eventName) {
+        Map<Long, IEventDeclaration> events = fTrace.getEvents(0L);
+        if (events != null) {
+            for (IEventDeclaration decl : events.values()) {
+                if (decl.getName().equals(eventName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return whether all requested events are in the metadata
+     *
+     * @param names
+     *            The array of events to check for
+     * @return Whether all events are in the metadata
+     * @since 2.1
+     */
+    public boolean hasAllEvents(String[] names) {
+        for (String name : names) {
+            if (!hasEvent(name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether the metadata contains at least one of the requested
+     * events
+     *
+     * @param names
+     *            The array of event names of check for
+     * @return Whether one of the event is present in trace metadata
+     * @since 2.1
+     */
+    public boolean hasAtLeastOneOfEvents(String[] names) {
+        for (String name : names) {
+            if (hasEvent(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // -------------------------------------------
     // Parser
     // -------------------------------------------
@@ -345,14 +402,5 @@ public class CtfTmfTrace extends TmfTrace
      */
     public CtfIterator createIterator() {
         return new CtfIterator(this);
-    }
-
-    // ------------------------------------------------------------------------
-    // Timestamp transformation functions
-    // ------------------------------------------------------------------------
-
-    @Override
-    public ITmfTimestamp createTimestamp(long ts) {
-        return new CtfTmfTimestamp(getTimestampTransform().transform(ts));
     }
 }

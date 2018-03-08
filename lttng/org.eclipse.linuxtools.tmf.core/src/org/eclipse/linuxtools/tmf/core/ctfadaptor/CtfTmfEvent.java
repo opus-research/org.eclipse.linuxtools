@@ -61,7 +61,6 @@ public final class CtfTmfEvent extends TmfEvent
     /**
      * Constructor used by {@link CtfTmfEventFactory#createEvent}
      */
-
     CtfTmfEvent(CtfTmfTrace trace, long rank, CtfTmfTimestamp timestamp,
             ITmfEventField content, String fileName, int cpu,
             IEventDeclaration declaration) {
@@ -78,7 +77,6 @@ public final class CtfTmfEvent extends TmfEvent
         sourceCPU = cpu;
         typeId = declaration.getId();
         eventName = declaration.getName();
-
     }
 
     /**
