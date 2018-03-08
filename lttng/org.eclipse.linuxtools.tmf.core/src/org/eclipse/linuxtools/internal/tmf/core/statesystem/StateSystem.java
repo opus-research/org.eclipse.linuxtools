@@ -124,28 +124,16 @@ public class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     /**
-     * Get the attribute tree associated with this state system. This should be
-     * the only way of accessing it (and if subclasses want to point to a
-     * different attribute tree than their own, they should only need to
-     * override this).
-     *
-     * @return The attribute tree
-     */
-    public AttributeTree getAttributeTree() {
-        return attributeTree;
-    }
-
-    /**
      * Method used by the attribute tree when creating new attributes, to keep
      * the attribute count in the transient state in sync.
      */
-    protected void addEmptyAttribute() {
+    void addEmptyAttribute() {
         transState.addEmptyEntry();
     }
 
     @Override
     public int getNbAttributes() {
-        return getAttributeTree().getNbAttributes();
+        return attributeTree.getNbAttributes();
     }
 
     @Override
@@ -155,12 +143,12 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public String getAttributeName(int attributeQuark) {
-        return getAttributeTree().getAttributeName(attributeQuark);
+        return attributeTree.getAttributeName(attributeQuark);
     }
 
     @Override
     public String getFullAttributePath(int attributeQuark) {
-        return getAttributeTree().getFullAttributeName(attributeQuark);
+        return attributeTree.getFullAttributeName(attributeQuark);
     }
 
     //--------------------------------------------------------------------------
@@ -200,7 +188,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * If null was returned, we simply won't save the attribute tree,
              * too bad!
              */
-            getAttributeTree().writeSelf(attributeTreeFile, attributeTreeFilePos);
+            attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
         finishedLatch.countDown(); /* Mark the history as finished building */
     }
@@ -212,29 +200,29 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public int getQuarkAbsolute(String... attribute)
             throws AttributeNotFoundException {
-        return getAttributeTree().getQuarkDontAdd(-1, attribute);
+        return attributeTree.getQuarkDontAdd(-1, attribute);
     }
 
     @Override
     public int getQuarkAbsoluteAndAdd(String... attribute) {
-        return getAttributeTree().getQuarkAndAdd(-1, attribute);
+        return attributeTree.getQuarkAndAdd(-1, attribute);
     }
 
     @Override
     public int getQuarkRelative(int startingNodeQuark, String... subPath)
             throws AttributeNotFoundException {
-        return getAttributeTree().getQuarkDontAdd(startingNodeQuark, subPath);
+        return attributeTree.getQuarkDontAdd(startingNodeQuark, subPath);
     }
 
     @Override
     public int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath) {
-        return getAttributeTree().getQuarkAndAdd(startingNodeQuark, subPath);
+        return attributeTree.getQuarkAndAdd(startingNodeQuark, subPath);
     }
 
     @Override
     public List<Integer> getSubAttributes(int quark, boolean recursive)
             throws AttributeNotFoundException {
-        return getAttributeTree().getSubAttributes(quark, recursive);
+        return attributeTree.getSubAttributes(quark, recursive);
     }
 
     @Override
@@ -298,7 +286,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
             } else {
                 startingAttribute = getQuarkAbsolute(prefixStr);
             }
-            directChildren = getSubAttributes(startingAttribute, false);
+            directChildren = attributeTree.getSubAttributes(startingAttribute,
+                    false);
         } catch (AttributeNotFoundException e) {
             /* That attribute path did not exist, return the empty array */
             return quarks;
@@ -446,7 +435,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * "Nullify our children first, recursively. We pass 'false' because we
          * handle the recursion ourselves.
          */
-        childAttributes = getSubAttributes(attributeQuark, false);
+        childAttributes = attributeTree.getSubAttributes(attributeQuark, false);
         for (Integer childNodeQuark : childAttributes) {
             assert (attributeQuark != childNodeQuark);
             removeAttribute(t, childNodeQuark);
@@ -509,10 +498,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateSystemDisposedException();
         }
 
-        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(getNbAttributes());
+        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
+                attributeTree.getNbAttributes());
 
         /* Bring the size of the array to the current number of attributes */
-        for (int i = 0; i < getNbAttributes(); i++) {
+        for (int i = 0; i < attributeTree.getNbAttributes(); i++) {
             stateInfo.add(null);
         }
 
@@ -706,7 +696,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
      *            The PrintWriter in which to print the output
      */
     public void debugPrint(PrintWriter writer) {
-        getAttributeTree().debugPrint(writer);
+        attributeTree.debugPrint(writer);
         transState.debugPrint(writer);
         backend.debugPrint(writer);
     }
