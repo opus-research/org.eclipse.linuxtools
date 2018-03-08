@@ -1,15 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial Design and Grammar
- *     Francis Giraldeau - Initial API and implementation
- *     Simon Marchi - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial Design and Grammar
+ * Contributors: Francis Giraldeau - Initial API and implementation
+ * Contributors: Simon Marchi - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
@@ -17,7 +16,6 @@ package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.antlr.runtime.tree.CommonTree;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
@@ -42,7 +39,6 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
-import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
@@ -457,7 +453,7 @@ public class IOStructGen {
 
             trace.setPacketHeader((StructDeclaration) packetHeaderDecl);
         } else {
-            Activator.log(IStatus.WARNING, "Unknown trace attribute : " + left); //$NON-NLS-1$
+            throw new ParseException("Unknown trace attribute : " + left); //$NON-NLS-1$
         }
     }
 
@@ -649,7 +645,7 @@ public class IOStructGen {
 
             stream.setPacketContext((StructDeclaration) packetContextDecl);
         } else {
-            Activator.log(IStatus.WARNING, "Unknown stream attribute : " + left); //$NON-NLS-1$
+            throw new ParseException("Unknown stream attribute : " + left); //$NON-NLS-1$
         }
     }
 
@@ -1401,7 +1397,8 @@ public class IOStructGen {
                 } else if (left.equals("map")) { //$NON-NLS-1$
                     clock = getClock(rightNode);
                 } else {
-                    Activator.log(IStatus.WARNING, "Integer: unknown attribute " + left); //$NON-NLS-1$
+                    throw new ParseException(
+                            "Integer: unknown attribute " + left); //$NON-NLS-1$
                 }
 
                 break;
@@ -1915,11 +1912,6 @@ public class IOStructGen {
             throw new ParseException("enum declarator values overlap."); //$NON-NLS-1$
         }
 
-        if (valueSpecified && (BigInteger.valueOf(low).compareTo(enumDeclaration.getContainerType().getMinValue()) == -1 ||
-                BigInteger.valueOf(high).compareTo(enumDeclaration.getContainerType().getMaxValue()) == 1)) {
-            throw new ParseException("enum value is not in range"); //$NON-NLS-1$
-        }
-
         return high;
     }
 
@@ -2334,9 +2326,8 @@ public class IOStructGen {
                 intval = Long.parseLong(strval, 010); // 010 == 0x08 == 8
             }
         } catch (NumberFormatException e) {
-            throw new ParseException("Invalid integer format: " + strval); //$NON-NLS-1$
+            throw new ParseException(e);
         }
-
         /* The rest of children are sign */
         if ((children.size() % 2) == 0) {
             return -intval;
@@ -2400,7 +2391,7 @@ public class IOStructGen {
         boolean ret = false;
         CommonTree firstChild = (CommonTree) rightNode.getChild(0);
 
-        if (firstChild.getType() == CTFParser.UNARY_EXPRESSION_STRING) {
+        if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
             if (strval.equals(CTFStrings.TRUE)
@@ -2448,7 +2439,7 @@ public class IOStructGen {
 
         CommonTree firstChild = (CommonTree) rightNode.getChild(0);
 
-        if (firstChild.getType() == CTFParser.UNARY_EXPRESSION_STRING) {
+        if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
             if (strval.equals(CTFStrings.LE)) {
@@ -2560,7 +2551,7 @@ public class IOStructGen {
                 return (int) intval;
             }
             throw new ParseException("Invalid value for base"); //$NON-NLS-1$
-        } else if (firstChild.getType() == CTFParser.UNARY_EXPRESSION_STRING) {
+        } else if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
             if (strval.equals(CTFStrings.DECIMAL)
@@ -2603,7 +2594,7 @@ public class IOStructGen {
 
         CommonTree firstChild = (CommonTree) rightNode.getChild(0);
 
-        if (firstChild.getType() == CTFParser.UNARY_EXPRESSION_STRING) {
+        if (isUnaryString(firstChild)) {
             String strval = concatenateUnaryStrings(rightNode.getChildren());
 
             if (strval.equals(CTFStrings.UTF8)) {
