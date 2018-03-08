@@ -66,7 +66,7 @@ public class RpmlintParser {
 	 * @return
 	 * 		a <code>RpmlintItem</code> ArrayList.
 	 */
-	public List<RpmlintItem> parseVisisted(List<String> visitedResources) {
+	public ArrayList<RpmlintItem> parseVisisted(ArrayList<String> visitedResources) {
 		String rpmlintPath = new ScopedPreferenceStore(InstanceScope.INSTANCE,Activator.PLUGIN_ID).getString(
 				PreferenceConstants.P_RPMLINT_PATH);
 		/*
