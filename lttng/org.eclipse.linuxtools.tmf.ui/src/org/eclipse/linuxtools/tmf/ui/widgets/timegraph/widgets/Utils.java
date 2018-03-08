@@ -6,11 +6,10 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Intel Corporation - Initial API and implementation
- *     Ruslan A. Scherbakov, Intel - Initial API and implementation
- *     Alvaro Sanchez-Leon - Udpated for TMF
- *     Patrick Tasse - Refactoring
- *     Marc-Andre Laperle - Add time zone preference
+ *   Intel Corporation - Initial API and implementation
+ *   Ruslan A. Scherbakov, Intel - Initial API and implementation
+ *   Alvaro Sanchez-Leon - Udpated for TMF
+ *   Patrick Tasse - Refactoring
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -19,9 +18,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.TimeZone;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.graphics.Color;
@@ -82,16 +79,6 @@ public class Utils {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
     private static final long SEC_IN_NS = 1000000000;
     private static final long MILLISEC_IN_NS = 1000000;
-
-    /**
-     * @since 2.1
-     *
-     */
-    static public void updateTimeZone() {
-        TimeZone timeZone = TmfTimePreferences.getInstance().getTimeZone();
-        TIME_FORMAT.setTimeZone(timeZone);
-        DATE_FORMAT.setTimeZone(timeZone);
-    }
 
     static Rectangle clone(Rectangle source) {
         return new Rectangle(source.x, source.y, source.width, source.height);
