@@ -23,27 +23,16 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
  */
 public class TmfExperimentSelectedSignal<T extends ITmfEvent> extends TmfSignal {
 
-    private final TmfExperiment<T> fExperiment;
+	private final TmfExperiment<T> fExperiment;
+	
+	public TmfExperimentSelectedSignal(Object source, TmfExperiment<T> experiment) {
+		super(source);
+		fExperiment = experiment;
+	}
 
-    /**
-     * Constructor
-     *
-     * @param source
-     *            Object sending this signal
-     * @param experiment
-     *            The experiment that was selected
-     */
-    public TmfExperimentSelectedSignal(Object source, TmfExperiment<T> experiment) {
-        super(source);
-        fExperiment = experiment;
-    }
-
-    /**
-     * @return The experiment
-     */
-    public TmfExperiment<? extends ITmfEvent> getExperiment() {
-        return fExperiment;
-    }
+	public TmfExperiment<? extends ITmfEvent> getExperiment() {
+		return fExperiment;
+	}
 
 	@Override
     @SuppressWarnings("nls")
