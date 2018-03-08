@@ -111,10 +111,9 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 					}
 				}
 			} catch (CoreException e) {
-				e.printStackTrace();
+				// Failed to call 'which', do nothing
 			} catch (IndexOutOfBoundsException e) {
 				// Executable cannot be found in system path.
-				e.printStackTrace();
 			}
 		}
 		return command;
