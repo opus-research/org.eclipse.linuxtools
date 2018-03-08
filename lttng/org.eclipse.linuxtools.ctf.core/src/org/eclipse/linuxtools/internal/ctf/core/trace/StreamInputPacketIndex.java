@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.trace;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.ListIterator;
 import java.util.Vector;
 
@@ -99,9 +101,9 @@ public class StreamInputPacketIndex {
     }
 
     /**
-     * Given a timestamp, this methods returns the first PacketIndexEntry that
-     * could include the timestamp, that is the last packet with a begin
-     * timestamp smaller than the given timestamp.
+     * This method returns the first packet with the end timestamp greater
+     * or equal to the given timestamp. The returned packet is the first one
+     * that could include the timestamp.
      *
      * @param timestamp
      *            The timestamp to look for.
@@ -109,15 +111,6 @@ public class StreamInputPacketIndex {
      *         includes the given timestamp.
      */
     public ListIterator<StreamInputPacketIndexEntry> search(final long timestamp) {
-        /*
-         * Start with min and max covering all the elements.
-         */
-        int max = this.entries.size() - 1;
-        int min = 0;
-
-        int guessI;
-        StreamInputPacketIndexEntry guessEntry = null;
-
         /*
          * If the index is empty, return the iterator at the very beginning.
          */
@@ -129,57 +122,25 @@ public class StreamInputPacketIndex {
             throw new IllegalArgumentException("timestamp is negative"); //$NON-NLS-1$
         }
 
-        for (;;) {
-            /*
-             * Guess in the middle of min and max. The +1 is so that in case
-             * (min + 1 == max), we choose the packet at the subscript "max"
-             * instead of the one at "min". Otherwise, it would give an infinite
-             * loop.
-             */
-            guessI = (max + min + 1) / 2;
-            guessEntry = this.entries.get(guessI);
+        StreamInputPacketIndexEntry key = new StreamInputPacketIndexEntry(0);
 
-            /*
-             * If we reached the point where we focus on a single packet, our
-             * search is done.
-             */
-            if (min == max) {
-                break;
-            }
+        key.setTimestampEnd(timestamp);
 
-            if (timestamp < guessEntry.getTimestampBegin()) {
-                /*
-                 * If the timestamp if before the begin timestamp, we know that
-                 * the packet to return is before the guess.
-                 */
-                max = guessI - 1;
-            } else if (timestamp > guessEntry.getTimestampBegin()) {
-                /*
-                 * If the timestamp is after the begin timestamp, we know that
-                 * the packet to return is after the guess or is the guess.
-                 */
-                min = guessI;
-            } else if (timestamp == guessEntry.getTimestampBegin()) {
-                /*
-                 * If the timestamp is equal to the begin timestamp, we want to
-                 * return the first packetIndexEntry that have this timestamp.
-                 */
-                if (guessI > 0) {
-                    StreamInputPacketIndexEntry previousGuessEntry = this.entries.get(guessI - 1);
-                    while (guessI > 0 && guessEntry.getTimestampBegin() == previousGuessEntry.getTimestampBegin()) {
-                        guessEntry = previousGuessEntry;
-                        guessI--;
-                        if (guessI - 1 >= 0) {
-                            previousGuessEntry = this.entries.get(guessI - 1);
-                        }
-                    }
-                    min = guessI;
-                    max = guessI;
-                }
+        int guessI = Collections.binarySearch(this.entries ,key,  new StreamInputPacketIndexEntryComparator());
 
-            }
-        }
+        guessI = (guessI < 0)? ~guessI: guessI;
 
         return this.entries.listIterator(guessI);
+    }
+
+    class StreamInputPacketIndexEntryComparator implements Comparator<StreamInputPacketIndexEntry>{
+
+        @Override
+        public int compare(StreamInputPacketIndexEntry left, StreamInputPacketIndexEntry right) {
+            final long leftTimestampEnd = left.getTimestampEnd();
+            final long rightTimestampEnd = right.getTimestampEnd();
+            return leftTimestampEnd<rightTimestampEnd? -1 : leftTimestampEnd==rightTimestampEnd? 0 : 1;
+        }
+
     }
 }
