@@ -349,7 +349,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                if (!e.doit || e.item == null) {
+                if (e.item == null) {
                     return;
                 }
                 updateStatusLine(null);

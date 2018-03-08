@@ -21,8 +21,10 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseWheelListener;
@@ -290,17 +292,24 @@ public class TmfVirtualTable extends Composite {
         fTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                handleTableSelection(event);
+                if (event.item == null) {
+                    // Override table selection from Select All action
+                    refreshSelection();
+                }
             }
         });
 
-        fTable.addKeyListener(new KeyListener() {
+        fTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                handleTableMouseEvent(e);
+            }
+        });
+
+        fTable.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
                 handleTableKeyEvent(event);
-            }
-            @Override
-            public void keyReleased(KeyEvent event) {
             }
         });
 
@@ -344,26 +353,24 @@ public class TmfVirtualTable extends Composite {
     }
 
     /**
-     * Update the rows and selected item
+     * Handle mouse-based selection in table.
+     *
+     * @param event the mouse event
      */
-    private void handleTableSelection(SelectionEvent event) {
-        int selectedRow = fTable.getSelectionIndex();
-        if ((event.stateMask & SWT.BUTTON_MASK) != 0) {
-            if ((event.stateMask & SWT.CTRL) == 0) {
-                if (selectedRow >= 0) {
-                    if (selectedRow < fFrozenRowCount) {
-                        fSelectedEventRank = selectedRow;
-                    } else {
-                        fSelectedEventRank = fTableTopEventRank + selectedRow;
-                    }
-                } else {
-                    fSelectedEventRank = -1;
-                }
-                if ((event.stateMask & SWT.SHIFT) == 0 || (fTable.getStyle() & SWT.MULTI) == 0 || fSelectedBeginRank == -1) {
-                    fSelectedBeginRank = fSelectedEventRank;
-                }
+    private void handleTableMouseEvent(MouseEvent event) {
+        TableItem item = fTable.getItem(new Point(event.x, event.y));
+        if (item == null) {
+            return;
+        }
+        int selectedRow = indexOf(item);
+        if (event.button != 2) {
+            if (selectedRow >= 0) {
+                fSelectedEventRank = selectedRow;
             } else {
-                event.doit = false;
+                fSelectedEventRank = -1;
+            }
+            if ((event.stateMask & SWT.SHIFT) == 0 || (fTable.getStyle() & SWT.MULTI) == 0 || fSelectedBeginRank == -1) {
+                fSelectedBeginRank = fSelectedEventRank;
             }
         }
         refreshSelection();
@@ -383,7 +390,7 @@ public class TmfVirtualTable extends Composite {
     /**
      * Handle key-based navigation in table.
      *
-     * @param event
+     * @param event the key event
      */
     private void handleTableKeyEvent(KeyEvent event) {
 
