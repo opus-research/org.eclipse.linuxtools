@@ -285,6 +285,13 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 				}
 			}
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 	/**
@@ -312,6 +319,13 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 				Activator.logError(Messages.RemoveButtonListener_error, e1);
 			}
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 
 		/**
          * Delete the resource if the tree item has the same name as it.
@@ -356,6 +370,13 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 			executeCreaterepo.setUser(true);
 			executeCreaterepo.schedule();
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		 */
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 	/*
