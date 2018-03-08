@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.trace;
 
-import java.util.HashMap;
-
 /**
  * <b><u>StreamInputPacketIndexEntry</u></b>
  * <p>
@@ -60,13 +58,6 @@ public class StreamInputPacketIndexEntry {
      * How many lost events are there?
      */
     private long lostEvents = 0;
-
-    /**
-     * Which target is being traced
-     */
-    private String target ;
-    private long targetID;
-
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -209,26 +200,5 @@ public class StreamInputPacketIndexEntry {
      */
     public void setLostEvents(long lostEvents) {
         this.lostEvents = lostEvents;
-    }
-
-    private final HashMap<String, Object> attributes = new HashMap<String, Object>();
-    public void addAttribute(String field, Object value) {
-        attributes.put(field, value);
-    }
-    public Object lookupAttribute(String field){
-        return attributes.get(field);
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
-        this.targetID = Integer.parseInt(target.replaceAll("[\\D]", "")); //$NON-NLS-1$ //$NON-NLS-2$ // slow
-    }
-
-    public long getTargetId(){
-        return targetID;
     }
 }
