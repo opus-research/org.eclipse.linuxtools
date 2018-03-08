@@ -120,6 +120,15 @@ public final class TmfTraceManager {
         return getTraceSet(trace);
     }
 
+    /**
+     * Get the currently-opened traces, as an unmodifiable set.
+     *
+     * @return A set containing the opened traces
+     */
+    public synchronized Set<ITmfTrace> getOpenedTraces() {
+        return Collections.unmodifiableSet(fTraces.keySet());
+    }
+
     private TmfTraceContext getCurrentTraceContext() {
         TmfTraceContext curCtx = fTraces.get(fCurrentTrace);
         if (curCtx == null) {
@@ -207,6 +216,7 @@ public final class TmfTraceManager {
         /* We also want to set the newly-opened trace as the active trace */
         fCurrentTrace = trace;
     }
+
 
     /**
      * Handler for the TmfTraceSelectedSignal.
@@ -301,15 +311,6 @@ public final class TmfTraceManager {
         }
     }
 
-    /**
-     * get the currently-opened trace and return them into an unmodifiable set
-     *
-     * @return a set containing the opened trace
-     */
-    public synchronized Set<ITmfTrace> getOpenedTraces() {
-        return Collections.unmodifiableSet(fTraces.keySet());
-    }
-
     // ------------------------------------------------------------------------
     // Private utility methods
     // ------------------------------------------------------------------------
@@ -367,8 +368,8 @@ public final class TmfTraceManager {
      */
     private static String getTemporaryDir(ITmfTrace trace) {
         return System.getProperty("java.io.tmpdir") + //$NON-NLS-1$
-                File.separator +
-                trace.getName() +
-                File.separator;
+            File.separator +
+            trace.getName() +
+            File.separator;
     }
 }
