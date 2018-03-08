@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
 /**
  * A kernel event type. This is an {@link CtfTmfEvent} with a getPid function.
+ *
  * @author Matthew Khouzam
  * @since 2.0
  */
@@ -32,9 +33,13 @@ final public class CtfKernelEvent extends CtfTmfEvent {
 
     /**
      * Constructor
-     * @param eventDef the event definition from CTF
-     * @param fileName the file that the event came from
-     * @param originTrace the trace that the event came from
+     *
+     * @param eventDef
+     *            the event definition from CTF
+     * @param fileName
+     *            the file that the event came from
+     * @param originTrace
+     *            the trace that the event came from
      */
     public CtfKernelEvent(EventDefinition eventDef, String fileName,
             CtfKernelTrace originTrace) {
@@ -43,7 +48,9 @@ final public class CtfKernelEvent extends CtfTmfEvent {
 
     /**
      * Copy constructor
-     * @param ctfKernelEvent item to copy
+     *
+     * @param ctfKernelEvent
+     *            item to copy
      */
     public CtfKernelEvent(CtfKernelEvent ctfKernelEvent) {
         super(ctfKernelEvent);
@@ -51,7 +58,41 @@ final public class CtfKernelEvent extends CtfTmfEvent {
 
     @Override
     public String getSource() {
-        return Integer.toString(getPid());
+        return getProcessName() + ':' + Integer.toString(getPid());
+    }
+
+    /**
+     * Gets the name of the process that generated the event
+     *
+     * @return the name or "unknown"
+     * @since 2.0
+     */
+    public String getProcessName() {
+        ITmfStateSystem ss = getStateSystem();
+        int pid = getPid();
+        String execName = "unknown"; //$NON-NLS-1$
+        try {
+            int execNameQuark = ss.getQuarkAbsolute(Attributes.THREADS, Integer.toString(pid), Attributes.EXEC_NAME);
+            execName = ss.querySingleState(this.getTimestamp().getValue(), execNameQuark).getStateValue().unboxStr();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (TimeRangeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            e.printStackTrace();
+        }
+        return execName;
+    }
+
+    /**
+     * @return the kernel state system
+     */
+    private ITmfStateSystem getStateSystem() {
+        CtfKernelTrace trace = (CtfKernelTrace) this.getTrace();
+        ITmfStateSystem ss = trace.getStateSystem(CtfKernelTrace.STATE_ID);
+        return ss;
     }
 
     /**
@@ -65,11 +106,9 @@ final public class CtfKernelEvent extends CtfTmfEvent {
         // check if the pid is in the context
         ITmfEventField pidContext = this.getContent().getField("context._pid"); //$NON-NLS-1$
         if (null != pidContext) {
-            return ((Integer) pidContext.getValue()).intValue();
+            return  (((Long)pidContext.getValue()).intValue());
         }
-        // fall back on the state system
-        CtfKernelTrace trace = (CtfKernelTrace) this.getTrace();
-        ITmfStateSystem ss = trace.getStateSystem(CtfKernelTrace.STATE_ID);
+        ITmfStateSystem ss = getStateSystem();
         int retVal = -1;
         try {
             int threadNode = ss.getQuarkAbsolute(Attributes.CPUS, String.valueOf(getCPU()), Attributes.CURRENT_THREAD);
