@@ -21,7 +21,6 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocation;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
@@ -349,13 +348,12 @@ public class CtfTmfTraceTest {
 
     /**
      * Run the boolean validate(IProject,String) method test.
-     * @throws TmfValidationException
      */
     @Test
     public void testValidate() {
         IProject project = null;
         String path = PATH;
-        IStatus result = fixture.validate(project, path);
-        assertTrue(result.isOK());
+        boolean result = fixture.validate(project, path);
+        assertTrue(result);
     }
 }
