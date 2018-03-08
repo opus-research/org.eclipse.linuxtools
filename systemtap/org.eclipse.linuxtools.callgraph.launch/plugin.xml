@@ -97,7 +97,6 @@
     <provider
           default="true"
           delegate="org.eclipse.linuxtools.internal.callgraph.launch.SystemTapLaunchConfigurationDelegate"
-          description="Function Execution Timing"
           id="org.eclipse.linuxtools.callgraph.launch.provider"
           name="Callgraph"
           priority="3"
