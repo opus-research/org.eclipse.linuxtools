@@ -731,7 +731,29 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
                     }
                 }
             } else {
-                IConfigurationElement ce = TmfTraceType.getInstance().getTraceAttributes(traceType);
+                String temp[] = traceType.split(":"); //$NON-NLS-1$
+                if (temp.length < 2) {
+                    Activator.getDefault().logError("Error with trace type " + traceType); //$NON-NLS-1$
+                    return false;
+                }
+                if (temp.length > 2) {
+                    for (int i = 2; i < temp.length; i++) {
+                        temp[1] += temp[i];
+                    }
+                }
+                final String traceId = TmfTraceType.getInstance().getTraceTypeId(temp[0], temp[1]);
+                if (traceId != null) {
+                    if (!TmfTraceType.getInstance().validateTrace(traceId, getSelectedResources())) {
+                        setMessage(null);
+                        setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
+                        return false;
+                    }
+                } else {
+                    setMessage(null);
+                    setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
+                    return false;
+                }
+                IConfigurationElement ce = TmfTraceType.getInstance().getTraceAttributes(traceId);
                 if (ce != null) {
                     traceTypeOK = true;
                     traceBundle = ce.getContributor().getName();
