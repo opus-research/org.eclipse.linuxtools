@@ -134,13 +134,6 @@ public class TraceDomainComponent extends TraceControlComponent {
         return ((TraceSessionComponent)getParent()).getTargetNode();
     }
 
-    /**
-     * @return the buffer type
-     */
-    public String getBufferType(){
-        return fDomainInfo.getBufferType();
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
