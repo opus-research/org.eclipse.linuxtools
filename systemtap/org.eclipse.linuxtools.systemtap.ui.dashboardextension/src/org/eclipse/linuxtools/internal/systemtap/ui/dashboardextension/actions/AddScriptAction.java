@@ -38,7 +38,7 @@ import org.eclipse.linuxtools.systemtap.ui.ide.actions.TempFileAction;
  * version as well as the original.
  * @author Ryan Morse
  */
-public class ViewScriptAction extends Action implements IViewActionDelegate {
+public class AddScriptAction extends Action implements IViewActionDelegate {
 	/**
 	 * This method sets what item the user has selected to view.
 	 */
