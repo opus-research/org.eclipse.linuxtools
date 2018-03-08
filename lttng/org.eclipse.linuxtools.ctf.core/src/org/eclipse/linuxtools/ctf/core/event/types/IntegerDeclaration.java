@@ -45,7 +45,7 @@ public class IntegerDeclaration implements IDeclaration {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * Contructor
      *
      * @param len
      *            The length in bits
@@ -54,7 +54,7 @@ public class IntegerDeclaration implements IDeclaration {
      * @param base
      *            The base (10-16 are most common)
      * @param byteOrder
-     *            Big-endian little-endian or other
+     *            Big endian little endian or other
      * @param encoding
      *            ascii, utf8 or none.
      * @param clock
@@ -77,7 +77,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     // ------------------------------------------------------------------------
-    // Getters/Setters/Predicates
+    // Gettters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
@@ -89,7 +89,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Get the integer base commonly decimal or hex
+     * get the integer base commonly decimal or hex
      * @return the integer base
      */
     public int getBase() {
@@ -97,7 +97,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Gets the byte order
+     * gets the byte order
      * @return the byte order
      */
     public ByteOrder getByteOrder() {
@@ -105,7 +105,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Get encoding, chars are 8 bit ints
+     * get encoding, chars are 8 bit ints
      * @return the encoding
      */
     public Encoding getEncoding() {
@@ -113,7 +113,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * Is the integer a character (8 bits and encoded?)
+     * is the integer a character (8 bits and encoded?)
      * @return is the integer a char
      */
    public boolean isCharacter() {
@@ -129,7 +129,7 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     @Override
-    public long getAlignment() {
+    public long getAlignment(){
         return alignment;
     }
 
@@ -137,7 +137,7 @@ public class IntegerDeclaration implements IDeclaration {
      * The integer's clock, since timestamps are stored in ints
      * @return the integer's clock, can be null. (most often it is)
      */
-    public String getClock() {
+    public String getClock(){
         return clock;
     }
     // ------------------------------------------------------------------------

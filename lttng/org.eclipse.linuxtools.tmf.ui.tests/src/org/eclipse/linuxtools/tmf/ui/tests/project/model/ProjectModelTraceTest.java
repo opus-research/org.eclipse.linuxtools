@@ -31,8 +31,6 @@ import org.junit.Test;
 
 /**
  * Test suite for the TmfTraceElement class.
- *
- * @author Geneviève Bastien
  */
 public class ProjectModelTraceTest {
 
@@ -56,7 +54,11 @@ public class ProjectModelTraceTest {
      */
     @After
     public void cleanUp() {
-        ProjectModelTestData.deleteProject(fixture);
+        try {
+            ProjectModelTestData.deleteProject(fixture);
+        } catch (CoreException e) {
+            fail(e.getMessage());
+        }
     }
 
     /**
@@ -77,7 +79,7 @@ public class ProjectModelTraceTest {
         TmfOpenTraceHelper.openTraceFromElement(traceElement);
 
         /* Give the trace a chance to open */
-        ProjectModelTestData.delayThread(500);
+        ProjectModelTestData.delayThread(5000);
 
         trace = traceElement.getTrace();
         assertNotNull(trace);
@@ -87,7 +89,7 @@ public class ProjectModelTraceTest {
          * the exact same element as the active trace
          */
         TmfOpenTraceHelper.openTraceFromElement(traceElement);
-        ProjectModelTestData.delayThread(500);
+        ProjectModelTestData.delayThread(5000);
 
         ITmfTrace trace2 = TmfTraceManager.getInstance().getActiveTrace();
 
