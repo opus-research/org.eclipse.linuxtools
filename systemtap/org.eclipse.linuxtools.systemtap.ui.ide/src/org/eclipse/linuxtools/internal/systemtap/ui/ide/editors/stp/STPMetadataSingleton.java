@@ -94,6 +94,8 @@ public class STPMetadataSingleton {
 	 */
 	public String[] getProbeVariableCompletions(String probe, String prefix){
 		TreeNode node = TapsetLibrary.getProbes();
+		if (node == null )
+			return NO_MATCHES;
 
 		// Get the matching leaf node.
 		node = node.getChildByName(getTapset(probe));
@@ -143,8 +145,10 @@ public class STPMetadataSingleton {
 	 */
 	private String getTapset(String data) {
 		int i = data.indexOf('.');
-		if (i < 0)
-			throw new StringIndexOutOfBoundsException();
+		if (i < 0){
+			return data;
+		}
+
 		return data.substring(0, data.indexOf('.'));
 	}
 

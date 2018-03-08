@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDataCollectionAction;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -79,15 +77,9 @@ public class PerfProfileView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
-		createActionMenu();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-
-	public void createActionMenu() {
-		IMenuManager manager = getViewSite().getActionBars().getMenuManager();
-		manager.add(new PerfDataCollectionAction());
-	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
@@ -154,5 +146,10 @@ public class PerfProfileView extends ViewPart {
 	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
+	}
+
+	@Override
+	public void setContentDescription (String name) {
+		super.setContentDescription(name);
 	}
 }

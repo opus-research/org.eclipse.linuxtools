@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
@@ -31,7 +33,7 @@ import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.TreeColumnViewerFilter;
 import org.eclipse.linuxtools.dataviewers.actions.STExportToCSVAction;
 import org.eclipse.linuxtools.dataviewers.charts.actions.ChartAction;
-import org.eclipse.linuxtools.gcov.Activator;
+import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.action.SwitchContentProviderAction;
 import org.eclipse.linuxtools.internal.gcov.parser.CovManager;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
@@ -81,7 +83,6 @@ public class CovView extends AbstractSTDataView {
 	 */
 	@Override
 	protected void contributeToToolbar(IToolBarManager manager) {
-		super.contributeToToolbar(manager);
 		manager.add(new Separator());
 		manager.add(new Separator());
 		manager.add(folderAction);
@@ -180,8 +181,10 @@ public class CovView extends AbstractSTDataView {
 				OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project,
 						binary, sf, 0);
 			}
-		} catch (Exception _) {
-			reportError(_);
+		} catch (CoreException e) {
+			reportError(e);
+		} catch (IOException e) {
+			reportError(e);
 		}
 	}
 
@@ -202,8 +205,12 @@ public class CovView extends AbstractSTDataView {
 			//load an Eclipse view
 			CovView cvrgeView = displayCovResults(cvrgeMnger);
 			return cvrgeView;
-		} catch (Exception _) {
-			reportError(_);
+		} catch (InterruptedException e) {
+			reportError(e);
+		} catch (IOException e) {
+			reportError(e);
+		} catch (CoreException e) {
+			reportError(e);
 		}
 		return null;
 	}
