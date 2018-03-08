@@ -228,7 +228,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
         super.init(traceName, type);
 
-        buildStatistics();
+        //buildStatistics();
     }
 
     /**
