@@ -12,7 +12,10 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.request;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
@@ -25,7 +28,6 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -383,7 +385,7 @@ public class TmfSchedulerTest {
             super(fixture.getEventType(),
                     timeRange,
                     0,
-                    TmfDataRequest.ALL_DATA,
+                    TmfEventRequest.ALL_DATA,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -410,7 +412,7 @@ public class TmfSchedulerTest {
             super(fixture.getEventType(),
                     timeRange,
                     0,
-                    TmfDataRequest.ALL_DATA,
+                    TmfEventRequest.ALL_DATA,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }
