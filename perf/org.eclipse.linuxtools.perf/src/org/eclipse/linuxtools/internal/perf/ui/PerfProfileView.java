@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDataCollectionAction;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -50,8 +48,8 @@ public class PerfProfileView extends ViewPart {
 	static class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
-			return (((TreeParent) e1).getPercent() <= ((TreeParent) e2)
-					.getPercent()) ? -1 : 1;
+			return (((TreeParent) e1).getPercent()
+					<= ((TreeParent) e2).getPercent()) ? 1 : -1;
 		}
 	}
 
@@ -79,15 +77,9 @@ public class PerfProfileView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
-		createActionMenu();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-
-	public void createActionMenu() {
-		IMenuManager manager = getViewSite().getActionBars().getMenuManager();
-		manager.add(new PerfDataCollectionAction());
-	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
