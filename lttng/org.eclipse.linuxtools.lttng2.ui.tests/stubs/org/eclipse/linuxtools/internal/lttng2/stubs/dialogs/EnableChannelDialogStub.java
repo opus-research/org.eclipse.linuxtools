@@ -33,7 +33,7 @@ public class EnableChannelDialogStub implements IEnableChannelDialog {
     // Constructor
     // ------------------------------------------------------------------------
     public EnableChannelDialogStub() {
-        fChannelInfo = new ChannelInfo("mychannel");
+        fChannelInfo = new ChannelInfo("mychannel"); //$NON-NLS-1$
         fChannelInfo.setNumberOfSubBuffers(4);
         fChannelInfo.setOverwriteMode(true);
         fChannelInfo.setReadTimer(200);

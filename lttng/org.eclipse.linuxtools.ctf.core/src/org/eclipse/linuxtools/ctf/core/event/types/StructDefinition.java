@@ -12,10 +12,9 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 
@@ -37,7 +36,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     private final StructDeclaration declaration;
-    private final Map<String, Definition> definitions = new LinkedHashMap<String, Definition>();
+    private final HashMap<String, Definition> definitions = new HashMap<String, Definition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -79,9 +78,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     /**
      * @return The definitions of all the fields
-     * @since 2.0
      */
-    public Map<String, Definition> getDefinitions() {
+    public HashMap<String, Definition> getDefinitions() {
         return definitions;
     }
 
