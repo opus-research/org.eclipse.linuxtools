@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun.actions;
 import java.util.ArrayList;
 
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.LoggedCommand2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.ConsoleAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
@@ -27,7 +28,6 @@ import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.ChartStr
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
-import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
@@ -61,7 +61,7 @@ public class ModifyParsingAction extends ConsoleAction {
 
 		if(null != parser && null != dataSet) {
 			ScriptConsole console = super.getActive();
-			LoggedCommand cmd = console.getCommand();
+			LoggedCommand2 cmd = console.getCommand();
 
 			ArrayList<IGobblerListener> listeners = cmd.getInputStreamListeners();
 			ChartStreamDaemon2 daemon = null;
