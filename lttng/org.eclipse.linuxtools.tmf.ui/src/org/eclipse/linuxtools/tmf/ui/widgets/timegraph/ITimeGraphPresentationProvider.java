@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Geneviève Bastien - Add drawing helper methods
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITmfTimeGraphDrawingHelper;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -80,6 +82,25 @@ public interface ITimeGraphPresentationProvider {
      * @see #INVISIBLE
      */
     public int getStateTableIndex(ITimeEvent event);
+
+    /**
+     * Returns the drawing helper for this presentation provider.
+     *
+     * @return The drawing helper
+     * @since 2.0
+     */
+    public ITmfTimeGraphDrawingHelper getDrawingHelper();
+
+    /**
+     * Sets this presentation provider's drawing helper.
+     * This helper be needed to know where to draw items, get its coordinates
+     * given a time, etc.
+     *
+     * @param helper
+     *            The drawing helper
+     * @since 2.0
+     */
+    public void setDrawingHelper(ITmfTimeGraphDrawingHelper helper);
 
     /**
      * Called after drawing the control

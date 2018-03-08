@@ -1,5 +1,6 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson.
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson, École Polytechnique
+ *     de Montréal
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +11,7 @@
  *   Ruslan A. Scherbakov, Intel - Initial API and implementation
  *   Alvaro Sanchez-Leon - Updated for TMF
  *   Patrick Tasse - Refactoring
+ *   Geneviève Bastien - Move code to provide base classes for time chart view
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -70,7 +72,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener {
+public class TimeGraphControl extends TimeGraphBaseControl implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener, ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider, MenuDetectListener, ITmfTimeGraphDrawingHelper {
 
     /** Max scrollbar size */
     public static final int H_SCROLLBAR_MAX = Integer.MAX_VALUE - 1;
@@ -209,6 +211,7 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      */
     public void setTimeGraphProvider(ITimeGraphPresentationProvider timeGraphProvider) {
         fTimeGraphProvider = timeGraphProvider;
+        timeGraphProvider.setDrawingHelper(this);
         _data.provider = timeGraphProvider;
 
         if (fEventColorMap != null) {
@@ -913,13 +916,9 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * Return the x coordinate corresponding to a time
-     *
-     * @param time the time
-     * @return the x coordinate corresponding to the time
-     *
      * @since 2.0
      */
+    @Override
     public int getXForTime(long time) {
         if (null == _timeProvider) {
             return -1;
@@ -934,13 +933,9 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     }
 
     /**
-     * Return the time corresponding to an x coordinate
-     *
-     * @param coord The X coordinate
-     * @return The time corresponding to the x coordinate
-     *
      * @since 2.0
      */
+    @Override
     public long getTimeAtX(int coord) {
         if (null == _timeProvider) {
             return -1;
