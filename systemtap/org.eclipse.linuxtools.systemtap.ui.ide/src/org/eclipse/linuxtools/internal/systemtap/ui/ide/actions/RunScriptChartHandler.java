@@ -11,14 +11,15 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.ChartStreamDaemon;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditorInput;
@@ -33,29 +34,36 @@ import org.eclipse.ui.WorkbenchException;
  */
 public class RunScriptChartHandler extends RunScriptHandler {
 
-	private IDataSet dataSet;
-	private IDataSetParser parser;
-	private LinkedList<GraphData> graphs;
+	private ArrayList<IDataSetParser> parsers;
+	private ArrayList<IDataSet> dataSets;
+	private ArrayList<String> names;
+	private ArrayList<LinkedList<GraphData>> graphs;
 
-	public RunScriptChartHandler(IDataSetParser parser, IDataSet dataSet, LinkedList<GraphData> graphs) {
+	public RunScriptChartHandler(ArrayList<IDataSetParser> parsers, ArrayList<IDataSet> dataSet, ArrayList<String> names, ArrayList<LinkedList<GraphData>> graphs) {
 		super();
-		this.parser = parser;
-		this.dataSet = dataSet;
+		this.parsers = parsers;
+		this.dataSets = dataSet;
+		this.names = names;
 		this.graphs = graphs;
 	}
 
 	@Override
 	protected void scriptConsoleInitialized(ScriptConsole console){
-		console.getCommand().addInputStreamListener(new ChartStreamDaemon2(console, dataSet, parser));
+		int n = parsers.size();
+		for (int i = 0; i < n; i++) {
+			console.getCommand().addInputStreamListener(new ChartStreamDaemon(dataSets.get(i), parsers.get(i)));
+		}
 		try {
 			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 			GraphSelectorEditor ivp = (GraphSelectorEditor)p.openEditor(new GraphSelectorEditorInput(), GraphSelectorEditor.ID);
 
-			String name = console.getName();
-			ivp.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
+			String scriptName = console.getName();
+			ivp.createScriptSets(scriptName, names, dataSets);
 
-			for (GraphData graph : graphs) {
-				ivp.getActiveDisplaySet().addGraph(graph);
+			for (int i = 0; i < n; i++) {
+				for (GraphData graph : graphs.get(i)) {
+					ivp.getDisplaySet(i).addGraph(graph);
+				}
 			}
 		} catch(WorkbenchException we) {
 			ExceptionErrorDialog.openError(Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective, we);
