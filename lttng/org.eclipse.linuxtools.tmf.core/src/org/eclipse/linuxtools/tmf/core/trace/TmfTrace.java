@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -249,16 +250,21 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * The default implementation of TmfTrace uses a TmfStatistics back-end.
      * Override this if you want to specify another type (or none at all).
      *
-     * @throws TmfTraceException
-     *             If there was a problem setting up the statistics
-     * @since 2.0
+     * @return An IStatus indicating if the statistics could be built
+     *         successfully or not.
+     * @since 3.0
      */
-    protected void buildStatistics() throws TmfTraceException {
+    protected IStatus buildStatistics() {
         /*
          * Initialize the statistics provider, but only if a Resource has been
          * set (so we don't build it for experiments, for unit tests, etc.)
          */
-        fStatistics = (fResource == null ? null : new TmfStateStatistics(this) );
+        try {
+            fStatistics = (fResource == null ? null : new TmfStateStatistics(this) );
+        } catch (TmfTraceException e) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
+        }
+        return Status.OK_STATUS;
     }
 
     /**
@@ -669,12 +675,16 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
          * The signal is either for this trace, or for an experiment containing
          * this trace.
          */
-        try {
-            buildStatistics();
-            buildStateSystem();
-        } catch (TmfTraceException e) {
-            e.printStackTrace();
+        IStatus[] statuses = new IStatus[2];
+        statuses[0] = buildStatistics();
+        statuses[1] = buildStateSystem();
+
+        for (IStatus status : statuses) {
+            if (!status.isOK()) {
+                Activator.log(status);
+            }
         }
+
 
         /* Refresh the project, so it can pick up new files that got created. */
         try {
