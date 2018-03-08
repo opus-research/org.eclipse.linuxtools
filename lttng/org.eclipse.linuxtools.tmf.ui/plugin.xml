@@ -644,6 +644,31 @@
                </with>
             </visibleWhen>
          </menu>
+         <menu
+               label="%command.select_experiment_type"
+               mnemonic="%command.select_experiment_type.mnemonic"
+               tooltip="%command.select_experiment_type.description">
+            <dynamic
+                  class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectExperimentTypeContributionItem"
+                  id="org.eclipse.linuxtools.tmf.ui.command.select_experiment_type.dynamic">
+            </dynamic>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </menu>
          <separator
                name="org.eclipse.linuxtools.tmf.ui.separator4"
                visible="true">
@@ -739,6 +764,27 @@
          <commandParameter
                id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"
                name="%commands.trace.select_trace_type.icon"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.select_experiment_type.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.select_experiment_type"
+            name="%command.select_experiment_type">
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.bundle"
+               name="%commands.trace.select_experiment_type.bundle"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.type"
+               name="%commands.trace.select_experiment_type.type"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.icon"
+               name="%commands.trace.select_experiment_type.icon"
                optional="false">
          </commandParameter>
       </command>
@@ -1056,6 +1102,19 @@
          </activeWhen>
       </handler>
       <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectExperimentTypeHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.select_experiment_type">
+         <activeWhen>
+            <iterate
+                  ifEmpty="false"
+                  operator="and">
+               <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+               </instanceof>
+            </iterate>
+         </activeWhen>
+      </handler>
+      <handler
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTracesHandler"
             commandId="org.eclipse.linuxtools.tmf.ui.command.select_traces">
          <activeWhen>
@@ -1242,6 +1301,14 @@
             name="%tracetype.type.ctf"
             trace_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace">
       </type>
+      <type
+            event_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent"
+            icon="icons/elcl16/experiment.gif"
+            id="org.eclipse.linuxtools.tmf.ui.experimenttype.generic"
+            name="Generic Experiment"
+            trace_type="org.eclipse.linuxtools.tmf.core.trace.TmfExperiment"
+            is_experiment="true">
+      </type>  
    </extension>
    <extension
          point="org.eclipse.ui.navigator.linkHelper">

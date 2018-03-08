@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,7 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Matthew Khouzam - Added import functionalities
+ *   Geneviève Bastien - New is_experiment parameter to trace type extension
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -119,6 +120,11 @@ public final class TmfTraceType {
      * Extension point attribute 'class'
      */
     public static final String CLASS_ATTR = "class"; //$NON-NLS-1$
+    /**
+     * Extension point attribute 'is_experiment'
+     * @since 2.1
+     */
+    public static final String IS_EXPERIMENT_ATTR = "is_experiment"; //$NON-NLS-1$
 
     /**
      * Custom text label used internally and therefore should not be
@@ -348,15 +354,19 @@ public final class TmfTraceType {
             // create the trace types
             for (String typeId : fTraceTypeAttributes.keySet()) {
                 IConfigurationElement ce = fTraceTypeAttributes.get(typeId);
-                final String category = getCategory(ce);
-                final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
-                ITmfTrace trace = null;
-                try {
-                    trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                } catch (CoreException e) {
+                /* Do not add experiment types to the fTraceTypes list */
+                boolean isExperiment = Boolean.valueOf(ce.getAttribute(TmfTraceType.IS_EXPERIMENT_ATTR)).booleanValue();
+                if (!isExperiment) {
+                    final String category = getCategory(ce);
+                    final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
+                    ITmfTrace trace = null;
+                    try {
+                        trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    } catch (CoreException e) {
+                    }
+                    TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
+                    fTraceTypes.put(typeId, tt);
                 }
-                TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
-                fTraceTypes.put(typeId, tt);
             }
         }
     }

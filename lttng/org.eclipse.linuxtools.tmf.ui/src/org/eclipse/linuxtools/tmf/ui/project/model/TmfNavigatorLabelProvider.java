@@ -95,8 +95,8 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     @Override
     public Image getImage(Object element) {
 
-        if (element instanceof TmfTraceElement) {
-            TmfTraceElement trace = (TmfTraceElement) element;
+        if (element instanceof TmfCommonProjectElement) {
+            TmfCommonProjectElement trace = (TmfCommonProjectElement) element;
             try {
                 if (trace.getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE) == null) {
                     return fUnknownTraceIcon;
@@ -115,10 +115,9 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
                 }
             } catch (CoreException e) {
             }
-            return fDefaultTraceIcon;
-        }
-
-        if (element instanceof TmfExperimentElement) {
+            if (element instanceof TmfTraceElement) {
+                return fDefaultTraceIcon;
+            }
             return fExperimentIcon;
         }
 
