@@ -26,6 +26,7 @@ import org.eclipse.ui.PlatformUI;
  */
 public class SaveLogAction extends ConsoleAction {
 
+
 	public SaveLogAction(ScriptConsole fConsole) {
 		super(fConsole,
 				ConsoleLogPlugin.getDefault().getBundle().getEntry("icons/actions/save_log.gif"), //$NON-NLS-1$
