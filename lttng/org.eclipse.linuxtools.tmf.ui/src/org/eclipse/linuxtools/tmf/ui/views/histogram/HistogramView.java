@@ -297,7 +297,8 @@ public class HistogramView extends TmfView {
     void updateCurrentEventTime(long newTime) {
         if (fTrace != null) {
             TmfTimeRange timeRange = new TmfTimeRange(new TmfTimestamp(newTime, ITmfTimestamp.NANOSECOND_SCALE), TmfTimestamp.BIG_CRUNCH);
-            HistogramRequest request = new HistogramRequest(fTimeRangeHistogram.getDataModel(), timeRange, 0, 1, 0, ExecutionType.FOREGROUND) {
+            HistogramRequest request = new HistogramRequest(fTimeRangeHistogram.getDataModel(),
+                    timeRange, 0, 1, 0, ExecutionType.BACKGROUND) {
                 @Override
                 public void handleData(ITmfEvent event) {
                     if (event != null) {
@@ -614,7 +615,8 @@ public class HistogramView extends TmfView {
         fTimeRangeHistogram.setTimeRange(startTime, endTime - startTime);
 
         int cacheSize = fTrace.getCacheSize();
-        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(), timeRange, 0, TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.FOREGROUND);
+        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(),
+                timeRange, 0, TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.BACKGROUND);
         fTrace.sendRequest(fTimeRangeRequest);
     }
 

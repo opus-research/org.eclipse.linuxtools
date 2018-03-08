@@ -25,22 +25,29 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * The state provider for traces statistics that use TmfStateStatistics. It
  * should work with any trace type for which we can use the state system.
  *
- * Only one attribute will be stored, containing the total of events seen so
- * far. The resulting attribute tree will look like this:
+ * The resulting attribute tree will look like this:
  *
  * <root>
- *   \-- total
+ *   |-- total
+ *   \-- event_types
+ *        |-- <event name 1>
+ *        |-- <event name 2>
+ *        |-- <event name 3>
+ *       ...
+ *
+ * And each <event name>'s value will be an integer, representing how many times
+ * this particular event type has been seen in the trace so far.
  *
  * @author Alexandre Montplaisir
  * @version 1.0
  */
-class StatsProviderTotals extends AbstractStateChangeInput {
+class StatsStateProvider extends AbstractStateChangeInput {
 
     /**
      * Version number of this input handler. Please bump this if you modify the
      * contents of the generated state history in some way.
      */
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     /**
      * Constructor
@@ -48,8 +55,8 @@ class StatsProviderTotals extends AbstractStateChangeInput {
      * @param trace
      *            The trace for which we build this state system
      */
-    public StatsProviderTotals(ITmfTrace trace) {
-        super(trace, ITmfEvent.class ,"TMF Statistics, event totals"); //$NON-NLS-1$
+    public StatsStateProvider(ITmfTrace trace) {
+        super(trace, ITmfEvent.class ,"TMF Statistics"); //$NON-NLS-1$
     }
 
     @Override
@@ -58,8 +65,8 @@ class StatsProviderTotals extends AbstractStateChangeInput {
     }
 
     @Override
-    public StatsProviderTotals getNewInstance() {
-        return new StatsProviderTotals(this.getTrace());
+    public StatsStateProvider getNewInstance() {
+        return new StatsStateProvider(this.getTrace());
     }
 
     @Override
@@ -70,10 +77,25 @@ class StatsProviderTotals extends AbstractStateChangeInput {
          * timestamp values to nanoseconds. */
         final long ts = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
+        final String eventName = event.getType().getName();
+
         try {
+
             /* Total number of events */
             quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
             ss.incrementAttribute(ts, quark);
+
+            /* Number of events of each type, globally */
+            quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+            ss.incrementAttribute(ts, quark);
+
+//            /* Number of events per CPU */
+//            quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
+//            ss.incrementAttribute(ts, quark);
+//
+//            /* Number of events per process */
+//            quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
+//            ss.incrementAttribute(ts, quark);
 
         } catch (StateValueTypeException e) {
             e.printStackTrace();

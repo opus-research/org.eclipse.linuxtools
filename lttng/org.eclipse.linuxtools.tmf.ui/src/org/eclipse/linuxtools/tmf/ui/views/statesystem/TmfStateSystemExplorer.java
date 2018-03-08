@@ -152,9 +152,10 @@ public class TmfStateSystemExplorer extends TmfView {
                     fullStates.put(ssName, ss.queryFullState(startTime));
                 } catch (TimeRangeException e) {
                     /* Should not happen since we're querying at start time */
-                    e.printStackTrace();
+                    throw new RuntimeException();
                 } catch (StateSystemDisposedException e) {
-                    e.printStackTrace();
+                    /* Probably shutting down, cancel and return */
+                    return;
                 }
             }
 
@@ -217,7 +218,8 @@ public class TmfStateSystemExplorer extends TmfView {
             }
 
         } catch (AttributeNotFoundException e) {
-            e.printStackTrace();
+            /* Should not happen, we're iterating on known attributes */
+            throw new RuntimeException();
         }
     }
 
@@ -273,7 +275,7 @@ public class TmfStateSystemExplorer extends TmfView {
                         }
                     });
                 } catch (StateSystemDisposedException e) {
-                    e.printStackTrace();
+                    return;
                 }
 
                 ssNb++;
@@ -298,7 +300,8 @@ public class TmfStateSystemExplorer extends TmfView {
             }
 
         } catch (AttributeNotFoundException e) {
-            e.printStackTrace();
+            /* We're iterating on known attributes, should not happen */
+            throw new RuntimeException();
         }
     }
 
@@ -334,7 +337,8 @@ public class TmfStateSystemExplorer extends TmfView {
             item.setText(END_TIME_COL, endTime.toString());
 
         } catch (StateValueTypeException e) {
-            e.printStackTrace();
+            /* Should not happen, we're case-switching on the specific types */
+            throw new RuntimeException();
         }
     }
 
@@ -386,7 +390,7 @@ public class TmfStateSystemExplorer extends TmfView {
     @TmfSignalHandler
     public void traceSelected(TmfTraceSelectedSignal signal) {
         ITmfTrace trace = signal.getTrace();
-        if (!trace.equals(fTrace)) {
+        if (trace != fTrace) {
             fTrace = trace;
             Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
                 @Override
