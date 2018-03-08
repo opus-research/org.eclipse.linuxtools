@@ -11,7 +11,7 @@
  *
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,16 +20,15 @@ import java.util.Set;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
 
 /**
  * Base class for the statistics storage. It allow to implement a tree structure
  * while avoiding the need to run through the tree each time you need to add a
  * node at a given place.
  *
- * @version 2.0
+ * @version 1.0
  * @author Mathieu Denis
- * @since 2.0
  */
 public abstract class AbsTmfStatisticsTree {
 

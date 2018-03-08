@@ -10,7 +10,7 @@
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Intial API and Implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
 
 /**
  * Primitive container for Statistics data
@@ -18,8 +18,7 @@ package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
  * Contains information about statistics that can be retrieved with any type of
  * traces
  *
- * @version 2.0
- * @since 2.0
+ * @version 1.0
  * @author Mathieu Denis
  */
 public class TmfStatistics {
