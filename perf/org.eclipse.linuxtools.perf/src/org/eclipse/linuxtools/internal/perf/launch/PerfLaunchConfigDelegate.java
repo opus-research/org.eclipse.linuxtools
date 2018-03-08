@@ -202,7 +202,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		}
 
 		Object[] titleArgs = new Object[]{exePath.toOSString(), args.toString(), String.valueOf(runCount)};
-		String title = MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs);
+		String title = renderProcessLabel(MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs));
 
 		@SuppressWarnings("unchecked")
 		List<String> configEvents = config.getAttribute(PerfPlugin.ATTR_SelectedEvents,
