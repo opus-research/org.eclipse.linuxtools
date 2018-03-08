@@ -21,9 +21,9 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
@@ -42,7 +42,7 @@ public class TmfEventProviderStub extends TmfEventProvider {
     private TmfTraceStub fTrace;
 
     public TmfEventProviderStub(final String path) throws IOException {
-        super(path, TmfEvent.class);
+        super(path, ITmfEvent.class);
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
         try {
             final File test = new File(FileLocator.toFileURL(location).toURI());
@@ -69,9 +69,12 @@ public class TmfEventProviderStub extends TmfEventProvider {
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfContext armRequest(final ITmfRequest request) {
-        final ITmfContext context = fTrace.seekEvent(request.getTimeRange().getStartTime());
-        return context;
+    public ITmfContext armRequest(final ITmfDataRequest request) {
+        if (request instanceof ITmfEventRequest) {
+            final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
+            return context;
+        }
+        return null;
     }
 
     @Override

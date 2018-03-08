@@ -64,20 +64,6 @@
 	
 </profiles>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptors>
-            <descriptor>../src.xml</descriptor>
-          </descriptors>
-        </configuration>
-      </plugin>
-
-    </plugins>
-  </build>
-
   <modules>
     <module>org.eclipse.linuxtools.ctf</module>
     <module>org.eclipse.linuxtools.ctf.core</module>
@@ -87,6 +73,7 @@
     <module>org.eclipse.linuxtools.tmf</module>
     <module>org.eclipse.linuxtools.tmf.core</module>
     <module>org.eclipse.linuxtools.tmf.core.tests</module>
+    <module>org.eclipse.linuxtools.tmf.help</module>
     <module>org.eclipse.linuxtools.tmf.ui</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
 

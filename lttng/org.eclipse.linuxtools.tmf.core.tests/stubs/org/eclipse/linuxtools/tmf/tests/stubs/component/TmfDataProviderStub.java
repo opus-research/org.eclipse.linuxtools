@@ -21,10 +21,9 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
@@ -34,7 +33,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
  * <p>
  * TODO: Implement me. Please.
  */
-@SuppressWarnings({"nls","javadoc", "deprecation"})
+@SuppressWarnings({"nls","javadoc"})
 public class TmfDataProviderStub extends TmfDataProvider {
 
     private static final String DIRECTORY   = "testfiles";
@@ -43,7 +42,7 @@ public class TmfDataProviderStub extends TmfDataProvider {
     private TmfTraceStub fTrace;
 
     public TmfDataProviderStub(final String path) throws IOException {
-        super("TmfDataProviderStub", TmfEvent.class);
+        super("TmfDataProviderStub", ITmfEvent.class);
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
         try {
             final File test = new File(FileLocator.toFileURL(location).toURI());
@@ -64,7 +63,7 @@ public class TmfDataProviderStub extends TmfDataProvider {
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfContext armRequest(final ITmfRequest request) {
+    public ITmfContext armRequest(final ITmfDataRequest request) {
         if (request instanceof ITmfEventRequest) {
             final ITmfContext context = fTrace.seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
             return context;
@@ -78,7 +77,7 @@ public class TmfDataProviderStub extends TmfDataProvider {
     }
 
     @Override
-    public boolean isCompleted(final ITmfRequest request, final ITmfEvent data, final int nbRead) {
+    public boolean isCompleted(final ITmfDataRequest request, final ITmfEvent data, final int nbRead) {
         return false;
     }
 

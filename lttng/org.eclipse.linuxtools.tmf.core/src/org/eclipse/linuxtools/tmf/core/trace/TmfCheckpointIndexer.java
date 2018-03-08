@@ -20,14 +20,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
+import org.eclipse.linuxtools.internal.tmf.core.Messages;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfRequest.TmfRequestPriority;
-import org.eclipse.linuxtools.tmf.core.request.TmfRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 
 /**
@@ -73,7 +74,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     /**
      * The indexing request
      */
-    private ITmfRequest fIndexingRequest = null;
+    private ITmfEventRequest fIndexingRequest = null;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -154,9 +155,16 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
+                monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                 while (!monitor.isCanceled()) {
                     try {
-                        Thread.sleep(100);
+                        long prevNbEvents = fTrace.getNbEvents();
+                        Thread.sleep(250);
+                        long nbEvents = fTrace.getNbEvents();
+                        setName(Messages.TmfCheckpointIndexer_Indexing + ' ' + fTrace.getName() + " (" + nbEvents + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                        // setName doesn't refresh the UI, setTaskName does
+                        long rate = (nbEvents - prevNbEvents) * 4;
+                        monitor.setTaskName(rate + " " + Messages.TmfCheckpointIndexer_EventsPerSecond); //$NON-NLS-1$
                     } catch (final InterruptedException e) {
                         return Status.OK_STATUS;
                     }
@@ -169,14 +177,15 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
 
         // Build a background request for all the trace data. The index is
         // updated as we go by readNextEvent().
-        fIndexingRequest = new TmfRequest(range, offset, ITmfRequest.ALL_EVENTS, TmfRequestPriority.NORMAL)
+        fIndexingRequest = new TmfEventRequest(ITmfEvent.class,
+                range, offset, TmfDataRequest.ALL_DATA, fCheckpointInterval, ITmfDataRequest.ExecutionType.BACKGROUND)
         {
             @Override
-            public synchronized void handleEvent(final ITmfEvent event) {
-                super.handleEvent(event);
+            public void handleData(final ITmfEvent event) {
+                super.handleData(event);
                 if (event != null) {
                     // Update the trace status at regular intervals
-                    if ((getNbEventsRead() % fCheckpointInterval) == 0) {
+                    if ((getNbRead() % fCheckpointInterval) == 0) {
                         updateTraceStatus();
                     }
                 }
@@ -188,7 +197,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
             }
 
             @Override
-            public synchronized void handleCompleted() {
+            public void handleCompleted() {
                 job.cancel();
                 super.handleCompleted();
                 fIsIndexing = false;
@@ -230,13 +239,12 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
      */
     @Override
     public synchronized void updateIndex(final ITmfContext context, final ITmfTimestamp timestamp) {
-        final long rank = context.getRank();
-        if ((rank % fCheckpointInterval) == 0) {
+        if ((context.getRank() % fCheckpointInterval) == 0) {
             // Determine the table position
-            final long position = rank / fCheckpointInterval;
+            final long position = context.getRank() / fCheckpointInterval;
             // Add new entry at proper location (if empty)
             if (fTraceIndex.size() == position) {
-                fTraceIndex.add(new TmfCheckpoint(timestamp, saveContext(context)));
+                fTraceIndex.add(new TmfCheckpoint(timestamp, context.getLocation()));
             }
         }
     }
@@ -306,7 +314,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
                 if (index >= fTraceIndex.size()) {
                     index = fTraceIndex.size() - 1;
                 }
-                return restoreContext(fTraceIndex.get(index).getContext());
+                location = fTraceIndex.get(index).getLocation();
             }
         }
         final ITmfContext context = fTrace.seekEvent(location);
@@ -323,67 +331,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
      */
     protected List<ITmfCheckpoint> getTraceIndex() {
         return fTraceIndex;
-    }
-
-    // ------------------------------------------------------------------------
-    // Context conversion functions
-    // ------------------------------------------------------------------------
-
-    private static ITmfContext saveContext(ITmfContext context) {
-        if (context instanceof TmfExperimentContext) {
-            return saveExpContext(context);
-        }
-        TmfContext ctx = new TmfContext(context.getLocation(), context.getRank());
-        return ctx;
-    }
-
-    private static ITmfContext saveExpContext(ITmfContext context) {
-        TmfExperimentContext expContext = (TmfExperimentContext) context;
-        int size = expContext.getContexts().length;
-        ITmfContext[] trcCtxts = new TmfContext[size];
-        for (int i = 0; i < size; i++) {
-            ITmfContext ctx = expContext.getContexts()[i];
-            trcCtxts[i] = (ctx != null) ? new TmfContext(ctx.getLocation(), ctx.getRank()) : null;
-        }
-        TmfExperimentContext expCtx = new TmfExperimentContext(trcCtxts);
-        expCtx.setLocation(context.getLocation());
-        expCtx.setRank(context.getRank());
-        ITmfEvent[] trcEvts = expCtx.getEvents();
-        for (int i = 0; i < size; i++) {
-            ITmfEvent event = expContext.getEvents()[i];
-            trcEvts[i] = (event != null) ? event.clone() : null;
-        }
-        return expCtx;
-    }
-
-    private ITmfContext restoreContext(ITmfContext context) {
-        if (context instanceof TmfExperimentContext) {
-            return restoreExpContext(context);
-        }
-        ITmfContext ctx = fTrace.seekEvent(context.getLocation());
-        ctx.setRank(context.getRank());
-        return ctx;
-    }
-
-    private ITmfContext restoreExpContext(ITmfContext context) {
-        TmfExperimentContext expContext = (TmfExperimentContext) context;
-        int size = expContext.getContexts().length;
-        ITmfContext[] trcCtxts = new ITmfContext[size];
-        for (int i = 0; i < size; i++) {
-            ITmfTrace trace = ((TmfExperiment) fTrace).getTraces()[i];
-            ITmfContext ctx = expContext.getContexts()[i];
-            trcCtxts[i] = trace.seekEvent(ctx.getLocation());
-            trcCtxts[i].setRank(ctx.getRank());
-        }
-        TmfExperimentContext ctx = new TmfExperimentContext(trcCtxts);
-        ctx.setLocation(context.getLocation());
-        ctx.setRank(context.getRank());
-        ITmfEvent[] trcEvts = expContext.getEvents();
-        for (int i = 0; i < size; i++) {
-            ITmfEvent event = trcEvts[i];
-            ctx.getEvents()[i] = (event != null) ? event.clone() : null;
-        }
-        return ctx;
     }
 
 }

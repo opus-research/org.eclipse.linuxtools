@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.IOException;
 
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
@@ -41,7 +42,6 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
  * @author alexmont
  *
  */
-@SuppressWarnings("deprecation")
 public class HistoryBuilder extends TmfComponent {
 
     private final IStateChangeInput sci;
@@ -50,33 +50,36 @@ public class HistoryBuilder extends TmfComponent {
     private boolean started = true; /* Don't handle signals until we're ready */
 
     /**
-     * Instantiate a new HistoryBuilder helper.
+     * Instantiate a new HistoryBuilder helper. The input -> ss -> backend
+     * relationships should have been set up already.
      *
      * @param stateChangeInput
-     *            The input plugin to use. This is required.
+     *            The input plugin to use
+     * @param ss
+     *            The state system object that will receive the state changes
+     *            from the input
      * @param backend
-     *            The backend storage to use.
+     *            The back-end storage to use, which will receive the intervals
+     *            from the ss
      * @param buildManually
      *            Should we build this history in-band or not. True means we
      *            will start the building ourselves and block the caller until
      *            construction is done. False (out-of-band) means we will start
-     *            listening for the signal and return immediately. Another
-     *            signal will be sent when finished.
-     * @throws IOException
-     *             Is thrown if anything went wrong (usually with the storage
-     *             backend)
+     *            listening for the signal and return immediately.
      */
-    public HistoryBuilder(IStateChangeInput stateChangeInput,
-            IStateHistoryBackend backend, boolean buildManually)
-            throws IOException {
-        if (stateChangeInput == null || backend == null) {
+    public HistoryBuilder(IStateChangeInput stateChangeInput, StateSystem ss,
+            IStateHistoryBackend backend, boolean buildManually) {
+        if (stateChangeInput == null || backend == null || ss == null) {
             throw new IllegalArgumentException();
         }
+        if (stateChangeInput.getAssignedStateSystem() != ss) {
+            /* Logic check to make sure the input is setup properly */
+            throw new RuntimeException();
+        }
+
         sci = stateChangeInput;
         hb = backend;
-        ss = new StateSystem(hb, true);
-
-        sci.assignTargetStateSystem(ss);
+        this.ss = ss;
 
         if (buildManually) {
             TmfSignalManager.deregister(this);
@@ -234,7 +237,6 @@ class StateSystemBuildRequest extends TmfEventRequest {
     private final IStateChangeInput sci;
     private final ITmfTrace trace;
 
-    @SuppressWarnings("deprecation")
     StateSystemBuildRequest(HistoryBuilder builder) {
         super(builder.getInputPlugin().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
@@ -247,7 +249,6 @@ class StateSystemBuildRequest extends TmfEventRequest {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
         if (event != null) {

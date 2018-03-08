@@ -38,6 +38,14 @@ public interface ILttngControlService {
     public String getVersion();
 
     /**
+     * Checks if given version is supported by this ILTTngControlService implementation.
+     *
+     * @param version The version to check
+     * @return <code>true</code> if version is supported else <code>false</code>
+     */
+    public boolean isVersionSupported(String version);
+
+    /**
      * Retrieves the existing sessions names from the node.
      *
      * @param monitor
@@ -110,6 +118,52 @@ public interface ILttngControlService {
      *             If the command fails
      */
     public ISessionInfo createSession(String sessionName, String sessionPath,
+            IProgressMonitor monitor) throws ExecutionException;
+
+    /**
+     * Creates a session with given session name and location.
+     *
+     * @param sessionName
+     *            - a session name to create
+     * @param sessionPath
+     *            - a path for storing the traces (use null for default)
+     * @param noConsumer
+     *            - a flag to indicate no consumer
+     * @param disableConsumer
+     *            - a flag to disable consumer
+     * @param monitor
+     *            - a progress monitor
+     * @return the session information
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public ISessionInfo createSession(String sessionName, String sessionPath, boolean noConsumer, boolean disableConsumer,
+            IProgressMonitor monitor) throws ExecutionException;
+
+
+    /**
+     * Creates a session with given session name and location.
+     *
+     * @param sessionName
+     *            - a session name to create
+     * @param networkUrl
+     *            - a network URL for common definition of data and control channel
+     *              or null if separate definition of data and control channel
+     * @param controlUrl
+     *            - a URL for control channel (networkUrl has to be null, dataUrl has to be set)
+     * @param dataUrl
+     *            - a URL for data channel (networkUrl has to be null, controlUrl has to be set)
+     * @param noConsumer
+     *            - a flag to indicate no consumer
+     * @param disableConsumer
+     *            - a flag to disable consumer
+     * @param monitor
+     *            - a progress monitor
+     * @return the session information
+     * @throws ExecutionException
+     *             If the command fails
+     */
+    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, boolean noConsumer, boolean disableConsumer,
             IProgressMonitor monitor) throws ExecutionException;
 
     /**
@@ -206,14 +260,18 @@ public interface ILttngControlService {
      *            0)for all events .
      * @param isKernel
      *            - a flag for indicating kernel or UST.
+     * @param filterExpression
+     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableEvents(String sessionName, String channelName,
-            List<String> eventNames, boolean isKernel, IProgressMonitor monitor)
+            List<String> eventNames, boolean isKernel, String filterExpression,
+            IProgressMonitor monitor)
             throws ExecutionException;
+
 
     /**
      * Enables all syscall events.
@@ -265,6 +323,8 @@ public interface ILttngControlService {
      *            - a log level type
      * @param level
      *            - a log level
+     * @param filterExpression
+     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
@@ -272,6 +332,7 @@ public interface ILttngControlService {
      */
     public void enableLogLevel(String sessionName, String channelName,
             String eventName, LogLevelType logLevelType, TraceLogLevel level,
+            String filterExpression,
             IProgressMonitor monitor) throws ExecutionException;
 
     /**
