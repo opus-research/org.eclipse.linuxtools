@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF float definition.
@@ -86,7 +85,7 @@ public class FloatDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
         final int exp = declaration.getExponent();
@@ -102,10 +101,10 @@ public class FloatDefinition extends Definition {
     }
 
     private static double readRawFloat64(BitBuffer input, final int manBits,
-            final int expBits) throws CTFReaderException {
-        long low = input.get(32, false);
+            final int expBits) {
+        long low = input.getInt(32, false);
         low = low & 0x00000000FFFFFFFFL;
-        long high = input.get(32, false);
+        long high = input.getInt(32, false);
         high = high & 0x00000000FFFFFFFFL;
         long temp = (high << 32) | low;
         return createFloat(temp, manBits - 1, expBits);
@@ -134,8 +133,8 @@ public class FloatDefinition extends Definition {
     }
 
     private static double readRawFloat32(BitBuffer input, final int manBits,
-            final int expBits) throws CTFReaderException {
-        long temp = input.get(32, false);
+            final int expBits) {
+        long temp = input.getInt(32, false);
         return createFloat(temp, manBits - 1, expBits);
     }
 

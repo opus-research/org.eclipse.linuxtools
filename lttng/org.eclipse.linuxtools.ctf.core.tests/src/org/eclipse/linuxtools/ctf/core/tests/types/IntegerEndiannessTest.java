@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,40 +55,36 @@ public class IntegerEndiannessTest {
         input = new BitBuffer(bb);
     }
 
-    /** Read 32-bits BE
-     * @throws CTFReaderException error */
+    /** Read 32-bits BE */
     @Test
-    public void test32BE() throws CTFReaderException {
+    public void test32BE() {
         IntegerDeclaration be = new IntegerDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
         IntegerDefinition fixture_be = be.createDefinition(null, name);
         fixture_be.read(input);
         assertEquals(0xabcdef12, fixture_be.getValue());
     }
 
-    /** Read 64-bits BE
-     * @throws CTFReaderException error*/
+    /** Read 64-bits BE */
     @Test
-    public void test64BE() throws CTFReaderException {
+    public void test64BE() {
         IntegerDeclaration be = new IntegerDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
         IntegerDefinition fixture_be = be.createDefinition(null, name);
         fixture_be.read(input);
         assertEquals(0xabcdef123456789aL, fixture_be.getValue());
     }
 
-    /** Read 32-bits LE
-     * @throws CTFReaderException error*/
+    /** Read 32-bits LE */
     @Test
-    public void test32LE() throws CTFReaderException {
+    public void test32LE() {
         IntegerDeclaration le = new IntegerDeclaration(32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
         IntegerDefinition fixture_le = le.createDefinition(null, name);
         fixture_le.read(input);
         assertEquals(0x12efcdab, fixture_le.getValue());
     }
 
-    /** Read 64-bits LE
-     * @throws CTFReaderException error*/
+    /** Read 64-bits LE */
     @Test
-    public void test64LE() throws CTFReaderException {
+    public void test64LE() {
         IntegerDeclaration le = new IntegerDeclaration(64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
         IntegerDefinition fixture_le = le.createDefinition(null, name);
         fixture_le.read(input);
