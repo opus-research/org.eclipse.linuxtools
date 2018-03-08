@@ -59,7 +59,6 @@ public abstract class CtfTmfEventField implements ITmfEventField {
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** The name of this field */
     protected final String name;
 
     // ------------------------------------------------------------------------

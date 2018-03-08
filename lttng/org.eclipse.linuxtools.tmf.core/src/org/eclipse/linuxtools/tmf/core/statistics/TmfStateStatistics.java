@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -99,9 +100,32 @@ public class TmfStateStatistics implements ITmfStatistics {
         this.stats = StateSystemManager.loadStateHistory(htFile, htInput, STATE_ID, false);
     }
 
+    /**
+     * Manual constructor. This should be used if the trace's Resource is null
+     * (ie, for unit tests). It requires specifying the location of the history
+     * file manually.
+     *
+     * @param trace
+     *            The trace for which we build these statistics
+     * @param historyFile
+     *            The location of the state history file to build for the stats
+     * @throws TmfTraceException
+     *             If the file could not be written to
+     */
+    public TmfStateStatistics(ITmfTrace trace, File historyFile) throws TmfTraceException {
+        this.trace = trace;
+        final IStateChangeInput htInput = new StatsStateProvider(trace);
+        this.stats = StateSystemManager.loadStateHistory(historyFile, htInput, STATE_ID, true);
+    }
+
     // ------------------------------------------------------------------------
     // ITmfStatistics
     // ------------------------------------------------------------------------
+
+    @Override
+    public void dispose() {
+        stats.dispose();
+    }
 
     @Override
     public void updateStats(final boolean isGlobal, final ITmfTimestamp start,
@@ -119,7 +143,9 @@ public class TmfStateStatistics implements ITmfStatistics {
                 Map<String, Long> map;
 
                 /* Wait until the history building completed */
-                stats.waitUntilBuilt();
+                if (!stats.waitUntilBuilt()) {
+                    return;
+                }
 
                 /* Range should be valid for both global and time range queries */
                 total = getEventsInRange(start, end);
@@ -137,14 +163,15 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public long getEventsTotal() {
-        long startTime = stats.getStartTime();
+        /* We need the complete state history to be built to answer this. */
+        stats.waitUntilBuilt();
+
         long endTime = stats.getCurrentEndTime();
-        int countAtStart = 0, countAtEnd = 0;
+        int count = 0;
 
         try {
             final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            countAtStart = stats.querySingleState(startTime, quark).getStateValue().unboxInt();
-            countAtEnd = stats.querySingleState(endTime, quark).getStateValue().unboxInt();
+            count= stats.querySingleState(endTime, quark).getStateValue().unboxInt();
 
         } catch (TimeRangeException e) {
             /* Assume there is no events for that range */
@@ -153,16 +180,20 @@ public class TmfStateStatistics implements ITmfStatistics {
             e.printStackTrace();
         } catch (StateValueTypeException e) {
             e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            e.printStackTrace();
         }
 
-        long total = countAtEnd - countAtStart;
-        return total;
+        return count;
     }
 
     @Override
     public Map<String, Long> getEventTypesTotal() {
+        /* We need the complete state history to be built to answer this. */
+        stats.waitUntilBuilt();
+
         Map<String, Long> map = new HashMap<String, Long>();
-        long endTime = stats.getCurrentEndTime(); //shouldn't need to check it...
+        long endTime = stats.getCurrentEndTime();
 
         try {
             /* Get the list of quarks, one for each even type in the database */
@@ -186,19 +217,30 @@ public class TmfStateStatistics implements ITmfStatistics {
             e.printStackTrace();
         } catch (StateValueTypeException e) {
             e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            e.printStackTrace();
         }
         return map;
     }
 
     @Override
     public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end) {
+        // FIXME Instead of waiting until the end, we could check the current
+        // end time, and answer as soon as possible...
+        stats.waitUntilBuilt();
+
         int countAtStart = 0, countAtEnd = 0;
         long startTime = checkStartTime(start);
         long endTime = checkEndTime(end);
 
         try {
             final int quark = stats.getQuarkAbsolute(Attributes.TOTAL);
-            countAtStart = stats.querySingleState(startTime, quark).getStateValue().unboxInt();
+            if (startTime == stats.getStartTime()) {
+                countAtStart = 0;
+            } else {
+                /* State system works that way... */
+                countAtStart = stats.querySingleState(startTime - 1, quark).getStateValue().unboxInt();
+            }
             countAtEnd = stats.querySingleState(endTime, quark).getStateValue().unboxInt();
 
         } catch (TimeRangeException e) {
@@ -208,6 +250,8 @@ public class TmfStateStatistics implements ITmfStatistics {
             e.printStackTrace();
         } catch (StateValueTypeException e) {
             e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            e.printStackTrace();
         }
 
         long total = countAtEnd - countAtStart;
@@ -216,6 +260,10 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public Map<String, Long> getEventTypesInRange(ITmfTimestamp start, ITmfTimestamp end) {
+        // FIXME Instead of waiting until the end, we could check the current
+        // end time, and answer as soon as possible...
+        stats.waitUntilBuilt();
+
         Map<String, Long> map = new HashMap<String, Long>();
 
         /* Make sure the start/end times are within the state history, so we
@@ -229,51 +277,43 @@ public class TmfStateStatistics implements ITmfStatistics {
             int quark = stats.getQuarkAbsolute(Attributes.EVENT_TYPES);
             List<Integer> quarks = stats.getSubAttributes(quark, false);
 
-            /*
-             * Get the complete states (in our case, event counts) at the start
-             * time and end time of the requested time range.
-             */
-            List<ITmfStateInterval> startState = stats.queryFullState(startTime);
             List<ITmfStateInterval> endState = stats.queryFullState(endTime);
 
-            /* Save the relevant information in the map we will be returning */
             String curEventName;
             long countAtStart, countAtEnd, eventCount;
-            for (int typeQuark : quarks) {
-                curEventName = stats.getAttributeName(typeQuark);
-                countAtStart = startState.get(typeQuark).getStateValue().unboxInt();
-                countAtEnd = endState.get(typeQuark).getStateValue().unboxInt();
 
-                /*
-                 * The default value for the statistics is 0, rather than the
-                 * value -1 used by the state system for non-initialized state.
-                 */
-                if (startTime == stats.getStartTime() || countAtStart == -1) {
-                    countAtStart = 0;
+            if (startTime == stats.getStartTime()) {
+                /* Only use the values picked up at the end time */
+                for (int typeQuark : quarks) {
+                    curEventName = stats.getAttributeName(typeQuark);
+                    eventCount = endState.get(typeQuark).getStateValue().unboxInt();
+                    if (eventCount == -1) {
+                        eventCount = 0;
+                    }
+                    map.put(curEventName, eventCount);
                 }
-
+            } else {
                 /*
-                 * Workaround a bug in the state system where requests for the
-                 * very last state change will give -1. Send the request 1ns
-                 * before the end of the trace and add the last event to the
-                 * count.
+                 * Query the start time at -1, so the beginning of the interval
+                 * is inclusive.
                  */
-                if (countAtEnd < 0) {
-                    ITmfStateInterval realInterval = stats.querySingleState(endTime - 1, typeQuark);
-                    countAtEnd = realInterval.getStateValue().unboxInt() + 1;
-                }
+                List<ITmfStateInterval> startState = stats.queryFullState(startTime - 1);
+                for (int typeQuark : quarks) {
+                    curEventName = stats.getAttributeName(typeQuark);
+                    countAtStart = startState.get(typeQuark).getStateValue().unboxInt();
+                    countAtEnd = endState.get(typeQuark).getStateValue().unboxInt();
 
-                /*
-                 * If after this it is still at -1, it's because no event of
-                 * this type happened during the requested time range.
-                 */
-                if (countAtEnd < 0) {
-                    countAtEnd = 0;
+                    if (countAtStart == -1) {
+                        countAtStart = 0;
+                    }
+                    if (countAtEnd == -1) {
+                        countAtEnd = 0;
+                    }
+                    eventCount = countAtEnd - countAtStart;
+                    map.put(curEventName, eventCount);
                 }
-
-                eventCount = countAtEnd - countAtStart;
-                map.put(curEventName, eventCount);
             }
+
         } catch (TimeRangeException e) {
             /* Assume there is no events, nothing will be put in the map. */
         } catch (AttributeNotFoundException e) {
@@ -284,11 +324,13 @@ public class TmfStateStatistics implements ITmfStatistics {
             e.printStackTrace();
         } catch (StateValueTypeException e) {
             e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
+            e.printStackTrace();
         }
         return map;
     }
 
-    private long checkStartTime(ITmfTimestamp startTs) {
+    protected long checkStartTime(ITmfTimestamp startTs) {
         long start = startTs.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         if (start < stats.getStartTime()) {
             return stats.getStartTime();
@@ -296,7 +338,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         return start;
     }
 
-    private long checkEndTime(ITmfTimestamp endTs) {
+    protected long checkEndTime(ITmfTimestamp endTs) {
         long end = endTs.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         if (end > stats.getCurrentEndTime()) {
             return stats.getCurrentEndTime();

@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -55,6 +56,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
     /* Latch tracking if the state history is done building or not */
     private final CountDownLatch finishedLatch = new CountDownLatch(1);
 
+    private boolean buildCancelled = false;
+    private boolean isDisposed = false;
+
     /**
      * General constructor
      *
@@ -82,12 +86,23 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public void waitUntilBuilt() {
+    public boolean waitUntilBuilt() {
         try {
             finishedLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        return !buildCancelled;
+    }
+
+    @Override
+    public synchronized void dispose() {
+        isDisposed = true;
+        if (transState.isActive()) {
+            transState.setInactive();
+            buildCancelled = true;
+        }
+        backend.dispose();
     }
 
     //--------------------------------------------------------------------------
@@ -448,7 +463,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public synchronized List<ITmfStateInterval> queryFullState(long t)
-            throws TimeRangeException {
+            throws TimeRangeException, StateSystemDisposedException {
+        if (isDisposed) {
+            throw new StateSystemDisposedException();
+        }
+
         List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
                 attributeTree.getNbAttributes());
 
@@ -484,9 +503,13 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException {
-        ITmfStateInterval ret;
+            throws AttributeNotFoundException, TimeRangeException,
+            StateSystemDisposedException {
+        if (isDisposed) {
+            throw new StateSystemDisposedException();
+        }
 
+        ITmfStateInterval ret;
         if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
             ret = transState.getOngoingInterval(attributeQuark);
         } else {
@@ -508,7 +531,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
             throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException {
+            TimeRangeException, StateSystemDisposedException {
         Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
 
         if (curStackDepth == -1) {
@@ -530,7 +553,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2) throws TimeRangeException,
-            AttributeNotFoundException {
+            AttributeNotFoundException, StateSystemDisposedException {
+        if (isDisposed) {
+            throw new StateSystemDisposedException();
+        }
+
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
@@ -566,7 +593,12 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException {
+            throws TimeRangeException, AttributeNotFoundException,
+            StateSystemDisposedException {
+        if (isDisposed) {
+            throw new StateSystemDisposedException();
+        }
+
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;

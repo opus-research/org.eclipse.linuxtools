@@ -61,21 +61,12 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** The type of event handled by this provider */
     protected Class<? extends ITmfEvent> fType;
-
-    /** Is there some data being logged? */
     protected boolean fLogData;
-
-    /** Are errors being logged? */
     protected boolean fLogError;
 
-    /** Queue of events */
-    protected BlockingQueue<ITmfEvent> fDataQueue;
-
-    /** Size of the fDataQueue */
     protected int fQueueSize = DEFAULT_QUEUE_SIZE;
-
+    protected BlockingQueue<ITmfEvent> fDataQueue;
     private TmfRequestExecutor fExecutor;
 
     private int fSignalDepth = 0;
@@ -119,16 +110,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         TmfProviderManager.register(fType, this);
     }
 
-    /**
-     * Constructor specifying the event type and the queue size.
-     *
-     * @param name
-     *            Name of the provider
-     * @param type
-     *            Type of event that will be handled
-     * @param queueSize
-     *            Size of the event queue
-     */
     protected TmfDataProvider(String name, Class<? extends ITmfEvent> type, int queueSize) {
         this();
         fQueueSize = queueSize;
@@ -251,16 +232,8 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     // Coalescing (primitive test...)
     // ------------------------------------------------------------------------
 
-    /** List of coalesced requests */
     protected Vector<TmfCoalescedDataRequest> fPendingCoalescedRequests = new Vector<TmfCoalescedDataRequest>();
 
-    /**
-     * Create a new request from an existing one, and add it to the coalesced
-     * requests
-     *
-     * @param request
-     *            The request to copy
-     */
     protected void newCoalescedDataRequest(ITmfDataRequest request) {
         synchronized (fLock) {
             TmfCoalescedDataRequest coalescedRequest = new TmfCoalescedDataRequest(request.getDataType(), request.getIndex(),
@@ -274,12 +247,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         }
     }
 
-    /**
-     * Add an existing requests to the list of coalesced ones
-     *
-     * @param request
-     *            The request to add to the list
-     */
     protected void coalesceDataRequest(ITmfDataRequest request) {
         synchronized (fLock) {
             for (TmfCoalescedDataRequest coalescedRequest : fPendingCoalescedRequests) {
@@ -308,12 +275,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         }
     }
 
-    /**
-     * Queue a request.
-     *
-     * @param request
-     *            The data request
-     */
     protected void queueRequest(final ITmfDataRequest request) {
 
         if (fExecutor.isShutdown()) {
@@ -394,20 +355,10 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
             TmfCoreTracer.traceRequest(request, "QUEUED"); //$NON-NLS-1$
         }
         fExecutor.execute(thread);
+
     }
 
-    /**
-     * Queue a background request
-     *
-     * @param request
-     *            The request
-     * @param blockSize
-     *            The request should be split in chunks of this size
-     * @param indexing
-     *            Should we index the chunks
-     */
-    protected void queueBackgroundRequest(final ITmfDataRequest request,
-            final int blockSize, final boolean indexing) {
+    protected void queueBackgroundRequest(final ITmfDataRequest request, final int blockSize, final boolean indexing) {
 
         final TmfDataProvider provider = this;
 
@@ -494,9 +445,7 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      * specific and will be updated by getNext().
      *
      * @param request
-     *            The request
-     * @return Sn application specific context; null if request can't be
-     *         serviced
+     * @return an application specific context; null if request can't be serviced
      */
     protected abstract ITmfContext armRequest(ITmfDataRequest request);
 
