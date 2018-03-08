@@ -504,7 +504,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fLogLevelButton.setToolTipText(Messages.TraceControl_EnableEventsLogLevelTypeTooltip);
         data = new GridData(GridData.FILL_BOTH);
         fLogLevelButton.setLayoutData(data);
-        fLogLevelButton.setSelection(true);
 
         fLogLevelOnlyButton = new Button(logLevelGroup, SWT.RADIO);
         fLogLevelOnlyButton.setText(Messages.TraceControl_EnableEventsLogLevelOnlyTypeName);
