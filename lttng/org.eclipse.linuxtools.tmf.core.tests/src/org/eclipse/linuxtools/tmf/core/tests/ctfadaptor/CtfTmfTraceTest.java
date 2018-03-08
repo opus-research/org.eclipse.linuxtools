@@ -348,14 +348,4 @@ public class CtfTmfTraceTest {
         IStatus result = fixture.validate(project, path);
         assertTrue(result.isOK());
     }
-
-    /**
-     * Run the String getHost() method test
-     */
-    @Test
-    public void testCtfHost() {
-        String a = fixture.getHost();
-        assertEquals("\"84db105b-b3f4-4821-b662-efc51455106a\"", a);
-    }
-
 }

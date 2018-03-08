@@ -99,8 +99,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // The trace's statistics
     private ITmfStatistics fStatistics;
 
-    private ITmfHostProvider fHostProvider;
-
     /**
      * The collection of state systems that are registered with this trace. Each
      * sub-class can decide to add its (one or many) state system to this map
@@ -221,7 +219,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                 throw new TmfTraceException("Invalid trace parser"); //$NON-NLS-1$
             }
         }
-        setHostProvider(new TmfHostProvider(this));
         super.init(traceName, type);
         // register as VIP after super.init() because TmfComponent registers to signal manager there
         TmfSignalManager.registerVIP(this);
@@ -413,14 +410,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
     }
 
-    /**
-     * @since 3.0
-     */
-    @Override
-    public String getHost() {
-        return fHostProvider.getHost();
-    }
-
     // ------------------------------------------------------------------------
     // Convenience setters
     // ------------------------------------------------------------------------
@@ -500,18 +489,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected void setParser(final ITmfEventParser parser) {
         fParser = parser;
-    }
-
-    /**
-     * Set the host provider for this trace
-     *
-     * @param provider
-     *            The host provider
-     * @since 3.0
-     */
-    @Override
-    public void setHostProvider(ITmfHostProvider provider) {
-        fHostProvider = provider;
     }
 
     // ------------------------------------------------------------------------

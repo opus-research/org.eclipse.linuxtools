@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -30,10 +29,9 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
-import org.eclipse.linuxtools.tmf.core.trace.TmfHostProvider;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
@@ -61,37 +59,6 @@ public class CtfTmfTrace extends TmfTrace
     private CTFTrace fTrace;
 
     // -------------------------------------------
-    // Internal classes
-    // -------------------------------------------
-
-    /**
-     * Provides a host provider for ctf traces.
-     *
-     * Ctf traces have a clock with a unique uuid that will be used to identify the
-     * host. Traces with the same clock uuid will be known to have been made on the
-     * same machine.
-     *
-     */
-    private class CtfTmfHostProvider extends TmfHostProvider {
-
-        private final String CLOCK_HOST_PROPERTY = "uuid"; //$NON-NLS-1$
-
-        public CtfTmfHostProvider(CtfTmfTrace trace) {
-            super(trace);
-        }
-
-        @Override
-        public String getHost() {
-            CTFClock clock = ((CtfTmfTrace)getTrace()).getCTFTrace().getClock();
-            if (clock != null) {
-                return (String)clock.getProperty(CLOCK_HOST_PROPERTY);
-            }
-            return getTrace().getName();
-        }
-
-    }
-
-    // -------------------------------------------
     // TmfTrace Overrides
     // -------------------------------------------
     /**
@@ -116,8 +83,6 @@ public class CtfTmfTrace extends TmfTrace
         setCacheSize();
 
         super.initTrace(resource, path, eventType);
-
-        setHostProvider(new CtfTmfHostProvider(this));
 
         @SuppressWarnings("unused")
         CtfTmfEventType type;
