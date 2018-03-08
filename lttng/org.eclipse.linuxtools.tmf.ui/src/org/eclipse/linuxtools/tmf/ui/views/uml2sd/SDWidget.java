@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.contexts.IContextIds;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -1322,21 +1321,21 @@ public class SDWidget extends ScrollView implements SelectionListener,
     /**
      * Returns a draw buffer image.
      *
-     * @return A Image containing the draw buffer, or 'null' if there was a
-     *         problem creating the image.
+     * @return a Image containing the draw buffer.
      */
-    protected @Nullable Image getDrawBuffer() {
+    protected Image getDrawBuffer() {
 
         update();
         Rectangle area = getClientArea();
         Image dbuffer = null;
         GC gcim = null;
 
-        /* Make sure we don't pass 0 to new Image() */
-        area.width = Math.max(area.width, 1);
-        area.height = Math.max(area.height, 1);
+        try {
+            dbuffer = new Image(getDisplay(), area.width, area.height);
+        } catch (Exception e) {
+            Activator.getDefault().logError("Error creating image", e); //$NON-NLS-1$
+        }
 
-        dbuffer = new Image(getDisplay(), area.width, area.height);
         gcim = new GC(dbuffer);
 
         NGC context = new NGC(this, gcim);
@@ -1888,9 +1887,7 @@ public class SDWidget extends ScrollView implements SelectionListener,
         } catch (Exception e) {
             Activator.getDefault().logError("Error drawin content", e); //$NON-NLS-1$
         }
-        if (dbuffer != null) {
-            dbuffer.dispose();
-        }
+        dbuffer.dispose();
         setHScrollBarIncrement(Math.round(SDViewPref.getInstance().getLifelineWidth() / (float) 2 * fZoomValue));
         setVScrollBarIncrement(Math.round(Metrics.getMessagesSpacing() * fZoomValue));
         if ((fTimeBar != null) && (fFrame.hasTimeInfo())) {

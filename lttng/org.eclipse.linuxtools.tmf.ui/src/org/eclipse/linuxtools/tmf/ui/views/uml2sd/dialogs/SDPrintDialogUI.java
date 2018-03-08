@@ -391,9 +391,7 @@ public class SDPrintDialogUI {
 
             fTotalPages.setText(Integer.valueOf(maxNumOfPages()).toString());
             displayPageNum();
-            if (dbuffer != null) {
-                dbuffer.dispose();
-            }
+            dbuffer.dispose();
             d.dispose();
             gc.dispose();
         }
