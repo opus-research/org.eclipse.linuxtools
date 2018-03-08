@@ -8,12 +8,12 @@
  * Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation
  *    Kent Sebastian <ksebasti@redhat.com> -
- *
+ *    
  * CounterSubTab Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation (before subclassing)
  *    Kent Sebastian <ksebasti@redhat.com> - turned into a sub class,
  * 	     changed layouts, fixed up some interactivity issues, ..
- *
+ * 
  * UnitMaskViewer Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation
  *    Kent Sebastian <ksebasti@redhat.com>
@@ -42,6 +42,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider;
+import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider2;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
@@ -99,7 +100,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		counters = OprofileCounter.getCounters(null);
 		TabItem[] counterTabs = new TabItem[counters.length];
 		counterSubTabs = new CounterSubTab[counters.length];
-
+		
 		TabFolder tabFolder = new TabFolder(top, SWT.NONE);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -108,12 +109,12 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			Composite c = new Composite(tabFolder, SWT.NONE);
 			CounterSubTab currentTab = new CounterSubTab(c, counters[i]);
 			counterSubTabs[i] = currentTab;
-
+			
 			counterTabs[i] = new TabItem(tabFolder, SWT.NONE);
 			counterTabs[i].setControl(c);
 			counterTabs[i].setText(OprofileLaunchMessages.getString("tab.event.counterTab.counterText") + String.valueOf(i)); //$NON-NLS-1$
 		}
-
+		
 		getTabFolderComposite();
 	}
 
@@ -189,8 +190,8 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		}
 
 		// Create the counter tabs if host has changed or if they haven't been created yet
-		// Check that initialization is not done for current project.
-		// Any calculation based on project doesn't work as the very first time for local project they are both null.
+		// Check that initialization is not done for current project. 
+		// Any calculation based on project doesn't work as the very first time for local project they are both null. 
 		if(previousProject == null || previousHost != host || host == null || counters == null){
 			Control[] children = top.getChildren();
 
@@ -224,7 +225,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				for (int i = 0; i < counters.length; i++) {
 					counters[i].loadConfiguration(config);
 				}
-
+				
 				for (CounterSubTab tab : counterSubTabs) {
 					tab.initializeTab(config);
 					tab.createEventsFilter();
@@ -260,7 +261,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		} else {
 			int numEnabledEvents = 0;
 			boolean valid = true;
-
+	
 			try {
 				if (config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false)) {
 					numEnabledEvents = 1;
@@ -281,19 +282,19 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 						if (counters[i].getEnabled()) {
 							++numEnabledEvents;
-
+	
 							if (counters[i].getEvent() == null) {
 								valid = false;
 								break;
 							}
-
+	
 							// First check min count
 							int min = counters[i].getEvent().getMinCount();
 							if (counters[i].getCount() < min) {
 								valid = false;
 								break;
 							}
-
+	
 							// Next ask oprofile if it is valid
 							if (!checkEventSetupValidity(counters[i].getNumber(), counters[i].getEvent().getText(), counters[i].getEvent().getUnitMask().getMaskValue())) {
 								valid = false;
@@ -305,9 +306,9 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
-
+	
 			return (numEnabledEvents > 0 && valid);
-		}
+		} 
 	}
 
 	/**
@@ -364,7 +365,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 		config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, useDefault);
 	}
-
+	
 	/**
 	 * @see ILaunchConfigurationTab#getName()
 	 */
@@ -388,7 +389,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		setEnabledState(!defaultEventCheck.getSelection());
 		updateLaunchConfigurationDialog();
 	}
-
+	
 	/**
 	 * Sets the state of the child counter tabs' widgets.
 	 * @param state true for enabled, false for disabled
@@ -421,15 +422,15 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 	protected boolean getTimerMode() {
 		return Oprofile.getTimerMode();
 	}
-
+	
 	/**
-	 * Returns the number of hardware counters the cpu has
+	 * Returns the number of hardware counters the cpu has 
 	 * @return int number of counters
 	 */
 	protected int getNumberOfCounters() {
 		return Oprofile.getNumberOfCounters();
 	}
-
+	
 	/**
 	 * Checks if user has permission to run remote opcontrol as root. Uses a local cache variable
 	 * to avoid running costly calls repeatedly during creation of the view
@@ -441,7 +442,10 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 	protected boolean hasPermissions(IProject project) throws OpcontrolException{
 		if (this.hasPermissions == null){
 			IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
-				this.hasPermissions = provider.hasPermissions(project);
+			if (provider instanceof IOpcontrolProvider2)
+				this.hasPermissions = ((IOpcontrolProvider2)provider).hasPermissions(project);
+			else
+				this.hasPermissions = true;
 		}
 		return this.hasPermissions;
 	}
@@ -467,11 +471,11 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 	}
 
 	/**
-	 * A sub-tab of the OprofileEventConfigTab launch configuration tab.
-	 * Essentially, it is a frontend to an OprofileCounter. This is an
+	 * A sub-tab of the OprofileEventConfigTab launch configuration tab. 
+	 * Essentially, it is a frontend to an OprofileCounter. This is an 
 	 * inner class because it requires methods from the parent tab (such as
 	 * updateLaunchConfigurationDialog() when a widget changes state).
-	 */
+	 */ 
 	protected class CounterSubTab {
 		private Button enabledCheck;
 		private Button profileKernelCheck;
@@ -484,7 +488,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		private ListViewer eventList;
 		private Text eventFilterText;
 		private OprofileCounter counter;
-
+		
 		private ScrolledComposite scrolledTop;
 		protected Composite tabTopContainer;
 
@@ -499,7 +503,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 		/**
 		 * Constructor for a subtab. Creates the layout and widgets for its content.
-		 * @param parent composite the widgets will be created in
+		 * @param parent composite the widgets will be created in 
 		 * @param counter the associated OprofileCounter object
 		 */
 		public CounterSubTab(Composite parent, OprofileCounter counter) {
@@ -516,7 +520,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			scrolledContainer.setLayout(layout);
 			scrolledContainer.setExpandHorizontal(true);
 			scrolledContainer.setExpandVertical(true);
-
+			
 			//composite to contain the rest of the tab
 			Composite tabTopContainer = new Composite(scrolledContainer, SWT.NONE);
 			scrolledContainer.setContent(tabTopContainer);
@@ -525,7 +529,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			layout.marginWidth = 0;
 			layout.numColumns = 2;
 			tabTopContainer.setLayout(layout);
-			tabTopContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			tabTopContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true)); 
 
 			//top cell
 			Composite topCellComp = new Composite(tabTopContainer, SWT.NONE);
@@ -535,11 +539,11 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			layout.numColumns = 2;
 			topCellComp.setLayout(layout);
 			topCellComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
-
+			
 			createTopCell(topCellComp);
-
+			
 			createVerticalSpacer(tabTopContainer, 2);
-
+			
 			//left side composite group for eventList
 			Composite eventListComp = new Composite(tabTopContainer, SWT.NONE);
 			layout = new GridLayout();
@@ -549,8 +553,8 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			//layoutdata is set later
 
 			createLeftCell(eventListComp);
-
-
+			
+			
 			//right side composite group for other event config and unit mask
 			Composite eventConfigComp = new Composite(tabTopContainer, SWT.NONE);
 			layout = new GridLayout();
@@ -559,19 +563,19 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			layout.marginWidth = 0;
 			eventConfigComp.setLayout(layout);
 			eventConfigComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
+			
 			createRightCell(eventConfigComp);
 
-
+			
 			//set the list's composite layout based on the right cell's size
 			GridData data = new GridData(SWT.FILL, SWT.FILL, false, true);
 			data.heightHint = eventConfigComp.getSize().x;
 			eventListComp.setLayoutData(data);
-
+			
 			scrolledTop = scrolledContainer;
 			this.tabTopContainer = tabTopContainer;
 		}
-
+		
 		/**
 		 * Creates the "Enabled" checkbox, and the event description text.
 		 * @param parent composite these widgets will be created in
@@ -590,7 +594,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				}
 			});
 			enabledCheck.setEnabled(false);
-
+			
 			//label for textbox
 			eventDescLabel = new Label(parent, SWT.NONE);
 			eventDescLabel.setText(OprofileLaunchMessages.getString("tab.event.eventDescription.label.text")); //$NON-NLS-1$
@@ -633,7 +637,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				public boolean isLabelProperty(Object element, String property) { return false; }
 				public void removeListener(ILabelProviderListener listener) { }
 			});
-
+			
 			eventList.setContentProvider(new IStructuredContentProvider() {
 				public Object[] getElements(Object inputElement) {
 					OprofileCounter ctr = (OprofileCounter) inputElement;
@@ -645,14 +649,14 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 			//adds the events to the list from the counter
 			eventList.setInput(counter);
-
+			
 			eventList.addSelectionChangedListener(new ISelectionChangedListener() {
 				public void selectionChanged(SelectionChangedEvent sce) {
 					handleEventListSelectionChange();
 				}
 			});
 		}
-
+		
 		/**
 		 * Creates the 2 profile space checkboxes, event count and unit mask widget.
 		 * @param parent composite these widgets will be created in
@@ -667,7 +671,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 					handleProfileKernelToggle();
 				}
 			});
-
+			
 			//profile user checkbox -- should this ever be disabled?
 			profileUserCheck = new Button(parent, SWT.CHECK);
 			profileUserCheck.setText(OprofileLaunchMessages.getString("tab.event.counterSettings.profileUser.check.text")); //$NON-NLS-1$
@@ -677,8 +681,8 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 					handleProfileUserToggle();
 				}
 			});
-
-			//event count label/text
+			
+			//event count label/text 
 			countTextLabel = new Label(parent, SWT.NONE);
 			countTextLabel.setText(OprofileLaunchMessages.getString("tab.event.counterSettings.count.label.text")); //$NON-NLS-1$
 			countText = new Text(parent, SWT.SINGLE | SWT.BORDER);
@@ -699,9 +703,9 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 			unitMaskViewer = new UnitMaskViewer(unitMaskComp);
 		}
-
+		
 		/**
-		 * Creates a text filter for the events list widget
+		 * Creates a text filter for the events list widget 
 		 */
 		private void createEventsFilter(){
 			// Event Filter
@@ -734,7 +738,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				eventList.addFilter(eventFilter);
 			}
 		}
-
+		
 		/**
 		 * Initializes the tab on first creation.
 		 * @param config default configuration for the counter and the associated widgets
@@ -743,7 +747,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			//make all controls inactive, since the 'default event' checkbox
 			// is checked by default
 			setEnabledState(false);
-
+			
 			if (config != null) {
 				counter.loadConfiguration(config);
 			}
@@ -764,7 +768,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			unitMaskViewer.displayEvent(counter.getEvent());
 			eventList.setSelection(new StructuredSelection(counter.getEvent()));
 		}
-
+		
 		/**
 		 * Applies the tab's current state to the launch configuration.
 		 * @param config launch config to apply to
@@ -779,14 +783,14 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		 */
 		public void setEnabledState(boolean state) {
 			enabledCheck.setEnabled(state);
-
+			
 			if (state) {
 				internalSetEnabledState(counter.getEnabled());
 			} else {
 				internalSetEnabledState(false);
 			}
 		}
-
+		
 		/**
 		 * Method split from setEnabledState to avoid code duplication.
 		 * Not meant to be called directly.
@@ -803,8 +807,8 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		}
 
 		/**
-		 * Handling method for the event list. Gets the selection from the listviewer
-		 * and updates the UnitMask and event description text box.
+		 * Handling method for the event list. Gets the selection from the listviewer 
+		 * and updates the UnitMask and event description text box. 
 		 */
 		private void handleEventListSelectionChange() {
 			int index = eventList.getList().getSelectionIndex();
@@ -813,7 +817,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				counter.setEvent(event);
 				eventDescText.setText(event.getTextDescription());
 				unitMaskViewer.displayEvent(event);
-
+				
 				// Check the min count to update the error message (events can have
 				// different minimum reset counts)
 				int min = counter.getEvent().getMinCount();
@@ -830,7 +834,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 			updateLaunchConfigurationDialog();
 		}
-
+		
 		/**
 		 * Handles the toggling of the "profile user" button.
 		 */
@@ -846,7 +850,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			counter.setProfileKernel(profileKernelCheck.getSelection());
 			updateLaunchConfigurationDialog();
 		}
-
+		
 		/**
 		 * Handles text modify events in the count text widget.
 		 */
@@ -872,7 +876,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				updateLaunchConfigurationDialog();
 			}
 		}
-
+		
 		/**
 		 * Returns a string with the minimum allowed count, suitable foruse with setErrorMessage().
 		 * @param min minimum count
@@ -883,10 +887,10 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			Object[] args = new Object[] { Integer.valueOf(min) };
 			return MessageFormat.format(msg, args);
 		}
-
+		
 		/**
 		 * Changes parameters for the top scrolled composite which makes the scroll bars
-		 * appear when content overflows the visible area. Called by the UnitMaskViewer
+		 * appear when content overflows the visible area. Called by the UnitMaskViewer 
 		 * whenever a new set of unit mask buttons are created, since the number of them is
 		 * variable and there is no guarantee as to the default size of the launch configuration
 		 * dialog in general.
@@ -894,8 +898,8 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 		private void resizeScrollContainer() {
 			scrolledTop.setMinSize(tabTopContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		}
-
-
+		
+		
 		/**
 		 * This class displays event unit masks via check boxes and appropriate labels.
 		 */
@@ -924,7 +928,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 				layout.marginWidth = 0;
 				top.setLayout(layout);
 				this.top = top;
-
+				
 				maskListComp = null;
 				unitMaskButtons = null;
 			}
@@ -932,7 +936,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			/**
 			 * Handles button toggles; updates the counter's unit mask to the appropriate value.
 			 * @param maskButton the button object
-			 * @param index the button's mask index (used in OpUnitMask for a proper mask value)
+			 * @param index the button's mask index (used in OpUnitMask for a proper mask value) 
 			 */
 			private void handleToggle(Button maskButton, int index) {
 				OpUnitMask mask = counter.getUnitMask();
@@ -949,15 +953,15 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 			}
 
 			/**
-			 * Disposes of the old unit mask check list and creates a new one with
-			 *   the appropriate default value.
+			 * Disposes of the old unit mask check list and creates a new one with 
+			 *   the appropriate default value. 
 			 * @param oe the event
 			 */
 			public void displayEvent(OpEvent oe) {
 				if (maskListComp != null) {
 					maskListComp.dispose();
 				}
-
+				
 				if(oe == null){
 					return;
 				}
@@ -973,9 +977,9 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 
 				//creates these buttons with the default masks
 				mask.setDefaultMaskValue();
-
+				
 				ArrayList<Button> maskButtons = new ArrayList<Button>();
-
+				
 				for (int i = 0; i < totalMasks; i++) {
 					Button maskButton;
 
@@ -998,7 +1002,7 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 						} else {	//mask type is OpUnitMask.BITMASK
 							buttonType = SWT.CHECK;
 						}
-
+						
 						maskButton = new Button(newMaskComp, buttonType);
 						maskButton.setEnabled(true);
 						maskButton.setText(mask.getText(i));
@@ -1009,14 +1013,14 @@ public class OprofileEventConfigTab extends AbstractLaunchConfigurationTab {
 								handleToggle((Button)se.getSource(), maskButtonIndex);
 							}
 						});
-
+						
 						maskButtons.add(maskButton);
 					}
 				}
-
+				
 				unitMaskButtons = new Button[maskButtons.size()];
 				maskButtons.toArray(unitMaskButtons);
-
+				
 				resizeScrollContainer();
 			}
 
