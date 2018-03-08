@@ -9,6 +9,7 @@ public class Messages extends NLS {
 	public static String EventsTable_timestampColumn;
 	public static String EventsTable_typeColumn;
     public static String EventsTable_contentColumn;
+    public static String EventsTable_pidColumn;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
