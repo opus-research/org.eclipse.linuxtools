@@ -377,6 +377,7 @@ public class TmfSchedulerTest {
     // ------------------------------------------------------------------------
 
     private class BackgroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String backgroundName;
 
@@ -385,6 +386,7 @@ public class TmfSchedulerTest {
                     timeRange,
                     0,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -404,6 +406,7 @@ public class TmfSchedulerTest {
     }
 
     private class ForegroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String foregroundName;
 
@@ -412,6 +415,7 @@ public class TmfSchedulerTest {
                     timeRange,
                     0,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }

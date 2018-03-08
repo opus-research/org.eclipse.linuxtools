@@ -225,6 +225,10 @@ public class HistoryBuilder extends TmfComponent {
 }
 
 class StateSystemBuildRequest extends TmfEventRequest {
+
+    /** The amount of events queried at a time through the requests */
+    private static final int CHUNK_SIZE = 50000;
+
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
     private final ITmfTrace trace;
@@ -234,6 +238,7 @@ class StateSystemBuildRequest extends TmfEventRequest {
                 TmfTimeRange.ETERNITY,
                 0,
                 TmfDataRequest.ALL_DATA,
+                CHUNK_SIZE,
                 ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();

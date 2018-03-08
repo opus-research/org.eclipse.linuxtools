@@ -53,6 +53,10 @@ public class TmfCoalescedEventRequest extends TmfCoalescedDataRequest implements
      * @param nbRequested
      *            The number of events requested. You can use
      *            {@link TmfDataRequest#ALL_DATA} to request all events.
+     * @param blockSize
+     *            The number of events per block. You can use
+     *            {@link TmfDataRequest#DEFAULT_BLOCK_SIZE} to use a default
+     *            value.
      * @param priority
      *            The requested execution priority
      */
@@ -60,8 +64,9 @@ public class TmfCoalescedEventRequest extends TmfCoalescedDataRequest implements
             TmfTimeRange range,
             long index,
             int nbRequested,
+            int blockSize,
             ExecutionType priority) {
-        super(ITmfEvent.class, index, nbRequested, priority);
+        super(ITmfEvent.class, index, nbRequested, blockSize, priority);
         fRange = range;
 
         if (TmfCoreTracer.isRequestTraced()) {
@@ -196,7 +201,7 @@ public class TmfCoalescedEventRequest extends TmfCoalescedDataRequest implements
     @SuppressWarnings("nls")
     public String toString() {
         return "[TmfCoalescedEventRequest(" + getRequestId() + "," + getDataType().getSimpleName()
-                + "," + getRange() + "," + getIndex() + "," + getNbRequested() + ")]";
+                + "," + getRange() + "," + getIndex() + "," + getNbRequested() + "," + getBlockSize() + ")]";
     }
 
 }

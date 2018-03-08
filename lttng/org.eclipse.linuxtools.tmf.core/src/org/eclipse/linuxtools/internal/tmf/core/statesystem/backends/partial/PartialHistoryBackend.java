@@ -283,6 +283,10 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     // ------------------------------------------------------------------------
 
     private class CheckpointsRequest extends TmfEventRequest {
+
+        /** The amount of events queried at a time through the requests */
+        private static final int CHUNK_SIZE = 50000;
+
         private final ITmfTrace trace;
         private final Map<Long, Long> checkpts;
         private long eventCount;
@@ -293,6 +297,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
                     TmfTimeRange.ETERNITY,
                     0,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ITmfDataRequest.ExecutionType.BACKGROUND);
             checkpoints.clear();
             this.trace = input.getTrace();
@@ -326,6 +331,8 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     }
 
     private class PartialStateSystemRequest extends TmfEventRequest {
+
+        private static final int CHUNK_SIZE = 50000;
         private final ITmfStateProvider sci;
         private final ITmfTrace trace;
 
@@ -334,6 +341,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
                     range,
                     0,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ITmfDataRequest.ExecutionType.BACKGROUND);
             this.sci = sci;
             this.trace = sci.getTrace();
