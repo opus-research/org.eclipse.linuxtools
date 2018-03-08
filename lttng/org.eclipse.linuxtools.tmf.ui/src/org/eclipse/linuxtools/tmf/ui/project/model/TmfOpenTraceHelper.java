@@ -233,25 +233,31 @@ public class TmfOpenTraceHelper {
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            final IEditorInput editorInput = new TmfEditorInput(file, trace);
-                            final IWorkbench wb = PlatformUI.getWorkbench();
-                            final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
-                            final IEditorPart editor = activePage.findEditor(new FileEditorInput(file));
-                            if ((editor != null) && (editor instanceof IReusableEditor)) {
-                                activePage.reuseEditor((IReusableEditor) editor, editorInput);
-                                activePage.activate(editor);
-                            } else {
-                                activePage.openEditor(editorInput, editorId);
-                                IDE.setDefaultEditor(file, editorId);
-                                // editor should dispose the trace on close
+                        if (!traceElement.getResource().exists()) {
+                            /* The trace does not exist anymore, just quietly exit */
+                            return;
+                        }
+                        synchronized (traceElement.getResource()) {
+                            try {
+                                final IEditorInput editorInput = new TmfEditorInput(file, trace);
+                                final IWorkbench wb = PlatformUI.getWorkbench();
+                                final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
+                                final IEditorPart editor = activePage.findEditor(new FileEditorInput(file));
+                                if ((editor != null) && (editor instanceof IReusableEditor)) {
+                                    activePage.reuseEditor((IReusableEditor) editor, editorInput);
+                                    activePage.activate(editor);
+                                } else {
+                                    activePage.openEditor(editorInput, editorId);
+                                    IDE.setDefaultEditor(file, editorId);
+                                    // editor should dispose the trace on close
+                                }
+                            } catch (final PartInitException e) {
+                                TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ENDL + ENDL + e.getMessage());
+                                Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + traceElement.getName());
+                                trace.dispose();
+                            } finally {
+                                fOpenLatches.get(traceElement.getResource()).countDown();
                             }
-                        } catch (final PartInitException e) {
-                            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ENDL + ENDL + e.getMessage());
-                            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + traceElement.getName());
-                            trace.dispose();
-                        } finally {
-                            fOpenLatches.get(traceElement.getResource()).countDown();
                         }
                     }
                 });

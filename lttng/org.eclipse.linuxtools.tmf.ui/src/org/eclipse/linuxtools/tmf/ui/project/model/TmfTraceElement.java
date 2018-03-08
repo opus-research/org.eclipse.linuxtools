@@ -312,7 +312,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      *             if the bookmarks file cannot be created
      * @since 2.0
      */
-    public IFile createBookmarksFile() throws CoreException {
+    public synchronized IFile createBookmarksFile() throws CoreException {
         IFile file = getBookmarksFile();
         if (fResource instanceof IFolder) {
             if (!file.exists()) {
@@ -581,7 +581,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * Get the instantiated trace associated with this element. If it is not
      * opened, the trace is opened, and the thread waits until it is available
      * or after a timeout.
-     *
+     * 
      * @return The instantiated trace or null if trace is not (yet) available
      * @throws RuntimeException
      *             exception from the waitTillOpened call
