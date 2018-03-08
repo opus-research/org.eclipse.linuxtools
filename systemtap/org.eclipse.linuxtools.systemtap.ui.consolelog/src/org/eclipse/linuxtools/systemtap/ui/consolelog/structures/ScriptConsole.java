@@ -141,9 +141,11 @@ public class ScriptConsole extends IOConsole {
 	 */
 	protected void createErrorDaemon(IErrorParser parser) {
 		ErrorView errorView = null;
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ErrorView.ID);
-		if(null != ivp && ivp instanceof ErrorView)
-			errorView = ((ErrorView)ivp);
+		try {
+			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ErrorView.ID);
+			if(null != ivp && ivp instanceof ErrorView)
+				errorView = ((ErrorView)ivp);
+		} catch(Exception e) {e.printStackTrace();}
 		errorDaemon = new ErrorStreamDaemon(this, errorView, parser);
 	}
 	
@@ -252,6 +254,11 @@ public class ScriptConsole extends IOConsole {
               cmd.removeErrorStreamListener(errorDaemon);
               cmd.removeInputStreamListener(consoleDaemon);
               setName(Localization.getString("ScriptConsole.Terminated") + super.getName());
+			ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[] {this});
+			
+	        
+			
+			
 		}
 	}
 	
@@ -279,9 +286,11 @@ public class ScriptConsole extends IOConsole {
 	 */
 	@Override
 	public void setName(String name) {
-		super.setName(name);
-		if(null != ConsolePlugin.getDefault())
-			ConsolePlugin.getDefault().getConsoleManager().refresh(this);
+		try {
+			super.setName(name);
+			if(null != ConsolePlugin.getDefault())
+				ConsolePlugin.getDefault().getConsoleManager().refresh(this);
+		} catch(Exception e) {}
 	}
 	
 	private LoggedCommand2 cmd;
