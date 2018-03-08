@@ -9,27 +9,21 @@
  *    Alphonse Van Assche - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.rpm.rpmlint;
+package org.eclipse.linuxtools.internal.rpmstubby.preferences;
+
+import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
 
 /**
- * The activator class controls the plug-in life cycle
+ * Class used to initialize default preference values.
  */
-public class Activator {
-
-	/**
-	 * The id of this plugin.
-	 */
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.rpm.rpmlint"; //$NON-NLS-1$
+public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	
 	/**
-	 * Specfile extension constant i.e. .spec files.
+	 * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
 	 */
-	public static final String SPECFILE_EXTENSION = "spec"; //$NON-NLS-1$
-	
-	/**
-	 * RPM extension constant, i.e. .rpm files.
-	 */
-	public static final String RPMFILE_EXTENSION = "rpm"; //$NON-NLS-1$
+	@Override
+	public void initializeDefaultPreferences() {
+	}
 
 }
