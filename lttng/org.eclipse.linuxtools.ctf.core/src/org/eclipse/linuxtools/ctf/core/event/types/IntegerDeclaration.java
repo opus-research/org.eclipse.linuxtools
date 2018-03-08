@@ -163,9 +163,11 @@ public class IntegerDeclaration implements IDeclaration {
      * @since 2.0
      */
     public BigInteger getMaxValue() {
-        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
-        BigInteger max = signed ? capacity.divide(BigInteger.valueOf(2)) : capacity;
-        return max.subtract(BigInteger.ONE);
+        if (length == 0) {
+            return BigInteger.ZERO;
+        }
+        int delta = signed ? 1 : 0;
+        return BigInteger.ONE.shiftLeft(length - delta).subtract(BigInteger.ONE);
     }
 
     /**
@@ -175,12 +177,12 @@ public class IntegerDeclaration implements IDeclaration {
      * @since 2.0
      */
     public BigInteger getMinValue() {
-        if (!signed) {
+        if (length == 0 || !signed) {
             return BigInteger.ZERO;
         }
 
-        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
-        return capacity.divide(BigInteger.valueOf(2)).negate();
+        BigInteger capacity = BigInteger.ONE.shiftLeft(length - 1);
+        return capacity.negate();
     }
 
 }
