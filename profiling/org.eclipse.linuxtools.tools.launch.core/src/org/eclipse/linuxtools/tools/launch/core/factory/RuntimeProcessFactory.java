@@ -44,8 +44,9 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	private String[] tokenizeCommand(String command) {
 		StringTokenizer tokenizer = new StringTokenizer(command);
 		String[] cmdarray = new String[tokenizer.countTokens()];
-		for (int i = 0; tokenizer.hasMoreElements(); i++)
+		for (int i = 0; tokenizer.hasMoreElements(); i++) {
 			cmdarray[i] = tokenizer.nextToken();
+		}
 
 		return cmdarray;
 	}
@@ -125,8 +126,9 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	 * @return The default instance of the RuntimeProcessFactory.
 	 */
 	public static RuntimeProcessFactory getFactory() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new RuntimeProcessFactory();
+		}
 		return instance;
 	}
 
@@ -232,13 +234,15 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 				path = new Path(proxy.toPath(uri));
 				launcher = RemoteProxyManager.getInstance().getLauncher(project);
 				envp = updateEnvironment(envp, project);
-				if (dir != null)
+				if (dir != null) {
 					changeToDir = new Path(proxy.toPath(dir.toURI()));
+				}
 			} else {
 				path = new Path(uri.getPath());
 				launcher = RemoteProxyManager.getInstance().getLauncher(uri);
-				if (dir != null)
+				if (dir != null) {
 					changeToDir = new Path(dir.toURI().getPath());
+				}
 			}
 
 
@@ -254,7 +258,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 
 		return p;
 	}
-	
+
 	/**
 	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
 	 * preference page in the informed project.
@@ -266,7 +270,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	public Process sudoExec(String cmd, IProject project) throws IOException {
 		return sudoExec(cmd, null, (IFileStore)null, project);
 	}
-	
+
 	/**
 	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
 	 * preference page in the informed project.
@@ -298,7 +302,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 			throws IOException {
 			return sudoExec(tokenizeCommand(cmd), envp, dir, project);
 	}
-	
+
 	/**
 	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
 	 * preference page in the informed project.
@@ -310,7 +314,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	public Process sudoExec(String[] cmdarray, IProject project) throws IOException {
 		return sudoExec(cmdarray, null, project);
 	}
-	
+
 	/**
 	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
 	 * preference page in the informed project.
@@ -359,13 +363,15 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 				launcher = RemoteProxyManager.getInstance().getLauncher(project);
 				envp = updateEnvironment(envp, project);
 
-				if (dir != null)
+				if (dir != null) {
 					changeToDir = new Path(proxy.toPath(dir.toURI()));
+				}
 			} else {
 				launcher = RemoteProxyManager.getInstance().getLauncher(uri);
 				path = new Path(uri.getPath());
-				if (dir != null)
+				if (dir != null) {
 					changeToDir = new Path(dir.toURI().getPath());
+				}
 			}
 
 			List<String> cmdlist = new ArrayList<String>(Arrays.asList(cmdArraySudo));
