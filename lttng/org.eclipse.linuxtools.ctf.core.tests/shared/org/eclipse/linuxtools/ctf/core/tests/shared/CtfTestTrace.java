@@ -19,8 +19,8 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 /**
  * Here is the list of the available test traces for the CTF parser.
  *
- * Make sure you run the traces/get-traces.xml Ant script (or get-traces.sh
- * shell script) to download them first!
+ * Make sure you run the traces/get-traces.xml Ant script to download them
+ * first!
  *
  * @author Alexandre Montplaisir
  */
@@ -32,9 +32,7 @@ public enum CtfTestTrace {
     /** Kernel trace with event contexts */
     KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"),
     /** UST trace with lots of lost events */
-    HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost"),
-    /** Trace with non-standard field sizes */
-    FUNKY_TRACE("../org.eclipse.linuxtools.ctf.core.tests/traces/funky_trace");
+    HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost");
 
 
     private final String fPath;
