@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,7 +20,7 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -53,6 +53,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
     private long fLastThreadId = -1; // used to draw the process name label only once per thread id
 
     private enum State {
+        UNKNOWN         (new RGB(100, 100, 100)),
         IDLE            (new RGB(200, 200, 200)),
         USERMODE        (new RGB(0, 200, 0)),
         SYSCALL         (new RGB(0, 0, 200)),
@@ -120,10 +121,10 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 }
                 return State.SOFT_IRQ_ACTIVE.ordinal();
             } else {
-                return INVISIBLE; // NULL
+                return -1; // NULL
             }
         }
-        return TRANSPARENT;
+        return State.UNKNOWN.ordinal();
     }
 
     @Override
@@ -155,7 +156,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 return null;
             }
         }
-        return Messages.ResourcesView_multipleStates;
+        return State.UNKNOWN.toString();
     }
 
     @Override
@@ -183,7 +184,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 if (status == StateValues.CPU_STATUS_IRQ) {
                     // In IRQ state get the IRQ that caused the interruption
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+                    ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
                     int cpu = entry.getId();
 
                     try {
@@ -212,7 +213,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (status == StateValues.CPU_STATUS_SOFTIRQ) {
                     // In SOFT_IRQ state get the SOFT_IRQ that caused the interruption
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+                    ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
                     int cpu = entry.getId();
 
                     try {
@@ -241,7 +242,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 } else if (status == StateValues.CPU_STATUS_RUN_USERMODE || status == StateValues.CPU_STATUS_RUN_SYSCALL){
                     // In running state get the current tid
                     ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-                    ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+                    ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
 
                     try {
                         retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.CALENDAR, Resolution.NANOSEC));
@@ -300,7 +301,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
             return;
         }
         ResourcesEntry entry = (ResourcesEntry) event.getEntry();
-        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        ITmfStateSystem ss = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
         long time = event.getTime();
         try {
             while (time < event.getTime() + event.getDuration()) {

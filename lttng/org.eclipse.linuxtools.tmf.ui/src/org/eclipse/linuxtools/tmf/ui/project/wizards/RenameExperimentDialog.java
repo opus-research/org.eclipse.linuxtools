@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -246,8 +246,6 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
                             bookmarksFile.move(newBookmarksPath, IResource.FORCE | IResource.SHALLOW, null);
                         }
                     }
-
-                    fExperiment.renameSupplementaryFolder(newName);
                 	fExperiment.getResource().move(newPath, IResource.FORCE | IResource.SHALLOW, null);
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();

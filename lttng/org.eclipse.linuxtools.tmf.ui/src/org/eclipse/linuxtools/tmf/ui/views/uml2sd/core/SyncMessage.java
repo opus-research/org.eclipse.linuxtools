@@ -1,21 +1,22 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ *
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
 import java.util.Comparator;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.ISDPreferences;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewPref;
@@ -208,7 +209,6 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * Set the time when the message occurs
      *
      * @param time the time when the message occurs
-     * @since 2.0
      */
     public void setTime(ITmfTimestamp time) {
         fEventTime = time;
@@ -220,16 +220,18 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
         }
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
      */
     @Override
     public ITmfTimestamp getEndTime() {
         return fEventTime;
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
      */
     @Override
     public ITmfTimestamp getStartTime() {

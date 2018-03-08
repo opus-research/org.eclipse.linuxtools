@@ -11,9 +11,9 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.FunctionBrowserAction;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.FunctionBrowserAction;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
@@ -39,7 +39,7 @@ public class FunctionBrowserView extends BrowserView {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		TapsetLibrary.init();
-		TapsetLibrary.addFunctionListener(new ViewUpdater());
+		TapsetLibrary.addListener(new ViewUpdater());
 		refresh();
 		makeActions();
 	}
@@ -50,9 +50,7 @@ public class FunctionBrowserView extends BrowserView {
 	@Override
 	public void refresh() {
 		functions = TapsetLibrary.getFunctions();
-		if (functions != null){
-			addLocalFunctions(localFunctions);
-		}
+		addLocalFunctions(localFunctions);
 	}
 
 	/**

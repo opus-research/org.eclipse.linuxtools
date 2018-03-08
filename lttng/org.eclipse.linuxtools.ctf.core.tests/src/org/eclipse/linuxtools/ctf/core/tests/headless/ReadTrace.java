@@ -30,6 +30,7 @@ public class ReadTrace {
     /**
      * @param args
      */
+    @SuppressWarnings("nls")
     public static void main(String[] args) {
         final String TRACE_PATH = "traces/kernel";
 
@@ -107,7 +108,7 @@ public class ReadTrace {
      */
     private static String formatDate(long timestamp) {
         Date d = new Date(timestamp / 1000000);
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss."); //$NON-NLS-1$
         String output = df.format(d) + (timestamp % 1000000000);
         return output;
     }

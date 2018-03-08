@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.common.EventIterator;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 
@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
  */
 public class ControlFlowEntry implements ITimeGraphEntry {
     private final int fThreadQuark;
-    private final LttngKernelTrace fTrace;
+    private final CtfKernelTrace fTrace;
     private ControlFlowEntry fParent = null;
     private final ArrayList<ControlFlowEntry> fChildren = new ArrayList<ControlFlowEntry>();
     private String fName;
@@ -55,7 +55,7 @@ public class ControlFlowEntry implements ITimeGraphEntry {
      * @param endTime
      *            The end time of this process
      */
-    public ControlFlowEntry(int threadQuark, LttngKernelTrace trace, String execName, int threadId, int parentThreadId, long startTime, long endTime) {
+    public ControlFlowEntry(int threadQuark, CtfKernelTrace trace, String execName, int threadId, int parentThreadId, long startTime, long endTime) {
         fThreadQuark = threadQuark;
         fTrace = trace;
         fName = execName;
@@ -72,7 +72,7 @@ public class ControlFlowEntry implements ITimeGraphEntry {
 
     @Override
     public boolean hasChildren() {
-        return fChildren.size() > 0;
+        return fChildren != null && fChildren.size() > 0;
     }
 
     @Override
@@ -132,7 +132,7 @@ public class ControlFlowEntry implements ITimeGraphEntry {
      *
      * @return The trace
      */
-    public LttngKernelTrace getTrace() {
+    public CtfKernelTrace getTrace() {
         return fTrace;
     }
 

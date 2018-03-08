@@ -19,10 +19,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.loader.TmfSyncMessage;
 import org.junit.AfterClass;
@@ -34,6 +34,7 @@ import org.junit.Test;
  *
  * @author Bernd Hufmann
  */
+@SuppressWarnings("nls")
 public class TmfUml2SDSyncLoaderTimeTest {
 
     // ------------------------------------------------------------------------
@@ -42,7 +43,7 @@ public class TmfUml2SDSyncLoaderTimeTest {
 
     // Test case 001 expected values
     final static private Uml2SDTestTimestamp TC_001_TIME_VALUE       = new Uml2SDTestTimestamp(9788642228395L);
-    final static private String              TC_001_MESSAGE_NAME     = "START_GAME_REPLY";
+    final static private String              TC_001_MESSAGE_NAME     = "START_GAME_REPLY"; //$NON-NLS-1$
     final static private int                 TC_001_PAGE_VALUE       = 0;
     final static private int                 TC_001_START_OCCURRANCE = 6;
     final static private int                 TC_001_END_OCCURRANCE   = TC_001_START_OCCURRANCE;
@@ -51,7 +52,7 @@ public class TmfUml2SDSyncLoaderTimeTest {
 
     // Test case 002 expected values
     final static private Uml2SDTestTimestamp TC_002_TIME_VALUE       = new Uml2SDTestTimestamp(9789689830722L);
-    final static private String              TC_002_MESSAGE_NAME     = "PAUSE_GAME_REQUEST";
+    final static private String              TC_002_MESSAGE_NAME     = "PAUSE_GAME_REQUEST"; //$NON-NLS-1$
     final static private int                 TC_002_PAGE_VALUE       = 2;
     final static private int                 TC_002_START_OCCURRANCE = 7;
     final static private int                 TC_002_END_OCCURRANCE   = TC_002_START_OCCURRANCE;

@@ -10,9 +10,9 @@
 package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.actions.ModifyParsingAction;
-import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.actions.SaveLogAction;
-import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.actions.StopScriptAction;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.ModifyParsingAction;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.SaveLogAction;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScriptAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
@@ -21,7 +21,6 @@ import org.eclipse.ui.part.IPageBookViewPage;
 
 /**
  * This class is responsible for creating and initializing UI for a {@link ScriptConsole}
- * @since 2.0
  */
 public class ScriptConsolePageParticipant implements IConsolePageParticipant {
 

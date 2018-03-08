@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -24,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -32,15 +33,15 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -54,7 +55,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfTrace class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfTraceTest {
 
     // ------------------------------------------------------------------------
@@ -547,17 +548,15 @@ public class TmfTraceTest {
     @Test
     public void testGetStateSystem() {
         /* There should be no state system registered so far */
-        ITmfStateSystem ss = fTrace.getStateSystems().get("something");
+        ITmfStateSystem ss = fTrace.getStateSystem("something");
         assertNull(ss);
     }
 
-    /**
-     * Make sure the returned map is unmodifiable.
-     */
-    @Test(expected=UnsupportedOperationException.class)
-    public void testGetStateSystem_readOnly() {
-        Map<String, ITmfStateSystem> sss = fTrace.getStateSystems();
-        sss.put("something", null);
+    @Test
+    public void testListStateSystem() {
+        Collection<String> sss = fTrace.listStateSystems();
+        assertNotNull(sss);
+        assertEquals(0, sss.size());
     }
 
     // ------------------------------------------------------------------------
@@ -1442,6 +1441,7 @@ public class TmfTraceTest {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testCurrentTimeValues() throws TmfTraceException {
 
         TmfTraceStub trace = null;

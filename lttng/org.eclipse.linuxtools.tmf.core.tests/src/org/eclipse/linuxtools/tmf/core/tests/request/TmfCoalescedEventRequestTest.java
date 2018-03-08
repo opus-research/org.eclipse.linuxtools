@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -30,6 +30,8 @@ import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedDataRequest;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedEventRequest;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
@@ -38,8 +40,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.tests.stubs.request.TmfEventRequestStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.Before;
@@ -48,7 +48,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfCoalescedEventRequest class.
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({ "nls", "javadoc" })
 public class TmfCoalescedEventRequestTest {
 
     // ------------------------------------------------------------------------

@@ -14,8 +14,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
-import org.eclipse.linuxtools.internal.gprof.Activator;
-import org.eclipse.linuxtools.internal.gprof.Messages;
+import org.eclipse.linuxtools.gprof.Activator;
 import org.eclipse.linuxtools.internal.gprof.parser.GmonDecoder;
 import org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField;
 import org.eclipse.swt.SWT;
@@ -38,9 +37,9 @@ public class SwitchSampleTimeAction extends Action {
 	 * @param view the Gmon viewer
 	 */
 	public SwitchSampleTimeAction(AbstractSTDataView view) {
-		super(Messages.SwitchSampleTimeAction_SWITCH_SAMPLE_TIME, SWT.TOGGLE);
+		super("Switch sample/time", SWT.TOGGLE);
 		this.setImageDescriptor(Activator.getImageDescriptor("icons/datetime_obj.gif")); //$NON-NLS-1$
-		this.setToolTipText(Messages.SwitchSampleTimeAction_SWITCH_SAMPLE_TIME);
+		this.setToolTipText("Switch sample/time");
 		this.view = view;
 	}
 
@@ -56,8 +55,8 @@ public class SwitchSampleTimeAction extends Action {
 
 			if (prof_rate == 0) {
 				MessageDialog.openError(view.getSite().getShell(),
-						Messages.SwitchSampleTimeAction_GMON_PROF_RATE_IS_NULL,
-				Messages.SwitchSampleTimeAction_GMON_PROF_RATE_IS_NULL_LONG_MSG);
+						"Gmon prof rate is null",
+				"Unable to display time, because profiling rate is null");
 				return;
 			}
 

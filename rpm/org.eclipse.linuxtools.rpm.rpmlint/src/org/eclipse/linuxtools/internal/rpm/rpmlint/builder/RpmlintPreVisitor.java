@@ -11,18 +11,13 @@
 package org.eclipse.linuxtools.internal.rpm.rpmlint.builder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.Activator;
 
-/**
- * Resourse visitor accepting only spec and rpm files.
- *
- */
 public class RpmlintPreVisitor implements IResourceVisitor {
-
+	
 	private ArrayList<String> paths = new ArrayList<String>();
 
 	/**
@@ -36,17 +31,13 @@ public class RpmlintPreVisitor implements IResourceVisitor {
 			// only once. That improve drasticaly the perfs.
 			if (resource.getLocation()==null) {
 				paths.add(resource.getLocationURI().toString());
-			} else {
-				paths.add(resource.getLocation().toOSString());
-			}
+			} 
+			else paths.add(resource.getLocation().toOSString());
 		}
-		return true;
+		return true;	
 	}
 
-	/**
-	 * @return List of the accepted paths.
-	 */
-	public List<String> getVisitedPaths() {
+	public ArrayList<String> getVisitedPaths() {
 		return paths;
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,8 +15,8 @@ package org.eclipse.linuxtools.tmf.core.statistics;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * Provider for statistics, which is assigned to a trace. This can be used to

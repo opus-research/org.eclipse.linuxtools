@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.loader;
 
 import java.util.ArrayList;
@@ -29,6 +28,9 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
@@ -39,9 +41,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.uml2sd.ITmfSyncSequenceDiagramEvent;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfSyncSequenceDiagramEvent;
@@ -224,12 +223,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
     /**
      * Returns the current time if available else null.
      *
      * @return the current time if available else null
-     * @since 2.0
      */
     public ITmfTimestamp getCurrentTime() {
         fLock.lock();
@@ -307,7 +304,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 public void handleData(ITmfEvent event) {
                     super.handleData(event);
 
-                    ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+                    ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
                     if (sdEvent != null) {
                         ++fNbSeqEvents;
@@ -1145,7 +1142,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             public void handleData(ITmfEvent event) {
                 super.handleData(event);
 
-                ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+                ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
                 if (sdEvent != null) {
                     fSdEvent.add(sdEvent);
@@ -1173,7 +1170,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      *
      * @param time The timestamp
      * @return page that contains the time
-     * @since 2.0
      */
     protected int getPage(ITmfTimestamp time) {
         int page;
@@ -1231,7 +1227,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      *
      * @param startTime The start time of time range.
      * @return the time range
-     * @since 2.0
      */
     protected TmfTimeRange getSignalTimeRange(ITmfTimestamp startTime) {
         fLock.lock();
@@ -1304,7 +1299,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          *
          * @param findCriteria The search criteria
          * @param window Time range to search in
-         * @since 2.0
          */
         public SearchJob(Criteria findCriteria, TmfTimeRange window) {
             super(Messages.TmfUml2SDSyncLoader_SearchJobDescrition);
@@ -1445,7 +1439,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                 return;
             }
 
-            ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+            ITmfSyncSequenceDiagramEvent sdEvent = getSequnceDiagramEvent(event);
 
             if (sdEvent != null) {
 
@@ -1493,7 +1487,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          * Returns timestamp of found time.
          *
          * @return timestamp of found time.
-         * @since 2.0
          */
         public ITmfTimestamp getFoundTime() {
             return fFoundTime;
@@ -1536,16 +1529,15 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      *
      * @param tmfEvent Event to parse for sequence diagram event details
      * @return sequence diagram event if details are available else null
-     * @since 2.0
      */
-    protected ITmfSyncSequenceDiagramEvent getSequenceDiagramEvent(ITmfEvent tmfEvent){
+    protected ITmfSyncSequenceDiagramEvent getSequnceDiagramEvent(ITmfEvent tmfEvent){
         //type = .*RECEIVE.* or .*SEND.*
         //content = sender:<sender name>:receiver:<receiver name>,signal:<signal name>
         String eventType = tmfEvent.getType().toString();
-        if (eventType.contains(Messages.TmfUml2SDSyncLoader_EventTypeSend) || eventType.contains(Messages.TmfUml2SDSyncLoader_EventTypeReceive)) {
-            Object sender = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldSender);
-            Object receiver = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldReceiver);
-            Object name = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldSignal);
+        if (eventType.contains(Messages.TmfUml2SDSyncCloader_EventTypeSend) || eventType.contains(Messages.TmfUml2SDSyncCloader_EventTypeReceive)) {
+            Object sender = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldSender);
+            Object receiver = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldReceiver);
+            Object name = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldSignal);
             if ((sender instanceof ITmfEventField) && (receiver instanceof ITmfEventField) && (name instanceof ITmfEventField)) {
                 ITmfSyncSequenceDiagramEvent sdEvent = new TmfSyncSequenceDiagramEvent(tmfEvent,
                                 ((ITmfEventField) sender).getValue().toString(),

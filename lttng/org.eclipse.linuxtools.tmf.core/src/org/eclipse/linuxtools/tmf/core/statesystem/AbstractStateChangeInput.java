@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,10 +17,8 @@ import java.util.concurrent.BlockingQueue;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 
@@ -50,7 +48,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     private ITmfEvent currentEvent;
 
     /** State system in which to insert the state changes */
-    protected ITmfStateSystemBuilder ss = null;
+    protected ITmfStateSystemBuilder ss;
 
     /**
      * Instantiate a new state provider plugin.
@@ -93,11 +91,6 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     }
 
     @Override
-    public ITmfStateSystem getAssignedStateSystem() {
-        return ss;
-    }
-
-    @Override
     public void dispose() {
         /* Insert a null event in the queue to stop the event handler's thread. */
         try {
@@ -133,28 +126,6 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     }
 
     /**
-     * Block the caller until the events queue is empty.
-     */
-    public void waitForEmptyQueue() {
-        /*
-         * We will first insert a dummy event that is guaranteed to not modify
-         * the state. That way, when that event leaves the queue, we will know
-         * for sure that the state system processed the preceding real event.
-         */
-        TmfTimestamp ts = new TmfTimestamp(0); /* it must not be -1! */
-        TmfEvent ev = new TmfEvent(null, ts, null, null, null, null);
-
-        try {
-            eventsQueue.put(ev);
-            while (!eventsQueue.isEmpty()) {
-                    Thread.sleep(100);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * This is the runner class for the second thread, which will take the
      * events from the queue and pass them through the state system.
      */
@@ -174,7 +145,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
                     currentEvent = event;
 
                     /* Make sure this is an event the sub-class can process */
-                    if (eventType.isInstance(event) && event.getType() != null) {
+                    if (eventType.isInstance(event)) {
                         eventHandle(event);
                     }
                     event = eventsQueue.take();

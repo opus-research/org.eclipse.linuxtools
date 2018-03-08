@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -32,7 +32,7 @@ public class Benchmark {
      * @param args The command-line arguments
      */
     public static void main(final String[] args) {
-        final String TRACE_PATH = "testfiles/kernel";
+        final String TRACE_PATH = "testfiles/kernel"; //$NON-NLS-1$
         final int NUM_LOOPS = 100;
 
         // Change this to enable text output
@@ -63,9 +63,9 @@ public class Benchmark {
                     nbEvent++;
                     if (USE_TEXT) {
 
-                        System.out.println("Event " + nbEvent + " Time "
-                                + current.getTimestamp().toString() + " type " + current.getEventName()
-                                + " on CPU " + current.getSource() + " " + current.getContent().toString());
+                        System.out.println("Event " + nbEvent + " Time " //$NON-NLS-1$ //$NON-NLS-2$
+                                + current.getTimestamp().toString() + " type " + current.getEventName() //$NON-NLS-1$
+                                + " on CPU " + current.getSource() + " " + current.getContent().toString()) ; //$NON-NLS-1$ //$NON-NLS-2$
                     }
                     // advance the trace to the next event.
                     boolean hasMore = traceReader.advance();
@@ -80,16 +80,16 @@ public class Benchmark {
             final double time = (stop - start) / (double) nbEvent;
             benchs.add(time);
         }
-        System.out.println("");
+        System.out.println(""); //$NON-NLS-1$
         double avg = 0;
         for (final Double val : benchs) {
             avg += val;
         }
         avg /= benchs.size();
-        System.out.println("Time to read = " + avg + " events/ns");
+        System.out.println("Time to read = " + avg + " events/ns"); //$NON-NLS-1$ //$NON-NLS-2$
         for (final Double val : benchs) {
             System.out.print(val);
-            System.out.print(", ");
+            System.out.print(", "); //$NON-NLS-1$
         }
 
     }
