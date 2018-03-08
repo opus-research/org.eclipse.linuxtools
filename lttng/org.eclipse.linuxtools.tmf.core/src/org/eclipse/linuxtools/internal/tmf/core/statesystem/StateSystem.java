@@ -60,10 +60,23 @@ public class StateSystem implements ITmfStateSystemBuilder {
     private boolean isDisposed = false;
 
     /**
+     * New-file constructor. For when you build a state system from an existing
+     * file, or if the back-end does not require a file on disk.
+     *
+     * @param backend
+     *            Back-end plugin to use
+     */
+    public StateSystem(IStateHistoryBackend backend) {
+        this.backend = backend;
+        this.transState = new TransientState(backend);
+        this.attributeTree = new AttributeTree(this);
+    }
+
+    /**
      * General constructor
      *
      * @param backend
-     *            The "state history storage" backend to use.
+     *            The "state history storage" back-end to use.
      * @param newFile
      *            Put true if this is a new history started from scratch. It is
      *            used to tell the state system where to get its attribute tree.
