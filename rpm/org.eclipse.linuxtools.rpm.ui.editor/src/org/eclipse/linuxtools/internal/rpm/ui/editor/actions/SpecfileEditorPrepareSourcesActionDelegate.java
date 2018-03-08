@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.RPMHandlerUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.UiUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
@@ -34,9 +35,11 @@ import org.eclipse.linuxtools.rpm.core.RPMProject;
 import org.eclipse.linuxtools.rpm.core.utils.DownloadJob;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
-import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMHandlerUtils;
 import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMUtils;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -119,7 +122,9 @@ public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler 
 				monitor.beginTask(
 						"Preparing sources for " + rpj.getSpecFile().getName(), //$NON-NLS-1$
 						IProgressMonitor.UNKNOWN);
-				MessageConsole myConsole = RPMUtils.getConsole(rpj.getSpecFile().getName());
+				int offset = rpj.getSpecFile().getName().toString().lastIndexOf("."); //$NON-NLS-1$
+				String projname = rpj.getSpecFile().getName().toString().substring(0,offset);
+				MessageConsole myConsole = getConsole(projname);
 				MessageConsoleStream out = myConsole.newMessageStream();
 				IStatus is = null;
 				try {
@@ -140,6 +145,33 @@ public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler 
 		job.setUser(true); // suppress UI. That's done in encapsulated
 		job.schedule();
 		return null;
+	}
+
+	/**
+	 * Get the console.
+	 *
+	 * @param packageName The name of the package(RPM) this console will be for.
+	 * @return A console instance.
+	 */
+	public MessageConsole getConsole(String packageName) {
+		ConsolePlugin plugin = ConsolePlugin.getDefault();
+		IConsoleManager conMan = plugin.getConsoleManager();
+		String projectConsoleName = "rpmbuild"+'('+packageName+')'; //$NON-NLS-1$
+		MessageConsole ret = null;
+		for (IConsole cons : ConsolePlugin.getDefault().getConsoleManager()
+				.getConsoles()) {
+			if (cons.getName().equals(projectConsoleName)) {
+				ret = (MessageConsole) cons;
+			}
+		}
+		// no existing console, create new one
+		if (ret == null) {
+			ret = new MessageConsole(projectConsoleName, null, null, true);
+		}
+		conMan.addConsoles(new IConsole[] { ret });
+		ret.clearConsole();
+		ret.activate();
+		return ret;
 	}
 
 }

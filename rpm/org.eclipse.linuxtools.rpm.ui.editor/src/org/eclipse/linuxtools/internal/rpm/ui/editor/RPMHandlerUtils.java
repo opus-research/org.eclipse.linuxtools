@@ -8,7 +8,7 @@
  * Contributors:
  *    Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.rpm.ui.editor.utils;
+package org.eclipse.linuxtools.internal.rpm.ui.editor;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.actions.Messages;
 import org.eclipse.linuxtools.rpm.core.IRPMConstants;
 import org.eclipse.linuxtools.rpm.core.RPMProject;
@@ -79,6 +78,11 @@ public class RPMHandlerUtils {
 		return null;
 	}
 
+	/**
+	 * Get an RPMProject for the resource creating a new instance to an RPMProject.
+	 * @param resource The resource to check its parent project.
+	 * @return The RPMProject of the resource passed in.
+	 */
 	public static RPMProject getRPMProject(IResource resource) {
 		RPMProject rc = null;
 
