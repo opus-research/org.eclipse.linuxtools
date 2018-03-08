@@ -44,8 +44,6 @@ public class Messages extends NLS {
     public static String BatchImportTraceWizard_remove;
     public static String BatchImportTraceWizard_add;
 
-    public static String BatchImportTraceWizard_errorImportingTraceResource;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
