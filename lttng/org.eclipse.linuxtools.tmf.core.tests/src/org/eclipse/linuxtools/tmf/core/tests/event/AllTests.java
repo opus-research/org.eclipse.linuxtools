@@ -14,6 +14,7 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
 
+import org.eclipse.linuxtools.tmf.core.tests.event.lookup.TmfCallsiteTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -22,6 +23,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+    TmfCallsiteTest.class,
     TmfEventFieldTest.class,
     TmfEventTest.class,
     TmfEventTypeManagerTest.class,
