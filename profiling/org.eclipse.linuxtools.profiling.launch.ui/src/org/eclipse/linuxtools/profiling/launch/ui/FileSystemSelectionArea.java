@@ -26,7 +26,6 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -61,7 +60,7 @@ public class FileSystemSelectionArea {
 			fsElements = new LinkedList<FileSystemElement>();
 
 			// Add all of the ones declared by the registry.
-			IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, EXTENSION_POINT_ID);
+			IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(Activator.PLUGIN_ID, EXTENSION_POINT_ID);
 			IConfigurationElement[] infos = extensionPoint.getConfigurationElements();
 			for (int i = 0; i < infos.length; i++) {
 				IConfigurationElement configurationElement = infos[i];
@@ -73,7 +72,7 @@ public class FileSystemSelectionArea {
 							remoteSelector = (IRemoteResourceSelectorProxy)obj;
 						}
 					} catch (CoreException e) {
-						ProfileLaunchPlugin.log(IStatus.ERROR, ResourceSelectorWidgetMessages.FileSystemSelectionArea_exception_while_creating_runnable_class + configurationElement.getAttribute(EXT_ATTR_CLASS), e);
+						Activator.log(IStatus.ERROR, ResourceSelectorWidgetMessages.FileSystemSelectionArea_exception_while_creating_runnable_class + configurationElement.getAttribute(EXT_ATTR_CLASS), e);
 					}
 					FileSystemElement element = new FileSystemElement(
 							configurationElement.getAttribute(SCHEME_ID),
@@ -119,6 +118,7 @@ public class FileSystemSelectionArea {
 			 *
 			 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
 			 */
+			@Override
 			public void dispose() {
 				// Nothing to do
 			}
@@ -128,6 +128,7 @@ public class FileSystemSelectionArea {
 			 *
 			 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
 			 */
+			@Override
 			public Object[] getElements(Object inputElement) {
 				return getSchemes();
 			}
@@ -138,6 +139,7 @@ public class FileSystemSelectionArea {
 			 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer,
 			 *      java.lang.Object, java.lang.Object)
 			 */
+			@Override
 			public void inputChanged(org.eclipse.jface.viewers.Viewer viewer,
 					Object oldInput, Object newInput) {
 				// Nothing to do
@@ -151,7 +153,7 @@ public class FileSystemSelectionArea {
 			FileSystemElement fsElt = fsEltItr.next();
 			if (fsElt.getIsDefault()) {
 				if (foundDefault) {
-					ProfileLaunchPlugin.log(IStatus.WARNING, ResourceSelectorWidgetMessages.FileSystemSelectionArea_found_multiple_default_extensions + fsElt.getScheme());
+					Activator.log(IStatus.WARNING, ResourceSelectorWidgetMessages.FileSystemSelectionArea_found_multiple_default_extensions + fsElt.getScheme());
 					// use only the first one we found marked as default
 					continue;
 				}
@@ -195,7 +197,7 @@ public class FileSystemSelectionArea {
 			}
 		}
 		if (!foundMatch) {
-			throw new CoreException(new Status(IStatus.ERROR, ProfileLaunchPlugin.PLUGIN_ID, IStatus.OK,
+			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK,
 					ResourceSelectorWidgetMessages.FileSystemSelectionArea_unrecognized_scheme + scheme, null));
 		}
 	}
