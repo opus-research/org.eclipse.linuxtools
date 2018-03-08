@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 
 /**
  * This class manages the set of signal listeners and the signals they are
@@ -139,8 +139,8 @@ public class TmfSignalManager {
 
     static private void sendSignal(Map<Object, Method[]> listeners, TmfSignal signal) {
 
-        if (TmfCoreTracer.isSignalTraced()) {
-            TmfCoreTracer.traceSignal(signal, "(start)"); //$NON-NLS-1$
+        if (Tracer.isSignalTraced()) {
+            Tracer.traceSignal(signal, "(start)"); //$NON-NLS-1$
         }
 
         // Build the list of listener methods that are registered for this signal
@@ -164,24 +164,24 @@ public class TmfSignalManager {
             for (Method method : entry.getValue()) {
                 try {
                     method.invoke(entry.getKey(), new Object[] { signal });
-                    if (TmfCoreTracer.isSignalTraced()) {
+                    if (Tracer.isSignalTraced()) {
                         Object key = entry.getKey();
                         String hash = String.format("%1$08X", entry.getKey().hashCode()); //$NON-NLS-1$
                         String target = "[" + hash + "] " + key.getClass().getSimpleName() + ":" + method.getName();   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        TmfCoreTracer.traceSignal(signal, target);
+                        Tracer.traceSignal(signal, target);
                     }
                 } catch (IllegalArgumentException e) {
-                    Activator.logError("Exception handling signal " + signal + " in method " + method, e); //$NON-NLS-1$ //$NON-NLS-2$
+                    Activator.getDefault().logError("Exception handling signal " + signal + " in method " + method, e); //$NON-NLS-1$ //$NON-NLS-2$
                 } catch (IllegalAccessException e) {
-                    Activator.logError("Exception handling signal " + signal + " in method " + method, e); //$NON-NLS-1$ //$NON-NLS-2$
+                    Activator.getDefault().logError("Exception handling signal " + signal + " in method " + method, e); //$NON-NLS-1$ //$NON-NLS-2$
                 } catch (InvocationTargetException e) {
-                    Activator.logError("Exception handling signal " + signal + " in method " + method, e); //$NON-NLS-1$ //$NON-NLS-2$
+                    Activator.getDefault().logError("Exception handling signal " + signal + " in method " + method, e); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             }
         }
 
-        if (TmfCoreTracer.isSignalTraced()) {
-            TmfCoreTracer.traceSignal(signal, "(end)"); //$NON-NLS-1$
+        if (Tracer.isSignalTraced()) {
+            Tracer.traceSignal(signal, "(end)"); //$NON-NLS-1$
         }
     }
 

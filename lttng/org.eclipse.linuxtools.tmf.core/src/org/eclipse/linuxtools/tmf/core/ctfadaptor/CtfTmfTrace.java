@@ -33,7 +33,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * @version 1.0
  * @author Matthew khouzam
  */
-public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
+public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
 
 
     //-------------------------------------------
@@ -155,19 +155,19 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentLocation()
      */
     @Override
-    public ITmfLocation getCurrentLocation() {
+    public ITmfLocation<?> getCurrentLocation() {
         return null;
     }
 
 
 
     @Override
-    public double getLocationRatio(ITmfLocation location) {
+    public double getLocationRatio(ITmfLocation<?> location) {
         final CtfLocation curLocation = (CtfLocation) location;
         final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         context.setLocation(curLocation);
-        context.seek(curLocation.getLocationInfo());
-        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocationInfo());
+        context.seek(curLocation.getLocation());
+        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocation());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
         return ((double) currentTime.getTimestamp() - startTime)
@@ -197,7 +197,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      * @return ITmfContext
      */
     @Override
-    public ITmfContext seekEvent(final ITmfLocation location) {
+    public ITmfContext seekEvent(final ITmfLocation<?> location) {
         CtfLocation currentLocation = (CtfLocation) location;
         CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         /*
@@ -209,15 +209,15 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
             currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
             context.setRank(0);
         }
-        if (currentLocation.getLocationInfo() == CtfLocation.INVALID_LOCATION) {
+        if (currentLocation.getLocation() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation = new CtfLocation(getEndTime().getValue() + 1, 0L);
+            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
         if (location == null) {
             CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
             if (event != null) {
-                currentLocation = new CtfLocation(event.getTimestamp().getValue(), 0);
+                currentLocation.setLocation(event.getTimestampValue(), 0);
             }
         }
         if(context.getRank() != 0) {
@@ -249,7 +249,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     public synchronized CtfTmfEvent getNext(final ITmfContext context) {
         CtfTmfEvent event = null;
         if (context instanceof CtfTmfLightweightContext) {
-            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocationInfo())) {
+            if (CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocation())) {
                 return null;
             }
             CtfTmfLightweightContext ctfContext = (CtfTmfLightweightContext) context;
@@ -280,11 +280,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         return;
     }
 
-    /**
-     * Method getStateSystem.
-     *
-     * @return IStateSystemQuerier
-     */
+    @Override
     public IStateSystemQuerier getStateSystem() {
         return this.ss;
     }

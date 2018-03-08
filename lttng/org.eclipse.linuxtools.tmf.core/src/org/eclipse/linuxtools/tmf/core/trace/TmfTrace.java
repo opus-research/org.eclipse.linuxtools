@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -349,6 +350,15 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return fEndTime.clone();
     }
 
+    /**
+     * @since 2.0
+     */
+    @Override
+    public IStateSystemQuerier getStateSystem() {
+        /* By default, no state system is used */
+        return null;
+    }
+
     // ------------------------------------------------------------------------
     // Convenience setters/getters
     // ------------------------------------------------------------------------
@@ -439,7 +449,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A rank <= 0 indicates to seek the first event
         if (rank <= 0) {
-            ITmfContext context = seekEvent((ITmfLocation) null);
+            ITmfContext context = seekEvent((ITmfLocation<?>) null);
             context.setRank(0);
             return context;
         }
@@ -466,7 +476,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A null timestamp indicates to seek the first event
         if (timestamp == null) {
-            ITmfContext context = seekEvent((ITmfLocation) null);
+            ITmfContext context = seekEvent((ITmfLocation<?>) null);
             context.setRank(0);
             return context;
         }

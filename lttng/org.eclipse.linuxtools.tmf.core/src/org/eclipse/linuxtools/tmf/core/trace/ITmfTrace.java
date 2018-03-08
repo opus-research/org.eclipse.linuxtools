@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -200,6 +201,12 @@ public interface ITmfTrace extends ITmfDataProvider {
      */
     public long getStreamingInterval();
 
+    /**
+     * @return The state system associated with this trace
+     * @since 2.0
+     */
+    public IStateSystemQuerier getStateSystem();
+
     // ------------------------------------------------------------------------
     // Trace positioning getters
     // ------------------------------------------------------------------------
@@ -207,7 +214,7 @@ public interface ITmfTrace extends ITmfDataProvider {
     /**
      * @return the current trace location
      */
-    public ITmfLocation getCurrentLocation();
+    public ITmfLocation<?> getCurrentLocation();
 
     /**
      * Returns the ratio (proportion) corresponding to the specified location.
@@ -215,7 +222,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param location a trace specific location
      * @return a floating-point number between 0.0 (beginning) and 1.0 (end)
      */
-    public double getLocationRatio(ITmfLocation location);
+    public double getLocationRatio(ITmfLocation<?> location);
 
     // ------------------------------------------------------------------------
     // SeekEvent operations (returning a trace context)
@@ -233,7 +240,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @param location the trace specific location
      * @return a context which can later be used to read the corresponding event
      */
-    public ITmfContext seekEvent(ITmfLocation location);
+    public ITmfContext seekEvent(ITmfLocation<?> location);
 
     /**
      * Position the trace at the 'rank'th event in the trace.

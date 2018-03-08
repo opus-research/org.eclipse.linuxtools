@@ -451,6 +451,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Object getAdapter(final Class adapter) {
         if (IGotoMarker.class.equals(adapter)) {
             return fEventsTable;

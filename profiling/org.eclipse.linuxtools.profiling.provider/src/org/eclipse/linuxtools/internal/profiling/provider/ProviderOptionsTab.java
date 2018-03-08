@@ -20,7 +20,6 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
-import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.swt.SWT;
@@ -33,30 +32,16 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
-public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
+public abstract class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 
-	String type;
-	String name;
 	Composite top;
 	Combo providerCombo;
 	AbstractLaunchConfigurationTab[] tabs;
 	ILaunchConfiguration initial;
 	HashMap<String, String> comboItems;
 	CTabFolder tabgroup;
-
-	// if tabs are being initialized do not call performApply()
-	HashMap<String, Boolean> initialized = new HashMap<String, Boolean> ();
-
-	/**
-	 * ProviderOptionsTab constructor.
-	 *
-	 * @param profilingType String type of profiling this tab will be used for.
-	 * @param profilingName String name of this tab to be displayed.
-	 */
-	public ProviderOptionsTab(String profilingType, String profilingName) {
-		type = profilingType;
-		name = profilingName;
-	}
+	Boolean initialized;
+	public static final String PROVIDER_CONFIG_ATT = "provider"; //$NON-NLS-1$
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
@@ -84,23 +69,18 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 	}
 
 	public void loadTabGroupItems(CTabFolder tabgroup, String curProviderId) {
-		// dispose of old tabs and their state
+		// dispose of old tabs
 		for (CTabItem item : tabgroup.getItems()) {
 			item.dispose();
 		}
-		initialized.clear();
 
 		ProfileLaunchConfigurationTabGroup tabGroupConfig;
 
 		if (curProviderId == null || "".equals(curProviderId)) {
-			// get the id of a provider
-			curProviderId = ProviderLaunchConfigurationDelegate
-					.getProviderIdToRun(getProfilingType());
+			// get id of highest priority provider
+			curProviderId = ProfileLaunchConfigurationTabGroup
+					.getHighestProviderId(getProfilingType());
 		}
-
-		// starting initialization of this tab's controls
-		initialized.put(curProviderId, false);
-
 		tabGroupConfig = ProfileLaunchConfigurationTabGroup
 				.getTabGroupProviderFromId(curProviderId);
 		if (tabGroupConfig == null) {
@@ -145,21 +125,22 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 		 * can properly load the widgets the first time.
 		 */
 
+		// starting initialization of this tab's controls
+		initialized = false;
+
 		// update current configuration (initial) with configuration being
 		// passed in
 		initial = configuration;
 
-
 		// check if there exists a launch provider id in the configuration
 		if (initial != null) {
 			try {
-				String providerId = initial.getAttribute(
-						ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+				String providerId = initial.getAttribute(PROVIDER_CONFIG_ATT, "");
 				if (providerId != null && !providerId.equals("")) {
 					// load provider corresponding to specified id
 					loadTabGroupItems(tabgroup, providerId);
 				} else {
-					// find a provider to load if none found
+					// load highest priority provider if none found
 					loadTabGroupItems(tabgroup, null);
 				}
 			} catch (CoreException e) {
@@ -171,19 +152,14 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 				tab.initializeFrom(configuration);
 			}
 		}
-
 		// finished initialization
-		initialized.put(getProviderId(), true);
+		initialized = true;
 	}
 
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		// make sure tabs are not null, and the tab's controls have been
 		// initialized.
-
-		Boolean isInitialized = initialized.get(getProviderId());
-		isInitialized = (isInitialized != null) ? isInitialized : false;
-
-		if (tabs != null && isInitialized) {
+		if (tabs != null && initialized) {
 			for (AbstractLaunchConfigurationTab tab : tabs) {
 				tab.performApply(configuration);
 			}
@@ -195,30 +171,13 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 	 *
 	 * @param configuration a configuration
 	 */
-	private void setProvider(String providerId) {
+	public void setProvider(String providerId) {
 		try {
 			ILaunchConfigurationWorkingCopy wc = initial.getWorkingCopy();
-			wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT,
-					providerId);
+			wc.setAttribute(PROVIDER_CONFIG_ATT, providerId);
 			initial = wc.doSave();
 		} catch (CoreException e1) {
 			e1.printStackTrace();
-		}
-	}
-
-	/**
-	 * Get the provider ID for the provider of the currently loaded
-	 * configuration.
-	 *
-	 * @return the provider ID or an empty string if the configuration
-	 * has no provider ID defined.
-	 */
-	private String getProviderId() {
-		try {
-			return initial.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
-		} catch (CoreException e) {
-			return "";
 		}
 	}
 
@@ -268,8 +227,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 	public boolean isValid(ILaunchConfiguration config) {
 		String provider;
 		try {
-			provider = config.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+			provider = config.getAttribute(PROVIDER_CONFIG_ATT, "");
 		} catch (CoreException e) {
 			setErrorMessage(e.getMessage());
 			return false;
@@ -282,20 +240,9 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 	}
 
 	/**
-	 * Get profiling type of the configuration.
-	 * 
+	 * Get profiling type of this plug-in.
+	 *
 	 * @return String profiling type this plug-in supports.
 	 */
-	protected String getProfilingType() {
-		return type;
-	}
-
-	/**
-	 * Get name of profiling type that used for this tab.
-	 * 
-	 * @return String profiling name.
-	 */
-	public String getName() {
-		return name;
-	}
+	protected abstract String getProfilingType();
 }

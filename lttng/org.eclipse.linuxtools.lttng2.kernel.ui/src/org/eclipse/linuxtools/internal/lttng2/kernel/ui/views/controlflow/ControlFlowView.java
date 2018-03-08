@@ -37,7 +37,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentDisposedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
@@ -279,7 +278,7 @@ public class ControlFlowView extends TmfView {
         public void run() {
             ArrayList<ControlFlowEntry> entryList = null;
             synchronized (fEntryListSyncObj) {
-                entryList = (ArrayList<ControlFlowEntry>) fEntryList.clone();
+                entryList = fEntryList;
             }
             if (entryList == null) {
                 return;
@@ -424,25 +423,6 @@ public class ControlFlowView extends TmfView {
             }
         };
         thread.start();
-    }
-
-    /**
-     * Experiment is disposed: clear the data structures and the view
-     *
-     * @param signal the signal received
-     */
-    @TmfSignalHandler
-    public void experimentDisposed(final TmfExperimentDisposedSignal signal) {
-        if (signal.getExperiment().equals(fSelectedExperiment)) {
-            fSelectedExperiment = null;
-            fStartTime = 0;
-            fEndTime = 0;
-            fZoomThread.cancel();
-            synchronized(fEntryListSyncObj) {
-                fEntryList.clear();
-            }
-            refresh(INITIAL_WINDOW_OFFSET);
-        }
     }
 
     /**
