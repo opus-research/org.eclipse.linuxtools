@@ -89,7 +89,7 @@ public class StapGraphParserTest extends TestCase {
 	}
 	
 	
-	public final String currentPath = Activator.getPluginLocation();
+	public final String currentPath = Activator.PLUGIN_LOCATION;
 	public String graphDataPath= "";
 	
 	//FOR TESTING THE GRAPH PARSING
