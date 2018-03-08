@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.eclipse.core.resources.IFolder;
@@ -34,11 +32,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.junit.Test;
 
 public class LinkedResourceDoubleClickTest extends AbstractLinkedResourceMemcheckTest {
 	private ValgrindStackFrame frame;
-	@Test
+
 	public void testLinkedDoubleClickFile() throws Exception {
 		ILaunchConfiguration config = createConfiguration(proj.getProject());
 		doLaunch(config, "testLinkedDoubleClickFile"); //$NON-NLS-1$
@@ -60,7 +57,7 @@ public class LinkedResourceDoubleClickTest extends AbstractLinkedResourceMemchec
 		assertEquals(expectedFile.getCanonicalPath(),
 				actualFile.getCanonicalPath());
 	}
-	@Test
+
 	public void testLinkedDoubleClickLine() throws Exception {
 		ILaunchConfiguration config = createConfiguration(proj.getProject());
 		doLaunch(config, "testLinkedDoubleClickLine"); //$NON-NLS-1$

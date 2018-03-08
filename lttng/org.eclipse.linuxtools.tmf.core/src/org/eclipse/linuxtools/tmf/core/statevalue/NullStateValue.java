@@ -42,28 +42,4 @@ final class NullStateValue extends TmfStateValue {
     public String toString() {
         return "nullValue"; //$NON-NLS-1$
     }
-
-    // ------------------------------------------------------------------------
-    // Unboxing methods. Null values can be unboxed into any type.
-    // ------------------------------------------------------------------------
-
-    @Override
-    public int unboxInt() {
-        return -1;
-    }
-
-    @Override
-    public long unboxLong() {
-        return -1;
-    }
-
-    @Override
-    public double unboxDouble() {
-        return Double.NaN;
-    }
-
-    @Override
-    public String unboxStr() {
-        return "nullValue"; //$NON-NLS-1$
-    }
 }

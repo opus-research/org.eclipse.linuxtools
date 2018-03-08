@@ -12,8 +12,6 @@
  *   Geneviève Bastien - Moved supplementary files handling to parent class,
  *                       added code to copy trace
  *   Patrick Tasse - Close editors to release resources
- *   Jean-Christian Kouame - added trace properties to be shown into
- *                           the properties view
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -40,9 +38,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefin
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.IActionFilter;
@@ -81,13 +77,12 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     public static final String IS_LINKED = "isLinked"; //$NON-NLS-1$
 
     // Property View stuff
-    private static final String sfResourcePropertiesCategory = Messages.TmfTraceElement_ResourceProperties;
-    private static final String sfName = Messages.TmfTraceElement_Name;
-    private static final String sfPath = Messages.TmfTraceElement_Path;
-    private static final String sfLocation = Messages.TmfTraceElement_Location;
-    private static final String sfEventType = Messages.TmfTraceElement_EventType;
-    private static final String sfIsLinked = Messages.TmfTraceElement_IsLinked;
-    private static final String sfTracePropertiesCategory = Messages.TmfTraceElement_TraceProperties;
+    private static final String sfInfoCategory = "Info"; //$NON-NLS-1$
+    private static final String sfName = "name"; //$NON-NLS-1$
+    private static final String sfPath = "path"; //$NON-NLS-1$
+    private static final String sfLocation = "location"; //$NON-NLS-1$
+    private static final String sfEventType = "type"; //$NON-NLS-1$
+    private static final String sfIsLinked = "linked"; //$NON-NLS-1$
 
     private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
     private static final ReadOnlyTextPropertyDescriptor sfPathDescriptor = new ReadOnlyTextPropertyDescriptor(sfPath, sfPath);
@@ -99,11 +94,11 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             sfTypeDescriptor, sfIsLinkedDescriptor };
 
     static {
-        sfNameDescriptor.setCategory(sfResourcePropertiesCategory);
-        sfPathDescriptor.setCategory(sfResourcePropertiesCategory);
-        sfLocationDescriptor.setCategory(sfResourcePropertiesCategory);
-        sfTypeDescriptor.setCategory(sfResourcePropertiesCategory);
-        sfIsLinkedDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfNameDescriptor.setCategory(sfInfoCategory);
+        sfPathDescriptor.setCategory(sfInfoCategory);
+        sfLocationDescriptor.setCategory(sfInfoCategory);
+        sfTypeDescriptor.setCategory(sfInfoCategory);
+        sfIsLinkedDescriptor.setCategory(sfInfoCategory);
     }
 
     private static final String BOOKMARKS_HIDDEN_FILE = ".bookmarks"; //$NON-NLS-1$
@@ -413,45 +408,8 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         return null;
     }
 
-    /**
-     * Get the trace properties of this traceElement if the corresponding trace
-     * is opened in an editor
-     *
-     * @return a map with the names and values of the trace properties
-     *         respectively as keys and values
-     */
-    private Map<String, String> getTraceProperties() {
-        for (ITmfTrace openedTrace : TmfTraceManager.getInstance().getOpenedTraces()) {
-            for (ITmfTrace singleTrace : TmfTraceManager.getTraceSet(openedTrace)) {
-                if (this.getLocation().toString().endsWith(singleTrace.getPath())) {
-                    if (singleTrace instanceof ITmfTraceProperties) {
-                        ITmfTraceProperties traceProperties = (ITmfTraceProperties) singleTrace;
-                        return traceProperties.getTraceProperties();
-                    }
-                }
-            }
-        }
-        return new HashMap<String, String>();
-    }
-
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        Map<String, String> traceProperties = getTraceProperties();
-        if (!traceProperties.isEmpty()) {
-            IPropertyDescriptor[] propertyDescriptorArray = new IPropertyDescriptor[traceProperties.size() + sfDescriptors.length];
-            int index = 0;
-            for (Map.Entry<String, String> varName : traceProperties.entrySet()) {
-                ReadOnlyTextPropertyDescriptor descriptor = new ReadOnlyTextPropertyDescriptor(this.getName() + "_" + varName.getKey(), varName.getKey()); //$NON-NLS-1$
-                descriptor.setCategory(sfTracePropertiesCategory);
-                propertyDescriptorArray[index] = descriptor;
-                index++;
-            }
-            for (int i = 0; i < sfDescriptors.length; i++) {
-                propertyDescriptorArray[index] = sfDescriptors[i];
-                index++;
-            }
-            return propertyDescriptorArray;
-        }
         return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
@@ -479,14 +437,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
                 IConfigurationElement ce = sfTraceTypeAttributes.get(fTraceTypeId);
                 return (ce != null) ? (getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR)) : ""; //$NON-NLS-1$ //$NON-NLS-2$
             }
-        }
-
-        Map<String, String> traceProperties = getTraceProperties();
-        if (id != null && !traceProperties.isEmpty()) {
-            String key = (String) id;
-            key = key.replaceFirst(this.getName() + "_", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            String value = traceProperties.get(key);
-            return value;
         }
 
         return null;
@@ -538,7 +488,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
     /**
      * Close opened editors associated with this trace.
-     *
      * @since 2.0
      */
     public void closeEditors() {
@@ -575,20 +524,5 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             TmfExperimentElement experiment = (TmfExperimentElement) getParent();
             experiment.closeEditors();
         }
-    }
-
-    /**
-     * Get the instantiated trace associated with this element.
-     *
-     * @return The instantiated trace or null if trace is not (yet) available
-     * @since 2.1
-     */
-    public ITmfTrace getTrace() {
-        for (ITmfTrace trace : TmfTraceManager.getInstance().getOpenedTraces()) {
-            if (trace.getResource().equals(getResource())) {
-                return trace;
-            }
-        }
-        return null;
     }
 }

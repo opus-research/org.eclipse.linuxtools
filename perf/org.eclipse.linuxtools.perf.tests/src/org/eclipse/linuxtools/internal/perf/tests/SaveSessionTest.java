@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,9 +41,7 @@ public class SaveSessionTest {
 	@After
 	public void tearDown(){
 		for (File file : testFiles) {
-			if(!file.delete()){
-				fail();
-			}
+			file.delete();
 		}
 	}
 
@@ -74,7 +71,6 @@ public class SaveSessionTest {
 
 		File data = handler.saveData(DATA_FILE_NAME);
 		assertNotNull(data);
-		assertTrue(!data.canWrite());
 		testFiles.add(data);
 
 	}
@@ -98,12 +94,11 @@ public class SaveSessionTest {
 
 		File stats = handler.saveData(DATA_FILE_NAME);
 		assertNotNull(stats);
-		assertTrue(!stats.canWrite());
 
 		testFiles.add(stats);
 	}
 
-	private static class GenericSaveDataHandler extends AbstractSaveDataHandler {
+	private class GenericSaveDataHandler extends AbstractSaveDataHandler {
 		@Override
 		public Object execute(ExecutionEvent event) {
 			return null;
@@ -125,14 +120,14 @@ public class SaveSessionTest {
 		}
 	}
 
-	private static class PerfSaveSessionTestHandler extends PerfSaveSessionHandler {
+	private class PerfSaveSessionTestHandler extends PerfSaveSessionHandler {
 		@Override
 		protected IPath getWorkingDir() {
 			return new Path(WORKING_DIR);
 		}
 	}
 
-	private static class PerfSaveStatsTestHandler extends PerfSaveStatsHandler {
+	private class PerfSaveStatsTestHandler extends PerfSaveStatsHandler {
 		@Override
 		protected IPath getWorkingDir() {
 			return new Path(WORKING_DIR);

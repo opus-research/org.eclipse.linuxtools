@@ -88,7 +88,6 @@ public class CoreMessagesViewer {
 		}
 		contentProvider = new ITreeContentProvider() {
 
-			@Override
 			public Object[] getChildren(Object parentElement) {
 				if (parentElement instanceof Object[]) {
 					return (Object[]) parentElement;
@@ -96,25 +95,20 @@ public class CoreMessagesViewer {
 				return ((IValgrindMessage) parentElement).getChildren();
 			}
 
-			@Override
 			public Object getParent(Object element) {
 				return ((IValgrindMessage) element).getParent();
 			}
 
-			@Override
 			public boolean hasChildren(Object element) {
 				return getChildren(element).length > 0;
 			}
 
-			@Override
 			public Object[] getElements(Object inputElement) {
 				return getChildren(inputElement);
 			}
 
-			@Override
 			public void dispose() {}
 
-			@Override
 			public void inputChanged(Viewer viewer, Object oldInput,
 					Object newInput) {}
 
@@ -146,7 +140,6 @@ public class CoreMessagesViewer {
 
 		doubleClickListener = new IDoubleClickListener() {
 
-			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				Object element = ((TreeSelection) event.getSelection()).getFirstElement();
 				if (element instanceof ValgrindStackFrame) {
@@ -212,7 +205,6 @@ public class CoreMessagesViewer {
 
 		MenuManager manager = new MenuManager();
 		manager.addMenuListener(new IMenuListener() {
-			@Override
 			public void menuAboutToShow(IMenuManager manager) {
 				ITreeSelection selection = (ITreeSelection) viewer.getSelection();
 				Object element = selection.getFirstElement();

@@ -19,13 +19,9 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.ReportComparisonData;
 import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.linuxtools.internal.perf.StatData;
-import org.eclipse.linuxtools.internal.perf.handlers.PerfStatDiffMenuAction;
-import org.eclipse.linuxtools.internal.perf.handlers.PerfStatDiffMenuAction.PerfCachedData;
-import org.eclipse.linuxtools.internal.perf.handlers.PerfStatDiffMenuAction.Type;
 import org.junit.Test;
 
 public class DataManipulatorTest {
@@ -53,8 +49,8 @@ public class DataManipulatorTest {
 		sData.parse();
 
 		String expected = "perf stat -r " + runCount + " " + binary; //$NON-NLS-1$
-		for (String i:args) {
-			expected += " " + i; //$NON-NLS-1$
+		for (int i = 0; i < args.length; i++) {
+			expected += " " + args[i]; //$NON-NLS-1$
 		}
 
 		assertEquals(expected, sData.getPerfData().trim());
@@ -76,8 +72,8 @@ public class DataManipulatorTest {
 		}
 
 		expected = expected + " " + binary; //$NON-NLS-1$
-		for (String i : args) {
-			expected += " " + i; //$NON-NLS-1$
+		for (int i = 0; i < args.length; i++) {
+			expected += " " + args[i]; //$NON-NLS-1$
 		}
 
 		assertEquals(expected, sData.getPerfData().trim());
@@ -97,29 +93,10 @@ public class DataManipulatorTest {
 		assertEquals(expected, diffData.getPerfData().trim());
 	}
 
-	@Test
-	public void testPerfDataFile() {
-		String dataTitle = "title";
-		String dataID = "id";
-		String data = "perf stat data stub file\n";
-
-		PerfStatDiffMenuAction action = new PerfStatDiffMenuAction(Type.PERF_DIFF, "0");
-		PerfCachedData dataFile = action.new PerfCachedData(dataID, dataTitle);
-
-		// put test data on cache
-		PerfPlugin.getDefault().cacheData("id", data);
-
-		assertEquals("title", dataFile.getTitle());
-		assertEquals(data, dataFile.getPerfData());
-
-		// remove test data from cache
-		PerfPlugin.getDefault().removeCachedData("id");
-	}
-
 	/**
 	 * Used for testing SourceDisassemblyData
 	 */
-	private static class StubSourceDisassemblyData extends SourceDisassemblyData {
+	private class StubSourceDisassemblyData extends SourceDisassemblyData {
 
 		public StubSourceDisassemblyData(String title, IPath workingDir) {
 			super(title, workingDir);
@@ -131,14 +108,14 @@ public class DataManipulatorTest {
 			// return the same command with 'echo' prepended
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand(workingDir)));
-			return ret.toArray(new String[ret.size()]);
+			return ret.toArray(new String[0]);
 		}
 	}
 
 	/**
 	 * Used for testing StatData
 	 */
-	private static class StubStatData extends StatData {
+	private class StubStatData extends StatData {
 
 		public StubStatData(String title, String cmd, String[] args,
 				int runCount, String[] events) {
@@ -151,7 +128,7 @@ public class DataManipulatorTest {
 			List<String> ret = new ArrayList<String>();
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand(command, args)));
-			return ret.toArray(new String[ret.size()]);
+			return ret.toArray(new String[0]);
 		}
 
 		@Override
@@ -165,10 +142,11 @@ public class DataManipulatorTest {
 	/**
 	 * Used for testing ReportComparisonData
 	 */
-	private static class StubReportDiffData extends ReportComparisonData{
+	private class StubReportDiffData extends ReportComparisonData{
 
 		public StubReportDiffData(String title, File oldFile, File newFile) {
 			super(title, oldFile, newFile);
+			// TODO Auto-generated constructor stub
 		}
 
 		@Override
@@ -177,7 +155,7 @@ public class DataManipulatorTest {
 			List<String> ret = new ArrayList<String>();
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand()));
-			return ret.toArray(new String[ret.size()]);
+			return ret.toArray(new String[0]);
 		}
 
 	}

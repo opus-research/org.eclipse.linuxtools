@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.junit.Test;
 
 /**
@@ -39,8 +38,8 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public abstract class StateSystemTest {
 
-    /** Test trace used for these tests */
-    protected static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.TRACE2;
+    /** Index of the test trace used for these tests */
+    protected static final int TRACE_INDEX = 1;
 
     /** Expected start time of the test trace/state history */
     protected static final long startTime = 1331668247314038062L;
@@ -56,6 +55,8 @@ public abstract class StateSystemTest {
 
     /* Offset in the trace + start time of the trace */
     static final long interestingTimestamp1 = 18670067372290L + 1331649577946812237L;
+    static final long interestingTimestamp2 = 1331668248014135800L;
+    static final int interestingQuark = 233;
 
     @Test
     public void testFullQuery1() {
@@ -410,11 +411,14 @@ public abstract class StateSystemTest {
     @Test
     public void testFirstIntervalIsConsidered() {
         try {
-            List<ITmfStateInterval> list = ssq.queryFullState(1331668248014135800L);
-            ITmfStateInterval interval = list.get(233);
+            List<ITmfStateInterval> list;
+            ITmfStateInterval interval;
+            int quark = interestingQuark, valueInt;
+            list = ssq.queryFullState(interestingTimestamp2);
+            interval = list.get(quark);
             assertEquals(1331668247516664825L, interval.getStartTime());
-
-            int valueInt = interval.getStateValue().unboxInt();
+            assertEquals(1331668248014135818L, interval.getEndTime());
+            valueInt = interval.getStateValue().unboxInt();
             assertEquals(1, valueInt);
         } catch (TimeRangeException e) {
             fail();
