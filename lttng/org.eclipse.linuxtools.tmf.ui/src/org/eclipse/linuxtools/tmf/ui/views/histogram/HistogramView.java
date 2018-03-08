@@ -224,7 +224,6 @@ public class HistogramView extends TmfView {
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         timeRangeComposite.setLayoutData(gridData);
 
         // Histogram
@@ -252,7 +251,6 @@ public class HistogramView extends TmfView {
         gridData.verticalAlignment = SWT.FILL;
         gridData.horizontalSpan = 2;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         fullRangeComposite.setLayoutData(gridData);
 
         // Histogram

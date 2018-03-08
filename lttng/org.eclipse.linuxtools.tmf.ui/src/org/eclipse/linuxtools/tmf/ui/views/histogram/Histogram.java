@@ -101,6 +101,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     private final Color fLastEventColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED);
     private final Color fHistoBarColor = new Color(Display.getDefault(), 74, 112, 139);
     private final Color fLostEventColor = new Color(Display.getCurrent(), 208, 62, 120);
+    private final Color fFillColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     private final Color fTimeRangeColor = new Color(Display.getCurrent(), 255, 128, 0);
 
     // Drag states
@@ -262,7 +263,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         composite.setLayoutData(gridData);
 
         // Y-axis max event
@@ -283,10 +283,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         gridData.verticalSpan = 2;
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
-        gridData.heightHint = 0;
-        gridData.widthHint = 0;
         gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
         canvasComposite.setLayoutData(gridData);
         canvasComposite.setLayout(new FillLayout());
         fCanvas = new Canvas(canvasComposite, SWT.DOUBLE_BUFFERED);
@@ -580,8 +577,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                                 long maxNbEvents = HistogramScaledData.hideLostEvents ? fScaledData.fMaxValue : fScaledData.fMaxCombinedValue;
                                 fMaxNbEventsText.setText(Long.toString(maxNbEvents));
                                 // The Y-axis area might need to be re-sized
-                                GridData gd = (GridData) fMaxNbEventsText.getLayoutData();
-                                gd.widthHint = Math.max(gd.widthHint, fMaxNbEventsText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
                                 fMaxNbEventsText.getParent().layout();
                             }
                         }
@@ -732,8 +727,8 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             drawDelimiter(imageGC, fLastEventColor, height, delimiterIndex);
 
             // Fill the area to the right of delimiter with background color
-            imageGC.setBackground(fComposite.getParent().getBackground());
-            imageGC.fillRectangle(delimiterIndex + 1, 0, width - delimiterIndex + 1, height);
+            imageGC.setBackground(fFillColor);
+            imageGC.fillRectangle(delimiterIndex + 1, 0, width - (delimiterIndex + 1), height);
 
         } catch (final Exception e) {
             // Do nothing
