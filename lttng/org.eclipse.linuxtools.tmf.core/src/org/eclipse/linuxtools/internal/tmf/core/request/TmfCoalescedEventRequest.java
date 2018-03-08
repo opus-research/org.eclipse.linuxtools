@@ -24,8 +24,6 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 /**
  * The TMF coalesced event request
  *
- * @param <T> The request event type
- *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -148,9 +146,8 @@ public class TmfCoalescedEventRequest<T extends ITmfEvent> extends TmfCoalescedD
      * @param blockSize the number of events per block
      * @param priority the requested execution priority
      */
-    @SuppressWarnings("unchecked")
     public TmfCoalescedEventRequest(Class<T> dataType, TmfTimeRange range, long index, int nbRequested, int blockSize, ExecutionType priority) {
-        super((Class<T>) ITmfEvent.class, index, nbRequested, blockSize, priority);
+        super(dataType, index, nbRequested, blockSize, priority);
         fRange = range;
 
         if (Tracer.isRequestTraced()) {

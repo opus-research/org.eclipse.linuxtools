@@ -46,8 +46,6 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
  * TmfCheckpointIndexer (default). In this case, the trace cache size will be
  * used as checkpoint interval.
  *
- * @param <T> The trace event type
- *
  * @version 1.0
  * @author Francois Chouinard
  *
@@ -168,7 +166,6 @@ public abstract class TmfTrace<T extends ITmfEvent> extends TmfEventProvider<T> 
      * Copy constructor
      *
      * @param trace the original trace
-     * @throws TmfTraceException Should not happen usually
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public TmfTrace(final TmfTrace<T> trace) throws TmfTraceException {
@@ -269,6 +266,7 @@ public abstract class TmfTrace<T extends ITmfEvent> extends TmfEventProvider<T> 
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getEventType()
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Class<T> getEventType() {
         return (Class<T>) super.getType();
     }
@@ -493,7 +491,7 @@ public abstract class TmfTrace<T extends ITmfEvent> extends TmfEventProvider<T> 
         }
         return context;
     }
-
+    
     // ------------------------------------------------------------------------
     // ITmfTrace - Read operations (returning an actual event)
     // ------------------------------------------------------------------------

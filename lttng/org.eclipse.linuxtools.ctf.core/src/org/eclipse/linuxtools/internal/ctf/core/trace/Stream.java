@@ -53,7 +53,7 @@ public class Stream {
     /**
      * Maps event ids to events
      */
-    private HashMap<Long, EventDeclaration> events = new HashMap<Long, EventDeclaration>();
+    private HashMap<Long, EventDeclaration> events;
 
     /**
      * The inputs associated to this stream
