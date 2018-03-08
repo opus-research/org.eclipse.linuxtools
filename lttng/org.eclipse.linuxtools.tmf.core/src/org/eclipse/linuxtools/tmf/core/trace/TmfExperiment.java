@@ -80,23 +80,8 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @param traces the experiment set of traces
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String id, final ITmfTrace[] traces) {
-        this(type, id, traces, DEFAULT_INDEX_PAGE_SIZE, null);
+        this(type, id, traces, DEFAULT_INDEX_PAGE_SIZE);
     }
-
-    /**
-     * @param type
-     *            the event type
-     * @param id
-     *            the experiment id
-     * @param traces
-     *            the experiment set of traces
-     * @param resource
-     *            the resource associated to the experiment
-     */
-    public TmfExperiment(final Class<? extends ITmfEvent> type, final String id, final ITmfTrace[] traces, IResource resource) {
-        this(type, id, traces, DEFAULT_INDEX_PAGE_SIZE, resource);
-    }
-
 
     /**
      * @param type the event type
@@ -105,24 +90,12 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @param indexPageSize the experiment index page size
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize) {
-        this(type, path, traces, indexPageSize, null);
-    }
-
-    /**
-     * @param type the event type
-     * @param path the experiment path
-     * @param traces the experiment set of traces
-     * @param indexPageSize the experiment index page size
-     * @param resource
-     *            the resource associated to the experiment
-     */
-    public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
         setCacheSize(indexPageSize);
         setStreamingInterval(0);
         setIndexer(new TmfCheckpointIndexer(this, indexPageSize));
         setParser(this);
         try {
-            super.initialize(resource, path, type);
+            super.initialize(null, path, type);
         } catch (TmfTraceException e) {
             e.printStackTrace();
         }
