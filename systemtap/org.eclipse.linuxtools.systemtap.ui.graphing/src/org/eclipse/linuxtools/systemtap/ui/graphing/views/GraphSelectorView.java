@@ -13,12 +13,9 @@ package org.eclipse.linuxtools.systemtap.ui.graphing.views;
 
 import java.util.ArrayList;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.linuxtools.internal.systemtap.ui.graphing.views.Messages;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.structures.listeners.ITabListener;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphDisplaySet;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
@@ -30,10 +27,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.ViewPart;
 
 
 
@@ -43,16 +37,9 @@ import org.eclipse.ui.part.EditorPart;
  * that specific script.  Script sets can be created or disposed of at the will
  * of the user.
  * @author Ryan Morse
- * @since 2.0
  */
-public class GraphSelectorEditor extends EditorPart {
-
-	private CTabFolder scriptFolder;
-	private ArrayList<GraphDisplaySet> displaySets;
-	private ArrayList<ITabListener> tabListeners;
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor"; //$NON-NLS-1$
-
-	public GraphSelectorEditor() {
+public class GraphSelectorView extends ViewPart {
+	public GraphSelectorView() {
 		super();
 		displaySets = new ArrayList<GraphDisplaySet>();
 		tabListeners = new ArrayList<ITabListener>();
@@ -79,7 +66,6 @@ public class GraphSelectorEditor extends EditorPart {
 
 		scriptFolder.setSelection(item);
 		fireTabOpenEvent();
-		this.setPartName(NLS.bind(Messages.GraphSelectorEditor_graphsEditorTitle, title));
 	}
 
 	/**
@@ -192,28 +178,8 @@ public class GraphSelectorEditor extends EditorPart {
 		tabListeners = null;
 	}
 
-	@Override
-	public void doSave(IProgressMonitor monitor) {
-	}
-
-	@Override
-	public void doSaveAs() {
-	}
-
-	@Override
-	public void init(IEditorSite site, IEditorInput input)
-			throws PartInitException {
-		setInput(input);
-		setSite(site);
-	}
-
-	@Override
-	public boolean isDirty() {
-		return false;
-	}
-
-	@Override
-	public boolean isSaveAsAllowed() {
-		return false;
-	}
+	private CTabFolder scriptFolder;
+	private ArrayList<GraphDisplaySet> displaySets;
+	private ArrayList<ITabListener> tabListeners;
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView"; //$NON-NLS-1$
 }
