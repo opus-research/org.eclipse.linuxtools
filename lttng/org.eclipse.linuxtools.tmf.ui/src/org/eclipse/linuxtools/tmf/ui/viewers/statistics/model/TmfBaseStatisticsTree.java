@@ -163,16 +163,8 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
      * (org.eclipse.linuxtools.tmf.core.event.ITmfEvent, org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo, int)
      */
     @Override
-    public void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo, int values) {
-        TmfFixedArray<String>[] paths = getNormalPaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            getOrCreate(path).getValue().incrementTotal(values);
-        }
-
-        paths = getTypePaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            getOrCreate(path).getValue().incrementTotal(values);
-        }
+    public void increase(ITmfEvent event, ITmfExtraEventInfo extraInfo, int values) {
+        // Do nothing
     }
 
     /*
@@ -191,19 +183,6 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
         paths = getTypePaths(event, extraInfo);
         for (TmfFixedArray<String> path : paths) {
             getOrCreate(path).getValue().incrementTotal();
-        }
-    }
-
-    @Override
-    public void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty) {
-        TmfFixedArray<String>[] paths = getNormalPaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            getOrCreate(path).getValue().incrementPartial(qty);
-        }
-
-        paths = getTypePaths(event, extraInfo);
-        for (TmfFixedArray<String> path : paths) {
-            getOrCreate(path).getValue().incrementPartial(qty);
         }
     }
 
@@ -238,8 +217,9 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected TmfFixedArray<String>[] getTypePaths(ITmfEvent event, ITmfExtraEventInfo extraInfo) {
         String trace = extraInfo.getTraceName();
-        // Take only the event type name
-        String type = event.getType().getName();
+        // String type = event.getType().getTypeId(); // Add too much
+        // informations
+        String type = event.getType().toString();
 
         TmfFixedArray[] paths = { new TmfFixedArray<String>(trace, HEADER_EVENT_TYPES, type) };
 
