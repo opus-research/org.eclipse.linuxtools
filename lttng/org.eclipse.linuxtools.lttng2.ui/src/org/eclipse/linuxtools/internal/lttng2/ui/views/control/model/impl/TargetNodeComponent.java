@@ -234,10 +234,10 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     }
 
     /**
-     * Returns if node supports configuring buffer type  or not
-     * @return <code>true</code> if node supports buffer type configuration else <code>false</code>
+     * Returns if node supports per UID buffers or not
+     * @return <code>true</code> if node supports per UID buffers else <code>false</code>
      */
-    public boolean isBufferTypeConfigSupported() {
+    public boolean isPerUIDBuffersSupported() {
         return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
     }
 
@@ -255,14 +255,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      */
     public boolean isPeriodicalMetadataFlushSupported() {
         return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
-    }
-    /**
-     * Returns if node supports snapshots or not
-     * @return <code>true</code> if it supports snapshots else <code>false</code>
-     *
-     */
-    public boolean isSnapshotSupported() {
-        return getControlService().isVersionSupported("2.3.0"); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------

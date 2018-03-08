@@ -44,9 +44,8 @@ public class ValgrindExportWizard extends Wizard implements IExportWizard {
 		try {
 			ps.busyCursorWhile(new IRunnableWithProgress() {
 
-				@Override
 				public void run(IProgressMonitor monitor)
-				throws InvocationTargetException {
+				throws InvocationTargetException, InterruptedException {
 					if (logs.length > 0) {
 						File outputDir = outputPath.toFile();
 						monitor.beginTask(NLS.bind(Messages.getString("ValgrindExportWizard.Export_task"), outputPath.toOSString()), logs.length); //$NON-NLS-1$
@@ -98,7 +97,6 @@ public class ValgrindExportWizard extends Wizard implements IExportWizard {
 		return true;
 	}
 
-	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		setWindowTitle(ExportWizardConstants.WIZARD_WINDOW_TITLE);
 		exportPage = getWizardPage();

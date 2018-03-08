@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 Alphonse Van Assche and others.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Alphonse Van Assche - initial API and implementation
- *    Red Hat Inc. - ongoing maintenance
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor.wizards;
@@ -79,7 +78,6 @@ public class SpecfileNewWizard extends Wizard implements INewWizard {
 		final String fileName = page.getFileName();
 		final InputStream contentInputStream = openContentStream();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
-			@Override
 			public void run(IProgressMonitor monitor)
 					throws InvocationTargetException {
 				try {
@@ -136,7 +134,6 @@ public class SpecfileNewWizard extends Wizard implements INewWizard {
 		monitor.worked(1);
 		monitor.setTaskName(Messages.SpecfileNewWizard_4);
 		getShell().getDisplay().asyncExec(new Runnable() {
-			@Override
 			public void run() {
 				IWorkbenchPage page = PlatformUI.getWorkbench()
 						.getActiveWorkbenchWindow().getActivePage();
@@ -166,10 +163,9 @@ public class SpecfileNewWizard extends Wizard implements INewWizard {
 	/**
 	 * We will accept the selection in the workbench to see if we can initialize
 	 * from it.
-	 *
+	 * 
 	 * @see INewWizard#init(IWorkbench, IStructuredSelection)
 	 */
-	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
 	}

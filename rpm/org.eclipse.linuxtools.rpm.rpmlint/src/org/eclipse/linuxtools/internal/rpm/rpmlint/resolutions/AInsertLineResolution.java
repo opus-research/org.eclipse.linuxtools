@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008 Alexander Kurtakov and others.
+ * Copyright (c) 2008 Alexander Kurtakov.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,8 @@ import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
  *
  */
 public abstract class AInsertLineResolution extends ARpmlintResolution {
+
+	protected int markerLine;
 
 	/**
 	 * Returns the line to be inserted for the fix.
@@ -44,8 +46,8 @@ public abstract class AInsertLineResolution extends ARpmlintResolution {
 	 *
 	 * @see org.eclipse.ui.IMarkerResolution#run(org.eclipse.core.resources.IMarker)
 	 */
-	@Override
 	public void run(IMarker marker) {
+		markerLine = marker.getAttribute(IMarker.LINE_NUMBER, 0);
 		SpecfileEditor editor = getEditor(marker);
 		if (editor == null) {
 			return;

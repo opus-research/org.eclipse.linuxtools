@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -45,17 +43,15 @@ import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 public class ModelTest extends AbstractTest {
-	private ILaunchConfiguration config;
-	private Stack<Class<?>> stack;
+	protected ILaunchConfiguration config;
+	protected Stack<Class<?>> stack;
 
-	@Before
-	public void setUp() throws Exception {
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
 		config = createConfiguration(proj.getProject());
 
@@ -65,9 +61,10 @@ public class ModelTest extends AbstractTest {
 		stack.addAll(Arrays.asList(klassList));
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@Override
+	protected void tearDown() throws Exception {
 		deleteProject(proj);
+		super.tearDown();
 	}
 
 	@Override
@@ -83,7 +80,7 @@ public class ModelTest extends AbstractTest {
 		eventsTab.setDefaults(wc);
 		optionsTab.setDefaults(wc);
 	}
-	@Test
+
 	public void testModelDefaultGenericStructure() {
 		TreeParent invisibleRoot = buildModel(
 				"resources/defaultevent-data/perf.data",
@@ -92,7 +89,7 @@ public class ModelTest extends AbstractTest {
 
 		checkChildrenStructure(invisibleRoot, stack);
 	}
-	@Test
+
 	public void testModelMultiEventGenericStructure() {
 		TreeParent invisibleRoot = buildModel(
 				"resources/multievent-data/perf.data",
@@ -101,7 +98,7 @@ public class ModelTest extends AbstractTest {
 
 		checkChildrenStructure(invisibleRoot, stack);
 	}
-	@Test
+
 	public void testPercentages() {
 		TreeParent invisibleRoot = buildModel(
 				"resources/defaultevent-data/perf.data",
@@ -110,7 +107,7 @@ public class ModelTest extends AbstractTest {
 
 		checkChildrenPercentages(invisibleRoot, invisibleRoot.getPercent());
 	}
-	@Test
+
 	public void testDoubleClickAction () {
 		TreeParent invisibleRoot = buildModel(
 				"resources/defaultevent-data/perf.data",
@@ -142,7 +139,7 @@ public class ModelTest extends AbstractTest {
 			fail("Failed to open the Profiling View.");
 		}
 	}
-	@Test
+
 	public void testParserMultiEvent() {
 		TreeParent invisibleRoot = buildModel(
 				"resources/multievent-data/perf.data",
@@ -197,12 +194,12 @@ public class ModelTest extends AbstractTest {
 						"libc-2.14.90.so" };
 				checkCommadLabels(cmdLabels, cmd);
 			} else if ("major-faults".equals(cur)) {
-				assertFalse(event.hasChildren());
+				assertTrue(!event.hasChildren());
 			}
 
 		}
 	}
-	@Test
+
 	public void testParserDefaultEvent() {
 		TreeParent invisibleRoot = buildModel(
 				"resources/defaultevent-data/perf.data",
@@ -225,7 +222,7 @@ public class ModelTest extends AbstractTest {
 				"ld-2.14.90.so", "perf" };
 		checkCommadLabels(cmdLabels, cmd);
 	}
-	@Test
+
 	public void testParseEventList() {
 		BufferedReader input = null;
 		try {
@@ -256,7 +253,7 @@ public class ModelTest extends AbstractTest {
 			}
 		}
 	}
-	@Test
+
 	public void testParseAnnotation() {
 		BufferedReader input = null;
 
@@ -317,65 +314,113 @@ public class ModelTest extends AbstractTest {
 		}
 	}
 
-	@Test
-	public void testAnnotateString() throws CoreException {
-		ILaunchConfigurationWorkingCopy tempConfig = config.copy("test-config");
-		tempConfig
-				.setAttribute(PerfPlugin.ATTR_Kernel_Location, "/boot/kernel");
-		tempConfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, true);
+	public void testAnnotateString(){
+		ILaunchConfigurationWorkingCopy tempConfig = null;
+		try {
+			tempConfig = config.copy("test-config");
+			tempConfig.setAttribute(PerfPlugin.ATTR_Kernel_Location,
+					"/boot/kernel");
+			tempConfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, true);
+		} catch (CoreException e) {
+			fail();
+		}
 
 		String[] annotateString = PerfCore.getAnnotateString(tempConfig, "dso",
 				"symbol", "resources/defaultevent-data/perf.data", false);
 
 		String[] expectedString = new String[] { PerfPlugin.PERF_COMMAND,
-				"annotate", "-d", "dso", "-s", "symbol", "-l", "-P",
-				"--vmlinux", "/boot/kernel", "-m", "-i",
+				"annotate",
+				"-d",
+				"dso",
+				"-s",
+				"symbol",
+				"-l",
+				"-P",
+				"--vmlinux",
+				"/boot/kernel",
+				"-m",
+				"-i",
 				"resources/defaultevent-data/perf.data" };
 
-		assertArrayEquals(expectedString, annotateString);
+		for (int i = 0; i < annotateString.length; i++) {
+			assertTrue(annotateString[i].equals(expectedString[i]));
+		}
 	}
 
-	@Test
-	public void testRecordString() throws CoreException {
-		ILaunchConfigurationWorkingCopy tempConfig = config.copy("test-config");
-		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, true);
-		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, true);
-		tempConfig.setAttribute(PerfPlugin.ATTR_Multiplex, true);
+	public void testRecordString() {
+		ILaunchConfigurationWorkingCopy tempConfig = null;
+		try {
+			tempConfig = config.copy("test-config");
+			tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, true);
+			tempConfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, true);
+			tempConfig.setAttribute(PerfPlugin.ATTR_Multiplex, true);
 
-		ArrayList<String> selectedEvents = new ArrayList<String>();
-		selectedEvents.add("cpu-cycles");
-		selectedEvents.add("cache-misses");
-		selectedEvents.add("cpu-clock");
-		tempConfig.setAttribute(PerfPlugin.ATTR_SelectedEvents, selectedEvents);
+			ArrayList<String> selectedEvents = new ArrayList<String>();
+			selectedEvents.add("cpu-cycles");
+			selectedEvents.add("cache-misses");
+			selectedEvents.add("cpu-clock");
+			tempConfig.setAttribute(PerfPlugin.ATTR_SelectedEvents,	selectedEvents);
 
-		tempConfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
+			tempConfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
+
+		} catch (CoreException e) {
+			fail();
+		}
 
 		String[] recordString = PerfCore.getRecordString(tempConfig);
 		assertNotNull(recordString);
 
-		String[] expectedString = { PerfPlugin.PERF_COMMAND, "record", "-f",
-				"-r", "-v", "-M", "-e", "cpu-cycles", "-e", "cache-misses",
-				"-e", "cpu-clock" };
-		assertArrayEquals(expectedString, recordString);
+		String[] expectedString = { PerfPlugin.PERF_COMMAND,
+				"record",
+				"-f",
+				"-r",
+				"-v",
+				"-M",
+				"-e",
+				"cpu-cycles",
+				"-e",
+				"cache-misses",
+				"-e",
+				"cpu-clock" };
+		assertTrue(recordString.length == expectedString.length);
+
+		for (int i = 0; i < recordString.length; i++) {
+			assertTrue(recordString[i].equals(expectedString[i]));
+		}
 	}
 
-	@Test
-	public void testReportString() throws CoreException {
-		ILaunchConfigurationWorkingCopy tempConfig = null;
-		tempConfig = config.copy("test-config");
-		tempConfig
-				.setAttribute(PerfPlugin.ATTR_Kernel_Location, "/boot/kernel");
-		tempConfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, true);
+	public void testReportString(){ILaunchConfigurationWorkingCopy tempConfig = null;
+		try {
+			tempConfig = config.copy("test-config");
+			tempConfig.setAttribute(PerfPlugin.ATTR_Kernel_Location,
+					"/boot/kernel");
+			tempConfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, true);
+		} catch (CoreException e) {
+			fail();
+		}
 
 		String[] reportString = PerfCore.getReportString(tempConfig,
 				"resources/defaultevent-data/perf.data");
 		assertNotNull(reportString);
 
-		String[] expectedString = { PerfPlugin.PERF_COMMAND, "report",
-				"--sort", "comm,dso,sym", "-n", "-t", "" + (char) 1,
-				"--vmlinux", "/boot/kernel", "-m", "-i",
+		String[] expectedString = { PerfPlugin.PERF_COMMAND,
+				"report",
+				"--sort",
+				"comm,dso,sym",
+				"-n",
+				"-t",
+				"" + (char) 1,
+				"--vmlinux",
+				"/boot/kernel",
+				"-m",
+				"-i",
 				"resources/defaultevent-data/perf.data" };
-		assertArrayEquals(expectedString, reportString);
+		assertTrue(reportString.length == expectedString.length);
+
+		for (int i = 0; i < reportString.length; i++) {
+			assertTrue(reportString[i].equals(expectedString[i]));
+		}
+
 	}
 
 	/**
@@ -383,7 +428,7 @@ public class ModelTest extends AbstractTest {
 	 * @param sum the expected sum of the percentages of this root's
 	 * immediate children
 	 */
-	private void checkChildrenPercentages (TreeParent root, float sum) {
+	public void checkChildrenPercentages (TreeParent root, float sum) {
 		float actualSum = 0;
 		// If a root has no children we're done
 		if (root.getChildren().length != 0) {
@@ -404,8 +449,10 @@ public class ModelTest extends AbstractTest {
 	 * @param root some element that will serve as the root
 	 * @param stack a stack of classes
 	 */
-	private void checkChildrenStructure (TreeParent root, Stack<Class<?>> stack){
-		if (!stack.isEmpty()){
+	public void checkChildrenStructure (TreeParent root, Stack<Class<?>> stack){
+		if (stack.isEmpty()){
+			return;
+		}else{
 			// children of root must be instances of the top class on the stack
 			Class<?> klass = stack.pop();
 			for (TreeParent tp : root.getChildren()){
@@ -462,7 +509,7 @@ public class ModelTest extends AbstractTest {
 	 * @param perfErrorDataLoc location of error log file
 	 * @return tree model based on perf data report.
 	 */
-	private TreeParent buildModel(String perfDataLoc, String perfTextDataLoc,
+	public TreeParent buildModel(String perfDataLoc, String perfTextDataLoc,
 			String perfErrorDataLoc) {
 		TreeParent invisibleRoot = new TreeParent("");
 		BufferedReader input = null;
@@ -473,7 +520,7 @@ public class ModelTest extends AbstractTest {
 			error = new BufferedReader(new FileReader(perfErrorDataLoc));
 		} catch (IOException e) {
 			e.printStackTrace();
-			fail(e.getMessage());
+			fail();
 		}
 
 		PerfCore.parseReport(config, null, null, perfDataLoc, null,
@@ -487,7 +534,7 @@ public class ModelTest extends AbstractTest {
 	 * @param cmdLabels list of command labels
 	 * @param cmd root of tree model
 	 */
-	private void checkCommadLabels(String[] cmdLabels, TreeParent cmd) {
+	public void checkCommadLabels(String[] cmdLabels, TreeParent cmd) {
 		List<String> cmdList = new ArrayList<String>(Arrays.asList(cmdLabels));
 
 		for (TreeParent dso : cmd.getChildren()) {

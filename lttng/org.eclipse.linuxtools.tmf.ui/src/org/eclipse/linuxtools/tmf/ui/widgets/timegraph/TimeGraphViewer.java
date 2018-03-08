@@ -427,8 +427,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
             fTime0 = fTime0Bound;
             fTime1 = fTime1Bound;
         }
-        fTime0 = Math.max(fTime0Bound, Math.min(fTime0, fTime1Bound));
-        fTime1 = Math.max(fTime0Bound, Math.min(fTime1, fTime1Bound));
         if (fTime1 - fTime0 < fMinTimeInterval) {
             fTime1 = Math.min(fTime1Bound, fTime0 + fMinTimeInterval);
         }
@@ -642,17 +640,10 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
      *            The end time
      */
     public void setTimeBounds(long beginTime, long endTime) {
-        if (endTime >= beginTime) {
-            fBeginTime = beginTime;
-            fEndTime = endTime;
-            fTime0Bound = beginTime;
-            fTime1Bound = endTime;
-        } else {
-            fBeginTime = 0;
-            fEndTime = 0;
-            fTime0Bound = 0;
-            fTime1Bound = 0;
-        }
+        fBeginTime = beginTime;
+        fEndTime = endTime;
+        fTime0Bound = beginTime;
+        fTime1Bound = endTime;
         fTimeGraphCtrl.adjustScrolls();
     }
 

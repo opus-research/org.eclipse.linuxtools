@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor.outline;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -32,26 +31,20 @@ public class SpecfileLabelProvider implements ILabelProvider {
 	private static final String SECTION_ICON="icons/section_obj.gif"; //$NON-NLS-1$
 	private static final String PACKAGES_ICON="icons/packages_obj.gif"; //$NON-NLS-1$
 	private static final String PACKAGE_ICON="icons/package_obj.gif"; //$NON-NLS-1$
-	private IProject project;
-
-	@Override
+	
 	public void addListener(ILabelProviderListener listener) {
 	}
 
-	@Override
 	public void dispose() {
 	}
 
-	@Override
 	public boolean isLabelProperty(Object element, String property) {
 		return false;
 	}
 
-	@Override
 	public void removeListener(ILabelProviderListener listener) {
 	}
 
-	@Override
 	public Image getImage(Object element) {
 		if (element instanceof SpecfilePackage) {
 			return Activator.getDefault().getImage(PACKAGE_ICON);
@@ -65,7 +58,6 @@ public class SpecfileLabelProvider implements ILabelProvider {
 		return null;
 	}
 
-	@Override
 	public String getText(Object element) {
 		String str = ""; //$NON-NLS-1$
 		try {
@@ -86,18 +78,11 @@ public class SpecfileLabelProvider implements ILabelProvider {
 			} else if (element instanceof SpecfilePackage) {
 				str = ((SpecfilePackage) element).getName();
 			}
-			str = RPMQuery.eval(project, str).trim();
+			str = RPMQuery.eval(str).trim();
 		} catch (CoreException e) {
 			SpecfileLog.logError("Within Project Outline, unable to evaluate " + str, e); //$NON-NLS-1$
 		}
 		return str;
 	}
 
-	/**
-	 * Sets IProject
-	 * @since 2.1
-	 */
-	protected void setProject(IProject project) {
-		this.project=project;
-	}
 }

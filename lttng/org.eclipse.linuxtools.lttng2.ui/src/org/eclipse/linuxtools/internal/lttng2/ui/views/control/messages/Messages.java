@@ -86,9 +86,6 @@ final public class Messages extends NLS {
     public static String TraceControl_AddCalibrateJob;
     public static String TraceControl_AddCalibrateFailure;
 
-    public static String TraceControl_RecordSnapshotJob;
-    public static String TraceControl_RecordSnapshotFailure;
-
     // Dialogs
     public static String TraceControl_NewDialogTitle;
     public static String TraceControl_NewNodeExistingConnectionGroupName;
@@ -107,8 +104,6 @@ final public class Messages extends NLS {
     public static String TraceControl_CreateSessionNameTooltip;
     public static String TraceControl_CreateSessionPathLabel;
     public static String TraceControl_CreateSessionPathTooltip;
-    public static String TraceControl_CreateSessionSnapshotLabel;
-    public static String TraceControl_CreateSessionSnapshotTooltip;
 
     public static String TraceControl_CreateSessionConfigureStreamingButtonText;
     public static String TraceControl_CreateSessionConfigureStreamingButtonTooltip;
@@ -230,16 +225,11 @@ final public class Messages extends NLS {
     public static String TraceControl_AllSessionsDisplayName;
     public static String TraceControl_SessionDisplayName;
     public static String TraceControl_DomainDisplayName;
-    public static String TraceControl_BufferTypeDisplayName;
     public static String TraceControl_ChannelDisplayName;
     public static String TraceControl_EventDisplayName;
     public static String TraceControl_ProviderDisplayName;
     public static String TraceControl_KernelProviderDisplayName;
-    public static String TraceControl_SharedBuffersDisplayName;
-    public static String TraceControl_PerPidBuffersDisplayName;
-    public static String TraceControl_PerPidBuffersTooltip;
     public static String TraceControl_PerUidBuffersDisplayName;
-    public static String TraceControl_PerUidBuffersTooltip;
 
     // Property names
     public static String TraceControl_SessionNamePropertyName;
@@ -262,9 +252,6 @@ final public class Messages extends NLS {
     public static String TraceControl_HostNamePropertyName;
     public static String TraceControl_HostAddressPropertyName;
     public static String TraceControl_SessionPathPropertyName;
-    public static String TraceControl_SnapshotPathPropertyName;
-    public static String TraceControl_SnapshotNamePropertyName;
-    public static String TraceControl_SnapshotIdPropertyName;
     public static String TraceControl_ProviderNamePropertyName;
     public static String TraceControl_ProcessIdPropertyName;
     public static String TraceControl_ProbeAddressPropertyName;

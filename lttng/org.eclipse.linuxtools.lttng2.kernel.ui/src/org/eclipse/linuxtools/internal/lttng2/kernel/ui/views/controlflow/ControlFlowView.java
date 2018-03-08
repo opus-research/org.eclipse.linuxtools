@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
@@ -103,19 +102,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
         if (section == null) {
             section = settings.addNewSection(getClass().getName());
         }
-
-        IAction hideArrowsAction = getTimeGraphCombo().getTimeGraphViewer().getHideArrowsAction(section);
-        manager.add(hideArrowsAction);
-
-        IAction followArrowBwdAction = getTimeGraphCombo().getTimeGraphViewer().getFollowArrowBwdAction();
-        followArrowBwdAction.setText(Messages.ControlFlowView_followCPUBwdText);
-        followArrowBwdAction.setToolTipText(Messages.ControlFlowView_followCPUBwdText);
-        manager.add(followArrowBwdAction);
-
-        IAction followArrowFwdAction = getTimeGraphCombo().getTimeGraphViewer().getFollowArrowFwdAction();
-        followArrowFwdAction.setText(Messages.ControlFlowView_followCPUFwdText);
-        followArrowFwdAction.setToolTipText(Messages.ControlFlowView_followCPUFwdText);
-        manager.add(followArrowFwdAction);
+        manager.add(getTimeGraphCombo().getTimeGraphViewer().getHideArrowsAction(section));
+        manager.add(getTimeGraphCombo().getTimeGraphViewer().getFollowArrowBwdAction());
+        manager.add(getTimeGraphCombo().getTimeGraphViewer().getFollowArrowFwdAction());
     }
 
     @Override
@@ -202,13 +191,13 @@ public class ControlFlowView extends AbstractTimeGraphView {
         setStartTime(Long.MAX_VALUE);
         setEndTime(Long.MIN_VALUE);
 
-        ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        ArrayList<TimeGraphEntry> rootList = new ArrayList<TimeGraphEntry>();
+        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
             if (monitor.isCanceled()) {
                 return;
             }
             if (aTrace instanceof LttngKernelTrace) {
-                ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
+                ArrayList<TimeGraphEntry> entryList = new ArrayList<TimeGraphEntry>();
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
                 ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
@@ -246,7 +235,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                         if (monitor.isCanceled()) {
                             return;
                         }
-                        ControlFlowEntry entry = null;
+                        TimeGraphEntry entry = null;
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -293,20 +282,22 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 refresh();
             }
         }
-        for (ControlFlowEntry entry : rootList) {
+        for (TimeGraphEntry entry : rootList) {
             if (monitor.isCanceled()) {
                 return;
             }
-            buildStatusEvents(entry.getTrace(), entry, monitor);
+            buildStatusEvents(trace, entry, monitor);
         }
     }
 
-    private static void buildTree(ArrayList<ControlFlowEntry> entryList,
-            ArrayList<ControlFlowEntry> rootList) {
-        for (ControlFlowEntry entry : entryList) {
+    private static void buildTree(ArrayList<TimeGraphEntry> entryList,
+            ArrayList<TimeGraphEntry> rootList) {
+        for (TimeGraphEntry listentry : entryList) {
+            ControlFlowEntry entry = (ControlFlowEntry) listentry;
             boolean root = true;
             if (entry.getParentThreadId() > 0) {
-                for (ControlFlowEntry parent : entryList) {
+                for (TimeGraphEntry parententry : entryList) {
+                    ControlFlowEntry parent = (ControlFlowEntry) parententry;
                     if (parent.getThreadId() == entry.getParentThreadId() &&
                             entry.getStartTime() >= parent.getStartTime() &&
                             entry.getStartTime() <= parent.getEndTime()) {
@@ -322,7 +313,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         }
     }
 
-    private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
+    private void buildStatusEvents(ITmfTrace trace, TimeGraphEntry entry, IProgressMonitor monitor) {
         ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
 
         long start = ssq.getStartTime();
@@ -340,7 +331,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
             if (monitor.isCanceled()) {
                 return;
             }
-            buildStatusEvents(trace, (ControlFlowEntry) child, monitor);
+            buildStatusEvents(trace, (TimeGraphEntry) child, monitor);
         }
     }
 
@@ -474,34 +465,22 @@ public class ControlFlowView extends AbstractTimeGraphView {
                     }
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
-                        // adjust the query range to include the previous and following intervals
-                        long qstart = Math.max(ssq.querySingleState(start, currentThreadQuark).getStartTime() - 1, ssq.getStartTime());
-                        long qend = Math.min(ssq.querySingleState(end, currentThreadQuark).getEndTime() + 1, ssq.getCurrentEndTime());
-                        List<ITmfStateInterval> currentThreadIntervals = ssq.queryHistoryRange(currentThreadQuark, qstart, qend, resolution, monitor);
+                        List<ITmfStateInterval> currentThreadIntervals = ssq.queryHistoryRange(currentThreadQuark, start, end, resolution, monitor);
                         int prevThread = 0;
                         long prevEnd = 0;
-                        long lastEnd = 0;
                         for (ITmfStateInterval currentThreadInterval : currentThreadIntervals) {
                             if (monitor.isCanceled()) {
                                 return null;
                             }
                             long time = currentThreadInterval.getStartTime();
-                            if (time != lastEnd) {
-                                // don't create links where there are gaps in intervals due to the resolution
-                                prevThread = 0;
-                                prevEnd = 0;
-                            }
                             int thread = currentThreadInterval.getStateValue().unboxInt();
-                            if (thread > 0 && prevThread > 0) {
+                            if (thread > 0 && prevThread > 0 && thread != prevThread && time == prevEnd) {
                                 ITimeGraphEntry prevEntry = findEntry(entryList, trace, prevThread);
                                 ITimeGraphEntry nextEntry = findEntry(entryList, trace, thread);
-                                list.add(new TimeLinkEvent(prevEntry, nextEntry, prevEnd, time - prevEnd, 0));
+                                list.add(new TimeLinkEvent(prevEntry, nextEntry, time, 0, 0));
                             }
-                            lastEnd = currentThreadInterval.getEndTime() + 1;
-                            if (thread != 0) {
-                                prevThread = thread;
-                                prevEnd = lastEnd;
-                            }
+                            prevThread = thread;
+                            prevEnd = currentThreadInterval.getEndTime() + 1;
                         }
                     }
                 } catch (TimeRangeException e) {

@@ -9,7 +9,6 @@
  *    Phil Muldoon <pmuldoon@redhat.com> - initial API and implementation
  *    Kyu Lee <klee@redhat.com>          - editor support
  *    Alexander Kurtakov (Red Hat)       - remove parts notneeded
- *    Red Hat Inc.                       - ongoing maintenance
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.changelog.core;
 
@@ -98,10 +97,9 @@ public class ChangeLogPreferencesPage extends PreferencePage implements
 		return list;
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
-
+	
 	@Override
 	protected IPreferenceStore doGetPreferenceStore() {
 		return ChangelogPlugin.getDefault().getPreferenceStore();
@@ -158,7 +156,7 @@ public class ChangeLogPreferencesPage extends PreferencePage implements
 					// only add formatters for external files, not in-file formatters.
 					if (elements[i].getAttribute("inFile").toLowerCase().equals("false"))
 						formatterList.add(fname);
-
+					
 					if (fname
 							.equals(store
 									.getString("IChangeLogConstants.DEFAULT_FORMATTER"))) //$NON-NLS-1$
@@ -197,7 +195,7 @@ public class ChangeLogPreferencesPage extends PreferencePage implements
 		IPreferenceStore store = getPreferenceStore();
 
 		emailField.setText(store.getString("IChangeLogConstants.AUTHOR_EMAIL")); //$NON-NLS-1$
-		nameField.setText(store.getString("IChangeLogConstants.AUTHOR_NAME")); //$NON-NLS-1$
+		nameField.setText(store.getString("IChangeLogConstants.AUTHOR_NAME")); //$NON-NLS-1$	   	
 		populateFormatList(store);
 		populateEditorList(store);
 	}

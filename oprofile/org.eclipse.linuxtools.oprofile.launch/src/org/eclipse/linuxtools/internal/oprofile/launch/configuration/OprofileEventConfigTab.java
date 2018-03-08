@@ -23,7 +23,10 @@ package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider;
+import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
+import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 
 /**
@@ -73,4 +76,19 @@ public class OprofileEventConfigTab extends AbstractEventConfigTab {
 		return OprofileLaunchPlugin.getCache().checkEvent(counter, name, maskValue);
 	}
 
+
+	@Override
+	protected boolean hasPermissions(IProject project) {
+		Boolean perms = getPermissions();
+		try{
+			if (perms == null){
+				IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
+				perms = provider.hasPermissions(project);
+				setPermissions(perms);
+			}
+			return perms;
+		} catch (OpcontrolException e){
+			return false;
+		}
+	}
 }
