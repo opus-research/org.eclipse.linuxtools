@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -180,19 +180,19 @@ public class ColorSettingsXML {
                 bg = null;
                 filter = null;
             } else if (localName.equals(FG_TAG)) {
-                int r = Integer.valueOf(attributes.getValue(R_ATTR));
-                int g = Integer.valueOf(attributes.getValue(G_ATTR));
-                int b = Integer.valueOf(attributes.getValue(B_ATTR));
+                int r = Integer.parseInt(attributes.getValue(R_ATTR));
+                int g = Integer.parseInt(attributes.getValue(G_ATTR));
+                int b = Integer.parseInt(attributes.getValue(B_ATTR));
                 fg = new RGB(r, g, b);
             } else if (localName.equals(BG_TAG)) {
-                int r = Integer.valueOf(attributes.getValue(R_ATTR));
-                int g = Integer.valueOf(attributes.getValue(G_ATTR));
-                int b = Integer.valueOf(attributes.getValue(B_ATTR));
+                int r = Integer.parseInt(attributes.getValue(R_ATTR));
+                int g = Integer.parseInt(attributes.getValue(G_ATTR));
+                int b = Integer.parseInt(attributes.getValue(B_ATTR));
                 bg = new RGB(r, g, b);
             } else if (localName.equals(TICK_TAG)) {
-                int r = Integer.valueOf(attributes.getValue(R_ATTR));
-                int g = Integer.valueOf(attributes.getValue(G_ATTR));
-                int b = Integer.valueOf(attributes.getValue(B_ATTR));
+                int r = Integer.parseInt(attributes.getValue(R_ATTR));
+                int g = Integer.parseInt(attributes.getValue(G_ATTR));
+                int b = Integer.parseInt(attributes.getValue(B_ATTR));
                 tickColor = new RGB(r, g, b);
             } else if (localName.equals(FILTER_TAG)) {
                 filterContentHandler = new TmfFilterContentHandler();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -101,7 +101,7 @@ public abstract class TmfStatisticsTest {
 
         /* Check the total number of events */
         long count = 0;
-        for (Long val : results) {
+        for (long val : results) {
             count += val;
         }
         assertEquals(totalNbEvents, count);
@@ -356,7 +356,7 @@ public abstract class TmfStatisticsTest {
 
     private static long sumOfEvents(Map<String, Long> map) {
         long count = 0;
-        for (Long val : map.values()) {
+        for (long val : map.values()) {
             count += val;
         }
         return count;

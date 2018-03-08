@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,6 +21,16 @@ import java.nio.ByteBuffer;
  * @since 3.0
  */
 public final class TmfLongLocation extends TmfLocation {
+
+    /**
+     * Constructor
+     *
+     * @param locationInfo
+     *            The concrete location
+     */
+    public TmfLongLocation(long locationInfo) {
+        super(Long.valueOf(locationInfo));
+    }
 
     /**
      * The normal constructor
@@ -49,7 +59,7 @@ public final class TmfLongLocation extends TmfLocation {
      * @since 3.0
      */
     public TmfLongLocation(ByteBuffer bufferIn) {
-        super(bufferIn.getLong());
+        this(bufferIn.getLong());
     }
 
     @Override

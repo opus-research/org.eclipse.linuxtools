@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -195,7 +195,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
         }
         try {
             if (location.getLocationInfo() instanceof Long) {
-                return (double) ((Long) location.getLocationInfo()) / fFile.length();
+                return ((Long) location.getLocationInfo()).doubleValue() / fFile.length();
             }
         } catch (final IOException e) {
             Activator.logError("Error seeking event. File: " + getPath(), e); //$NON-NLS-1$

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -60,7 +60,7 @@ public class TmfAnalysisModuleHelperConfigElement implements IAnalysisModuleHelp
 
     @Override
     public boolean isAutomatic() {
-        return Boolean.valueOf(fCe.getAttribute(TmfAnalysisModuleSourceConfigElement.AUTOMATIC_ATTR));
+        return Boolean.parseBoolean(fCe.getAttribute(TmfAnalysisModuleSourceConfigElement.AUTOMATIC_ATTR));
     }
 
     @Override
@@ -95,7 +95,7 @@ public class TmfAnalysisModuleHelperConfigElement implements IAnalysisModuleHelp
                 String classAppliesVal = element.getAttribute(TmfAnalysisModuleSourceConfigElement.APPLIES_ATTR);
                 boolean classApplies = true;
                 if (classAppliesVal != null) {
-                    classApplies = Boolean.valueOf(classAppliesVal);
+                    classApplies = Boolean.parseBoolean(classAppliesVal);
                 }
                 if (classApplies) {
                     applies = applyclass.isAssignableFrom(traceclass);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -63,10 +63,10 @@ public class TmfCoreTracer {
     // ------------------------------------------------------------------------
 
     // Classes tracing flags
-    static Boolean COMPONENT_CLASS_ENABLED = Boolean.FALSE;
-    static Boolean REQUEST_CLASS_ENABLED   = Boolean.FALSE;
-    static Boolean SIGNAL_CLASS_ENABLED    = Boolean.FALSE;
-    static Boolean EVENT_CLASS_ENABLED     = Boolean.FALSE;
+    static boolean COMPONENT_CLASS_ENABLED = false;
+    static boolean REQUEST_CLASS_ENABLED   = false;
+    static boolean SIGNAL_CLASS_ENABLED    = false;
+    static boolean EVENT_CLASS_ENABLED     = false;
 
     // Trace log file
     private static BufferedWriter fTraceFile;
