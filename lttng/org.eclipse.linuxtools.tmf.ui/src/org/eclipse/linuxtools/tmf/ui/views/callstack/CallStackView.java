@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -106,24 +105,13 @@ public class CallStackView extends TmfView {
      */
     private enum State { IDLE, BUSY, PENDING }
 
-    private static final String[] COLUMN_NAMES = new String[] {
+    private final String[] COLUMN_NAMES = new String[] {
             Messages.CallStackView_FunctionColumn,
             Messages.CallStackView_DepthColumn,
             Messages.CallStackView_EntryTimeColumn,
             Messages.CallStackView_ExitTimeColumn,
             Messages.CallStackView_DurationColumn
     };
-
-    private static final int[] COLUMN_WIDTHS = new int[] {
-            200,
-            50,
-            120,
-            120,
-            120
-    };
-
-    // Fraction of a function duration to be added as spacing
-    private static final double SPACING_RATIO = 0.01;
 
     private static final Image THREAD_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/thread_obj.gif"); //$NON-NLS-1$
     private static final Image STACKFRAME_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/stckframe_obj.gif"); //$NON-NLS-1$
@@ -133,22 +121,22 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
 
     // The time graph combo
-    private TimeGraphCombo fTimeGraphCombo;
+    TimeGraphCombo fTimeGraphCombo;
 
     // The selected trace
     private ITmfTrace fTrace;
 
     // The selected thread map
-    private final Map<ITmfTrace, String> fSelectedThreadMap = new HashMap<ITmfTrace, String>();
+    final private HashMap<ITmfTrace, String> fSelectedThreadMap = new HashMap<ITmfTrace, String>();
 
     // The time graph entry list
-    private List<ThreadEntry> fEntryList;
+    private ArrayList<ThreadEntry> fEntryList;
 
     // The trace to entry list hash map
-    private final Map<ITmfTrace, ArrayList<ThreadEntry>> fEntryListMap = new HashMap<ITmfTrace, ArrayList<ThreadEntry>>();
+    final private HashMap<ITmfTrace, ArrayList<ThreadEntry>> fEntryListMap = new HashMap<ITmfTrace, ArrayList<ThreadEntry>>();
 
     // The trace to build thread hash map
-    private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
+    final private HashMap<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
 
     // The start time
     private long fStartTime;
@@ -178,7 +166,7 @@ public class CallStackView extends TmfView {
     private State fRedrawState = State.IDLE;
 
     // The redraw synchronization object
-    private final Object fSyncObj = new Object();
+    final private Object fSyncObj = new Object();
 
     // The saved time sync. signal used when switching off the pinning of a view
     private TmfTimeSynchSignal fSavedTimeSyncSignal;
@@ -227,9 +215,9 @@ public class CallStackView extends TmfView {
                     ITmfStateInterval eventStackInterval = ss.querySingleState(ss.getStartTime(), eventStackQuark);
                     return ! eventStackInterval.getStateValue().isNull() || eventStackInterval.getEndTime() != ss.getCurrentEndTime();
                 } catch (AttributeNotFoundException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (TimeRangeException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (StateSystemDisposedException e) {
                     /* Ignored */
                 }
@@ -365,18 +353,26 @@ public class CallStackView extends TmfView {
                 CallStackEntry entry = (CallStackEntry) element;
                 if (columnIndex == 0) {
                     return entry.getFunctionName();
-                } else if (columnIndex == 1 && entry.getFunctionName().length() > 0) {
-                    int depth = entry.getStackLevel();
-                    return Integer.toString(depth);
-                } else if (columnIndex == 2 && entry.getFunctionName().length() > 0) {
-                    ITmfTimestamp ts = new TmfTimestamp(entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
-                    return ts.toString();
-                } else if (columnIndex == 3 && entry.getFunctionName().length() > 0) {
-                    ITmfTimestamp ts = new TmfTimestamp(entry.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
-                    return ts.toString();
-                } else if (columnIndex == 4 && entry.getFunctionName().length() > 0) {
-                    ITmfTimestamp ts = new TmfTimestampDelta(entry.getEndTime() - entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
-                    return ts.toString();
+                } else if (columnIndex == 1) {
+                    if (entry.getFunctionName().length() > 0) {
+                        int depth = entry.getStackLevel();
+                        return Integer.toString(depth);
+                    }
+                } else if (columnIndex == 2) {
+                    if (entry.getFunctionName().length() > 0) {
+                        ITmfTimestamp ts = new TmfTimestamp(entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
+                        return ts.toString();
+                    }
+                } else if (columnIndex == 3) {
+                    if (entry.getFunctionName().length() > 0) {
+                        ITmfTimestamp ts = new TmfTimestamp(entry.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
+                        return ts.toString();
+                    }
+                } else if (columnIndex == 4) {
+                    if (entry.getFunctionName().length() > 0) {
+                        ITmfTimestamp ts = new TmfTimestampDelta(entry.getEndTime() - entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
+                        return ts.toString();
+                    }
                 }
             }
             return ""; //$NON-NLS-1$
@@ -408,12 +404,12 @@ public class CallStackView extends TmfView {
     }
 
     private class ZoomThread extends Thread {
-        private final List<ThreadEntry> fZoomEntryList;
+        private final ArrayList<ThreadEntry> fZoomEntryList;
         private final long fZoomStartTime;
         private final long fZoomEndTime;
         private final IProgressMonitor fMonitor;
 
-        public ZoomThread(List<ThreadEntry> entryList, long startTime, long endTime) {
+        public ZoomThread(ArrayList<ThreadEntry> entryList, long startTime, long endTime) {
             super("ResourcesView zoom"); //$NON-NLS-1$
             fZoomEntryList = entryList;
             fZoomStartTime = startTime;
@@ -481,11 +477,11 @@ public class CallStackView extends TmfView {
 
         fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
 
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(0).setWidth(COLUMN_WIDTHS[0]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(1).setWidth(COLUMN_WIDTHS[1]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(2).setWidth(COLUMN_WIDTHS[2]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(3).setWidth(COLUMN_WIDTHS[3]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(4).setWidth(COLUMN_WIDTHS[4]);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(0).setWidth(200);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(1).setWidth(50);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(2).setWidth(120);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(3).setWidth(120);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(4).setWidth(120);
 
         fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider());
         fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
@@ -530,7 +526,7 @@ public class CallStackView extends TmfView {
                     if (entry.getFunctionName().length() > 0) {
                         long startTime = entry.getStartTime();
                         long endTime = entry.getEndTime();
-                        long spacingTime = (long) ((endTime - startTime) * SPACING_RATIO);
+                        long spacingTime = (long) ((endTime - startTime) * 0.01);
                         startTime -= spacingTime;
                         endTime += spacingTime;
                         TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
@@ -554,7 +550,7 @@ public class CallStackView extends TmfView {
                         CallStackEvent event = (CallStackEvent) o;
                         long startTime = event.getTime();
                         long endTime = startTime + event.getDuration();
-                        long spacingTime = (long) ((endTime - startTime) * SPACING_RATIO);
+                        long spacingTime = (long) ((endTime - startTime) * 0.01);
                         startTime -= spacingTime;
                         endTime += spacingTime;
                         TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
@@ -683,13 +679,13 @@ public class CallStackView extends TmfView {
                             break;
                         }
                     } catch (AttributeNotFoundException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     } catch (TimeRangeException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     } catch (StateSystemDisposedException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     } catch (StateValueTypeException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     }
                 }
             }
@@ -799,7 +795,7 @@ public class CallStackView extends TmfView {
                         threadEntry.addChild(callStackEntry);
                     }
                 } catch (AttributeNotFoundException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 }
             }
         }
@@ -856,8 +852,8 @@ public class CallStackView extends TmfView {
                 long time = statusInterval.getStartTime();
                 long duration = statusInterval.getEndTime() - time + 1;
                 if (!statusInterval.getStateValue().isNull()) {
-                    final int modulo = CallStackPresentationProvider.NUM_COLORS / 2;
-                    int value = statusInterval.getStateValue().toString().hashCode() % modulo + modulo;
+                    final int MODULO = CallStackPresentationProvider.NUM_COLORS / 2;
+                    int value = statusInterval.getStateValue().toString().hashCode() % MODULO + MODULO;
                     eventList.add(new CallStackEvent(entry, time, duration, value));
                     lastIsNull = false;
                 } else {
@@ -870,9 +866,9 @@ public class CallStackView extends TmfView {
                 lastEndTime = time + duration;
             }
         } catch (AttributeNotFoundException e) {
-            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (TimeRangeException e) {
-            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */
         }
@@ -911,11 +907,11 @@ public class CallStackView extends TmfView {
                         callStackEntry.setEndTime(stackLevelInterval.getEndTime() + 1);
                     }
                 } catch (AttributeNotFoundException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (TimeRangeException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (StateSystemDisposedException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 }
             }
         }
@@ -1008,15 +1004,17 @@ public class CallStackView extends TmfView {
         fPinAction.addPropertyChangeListener(new IPropertyChangeListener(){
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                if (IAction.CHECKED.equals(event.getProperty()) && !isPinned()) {
-                    if (fSavedRangeSyncSignal != null) {
-                        synchToRange(fSavedRangeSyncSignal);
-                        fSavedRangeSyncSignal = null;
-                    }
+                if (IAction.CHECKED.equals(event.getProperty())) {
+                    if (!isPinned()) {
+                        if (fSavedRangeSyncSignal != null) {
+                            synchToRange(fSavedRangeSyncSignal);
+                            fSavedRangeSyncSignal = null;
+                        }
 
-                    if (fSavedTimeSyncSignal != null) {
-                        synchToTime(fSavedTimeSyncSignal);
-                        fSavedTimeSyncSignal = null;
+                        if (fSavedTimeSyncSignal != null) {
+                            synchToTime(fSavedTimeSyncSignal);
+                            fSavedTimeSyncSignal = null;
+                        }
                     }
                 }
             }
@@ -1064,13 +1062,13 @@ public class CallStackView extends TmfView {
                             viewer.getTimeGraphControl().fireSelectionChanged();
                             startZoomThread(viewer.getTime0(), viewer.getTime1());
                         } catch (AttributeNotFoundException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (TimeRangeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateSystemDisposedException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateValueTypeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -1115,13 +1113,13 @@ public class CallStackView extends TmfView {
                             viewer.getTimeGraphControl().fireSelectionChanged();
                             startZoomThread(viewer.getTime0(), viewer.getTime1());
                         } catch (AttributeNotFoundException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (TimeRangeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateSystemDisposedException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateValueTypeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         }
                     }
                 }
