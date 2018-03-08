@@ -31,7 +31,7 @@ public class CtfTmfLightweightContextTest {
     public void testTooManyContexts() throws TmfTraceException, InterruptedException {
         long begin = 1332170682440133097L;
         long end = 1332170692664579801L;
-        final int lwcCount = 1000;
+        final int lwcCount = 101;
         double increment = (end - begin) / lwcCount;
         final ArrayList<Long> vals = new ArrayList<Long>();
         fixture = new CtfTmfTrace();
