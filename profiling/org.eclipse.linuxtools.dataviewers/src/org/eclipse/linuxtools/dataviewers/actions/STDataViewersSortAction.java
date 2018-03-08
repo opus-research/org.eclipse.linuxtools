@@ -32,7 +32,8 @@ public class STDataViewersSortAction extends Action {
     /**
      * Constructor
      *
-     * @param stViewer
+     * @param view
+     * @param dialog
      */
     public STDataViewersSortAction(AbstractSTViewer stViewer) {
         super(STDataViewersMessages.sortAction_title);

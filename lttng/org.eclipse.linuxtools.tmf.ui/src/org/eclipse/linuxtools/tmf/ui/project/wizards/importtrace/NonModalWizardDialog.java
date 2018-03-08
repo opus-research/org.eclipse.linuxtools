@@ -18,7 +18,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -60,11 +59,6 @@ public class NonModalWizardDialog extends WizardDialog {
      */
     public NonModalWizardDialog(WizardDialog wiz) {
         super(wiz.getShell(), wiz.getCurrentPage().getWizard());
-    }
-
-    @Override
-    protected IDialogSettings getDialogBoundsSettings() {
-        return getWizard().getDialogSettings();
     }
 
     @Override

@@ -46,39 +46,39 @@ public class MinMaxDialog extends Dialog {
     /**
      * Label for minimum.
      */
-    private Label fMinLabel;
+    protected Label fMinLabel;
     /**
      * Label for maximum.
      */
-    private Label fMaxLabel;
+    protected Label fMaxLabel;
     /**
      * Label for scale
      */
-    private Label fScaleLabel;
+    protected Label fScaleLabel;
     /**
      * Label for precision.
      */
-    private Label fPrecisionLabel;
+    protected Label fPrecisionLabel;
     /**
      * Text field for minimum.
      */
-    private Text fMinText;
+    protected Text fMinText;
     /**
      * Text field for maximum.
      */
-    private Text fMaxText;
+    protected Text fMaxText;
     /**
      * Text field for scale.
      */
-    private Text fScaleText;
+    protected Text fScaleText;
     /**
      * Text field for precision.
      */
-    private Text fPrecisionText;
+    protected Text fPrecisionText;
     /**
      * The sequence diagram widget reference.
      */
-    private SDWidget fSdWidget;
+    protected SDWidget fSdWidget;
 
     // ------------------------------------------------------------------------
     // Constructor

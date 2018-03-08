@@ -556,7 +556,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content provider for the tracepoints tree.
      */
-    public static final class UstContentProvider extends TraceControlContentProvider {
+    final static public class UstContentProvider extends TraceControlContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof TargetNodeComponent) {
@@ -577,7 +577,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content label for the tracepoints tree.
      */
-    public static final class UstLabelProvider extends TraceControlLabelProvider {
+     final static public class UstLabelProvider extends TraceControlLabelProvider {
         @Override
         public Image getImage(Object element) {
             return null;
@@ -598,7 +598,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Check state listener for the tracepoints tree.
      */
-    public final class UstCheckStateListener implements ICheckStateListener {
+    final public class UstCheckStateListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             if (event.getChecked()) {
