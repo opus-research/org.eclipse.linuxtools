@@ -25,11 +25,6 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
      */
     protected String xTitle = null;
 	protected boolean xLineGrid, yLineGrid;
-	
-	/**
-	 * Create a chart series for that chart.
-	 */
-	protected abstract ISeries createChartISeries(int i);
 
     /**
      * Constructor.
@@ -50,6 +45,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 	 */
 	@Override
 	protected void buildXAxis() {
+		super.buildXAxis();
 		String labels[] = adapter.getLabels();
 		IAxis xAxis = this.chart.getAxisSet().getXAxis(0);
 		if (xLineGrid)
@@ -120,5 +116,12 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 
 		chart.getAxisSet().adjustRange();
 		chart.redraw();
+	}
+
+	/*
+	 * Create a chart series for that chart.
+	 */
+	protected ISeries createChartISeries(int i) {
+		return null;
 	}
 }

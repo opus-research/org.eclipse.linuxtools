@@ -72,8 +72,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 * Chart title.
 	 */
 	protected String title = null;
-	
-	public abstract void updateDataSet();
 
 	/**
 	 * Constructs one chart builder and associate it to one data set.
@@ -174,6 +172,10 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 */
 	public Chart getChart() {
 		return chart;
+	}
+
+	public void updateDataSet() {
+
 	}
 
 	public void setScale(double scale) {
