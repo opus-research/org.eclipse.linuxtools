@@ -124,6 +124,9 @@ public class GdbEventsTable extends TmfEventsTable {
         return fields;
     }
 
+    /**
+     * @param signal don't use since we don't synchronize
+     */
     @Override
     @TmfSignalHandler
     public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
