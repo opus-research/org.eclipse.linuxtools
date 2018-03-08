@@ -28,26 +28,22 @@ public class ProviderLaunchConfigurationDelegate extends
 
 	@Override
 	public void launch(ILaunchConfiguration config, String mode,
-			ILaunch launch, IProgressMonitor monitor) {
-		try {
+			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
-			if (config != null) {
-				// get provider id from configuration.
-				String providerId = config.getAttribute(
-						ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+		if (config != null) {
+			// get provider id from configuration.
+			String providerId = config.getAttribute(
+					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
 
-				// get delegate associated with provider id.
-				ProfileLaunchConfigurationDelegate delegate = ProviderFramework.getConfigurationDelegateFromId(providerId);
+			// get delegate associated with provider id.
+			ProfileLaunchConfigurationDelegate delegate = ProviderFramework
+					.getConfigurationDelegateFromId(providerId);
 
-				// launch delegate
-				if (delegate != null) {
-					delegate.launch(config, mode, launch, monitor);
-				}
+			// launch delegate
+			if (delegate != null) {
+				delegate.launch(config, mode, launch, monitor);
 			}
-		} catch (CoreException e) {
-			e.printStackTrace();
 		}
-		return;
 	}
 
 	/**
@@ -71,17 +67,19 @@ public class ProviderLaunchConfigurationDelegate extends
 		if (wc != null) {
 			try {
 				IResource[] resources = wc.getMappedResources();
-				for (int i = 0; i < resources.length; ++i) {
-					IResource resource = resources[i];
-					if (resource instanceof IProject) {
-						IProject project = (IProject)resource;
-						ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project),
-								ProviderProfileConstants.PLUGIN_ID);
-						Boolean use_project_settings = store.getBoolean(ProviderProfileConstants.USE_PROJECT_SETTINGS + type);
-						if (use_project_settings.booleanValue() == true) {
-							String provider = store.getString(ProviderProfileConstants.PREFS_KEY + type);
-							if (!provider.equals(""))
-								providerId = provider;
+				if(resources != null){
+					for (int i = 0; i < resources.length; ++i) {
+						IResource resource = resources[i];
+						if (resource instanceof IProject) {
+							IProject project = (IProject)resource;
+							ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project),
+									ProviderProfileConstants.PLUGIN_ID);
+							Boolean use_project_settings = store.getBoolean(ProviderProfileConstants.USE_PROJECT_SETTINGS + type);
+							if (use_project_settings.booleanValue() == true) {
+								String provider = store.getString(ProviderProfileConstants.PREFS_KEY + type);
+								if (!provider.equals(""))
+									providerId = provider;
+							}
 						}
 					}
 				}
