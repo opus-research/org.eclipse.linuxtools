@@ -147,6 +147,16 @@ public class StreamInputReader {
     }
 
     /**
+     * Gets the CPU of a stream. It's the same as the one in /proc or running
+     * the asm CPUID instruction
+     *
+     * @return The CPU id (a number)
+     */
+    public int getCPU() {
+        return this.packetReader.getCPU();
+    }
+
+    /**
      * Gets the filename of the stream being read
      * @return The filename of the stream being read
      */
