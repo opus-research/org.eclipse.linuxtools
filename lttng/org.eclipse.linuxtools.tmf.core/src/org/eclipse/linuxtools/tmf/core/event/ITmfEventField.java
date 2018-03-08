@@ -8,12 +8,9 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Consolidated API methods
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
-
-import java.util.Map;
 
 /**
  * The generic event payload in TMF. Each field can be either a terminal or
@@ -57,24 +54,31 @@ public interface ITmfEventField {
     public String getFormattedValue();
 
     /**
-     * Return the sub-fields contained in this field. This is an unmodifiable
-     * map, so do not try to modify it! The order of iteration should remain the
-     * same as the order of insertion.
-     *
-     * @return The map of subfields (empty map if none)
-     * @throws UnsupportedOperationException
-     *             If an attempt to modify the map is made
-     * @since 2.0
+     * @return the list of subfield names (empty array if none)
      */
-    public Map<String, ITmfEventField> getFields();
+    public String[] getFieldNames();
 
     /**
-     * Convenience method for getting fields by name, equivalent to
-     * .getFields().get(name).
-     *
-     * @param name
-     *            The name of the field
-     * @return A specific subfield by name (null if absent or inexistent)
+     * @param index The index of the field
+     * @return the nth field name (null if absent or inexistent)
+     */
+    public String getFieldName(int index);
+
+    /**
+     * @return the list of subfields (empty array if none)
+     */
+    public ITmfEventField[] getFields();
+
+    /**
+     * @param name The name of the field
+     * @return a specific subfield by name (null if absent or inexistent)
      */
     public ITmfEventField getField(String name);
+
+    /**
+     * @param index The index of the field to return
+     * @return a specific subfield by index (null if absent or inexistent)
+     */
+    public ITmfEventField getField(int index);
+
 }
