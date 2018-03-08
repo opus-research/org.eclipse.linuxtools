@@ -37,6 +37,8 @@ public class MatchAndSyncTest {
     @Test
     public void testMatching() {
         final String cr = System.getProperty("line.separator");
+        assertTrue(CtfTmfTestTrace.SYNC_SRC.exists());
+        assertTrue(CtfTmfTestTrace.SYNC_DEST.exists());
         CtfTmfTrace trace1 = CtfTmfTestTrace.SYNC_SRC.getTrace();
         CtfTmfTrace trace2 = CtfTmfTestTrace.SYNC_DEST.getTrace();
 
@@ -58,6 +60,9 @@ public class MatchAndSyncTest {
                 "Trace 1:" + cr +
                 "  2 unmatched incoming events" + cr +
                 "  1 unmatched outgoing events" + cr, stats);
+
+        CtfTmfTestTrace.SYNC_SRC.dispose();
+        CtfTmfTestTrace.SYNC_DEST.dispose();
     }
 
 }
