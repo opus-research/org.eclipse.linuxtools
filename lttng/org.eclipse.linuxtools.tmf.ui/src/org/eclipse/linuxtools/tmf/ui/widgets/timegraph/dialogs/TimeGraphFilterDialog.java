@@ -29,7 +29,6 @@ import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
@@ -49,6 +48,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ContainerCheckedTreeViewer;
 import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
@@ -90,6 +90,8 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
     private int fHeight = 18;
 
+    private boolean fContainerMode;
+
     private Object[] fExpandedElements;
 
     /**
@@ -103,7 +105,19 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         setResult(new ArrayList<Object>(0));
         setStatusLineAboveButtons(true);
         setHelpAvailable(false);
+        fContainerMode = false;
         fExpandedElements = null;
+    }
+
+    /**
+     * If set, the checked /gray state of containers (inner nodes) is derived
+     * from the checked state of its leaf nodes.
+     *
+     * @param containerMode
+     *            The containerMode to set
+     */
+    public void setContainerMode(boolean containerMode) {
+        fContainerMode = containerMode;
     }
 
     /**
@@ -301,7 +315,11 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      * @return the tree viewer
      */
     protected CheckboxTreeViewer createTreeViewer(Composite parent) {
-        fViewer = new CheckboxTreeViewer(parent, SWT.BORDER | SWT.MULTI);
+        if (fContainerMode) {
+            fViewer = new ContainerCheckedTreeViewer(parent, SWT.BORDER);
+        } else {
+            fViewer = new CheckboxTreeViewer(parent, SWT.BORDER);
+        }
 
         Tree tree = fViewer.getTree();
         tree.setHeaderVisible(true);
@@ -363,26 +381,26 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 | GridData.GRAB_HORIZONTAL);
         data.grabExcessHorizontalSpace = true;
         buttonComposite.setLayoutData(data);
-
-        Button checkAllButton = createButton(buttonComposite,
-                IDialogConstants.SELECT_ALL_ID, Messages.TmfTimeFilterDialog_CHECK_ALL,
+        Button selectButton = createButton(buttonComposite,
+                IDialogConstants.SELECT_ALL_ID, Messages.TmfTimeFilterDialog_SELECT_ALL,
                 false);
         SelectionListener listener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Object[] viewerElements = fContentProvider.getElements(fInput);
-
-                for (int i = 0; i < viewerElements.length; i++) {
-                    fViewer.setSubtreeChecked(viewerElements[i], true);
+                if (fContainerMode) {
+                    fViewer.setCheckedElements(viewerElements);
+                } else {
+                    for (int i = 0; i < viewerElements.length; i++) {
+                        fViewer.setSubtreeChecked(viewerElements[i], true);
+                    }
                 }
-
                 updateOKStatus();
             }
         };
-        checkAllButton.addSelectionListener(listener);
-
-        Button uncheckAllButton = createButton(buttonComposite,
-                IDialogConstants.DESELECT_ALL_ID, Messages.TmfTimeFilterDialog_UNCHECK_ALL,
+        selectButton.addSelectionListener(listener);
+        Button deselectButton = createButton(buttonComposite,
+                IDialogConstants.DESELECT_ALL_ID, Messages.TmfTimeFilterDialog_DESELECT_ALL,
                 false);
         listener = new SelectionAdapter() {
             @Override
@@ -391,61 +409,8 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 updateOKStatus();
             }
         };
-        uncheckAllButton.addSelectionListener(listener);
-
-        Button checkSelectedButton = createButton(buttonComposite,
-                IDialogConstants.CLIENT_ID, Messages.TmfTimeFilterDialog_CHECK_SELECTED,
-                false);
-        listener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeSelection selection = (TreeSelection) fViewer.getSelection();
-
-                for (Object element : selection.toArray()) {
-                    checkElement(element);
-                }
-
-                updateOKStatus();
-            }
-        };
-        checkSelectedButton.addSelectionListener(listener);
-
-        Button uncheckSelectedButton = createButton(buttonComposite,
-                IDialogConstants.CLIENT_ID + 1, Messages.TmfTimeFilterDialog_UNCHECK_SELECTED,
-                false);
-        listener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeSelection selection = (TreeSelection) fViewer.getSelection();
-
-                for (Object element : selection.toArray()) {
-                    uncheckElement(element);
-                }
-
-                updateOKStatus();
-            }
-        };
-        uncheckSelectedButton.addSelectionListener(listener);
-
+        deselectButton.addSelectionListener(listener);
         return buttonComposite;
-    }
-
-    private void checkElement(Object element) {
-        Object e = element;
-        while (e != null) {
-            fViewer.setChecked(e, true);
-            e = fContentProvider.getParent(e);
-        }
-    }
-
-    private void uncheckElement(Object element) {
-        Object e = element;
-
-        fViewer.setChecked(e, false);
-
-        for (Object child : fContentProvider.getChildren(e)) {
-            uncheckElement(child);
-        }
     }
 
     private boolean evaluateIfTreeEmpty(Object input) {
@@ -469,19 +434,36 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
         CheckStateListener() {
         }
-
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             try {
                 ITimeGraphEntry entry = (ITimeGraphEntry) event.getElement();
                 boolean checked = event.getChecked();
-                if (checked) {
-                    checkElement(entry);
-                } else {
-                    uncheckElement(entry);
+                if (!checked) {
+                    uncheckChildren(entry);
+                }
+                else
+                {
+                    checkParent(entry);
                 }
             } catch (ClassCastException e) {
                 return;
+            }
+        }
+
+        private void uncheckChildren(ITimeGraphEntry entry) {
+
+            for (ITimeGraphEntry child : entry.getChildren()) {
+                getTreeViewer().setChecked(child, false);
+                uncheckChildren(child);
+            }
+        }
+
+        private void checkParent(ITimeGraphEntry entry) {
+
+            if (entry.getParent() != null) {
+                getTreeViewer().setChecked(entry.getParent(), true);
+                checkParent(entry.getParent());
             }
         }
     }
