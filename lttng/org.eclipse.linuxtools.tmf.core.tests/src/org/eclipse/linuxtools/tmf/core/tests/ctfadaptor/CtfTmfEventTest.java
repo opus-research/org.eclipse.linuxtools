@@ -43,7 +43,7 @@ import org.junit.Test;
  */
 public class CtfTmfEventTest {
 
-    private static final int TRACE_INDEX = 0;
+    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.KERNEL;
 
     private static CtfTmfEvent nullEvent;
     private CtfTmfEvent fixture;
@@ -61,8 +61,8 @@ public class CtfTmfEventTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
-        CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
+        assumeTrue(testTrace.exists());
+        CtfTmfTrace trace = testTrace.getTrace();
         CtfIterator tr = new CtfIterator(trace);
         tr.advance();
         fixture = tr.getCurrentEvent();

@@ -45,8 +45,7 @@ public class TmfSchedulerTest {
     // Constants
     // ------------------------------------------------------------------------
 
-    private static final int TRACE_INDEX = 0;
-    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
+    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.KERNEL;
     private static final int NB_EVENTS_TRACE = 695319;
     private static final int NB_EVENTS_TIME_RANGE = 155133;
 
@@ -72,9 +71,9 @@ public class TmfSchedulerTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
+        assumeTrue(testTrace.exists());
         fixture = new CtfTmfTrace();
-        fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
+        fixture.initTrace((IResource) null, testTrace.getPath(), CtfTmfEvent.class);
         fixture.indexTrace(true);
         fStartTime = fixture.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         fEndTime = fixture.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();

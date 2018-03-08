@@ -32,6 +32,8 @@ import org.junit.Test;
  */
 public class CTFTraceCallsitePerformanceTest {
 
+    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
+
     private static final int NUMBER_OF_SEEKS = 100000;
 
     private final String[] callsites = { "Alligator", "Bunny", "Cat",
@@ -73,8 +75,8 @@ public class CTFTraceCallsitePerformanceTest {
     @Before
     public void setup() throws CTFReaderException, SecurityException,
             IllegalArgumentException {
-        assumeTrue(CtfTestTraces.tracesExist());
-        fTrace = new CTFTrace(CtfTestTraces.getTraceFile().getParentFile());
+        assumeTrue(testTrace.exists());
+        fTrace = new CTFTrace(testTrace.getPath());
     }
 
     private void addCallsites(int numCallsites) {

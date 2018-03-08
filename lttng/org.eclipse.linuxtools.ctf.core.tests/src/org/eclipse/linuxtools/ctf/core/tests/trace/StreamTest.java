@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.File;
 import java.nio.channels.FileChannel;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +42,7 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class StreamTest {
 
-    private static final int TRACE_INDEX = 0;
+    private static final CtfTestTraces testTrace = CtfTestTraces.KERNEL;
 
     private Stream fixture;
 
@@ -52,14 +53,14 @@ public class StreamTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(CtfTestTraces.tracesExist());
-        fixture = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
+        assumeTrue(testTrace.exists());
+        fixture = new Stream(testTrace.getTrace());
         fixture.setEventContext(new StructDeclaration(1L));
         fixture.setPacketContext(new StructDeclaration(1L));
         fixture.setEventHeader(new StructDeclaration(1L));
         fixture.setId(1L);
-        fixture.addInput(new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
-                (FileChannel) null, CtfTestTraces.getEmptyFile()));
+        fixture.addInput(new StreamInput(new Stream(testTrace.getTrace()),
+                (FileChannel) null, new File("")));
     }
 
     /**
@@ -69,7 +70,7 @@ public class StreamTest {
      */
     @Test
     public void testStream() throws CTFReaderException {
-        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
+        CTFTrace trace = testTrace.getTrace();
         Stream result = new Stream(trace);
         assertNotNull(result);
     }

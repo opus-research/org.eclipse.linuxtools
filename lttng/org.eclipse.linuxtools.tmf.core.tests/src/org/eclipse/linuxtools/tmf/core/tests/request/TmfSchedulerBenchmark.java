@@ -38,13 +38,12 @@ public class TmfSchedulerBenchmark {
     private static final int NUM_LOOPS = 10;
     private static final int NANOSECONDS_IN_MILLISECONDS = 1000000;
     private static final int NANOSECONDS_IN_SECONDS = 1000000000;
-    private static final int TRACE_INDEX = 0;
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private static CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
+    private static CtfTmfTrace trace = CtfTmfTestTraces.KERNEL.getTrace();
     private static ForegroundRequest lastForegroundRequest = null;
     private static BackgroundRequest lastBackgroundRequest = null;
 

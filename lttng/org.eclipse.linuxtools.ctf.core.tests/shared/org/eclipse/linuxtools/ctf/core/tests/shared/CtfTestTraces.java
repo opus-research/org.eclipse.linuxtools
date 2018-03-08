@@ -17,142 +17,73 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 
 /**
- * Here are the definitions common to all the CTF parser tests.
+ * Here is the list of the available test traces for the CTF parser.
  *
- * @author alexmont
+ * Make sure you run the traces/get-traces.xml Ant script (or get-traces.sh
+ * shell script) to download them first!
+ *
+ * @author Alexandre Montplaisir
  */
-public abstract class CtfTestTraces {
+public enum CtfTestTraces {
+    /** Example kernel trace */
+    KERNEL("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"),
+    /** Another kernel trace */
+    TRACE2("../org.eclipse.linuxtools.ctf.core.tests/traces/trace2"),
+    /** Kernel trace with event contexts */
+    KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm");
 
-    /*
-     * Path to test traces. Make sure you run the traces/get-traces.sh script
-     * first!
-     */
-    private static final String[] testTracePaths = {
-        "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel",
-        "../org.eclipse.linuxtools.ctf.core.tests/traces/trace2",
-        "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"
-    };
 
-    private static CTFTrace[] testTraces = new CTFTrace[testTracePaths.length];
-    private static CTFTrace[] testTracesFromFile = new CTFTrace[testTracePaths.length];
+    private final String fPath;
+    private CTFTrace fTrace = null;
+    private CTFTrace fTraceFromFile = null;
 
-    private static final File testTraceFile1 = new File(testTracePaths[0] + "/channel0_0");
+    private CtfTestTraces(String path) {
+        fPath = path;
+    }
 
-    private static final File emptyFile = new File("");
-    private static CTFTrace emptyTrace = null;
-
-    /**
-     * Return an empty file (new File("");)
-     *
-     * @return An empty file
-     */
-    public static File getEmptyFile() {
-        return emptyFile;
+    /** @return The path to the test trace */
+    public String getPath() {
+        return fPath;
     }
 
     /**
-     * Return a file in test trace #1 (channel0_0).
+     * Get a CTFTrace instance of a test trace. Make sure
+     * {@link #exists()} before calling this!
      *
-     * Make sure {@link #tracesExist()} before calling this!
-     *
-     * @return A file in a test trace
-     */
-    public static File getTraceFile(){
-        return testTraceFile1;
-    }
-
-    /**
-     * Return a trace out of an empty file (new CTFTrace("");)
-     *
-     * @return An empty trace
-     */
-    public static CTFTrace getEmptyTrace() {
-        if (emptyTrace == null) {
-            try {
-                emptyTrace = new CTFTrace("");
-            } catch (CTFReaderException e) {
-                /* Should always work... */
-                throw new RuntimeException(e);
-            }
-        }
-        return emptyTrace;
-    }
-
-    /**
-     * Get a CTFTrace reference to the given test trace.
-     *
-     * Make sure {@link #tracesExist()} before calling this!
-     *
-     * @param idx
-     *            The index of the trace among all the available ones
-     * @return Reference to test trace #1
+     * @return The CTFTrace object
      * @throws CTFReaderException
-     *             If the trace cannot be found
+     *             If the trace cannot be found.
      */
-    public static CTFTrace getTestTrace(int idx) throws CTFReaderException {
-        if (testTraces[idx] == null) {
-            testTraces[idx] = new CTFTrace(testTracePaths[idx]);
+    public CTFTrace getTrace() throws CTFReaderException {
+        if (fTrace == null) {
+            fTrace = new CTFTrace(fPath);
         }
-        return testTraces[idx];
+        return fTrace;
     }
 
     /**
-     * Get the (string) path to a given test trace.
+     * Get a CTFTrace instance created from a File. Make sure
+     * {@link #exists()} before calling this!
      *
-     * You should call {@link #tracesExist()} before calling this if you are
-     * going to use this trace for real.
-     *
-     * @param idx
-     *            The index of the trace among all the available ones
-     * @return The path to the test trace
+     * @return The CTFTrace object
+     * @throws CTFReaderException
+     *             If the trace cannot be found.
      */
-    public static String getTestTracePath(int idx) {
-        return testTracePaths[idx];
+    public CTFTrace getTraceFromFile() throws CTFReaderException {
+        if (fTraceFromFile == null) {
+            fTraceFromFile = new CTFTrace(new File(fPath));
+        }
+        return fTraceFromFile;
     }
 
     /**
-     * Same as {@link #getTestTrace}, except the CTFTrace is create from the
-     * File object and not the path.
+     * Check if this test trace actually exists on disk.
      *
-     * Make sure {@link #tracesExist()} before calling this!
-     *
-     * @param idx
-     *            The index of the trace among all the available ones
-     * @return Reference to test trace #1
+     * @return If the trace exists
      */
-    public static CTFTrace getTestTraceFromFile(int idx) {
-        if (testTracesFromFile[idx] == null) {
-            try {
-                testTracesFromFile[idx] = new CTFTrace(new File(testTracePaths[idx]));
-            } catch (CTFReaderException e) {
-                /* This trace should exist */
-                throw new RuntimeException(e);
-            }
-        }
-        return testTracesFromFile[idx];
-    }
-
-    /**
-     * Check if the test traces are present in the tree. If not, you can get
-     * them by running traces/get-traces.sh or traces/get-traces.xml
-     *
-     * @return True if *all* the test files could be found, false otherwise.
-     */
-    public static boolean tracesExist() {
-        for (int i = 0; i < testTracePaths.length; i++) {
-            if (!traceExists(i)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean traceExists(int idx) {
-        if (testTraces[idx] != null) {
-            return true;
-        }
+    public boolean exists() {
         try {
-            getTestTrace(idx);
+            getTrace();
         } catch (CTFReaderException e) {
             return false;
         }

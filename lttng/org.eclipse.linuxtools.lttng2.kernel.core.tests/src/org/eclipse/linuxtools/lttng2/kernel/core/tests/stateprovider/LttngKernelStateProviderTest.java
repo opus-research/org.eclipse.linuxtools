@@ -28,7 +28,7 @@ import org.junit.Test;
  */
 public class LttngKernelStateProviderTest {
 
-    private final static int TRACE_INDEX = 1;
+    private static final CtfTmfTestTraces testTrace = CtfTmfTestTraces.TRACE2;
 
     private static ITmfStateProvider input;
 
@@ -37,8 +37,8 @@ public class LttngKernelStateProviderTest {
      */
     @BeforeClass
     public static void initialize() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
-        input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+        assumeTrue(testTrace.exists());
+        input = new LttngKernelStateProvider(testTrace.getTrace());
 
     }
 

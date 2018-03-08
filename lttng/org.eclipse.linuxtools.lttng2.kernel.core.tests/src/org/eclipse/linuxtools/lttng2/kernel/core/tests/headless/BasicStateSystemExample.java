@@ -43,7 +43,7 @@ public class BasicStateSystemExample {
         /* Read a trace and build the state system */
         try {
             File newStateFile = new File("/tmp/helloworldctf.ht");
-            ITmfStateProvider input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(1));
+            ITmfStateProvider input = new LttngKernelStateProvider(CtfTmfTestTraces.TRACE2.getTrace());
             ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(newStateFile, input, true);
 
             requestExample(ss);
