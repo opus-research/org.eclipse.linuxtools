@@ -181,21 +181,35 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     /**
      * Set the general event list of this entry.
      *
+     * Creates a copy of the list to avoid the caller still modifying the list
+     *
      * @param eventList
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        fEventList = eventList;
+        if (eventList != null) {
+            fEventList = new ArrayList<ITimeEvent>(eventList);
+        } else {
+            // the event list should never be null
+            fEventList = new ArrayList<ITimeEvent>();
+        }
     }
 
     /**
      * Set the zoomed event list of this entry.
      *
+     * Creates a copy of the list to avoid the caller still modifying the list
+     *
      * @param eventList
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        fZoomedEventList = eventList;
+        if (eventList != null) {
+            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+        } else {
+            // the zoomed event list can be null
+            fZoomedEventList = null;
+        }
     }
 
     /**

@@ -69,17 +69,9 @@ public class EventIterator implements Iterator<ITimeEvent> {
             fZoomedStartTime = zoomedEventList.get(0).getTime();
             ITimeEvent lastEvent = zoomedEventList.get(zoomedEventList.size() - 1);
             fZoomedEndTime = lastEvent.getTime() + lastEvent.getDuration();
-            if (zoomedEventList instanceof EventList) {
-                fZoomedStartTime = Math.min(((EventList) zoomedEventList).getStartTime(), fZoomedStartTime);
-                fZoomedEndTime = Math.max(((EventList) zoomedEventList).getEndTime(), fZoomedEndTime);
-            }
         } else {
             fZoomedStartTime = Long.MAX_VALUE;
             fZoomedEndTime = Long.MIN_VALUE;
-            if (zoomedEventList instanceof EventList) {
-                fZoomedStartTime = ((EventList) zoomedEventList).getStartTime();
-                fZoomedEndTime = ((EventList) zoomedEventList).getEndTime();
-            }
         }
         fStartTime = startTime;
         fEndTime = endTime;
@@ -99,20 +91,12 @@ public class EventIterator implements Iterator<ITimeEvent> {
                         fNext = null;
                         if (event.getTime() + event.getDuration() > fZoomedEndTime && fZoomedEndTime < fEndTime) {
                             // the end of the event is partially hidden by the zoomed events and is visible
-                            if (event instanceof ITimeEvent2) {
-                                fNext = ((ITimeEvent2) event).split(fZoomedEndTime).getSecond();
-                            } else {
-                                fNext = new TimeEvent(event.getEntry(), fZoomedEndTime, event.getTime() + event.getDuration() - fZoomedEndTime);
-                            }
+                            fNext = new TimeEvent(event.getEntry(), fZoomedEndTime, event.getTime() + event.getDuration() - fZoomedEndTime);
                         }
                         if (event.getTime() < fZoomedStartTime && fZoomedStartTime > fStartTime) {
                             // the start of the event is partially hidden by the zoomed events and is visible
                             fSplitNext = fNext;
-                            if (event instanceof ITimeEvent2) {
-                                fNext = ((ITimeEvent2) event).split(fZoomedStartTime).getFirst();
-                            } else {
-                                fNext = new TimeEvent(event.getEntry(), event.getTime(), fZoomedStartTime - event.getTime());
-                            }
+                            fNext = new TimeEvent(event.getEntry(), event.getTime(), fZoomedStartTime - event.getTime());
                         }
                     }
                     if (fNext != null) {
