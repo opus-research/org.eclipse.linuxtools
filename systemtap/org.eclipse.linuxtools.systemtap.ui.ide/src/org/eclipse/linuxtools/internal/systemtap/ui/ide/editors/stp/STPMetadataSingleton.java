@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
 
 /**
@@ -61,7 +60,7 @@ public class STPMetadataSingleton {
 	 * 
 	 */
 	public static String[] getCompletionResults(String match) {
-
+		
 		ArrayList<String> data = new ArrayList<String>();
 	
 		// TODO: Until an error strategy is devised to better inform
@@ -78,10 +77,6 @@ public class STPMetadataSingleton {
 		/// narrow down the list with partial probe matches.
 		if (tapsetAndProbeIncluded) {
 			ArrayList<String> temp = builtMetadata.get(getTapset(match));
-
-			if (temp == null)
-				return new String[] {"No completion data found."};
-
 			String probe = getTapsetProbe(match);
 			for (int i=0; i<temp.size(); i++) {
 				if (temp.get(i).startsWith(probe)) {
@@ -90,14 +85,8 @@ public class STPMetadataSingleton {
 			}
 		}
 		// If the result was a <tapset>, return all <probe> matches.
-		else{
-			Set<String> tapset = builtMetadata.keySet();
-			for (String probePoint : tapset) {
-				if (probePoint.startsWith(match)){
-					data.add(probePoint);
-				}
-			}
-		}
+		else
+			data = builtMetadata.get(match);
 		
 		if (data == null)
 			return new String[] {};
