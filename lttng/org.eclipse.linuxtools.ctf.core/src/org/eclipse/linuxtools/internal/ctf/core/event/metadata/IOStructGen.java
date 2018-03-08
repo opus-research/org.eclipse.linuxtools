@@ -380,7 +380,7 @@ public class IOStructGen {
         String left = concatenateUnaryStrings(leftStrings);
 
         if (left.equals(MetadataStrings.MAJOR)) {
-            if (trace.majorIsSet()) {
+            if (trace.majortIsSet()) {
                 throw new ParseException("major is already set"); //$NON-NLS-1$
             }
 
