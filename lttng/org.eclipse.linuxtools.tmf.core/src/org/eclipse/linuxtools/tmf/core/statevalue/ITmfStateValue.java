@@ -33,12 +33,6 @@ public interface ITmfStateValue {
     public static final byte TYPE_STRING = 1;
 
     /**
-     * The 'byte' value associated to null state values (2)
-     * @since 2.0
-     */
-    public static final byte TYPE_LONG = 2;
-
-    /**
      * Each implementation has to supply a "type" number. This will get written
      * as-is in the History file to recognize the type, so it needs to be unique
      *
@@ -71,14 +65,4 @@ public interface ITmfStateValue {
      *             If the contained value cannot be read as a String
      */
     public String unboxStr() throws StateValueTypeException;
-
-    /**
-     * Read the contained value as a 'long' primitive
-     *
-     * @return The long contained in the state value
-     * @throws StateValueTypeException
-     *             If the contained value cannot be read as a long
-     * @since 2.0
-     */
-    public long unboxLong() throws StateValueTypeException;
 }
