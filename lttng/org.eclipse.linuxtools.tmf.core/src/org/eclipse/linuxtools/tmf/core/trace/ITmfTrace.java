@@ -224,6 +224,17 @@ public interface ITmfTrace extends ITmfDataProvider {
      */
     public void registerStateSystem(String id, ITmfStateSystem ss);
 
+    /**
+     * Index the trace. Depending on the trace type, this could be done at the
+     * constructor or initTrace phase too, so this could be implemented as a
+     * no-op.
+     *
+     * @param waitForCompletion
+     *            Should we block the caller until indexing is finished, or not.
+     * @since 2.0
+     */
+    public void indexTrace(boolean waitForCompletion);
+
     // ------------------------------------------------------------------------
     // Trace characteristics getters
     // ------------------------------------------------------------------------
@@ -342,20 +353,4 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @since 2.0
      */
     public ITmfTimestamp getInitialRangeOffset();
-
-    /**
-     * Return the current selected time.
-     *
-     * @return the current time stamp
-     * @since 2.0
-     */
-    public ITmfTimestamp getCurrentTime();
-
-    /**
-     * Return the current selected range.
-     *
-     * @return the current time range
-     * @since 2.0
-     */
-    public TmfTimeRange getCurrentRange();
 }
