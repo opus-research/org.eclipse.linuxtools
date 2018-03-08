@@ -67,10 +67,12 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  *
  * TODO: Implement request failures (codes, etc...)
  *
+ * @param <T> The request data type
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
-public abstract class TmfDataRequest implements ITmfDataRequest {
+public abstract class TmfDataRequest<T extends ITmfEvent> implements ITmfDataRequest<T> {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -88,7 +90,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final Class<? extends ITmfEvent> fDataType;
+    private final Class<T> fDataType;
     private final ExecutionType fExecType;
     private final int fRequestId; // A unique request ID
     protected long fIndex; // The index (rank) of the requested event
@@ -96,8 +98,8 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     private final int fBlockSize; // The block size (for BG requests)
     private int fNbRead; // The number of reads so far
 
-    private final CountDownLatch startedLatch = new CountDownLatch(1);
-    private final CountDownLatch completedLatch = new CountDownLatch(1);
+    private CountDownLatch startedLatch = new CountDownLatch(1);
+    private CountDownLatch completedLatch = new CountDownLatch(1);
     private boolean fRequestRunning;
     private boolean fRequestCompleted;
     private boolean fRequestFailed;
@@ -120,7 +122,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      *
      * @param dataType the requested data type
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType) {
+    public TmfDataRequest(Class<T> dataType) {
         this(dataType, 0, ALL_DATA, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
     }
 
@@ -131,7 +133,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param dataType the requested data type
      * @param priority the requested execution priority
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, ExecutionType priority) {
+    public TmfDataRequest(Class<T> dataType, ExecutionType priority) {
         this(dataType, 0, ALL_DATA, DEFAULT_BLOCK_SIZE, priority);
     }
 
@@ -142,7 +144,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param dataType the requested data type
      * @param index the index of the first event to retrieve
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index) {
+    public TmfDataRequest(Class<T> dataType, long index) {
         this(dataType, index, ALL_DATA, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
     }
 
@@ -154,7 +156,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param index the index of the first event to retrieve
      * @param priority the requested execution priority
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, ExecutionType priority) {
+    public TmfDataRequest(Class<T> dataType, long index, ExecutionType priority) {
         this(dataType, index, ALL_DATA, DEFAULT_BLOCK_SIZE, priority);
     }
 
@@ -166,7 +168,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param index the index of the first event to retrieve
      * @param nbRequested the number of events requested
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested) {
+    public TmfDataRequest(Class<T> dataType, long index, int nbRequested) {
         this(dataType, index, nbRequested, DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND);
     }
 
@@ -179,7 +181,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param nbRequested the number of events requested
      * @param priority the requested execution priority
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested, ExecutionType priority) {
+    public TmfDataRequest(Class<T> dataType, long index, int nbRequested, ExecutionType priority) {
         this(dataType, index, nbRequested, DEFAULT_BLOCK_SIZE, priority);
     }
 
@@ -192,7 +194,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param nbRequested the number of events requested
      * @param blockSize the number of events per block
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested, int blockSize) {
+    public TmfDataRequest(Class<T> dataType, long index, int nbRequested, int blockSize) {
         this(dataType, index, nbRequested, blockSize, ExecutionType.FOREGROUND);
     }
 
@@ -206,7 +208,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param blockSize the number of events per block
      * @param priority the requested execution priority
      */
-    public TmfDataRequest(Class<? extends ITmfEvent> dataType, long index, int nbRequested, int blockSize, ExecutionType priority) {
+    public TmfDataRequest(Class<T> dataType, long index, int nbRequested, int blockSize, ExecutionType priority) {
         fRequestId = fRequestNumber++;
         fDataType = dataType;
         fIndex = index;
@@ -236,7 +238,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * Copy constructor
      */
     @SuppressWarnings("unused")
-    private TmfDataRequest(TmfDataRequest other) {
+    private TmfDataRequest(TmfDataRequest<T> other) {
         this(null, 0, ALL_DATA, DEFAULT_BLOCK_SIZE);
     }
 
@@ -328,7 +330,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @return the requested data type
      */
     @Override
-    public Class<? extends ITmfEvent> getDataType() {
+    public Class<T> getDataType() {
         return fDataType;
     }
 
@@ -366,7 +368,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      * @param data a piece of data
      */
     @Override
-    public void handleData(ITmfEvent data) {
+    public void handleData(T data) {
         if (data != null) {
             fNbRead++;
         }
@@ -374,7 +376,8 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
 
     @Override
     public void handleStarted() {
-        if (Tracer.isRequestTraced()) {
+        if (Tracer.isRequestTraced())
+         {
             Tracer.traceRequest(this, "STARTED"); //$NON-NLS-1$
         }
     }
@@ -405,28 +408,32 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
         } else {
             handleSuccess();
         }
-        if (Tracer.isRequestTraced()) {
+        if (Tracer.isRequestTraced())
+         {
             Tracer.traceRequest(this, "COMPLETED (" + fNbRead + " events read)"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
     @Override
     public void handleSuccess() {
-        if (Tracer.isRequestTraced()) {
+        if (Tracer.isRequestTraced())
+         {
             Tracer.traceRequest(this, "SUCCEEDED"); //$NON-NLS-1$
         }
     }
 
     @Override
     public void handleFailure() {
-        if (Tracer.isRequestTraced()) {
+        if (Tracer.isRequestTraced())
+         {
             Tracer.traceRequest(this, "FAILED"); //$NON-NLS-1$
         }
     }
 
     @Override
     public void handleCancel() {
-        if (Tracer.isRequestTraced()) {
+        if (Tracer.isRequestTraced())
+         {
             Tracer.traceRequest(this, "CANCELLED"); //$NON-NLS-1$
         }
     }
@@ -523,8 +530,8 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof TmfDataRequest) {
-            TmfDataRequest request = (TmfDataRequest) other;
+        if (other instanceof TmfDataRequest<?>) {
+            TmfDataRequest<?> request = (TmfDataRequest<?>) other;
             return (request.fDataType == fDataType) && (request.fIndex == fIndex)
                     && (request.fNbRequested == fNbRequested);
         }
