@@ -44,7 +44,9 @@ public interface IStateSystemQuerier {
     public long getCurrentEndTime();
 
     /**
-     * Return the current total amount of attributes in the system.
+     * Return the current total amount of attributes in the system. This is also
+     * equal to the quark that will be assigned to the next attribute that's
+     * created.
      *
      * @return The current number of attributes in the system
      */

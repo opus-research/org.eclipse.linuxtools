@@ -277,12 +277,12 @@ class CtfKernelHandler implements Runnable {
                  * the new process (in case we haven't seen this process before)
                  */
                 quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.SYSTEM_CALL);
-                if (quark == ss.getNbAttributes()) { /* Did we just add this attribute? */
+                if (quark == ss.getNbAttributes() - 1) { /* Did we just add this attribute? */
                     value = TmfStateValue.nullValue();
                     ss.modifyAttribute(ts, value, quark);
                 }
                 quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.PPID);
-                if (quark == ss.getNbAttributes()) {
+                if (quark == ss.getNbAttributes() - 1) {
                     value = TmfStateValue.nullValue();
                     ss.modifyAttribute(ts, value, quark);
                 }
