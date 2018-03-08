@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.tmf.core.tests;
 
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
+import org.eclipse.linuxtools.internal.tmf.core.Tracer;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -72,12 +72,12 @@ public class TmfCoreTestPlugin extends Plugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		setDefault(this);
-		TmfCoreTracer.init();
+		Tracer.init();
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		TmfCoreTracer.stop();
+		Tracer.stop();
 		setDefault(null);
 		super.stop(context);
 	}
