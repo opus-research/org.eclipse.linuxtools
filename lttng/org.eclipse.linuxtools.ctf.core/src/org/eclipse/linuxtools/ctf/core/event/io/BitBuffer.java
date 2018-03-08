@@ -14,10 +14,9 @@
 
 package org.eclipse.linuxtools.ctf.core.event.io;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * <b><u>BitBuffer</u></b>
@@ -96,11 +95,8 @@ public final class BitBuffer {
      * byte order.
      *
      * @return The int value read from the buffer
-     * @throws CTFReaderException
-     *             An error occurred reading the data. When the buffer is read
-     *             beyond its end, this exception will be raised.
      */
-    public int getInt() throws CTFReaderException {
+    public int getInt() {
         return getInt(BIT_INT, true);
     }
 
@@ -116,11 +112,8 @@ public final class BitBuffer {
      * @param signed
      *            The sign extended flag
      * @return The int value read from the buffer
-     * @throws CTFReaderException
-     *             An error occurred reading the data. When the buffer is read
-     *             beyond its end, this exception will be raised.
      */
-    public int getInt(int length, boolean signed) throws CTFReaderException {
+    public int getInt(int length, boolean signed) {
 
         /* Nothing to read. */
         if (length == 0) {
@@ -129,9 +122,7 @@ public final class BitBuffer {
 
         /* Validate that the buffer has enough bits. */
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot read the integer, " + //$NON-NLS-1$
-                    "the buffer does not have enough remaining space. " + //$NON-NLS-1$
-                    "Requested:" + length); //$NON-NLS-1$
+            throw new BufferOverflowException();
         }
 
         /* Get the value from the byte buffer. */
@@ -303,11 +294,8 @@ public final class BitBuffer {
      *
      * @param value
      *            The int value to write
-     * @throws CTFReaderException
-     *             An error occurred writing the data. If the buffer is written
-     *             beyond its end, this exception will be raised.
      */
-    public void putInt(int value) throws CTFReaderException {
+    public void putInt(int value) {
         putInt(BIT_INT, value);
     }
 
@@ -324,16 +312,12 @@ public final class BitBuffer {
      *            The number of bits to write
      * @param value
      *            The value to write
-     * @throws CTFReaderException
-     *             An error occurred writing the data. If the buffer is written
-     *             beyond its end, this exception will be raised.
      */
-    public void putInt(int length, int value) throws CTFReaderException {
+    public void putInt(int length, int value) {
         final long curPos = this.pos;
 
         if (!canRead(length)) {
-            throw new CTFReaderException("Cannot write to bitbuffer, " //$NON-NLS-1$
-                    + "insufficient space. Requested: " + length); //$NON-NLS-1$
+            throw new BufferOverflowException();
         }
         if (length == 0) {
             return;

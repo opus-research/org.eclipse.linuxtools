@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF string definition (similar to a C null-terminated byte array).
@@ -111,7 +110,7 @@ public class StringDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
         string.setLength(0);

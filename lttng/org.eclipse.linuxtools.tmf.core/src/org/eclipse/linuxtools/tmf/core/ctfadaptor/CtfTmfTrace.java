@@ -439,12 +439,7 @@ public class CtfTmfTrace extends TmfTrace
      * @since 2.0
      */
     public CtfIterator createIterator() {
-        try {
-            return new CtfIterator(this);
-        } catch (CTFReaderException e) {
-            Activator.logError(e.getMessage(), e);
-        }
-        return null;
+        return new CtfIterator(this);
     }
 
     // ------------------------------------------------------------------------
