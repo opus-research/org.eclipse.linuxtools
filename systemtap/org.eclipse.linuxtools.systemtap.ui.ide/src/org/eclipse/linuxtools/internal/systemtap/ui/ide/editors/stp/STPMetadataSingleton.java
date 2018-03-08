@@ -20,19 +20,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import java.util.Set;
 
 
 /**
  * 
- * Build and hold completion metadata for Systemtap. This originally is generated from stap coverage data
+ * Build and hold completion metadata fo Systemtap. This originally is generated from stap coverage data
  * 
  *
  */
@@ -41,70 +34,22 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 // the generation of new meta-data is too slow to do this efficiently.
 public class STPMetadataSingleton {
 
-	public static String[] NO_MATCHES = new String[] {"No completion data found."};
 
 	private static STPMetadataSingleton instance = null;
+	private static HashMap<String, ArrayList<String>> builtMetadata = new HashMap<String, ArrayList<String>>();
 
-	private HashMap<String, ArrayList<String>> builtMetadata = new HashMap<String, ArrayList<String>>();
-	private boolean barLookups = false;
+	private static boolean barLookups = false;
 	
 	// Not a true singleton, but enough for the simplistic purpose
 	// it has to serve.
 	protected STPMetadataSingleton() {
-		TapsetLibrary.init();
 	}
 
 	public static STPMetadataSingleton getInstance() {
 		if (instance == null) {
 			instance = new STPMetadataSingleton();
-			
-			URL completionURL = null;
-			
-			completionURL = buildCompletionDataLocation("completion/stp_completion.properties"); //$NON-NLS-1$
-			STPMetadataSingleton completionDataStore = STPMetadataSingleton.getInstance();
-			
-			if (completionURL != null)
-				completionDataStore.build(completionURL);
-
-
 		}
 		return instance;
-	}
-
-	private static URL buildCompletionDataLocation(String completionDataLocation) {
-		URL completionURLLocation = null; 
-		try {
-			completionURLLocation = getCompletionURL(completionDataLocation);			
-		} catch (IOException e) {
-			completionURLLocation = null;
-		}
-		
-		if (completionURLLocation == null) {
-			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, 
-					IStatus.OK, "Cannot locate plug-in location for System Tap completion metadata " +
-							"(completion/stp_completion.properties). Completions are not available.", null));
-			return null;
-		} 
-		
-		File completionFile = new File(completionURLLocation.getFile());
-		if ((completionFile == null) || (!completionFile.exists()) || (!completionFile.canRead())) {
-			IDEPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, 
-					IStatus.OK, "Cannot find System Tap completion metadata at  " +completionFile.getPath() + 
-					"Completions are not available.", null));
-					
-			return null;
-		}
-
-		return completionURLLocation;
-		
-	}
-	private static URL getCompletionURL(String completionLocation) throws IOException {
-		URL fileURL = null;
-		URL location = IDEPlugin.getDefault().getBundle().getEntry(completionLocation);
-
-		if (location != null)
-			fileURL = FileLocator.toFileURL(location);		
-		return fileURL;
 	}
 
 	/**
@@ -115,56 +60,49 @@ public class STPMetadataSingleton {
 	 * @return - completion proposals.
 	 * 
 	 */
-	public String[] getCompletionResults(String match) {
+	public static String[] getCompletionResults(String match) {
+
+		ArrayList<String> data = new ArrayList<String>();
+	
 		// TODO: Until an error strategy is devised to better inform
 		// the user that there was a problem compiling completions other than
 		// a modal error dialog, or a log message use this.
 		if (barLookups)
-			return NO_MATCHES;
-
+			return new String[] {"No completion data found."};
+		
 		// Check to see if the proposal hint included a <tapset>.<partialprobe>
 		// or just a <probe>. (ie syscall. or syscall.re).
 		boolean tapsetAndProbeIncluded = isTapsetAndProbe(match);
 
-		TreeNode node = TapsetLibrary.getProbes();
-
 		// If the result is a tapset and partial probe, get the tapset, then 
-		// narrow down the list with partial probe matches.
+		/// narrow down the list with partial probe matches.
 		if (tapsetAndProbeIncluded) {
-			node = getChildByName(node, getTapset(match));
-			if (node == null )
-				return NO_MATCHES;
+			ArrayList<String> temp = builtMetadata.get(getTapset(match));
 
-			// Now get the completions.
-			return getMatchingChildren(node, match);			
-		}
+			if (temp == null)
+				return new String[] {"No completion data found."};
 
-		// Now get the completions.
-		return getMatchingChildren(node, match);
-	}
-
-	private TreeNode getChildByName(TreeNode node, String name){
-		int n = node.getChildCount();
-
-		for (int i = 0; i < n; i++) {
-			if (node.getChildAt(i).getData().equals(name))
-				return node.getChildAt(i);
-		}
-
-		return null;
-	}
-
-	private String[] getMatchingChildren(TreeNode node, String prefix) {
-		ArrayList<String> matches = new ArrayList<String>();
-
-		int n = node.getChildCount();
-		for (int i = 0; i < n; i++) {
-			if (node.getChildAt(i).toString().startsWith(prefix)){
-				matches.add(node.getChildAt(i).toString());
+			String probe = getTapsetProbe(match);
+			for (int i=0; i<temp.size(); i++) {
+				if (temp.get(i).startsWith(probe)) {
+					data.add(temp.get(i));
+				}
 			}
 		}
-
-		return matches.toArray(new String[0]);
+		// If the result was a <tapset>, return all <probe> matches.
+		else{
+			Set<String> tapset = builtMetadata.keySet();
+			for (String probePoint : tapset) {
+				if (probePoint.startsWith(match)){
+					data.add(probePoint);
+				}
+			}
+		}
+		
+		if (data == null)
+			return new String[] {};
+		else
+			return data.toArray(new String[0]);
 	}
 
 	/**
@@ -187,8 +125,8 @@ public class STPMetadataSingleton {
 			try {
 				String line = null;
 				while ((line = input.readLine()) != null) {
-					String tapset = ""; //$NON-NLS-1$
-					String probe = ""; //$NON-NLS-1$
+					String tapset = "";
+					String probe = "";
 					try {
 						tapset = getTapset(line);
 						probe = getTapsetProbe(line);
@@ -217,7 +155,7 @@ public class STPMetadataSingleton {
 	 * @param data - hint data
 	 * @return
 	 */
-	private boolean isTapsetAndProbe(String data) {
+	private static boolean isTapsetAndProbe(String data) {
 		if (data.indexOf('.') >= 0)
 			return true;
 		
@@ -230,7 +168,7 @@ public class STPMetadataSingleton {
 	 * @param data - hint data
 	 * @return
 	 */
-	private String getTapset(String data) {
+	private static String getTapset(String data) {
 		int i = data.indexOf('.');
 		if (i < 0)
 			throw new StringIndexOutOfBoundsException();
@@ -243,7 +181,7 @@ public class STPMetadataSingleton {
 	 * @param data - hint data
 	 * @return
 	 */
-	private String getTapsetProbe(String data) {
+	private static String getTapsetProbe(String data) {
 		int i = data.indexOf('.');
 		if (i < 0)
 			throw new StringIndexOutOfBoundsException();
