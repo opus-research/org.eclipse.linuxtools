@@ -44,7 +44,7 @@ public class CtfKernelTrace extends CtfTmfTrace {
      * ID of the state system we will build
      * @since 2.0
      * */
-    public static final String STATE_ID = "lttng-kernel"; //$NON-NLS-1$
+    public static final String STATE_ID = "org.eclipse.linuxtools.lttng2.kernel"; //$NON-NLS-1$
 
     /**
      * Default constructor

@@ -42,7 +42,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 public class TmfStatistics  implements ITmfStatistics {
 
     /** ID for the statistics state system */
-    public static final String STATE_ID = "statistics"; //$NON-NLS-1$
+    public static final String STATE_ID = "org.eclipse.linuxtools.tmf.statistics"; //$NON-NLS-1$
 
     /* Filename the "statistics state history" file will have */
     private static final String STATS_STATE_FILENAME = "statistics.ht"; //$NON-NLS-1$
