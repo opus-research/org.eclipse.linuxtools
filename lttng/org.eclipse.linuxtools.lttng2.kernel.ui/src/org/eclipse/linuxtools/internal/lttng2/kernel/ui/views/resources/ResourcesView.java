@@ -86,9 +86,6 @@ public class ResourcesView extends TmfView {
     // The time graph viewer
     TimeGraphViewer fTimeGraphViewer;
 
-    // The selected trace
-    private ITmfTrace fTrace;
-
     // The time graph entry list
     private ArrayList<TraceEntry> fEntryList;
 
@@ -357,40 +354,12 @@ public class ResourcesView extends TmfView {
     // ------------------------------------------------------------------------
 
     /**
-     * Handler for the trace selected signal
-     *
-     * @param signal
-     *            The incoming signal
-     */
-    @TmfSignalHandler
-    public void traceSelected(final TmfTraceSelectedSignal signal) {
-        if (signal.getTrace() == fTrace) {
-            return;
-        }
-        fTrace = signal.getTrace();
-
-        synchronized (fEntryListMap) {
-            fEntryList = fEntryListMap.get(fTrace);
-            if (fEntryList == null) {
-                synchronized (fBuildThreadMap) {
-                    BuildThread buildThread = new BuildThread(fTrace);
-                    fBuildThreadMap.put(fTrace, buildThread);
-                    buildThread.start();
-                }
-            } else {
-                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh();
-            }
-        }
-    }
-
-    /**
      * Trace is disposed: clear the data structures and the view
      *
      * @param signal the signal received
      */
     @TmfSignalHandler
+    @Override
     public void traceClosed(final TmfTraceClosedSignal signal) {
         synchronized (fBuildThreadMap) {
             BuildThread buildThread = fBuildThreadMap.remove(signal.getTrace());
@@ -469,6 +438,24 @@ public class ResourcesView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
+
+    @Override
+    protected void loadTrace() {
+        synchronized (fEntryListMap) {
+            fEntryList = fEntryListMap.get(fTrace);
+            if (fEntryList == null) {
+                synchronized (fBuildThreadMap) {
+                    BuildThread buildThread = new BuildThread(fTrace);
+                    fBuildThreadMap.put(fTrace, buildThread);
+                    buildThread.start();
+                }
+            } else {
+                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                refresh();
+            }
+        }
+    }
 
     private void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
         fStartTime = Long.MAX_VALUE;
