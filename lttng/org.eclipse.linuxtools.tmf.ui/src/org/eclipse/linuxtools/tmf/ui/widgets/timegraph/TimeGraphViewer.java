@@ -259,7 +259,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         });
         _verticalScrollBar.setEnabled(false);
 
-        _stateCtrl = createTimeGraphControl(_dataViewer, _colors);
+        _stateCtrl = createTimeGraphControl();
 
         _stateCtrl.setTimeProvider(this);
         _stateCtrl.addSelectionListener(this);
@@ -305,11 +305,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         _colors.dispose();
     }
 
-    /**
-     * @since 2.0
-     */
-    protected TimeGraphControl createTimeGraphControl(Composite parent, TimeGraphColorScheme colors) {
-        return new TimeGraphControl(parent, colors);
+    protected TimeGraphControl createTimeGraphControl() {
+        return new TimeGraphControl(_dataViewer, _colors);
     }
 
     /**
@@ -589,7 +586,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
 
     @Override
     public void resetStartFinishTime() {
-        setStartFinishTime(_time0_, _time1_);
+        setStartFinishTimeNotify(_time0_, _time1_);
         _timeRangeFixed = false;
     }
 
@@ -1115,26 +1112,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * Collapses all nodes of the viewer's tree, starting with the root.
-     *
-     * @since 2.0
-     */
-    public void collapseAll() {
-        _stateCtrl.collapseAll();
-        adjustVerticalScrollBar();
-    }
-
-    /**
-     * Expands all nodes of the viewer's tree, starting with the root.
-     *
-     * @since 2.0
-     */
-    public void expandAll() {
-        _stateCtrl.expandAll();
-        adjustVerticalScrollBar();
-    }
-
-    /**
      * Get the number of sub-elements when expanded
      *
      * @return The element count
@@ -1362,7 +1339,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#addTimeGraphEntryMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 2.0
+     * @since 1.2
      */
     public void addTimeGraphEntryMenuListener(MenuDetectListener listener) {
         _stateCtrl.addTimeGraphEntryMenuListener(listener);
@@ -1371,7 +1348,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#removeTimeGraphEntryMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 2.0
+     * @since 1.2
      */
     public void removeTimeGraphEntryMenuListener(MenuDetectListener listener) {
         _stateCtrl.removeTimeGraphEntryMenuListener(listener);
@@ -1380,7 +1357,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#addTimeEventMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 2.0
+     * @since 1.2
      */
     public void addTimeEventMenuListener(MenuDetectListener listener) {
         _stateCtrl.addTimeEventMenuListener(listener);
@@ -1389,7 +1366,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     /**
      * @param listener a {@link MenuDetectListener}
      * @see org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl#removeTimeEventMenuListener(org.eclipse.swt.events.MenuDetectListener)
-     * @since 2.0
+     * @since 1.2
      */
     public void removeTimeEventMenuListener(MenuDetectListener listener) {
         _stateCtrl.removeTimeEventMenuListener(listener);

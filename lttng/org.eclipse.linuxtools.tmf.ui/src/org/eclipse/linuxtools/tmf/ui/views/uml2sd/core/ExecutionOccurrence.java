@@ -133,7 +133,7 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * @param time the time when the execution occurrence starts
      */
     public void setStartTime(ITmfTimestamp time) {
-        fStartTime = time;
+        fStartTime = time.clone();
         fHasTimeInfo = true;
         if (fLifeline != null) {
             fLifeline.setTimeInfo(true);
@@ -146,7 +146,7 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * @param time the time when the execution occurrence ends
      */
     public void setEndTime(ITmfTimestamp time) {
-        fEndTime = time;
+        fEndTime = time.clone();
         fHasTimeInfo = true;
         if (fLifeline != null) {
             fLifeline.setTimeInfo(true);
