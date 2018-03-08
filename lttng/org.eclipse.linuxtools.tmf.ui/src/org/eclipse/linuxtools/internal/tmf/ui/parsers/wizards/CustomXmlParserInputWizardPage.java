@@ -551,8 +551,8 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
                 selectedElement.dispose();
             }
             if (!(event.getSelection().isEmpty()) && event.getSelection() instanceof IStructuredSelection) {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                InputElement inputElement = (InputElement) selection.getFirstElement();
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                InputElement inputElement = (InputElement) sel.getFirstElement();
                 selectedElement = new ElementNode(elementContainer, inputElement);
                 elementContainer.layout();
                 elementScrolledComposite.setMinSize(elementContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).x,
@@ -692,9 +692,9 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
     private String getSelectionText() {
         InputStream inputStream = null;
         if (this.selection instanceof IStructuredSelection) {
-            Object selection = ((IStructuredSelection) this.selection).getFirstElement();
-            if (selection instanceof IFile) {
-                IFile file = (IFile) selection;
+            Object sel = ((IStructuredSelection) this.selection).getFirstElement();
+            if (sel instanceof IFile) {
+                IFile file = (IFile) sel;
                 try {
                     inputStream = file.getContents();
                 } catch (CoreException e) {
@@ -773,10 +773,6 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         }
     }
 
-    private void updatePreviews() {
-        updatePreviews(false);
-    }
-
     private void initValues() {
         timeStampValue = null;
         timeStampFormat = null;
@@ -784,7 +780,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         logEntryFound = false;
     }
 
-    private void updatePreviews(boolean updateAll) {
+    private void updatePreviews() {
         if (inputText == null) {
             // early update during construction
             return;
@@ -928,10 +924,10 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        InputElement parent = ElementNode.this.inputElement.parentElement;
-                        while (parent != null) {
-                            parent.logEntry = false;
-                            parent = parent.parentElement;
+                        InputElement parentElem = ElementNode.this.inputElement.parentElement;
+                        while (parentElem != null) {
+                            parentElem.logEntry = false;
+                            parentElem = parentElem.parentElement;
                         }
                     }
                 });
@@ -1165,9 +1161,10 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         }
 
         private void removeAttribute(int attributeNumber) {
-            if (--attributeNumber < attributes.size()) {
-                attributes.remove(attributeNumber).dispose();
-                for (int i = attributeNumber; i < attributes.size(); i++) {
+            int nb = attributeNumber;
+            if (--nb < attributes.size()) {
+                attributes.remove(nb).dispose();
+                for (int i = nb; i < attributes.size(); i++) {
                     attributes.get(i).setAttributeNumber(i + 1);
                 }
                 elementContainer.layout();
@@ -1386,15 +1383,16 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
     }
 
     private Element getPreviewElement(InputElement inputElement) {
+        InputElement currentElement = inputElement;
         Element element = documentElement;
         if (element != null) {
             if (!documentElement.getNodeName().equals(definition.rootInputElement.elementName)) {
                 return null;
             }
             ArrayList<String> elementNames = new ArrayList<String>();
-            while (inputElement != null) {
-                elementNames.add(inputElement.elementName);
-                inputElement = inputElement.parentElement;
+            while (currentElement != null) {
+                elementNames.add(currentElement.elementName);
+                currentElement = currentElement.parentElement;
             }
             for (int i = elementNames.size() - 1; --i >= 0;) {
                 NodeList childList = element.getChildNodes();
